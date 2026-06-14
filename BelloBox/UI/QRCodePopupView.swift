@@ -46,6 +46,7 @@ struct QRCodePopupView: View {
     static let preferredSize = CGSize(width: 520, height: 660)
 
     @ObservedObject var viewModel: QRCodePopupViewModel
+    var onMinimize: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -62,7 +63,7 @@ struct QRCodePopupView: View {
     }
 
     private var header: some View {
-        PopupHeader(icon: "qrcode", title: "QR Code") { viewModel.close() }
+        PopupHeader(icon: "qrcode", title: "QR Code", onMinimize: onMinimize) { viewModel.close() }
     }
 
     @ViewBuilder

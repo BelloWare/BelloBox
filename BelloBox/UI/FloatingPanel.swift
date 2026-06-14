@@ -40,6 +40,7 @@ final class PopupPanel: NSPanel {
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         isOpaque = false
         backgroundColor = .clear
+        isMovableByWindowBackground = true
         hasShadow = true
         hidesOnDeactivate = false
         isReleasedWhenClosed = false

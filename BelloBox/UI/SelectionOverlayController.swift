@@ -12,6 +12,12 @@ final class SelectionOverlayController: NSObject {
 
     private var toolbarPanel: FloatingButtonPanel?
     private var popupPanel: PopupPanel?
+    private var popupFullContentView: NSView?
+    private var popupFullSize: CGSize = .zero
+    private var popupIsMinimized = false
+    private var popupMinimizedIcon = ""
+    private var popupMinimizedTitle = ""
+    private var popupMinimizedSubtitle: (() -> String?)?
     private var toolbarDismissMonitor: Any?
 
     private var pendingSelection: TextSelection?
@@ -202,22 +208,61 @@ final class SelectionOverlayController: NSObject {
             self?.hidePopup()
             self?.openSettings()
         }
-        present(ActionPopupView(viewModel: viewModel), size: ActionPopupView.preferredSize, anchorRect: selection.anchorRect)
+        let view = ActionPopupView(
+            viewModel: viewModel,
+            onMinimize: { [weak self] in self?.minimizePopup() }
+        )
+        present(
+            view,
+            size: ActionPopupView.preferredSize,
+            anchorRect: selection.anchorRect,
+            minimizedIcon: "wand.and.stars",
+            minimizedTitle: "BelloBox",
+            minimizedSubtitle: { viewModel.providerSummary }
+        )
     }
 
     private func showQRPopup(for selection: TextSelection) {
         let viewModel = QRCodePopupViewModel(text: selection.text)
         viewModel.onClose = { [weak self] in self?.hidePopup() }
-        present(QRCodePopupView(viewModel: viewModel), size: QRCodePopupView.preferredSize, anchorRect: selection.anchorRect)
+        let view = QRCodePopupView(
+            viewModel: viewModel,
+            onMinimize: { [weak self] in self?.minimizePopup() }
+        )
+        present(
+            view,
+            size: QRCodePopupView.preferredSize,
+            anchorRect: selection.anchorRect,
+            minimizedIcon: "qrcode",
+            minimizedTitle: "QR Code"
+        )
     }
 
     private func showTextToolsPopup(for selection: TextSelection) {
         let viewModel = TextToolsPopupViewModel(selection: selection, settings: settings, accessibility: accessibility)
         viewModel.onClose = { [weak self] in self?.hidePopup() }
-        present(TextToolsPopupView(viewModel: viewModel, settings: settings), size: TextToolsPopupView.preferredSize, anchorRect: selection.anchorRect)
+        let view = TextToolsPopupView(
+            viewModel: viewModel,
+            settings: settings,
+            onMinimize: { [weak self] in self?.minimizePopup() }
+        )
+        present(
+            view,
+            size: TextToolsPopupView.preferredSize,
+            anchorRect: selection.anchorRect,
+            minimizedIcon: "wrench.and.screwdriver",
+            minimizedTitle: "Text Tools"
+        )
     }
 
-    private func present<V: View>(_ view: V, size: CGSize, anchorRect: CGRect?) {
+    private func present<V: View>(
+        _ view: V,
+        size: CGSize,
+        anchorRect: CGRect?,
+        minimizedIcon: String,
+        minimizedTitle: String,
+        minimizedSubtitle: @escaping () -> String? = { nil }
+    ) {
         hidePopup()
         let origin = ScreenPlacement.popupOrigin(
             anchorRect: anchorRect,
@@ -225,18 +270,77 @@ final class SelectionOverlayController: NSObject {
             size: size
         )
         let panel = PopupPanel(contentRect: CGRect(origin: origin, size: size))
-        panel.contentView = NSHostingView(rootView: view)
+        let hosting = NSHostingView(rootView: view)
+        panel.contentView = hosting
         panel.setFrameOrigin(origin)
         panel.makeKeyAndOrderFront(nil)
         popupPanel = panel
+        popupFullContentView = hosting
+        popupFullSize = size
+        popupIsMinimized = false
+        popupMinimizedIcon = minimizedIcon
+        popupMinimizedTitle = minimizedTitle
+        popupMinimizedSubtitle = minimizedSubtitle
         // Note: the popup intentionally does NOT dismiss on an outside click, so
         // it stays put while you work (copy/paste, switch apps). Close it with
         // the × button or Esc.
     }
 
+    private func minimizePopup() {
+        guard let panel = popupPanel, !popupIsMinimized else { return }
+        popupFullContentView = panel.contentView
+        popupIsMinimized = true
+
+        let size = minimizedPopupSize()
+        let oldFrame = panel.frame
+        let origin = ScreenPlacement.clamp(
+            origin: CGPoint(x: oldFrame.minX, y: oldFrame.maxY - size.height),
+            size: size,
+            into: ScreenPlacement.screen(containing: CGPoint(x: oldFrame.midX, y: oldFrame.midY))
+        )
+
+        let bar = MinimizedPopupBar(
+            icon: popupMinimizedIcon,
+            title: popupMinimizedTitle,
+            subtitle: popupMinimizedSubtitle?(),
+            onRestore: { [weak self] in self?.restorePopup() },
+            onClose: { [weak self] in self?.hidePopup() }
+        )
+        panel.contentView = NSHostingView(rootView: bar.frame(width: size.width, height: size.height))
+        panel.setFrame(NSRect(origin: origin, size: size), display: true, animate: true)
+        panel.orderFrontRegardless()
+    }
+
+    private func restorePopup() {
+        guard let panel = popupPanel, popupIsMinimized, let contentView = popupFullContentView else { return }
+        let size = popupFullSize
+        let oldFrame = panel.frame
+        let origin = ScreenPlacement.clamp(
+            origin: CGPoint(x: oldFrame.minX, y: oldFrame.maxY - size.height),
+            size: size,
+            into: ScreenPlacement.screen(containing: CGPoint(x: oldFrame.midX, y: oldFrame.midY))
+        )
+
+        panel.setFrame(NSRect(origin: origin, size: size), display: true, animate: true)
+        panel.contentView = contentView
+        panel.makeKeyAndOrderFront(nil)
+        popupIsMinimized = false
+    }
+
+    private func minimizedPopupSize() -> CGSize {
+        let width = min(max(popupFullSize.width * 0.52, 340), 430)
+        return CGSize(width: width, height: 66)
+    }
+
     private func hidePopup() {
         popupPanel?.orderOut(nil)
         popupPanel = nil
+        popupFullContentView = nil
+        popupFullSize = .zero
+        popupIsMinimized = false
+        popupMinimizedIcon = ""
+        popupMinimizedTitle = ""
+        popupMinimizedSubtitle = nil
         pendingSelection = nil
     }
 }

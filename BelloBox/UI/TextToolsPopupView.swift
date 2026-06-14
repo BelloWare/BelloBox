@@ -103,6 +103,7 @@ struct TextToolsPopupView: View {
 
     @ObservedObject var viewModel: TextToolsPopupViewModel
     @ObservedObject var settings: AppSettings
+    var onMinimize: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -121,7 +122,7 @@ struct TextToolsPopupView: View {
     }
 
     private var header: some View {
-        PopupHeader(icon: "wrench.and.screwdriver", title: "Text Tools") { viewModel.close() }
+        PopupHeader(icon: "wrench.and.screwdriver", title: "Text Tools", onMinimize: onMinimize) { viewModel.close() }
     }
 
     private var categoryBar: some View {

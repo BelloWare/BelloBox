@@ -43,6 +43,7 @@ struct PopupHeader: View {
     let icon: String
     let title: String
     var subtitle: String? = nil
+    var onMinimize: (() -> Void)? = nil
     var onClose: () -> Void
 
     var body: some View {
@@ -60,16 +61,76 @@ struct PopupHeader: View {
                 }
             }
             Spacer(minLength: 8)
+            if let onMinimize {
+                chromeButton(systemName: "minus", help: "Minify", action: onMinimize)
+            }
+            chromeButton(systemName: "xmark", help: "Close", action: onClose)
+        }
+    }
+
+    private func chromeButton(systemName: String, help: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(.secondary)
+                .frame(width: 22, height: 22)
+                .background(Circle().fill(.primary.opacity(0.08)))
+        }
+        .buttonStyle(.plain)
+        .help(help)
+    }
+}
+
+/// Compact chrome used when a popup is minified. The panel itself remains
+/// draggable by background, while these controls restore or close it.
+struct MinimizedPopupBar: View {
+    let icon: String
+    let title: String
+    var subtitle: String? = nil
+    var onRestore: () -> Void
+    var onClose: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 28, height: 28)
+                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(BoxTheme.accentGradient))
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.callout.weight(.semibold)).lineLimit(1)
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle).font(.caption2).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                }
+            }
+
+            Spacer(minLength: 8)
+
+            Button(action: onRestore) {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24, height: 24)
+                    .background(Circle().fill(.primary.opacity(0.08)))
+            }
+            .buttonStyle(.plain)
+            .help("Restore")
+
             Button(action: onClose) {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(.secondary)
-                    .frame(width: 22, height: 22)
+                    .frame(width: 24, height: 24)
                     .background(Circle().fill(.primary.opacity(0.08)))
             }
             .buttonStyle(.plain)
             .help("Close")
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .popupCard()
+        .onExitCommand(perform: onClose)
     }
 }
 

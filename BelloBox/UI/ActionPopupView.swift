@@ -6,6 +6,7 @@ struct ActionPopupView: View {
     static let preferredSize = CGSize(width: 720, height: 760)
 
     @ObservedObject var viewModel: ActionPopupViewModel
+    var onMinimize: () -> Void = {}
 
     private let columns = [GridItem(.adaptive(minimum: 210), spacing: 10)]
 
@@ -38,7 +39,7 @@ struct ActionPopupView: View {
     // MARK: - Sections
 
     private var header: some View {
-        PopupHeader(icon: "wand.and.stars", title: "BelloBox", subtitle: viewModel.providerSummary) {
+        PopupHeader(icon: "wand.and.stars", title: "BelloBox", subtitle: viewModel.providerSummary, onMinimize: onMinimize) {
             viewModel.close()
         }
     }
