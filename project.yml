@@ -1,0 +1,107 @@
+name: BelloBox
+options:
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "13.0"
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.0.1
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: 43TXHV3TM3
+  configs:
+    Debug:
+      ONLY_ACTIVE_ARCH: YES
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.8.1
+schemes:
+  BelloBox:
+    build:
+      targets:
+        BelloBox: [test, run, profile, analyze, archive]
+    test:
+      config: Debug
+      targets:
+        - BelloBoxTests
+      gatherCoverageData: false
+    run:
+      config: Debug
+      executable: BelloBox
+    profile:
+      config: Release
+      executable: BelloBox
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+targets:
+  BelloBox:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: BelloBox
+    dependencies:
+      - package: Sparkle
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 43TXHV3TM3
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: BelloBox/Info.plist
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks"
+        PRODUCT_BUNDLE_IDENTIFIER: com.ainoob.BelloBox
+        PRODUCT_MODULE_NAME: BelloBox
+        PRODUCT_NAME: BelloBox
+        SPARKLE_FEED_URL: https://belloware.com/assets/bello_box.appcast.xml
+        SPARKLE_PUBLIC_ED_KEY: slSJ7z2j8RDa266+E/7To5AOOloc2YtiMUZUVEIhwNA=
+        SWIFT_EMIT_LOC_STRINGS: NO
+      configs:
+        Debug:
+          "CODE_SIGN_IDENTITY[sdk=macosx*]": Apple Development
+          CODE_SIGN_ENTITLEMENTS: BelloBox/BelloBox.Debug.entitlements
+          CODE_SIGN_STYLE: Automatic
+          ENABLE_HARDENED_RUNTIME: NO
+          ENABLE_TESTABILITY: YES
+          SWIFT_OPTIMIZATION_LEVEL: -Onone
+        Release:
+          CODE_SIGN_ENTITLEMENTS: BelloBox/BelloBox.Release.entitlements
+          ENABLE_HARDENED_RUNTIME: YES
+    postBuildScripts:
+      - name: Embed Sparkle Framework
+        shell: /bin/sh
+        script: |
+          set -euo pipefail
+          SRC="$BUILT_PRODUCTS_DIR/PackageFrameworks/Sparkle.framework"
+          DEST="$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/Sparkle.framework"
+          if [ ! -d "$SRC" ]; then
+            exit 0
+          fi
+          rm -rf "$DEST"
+          mkdir -p "$(dirname "$DEST")"
+          ditto "$SRC" "$DEST"
+  BelloBoxTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: BelloBoxTests
+    dependencies:
+      - target: BelloBox
+    settings:
+      base:
+        "CODE_SIGN_IDENTITY[sdk=macosx*]": Apple Development
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 43TXHV3TM3
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.ainoob.BelloBoxTests
+        PRODUCT_NAME: BelloBoxTests
+        BUNDLE_LOADER: $(TEST_HOST)
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/BelloBox.app/Contents/MacOS/BelloBox
+        TEST_TARGET_NAME: BelloBox
