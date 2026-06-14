@@ -36,6 +36,9 @@ struct BelloBoxApp: App {
         Button("Ask BelloBox About Selection") {
             appDelegate.overlay?.triggerOnCurrentSelection()
         }
+        Button("Generate QR Code from Selection") {
+            appDelegate.overlay?.triggerQROnCurrentSelection()
+        }
         Text(settings.isConfigured ? "Provider: \(settings.providerKind.displayName)" : "Not configured — open Settings")
             .font(.caption)
 

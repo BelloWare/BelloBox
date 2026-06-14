@@ -1,18 +1,18 @@
 import AppKit
 import SwiftUI
 
-/// Coordinates the whole selection → button → popup flow: listens for
-/// selections, shows the floating button, and presents the AI popup.
+/// Coordinates the whole selection → toolbar → popup flow: listens for
+/// selections, shows the floating tool toolbar, and presents the AI or QR popup.
 @MainActor
-final class SelectionOverlayController {
+final class SelectionOverlayController: NSObject {
     private let settings: AppSettings
     private let accessibility = AccessibilityService()
     private let client = AIClient()
     private let monitor: SelectionMonitor
 
-    private var buttonPanel: FloatingButtonPanel?
+    private var toolbarPanel: FloatingButtonPanel?
     private var popupPanel: PopupPanel?
-    private var buttonDismissMonitor: Any?
+    private var toolbarDismissMonitor: Any?
     private var popupDismissMonitor: Any?
 
     private var pendingSelection: TextSelection?
@@ -25,6 +25,7 @@ final class SelectionOverlayController {
     init(settings: AppSettings) {
         self.settings = settings
         self.monitor = SelectionMonitor(accessibility: accessibility)
+        super.init()
         monitor.onSelection = { [weak self] selection in
             self?.handleSelection(selection)
         }
@@ -52,20 +53,27 @@ final class SelectionOverlayController {
 
     func setFloatingButtonEnabled(_ enabled: Bool) {
         monitor.isEnabled = enabled
-        if !enabled { hideButton() }
+        if !enabled { hideToolbar() }
     }
 
     private func startTrustWatcher() {
         trustWatcher?.invalidate()
-        trustWatcher = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            let trusted = AccessibilityService.isTrusted
-            if trusted, !self.lastTrusted {
-                self.lastTrusted = true
-                self.restartMonitors()
-                self.trustWatcher?.invalidate()
-                self.trustWatcher = nil
-            }
+        trustWatcher = Timer.scheduledTimer(
+            timeInterval: 2,
+            target: self,
+            selector: #selector(checkTrust),
+            userInfo: nil,
+            repeats: true
+        )
+    }
+
+    @objc private func checkTrust() {
+        guard !lastTrusted else { return }
+        if AccessibilityService.isTrusted {
+            lastTrusted = true
+            restartMonitors()
+            trustWatcher?.invalidate()
+            trustWatcher = nil
         }
     }
 
@@ -75,16 +83,15 @@ final class SelectionOverlayController {
         guard settings.floatingButtonEnabled else { return }
         guard popupPanel == nil else { return } // don't interrupt an open popup
         pendingSelection = selection
-        showButton(for: selection)
+        showToolbar(for: selection)
     }
 
-    /// Used by the hotkey / menu: read the selection now and jump straight to the
-    /// popup, falling back to a synthesized copy when AX text is unavailable.
-    func triggerOnCurrentSelection() {
-        var selection = accessibility.readSelection()
-        if selection == nil, let copied = accessibility.copySelectionViaPasteboard() {
+    /// Reads the current selection (AX first, synthesized copy as a fallback).
+    private func currentSelection() -> TextSelection? {
+        if let selection = accessibility.readSelection() { return selection }
+        if let copied = accessibility.copySelectionViaPasteboard() {
             let front = NSWorkspace.shared.frontmostApplication
-            selection = TextSelection(
+            return TextSelection(
                 text: copied,
                 anchorRect: nil,
                 appName: front?.localizedName,
@@ -92,64 +99,85 @@ final class SelectionOverlayController {
                 pid: front?.processIdentifier
             )
         }
-        guard let selection, !selection.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            NSSound.beep()
-            return
-        }
-        hideButton()
-        showPopup(for: selection)
+        return nil
     }
 
-    // MARK: - Floating button
+    private func nonEmpty(_ selection: TextSelection?) -> TextSelection? {
+        guard let selection, !selection.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        return selection
+    }
 
-    private func showButton(for selection: TextSelection) {
-        hideButton()
-        let size = FloatingButtonView.preferredSize
-        let panelSize = CGSize(width: size.width + 8, height: size.height + 8)
+    /// Used by the hotkey / menu: read the selection now and open the AI popup.
+    func triggerOnCurrentSelection() {
+        guard let selection = nonEmpty(currentSelection()) else { NSSound.beep(); return }
+        hideToolbar()
+        showAIPopup(for: selection)
+    }
+
+    /// Used by the menu: read the selection now and open the QR popup.
+    func triggerQROnCurrentSelection() {
+        guard let selection = nonEmpty(currentSelection()) else { NSSound.beep(); return }
+        hideToolbar()
+        showQRPopup(for: selection)
+    }
+
+    // MARK: - Floating toolbar
+
+    private func showToolbar(for selection: TextSelection) {
+        hideToolbar()
+
+        let view = FloatingToolbarView(
+            onAI: { [weak self] in self?.activateAI() },
+            onQR: { [weak self] in self?.activateQR() }
+        )
+        let hosting = NSHostingView(rootView: view)
+        var size = hosting.fittingSize
+        if size.width < 1 || size.height < 1 { size = FloatingToolbarView.preferredSize }
+
         let origin = ScreenPlacement.buttonOrigin(
             anchorRect: selection.anchorRect,
             mouse: NSEvent.mouseLocation,
-            size: panelSize
+            size: size
         )
-
-        let panel = FloatingButtonPanel(contentRect: CGRect(origin: origin, size: panelSize))
-        let view = FloatingButtonView { [weak self] in
-            self?.activateButton()
-        }
-        panel.contentView = NSHostingView(rootView: view)
+        let panel = FloatingButtonPanel(contentRect: CGRect(origin: origin, size: size))
+        panel.contentView = hosting
         panel.setFrameOrigin(origin)
         panel.orderFrontRegardless()
-        buttonPanel = panel
+        toolbarPanel = panel
 
-        installButtonDismissMonitor()
+        installToolbarDismissMonitor()
     }
 
-    private func activateButton() {
+    private func activateAI() {
         guard let selection = pendingSelection else { return }
-        hideButton()
-        showPopup(for: selection)
+        hideToolbar()
+        showAIPopup(for: selection)
     }
 
-    private func hideButton() {
-        if let monitor = buttonDismissMonitor {
+    private func activateQR() {
+        guard let selection = pendingSelection else { return }
+        hideToolbar()
+        showQRPopup(for: selection)
+    }
+
+    private func hideToolbar() {
+        if let monitor = toolbarDismissMonitor {
             NSEvent.removeMonitor(monitor)
-            buttonDismissMonitor = nil
+            toolbarDismissMonitor = nil
         }
-        buttonPanel?.orderOut(nil)
-        buttonPanel = nil
+        toolbarPanel?.orderOut(nil)
+        toolbarPanel = nil
     }
 
-    private func installButtonDismissMonitor() {
-        buttonDismissMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            self?.hideButton()
+    private func installToolbarDismissMonitor() {
+        toolbarDismissMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            self?.hideToolbar()
         }
     }
 
-    // MARK: - Popup
+    // MARK: - Popups
 
-    private func showPopup(for selection: TextSelection) {
-        hidePopup()
-
+    private func showAIPopup(for selection: TextSelection) {
         let viewModel = ActionPopupViewModel(
             selection: selection,
             settings: settings,
@@ -161,15 +189,24 @@ final class SelectionOverlayController {
             self?.hidePopup()
             self?.openSettings()
         }
+        present(ActionPopupView(viewModel: viewModel), size: ActionPopupView.preferredSize, anchorRect: selection.anchorRect)
+    }
 
-        let size = ActionPopupView.preferredSize
+    private func showQRPopup(for selection: TextSelection) {
+        let viewModel = QRCodePopupViewModel(text: selection.text)
+        viewModel.onClose = { [weak self] in self?.hidePopup() }
+        present(QRCodePopupView(viewModel: viewModel), size: QRCodePopupView.preferredSize, anchorRect: selection.anchorRect)
+    }
+
+    private func present<V: View>(_ view: V, size: CGSize, anchorRect: CGRect?) {
+        hidePopup()
         let origin = ScreenPlacement.popupOrigin(
-            anchorRect: selection.anchorRect,
+            anchorRect: anchorRect,
             mouse: NSEvent.mouseLocation,
             size: size
         )
         let panel = PopupPanel(contentRect: CGRect(origin: origin, size: size))
-        panel.contentView = NSHostingView(rootView: ActionPopupView(viewModel: viewModel))
+        panel.contentView = NSHostingView(rootView: view)
         panel.setFrameOrigin(origin)
         panel.makeKeyAndOrderFront(nil)
         popupPanel = panel

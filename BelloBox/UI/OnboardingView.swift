@@ -61,15 +61,15 @@ struct OnboardingView: View {
             appBadge
             Text("Welcome to BelloBox")
                 .font(.system(size: 26, weight: .bold))
-            Text("BelloBox puts an AI assistant on whatever text you already have in front of you — in any app.")
+            Text("BelloBox is a little toolbox for whatever text you already have in front of you — in any app.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 12) {
-                bullet("cursorarrow.rays", "Select text anywhere", "A small BelloBox button appears next to your selection.")
-                bullet("wand.and.stars", "Ask the AI to act on it", "Fix grammar, rewrite, summarize, translate — or type your own instruction.")
-                bullet("arrow.left.arrow.right", "Copy or replace in place", "Drop the result straight back where it came from.")
+                bullet("cursorarrow.rays", "Select text anywhere", "A small BelloBox toolbar appears next to your selection.")
+                bullet("wand.and.stars", "Ask the AI", "Fix grammar, rewrite, summarize, or translate — then copy or replace in place.")
+                bullet("qrcode", "Make a QR code", "Turn a link or any text into a scannable QR code you can edit on the fly.")
             }
             .padding(.top, 4)
         }

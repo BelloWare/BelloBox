@@ -1,10 +1,18 @@
 # BelloBox Agent Guide
 
-BelloBox is a macOS menu-bar utility. When you select text in any app, a small
-floating button appears; clicking it (or pressing ⌃⌥⌘B) opens a popup where a
-configurable AI rewrites, fixes, summarizes, or answers about that text. The AI
-backend is user-supplied: any OpenAI-compatible or Anthropic-compatible endpoint
-plus the user's own key and model.
+BelloBox is a macOS menu-bar utility — a small "toolbox" for the current text
+selection. When you select text in any app, a floating toolbar appears with one
+tool per button:
+
+- **AI** (⌃⌥⌘B): a popup where a configurable AI rewrites, fixes, summarizes,
+  translates, or answers about the text — then copy or replace in place. The AI
+  backend is user-supplied: any OpenAI-compatible or Anthropic-compatible
+  endpoint plus the user's own key and model.
+- **QR code**: a popup with a live, scannable QR code of the selection and an
+  editable text field; copy or save the image.
+
+New tools are added by extending the toolbar in `FloatingButtonView.swift` and
+routing them in `SelectionOverlayController.swift`.
 
 It follows the same packaging conventions as the sibling Bello macOS apps
 (BelloGesture, BelloWall, BelloTracker): xcodegen project, Developer-ID signed
@@ -25,6 +33,8 @@ BelloBox/
 │   │   ├── AIConfig.swift          # ProviderKind, AIConfig, AIError
 │   │   ├── AIClient.swift          # request building + SSE streaming (OpenAI + Anthropic)
 │   │   └── QuickAction.swift       # one-click transformations + prompt builder
+│   ├── Tools/
+│   │   └── QRCodeGenerator.swift   # CoreImage QR rendering (NSImage / PNG)
 │   ├── Settings/
 │   │   ├── AppSettings.swift       # UserDefaults-backed config (ObservableObject)
 │   │   └── KeychainStore.swift     # API keys stored in the Keychain
@@ -32,11 +42,12 @@ BelloBox/
 │   │   ├── AccessibilityService.swift   # AX read selection + bounds, ⌘C/⌘V helpers
 │   │   └── SelectionMonitor.swift       # global mouse-up + hotkey monitors
 │   └── UI/
-│       ├── SelectionOverlayController.swift  # orchestrates monitor → button → popup; restarts monitors on grant
+│       ├── SelectionOverlayController.swift  # orchestrates monitor → toolbar → AI/QR popup; restarts monitors on grant
 │       ├── FloatingPanel.swift               # non-activating NSPanel subclasses + placement
-│       ├── FloatingButtonView.swift          # the small floating button (SwiftUI)
-│       ├── ActionPopupView.swift             # the popup (SwiftUI)
+│       ├── FloatingButtonView.swift          # the floating tool toolbar (AI + QR) (SwiftUI)
+│       ├── ActionPopupView.swift             # the AI popup (SwiftUI)
 │       ├── ActionPopupViewModel.swift        # runs AI actions, streams result
+│       ├── QRCodePopupView.swift             # the QR popup + view model (editable text, copy/save)
 │       ├── OnboardingView.swift              # first-run flow (welcome → permission → provider → done)
 │       ├── OnboardingWindowController.swift  # hosts onboarding in a window
 │       └── SettingsView.swift                # provider/endpoint/key/model/prompt UI
