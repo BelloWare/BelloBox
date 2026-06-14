@@ -37,6 +37,26 @@ final class AIClientTests: XCTestCase {
         XCTAssertEqual(messages.last?["content"] as? String, "hello")
     }
 
+    func testOpenAIResponsesRequestShape() throws {
+        var c = config(.openAI, base: "https://api.openai.com/v1")
+        c.openAIAPIKind = .responses
+
+        let request = try AIClient.openAIRequest(config: c, userText: "hello", stream: true)
+        XCTAssertEqual(request.url?.absoluteString, "https://api.openai.com/v1/responses")
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer sk-test")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
+
+        let body = try XCTUnwrap(request.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        XCTAssertEqual(json["model"] as? String, "m-1")
+        XCTAssertEqual(json["stream"] as? Bool, true)
+        XCTAssertEqual(json["instructions"] as? String, "be terse")
+        let input = try XCTUnwrap(json["input"] as? [[String: Any]])
+        XCTAssertEqual(input.first?["role"] as? String, "user")
+        XCTAssertEqual(input.first?["content"] as? String, "hello")
+    }
+
     // MARK: - Anthropic request
 
     func testAnthropicRequestShape() throws {
@@ -70,6 +90,16 @@ final class AIClientTests: XCTestCase {
         XCTAssertEqual(AIClient.openAIDelta(payload), "Hi")
         XCTAssertNil(AIClient.openAIDelta(#"{"choices":[{"delta":{}}]}"#))
         XCTAssertNil(AIClient.openAIDelta("garbage"))
+    }
+
+    func testOpenAIResponsesEventParsing() {
+        XCTAssertEqual(AIClient.openAIResponsesEvent(#"{"type":"response.output_text.delta","delta":"Hi"}"#), .delta("Hi"))
+        XCTAssertEqual(AIClient.openAIResponsesEvent(#"{"type":"response.completed"}"#), .stop)
+        XCTAssertEqual(
+            AIClient.openAIResponsesEvent(#"{"type":"response.failed","response":{"error":{"message":"boom"}}}"#),
+            .error("boom")
+        )
+        XCTAssertEqual(AIClient.openAIResponsesEvent(#"{"type":"response.created"}"#), .ignore)
     }
 
     func testAnthropicEventParsing() {
@@ -131,8 +161,8 @@ final class AIClientTests: XCTestCase {
     }
 
     func testCodexAppServerCommand() {
-        XCTAssertEqual(CodexAppServerClient.appServerCommand(""), "codex app-server")
-        XCTAssertEqual(CodexAppServerClient.appServerCommand("/Users/me/bin/codex"), "'/Users/me/bin/codex' app-server")
+        XCTAssertEqual(CodexAppServerClient.appServerCommand(""), "codex app-server --stdio")
+        XCTAssertEqual(CodexAppServerClient.appServerCommand("/Users/me/bin/codex"), "'/Users/me/bin/codex' app-server --stdio")
     }
 
     func testCodexDeveloperInstructions() {

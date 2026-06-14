@@ -26,7 +26,7 @@ final class FloatingButtonPanel: NSPanel {
 }
 
 /// The interactive popup. It can become key so the user can type a custom
-/// instruction, but the app stays an accessory (it never activates the Dock).
+/// instruction without pulling focus away from the app containing the selection.
 final class PopupPanel: NSPanel {
     init(contentRect: NSRect) {
         super.init(

@@ -45,6 +45,27 @@ enum ProviderKind: String, CaseIterable, Codable, Identifiable {
     }
 }
 
+enum OpenAIAPIKind: String, CaseIterable, Codable, Identifiable {
+    case chatCompletions
+    case responses
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .chatCompletions: return "Chat"
+        case .responses: return "Responses"
+        }
+    }
+
+    var fullLabel: String {
+        switch self {
+        case .chatCompletions: return "Chat Completions"
+        case .responses: return "Responses API"
+        }
+    }
+}
+
 /// A fully-resolved provider configuration used to issue one request.
 struct AIConfig: Equatable {
     var kind: ProviderKind
@@ -54,6 +75,7 @@ struct AIConfig: Equatable {
     var systemPrompt: String
     var maxTokens: Int = 2048
     var codexReasoningEffort: String = "medium"
+    var openAIAPIKind: OpenAIAPIKind = .chatCompletions
 
     var isUsable: Bool {
         switch kind {

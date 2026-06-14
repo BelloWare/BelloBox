@@ -133,6 +133,7 @@ struct ActionPopupView: View {
                         .font(.callout)
                         .foregroundStyle(.red)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
                 } else {
                     Text(viewModel.resultText.isEmpty ? " " : viewModel.resultText)
                         .font(.callout)

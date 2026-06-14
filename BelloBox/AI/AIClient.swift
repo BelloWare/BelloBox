@@ -67,9 +67,23 @@ final class AIClient {
                 switch config.kind {
                 case .openAI:
                     if payload == "[DONE]" { return }
-                    if let text = Self.openAIDelta(payload), !text.isEmpty {
-                        sawAny = true
-                        onDelta(text)
+                    switch config.openAIAPIKind {
+                    case .chatCompletions:
+                        if let text = Self.openAIDelta(payload), !text.isEmpty {
+                            sawAny = true
+                            onDelta(text)
+                        }
+                    case .responses:
+                        switch Self.openAIResponsesEvent(payload) {
+                        case let .delta(text):
+                            if !text.isEmpty { sawAny = true; onDelta(text) }
+                        case let .error(message):
+                            throw AIError.http(status: 200, message: message)
+                        case .stop:
+                            return
+                        case .ignore:
+                            break
+                        }
                     }
                 case .anthropic:
                     switch Self.anthropicEvent(payload) {
@@ -176,6 +190,15 @@ final class AIClient {
     }
 
     static func openAIRequest(config: AIConfig, userText: String, stream: Bool) throws -> URLRequest {
+        switch config.openAIAPIKind {
+        case .chatCompletions:
+            return try openAIChatCompletionsRequest(config: config, userText: userText, stream: stream)
+        case .responses:
+            return try openAIResponsesRequest(config: config, userText: userText, stream: stream)
+        }
+    }
+
+    static func openAIChatCompletionsRequest(config: AIConfig, userText: String, stream: Bool) throws -> URLRequest {
         let url = try endpointURL(base: config.baseURL, path: "/chat/completions")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -195,6 +218,32 @@ final class AIClient {
             "stream": stream,
         ]
         body["temperature"] = 0.3
+        request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [.sortedKeys])
+        return request
+    }
+
+    static func openAIResponsesRequest(config: AIConfig, userText: String, stream: Bool) throws -> URLRequest {
+        let url = try endpointURL(base: config.baseURL, path: "/responses")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
+
+        var body: [String: Any] = [
+            "model": config.model,
+            "input": [
+                [
+                    "role": "user",
+                    "content": userText,
+                ],
+            ],
+            "stream": stream,
+            "temperature": 0.3,
+        ]
+        let system = config.systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !system.isEmpty {
+            body["instructions"] = system
+        }
         request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [.sortedKeys])
         return request
     }
@@ -238,6 +287,43 @@ final class AIClient {
             let content = delta["content"] as? String
         else { return nil }
         return content
+    }
+
+    enum OpenAIResponsesChunk: Equatable {
+        case delta(String)
+        case error(String)
+        case stop
+        case ignore
+    }
+
+    static func openAIResponsesEvent(_ payload: String) -> OpenAIResponsesChunk {
+        guard
+            let data = payload.data(using: .utf8),
+            let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let type = obj["type"] as? String
+        else { return .ignore }
+
+        switch type {
+        case "response.output_text.delta":
+            return .delta(obj["delta"] as? String ?? "")
+        case "response.completed":
+            return .stop
+        case "response.failed", "response.incomplete":
+            if let response = obj["response"] as? [String: Any],
+               let error = response["error"] as? [String: Any],
+               let message = error["message"] as? String {
+                return .error(message)
+            }
+            return .error("The provider reported a Responses API failure.")
+        case "error":
+            if let error = obj["error"] as? [String: Any], let message = error["message"] as? String {
+                return .error(message)
+            }
+            if let message = obj["message"] as? String { return .error(message) }
+            return .error("The provider reported a Responses API stream error.")
+        default:
+            return .ignore
+        }
     }
 
     enum AnthropicChunk: Equatable {

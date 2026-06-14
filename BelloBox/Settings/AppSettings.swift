@@ -36,6 +36,7 @@ final class AppSettings: ObservableObject {
         static let openAIBase = "openAIBaseURL"
         static let anthropicBase = "anthropicBaseURL"
         static let openAIModel = "openAIModel"
+        static let openAIAPIKind = "openAIAPIKind"
         static let anthropicModel = "anthropicModel"
         static let systemPrompt = "systemPrompt"
         static let floatingButtonEnabled = "floatingButtonEnabled"
@@ -65,6 +66,7 @@ final class AppSettings: ObservableObject {
     @Published var openAIBaseURL: String { didSet { defaults.set(openAIBaseURL, forKey: Keys.openAIBase) } }
     @Published var anthropicBaseURL: String { didSet { defaults.set(anthropicBaseURL, forKey: Keys.anthropicBase) } }
     @Published var openAIModel: String { didSet { defaults.set(openAIModel, forKey: Keys.openAIModel) } }
+    @Published var openAIAPIKind: OpenAIAPIKind { didSet { defaults.set(openAIAPIKind.rawValue, forKey: Keys.openAIAPIKind) } }
     @Published var anthropicModel: String { didSet { defaults.set(anthropicModel, forKey: Keys.anthropicModel) } }
     @Published var systemPrompt: String { didSet { defaults.set(systemPrompt, forKey: Keys.systemPrompt) } }
     @Published var floatingButtonEnabled: Bool { didSet { defaults.set(floatingButtonEnabled, forKey: Keys.floatingButtonEnabled) } }
@@ -90,6 +92,7 @@ final class AppSettings: ObservableObject {
         openAIBaseURL = defaults.string(forKey: Keys.openAIBase) ?? ProviderKind.openAI.defaultBaseURL
         anthropicBaseURL = defaults.string(forKey: Keys.anthropicBase) ?? ProviderKind.anthropic.defaultBaseURL
         openAIModel = defaults.string(forKey: Keys.openAIModel) ?? ProviderKind.openAI.defaultModel
+        openAIAPIKind = OpenAIAPIKind(rawValue: defaults.string(forKey: Keys.openAIAPIKind) ?? "") ?? .chatCompletions
         anthropicModel = defaults.string(forKey: Keys.anthropicModel) ?? ProviderKind.anthropic.defaultModel
         systemPrompt = defaults.string(forKey: Keys.systemPrompt) ?? Self.defaultSystemPrompt
         floatingButtonEnabled = (defaults.object(forKey: Keys.floatingButtonEnabled) as? Bool) ?? true
@@ -110,7 +113,14 @@ final class AppSettings: ObservableObject {
     var currentConfig: AIConfig {
         switch providerKind {
         case .openAI:
-            return AIConfig(kind: .openAI, baseURL: openAIBaseURL, model: openAIModel, apiKey: apiKey, systemPrompt: systemPrompt)
+            return AIConfig(
+                kind: .openAI,
+                baseURL: openAIBaseURL,
+                model: openAIModel,
+                apiKey: apiKey,
+                systemPrompt: systemPrompt,
+                openAIAPIKind: openAIAPIKind
+            )
         case .anthropic:
             return AIConfig(kind: .anthropic, baseURL: anthropicBaseURL, model: anthropicModel, apiKey: apiKey, systemPrompt: systemPrompt)
         case .codexCLI:

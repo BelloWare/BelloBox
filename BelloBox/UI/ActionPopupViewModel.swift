@@ -43,7 +43,11 @@ final class ActionPopupViewModel: ObservableObject {
         return "\(settings.providerKind.displayName) · \(config.model)"
     }
     var canReplace: Bool { lastActionReplaces && !resultText.isEmpty && !isStreaming }
-    var canCopy: Bool { !resultText.isEmpty && !isStreaming }
+    var copyableText: String {
+        if !resultText.isEmpty { return resultText }
+        return errorMessage ?? ""
+    }
+    var canCopy: Bool { !copyableText.isEmpty && !isStreaming }
 
     func run(_ action: QuickAction) {
         runInstruction(action.instruction, replaces: action.replacesSelection)
@@ -90,10 +94,11 @@ final class ActionPopupViewModel: ObservableObject {
     }
 
     func copyResult() {
-        guard !resultText.isEmpty else { return }
+        let text = copyableText
+        guard !text.isEmpty else { return }
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(resultText, forType: .string)
+        pasteboard.setString(text, forType: .string)
     }
 
     func replaceSelection() {

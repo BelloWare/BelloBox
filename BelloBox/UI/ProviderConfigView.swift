@@ -37,6 +37,9 @@ struct ProviderConfigView: View {
             } else {
                 httpFields
             }
+            if settings.providerKind == .openAI {
+                openAIAPIKindRow
+            }
 
             modelRow
             if settings.providerKind == .codexCLI {
@@ -79,6 +82,17 @@ struct ProviderConfigView: View {
                 Button("Detect") { Task { await settings.detectCodexPath() } }
                     .help("Fill in the full path to your codex binary")
             }
+        }
+    }
+
+    private var openAIAPIKindRow: some View {
+        labeledField("Request API") {
+            Picker("Request API", selection: $settings.openAIAPIKind) {
+                ForEach(OpenAIAPIKind.allCases) { kind in
+                    Text(kind.fullLabel).tag(kind)
+                }
+            }
+            .pickerStyle(.segmented)
         }
     }
 
@@ -192,7 +206,12 @@ struct ProviderConfigView: View {
     private var hint: String {
         switch settings.providerKind {
         case .openAI:
-            return "POST {endpoint}/chat/completions with a Bearer token. Works with OpenAI, OpenRouter, Groq, Ollama, LM Studio, and other compatible servers. Use Load to fetch models."
+            switch settings.openAIAPIKind {
+            case .chatCompletions:
+                return "POST {endpoint}/chat/completions with a Bearer token. Works with OpenAI, OpenRouter, Groq, Ollama, LM Studio, and other compatible servers. Use Load to fetch models."
+            case .responses:
+                return "POST {endpoint}/responses with a Bearer token and Responses API streaming. Use this for OpenAI or compatible endpoints that implement the Responses API."
+            }
         case .anthropic:
             return "POST {endpoint}/messages with an x-api-key header. Use Load to fetch models from /models."
         case .codexCLI:
