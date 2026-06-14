@@ -4,7 +4,7 @@
 // Usage: swift scripts/generate-app-icons.swift [output-appiconset-dir] [source-png]
 //
 // The source image should be a 1024x1024 square PNG. The default source is the
-// selected BelloBox "B toolbox" icon generated during the 0.0.14 icon refresh.
+// selected BelloBox "Bello toolbox" icon generated during the 0.0.15 icon refresh.
 
 import AppKit
 import Foundation
