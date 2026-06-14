@@ -10,6 +10,10 @@ tool per button:
   endpoint plus the user's own key and model.
 - **QR code**: a popup with a live, scannable QR code of the selection and an
   editable text field; copy or save the image.
+- **Text tools**: offline utilities — case conversion, encode/decode
+  (auto-detecting Base64 / URL / HTML / Hex), pretty-print (auto-detecting JSON /
+  XML / HTML / brace code), hashes (MD5 / SHA-1 / SHA-256 / SHA-512), line ops,
+  and a Count tab with a model-aware token estimate.
 
 New tools are added by extending the toolbar in `FloatingButtonView.swift` and
 routing them in `SelectionOverlayController.swift`.
@@ -34,7 +38,9 @@ BelloBox/
 │   │   ├── AIClient.swift          # request building + SSE streaming (OpenAI + Anthropic)
 │   │   └── QuickAction.swift       # one-click transformations + prompt builder
 │   ├── Tools/
-│   │   └── QRCodeGenerator.swift   # CoreImage QR rendering (NSImage / PNG)
+│   │   ├── QRCodeGenerator.swift   # CoreImage QR rendering (NSImage / PNG)
+│   │   ├── TextTransforms.swift    # case / encode / decode / hash / lines / pretty-print
+│   │   └── TokenEstimator.swift    # model-aware token estimate (heuristic)
 │   ├── Settings/
 │   │   ├── AppSettings.swift       # UserDefaults-backed config (ObservableObject)
 │   │   └── KeychainStore.swift     # API keys stored in the Keychain
@@ -48,6 +54,7 @@ BelloBox/
 │       ├── ActionPopupView.swift             # the AI popup (SwiftUI)
 │       ├── ActionPopupViewModel.swift        # runs AI actions, streams result
 │       ├── QRCodePopupView.swift             # the QR popup + view model (editable text, copy/save)
+│       ├── TextToolsPopupView.swift          # the text-tools popup + view model
 │       ├── OnboardingView.swift              # first-run flow (welcome → permission → provider → done)
 │       ├── OnboardingWindowController.swift  # hosts onboarding in a window
 │       └── SettingsView.swift                # provider/endpoint/key/model/prompt UI

@@ -10,16 +10,19 @@ enum BoxTheme {
 /// The floating toolbar that appears next to a fresh text selection. It offers
 /// the available tools (AI actions and QR code) without stealing focus.
 struct FloatingToolbarView: View {
-    static let preferredSize = CGSize(width: 96, height: 46)
+    static let preferredSize = CGSize(width: 132, height: 46)
 
     var onAI: () -> Void
     var onQR: () -> Void
+    var onTools: () -> Void
 
     var body: some View {
         HStack(spacing: 2) {
             ToolIcon(symbol: "wand.and.stars", help: "Ask BelloBox AI about the selection", action: onAI)
-            Rectangle().fill(.white.opacity(0.28)).frame(width: 1, height: 18)
+            divider
             ToolIcon(symbol: "qrcode", help: "Generate a QR code from the selection", action: onQR)
+            divider
+            ToolIcon(symbol: "wrench.and.screwdriver", help: "Text tools (case, encode, hash, count…)", action: onTools)
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 5)
@@ -31,6 +34,10 @@ struct FloatingToolbarView: View {
         .overlay(Capsule().strokeBorder(.white.opacity(0.22), lineWidth: 0.5))
         .shadow(color: .black.opacity(0.22), radius: 5, y: 2)
         .padding(5)
+    }
+
+    private var divider: some View {
+        Rectangle().fill(.white.opacity(0.28)).frame(width: 1, height: 18)
     }
 }
 

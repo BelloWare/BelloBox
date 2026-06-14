@@ -121,6 +121,13 @@ final class SelectionOverlayController: NSObject {
         showQRPopup(for: selection)
     }
 
+    /// Used by the menu: read the selection now and open the text-tools popup.
+    func triggerTextToolsOnCurrentSelection() {
+        guard let selection = nonEmpty(currentSelection()) else { NSSound.beep(); return }
+        hideToolbar()
+        showTextToolsPopup(for: selection)
+    }
+
     // MARK: - Floating toolbar
 
     private func showToolbar(for selection: TextSelection) {
@@ -128,7 +135,8 @@ final class SelectionOverlayController: NSObject {
 
         let view = FloatingToolbarView(
             onAI: { [weak self] in self?.activateAI() },
-            onQR: { [weak self] in self?.activateQR() }
+            onQR: { [weak self] in self?.activateQR() },
+            onTools: { [weak self] in self?.activateTools() }
         )
         let hosting = NSHostingView(rootView: view)
         var size = hosting.fittingSize
@@ -158,6 +166,12 @@ final class SelectionOverlayController: NSObject {
         guard let selection = pendingSelection else { return }
         hideToolbar()
         showQRPopup(for: selection)
+    }
+
+    private func activateTools() {
+        guard let selection = pendingSelection else { return }
+        hideToolbar()
+        showTextToolsPopup(for: selection)
     }
 
     private func hideToolbar() {
@@ -196,6 +210,12 @@ final class SelectionOverlayController: NSObject {
         let viewModel = QRCodePopupViewModel(text: selection.text)
         viewModel.onClose = { [weak self] in self?.hidePopup() }
         present(QRCodePopupView(viewModel: viewModel), size: QRCodePopupView.preferredSize, anchorRect: selection.anchorRect)
+    }
+
+    private func showTextToolsPopup(for selection: TextSelection) {
+        let viewModel = TextToolsPopupViewModel(selection: selection, settings: settings, accessibility: accessibility)
+        viewModel.onClose = { [weak self] in self?.hidePopup() }
+        present(TextToolsPopupView(viewModel: viewModel), size: TextToolsPopupView.preferredSize, anchorRect: selection.anchorRect)
     }
 
     private func present<V: View>(_ view: V, size: CGSize, anchorRect: CGRect?) {
