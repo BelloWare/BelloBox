@@ -43,7 +43,7 @@ struct SettingsView: View {
                 }
             }
             .pickerStyle(.segmented)
-            Text("Follow the system setting, or force Light or Dark for BelloBox.")
+            Text("Follow the system setting, or force Light or Dark for Bello Box.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -52,7 +52,7 @@ struct SettingsView: View {
     private var behaviorSection: some View {
         Section("Behavior") {
             Toggle("Show the floating button when I select text", isOn: $settings.floatingButtonEnabled)
-            Text("You can also summon BelloBox on the current selection with ⌃⌥⌘B.")
+            Text("You can also summon Bello Box on the current selection with ⌃⌥⌘B.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -66,7 +66,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Accessibility access")
                     Text(accessibilityTrusted
-                        ? "Granted — BelloBox can read your selection and paste replacements."
+                        ? "Granted — Bello Box can read your selection and paste replacements."
                         : "Required to read selected text and replace it.")
                         .font(.caption2)
                         .foregroundStyle(.secondary)

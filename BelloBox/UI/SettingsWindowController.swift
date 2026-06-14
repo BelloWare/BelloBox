@@ -17,7 +17,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
         let hosting = NSHostingController(rootView: SettingsView(settings: settings))
         let window = NSWindow(contentViewController: hosting)
-        window.title = "BelloBox Settings"
+        window.title = "Bello Box Settings"
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         window.delegate = self

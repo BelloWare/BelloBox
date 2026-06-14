@@ -1,6 +1,6 @@
 import Foundation
 
-/// Helpers for the local Codex command. BelloBox talks to `codex app-server`
+/// Helpers for the local Codex command. Bello Box talks to `codex app-server`
 /// over stdio; Codex uses its own stored login, so no API key is needed.
 enum CodexCLI {
     /// Models and reasoning efforts Codex commonly supports. App-server has a

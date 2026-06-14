@@ -27,7 +27,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         )
         let hosting = NSHostingController(rootView: view)
         let window = NSWindow(contentViewController: hosting)
-        window.title = "Welcome to BelloBox"
+        window.title = "Welcome to Bello Box"
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         window.delegate = self

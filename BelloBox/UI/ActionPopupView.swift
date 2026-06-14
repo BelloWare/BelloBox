@@ -39,7 +39,7 @@ struct ActionPopupView: View {
     // MARK: - Sections
 
     private var header: some View {
-        PopupHeader(icon: "wand.and.stars", title: "BelloBox", subtitle: viewModel.providerSummary, onMinimize: onMinimize) {
+        PopupHeader(icon: "wand.and.stars", title: "Bello Box", subtitle: viewModel.providerSummary, onMinimize: onMinimize) {
             viewModel.close()
         }
     }
@@ -97,7 +97,7 @@ struct ActionPopupView: View {
 
     private var customPromptRow: some View {
         HStack(spacing: 8) {
-            TextField("Ask BelloBox to…", text: $viewModel.instruction)
+            TextField("Ask Bello Box to…", text: $viewModel.instruction)
                 .textFieldStyle(.roundedBorder)
                 .font(.callout)
                 .onSubmit { viewModel.runCustom() }
@@ -172,7 +172,7 @@ struct ActionPopupView: View {
     }
 
     private var footerHint: some View {
-        Text("Tip: select text anywhere, then click the BelloBox button — or press ⌃⌥⌘B.")
+        Text("Tip: select text anywhere, then click the Bello Box button — or press ⌃⌥⌘B.")
             .font(.caption2)
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)

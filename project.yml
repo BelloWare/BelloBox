@@ -8,8 +8,8 @@ configs:
   Release: release
 settings:
   base:
-    CURRENT_PROJECT_VERSION: 18
-    MARKETING_VERSION: 0.0.18
+    CURRENT_PROJECT_VERSION: 19
+    MARKETING_VERSION: 0.0.19
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: 43TXHV3TM3
   configs:
@@ -58,7 +58,7 @@ targets:
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks"
         PRODUCT_BUNDLE_IDENTIFIER: com.ainoob.BelloBox
         PRODUCT_MODULE_NAME: BelloBox
-        PRODUCT_NAME: BelloBox
+        PRODUCT_NAME: "Bello Box"
         SPARKLE_FEED_URL: https://belloware.com/assets/bello_box.appcast.xml
         SPARKLE_PUBLIC_ED_KEY: slSJ7z2j8RDa266+E/7To5AOOloc2YtiMUZUVEIhwNA=
         SWIFT_EMIT_LOC_STRINGS: NO
@@ -103,5 +103,5 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.ainoob.BelloBoxTests
         PRODUCT_NAME: BelloBoxTests
         BUNDLE_LOADER: $(TEST_HOST)
-        TEST_HOST: $(BUILT_PRODUCTS_DIR)/BelloBox.app/Contents/MacOS/BelloBox
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Bello Box.app/Contents/MacOS/Bello Box"
         TEST_TARGET_NAME: BelloBox

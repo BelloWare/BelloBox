@@ -51,15 +51,15 @@ struct OnboardingView: View {
     private var welcomeStep: some View {
         VStack(alignment: .leading, spacing: 18) {
             appBadge
-            Text("Welcome to BelloBox")
+            Text("Welcome to Bello Box")
                 .font(.system(size: 32, weight: .bold))
-            Text("BelloBox is a little toolbox for whatever text you already have in front of you — in any app.")
+            Text("Bello Box is a little toolbox for whatever text you already have in front of you — in any app.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 12) {
-                bullet("cursorarrow.rays", "Select text anywhere", "A small BelloBox toolbar appears next to your selection.")
+                bullet("cursorarrow.rays", "Select text anywhere", "A small Bello Box toolbar appears next to your selection.")
                 bullet("wand.and.stars", "Ask the AI", "Fix grammar, rewrite, summarize, or translate — then copy or replace in place.")
                 bullet("qrcode", "Make a QR code", "Turn a link or any text into a scannable QR code you can edit on the fly.")
             }
@@ -70,7 +70,7 @@ struct OnboardingView: View {
     private var permissionStep: some View {
         VStack(alignment: .leading, spacing: 18) {
             stepHeader("Grant Accessibility access", systemImage: "lock.shield")
-            Text("BelloBox uses macOS Accessibility to read the text you select and paste replacements back. It only reads a selection when you ask it to. Nothing is sent anywhere except to the AI endpoint you configure.")
+            Text("Bello Box uses macOS Accessibility to read the text you select and paste replacements back. It only reads a selection when you ask it to. Nothing is sent anywhere except to the AI endpoint you configure.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -82,8 +82,8 @@ struct OnboardingView: View {
                     Text(trusted ? "Accessibility access granted" : "Accessibility access needed")
                         .font(.headline)
                     Text(trusted
-                        ? "BelloBox is ready to read selections."
-                        : "Toggle BelloBox on under Privacy & Security → Accessibility.")
+                        ? "Bello Box is ready to read selections."
+                        : "Toggle Bello Box on under Privacy & Security → Accessibility.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -123,14 +123,14 @@ struct OnboardingView: View {
             appBadge
             Text("You're all set")
                 .font(.system(size: 32, weight: .bold))
-            Text("Select text in any app, then click the BelloBox button that appears — or press ⌃⌥⌘B to summon it on the current selection.")
+            Text("Select text in any app, then click the Bello Box button that appears — or press ⌃⌥⌘B to summon it on the current selection.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 12) {
-                bullet("menubar.arrow.up.rectangle", "Find BelloBox in the menu bar", "The ✨ icon opens Settings and this guide anytime.")
-                bullet("keyboard", "Summon with a hotkey", "⌃⌥⌘B runs BelloBox on whatever you have selected.")
+                bullet("menubar.arrow.up.rectangle", "Find Bello Box in the menu bar", "The ✨ icon opens Settings and this guide anytime.")
+                bullet("keyboard", "Summon with a hotkey", "⌃⌥⌘B runs Bello Box on whatever you have selected.")
             }
             .padding(.top, 4)
 
@@ -169,7 +169,7 @@ struct OnboardingView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(BoxTheme.accent)
             } else {
-                Button("Start Using BelloBox") { onFinish() }
+                Button("Start Using Bello Box") { onFinish() }
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(.borderedProminent)
                     .tint(BoxTheme.accent)

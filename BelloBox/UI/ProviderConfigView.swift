@@ -215,7 +215,7 @@ struct ProviderConfigView: View {
         case .anthropic:
             return "POST {endpoint}/messages with an x-api-key header. Use Load to fetch models from /models."
         case .codexCLI:
-            return "Runs `codex app-server` through your login shell and uses your existing Codex login. BelloBox passes the selected model, reasoning effort, sandbox, and approval policy on each request."
+            return "Runs `codex app-server` through your login shell and uses your existing Codex login. Bello Box passes the selected model, reasoning effort, sandbox, and approval policy on each request."
         }
     }
 

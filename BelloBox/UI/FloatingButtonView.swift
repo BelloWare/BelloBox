@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Visual palette shared by the overlay surfaces, echoing the BelloBox icon.
+/// Visual palette shared by the overlay surfaces, echoing the Bello Box icon.
 enum BoxTheme {
     static let accent = Color(red: 0.84, green: 0.46, blue: 0.12)
     static let accentDeep = Color(red: 0.72, green: 0.36, blue: 0.07)
@@ -18,7 +18,7 @@ struct FloatingToolbarView: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            ToolIcon(symbol: "wand.and.stars", help: "Ask BelloBox AI about the selection", action: onAI)
+            ToolIcon(symbol: "wand.and.stars", help: "Ask Bello Box AI about the selection", action: onAI)
             divider
             ToolIcon(symbol: "qrcode", help: "Generate a QR code from the selection", action: onQR)
             divider

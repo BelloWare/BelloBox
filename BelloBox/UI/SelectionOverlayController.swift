@@ -217,7 +217,7 @@ final class SelectionOverlayController: NSObject {
             size: ActionPopupView.preferredSize,
             anchorRect: selection.anchorRect,
             minimizedIcon: "wand.and.stars",
-            minimizedTitle: "BelloBox",
+            minimizedTitle: "Bello Box",
             minimizedSubtitle: { viewModel.providerSummary }
         )
     }

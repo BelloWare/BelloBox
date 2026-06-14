@@ -106,7 +106,7 @@ enum AIError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .missingAPIKey:
-            return "No API key is set. Open BelloBox settings and add a key for the selected provider."
+            return "No API key is set. Open Bello Box settings and add a key for the selected provider."
         case let .invalidEndpoint(value):
             return "The endpoint \"\(value)\" is not a valid URL."
         case let .http(status, message):

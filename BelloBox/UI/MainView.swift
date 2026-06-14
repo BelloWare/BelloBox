@@ -36,7 +36,7 @@ struct MainView: View {
         HStack(spacing: 14) {
             appIcon
             VStack(alignment: .leading, spacing: 2) {
-                Text("BelloBox").font(.system(size: 30, weight: .bold))
+                Text("Bello Box").font(.system(size: 30, weight: .bold))
                 Text(versionText).font(.caption).foregroundStyle(.secondary)
                 Text("A toolbox for the text you've selected.")
                     .font(.subheadline).foregroundStyle(.secondary)

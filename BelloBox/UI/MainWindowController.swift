@@ -29,7 +29,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
         )
         let hosting = NSHostingController(rootView: view)
         let window = NSWindow(contentViewController: hosting)
-        window.title = "BelloBox"
+        window.title = "Bello Box"
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false
         window.delegate = self

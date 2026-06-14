@@ -62,7 +62,7 @@ final class ActionPopupViewModel: ObservableObject {
     private func runInstruction(_ instruction: String, replaces: Bool) {
         task?.cancel()
         guard settings.isConfigured else {
-            errorMessage = "Add an API key for your provider in BelloBox settings first."
+            errorMessage = "Add an API key for your provider in Bello Box settings first."
             return
         }
         resultText = ""

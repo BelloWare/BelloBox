@@ -2,7 +2,7 @@ import Foundation
 
 /// Minimal JSON-RPC client for `codex app-server --stdio`.
 ///
-/// BelloBox uses one short-lived app-server session per AI action. The app
+/// Bello Box uses one short-lived app-server session per AI action. The app
 /// passes model, reasoning effort, approval, and sandbox parameters on the
 /// requests instead of creating or modifying any Codex config files.
 final class CodexAppServerClient {
@@ -35,7 +35,7 @@ final class CodexAppServerClient {
         [
             "clientInfo": [
                 "name": "bellobox",
-                "title": "BelloBox",
+                "title": "Bello Box",
                 "version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
             ],
             "capabilities": [
@@ -52,7 +52,7 @@ final class CodexAppServerClient {
             "approvalPolicy": "never",
             "sandbox": "read-only",
             "ephemeral": true,
-            "serviceName": "BelloBox",
+            "serviceName": "Bello Box",
             "developerInstructions": developerInstructions(system: config.systemPrompt),
         ]
     }

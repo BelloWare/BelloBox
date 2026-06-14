@@ -9,18 +9,18 @@ struct BelloBoxApp: App {
     @StateObject private var settings = AppSettings.shared
 
     var body: some Scene {
-        MenuBarExtra("BelloBox", systemImage: "wand.and.stars") {
+        MenuBarExtra("Bello Box", systemImage: "wand.and.stars") {
             menuContent
         }
     }
 
     @ViewBuilder
     private var menuContent: some View {
-        Button("Open BelloBox") { appDelegate.showMainWindow() }
+        Button("Open Bello Box") { appDelegate.showMainWindow() }
 
         Divider()
 
-        Button("Ask BelloBox About Selection") {
+        Button("Ask Bello Box About Selection") {
             appDelegate.overlay?.triggerOnCurrentSelection()
         }
         Button("Generate QR Code from Selection") {
@@ -34,7 +34,7 @@ struct BelloBoxApp: App {
 
         Divider()
 
-        Button("Set Up BelloBox…") { appDelegate.showOnboarding() }
+        Button("Set Up Bello Box…") { appDelegate.showOnboarding() }
 
         Button("Settings…") { appDelegate.showSettings() }
             .keyboardShortcut(",", modifiers: .command)
@@ -45,7 +45,7 @@ struct BelloBoxApp: App {
 
         Divider()
 
-        Button("Quit BelloBox") { NSApp.terminate(nil) }
+        Button("Quit Bello Box") { NSApp.terminate(nil) }
             .keyboardShortcut("q", modifiers: .command)
     }
 }
