@@ -125,9 +125,16 @@ final class AIClient {
         return shellQuote(trimmed)
     }
 
+    static func isCodexConfigError(_ message: String) -> Bool {
+        let lower = message.lowercased()
+        return lower.contains("config.toml") || lower.contains("unknown variant") || lower.contains("unknown field")
+    }
+
     /// Runs `codex exec` through the user's login shell so it uses the same
-    /// `codex` (and config) as their terminal. The prompt is piped via stdin to
-    /// avoid quoting issues, and the whole result arrives in one `onDelta` call.
+    /// `codex` (and config) as their terminal. If the user's `config.toml` is
+    /// incompatible with that codex, retries with an isolated `CODEX_HOME` that
+    /// preserves their login but ignores the broken config. The prompt is piped
+    /// via stdin, and the whole result arrives in one `onDelta` call.
     private func runCodex(config: AIConfig, userText: String, onDelta: @escaping (String) -> Void) async throws {
         let tmp = URL(fileURLWithPath: NSTemporaryDirectory())
         let outURL = tmp.appendingPathComponent("bellobox-codex-out-\(UUID().uuidString).txt")
@@ -139,10 +146,40 @@ final class AIClient {
             try? FileManager.default.removeItem(at: errURL)
         }
 
-        var command = "\(Self.codexInvocation(config.baseURL)) exec --skip-git-repo-check -s read-only -o \(Self.shellQuote(outURL.path))"
+        var codexCommand = "\(Self.codexInvocation(config.baseURL)) exec --skip-git-repo-check -s read-only -o \(Self.shellQuote(outURL.path))"
         let model = config.model.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !model.isEmpty { command += " -m \(Self.shellQuote(model))" }
-        command += " -" // read the prompt from stdin
+        if !model.isEmpty { codexCommand += " -m \(Self.shellQuote(model))" }
+        codexCommand += " -" // read the prompt from stdin
+
+        let prompt = Self.codexPrompt(system: config.systemPrompt, user: userText)
+
+        do {
+            let text = try await executeCodexShell(command: codexCommand, prompt: prompt, outURL: outURL, errURL: errURL)
+            onDelta(text)
+        } catch let error as AIError {
+            guard case let .transport(message) = error, Self.isCodexConfigError(message) else { throw error }
+            // The user's config.toml is incompatible with this codex. Retry with
+            // a clean CODEX_HOME that links their login/sessions but a fresh config.
+            let cleanCommand = """
+            __BB_HOME="$(mktemp -d)"
+            __BB_REAL="${CODEX_HOME:-$HOME/.codex}"
+            for f in "$__BB_REAL"/*; do bn="$(basename "$f")"; [ "$bn" = "config.toml" ] || ln -sf "$f" "$__BB_HOME/$bn"; done 2>/dev/null
+            : > "$__BB_HOME/config.toml"
+            CODEX_HOME="$__BB_HOME" \(codexCommand)
+            __BB_RC=$?
+            rm -rf "$__BB_HOME"
+            exit $__BB_RC
+            """
+            let text = try await executeCodexShell(command: cleanCommand, prompt: prompt, outURL: outURL, errURL: errURL)
+            onDelta(text)
+        }
+    }
+
+    /// Runs one codex shell command, feeding `prompt` on stdin and returning the
+    /// final message (or throwing `AIError.transport`).
+    private func executeCodexShell(command: String, prompt: String, outURL: URL, errURL: URL) async throws -> String {
+        try? Data().write(to: outURL)
+        try? Data().write(to: errURL)
 
         let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
         let process = Process()
@@ -150,7 +187,7 @@ final class AIClient {
         // Login + interactive so version managers (nvm, etc.) put the user's
         // codex on PATH, exactly like their terminal.
         process.arguments = ["-l", "-i", "-c", command]
-        process.currentDirectoryURL = tmp
+        process.currentDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory())
         process.environment = ProcessInfo.processInfo.environment
 
         let stdinPipe = Pipe()
@@ -160,16 +197,13 @@ final class AIClient {
             process.standardError = errHandle
         }
 
-        let prompt = Self.codexPrompt(system: config.systemPrompt, user: userText)
-
-        try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
                 process.terminationHandler = { proc in
                     let text = ((try? String(contentsOf: outURL, encoding: .utf8)) ?? "")
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                     if proc.terminationStatus == 0, !text.isEmpty {
-                        onDelta(text)
-                        continuation.resume()
+                        continuation.resume(returning: text)
                     } else {
                         let errText = ((try? String(contentsOf: errURL, encoding: .utf8)) ?? "")
                             .trimmingCharacters(in: .whitespacesAndNewlines)

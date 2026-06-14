@@ -130,6 +130,13 @@ final class AIClientTests: XCTestCase {
         XCTAssertEqual(AIClient.shellQuote("a'b"), "'a'\\''b'")
     }
 
+    func testIsCodexConfigError() {
+        XCTAssertTrue(AIClient.isCodexConfigError("Error loading config.toml: unknown variant `priority`, expected `fast` or `flex`"))
+        XCTAssertTrue(AIClient.isCodexConfigError("unknown field `foo`"))
+        XCTAssertFalse(AIClient.isCodexConfigError("command not found: codex"))
+        XCTAssertFalse(AIClient.isCodexConfigError("401 Unauthorized"))
+    }
+
     func testCodexPromptCombinesSystemAndUser() {
         XCTAssertTrue(AIClient.codexPrompt(system: "be terse", user: "hi").hasPrefix("be terse\n\nhi"))
         XCTAssertTrue(AIClient.codexPrompt(system: "   ", user: "hi").hasPrefix("hi"))
