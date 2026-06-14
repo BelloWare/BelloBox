@@ -1,6 +1,6 @@
 import Foundation
 
-/// Minimal JSON-RPC client for `codex app-server --stdio`.
+/// Minimal JSON-RPC client for `codex app-server`.
 ///
 /// BelloBox uses one short-lived app-server session per AI action. The app
 /// passes model, reasoning effort, approval, and sandbox parameters on the
@@ -28,7 +28,7 @@ final class CodexAppServerClient {
     }
 
     static func appServerCommand(_ pathOrCommand: String) -> String {
-        "\(AIClient.codexInvocation(pathOrCommand)) app-server --stdio"
+        "\(AIClient.codexInvocation(pathOrCommand)) app-server"
     }
 
     static func initializeParams() -> [String: Any] {

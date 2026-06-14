@@ -131,8 +131,8 @@ final class AIClientTests: XCTestCase {
     }
 
     func testCodexAppServerCommand() {
-        XCTAssertEqual(CodexAppServerClient.appServerCommand(""), "codex app-server --stdio")
-        XCTAssertEqual(CodexAppServerClient.appServerCommand("/Users/me/bin/codex"), "'/Users/me/bin/codex' app-server --stdio")
+        XCTAssertEqual(CodexAppServerClient.appServerCommand(""), "codex app-server")
+        XCTAssertEqual(CodexAppServerClient.appServerCommand("/Users/me/bin/codex"), "'/Users/me/bin/codex' app-server")
     }
 
     func testCodexDeveloperInstructions() {
