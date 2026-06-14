@@ -13,7 +13,6 @@ final class SelectionOverlayController: NSObject {
     private var toolbarPanel: FloatingButtonPanel?
     private var popupPanel: PopupPanel?
     private var toolbarDismissMonitor: Any?
-    private var popupDismissMonitor: Any?
 
     private var pendingSelection: TextSelection?
     private var trustWatcher: Timer?
@@ -230,25 +229,14 @@ final class SelectionOverlayController: NSObject {
         panel.setFrameOrigin(origin)
         panel.makeKeyAndOrderFront(nil)
         popupPanel = panel
-
-        installPopupDismissMonitor()
+        // Note: the popup intentionally does NOT dismiss on an outside click, so
+        // it stays put while you work (copy/paste, switch apps). Close it with
+        // the × button or Esc.
     }
 
     private func hidePopup() {
-        if let monitor = popupDismissMonitor {
-            NSEvent.removeMonitor(monitor)
-            popupDismissMonitor = nil
-        }
         popupPanel?.orderOut(nil)
         popupPanel = nil
         pendingSelection = nil
-    }
-
-    private func installPopupDismissMonitor() {
-        // Clicks outside our app dismiss the popup (clicks inside are delivered
-        // locally and never reach this global monitor).
-        popupDismissMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            self?.hidePopup()
-        }
     }
 }
