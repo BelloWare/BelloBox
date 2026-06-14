@@ -1,0 +1,35 @@
+import AppKit
+import SwiftUI
+
+/// Hosts the Settings window directly. A managed window is far more reliable in a
+/// menu-bar-only app than the SwiftUI `Settings` scene + `showSettingsWindow:`
+/// selector, which often does nothing here.
+@MainActor
+final class SettingsWindowController: NSObject, NSWindowDelegate {
+    private var window: NSWindow?
+
+    func show(settings: AppSettings) {
+        if let window {
+            NSApp.activate(ignoringOtherApps: true)
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        let hosting = NSHostingController(rootView: SettingsView(settings: settings))
+        let window = NSWindow(contentViewController: hosting)
+        window.title = "BelloBox Settings"
+        window.styleMask = [.titled, .closable]
+        window.isReleasedWhenClosed = false
+        window.delegate = self
+        window.setContentSize(NSSize(width: 540, height: 640))
+        window.center()
+        self.window = window
+
+        NSApp.activate(ignoringOtherApps: true)
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
+    }
+}

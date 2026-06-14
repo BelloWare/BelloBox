@@ -112,11 +112,22 @@ final class AIClientTests: XCTestCase {
         XCTAssertEqual(ProviderKind.codexCLI.shortName, "Codex")
     }
 
-    func testCodexConfigUsableWithPath() {
-        var c = AIConfig(kind: .codexCLI, baseURL: "/usr/local/bin/codex", model: "", apiKey: "", systemPrompt: "")
-        XCTAssertTrue(c.isUsable) // path set; key/model not required for Codex
-        c.baseURL = "  "
-        XCTAssertFalse(c.isUsable)
+    func testCodexConfigAlwaysUsable() {
+        var c = AIConfig(kind: .codexCLI, baseURL: "", model: "", apiKey: "", systemPrompt: "")
+        XCTAssertTrue(c.isUsable) // Codex resolves `codex` from the shell
+        c.baseURL = "/usr/local/bin/codex"
+        XCTAssertTrue(c.isUsable)
+    }
+
+    func testCodexInvocation() {
+        XCTAssertEqual(AIClient.codexInvocation(""), "codex")
+        XCTAssertEqual(AIClient.codexInvocation("codex"), "codex")
+        XCTAssertEqual(AIClient.codexInvocation("/Users/me/bin/codex"), "'/Users/me/bin/codex'")
+    }
+
+    func testShellQuote() {
+        XCTAssertEqual(AIClient.shellQuote("/a/b"), "'/a/b'")
+        XCTAssertEqual(AIClient.shellQuote("a'b"), "'a'\\''b'")
     }
 
     func testCodexPromptCombinesSystemAndUser() {

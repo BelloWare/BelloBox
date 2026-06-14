@@ -30,7 +30,6 @@ struct ProviderConfigView: View {
                 models = []
                 loadError = nil
                 testState = .idle
-                autoDetectCodexIfNeeded()
             }
 
             if settings.providerKind == .codexCLI {
@@ -47,7 +46,6 @@ struct ProviderConfigView: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .onAppear(perform: autoDetectCodexIfNeeded)
     }
 
     // MARK: - Fields
@@ -70,12 +68,13 @@ struct ProviderConfigView: View {
     }
 
     private var codexFields: some View {
-        labeledField("Codex path") {
+        labeledField("Codex command (optional)") {
             HStack {
-                TextField("/path/to/codex", text: $settings.codexPath)
+                TextField("codex (from your shell PATH)", text: $settings.codexPath)
                     .textFieldStyle(.roundedBorder)
                     .autocorrectionDisabled()
                 Button("Detect") { Task { await settings.detectCodexPath() } }
+                    .help("Fill in the full path to your codex binary")
             }
         }
     }
@@ -183,7 +182,7 @@ struct ProviderConfigView: View {
         case .anthropic:
             return "POST {endpoint}/messages with an x-api-key header. Use Load to fetch models from /models."
         case .codexCLI:
-            return "Runs the local `codex exec` CLI using your existing Codex login — no API key needed. Leave the model blank to use your codex config default."
+            return "Runs your local `codex` via your login shell, so it matches your terminal and uses your existing Codex login — no API key needed. Leave the command as codex unless you need a specific binary; leave the model blank to use your codex config default."
         }
     }
 
@@ -199,12 +198,6 @@ struct ProviderConfigView: View {
 
     private func setModel(_ name: String) {
         modelBinding.wrappedValue = name
-    }
-
-    private func autoDetectCodexIfNeeded() {
-        guard settings.providerKind == .codexCLI,
-              settings.codexPath.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        Task { await settings.detectCodexPath() }
     }
 
     private func loadModels() {

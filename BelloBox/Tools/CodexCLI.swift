@@ -26,13 +26,15 @@ enum CodexCLI {
         return paths
     }
 
-    /// Best-effort discovery of the codex binary. Runs off the main thread.
+    /// Best-effort discovery of the codex binary, for the optional Detect button.
+    /// The user's shell is asked first, so it matches their terminal's codex
+    /// (the default node/version), then well-known locations as a fallback.
     static func detectPath() -> String {
-        for path in candidatePaths() where FileManager.default.isExecutableFile(atPath: path) {
-            return path
-        }
         if let viaShell = resolveViaLoginShell(), FileManager.default.isExecutableFile(atPath: viaShell) {
             return viaShell
+        }
+        for path in candidatePaths() where FileManager.default.isExecutableFile(atPath: path) {
+            return path
         }
         return ""
     }
@@ -46,14 +48,18 @@ enum CodexCLI {
         let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
         let process = Process()
         process.executableURL = URL(fileURLWithPath: shell)
-        process.arguments = ["-lc", "command -v codex"]
+        // Login + interactive so version managers (nvm) load and `codex`
+        // resolves to the user's default — the same one their terminal uses.
+        process.arguments = ["-l", "-i", "-c", "command -v codex"]
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = Pipe()
         do { try process.run() } catch { return nil }
         process.waitUntilExit()
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        // An interactive shell may print rc noise; take the last non-empty line.
+        let output = String(data: data, encoding: .utf8) ?? ""
+        let path = output.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.last { !$0.isEmpty }
         return (path?.isEmpty == false) ? path : nil
     }
 }

@@ -51,8 +51,10 @@ Ask a configurable AI to act on the selected text. The answer **streams in live*
 - **API format:** OpenAI-compatible, Anthropic-compatible, or the local **Codex CLI**.
 - **Endpoint:** any base URL — works with OpenAI, Anthropic, OpenRouter, Groq,
   together.ai, and local servers like Ollama or LM Studio.
-- **Codex CLI:** point BelloBox at the local `codex` binary (auto-detected) to run
-  `codex exec` with your existing Codex login — no API key needed.
+- **Codex CLI:** runs your local `codex` via your login shell (so it matches your
+  terminal — same codex, same config) with your existing Codex login. No API key
+  and no path to set; an optional command field is there if you need a specific
+  binary.
 - **Load models:** fetch the available models from the endpoint and pick one
   (Codex offers preset models).
 - **Model** and **API key** (the key is stored in your macOS Keychain).

@@ -113,14 +113,22 @@ final class AIClient {
             + "explain, do not comment, do not ask questions, and do not use code fences."
     }
 
-    /// Runs `codex exec` and delivers its final message. Codex does not stream
-    /// incrementally here, so the whole result arrives in one `onDelta` call.
-    private func runCodex(config: AIConfig, userText: String, onDelta: @escaping (String) -> Void) async throws {
-        let codexPath = config.baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard CodexCLI.isInstalled(at: codexPath) else {
-            throw AIError.transport("Codex CLI not found. Set its path in BelloBox settings (or install the codex CLI).")
-        }
+    static func shellQuote(_ string: String) -> String {
+        "'" + string.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
 
+    /// The codex command to run: `codex` by name (resolved by the user's shell,
+    /// so it matches their terminal), or an explicit path if they set one.
+    static func codexInvocation(_ pathOrCommand: String) -> String {
+        let trimmed = pathOrCommand.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty || trimmed == "codex" { return "codex" }
+        return shellQuote(trimmed)
+    }
+
+    /// Runs `codex exec` through the user's login shell so it uses the same
+    /// `codex` (and config) as their terminal. The prompt is piped via stdin to
+    /// avoid quoting issues, and the whole result arrives in one `onDelta` call.
+    private func runCodex(config: AIConfig, userText: String, onDelta: @escaping (String) -> Void) async throws {
         let tmp = URL(fileURLWithPath: NSTemporaryDirectory())
         let outURL = tmp.appendingPathComponent("bellobox-codex-out-\(UUID().uuidString).txt")
         let errURL = tmp.appendingPathComponent("bellobox-codex-err-\(UUID().uuidString).txt")
@@ -131,31 +139,28 @@ final class AIClient {
             try? FileManager.default.removeItem(at: errURL)
         }
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: codexPath)
-        // Low reasoning effort: these are quick text transforms, and high effort
-        // makes the agent deliberate and describe the task instead of doing it.
-        var arguments = [
-            "exec", "--skip-git-repo-check", "-s", "read-only",
-            "-c", "model_reasoning_effort=low",
-            "-o", outURL.path,
-        ]
+        var command = "\(Self.codexInvocation(config.baseURL)) exec --skip-git-repo-check -s read-only -o \(Self.shellQuote(outURL.path))"
         let model = config.model.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !model.isEmpty { arguments += ["-m", model] }
-        arguments.append(Self.codexPrompt(system: config.systemPrompt, user: userText))
-        process.arguments = arguments
-        process.currentDirectoryURL = tmp
+        if !model.isEmpty { command += " -m \(Self.shellQuote(model))" }
+        command += " -" // read the prompt from stdin
 
-        var environment = ProcessInfo.processInfo.environment
-        let binDir = (codexPath as NSString).deletingLastPathComponent
-        if !binDir.isEmpty {
-            environment["PATH"] = binDir + ":" + (environment["PATH"] ?? "/usr/bin:/bin:/usr/local/bin")
-        }
-        process.environment = environment
+        let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: shell)
+        // Login + interactive so version managers (nvm, etc.) put the user's
+        // codex on PATH, exactly like their terminal.
+        process.arguments = ["-l", "-i", "-c", command]
+        process.currentDirectoryURL = tmp
+        process.environment = ProcessInfo.processInfo.environment
+
+        let stdinPipe = Pipe()
+        process.standardInput = stdinPipe
         process.standardOutput = FileHandle.nullDevice
         if let errHandle = try? FileHandle(forWritingTo: errURL) {
             process.standardError = errHandle
         }
+
+        let prompt = Self.codexPrompt(system: config.systemPrompt, user: userText)
 
         try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
@@ -170,14 +175,17 @@ final class AIClient {
                             .trimmingCharacters(in: .whitespacesAndNewlines)
                         let message = !text.isEmpty
                             ? text
-                            : (errText.isEmpty ? "Codex exited with status \(proc.terminationStatus)." : String(errText.suffix(600)))
+                            : (errText.isEmpty ? "Codex exited with status \(proc.terminationStatus). Is the codex CLI installed and logged in?" : String(errText.suffix(700)))
                         continuation.resume(throwing: AIError.transport(message))
                     }
                 }
                 do {
                     try process.run()
+                    let writer = stdinPipe.fileHandleForWriting
+                    writer.write(Data(prompt.utf8))
+                    try? writer.close()
                 } catch {
-                    continuation.resume(throwing: AIError.transport("Couldn't launch Codex: \(error.localizedDescription)"))
+                    continuation.resume(throwing: AIError.transport("Couldn't launch the shell to run Codex: \(error.localizedDescription)"))
                 }
             }
         } onCancel: {

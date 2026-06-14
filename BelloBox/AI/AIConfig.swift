@@ -61,8 +61,9 @@ struct AIConfig: Equatable {
                 && !model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 && URL(string: baseURL) != nil
         case .codexCLI:
-            // For Codex, `baseURL` carries the binary path.
-            return !baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            // Codex resolves `codex` from the user's shell, so it is always
+            // attemptable; the connection test reports if it isn't installed.
+            return true
         }
     }
 }

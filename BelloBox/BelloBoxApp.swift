@@ -12,10 +12,6 @@ struct BelloBoxApp: App {
         MenuBarExtra("BelloBox", systemImage: "wand.and.stars") {
             menuContent
         }
-
-        Settings {
-            SettingsView(settings: settings)
-        }
     }
 
     @ViewBuilder
@@ -40,7 +36,7 @@ struct BelloBoxApp: App {
 
         Button("Set Up BelloBox…") { appDelegate.showOnboarding() }
 
-        Button("Settings…") { AppDelegate.openSettingsWindow() }
+        Button("Settings…") { appDelegate.showSettings() }
             .keyboardShortcut(",", modifiers: .command)
 
         if appDelegate.updaterConfigured {
@@ -62,6 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = AppSettings.shared
     private let onboarding = OnboardingWindowController()
     private let mainWindow = MainWindowController()
+    private let settingsWindow = SettingsWindowController()
     private var updaterController: SPUStandardUpdaterController?
     private var cancellables = Set<AnyCancellable>()
 
@@ -76,7 +73,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .store(in: &cancellables)
 
         let overlay = SelectionOverlayController(settings: settings)
-        overlay.openSettings = { AppDelegate.openSettingsWindow() }
+        overlay.openSettings = { [weak self] in self?.showSettings() }
         overlay.start()
         self.overlay = overlay
 
@@ -113,7 +110,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         mainWindow.show(
             settings: settings,
             canCheckForUpdates: updaterConfigured,
-            onOpenSettings: { AppDelegate.openSettingsWindow() },
+            onOpenSettings: { [weak self] in self?.showSettings() },
             onOpenGuide: { [weak self] in self?.showOnboarding() },
             onCheckForUpdates: { [weak self] in self?.checkForUpdates() }
         )
@@ -127,12 +124,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
-    /// Opens the SwiftUI Settings scene. Uses the AppKit selector so it works on
-    /// macOS 13 (where `SettingsLink` / `openSettings` are unavailable).
-    static func openSettingsWindow() {
-        NSApp.activate(ignoringOtherApps: true)
-        if NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) { return }
-        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+    func showSettings() {
+        settingsWindow.show(settings: settings)
     }
 
     // MARK: - Updates

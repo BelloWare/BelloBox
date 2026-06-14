@@ -30,6 +30,7 @@
 		A70FE683F28B82E315741EE0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3304D187C5B28148AEBF40E3 /* Assets.xcassets */; };
 		B19CC1E495CFE64118DE09E2 /* SelectionOverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F39E7AD10AD19B3E090FE8DD /* SelectionOverlayController.swift */; };
 		C9504D108080F783FA14E45F /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2F6B9E2B89DE9CC44770BC /* MainView.swift */; };
+		CE78ACDAA66CADB05F060D9C /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D451D118605E72B2E84CC6 /* SettingsWindowController.swift */; };
 		CF9D67DB0D29B14B070E0506 /* SelectionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC035EEF5CE979E67A450095 /* SelectionMonitor.swift */; };
 		D0B79098FFCD9012BE7366C8 /* TextToolsPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98DC0948C3E1FBC14B77BFA5 /* TextToolsPopupView.swift */; };
 		DF215D5B42CBFC5366CCCA4E /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8937A9C45A6753018FD65683 /* KeychainStore.swift */; };
@@ -52,6 +53,7 @@
 
 /* Begin PBXFileReference section */
 		1D24648C227942429D5E7B40 /* QRCodeGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeGeneratorTests.swift; sourceTree = "<group>"; };
+		31D451D118605E72B2E84CC6 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		324699B28FE869CBDD32B8CE /* BelloBoxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BelloBoxApp.swift; sourceTree = "<group>"; };
 		3304D187C5B28148AEBF40E3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		35473BCCCB42BD6B76AF1F82 /* CodexCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexCLI.swift; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 				3CA6AA1145263DFB4A33083D /* QRCodePopupView.swift */,
 				F39E7AD10AD19B3E090FE8DD /* SelectionOverlayController.swift */,
 				4D32C61C1D0F535A5DC5BF9E /* SettingsView.swift */,
+				31D451D118605E72B2E84CC6 /* SettingsWindowController.swift */,
 				98DC0948C3E1FBC14B77BFA5 /* TextToolsPopupView.swift */,
 				4C1DF2470EFA12544D457904 /* Theme.swift */,
 			);
@@ -359,6 +362,7 @@
 				CF9D67DB0D29B14B070E0506 /* SelectionMonitor.swift in Sources */,
 				B19CC1E495CFE64118DE09E2 /* SelectionOverlayController.swift in Sources */,
 				FCACD6280C0BF8FD29F8E917 /* SettingsView.swift in Sources */,
+				CE78ACDAA66CADB05F060D9C /* SettingsWindowController.swift in Sources */,
 				D0B79098FFCD9012BE7366C8 /* TextToolsPopupView.swift in Sources */,
 				27E28F6111297F42C32A1036 /* TextTransforms.swift in Sources */,
 				F5AC7B2FC27357EEB864DDC6 /* Theme.swift in Sources */,
@@ -483,7 +487,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -503,7 +507,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.6;
+				MARKETING_VERSION = 0.0.7;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -549,7 +553,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -563,7 +567,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.6;
+				MARKETING_VERSION = 0.0.7;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
