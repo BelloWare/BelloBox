@@ -4,13 +4,27 @@ import Foundation
 enum ProviderKind: String, CaseIterable, Codable, Identifiable {
     case openAI
     case anthropic
+    case codexCLI
 
     var id: String { rawValue }
+
+    /// Whether this provider talks over HTTP (vs. a local CLI).
+    var isHTTP: Bool { self != .codexCLI }
 
     var displayName: String {
         switch self {
         case .openAI: return "OpenAI-compatible"
         case .anthropic: return "Anthropic-compatible"
+        case .codexCLI: return "Codex CLI"
+        }
+    }
+
+    /// Short label for compact pickers.
+    var shortName: String {
+        switch self {
+        case .openAI: return "OpenAI"
+        case .anthropic: return "Anthropic"
+        case .codexCLI: return "Codex"
         }
     }
 
@@ -18,6 +32,7 @@ enum ProviderKind: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .openAI: return "https://api.openai.com/v1"
         case .anthropic: return "https://api.anthropic.com/v1"
+        case .codexCLI: return ""
         }
     }
 
@@ -25,6 +40,7 @@ enum ProviderKind: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .openAI: return "gpt-4o-mini"
         case .anthropic: return "claude-3-5-haiku-latest"
+        case .codexCLI: return ""
         }
     }
 }
@@ -39,9 +55,15 @@ struct AIConfig: Equatable {
     var maxTokens: Int = 2048
 
     var isUsable: Bool {
-        !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && URL(string: baseURL) != nil
+        switch kind {
+        case .openAI, .anthropic:
+            return !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                && !model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                && URL(string: baseURL) != nil
+        case .codexCLI:
+            // For Codex, `baseURL` carries the binary path.
+            return !baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
     }
 }
 

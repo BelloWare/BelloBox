@@ -28,6 +28,10 @@ final class AIClient {
         userText: String,
         onDelta: @escaping (String) -> Void
     ) async throws {
+        if config.kind == .codexCLI {
+            try await runCodex(config: config, userText: userText, onDelta: onDelta)
+            return
+        }
         guard !config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw AIError.missingAPIKey
         }
@@ -37,6 +41,8 @@ final class AIClient {
             request = try Self.openAIRequest(config: config, userText: userText, stream: true)
         case .anthropic:
             request = try Self.anthropicRequest(config: config, userText: userText, stream: true)
+        case .codexCLI:
+            return
         }
 
         let (bytes, response): (URLSession.AsyncBytes, URLResponse)
@@ -76,6 +82,8 @@ final class AIClient {
                     case .ignore:
                         break
                     }
+                case .codexCLI:
+                    break
                 }
             }
         } catch let error as AIError {
@@ -92,6 +100,137 @@ final class AIClient {
         var buffer = ""
         try await stream(config: config, userText: userText) { buffer += $0 }
         return buffer
+    }
+
+    // MARK: - Codex CLI
+
+    static func codexPrompt(system: String, user: String) -> String {
+        let trimmed = system.trimmingCharacters(in: .whitespacesAndNewlines)
+        let base = trimmed.isEmpty ? user : "\(trimmed)\n\n\(user)"
+        // Codex is an agent; without a firm directive it tends to describe the
+        // task instead of performing it. Force a bare result.
+        return base + "\n\nIMPORTANT: Output only the resulting text itself. Do not "
+            + "explain, do not comment, do not ask questions, and do not use code fences."
+    }
+
+    /// Runs `codex exec` and delivers its final message. Codex does not stream
+    /// incrementally here, so the whole result arrives in one `onDelta` call.
+    private func runCodex(config: AIConfig, userText: String, onDelta: @escaping (String) -> Void) async throws {
+        let codexPath = config.baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard CodexCLI.isInstalled(at: codexPath) else {
+            throw AIError.transport("Codex CLI not found. Set its path in BelloBox settings (or install the codex CLI).")
+        }
+
+        let tmp = URL(fileURLWithPath: NSTemporaryDirectory())
+        let outURL = tmp.appendingPathComponent("bellobox-codex-out-\(UUID().uuidString).txt")
+        let errURL = tmp.appendingPathComponent("bellobox-codex-err-\(UUID().uuidString).txt")
+        FileManager.default.createFile(atPath: outURL.path, contents: nil)
+        FileManager.default.createFile(atPath: errURL.path, contents: nil)
+        defer {
+            try? FileManager.default.removeItem(at: outURL)
+            try? FileManager.default.removeItem(at: errURL)
+        }
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: codexPath)
+        // Low reasoning effort: these are quick text transforms, and high effort
+        // makes the agent deliberate and describe the task instead of doing it.
+        var arguments = [
+            "exec", "--skip-git-repo-check", "-s", "read-only",
+            "-c", "model_reasoning_effort=low",
+            "-o", outURL.path,
+        ]
+        let model = config.model.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !model.isEmpty { arguments += ["-m", model] }
+        arguments.append(Self.codexPrompt(system: config.systemPrompt, user: userText))
+        process.arguments = arguments
+        process.currentDirectoryURL = tmp
+
+        var environment = ProcessInfo.processInfo.environment
+        let binDir = (codexPath as NSString).deletingLastPathComponent
+        if !binDir.isEmpty {
+            environment["PATH"] = binDir + ":" + (environment["PATH"] ?? "/usr/bin:/bin:/usr/local/bin")
+        }
+        process.environment = environment
+        process.standardOutput = FileHandle.nullDevice
+        if let errHandle = try? FileHandle(forWritingTo: errURL) {
+            process.standardError = errHandle
+        }
+
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                process.terminationHandler = { proc in
+                    let text = ((try? String(contentsOf: outURL, encoding: .utf8)) ?? "")
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                    if proc.terminationStatus == 0, !text.isEmpty {
+                        onDelta(text)
+                        continuation.resume()
+                    } else {
+                        let errText = ((try? String(contentsOf: errURL, encoding: .utf8)) ?? "")
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                        let message = !text.isEmpty
+                            ? text
+                            : (errText.isEmpty ? "Codex exited with status \(proc.terminationStatus)." : String(errText.suffix(600)))
+                        continuation.resume(throwing: AIError.transport(message))
+                    }
+                }
+                do {
+                    try process.run()
+                } catch {
+                    continuation.resume(throwing: AIError.transport("Couldn't launch Codex: \(error.localizedDescription)"))
+                }
+            }
+        } onCancel: {
+            process.terminate()
+        }
+    }
+
+    // MARK: - Model listing
+
+    func listModels(config: AIConfig) async throws -> [String] {
+        switch config.kind {
+        case .codexCLI:
+            return CodexCLI.presetModels
+        case .openAI:
+            return try await listHTTPModels(base: config.baseURL, headers: ["Authorization": "Bearer \(config.apiKey)"])
+        case .anthropic:
+            return try await listHTTPModels(base: config.baseURL, headers: [
+                "x-api-key": config.apiKey,
+                "anthropic-version": "2023-06-01",
+            ])
+        }
+    }
+
+    private func listHTTPModels(base: String, headers: [String: String]) async throws -> [String] {
+        let url = try Self.endpointURL(base: base, path: "/models")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        for (key, value) in headers { request.setValue(value, forHTTPHeaderField: key) }
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            throw AIError.transport(error.localizedDescription)
+        }
+        guard let http = response as? HTTPURLResponse else {
+            throw AIError.transport("The response was not an HTTP response.")
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            throw AIError.http(status: http.statusCode, message: Self.extractErrorMessage(String(data: data, encoding: .utf8) ?? ""))
+        }
+        return Self.parseModelList(data)
+    }
+
+    /// Extracts and sorts model ids from an OpenAI/Anthropic `/models` response.
+    static func parseModelList(_ data: Data) -> [String] {
+        guard
+            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let entries = object["data"] as? [[String: Any]]
+        else { return [] }
+        let ids = entries.compactMap { $0["id"] as? String }
+        return Array(Set(ids)).sorted()
     }
 
     // MARK: - Request building (pure, unit-tested)

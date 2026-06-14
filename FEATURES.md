@@ -48,12 +48,16 @@ Ask a configurable AI to act on the selected text. The answer **streams in live*
 - **Replace** your original selection with it (⌘↩).
 
 **Bring your own AI** (set up once in Settings or onboarding):
-- **API format:** OpenAI-compatible or Anthropic-compatible.
+- **API format:** OpenAI-compatible, Anthropic-compatible, or the local **Codex CLI**.
 - **Endpoint:** any base URL — works with OpenAI, Anthropic, OpenRouter, Groq,
   together.ai, and local servers like Ollama or LM Studio.
+- **Codex CLI:** point BelloBox at the local `codex` binary (auto-detected) to run
+  `codex exec` with your existing Codex login — no API key needed.
+- **Load models:** fetch the available models from the endpoint and pick one
+  (Codex offers preset models).
 - **Model** and **API key** (the key is stored in your macOS Keychain).
 - **System prompt:** editable text that shapes every transformation.
-- **Test connection** button to verify your setup.
+- **Test connection:** runs a quick "say hi" to confirm it works.
 
 ---
 
@@ -104,7 +108,9 @@ categories offer **Copy** and **Replace**.
 ## Onboarding
 
 - On first launch a short guide walks you through what BelloBox does, granting
-  Accessibility, and connecting your AI provider.
+  Accessibility, and connecting your AI provider (load the model list and run a
+  "say hi" test to confirm it works).
+- You can **Skip** the setup and configure it later.
 - Reopen it anytime from the menu bar → **Set Up BelloBox…**.
 
 ## Menu bar

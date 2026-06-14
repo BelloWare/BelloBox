@@ -102,4 +102,40 @@ final class AIClientTests: XCTestCase {
         c.apiKey = "  "
         XCTAssertFalse(c.isUsable)
     }
+
+    // MARK: - Codex + model listing
+
+    func testProviderKindHasCodex() {
+        XCTAssertEqual(ProviderKind.allCases.count, 3)
+        XCTAssertFalse(ProviderKind.codexCLI.isHTTP)
+        XCTAssertTrue(ProviderKind.openAI.isHTTP)
+        XCTAssertEqual(ProviderKind.codexCLI.shortName, "Codex")
+    }
+
+    func testCodexConfigUsableWithPath() {
+        var c = AIConfig(kind: .codexCLI, baseURL: "/usr/local/bin/codex", model: "", apiKey: "", systemPrompt: "")
+        XCTAssertTrue(c.isUsable) // path set; key/model not required for Codex
+        c.baseURL = "  "
+        XCTAssertFalse(c.isUsable)
+    }
+
+    func testCodexPromptCombinesSystemAndUser() {
+        XCTAssertTrue(AIClient.codexPrompt(system: "be terse", user: "hi").hasPrefix("be terse\n\nhi"))
+        XCTAssertTrue(AIClient.codexPrompt(system: "   ", user: "hi").hasPrefix("hi"))
+        XCTAssertTrue(AIClient.codexPrompt(system: "", user: "hi").contains("Output only"))
+    }
+
+    func testParseModelList() {
+        let json = #"{"data":[{"id":"gpt-4o"},{"id":"gpt-3.5-turbo"},{"id":"gpt-4o"}]}"#
+        XCTAssertEqual(AIClient.parseModelList(Data(json.utf8)), ["gpt-3.5-turbo", "gpt-4o"])
+    }
+
+    func testParseModelListEmptyOnGarbage() {
+        XCTAssertEqual(AIClient.parseModelList(Data("not json".utf8)), [])
+        XCTAssertEqual(AIClient.parseModelList(Data(#"{"foo":1}"#.utf8)), [])
+    }
+
+    func testCodexPresetsNonEmpty() {
+        XCTAssertFalse(CodexCLI.presetModels.isEmpty)
+    }
 }

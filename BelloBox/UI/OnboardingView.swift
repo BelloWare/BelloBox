@@ -11,17 +11,9 @@ struct OnboardingView: View {
 
     @State private var step = 0
     @State private var trusted = AccessibilityService.isTrusted
-    @State private var isTesting = false
-    @State private var testState: TestState = .idle
 
     private let stepCount = 4
     private let poll = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
-
-    enum TestState: Equatable {
-        case idle
-        case success(String)
-        case failure(String)
-    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -116,54 +108,13 @@ struct OnboardingView: View {
     }
 
     private var providerStep: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             stepHeader("Connect your AI", systemImage: "antenna.radiowaves.left.and.right")
-            Text("BelloBox brings your own AI. Choose an API format and paste your endpoint, key, and model. You can change this anytime in Settings.")
+            Text("Bring your own AI: pick a format, add your details, optionally Load the model list, then run a quick hello to confirm it works. You can Skip and set this up later in Settings.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Picker("API format", selection: $settings.providerKind) {
-                ForEach(ProviderKind.allCases) { Text($0.displayName).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .onChange(of: settings.providerKind) { _ in testState = .idle }
-
-            Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 8) {
-                GridRow {
-                    Text("Endpoint").gridColumnAlignment(.trailing).foregroundStyle(.secondary)
-                    TextField("Base URL", text: baseURLBinding).textFieldStyle(.roundedBorder).autocorrectionDisabled()
-                }
-                GridRow {
-                    Text("Model").gridColumnAlignment(.trailing).foregroundStyle(.secondary)
-                    TextField("Model name", text: modelBinding).textFieldStyle(.roundedBorder).autocorrectionDisabled()
-                }
-                GridRow {
-                    Text("API key").gridColumnAlignment(.trailing).foregroundStyle(.secondary)
-                    SecureField("Paste your key", text: $settings.apiKey).textFieldStyle(.roundedBorder)
-                }
-            }
-
-            HStack(spacing: 10) {
-                Button {
-                    runTest()
-                } label: {
-                    if isTesting { ProgressView().controlSize(.small) } else { Text("Test connection") }
-                }
-                .disabled(isTesting || !settings.isConfigured)
-
-                switch testState {
-                case .idle:
-                    EmptyView()
-                case let .success(message):
-                    Label(message, systemImage: "checkmark.circle.fill").foregroundStyle(.green).font(.caption).lineLimit(1)
-                case let .failure(message):
-                    Label(message, systemImage: "xmark.octagon.fill").foregroundStyle(.red).font(.caption).lineLimit(2)
-                }
-                Spacer()
-            }
-            Text("Tip: this works with OpenAI, Anthropic, OpenRouter, Groq, and local servers like Ollama or LM Studio.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+            ProviderConfigView(settings: settings)
         }
     }
 
@@ -197,6 +148,11 @@ struct OnboardingView: View {
         HStack {
             if step > 0 {
                 Button("Back") { withAnimation { step -= 1 } }
+            }
+            if step < stepCount - 1 {
+                Button("Skip") { onFinish() }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
             }
             Spacer()
             HStack(spacing: 6) {
@@ -256,35 +212,4 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Bindings & actions
-
-    private var baseURLBinding: Binding<String> {
-        switch settings.providerKind {
-        case .openAI: return $settings.openAIBaseURL
-        case .anthropic: return $settings.anthropicBaseURL
-        }
-    }
-
-    private var modelBinding: Binding<String> {
-        switch settings.providerKind {
-        case .openAI: return $settings.openAIModel
-        case .anthropic: return $settings.anthropicModel
-        }
-    }
-
-    private func runTest() {
-        isTesting = true
-        testState = .idle
-        let config = settings.currentConfig
-        Task {
-            do {
-                let reply = try await AIClient().complete(config: config, userText: "Reply with the single word: OK")
-                let trimmed = reply.trimmingCharacters(in: .whitespacesAndNewlines)
-                testState = .success(trimmed.isEmpty ? "Connected" : "Connected: \(String(trimmed.prefix(40)))")
-            } catch {
-                testState = .failure((error as? AIError)?.errorDescription ?? error.localizedDescription)
-            }
-            isTesting = false
-        }
-    }
 }

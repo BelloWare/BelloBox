@@ -267,8 +267,7 @@ struct TextToolsPopupView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Token model").font(.caption2.bold()).foregroundStyle(.secondary)
             Picker("Provider", selection: $settings.providerKind) {
-                Text("OpenAI").tag(ProviderKind.openAI)
-                Text("Anthropic").tag(ProviderKind.anthropic)
+                ForEach(ProviderKind.allCases) { Text($0.shortName).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -299,6 +298,7 @@ struct TextToolsPopupView: View {
         switch settings.providerKind {
         case .openAI: return $settings.openAIModel
         case .anthropic: return $settings.anthropicModel
+        case .codexCLI: return $settings.codexModel
         }
     }
 
@@ -306,6 +306,7 @@ struct TextToolsPopupView: View {
         switch settings.providerKind {
         case .openAI: return ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1", "o3-mini", "gpt-3.5-turbo"]
         case .anthropic: return ["claude-3-5-haiku-latest", "claude-3-5-sonnet-latest", "claude-3-7-sonnet-latest", "claude-3-opus-latest"]
+        case .codexCLI: return CodexCLI.presetModels
         }
     }
 
@@ -313,6 +314,7 @@ struct TextToolsPopupView: View {
         switch settings.providerKind {
         case .openAI: settings.openAIModel = name
         case .anthropic: settings.anthropicModel = name
+        case .codexCLI: settings.codexModel = name
         }
     }
 

@@ -41,6 +41,8 @@ final class AppSettings: ObservableObject {
         static let floatingButtonEnabled = "floatingButtonEnabled"
         static let hasCompletedSetup = "hasCompletedSetup"
         static let appearance = "appearance"
+        static let codexPath = "codexPath"
+        static let codexModel = "codexModel"
     }
 
     static let defaultSystemPrompt = """
@@ -66,6 +68,8 @@ final class AppSettings: ObservableObject {
     @Published var systemPrompt: String { didSet { defaults.set(systemPrompt, forKey: Keys.systemPrompt) } }
     @Published var floatingButtonEnabled: Bool { didSet { defaults.set(floatingButtonEnabled, forKey: Keys.floatingButtonEnabled) } }
     @Published var appearance: AppearancePreference { didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) } }
+    @Published var codexPath: String { didSet { defaults.set(codexPath, forKey: Keys.codexPath) } }
+    @Published var codexModel: String { didSet { defaults.set(codexModel, forKey: Keys.codexModel) } }
 
     /// API key for the currently-selected provider. Persisted to the Keychain.
     @Published var apiKey: String {
@@ -88,6 +92,8 @@ final class AppSettings: ObservableObject {
         systemPrompt = defaults.string(forKey: Keys.systemPrompt) ?? Self.defaultSystemPrompt
         floatingButtonEnabled = (defaults.object(forKey: Keys.floatingButtonEnabled) as? Bool) ?? true
         appearance = AppearancePreference(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
+        codexPath = defaults.string(forKey: Keys.codexPath) ?? ""
+        codexModel = defaults.string(forKey: Keys.codexModel) ?? ""
         apiKey = KeychainStore.get(account: KeychainStore.account(for: kind)) ?? ""
     }
 
@@ -98,6 +104,8 @@ final class AppSettings: ObservableObject {
             return AIConfig(kind: .openAI, baseURL: openAIBaseURL, model: openAIModel, apiKey: apiKey, systemPrompt: systemPrompt)
         case .anthropic:
             return AIConfig(kind: .anthropic, baseURL: anthropicBaseURL, model: anthropicModel, apiKey: apiKey, systemPrompt: systemPrompt)
+        case .codexCLI:
+            return AIConfig(kind: .codexCLI, baseURL: codexPath, model: codexModel, apiKey: "", systemPrompt: systemPrompt)
         }
     }
 
@@ -105,10 +113,9 @@ final class AppSettings: ObservableObject {
 
     func resetSystemPrompt() { systemPrompt = Self.defaultSystemPrompt }
 
-    func baseURLBinding() -> (get: () -> String, set: (String) -> Void) {
-        switch providerKind {
-        case .openAI: return ({ self.openAIBaseURL }, { self.openAIBaseURL = $0 })
-        case .anthropic: return ({ self.anthropicBaseURL }, { self.anthropicBaseURL = $0 })
-        }
+    /// Detects the codex binary off the main thread and stores it if found.
+    func detectCodexPath() async {
+        let path = await Task.detached { CodexCLI.detectPath() }.value
+        if !path.isEmpty { codexPath = path }
     }
 }

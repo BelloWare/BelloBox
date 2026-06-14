@@ -6,8 +6,9 @@ tool per button:
 
 - **AI** (⌃⌥⌘B): a popup where a configurable AI rewrites, fixes, summarizes,
   translates, or answers about the text — then copy or replace in place. The AI
-  backend is user-supplied: any OpenAI-compatible or Anthropic-compatible
-  endpoint plus the user's own key and model.
+  backend is user-supplied: an OpenAI-compatible or Anthropic-compatible endpoint
+  (with model listing from `/models`), or the local **Codex CLI** (`codex exec`,
+  no key needed).
 - **QR code**: a popup with a live, scannable QR code of the selection and an
   editable text field; copy or save the image.
 - **Text tools**: offline utilities — case conversion, encode/decode
@@ -40,7 +41,8 @@ BelloBox/
 │   ├── Tools/
 │   │   ├── QRCodeGenerator.swift   # CoreImage QR rendering (NSImage / PNG)
 │   │   ├── TextTransforms.swift    # case / encode / decode / hash / lines / pretty-print
-│   │   └── TokenEstimator.swift    # model-aware token estimate (heuristic)
+│   │   ├── TokenEstimator.swift    # model-aware token estimate (heuristic)
+│   │   └── CodexCLI.swift          # locate the codex binary + preset models
 │   ├── Settings/
 │   │   ├── AppSettings.swift       # UserDefaults-backed config (ObservableObject)
 │   │   └── KeychainStore.swift     # API keys stored in the Keychain
@@ -56,7 +58,8 @@ BelloBox/
 │       ├── QRCodePopupView.swift             # the QR popup + view model (editable text, copy/save)
 │       ├── TextToolsPopupView.swift          # the text-tools popup + view model (inline token-model picker)
 │       ├── Theme.swift                       # design system: gradient, PopupHeader, popupCard, button styles, appear animation
-│       ├── OnboardingView.swift              # first-run flow (welcome → permission → provider → done)
+│       ├── ProviderConfigView.swift          # shared provider setup (3 providers, model load, say-hi test)
+│       ├── OnboardingView.swift              # first-run flow (welcome → permission → provider → done); Skip allowed
 │       ├── OnboardingWindowController.swift  # hosts onboarding in a window
 │       └── SettingsView.swift                # provider/endpoint/key/model/prompt UI
 ├── BelloBoxTests/                  # unit tests (request building + SSE parsing)
