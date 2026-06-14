@@ -26,8 +26,10 @@
 		865211148C380C6CE506B530 /* AccessibilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA0E2A8AD8C9D6E0F5454A8D /* AccessibilityService.swift */; };
 		96AE93145223EBF41A799CA0 /* FloatingButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 811AD718949634788A9F5E2F /* FloatingButtonView.swift */; };
 		9C0100D9A73B07635FBB9214 /* ActionPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 622B6A40F69FA3A931BDEEE5 /* ActionPopupView.swift */; };
+		A1B18391B3F4EF49E9C8077A /* MainWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA72D4674C4F19424AB887D4 /* MainWindowController.swift */; };
 		A70FE683F28B82E315741EE0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3304D187C5B28148AEBF40E3 /* Assets.xcassets */; };
 		B19CC1E495CFE64118DE09E2 /* SelectionOverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F39E7AD10AD19B3E090FE8DD /* SelectionOverlayController.swift */; };
+		C9504D108080F783FA14E45F /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2F6B9E2B89DE9CC44770BC /* MainView.swift */; };
 		CF9D67DB0D29B14B070E0506 /* SelectionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC035EEF5CE979E67A450095 /* SelectionMonitor.swift */; };
 		D0B79098FFCD9012BE7366C8 /* TextToolsPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98DC0948C3E1FBC14B77BFA5 /* TextToolsPopupView.swift */; };
 		DF215D5B42CBFC5366CCCA4E /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8937A9C45A6753018FD65683 /* KeychainStore.swift */; };
@@ -75,6 +77,7 @@
 		AF292F32F4A4FE25726FB855 /* BelloBox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BelloBox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA0E2A8AD8C9D6E0F5454A8D /* AccessibilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityService.swift; sourceTree = "<group>"; };
 		BC035EEF5CE979E67A450095 /* SelectionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionMonitor.swift; sourceTree = "<group>"; };
+		CB2F6B9E2B89DE9CC44770BC /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		D6B603F0B5CD70E58101A9A9 /* AIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIClient.swift; sourceTree = "<group>"; };
 		DBA0CDE0F4FDCCC2F9D41E12 /* BelloBoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BelloBoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1B8F6E501CDE05A69DFF0E8 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
@@ -82,6 +85,7 @@
 		F39E7AD10AD19B3E090FE8DD /* SelectionOverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionOverlayController.swift; sourceTree = "<group>"; };
 		F41464E634659AD5A3498BFD /* TextTransformsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextTransformsTests.swift; sourceTree = "<group>"; };
 		F41CBE868D630B1299CC4901 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		FA72D4674C4F19424AB887D4 /* MainWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +116,8 @@
 				97F6FA0F6E7381E4B04A34D7 /* ActionPopupViewModel.swift */,
 				811AD718949634788A9F5E2F /* FloatingButtonView.swift */,
 				F1B8F6E501CDE05A69DFF0E8 /* FloatingPanel.swift */,
+				CB2F6B9E2B89DE9CC44770BC /* MainView.swift */,
+				FA72D4674C4F19424AB887D4 /* MainWindowController.swift */,
 				F1FC81A7F76C40AA8B3D8903 /* OnboardingView.swift */,
 				5AB49A4D77D70434DB475B23 /* OnboardingWindowController.swift */,
 				4BE3499F82A9CB2A1166D030 /* ProviderConfigView.swift */,
@@ -342,6 +348,8 @@
 				96AE93145223EBF41A799CA0 /* FloatingButtonView.swift in Sources */,
 				2ADE8976E7196C217D2CCEB3 /* FloatingPanel.swift in Sources */,
 				DF215D5B42CBFC5366CCCA4E /* KeychainStore.swift in Sources */,
+				C9504D108080F783FA14E45F /* MainView.swift in Sources */,
+				A1B18391B3F4EF49E9C8077A /* MainWindowController.swift in Sources */,
 				3B251E1F55B56C5F043C6257 /* OnboardingView.swift in Sources */,
 				57B1C2D3853B532B2FCF6E96 /* OnboardingWindowController.swift in Sources */,
 				03174A7583C8E8DB7CF6CE43 /* ProviderConfigView.swift in Sources */,
@@ -475,7 +483,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -495,7 +503,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.5;
+				MARKETING_VERSION = 0.0.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -541,7 +549,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -555,7 +563,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.5;
+				MARKETING_VERSION = 0.0.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

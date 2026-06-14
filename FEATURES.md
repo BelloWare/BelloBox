@@ -100,6 +100,20 @@ categories offer **Copy** and **Replace**.
 
 ---
 
+## Home window
+
+Opening BelloBox (from Finder or Launchpad, or **Open BelloBox** in the menu)
+shows a home window with:
+
+- The app version and a one-line description.
+- Live **status**: whether an AI provider is configured and whether Accessibility
+  is granted, each with a quick action to fix it.
+- A short how-to.
+- Buttons for **Settings**, the **Setup Guide**, and **Check for Updates**.
+
+It opens centered, and re-opening the app brings it back (handy, since a menu-bar
+app has nothing in the Dock).
+
 ## Appearance / Themes
 
 - Choose **System**, **Light**, or **Dark** in **Settings → Appearance**.
@@ -116,6 +130,7 @@ categories offer **Copy** and **Replace**.
 ## Menu bar
 
 The ✨ menu-bar icon gives you:
+- **Open BelloBox** (the home window)
 - **Ask BelloBox About Selection**, **Generate QR Code from Selection**,
   **Text Tools on Selection**
 - **Set Up BelloBox…**, **Settings…**

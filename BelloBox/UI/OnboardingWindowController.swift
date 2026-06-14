@@ -8,9 +8,11 @@ import SwiftUI
 final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private weak var settings: AppSettings?
+    private var onClosed: (() -> Void)?
 
-    func show(settings: AppSettings, onPermissionGranted: @escaping () -> Void) {
+    func show(settings: AppSettings, onPermissionGranted: @escaping () -> Void, onClosed: @escaping () -> Void) {
         self.settings = settings
+        self.onClosed = onClosed
 
         if let window {
             NSApp.activate(ignoringOtherApps: true)
@@ -29,6 +31,8 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         window.delegate = self
+        // Size before centering so the window lands in the middle of the screen.
+        window.setContentSize(NSSize(width: 560, height: 600))
         window.center()
         self.window = window
 
@@ -46,5 +50,8 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         // the menu bar.
         settings?.hasCompletedSetup = true
         window = nil
+        let closed = onClosed
+        onClosed = nil
+        closed?()
     }
 }

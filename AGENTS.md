@@ -58,6 +58,8 @@ BelloBox/
 │       ├── QRCodePopupView.swift             # the QR popup + view model (editable text, copy/save)
 │       ├── TextToolsPopupView.swift          # the text-tools popup + view model (inline token-model picker)
 │       ├── Theme.swift                       # design system: gradient, PopupHeader, popupCard, button styles, appear animation
+│       ├── MainView.swift                    # the home window (status, how-to, Settings / Updates)
+│       ├── MainWindowController.swift         # hosts the home window (centered)
 │       ├── ProviderConfigView.swift          # shared provider setup (3 providers, model load, say-hi test)
 │       ├── OnboardingView.swift              # first-run flow (welcome → permission → provider → done); Skip allowed
 │       ├── OnboardingWindowController.swift  # hosts onboarding in a window
