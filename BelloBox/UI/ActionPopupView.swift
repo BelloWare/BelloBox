@@ -3,7 +3,7 @@ import SwiftUI
 /// The popup shown when the user clicks the floating button: a selected-text
 /// preview, one-click actions, a custom prompt, and the streamed result.
 struct ActionPopupView: View {
-    static let preferredSize = CGSize(width: 388, height: 440)
+    static let preferredSize = CGSize(width: 560, height: 640)
 
     @ObservedObject var viewModel: ActionPopupViewModel
 
@@ -51,7 +51,7 @@ struct ActionPopupView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .textSelection(.enabled)
         }
-        .frame(height: 56)
+        .frame(height: 104)
         .padding(8)
         .background(
             RoundedRectangle(cornerRadius: 9, style: .continuous)

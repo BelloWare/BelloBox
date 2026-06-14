@@ -43,7 +43,7 @@ final class QRCodePopupViewModel: ObservableObject {
 /// The QR popup: a live QR for the selection, an editable text field that
 /// regenerates it, and copy/save actions.
 struct QRCodePopupView: View {
-    static let preferredSize = CGSize(width: 320, height: 466)
+    static let preferredSize = CGSize(width: 420, height: 560)
 
     @ObservedObject var viewModel: QRCodePopupViewModel
 
@@ -90,7 +90,7 @@ struct QRCodePopupView: View {
                 .padding()
             }
         }
-        .frame(height: 224)
+        .frame(height: 280)
         .shadow(color: .black.opacity(0.08), radius: 4, y: 1)
     }
 
@@ -99,7 +99,7 @@ struct QRCodePopupView: View {
             Text("Encoded text").font(.caption.bold()).foregroundStyle(.secondary)
             TextEditor(text: $viewModel.text)
                 .font(.callout)
-                .frame(height: 56)
+                .frame(height: 96)
                 .scrollContentBackground(.hidden)
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 9).fill(.primary.opacity(0.05)))

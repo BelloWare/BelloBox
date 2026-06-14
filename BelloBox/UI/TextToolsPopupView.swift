@@ -99,7 +99,7 @@ final class TextToolsPopupViewModel: ObservableObject {
 }
 
 struct TextToolsPopupView: View {
-    static let preferredSize = CGSize(width: 404, height: 560)
+    static let preferredSize = CGSize(width: 560, height: 660)
 
     @ObservedObject var viewModel: TextToolsPopupViewModel
     @ObservedObject var settings: AppSettings
@@ -154,7 +154,7 @@ struct TextToolsPopupView: View {
             TextEditor(text: $viewModel.input)
                 .font(.callout)
                 .scrollContentBackground(.hidden)
-                .frame(height: 56)
+                .frame(height: 96)
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
         }
@@ -355,7 +355,7 @@ struct TextToolsPopupView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
-            .frame(height: 110)
+            .frame(height: 220)
             .padding(8)
             .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
 
