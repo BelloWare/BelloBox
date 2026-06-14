@@ -30,41 +30,16 @@ struct ActionPopupView: View {
         }
         .padding(16)
         .frame(width: Self.preferredSize.width, height: Self.preferredSize.height, alignment: .topLeading)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.regularMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(.primary.opacity(0.08), lineWidth: 1)
-        )
+        .popupCard()
+        .appearPop()
         .onExitCommand { viewModel.close() }
     }
 
     // MARK: - Sections
 
     private var header: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "wand.and.stars")
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(BoxTheme.accent)
-            Text("BelloBox")
-                .font(.headline)
-            Spacer()
-            Text(viewModel.providerSummary)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-            Button {
-                viewModel.close()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .help("Close")
+        PopupHeader(icon: "wand.and.stars", title: "BelloBox", subtitle: viewModel.providerSummary) {
+            viewModel.close()
         }
     }
 
@@ -176,6 +151,7 @@ struct ActionPopupView: View {
                 } label: {
                     Label("Copy", systemImage: "doc.on.doc")
                 }
+                .buttonStyle(SecondaryButtonStyle())
                 .disabled(!viewModel.canCopy)
 
                 Button {
@@ -183,6 +159,7 @@ struct ActionPopupView: View {
                 } label: {
                     Label("Replace", systemImage: "arrow.left.arrow.right")
                 }
+                .buttonStyle(PrimaryButtonStyle())
                 .keyboardShortcut(.return, modifiers: [.command])
                 .disabled(!viewModel.canReplace)
                 .help("Replace the original selection with this result")

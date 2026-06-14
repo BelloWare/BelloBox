@@ -30,6 +30,7 @@
 		D0B79098FFCD9012BE7366C8 /* TextToolsPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98DC0948C3E1FBC14B77BFA5 /* TextToolsPopupView.swift */; };
 		DF215D5B42CBFC5366CCCA4E /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8937A9C45A6753018FD65683 /* KeychainStore.swift */; };
 		E9F5F075D0B3F605B7EFAD39 /* QuickAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6987A826FEC30AE6E8F75509 /* QuickAction.swift */; };
+		F5AC7B2FC27357EEB864DDC6 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1DF2470EFA12544D457904 /* Theme.swift */; };
 		F94AA703B26F622C42DD728D /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 77345559C11126C1EB0C3C24 /* Sparkle */; };
 		FC3F6BA70986AD4CE2E559E5 /* QRCodeGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D24648C227942429D5E7B40 /* QRCodeGeneratorTests.swift */; };
 		FCACD6280C0BF8FD29F8E917 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D32C61C1D0F535A5DC5BF9E /* SettingsView.swift */; };
@@ -52,6 +53,7 @@
 		3CA6AA1145263DFB4A33083D /* QRCodePopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodePopupView.swift; sourceTree = "<group>"; };
 		415C8271C74675B6CC66CEF6 /* AIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIConfig.swift; sourceTree = "<group>"; };
 		4A6A94CD11F08653590A9BD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4C1DF2470EFA12544D457904 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		4D32C61C1D0F535A5DC5BF9E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		504BB31ABA699A1C9DC90B44 /* TextTransforms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextTransforms.swift; sourceTree = "<group>"; };
 		517194590B8688371EB8FE0A /* AIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIClientTests.swift; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 				F39E7AD10AD19B3E090FE8DD /* SelectionOverlayController.swift */,
 				4D32C61C1D0F535A5DC5BF9E /* SettingsView.swift */,
 				98DC0948C3E1FBC14B77BFA5 /* TextToolsPopupView.swift */,
+				4C1DF2470EFA12544D457904 /* Theme.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -342,6 +345,7 @@
 				FCACD6280C0BF8FD29F8E917 /* SettingsView.swift in Sources */,
 				D0B79098FFCD9012BE7366C8 /* TextToolsPopupView.swift in Sources */,
 				27E28F6111297F42C32A1036 /* TextTransforms.swift in Sources */,
+				F5AC7B2FC27357EEB864DDC6 /* Theme.swift in Sources */,
 				68FA7AEAF24DA3D88C38576C /* TokenEstimator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -463,7 +467,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -483,7 +487,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.3;
+				MARKETING_VERSION = 0.0.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -529,7 +533,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -543,7 +547,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.3;
+				MARKETING_VERSION = 0.0.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

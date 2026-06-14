@@ -54,7 +54,8 @@ BelloBox/
 │       ├── ActionPopupView.swift             # the AI popup (SwiftUI)
 │       ├── ActionPopupViewModel.swift        # runs AI actions, streams result
 │       ├── QRCodePopupView.swift             # the QR popup + view model (editable text, copy/save)
-│       ├── TextToolsPopupView.swift          # the text-tools popup + view model
+│       ├── TextToolsPopupView.swift          # the text-tools popup + view model (inline token-model picker)
+│       ├── Theme.swift                       # design system: gradient, PopupHeader, popupCard, button styles, appear animation
 │       ├── OnboardingView.swift              # first-run flow (welcome → permission → provider → done)
 │       ├── OnboardingWindowController.swift  # hosts onboarding in a window
 │       └── SettingsView.swift                # provider/endpoint/key/model/prompt UI

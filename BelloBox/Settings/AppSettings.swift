@@ -1,6 +1,28 @@
 import Foundation
 import Combine
 
+enum AppearancePreference: String, CaseIterable, Identifiable {
+    case system
+    case light
+    case dark
+
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .system: return "System"
+        case .light: return "Light"
+        case .dark: return "Dark"
+        }
+    }
+    var symbol: String {
+        switch self {
+        case .system: return "circle.lefthalf.filled"
+        case .light: return "sun.max"
+        case .dark: return "moon"
+        }
+    }
+}
+
 /// User-facing configuration, persisted to UserDefaults (API keys go to the
 /// Keychain). Per-provider base URL / model are kept independently so switching
 /// providers does not lose the other configuration.
@@ -18,6 +40,7 @@ final class AppSettings: ObservableObject {
         static let systemPrompt = "systemPrompt"
         static let floatingButtonEnabled = "floatingButtonEnabled"
         static let hasCompletedSetup = "hasCompletedSetup"
+        static let appearance = "appearance"
     }
 
     static let defaultSystemPrompt = """
@@ -42,6 +65,7 @@ final class AppSettings: ObservableObject {
     @Published var anthropicModel: String { didSet { defaults.set(anthropicModel, forKey: Keys.anthropicModel) } }
     @Published var systemPrompt: String { didSet { defaults.set(systemPrompt, forKey: Keys.systemPrompt) } }
     @Published var floatingButtonEnabled: Bool { didSet { defaults.set(floatingButtonEnabled, forKey: Keys.floatingButtonEnabled) } }
+    @Published var appearance: AppearancePreference { didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) } }
 
     /// API key for the currently-selected provider. Persisted to the Keychain.
     @Published var apiKey: String {
@@ -63,6 +87,7 @@ final class AppSettings: ObservableObject {
         anthropicModel = defaults.string(forKey: Keys.anthropicModel) ?? ProviderKind.anthropic.defaultModel
         systemPrompt = defaults.string(forKey: Keys.systemPrompt) ?? Self.defaultSystemPrompt
         floatingButtonEnabled = (defaults.object(forKey: Keys.floatingButtonEnabled) as? Bool) ?? true
+        appearance = AppearancePreference(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         apiKey = KeychainStore.get(account: KeychainStore.account(for: kind)) ?? ""
     }
 

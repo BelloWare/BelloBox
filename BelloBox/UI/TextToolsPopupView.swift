@@ -33,10 +33,9 @@ final class TextToolsPopupViewModel: ObservableObject {
     @Published var decodeFormat: TextDecoder.Format = .auto
     @Published var lineOp: LineTool.Operation = .sortAscending
 
-    let model: String
-    let provider: ProviderKind
     private let selection: TextSelection
     private let accessibility: AccessibilityService
+    private let settings: AppSettings
 
     var onClose: () -> Void = {}
 
@@ -44,9 +43,11 @@ final class TextToolsPopupViewModel: ObservableObject {
         self.selection = selection
         self.input = selection.text
         self.accessibility = accessibility
-        self.model = settings.currentConfig.model
-        self.provider = settings.providerKind
+        self.settings = settings
     }
+
+    var model: String { settings.currentConfig.model }
+    var provider: ProviderKind { settings.providerKind }
 
     // Outputs
     var caseOutput: String { CaseConverter.convert(input, to: caseStyle) }
@@ -98,9 +99,10 @@ final class TextToolsPopupViewModel: ObservableObject {
 }
 
 struct TextToolsPopupView: View {
-    static let preferredSize = CGSize(width: 404, height: 548)
+    static let preferredSize = CGSize(width: 404, height: 560)
 
     @ObservedObject var viewModel: TextToolsPopupViewModel
+    @ObservedObject var settings: AppSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -113,23 +115,13 @@ struct TextToolsPopupView: View {
         }
         .padding(16)
         .frame(width: Self.preferredSize.width, height: Self.preferredSize.height, alignment: .topLeading)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.regularMaterial))
-        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.primary.opacity(0.08), lineWidth: 1))
+        .popupCard()
+        .appearPop()
         .onExitCommand { viewModel.close() }
     }
 
     private var header: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "wrench.and.screwdriver")
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(BoxTheme.accent)
-            Text("Text Tools").font(.headline)
-            Spacer()
-            Button { viewModel.close() } label: {
-                Image(systemName: "xmark.circle.fill").font(.system(size: 14)).foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-        }
+        PopupHeader(icon: "wrench.and.screwdriver", title: "Text Tools") { viewModel.close() }
     }
 
     private var categoryBar: some View {
@@ -256,15 +248,71 @@ struct TextToolsPopupView: View {
     }
 
     private var countContent: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             ForEach(viewModel.stats, id: \.0) { label, value in
                 statRow(label, value)
             }
             statRow("≈ Tokens", "\(viewModel.tokenEstimate)", accent: true)
-            Text("Estimate for \(viewModel.modelLabel) · \(viewModel.tokenFamily). Change the model in Settings.")
+
+            modelControl
+
+            Text("Token estimate for \(viewModel.modelLabel) · \(viewModel.tokenFamily).")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var modelControl: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Token model").font(.caption2.bold()).foregroundStyle(.secondary)
+            Picker("Provider", selection: $settings.providerKind) {
+                Text("OpenAI").tag(ProviderKind.openAI)
+                Text("Anthropic").tag(ProviderKind.anthropic)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+
+            HStack(spacing: 6) {
+                TextField("model", text: modelBinding)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.callout)
+                    .autocorrectionDisabled()
+                Menu {
+                    ForEach(presetModels, id: \.self) { name in
+                        Button(name) { setModel(name) }
+                    }
+                } label: {
+                    Image(systemName: "chevron.down.circle.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(BoxTheme.accent)
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("Pick a common model")
+            }
+        }
+        .toolPanel()
+    }
+
+    private var modelBinding: Binding<String> {
+        switch settings.providerKind {
+        case .openAI: return $settings.openAIModel
+        case .anthropic: return $settings.anthropicModel
+        }
+    }
+
+    private var presetModels: [String] {
+        switch settings.providerKind {
+        case .openAI: return ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1", "o3-mini", "gpt-3.5-turbo"]
+        case .anthropic: return ["claude-3-5-haiku-latest", "claude-3-5-sonnet-latest", "claude-3-7-sonnet-latest", "claude-3-opus-latest"]
+        }
+    }
+
+    private func setModel(_ name: String) {
+        switch settings.providerKind {
+        case .openAI: settings.openAIModel = name
+        case .anthropic: settings.anthropicModel = name
         }
     }
 
@@ -312,8 +360,10 @@ struct TextToolsPopupView: View {
             HStack {
                 Spacer()
                 Button { viewModel.copy(text) } label: { Label("Copy", systemImage: "doc.on.doc") }
+                    .buttonStyle(SecondaryButtonStyle())
                     .disabled(text.isEmpty)
                 Button { viewModel.replace(text) } label: { Label("Replace", systemImage: "arrow.left.arrow.right") }
+                    .buttonStyle(PrimaryButtonStyle())
                     .disabled(text.isEmpty)
             }
         }

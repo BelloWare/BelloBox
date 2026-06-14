@@ -90,6 +90,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
+        applyAppearance(settings.appearance)
+        settings.$appearance
+            .receive(on: RunLoop.main)
+            .sink { [weak self] preference in self?.applyAppearance(preference) }
+            .store(in: &cancellables)
+
         let overlay = SelectionOverlayController(settings: settings)
         overlay.openSettings = { AppDelegate.openSettingsWindow() }
         overlay.start()
@@ -113,6 +119,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         onboarding.show(settings: settings) { [weak self] in
             // Re-establish monitors as soon as Accessibility is granted.
             self?.overlay?.restartMonitors()
+        }
+    }
+
+    private func applyAppearance(_ preference: AppearancePreference) {
+        switch preference {
+        case .system: NSApp.appearance = nil
+        case .light: NSApp.appearance = NSAppearance(named: .aqua)
+        case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
         }
     }
 

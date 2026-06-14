@@ -20,6 +20,7 @@ struct SettingsView: View {
         Form {
             providerSection
             promptSection
+            appearanceSection
             behaviorSection
             permissionSection
         }
@@ -103,6 +104,20 @@ struct SettingsView: View {
                 .frame(minHeight: 90)
             Button("Reset to default") { settings.resetSystemPrompt() }
                 .font(.caption)
+        }
+    }
+
+    private var appearanceSection: some View {
+        Section("Appearance") {
+            Picker("Theme", selection: $settings.appearance) {
+                ForEach(AppearancePreference.allCases) { preference in
+                    Label(preference.label, systemImage: preference.symbol).tag(preference)
+                }
+            }
+            .pickerStyle(.segmented)
+            Text("Follow the system setting, or force Light or Dark for BelloBox.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
     }
 

@@ -56,28 +56,13 @@ struct QRCodePopupView: View {
         }
         .padding(16)
         .frame(width: Self.preferredSize.width, height: Self.preferredSize.height, alignment: .topLeading)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.regularMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.primary.opacity(0.08), lineWidth: 1)
-        )
+        .popupCard()
+        .appearPop()
         .onExitCommand { viewModel.close() }
     }
 
     private var header: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "qrcode")
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(BoxTheme.accent)
-            Text("QR Code").font(.headline)
-            Spacer()
-            Button { viewModel.close() } label: {
-                Image(systemName: "xmark.circle.fill").font(.system(size: 14)).foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .help("Close")
-        }
+        PopupHeader(icon: "qrcode", title: "QR Code") { viewModel.close() }
     }
 
     @ViewBuilder
@@ -128,8 +113,10 @@ struct QRCodePopupView: View {
                 .foregroundStyle(viewModel.isTooLong ? .red : .secondary)
             Spacer()
             Button { viewModel.save() } label: { Label("Save…", systemImage: "square.and.arrow.down") }
+                .buttonStyle(SecondaryButtonStyle())
                 .disabled(viewModel.image == nil)
             Button { viewModel.copyImage() } label: { Label("Copy", systemImage: "doc.on.doc") }
+                .buttonStyle(PrimaryButtonStyle())
                 .disabled(viewModel.image == nil)
         }
     }

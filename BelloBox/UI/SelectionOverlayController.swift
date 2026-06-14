@@ -215,7 +215,7 @@ final class SelectionOverlayController: NSObject {
     private func showTextToolsPopup(for selection: TextSelection) {
         let viewModel = TextToolsPopupViewModel(selection: selection, settings: settings, accessibility: accessibility)
         viewModel.onClose = { [weak self] in self?.hidePopup() }
-        present(TextToolsPopupView(viewModel: viewModel), size: TextToolsPopupView.preferredSize, anchorRect: selection.anchorRect)
+        present(TextToolsPopupView(viewModel: viewModel, settings: settings), size: TextToolsPopupView.preferredSize, anchorRect: selection.anchorRect)
     }
 
     private func present<V: View>(_ view: V, size: CGSize, anchorRect: CGRect?) {
