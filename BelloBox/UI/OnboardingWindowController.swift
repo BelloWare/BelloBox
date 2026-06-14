@@ -32,7 +32,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         window.isReleasedWhenClosed = false
         window.delegate = self
         // Size before centering so the window lands in the middle of the screen.
-        window.setContentSize(NSSize(width: 560, height: 600))
+        window.setContentSize(NSSize(width: 680, height: 720))
         window.center()
         self.window = window
 

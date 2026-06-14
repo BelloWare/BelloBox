@@ -64,6 +64,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        applyApplicationIcon()
         configureUpdater()
 
         applyAppearance(settings.appearance)
@@ -153,6 +154,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .light: NSApp.appearance = NSAppearance(named: .aqua)
         case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
         }
+    }
+
+    private func applyApplicationIcon() {
+        let rawName = (Bundle.main.object(forInfoDictionaryKey: "CFBundleIconFile") as? String) ?? "AppIcon"
+        let iconName = rawName.replacingOccurrences(of: ".icns", with: "")
+        guard
+            let url = Bundle.main.url(forResource: iconName, withExtension: "icns"),
+            let image = NSImage(contentsOf: url)
+        else { return }
+        NSApp.applicationIconImage = image
     }
 
     // MARK: - Sparkle configuration validation

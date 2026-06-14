@@ -10,22 +10,22 @@ enum BoxTheme {
 /// The floating toolbar that appears next to a fresh text selection. It offers
 /// the available tools (AI actions and QR code) without stealing focus.
 struct FloatingToolbarView: View {
-    static let preferredSize = CGSize(width: 132, height: 46)
+    static let preferredSize = CGSize(width: 156, height: 52)
 
     var onAI: () -> Void
     var onQR: () -> Void
     var onTools: () -> Void
 
     var body: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: 4) {
             ToolIcon(symbol: "wand.and.stars", help: "Ask BelloBox AI about the selection", action: onAI)
             divider
             ToolIcon(symbol: "qrcode", help: "Generate a QR code from the selection", action: onQR)
             divider
             ToolIcon(symbol: "wrench.and.screwdriver", help: "Text tools (case, encode, hash, count…)", action: onTools)
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 5)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
         .background(
             Capsule().fill(
                 LinearGradient(colors: [BoxTheme.accent, BoxTheme.accentDeep], startPoint: .top, endPoint: .bottom)
@@ -37,7 +37,7 @@ struct FloatingToolbarView: View {
     }
 
     private var divider: some View {
-        Rectangle().fill(.white.opacity(0.28)).frame(width: 1, height: 18)
+        Rectangle().fill(.white.opacity(0.28)).frame(width: 1, height: 22)
     }
 }
 
@@ -51,9 +51,9 @@ private struct ToolIcon: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.white)
-                .frame(width: 32, height: 28)
+                .frame(width: 38, height: 32)
                 .background(
                     RoundedRectangle(cornerRadius: 7, style: .continuous)
                         .fill(.white.opacity(hovering ? 0.22 : 0))

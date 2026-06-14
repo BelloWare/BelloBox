@@ -19,14 +19,14 @@ struct OnboardingView: View {
         VStack(spacing: 0) {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(28)
+                .padding(34)
 
             Divider()
             footer
-                .padding(.horizontal, 24)
-                .padding(.vertical, 14)
+                .padding(.horizontal, 28)
+                .padding(.vertical, 16)
         }
-        .frame(width: 560, height: 600)
+        .frame(width: 680, height: 720)
         .onReceive(poll) { _ in
             let now = AccessibilityService.isTrusted
             if now != trusted {
@@ -52,7 +52,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 18) {
             appBadge
             Text("Welcome to BelloBox")
-                .font(.system(size: 26, weight: .bold))
+                .font(.system(size: 32, weight: .bold))
             Text("BelloBox is a little toolbox for whatever text you already have in front of you — in any app.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
@@ -122,7 +122,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 18) {
             appBadge
             Text("You're all set")
-                .font(.system(size: 26, weight: .bold))
+                .font(.system(size: 32, weight: .bold))
             Text("Select text in any app, then click the BelloBox button that appears — or press ⌃⌥⌘B to summon it on the current selection.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
@@ -182,10 +182,10 @@ struct OnboardingView: View {
     private var appBadge: some View {
         Group {
             if let icon = NSApp.applicationIconImage {
-                Image(nsImage: icon).resizable().frame(width: 72, height: 72)
+                Image(nsImage: icon).resizable().frame(width: 88, height: 88)
             } else {
                 Image(systemName: "wand.and.stars")
-                    .font(.system(size: 40))
+                    .font(.system(size: 48))
                     .foregroundStyle(BoxTheme.accent)
             }
         }
@@ -194,7 +194,7 @@ struct OnboardingView: View {
     private func stepHeader(_ title: String, systemImage: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: systemImage).font(.title2).foregroundStyle(BoxTheme.accent)
-            Text(title).font(.system(size: 22, weight: .bold))
+            Text(title).font(.system(size: 26, weight: .bold))
         }
     }
 

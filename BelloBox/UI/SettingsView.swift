@@ -19,7 +19,7 @@ struct SettingsView: View {
             permissionSection
         }
         .formStyle(.grouped)
-        .frame(width: 540, height: 640)
+        .frame(width: 640, height: 720)
         .onReceive(permissionTimer) { _ in
             accessibilityTrusted = AccessibilityService.isTrusted
         }

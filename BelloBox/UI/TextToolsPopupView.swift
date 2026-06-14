@@ -99,7 +99,7 @@ final class TextToolsPopupViewModel: ObservableObject {
 }
 
 struct TextToolsPopupView: View {
-    static let preferredSize = CGSize(width: 560, height: 660)
+    static let preferredSize = CGSize(width: 720, height: 760)
 
     @ObservedObject var viewModel: TextToolsPopupViewModel
     @ObservedObject var settings: AppSettings
@@ -125,7 +125,7 @@ struct TextToolsPopupView: View {
     }
 
     private var categoryBar: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 84), spacing: 6)], alignment: .leading, spacing: 6) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 8)], alignment: .leading, spacing: 8) {
             ForEach(TextToolsPopupViewModel.Category.allCases) { category in
                 let selected = viewModel.category == category
                 Button {
@@ -154,7 +154,7 @@ struct TextToolsPopupView: View {
             TextEditor(text: $viewModel.input)
                 .font(.callout)
                 .scrollContentBackground(.hidden)
-                .frame(height: 96)
+                .frame(height: 120)
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
         }
@@ -229,7 +229,7 @@ struct TextToolsPopupView: View {
         VStack(alignment: .leading, spacing: 6) {
             ForEach(viewModel.hashes, id: \.0) { algorithm, value in
                 HStack(spacing: 8) {
-                    Text(algorithm.rawValue).font(.caption.bold()).frame(width: 64, alignment: .leading)
+                    Text(algorithm.rawValue).font(.caption.bold()).frame(width: 80, alignment: .leading)
                     Text(value)
                         .font(.system(.caption, design: .monospaced))
                         .lineLimit(1)
@@ -326,7 +326,7 @@ struct TextToolsPopupView: View {
         label: @escaping (T) -> String,
         action: @escaping (T) -> Void
     ) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 6)], alignment: .leading, spacing: 6) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], alignment: .leading, spacing: 8) {
             ForEach(options) { option in
                 let selected = isSelected(option)
                 Button { action(option) } label: {
@@ -355,7 +355,7 @@ struct TextToolsPopupView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
-            .frame(height: 220)
+            .frame(height: 300)
             .padding(8)
             .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
 

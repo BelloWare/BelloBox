@@ -28,7 +28,7 @@ struct MainView: View {
             actions
         }
         .padding(24)
-        .frame(width: 460, height: 540)
+        .frame(width: 600, height: 640)
         .onReceive(timer) { _ in trusted = AccessibilityService.isTrusted }
     }
 
@@ -36,7 +36,7 @@ struct MainView: View {
         HStack(spacing: 14) {
             appIcon
             VStack(alignment: .leading, spacing: 2) {
-                Text("BelloBox").font(.system(size: 24, weight: .bold))
+                Text("BelloBox").font(.system(size: 30, weight: .bold))
                 Text(versionText).font(.caption).foregroundStyle(.secondary)
                 Text("A toolbox for the text you've selected.")
                     .font(.subheadline).foregroundStyle(.secondary)
@@ -48,11 +48,11 @@ struct MainView: View {
     private var appIcon: some View {
         Group {
             if let icon = NSApp.applicationIconImage {
-                Image(nsImage: icon).resizable().frame(width: 64, height: 64)
+                Image(nsImage: icon).resizable().frame(width: 80, height: 80)
             } else {
                 Image(systemName: "wand.and.stars")
                     .font(.system(size: 34)).foregroundStyle(BoxTheme.accent)
-                    .frame(width: 64, height: 64)
+                    .frame(width: 80, height: 80)
                     .background(RoundedRectangle(cornerRadius: 14).fill(BoxTheme.accentSoft))
             }
         }
