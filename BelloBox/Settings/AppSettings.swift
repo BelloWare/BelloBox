@@ -43,6 +43,7 @@ final class AppSettings: ObservableObject {
         static let appearance = "appearance"
         static let codexPath = "codexPath"
         static let codexModel = "codexModel"
+        static let codexReasoningEffort = "codexReasoningEffort"
     }
 
     static let defaultSystemPrompt = """
@@ -70,6 +71,7 @@ final class AppSettings: ObservableObject {
     @Published var appearance: AppearancePreference { didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) } }
     @Published var codexPath: String { didSet { defaults.set(codexPath, forKey: Keys.codexPath) } }
     @Published var codexModel: String { didSet { defaults.set(codexModel, forKey: Keys.codexModel) } }
+    @Published var codexReasoningEffort: String { didSet { defaults.set(codexReasoningEffort, forKey: Keys.codexReasoningEffort) } }
 
     /// API key for the currently-selected provider. Persisted to the Keychain.
     @Published var apiKey: String {
@@ -93,7 +95,14 @@ final class AppSettings: ObservableObject {
         floatingButtonEnabled = (defaults.object(forKey: Keys.floatingButtonEnabled) as? Bool) ?? true
         appearance = AppearancePreference(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         codexPath = defaults.string(forKey: Keys.codexPath) ?? ""
-        codexModel = defaults.string(forKey: Keys.codexModel) ?? ""
+        let storedCodexModel = defaults.string(forKey: Keys.codexModel) ?? ""
+        codexModel = storedCodexModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? CodexCLI.defaultModel
+            : storedCodexModel
+        let storedEffort = defaults.string(forKey: Keys.codexReasoningEffort) ?? ""
+        codexReasoningEffort = CodexCLI.reasoningEfforts.contains(storedEffort)
+            ? storedEffort
+            : CodexCLI.defaultReasoningEffort
         apiKey = KeychainStore.get(account: KeychainStore.account(for: kind)) ?? ""
     }
 
@@ -105,7 +114,14 @@ final class AppSettings: ObservableObject {
         case .anthropic:
             return AIConfig(kind: .anthropic, baseURL: anthropicBaseURL, model: anthropicModel, apiKey: apiKey, systemPrompt: systemPrompt)
         case .codexCLI:
-            return AIConfig(kind: .codexCLI, baseURL: codexPath, model: codexModel, apiKey: "", systemPrompt: systemPrompt)
+            return AIConfig(
+                kind: .codexCLI,
+                baseURL: codexPath,
+                model: codexModel,
+                apiKey: "",
+                systemPrompt: systemPrompt,
+                codexReasoningEffort: codexReasoningEffort
+            )
         }
     }
 

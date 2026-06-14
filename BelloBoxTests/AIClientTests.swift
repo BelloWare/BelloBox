@@ -114,7 +114,7 @@ final class AIClientTests: XCTestCase {
 
     func testCodexConfigAlwaysUsable() {
         var c = AIConfig(kind: .codexCLI, baseURL: "", model: "", apiKey: "", systemPrompt: "")
-        XCTAssertTrue(c.isUsable) // Codex resolves `codex` from the shell
+        XCTAssertTrue(c.isUsable) // Codex app-server resolves `codex` from the shell.
         c.baseURL = "/usr/local/bin/codex"
         XCTAssertTrue(c.isUsable)
     }
@@ -130,17 +130,71 @@ final class AIClientTests: XCTestCase {
         XCTAssertEqual(AIClient.shellQuote("a'b"), "'a'\\''b'")
     }
 
-    func testIsCodexConfigError() {
-        XCTAssertTrue(AIClient.isCodexConfigError("Error loading config.toml: unknown variant `priority`, expected `fast` or `flex`"))
-        XCTAssertTrue(AIClient.isCodexConfigError("unknown field `foo`"))
-        XCTAssertFalse(AIClient.isCodexConfigError("command not found: codex"))
-        XCTAssertFalse(AIClient.isCodexConfigError("401 Unauthorized"))
+    func testCodexAppServerCommand() {
+        XCTAssertEqual(CodexAppServerClient.appServerCommand(""), "codex app-server --stdio")
+        XCTAssertEqual(CodexAppServerClient.appServerCommand("/Users/me/bin/codex"), "'/Users/me/bin/codex' app-server --stdio")
     }
 
-    func testCodexPromptCombinesSystemAndUser() {
-        XCTAssertTrue(AIClient.codexPrompt(system: "be terse", user: "hi").hasPrefix("be terse\n\nhi"))
-        XCTAssertTrue(AIClient.codexPrompt(system: "   ", user: "hi").hasPrefix("hi"))
-        XCTAssertTrue(AIClient.codexPrompt(system: "", user: "hi").contains("Output only"))
+    func testCodexDeveloperInstructions() {
+        let instructions = CodexAppServerClient.developerInstructions(system: "be terse")
+        XCTAssertTrue(instructions.hasPrefix("be terse\n\n"))
+        XCTAssertTrue(instructions.contains("Output only"))
+    }
+
+    func testCodexThreadStartParamsPassModelAndInstructions() throws {
+        var c = AIConfig(kind: .codexCLI, baseURL: "", model: "gpt-5-codex", apiKey: "", systemPrompt: "be terse")
+        c.codexReasoningEffort = "high"
+        let params = CodexAppServerClient.threadStartParams(config: c, cwd: "/tmp")
+        XCTAssertEqual(params["model"] as? String, "gpt-5-codex")
+        XCTAssertEqual(params["cwd"] as? String, "/tmp")
+        XCTAssertEqual(params["approvalPolicy"] as? String, "never")
+        XCTAssertEqual(params["sandbox"] as? String, "read-only")
+        XCTAssertEqual(params["ephemeral"] as? Bool, true)
+        XCTAssertTrue((params["developerInstructions"] as? String)?.contains("be terse") == true)
+    }
+
+    func testCodexTurnStartParamsPassEffortAndInput() throws {
+        var c = AIConfig(kind: .codexCLI, baseURL: "", model: "gpt-5-codex", apiKey: "", systemPrompt: "")
+        c.codexReasoningEffort = "xhigh"
+        let params = CodexAppServerClient.turnStartParams(threadId: "t-1", config: c, userText: "hello", cwd: "/tmp")
+        XCTAssertEqual(params["threadId"] as? String, "t-1")
+        XCTAssertEqual(params["model"] as? String, "gpt-5-codex")
+        XCTAssertEqual(params["effort"] as? String, "xhigh")
+        let input = try XCTUnwrap(params["input"] as? [[String: Any]])
+        XCTAssertEqual(input.first?["type"] as? String, "text")
+        XCTAssertEqual(input.first?["text"] as? String, "hello")
+        let sandbox = try XCTUnwrap(params["sandboxPolicy"] as? [String: Any])
+        XCTAssertEqual(sandbox["type"] as? String, "readOnly")
+        XCTAssertEqual(sandbox["networkAccess"] as? Bool, true)
+    }
+
+    func testCodexAppServerParsesStreamingNotifications() throws {
+        let delta = try XCTUnwrap(CodexAppServerClient.jsonObject(from: #"{"method":"item/agentMessage/delta","params":{"delta":"Hi"}}"#))
+        XCTAssertEqual(CodexAppServerClient.agentMessageDelta(from: delta), "Hi")
+
+        let completed = try XCTUnwrap(CodexAppServerClient.jsonObject(from: #"{"method":"item/completed","params":{"item":{"type":"agentMessage","text":"Hi there"}}}"#))
+        XCTAssertEqual(CodexAppServerClient.completedAgentMessage(from: completed), "Hi there")
+
+        let turn = try XCTUnwrap(CodexAppServerClient.jsonObject(from: #"{"method":"turn/completed","params":{"turn":{"status":"completed"}}}"#))
+        XCTAssertEqual(CodexAppServerClient.turnCompletion(from: turn)?.status, "completed")
+    }
+
+    func testCodexAppServerParsesThreadAndErrors() throws {
+        let response = try XCTUnwrap(CodexAppServerClient.jsonObject(
+            from: #"{"id":2,"result":{"thread":{"id":"thread-1"}}}"#
+        ))
+        XCTAssertEqual(CodexAppServerClient.threadID(from: response), "thread-1")
+
+        let error = try XCTUnwrap(CodexAppServerClient.jsonObject(
+            from: #"{"id":1,"error":{"message":"boom"}}"#
+        ))
+        XCTAssertEqual(CodexAppServerClient.jsonRPCErrorMessage(error), "boom")
+    }
+
+    func testCodexDefaultsFillBlankModelAndEffort() {
+        let c = AIConfig(kind: .codexCLI, baseURL: "", model: " ", apiKey: "", systemPrompt: "", codexReasoningEffort: "")
+        XCTAssertEqual(CodexAppServerClient.resolvedModel(c), CodexCLI.defaultModel)
+        XCTAssertEqual(CodexAppServerClient.resolvedReasoningEffort(c), CodexCLI.defaultReasoningEffort)
     }
 
     func testParseModelList() {

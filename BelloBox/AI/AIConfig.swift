@@ -15,7 +15,7 @@ enum ProviderKind: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .openAI: return "OpenAI-compatible"
         case .anthropic: return "Anthropic-compatible"
-        case .codexCLI: return "Codex CLI"
+        case .codexCLI: return "Codex app-server"
         }
     }
 
@@ -53,6 +53,7 @@ struct AIConfig: Equatable {
     var apiKey: String
     var systemPrompt: String
     var maxTokens: Int = 2048
+    var codexReasoningEffort: String = "medium"
 
     var isUsable: Bool {
         switch kind {

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Shared provider configuration UI used in Settings and onboarding: pick a
 /// provider, fill its fields, load its model list, pick a model, and run a
-/// "say hi" connection test. Handles OpenAI, Anthropic, and the Codex CLI.
+/// "say hi" connection test. Handles OpenAI, Anthropic, and Codex app-server.
 struct ProviderConfigView: View {
     @ObservedObject var settings: AppSettings
 
@@ -39,6 +39,9 @@ struct ProviderConfigView: View {
             }
 
             modelRow
+            if settings.providerKind == .codexCLI {
+                codexReasoningRow
+            }
             testRow
 
             Text(hint)
@@ -118,6 +121,17 @@ struct ProviderConfigView: View {
         }
     }
 
+    private var codexReasoningRow: some View {
+        labeledField("Reasoning") {
+            Picker("Reasoning", selection: $settings.codexReasoningEffort) {
+                ForEach(CodexCLI.reasoningEfforts, id: \.self) { effort in
+                    Text(effortLabel(effort)).tag(effort)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+    }
+
     private var testRow: some View {
         HStack(spacing: 10) {
             Button {
@@ -164,7 +178,7 @@ struct ProviderConfigView: View {
     }
 
     private var modelPlaceholder: String {
-        settings.providerKind == .codexCLI ? "default (from codex config)" : "Model name"
+        settings.providerKind == .codexCLI ? CodexCLI.defaultModel : "Model name"
     }
 
     private var fallbackModels: [String] {
@@ -182,7 +196,7 @@ struct ProviderConfigView: View {
         case .anthropic:
             return "POST {endpoint}/messages with an x-api-key header. Use Load to fetch models from /models."
         case .codexCLI:
-            return "Runs your local `codex` via your login shell, so it matches your terminal and uses your existing Codex login — no API key needed. Leave the command as codex unless you need a specific binary; leave the model blank to use your codex config default."
+            return "Runs `codex app-server` through your login shell and uses your existing Codex login. BelloBox passes the selected model, reasoning effort, sandbox, and approval policy on each request."
         }
     }
 
@@ -198,6 +212,13 @@ struct ProviderConfigView: View {
 
     private func setModel(_ name: String) {
         modelBinding.wrappedValue = name
+    }
+
+    private func effortLabel(_ effort: String) -> String {
+        switch effort {
+        case "xhigh": return "XHigh"
+        default: return effort.capitalized
+        }
     }
 
     private func loadModels() {

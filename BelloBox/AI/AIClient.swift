@@ -29,7 +29,7 @@ final class AIClient {
         onDelta: @escaping (String) -> Void
     ) async throws {
         if config.kind == .codexCLI {
-            try await runCodex(config: config, userText: userText, onDelta: onDelta)
+            try await CodexAppServerClient().stream(config: config, userText: userText, onDelta: onDelta)
             return
         }
         guard !config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -102,16 +102,7 @@ final class AIClient {
         return buffer
     }
 
-    // MARK: - Codex CLI
-
-    static func codexPrompt(system: String, user: String) -> String {
-        let trimmed = system.trimmingCharacters(in: .whitespacesAndNewlines)
-        let base = trimmed.isEmpty ? user : "\(trimmed)\n\n\(user)"
-        // Codex is an agent; without a firm directive it tends to describe the
-        // task instead of performing it. Force a bare result.
-        return base + "\n\nIMPORTANT: Output only the resulting text itself. Do not "
-            + "explain, do not comment, do not ask questions, and do not use code fences."
-    }
+    // MARK: - Codex app-server
 
     static func shellQuote(_ string: String) -> String {
         "'" + string.replacingOccurrences(of: "'", with: "'\\''") + "'"
@@ -123,108 +114,6 @@ final class AIClient {
         let trimmed = pathOrCommand.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty || trimmed == "codex" { return "codex" }
         return shellQuote(trimmed)
-    }
-
-    static func isCodexConfigError(_ message: String) -> Bool {
-        let lower = message.lowercased()
-        return lower.contains("config.toml") || lower.contains("unknown variant") || lower.contains("unknown field")
-    }
-
-    /// Runs `codex exec` through the user's login shell so it uses the same
-    /// `codex` (and config) as their terminal. If the user's `config.toml` is
-    /// incompatible with that codex, retries with an isolated `CODEX_HOME` that
-    /// preserves their login but ignores the broken config. The prompt is piped
-    /// via stdin, and the whole result arrives in one `onDelta` call.
-    private func runCodex(config: AIConfig, userText: String, onDelta: @escaping (String) -> Void) async throws {
-        let tmp = URL(fileURLWithPath: NSTemporaryDirectory())
-        let outURL = tmp.appendingPathComponent("bellobox-codex-out-\(UUID().uuidString).txt")
-        let errURL = tmp.appendingPathComponent("bellobox-codex-err-\(UUID().uuidString).txt")
-        FileManager.default.createFile(atPath: outURL.path, contents: nil)
-        FileManager.default.createFile(atPath: errURL.path, contents: nil)
-        defer {
-            try? FileManager.default.removeItem(at: outURL)
-            try? FileManager.default.removeItem(at: errURL)
-        }
-
-        var codexCommand = "\(Self.codexInvocation(config.baseURL)) exec --skip-git-repo-check -s read-only -o \(Self.shellQuote(outURL.path))"
-        let model = config.model.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !model.isEmpty { codexCommand += " -m \(Self.shellQuote(model))" }
-        codexCommand += " -" // read the prompt from stdin
-
-        let prompt = Self.codexPrompt(system: config.systemPrompt, user: userText)
-
-        do {
-            let text = try await executeCodexShell(command: codexCommand, prompt: prompt, outURL: outURL, errURL: errURL)
-            onDelta(text)
-        } catch let error as AIError {
-            guard case let .transport(message) = error, Self.isCodexConfigError(message) else { throw error }
-            // The user's config.toml is incompatible with this codex. Retry with
-            // a clean CODEX_HOME that links their login/sessions but a fresh config.
-            let cleanCommand = """
-            __BB_HOME="$(mktemp -d)"
-            __BB_REAL="${CODEX_HOME:-$HOME/.codex}"
-            for f in "$__BB_REAL"/*; do bn="$(basename "$f")"; [ "$bn" = "config.toml" ] || ln -sf "$f" "$__BB_HOME/$bn"; done 2>/dev/null
-            : > "$__BB_HOME/config.toml"
-            CODEX_HOME="$__BB_HOME" \(codexCommand)
-            __BB_RC=$?
-            rm -rf "$__BB_HOME"
-            exit $__BB_RC
-            """
-            let text = try await executeCodexShell(command: cleanCommand, prompt: prompt, outURL: outURL, errURL: errURL)
-            onDelta(text)
-        }
-    }
-
-    /// Runs one codex shell command, feeding `prompt` on stdin and returning the
-    /// final message (or throwing `AIError.transport`).
-    private func executeCodexShell(command: String, prompt: String, outURL: URL, errURL: URL) async throws -> String {
-        try? Data().write(to: outURL)
-        try? Data().write(to: errURL)
-
-        let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: shell)
-        // Login + interactive so version managers (nvm, etc.) put the user's
-        // codex on PATH, exactly like their terminal.
-        process.arguments = ["-l", "-i", "-c", command]
-        process.currentDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory())
-        process.environment = ProcessInfo.processInfo.environment
-
-        let stdinPipe = Pipe()
-        process.standardInput = stdinPipe
-        process.standardOutput = FileHandle.nullDevice
-        if let errHandle = try? FileHandle(forWritingTo: errURL) {
-            process.standardError = errHandle
-        }
-
-        return try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
-                process.terminationHandler = { proc in
-                    let text = ((try? String(contentsOf: outURL, encoding: .utf8)) ?? "")
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                    if proc.terminationStatus == 0, !text.isEmpty {
-                        continuation.resume(returning: text)
-                    } else {
-                        let errText = ((try? String(contentsOf: errURL, encoding: .utf8)) ?? "")
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                        let message = !text.isEmpty
-                            ? text
-                            : (errText.isEmpty ? "Codex exited with status \(proc.terminationStatus). Is the codex CLI installed and logged in?" : String(errText.suffix(700)))
-                        continuation.resume(throwing: AIError.transport(message))
-                    }
-                }
-                do {
-                    try process.run()
-                    let writer = stdinPipe.fileHandleForWriting
-                    writer.write(Data(prompt.utf8))
-                    try? writer.close()
-                } catch {
-                    continuation.resume(throwing: AIError.transport("Couldn't launch the shell to run Codex: \(error.localizedDescription)"))
-                }
-            }
-        } onCancel: {
-            process.terminate()
-        }
     }
 
     // MARK: - Model listing

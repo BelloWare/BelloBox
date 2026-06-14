@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		010389B759714F75DDC1DB16 /* CodexAppServerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1476FDA95694D11FCEF1741E /* CodexAppServerClient.swift */; };
 		03174A7583C8E8DB7CF6CE43 /* ProviderConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BE3499F82A9CB2A1166D030 /* ProviderConfigView.swift */; };
 		0B8C2FF396C390C38BDE5545 /* TextTransformsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41464E634659AD5A3498BFD /* TextTransformsTests.swift */; };
 		1D914ED112329C73E7671957 /* QRCodePopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA6AA1145263DFB4A33083D /* QRCodePopupView.swift */; };
@@ -52,6 +53,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1476FDA95694D11FCEF1741E /* CodexAppServerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAppServerClient.swift; sourceTree = "<group>"; };
 		1D24648C227942429D5E7B40 /* QRCodeGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeGeneratorTests.swift; sourceTree = "<group>"; };
 		31D451D118605E72B2E84CC6 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		324699B28FE869CBDD32B8CE /* BelloBoxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BelloBoxApp.swift; sourceTree = "<group>"; };
@@ -157,6 +159,7 @@
 			children = (
 				D6B603F0B5CD70E58101A9A9 /* AIClient.swift */,
 				415C8271C74675B6CC66CEF6 /* AIConfig.swift */,
+				1476FDA95694D11FCEF1741E /* CodexAppServerClient.swift */,
 				6987A826FEC30AE6E8F75509 /* QuickAction.swift */,
 			);
 			path = AI;
@@ -347,6 +350,7 @@
 				2AA6479C97C5FE9C82F84628 /* ActionPopupViewModel.swift in Sources */,
 				338B602DCCE19D3AB2F75EE0 /* AppSettings.swift in Sources */,
 				2443B0926179C89BD3A20DBC /* BelloBoxApp.swift in Sources */,
+				010389B759714F75DDC1DB16 /* CodexAppServerClient.swift in Sources */,
 				4CD21CD523F082696F720893 /* CodexCLI.swift in Sources */,
 				96AE93145223EBF41A799CA0 /* FloatingButtonView.swift in Sources */,
 				2ADE8976E7196C217D2CCEB3 /* FloatingPanel.swift in Sources */,
@@ -487,7 +491,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -507,7 +511,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.9;
+				MARKETING_VERSION = 0.0.10;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -553,7 +557,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -567,7 +571,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.9;
+				MARKETING_VERSION = 0.0.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -1,11 +1,14 @@
 import Foundation
 
-/// Helpers for the local Codex CLI (`codex exec`). Codex is invoked as a
-/// subprocess; it uses its own stored login, so no API key is needed.
+/// Helpers for the local Codex command. BelloBox talks to `codex app-server`
+/// over stdio; Codex uses its own stored login, so no API key is needed.
 enum CodexCLI {
-    /// Models Codex commonly supports. Codex has no list endpoint, so these are
-    /// presets; an empty model falls back to the user's codex config default.
-    static let presetModels = ["gpt-5.5", "gpt-5-codex", "gpt-5", "o4-mini", "o3", "gpt-4.1"]
+    /// Models and reasoning efforts Codex commonly supports. App-server has a
+    /// model list endpoint, but these presets keep settings useful offline.
+    static let defaultModel = "gpt-5.5"
+    static let presetModels = [defaultModel, "gpt-5-codex", "gpt-5", "o4-mini", "o3", "gpt-4.1"]
+    static let defaultReasoningEffort = "medium"
+    static let reasoningEfforts = ["low", "medium", "high", "xhigh"]
 
     static func candidatePaths() -> [String] {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
