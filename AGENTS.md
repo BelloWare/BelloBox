@@ -32,11 +32,13 @@ BelloBox/
 │   │   ├── AccessibilityService.swift   # AX read selection + bounds, ⌘C/⌘V helpers
 │   │   └── SelectionMonitor.swift       # global mouse-up + hotkey monitors
 │   └── UI/
-│       ├── SelectionOverlayController.swift  # orchestrates monitor → button → popup
+│       ├── SelectionOverlayController.swift  # orchestrates monitor → button → popup; restarts monitors on grant
 │       ├── FloatingPanel.swift               # non-activating NSPanel subclasses + placement
 │       ├── FloatingButtonView.swift          # the small floating button (SwiftUI)
 │       ├── ActionPopupView.swift             # the popup (SwiftUI)
 │       ├── ActionPopupViewModel.swift        # runs AI actions, streams result
+│       ├── OnboardingView.swift              # first-run flow (welcome → permission → provider → done)
+│       ├── OnboardingWindowController.swift  # hosts onboarding in a window
 │       └── SettingsView.swift                # provider/endpoint/key/model/prompt UI
 ├── BelloBoxTests/                  # unit tests (request building + SSE parsing)
 └── scripts/
@@ -55,6 +57,12 @@ BelloBox/
 - Sparkle: shared EdDSA public key `slSJ7z2j8RDa266+E/7To5AOOloc2YtiMUZUVEIhwNA=`
   (private key lives in the login keychain, `acct=ed25519`,
   `svce=https://sparkle-project.org`). Feed: `https://belloware.com/assets/bello_box.appcast.xml`.
+- First launch shows `OnboardingView`; it is reopenable from the menu bar
+  ("Set Up BelloBox…").
+- Gotcha: a global keyboard monitor only receives events once the process is
+  Accessibility-trusted. `SelectionOverlayController` watches the trust state and
+  calls `restartMonitors()` when access is granted while running, so the ⌃⌥⌘B
+  hotkey works without relaunching.
 
 ## Building
 

@@ -16,6 +16,8 @@ final class SelectionOverlayController {
     private var popupDismissMonitor: Any?
 
     private var pendingSelection: TextSelection?
+    private var trustWatcher: Timer?
+    private var lastTrusted = false
 
     /// Set by the app to open the Settings window.
     var openSettings: () -> Void = {}
@@ -32,6 +34,18 @@ final class SelectionOverlayController {
     }
 
     func start() {
+        lastTrusted = AccessibilityService.isTrusted
+        monitor.isEnabled = settings.floatingButtonEnabled
+        monitor.start()
+        // Keyboard monitoring only takes effect once the process is trusted, so
+        // re-establish the monitors when Accessibility is granted while running.
+        if !lastTrusted { startTrustWatcher() }
+    }
+
+    /// Tears down and re-installs the event monitors. Needed after Accessibility
+    /// is granted so the global keyboard monitor actually receives events.
+    func restartMonitors() {
+        monitor.stop()
         monitor.isEnabled = settings.floatingButtonEnabled
         monitor.start()
     }
@@ -39,6 +53,20 @@ final class SelectionOverlayController {
     func setFloatingButtonEnabled(_ enabled: Bool) {
         monitor.isEnabled = enabled
         if !enabled { hideButton() }
+    }
+
+    private func startTrustWatcher() {
+        trustWatcher?.invalidate()
+        trustWatcher = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            let trusted = AccessibilityService.isTrusted
+            if trusted, !self.lastTrusted {
+                self.lastTrusted = true
+                self.restartMonitors()
+                self.trustWatcher?.invalidate()
+                self.trustWatcher = nil
+            }
+        }
     }
 
     // MARK: - Selection handling

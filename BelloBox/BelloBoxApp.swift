@@ -41,6 +41,8 @@ struct BelloBoxApp: App {
 
         Divider()
 
+        Button("Set Up BelloBox…") { appDelegate.showOnboarding() }
+
         Button("Settings…") { AppDelegate.openSettingsWindow() }
             .keyboardShortcut(",", modifiers: .command)
 
@@ -72,9 +74,11 @@ struct BelloBoxApp: App {
     }
 }
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var overlay: SelectionOverlayController?
     private let settings = AppSettings.shared
+    private let onboarding = OnboardingWindowController()
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -90,15 +94,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak overlay] enabled in overlay?.setFloatingButtonEnabled(enabled) }
             .store(in: &cancellables)
 
-        if !AccessibilityService.isTrusted {
+        if !settings.hasCompletedSetup {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                self?.showOnboarding()
+            }
+        } else if !AccessibilityService.isTrusted {
             AccessibilityService.requestPermissionPrompt()
         }
+    }
 
-        if !settings.hasCompletedSetup {
-            settings.hasCompletedSetup = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                AppDelegate.openSettingsWindow()
-            }
+    func showOnboarding() {
+        onboarding.show(settings: settings) { [weak self] in
+            // Re-establish monitors as soon as Accessibility is granted.
+            self?.overlay?.restartMonitors()
         }
     }
 
