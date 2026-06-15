@@ -12,6 +12,11 @@ struct BelloBoxApp: App {
         MenuBarExtra("Bello Box", systemImage: "wand.and.stars") {
             menuContent
         }
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { appDelegate.checkForUpdates() }
+            }
+        }
     }
 
     @ViewBuilder
@@ -63,7 +68,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        NSApp.setActivationPolicy(.regular)
         applyApplicationIcon()
         configureUpdater()
 
@@ -94,8 +99,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// Re-opening the app (e.g. double-clicking it in Finder) brings a window up,
-    /// since an accessory app has nothing in the Dock.
+    /// Re-opening the app (e.g. double-clicking it in Finder) brings a window up.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if settings.hasCompletedSetup {
             showMainWindow()

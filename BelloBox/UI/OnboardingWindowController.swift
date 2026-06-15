@@ -1,9 +1,8 @@
 import AppKit
 import SwiftUI
 
-/// Hosts the onboarding flow in a standard window. The app is a menu-bar
-/// accessory, so onboarding is shown by explicitly creating and focusing a
-/// window rather than relying on a SwiftUI `WindowGroup`.
+/// Hosts the onboarding flow in a standard window so the menu-bar extra and
+/// Dock-launched app paths use the same setup surface.
 @MainActor
 final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?

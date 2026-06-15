@@ -1,9 +1,8 @@
 import AppKit
 import SwiftUI
 
-/// Hosts the Settings window directly. A managed window is far more reliable in a
-/// menu-bar-only app than the SwiftUI `Settings` scene + `showSettingsWindow:`
-/// selector, which often does nothing here.
+/// Hosts the Settings window directly. A managed window keeps the menu-bar extra
+/// and Dock-launched app paths using the same settings surface.
 @MainActor
 final class SettingsWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
