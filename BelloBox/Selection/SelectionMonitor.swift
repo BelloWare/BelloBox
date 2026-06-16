@@ -1,4 +1,5 @@
 import AppKit
+import Carbon
 
 /// Watches for selection gestures system-wide (a left mouse-up that leaves text
 /// selected) and a manual global hotkey, then reports the captured selection.
@@ -7,13 +8,21 @@ final class SelectionMonitor {
     private let accessibility: AccessibilityService
 
     private var mouseUpMonitor: Any?
-    private var globalKeyMonitor: Any?
-    private var localKeyMonitor: Any?
+    private var hotkeyRef: EventHotKeyRef?
+    private var hotkeyHandlerRef: EventHandlerRef?
     private var debounce: DispatchWorkItem?
+    private var isRunning = false
+
+    private let hotkeySignature: OSType = 0x42425848 // "BBXH"
+    private let hotkeyID: UInt32 = 1
 
     var selectionMonitoringEnabled = true
-    var hotkeyEnabled = true
-    var hotkey = GlobalHotkey.default
+    var hotkeyEnabled = true {
+        didSet { refreshHotkeyRegistrationIfNeeded() }
+    }
+    var hotkey = GlobalHotkey.default {
+        didSet { refreshHotkeyRegistrationIfNeeded() }
+    }
     var onSelection: ((TextSelection) -> Void)?
     var onHotkey: (() -> Void)?
 
@@ -23,26 +32,21 @@ final class SelectionMonitor {
 
     func start() {
         stop()
+        isRunning = true
         mouseUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
             self?.scheduleSelectionRead()
         }
-        globalKeyMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
-            self?.handleKey(event)
-        }
-        localKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
-            self?.handleKey(event)
-            return event
-        }
+        installHotkeyIfNeeded()
     }
 
     func stop() {
         debounce?.cancel()
-        for monitor in [mouseUpMonitor, globalKeyMonitor, localKeyMonitor] {
-            if let monitor { NSEvent.removeMonitor(monitor) }
+        if let mouseUpMonitor {
+            NSEvent.removeMonitor(mouseUpMonitor)
         }
         mouseUpMonitor = nil
-        globalKeyMonitor = nil
-        localKeyMonitor = nil
+        unregisterHotkey()
+        isRunning = false
     }
 
     private func scheduleSelectionRead() {
@@ -59,9 +63,84 @@ final class SelectionMonitor {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.18, execute: work)
     }
 
-    private func handleKey(_ event: NSEvent) {
-        guard hotkeyEnabled else { return }
-        guard hotkey.matches(event) else { return }
+    private func handleRegisteredHotkey() {
         onHotkey?()
+    }
+
+    private func refreshHotkeyRegistrationIfNeeded() {
+        guard isRunning else { return }
+        unregisterHotkey()
+        installHotkeyIfNeeded()
+    }
+
+    private func installHotkeyIfNeeded() {
+        guard hotkeyEnabled, hotkey.isValid else { return }
+
+        var eventType = EventTypeSpec(
+            eventClass: OSType(kEventClassKeyboard),
+            eventKind: UInt32(kEventHotKeyPressed)
+        )
+        let userData = Unmanaged.passUnretained(self).toOpaque()
+        let handlerStatus = InstallEventHandler(
+            GetApplicationEventTarget(),
+            Self.hotkeyEventHandler,
+            1,
+            &eventType,
+            userData,
+            &hotkeyHandlerRef
+        )
+        guard handlerStatus == noErr else {
+            NSLog("Bello Box failed to install hotkey handler: \(handlerStatus)")
+            hotkeyHandlerRef = nil
+            return
+        }
+
+        var carbonHotkeyID = EventHotKeyID(signature: hotkeySignature, id: hotkeyID)
+        let registerStatus = RegisterEventHotKey(
+            UInt32(hotkey.keyCode),
+            hotkey.carbonModifiers,
+            carbonHotkeyID,
+            GetApplicationEventTarget(),
+            0,
+            &hotkeyRef
+        )
+        guard registerStatus == noErr else {
+            NSLog("Bello Box failed to register hotkey \(hotkey.displayString): \(registerStatus)")
+            unregisterHotkey()
+            return
+        }
+    }
+
+    private func unregisterHotkey() {
+        if let hotkeyRef {
+            UnregisterEventHotKey(hotkeyRef)
+            self.hotkeyRef = nil
+        }
+        if let hotkeyHandlerRef {
+            RemoveEventHandler(hotkeyHandlerRef)
+            self.hotkeyHandlerRef = nil
+        }
+    }
+
+    private static let hotkeyEventHandler: EventHandlerUPP = { _, event, userData in
+        guard let event, let userData else { return noErr }
+
+        var carbonHotkeyID = EventHotKeyID()
+        let status = GetEventParameter(
+            event,
+            EventParamName(kEventParamDirectObject),
+            EventParamType(typeEventHotKeyID),
+            nil,
+            MemoryLayout<EventHotKeyID>.size,
+            nil,
+            &carbonHotkeyID
+        )
+        guard status == noErr, carbonHotkeyID.id == 1 else { return noErr }
+
+        let monitor = Unmanaged<SelectionMonitor>.fromOpaque(userData).takeUnretainedValue()
+        Task { @MainActor in
+            monitor.handleRegisteredHotkey()
+        }
+        return noErr
     }
 }

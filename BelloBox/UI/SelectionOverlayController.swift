@@ -107,6 +107,9 @@ final class SelectionOverlayController: NSObject {
 
     /// Reads the current selection (AX first, synthesized copy as a fallback).
     private func currentSelection() -> TextSelection? {
+#if DEBUG
+        if let injected = e2eInjectedSelection() { return injected }
+#endif
         if let selection = accessibility.readSelection() { return selection }
         if let copied = accessibility.copySelectionViaPasteboard() {
             let front = NSWorkspace.shared.frontmostApplication
@@ -120,6 +123,23 @@ final class SelectionOverlayController: NSObject {
         }
         return nil
     }
+
+#if DEBUG
+    private func e2eInjectedSelection() -> TextSelection? {
+        guard
+            let text = ProcessInfo.processInfo.environment["BELLOBOX_E2E_SELECTION_TEXT"],
+            !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else { return nil }
+
+        return TextSelection(
+            text: text,
+            anchorRect: nil,
+            appName: "E2E",
+            bundleID: nil,
+            pid: nil
+        )
+    }
+#endif
 
     private func nonEmpty(_ selection: TextSelection?) -> TextSelection? {
         guard let selection, !selection.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
@@ -179,9 +199,30 @@ final class SelectionOverlayController: NSObject {
         panel.setFrameOrigin(origin)
         panel.orderFrontRegardless()
         toolbarPanel = panel
+#if DEBUG
+        writeE2EToolbarMarker(selection: selection)
+#endif
 
         installToolbarDismissMonitor()
     }
+
+#if DEBUG
+    private func writeE2EToolbarMarker(selection: TextSelection) {
+        guard
+            let path = ProcessInfo.processInfo.environment["BELLOBOX_E2E_TOOLBAR_MARKER"],
+            !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else { return }
+
+        let url = URL(fileURLWithPath: path)
+        let payload = [
+            "shownAt=\(Date().timeIntervalSince1970)",
+            "appName=\(selection.appName ?? "")",
+            "text=\(selection.text)"
+        ].joined(separator: "\n")
+        try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? payload.write(to: url, atomically: true, encoding: .utf8)
+    }
+#endif
 
     private func activateAI() {
         guard let selection = pendingSelection else { return }

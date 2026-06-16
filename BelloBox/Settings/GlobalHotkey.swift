@@ -1,4 +1,5 @@
 import AppKit
+import Carbon
 
 struct GlobalHotkey: Equatable {
     static let `default` = GlobalHotkey(keyCode: 11, modifiers: [.control, .option, .command])
@@ -23,6 +24,15 @@ struct GlobalHotkey: Equatable {
     var isValid: Bool {
         !Self.modifierKeys.contains(keyCode)
             && !modifiers.intersection([.control, .option, .shift, .command]).isEmpty
+    }
+
+    var carbonModifiers: UInt32 {
+        var result: UInt32 = 0
+        if modifiers.contains(.command) { result |= UInt32(cmdKey) }
+        if modifiers.contains(.option) { result |= UInt32(optionKey) }
+        if modifiers.contains(.control) { result |= UInt32(controlKey) }
+        if modifiers.contains(.shift) { result |= UInt32(shiftKey) }
+        return result
     }
 
     func matches(_ event: NSEvent) -> Bool {
