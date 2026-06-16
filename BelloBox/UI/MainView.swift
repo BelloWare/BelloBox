@@ -19,6 +19,19 @@ struct MainView: View {
         return "Version \(short) (\(build))"
     }
 
+    private var howToText: String {
+        switch (settings.floatingButtonEnabled, settings.globalHotkeyEnabled) {
+        case (true, true):
+            return "Select text in any app — a floating toolbar appears with AI, QR, and Text Tools. Or press ⌃⌥⌘B to summon the same board on the current selection."
+        case (true, false):
+            return "Select text in any app — a floating toolbar appears with AI, QR, and Text Tools."
+        case (false, true):
+            return "Select text in any app, then press ⌃⌥⌘B to summon the Bello Box board with AI, QR, and Text Tools."
+        case (false, false):
+            return "Auto hint and the global shortcut are both off. Open Settings to choose how Bello Box appears."
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             header
@@ -113,7 +126,7 @@ struct MainView: View {
                 .background(Circle().fill(BoxTheme.accentSoft))
             VStack(alignment: .leading, spacing: 3) {
                 Text("How to use it").font(.callout.weight(.semibold))
-                Text("Select text in any app — a floating toolbar appears with AI, QR, and Text Tools. Or press ⌃⌥⌘B to summon it on the current selection.")
+                Text(howToText)
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

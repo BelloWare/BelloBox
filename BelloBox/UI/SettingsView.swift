@@ -51,8 +51,9 @@ struct SettingsView: View {
 
     private var behaviorSection: some View {
         Section("Behavior") {
-            Toggle("Show the floating button when I select text", isOn: $settings.floatingButtonEnabled)
-            Text("You can also summon Bello Box on the current selection with ⌃⌥⌘B.")
+            Toggle("Show auto hint after I select text", isOn: $settings.floatingButtonEnabled)
+            Toggle("Enable global shortcut ⌃⌥⌘B", isOn: $settings.globalHotkeyEnabled)
+            Text("Auto hint shows the tool board after mouse selections. The shortcut can summon the same board on the current selection even when auto hint is off.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }

@@ -88,6 +88,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak overlay] enabled in overlay?.setFloatingButtonEnabled(enabled) }
             .store(in: &cancellables)
 
+        settings.$globalHotkeyEnabled
+            .receive(on: RunLoop.main)
+            .sink { [weak overlay] enabled in overlay?.setGlobalHotkeyEnabled(enabled) }
+            .store(in: &cancellables)
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
             if self.settings.hasCompletedSetup {

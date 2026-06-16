@@ -12,7 +12,7 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var trusted = AccessibilityService.isTrusted
 
-    private let stepCount = 4
+    private let stepCount = 5
     private let poll = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -43,7 +43,8 @@ struct OnboardingView: View {
         switch step {
         case 0: welcomeStep
         case 1: permissionStep
-        case 2: providerStep
+        case 2: behaviorStep
+        case 3: providerStep
         default: doneStep
         }
     }
@@ -59,7 +60,7 @@ struct OnboardingView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 12) {
-                bullet("cursorarrow.rays", "Select text anywhere", "A small Bello Box toolbar appears next to your selection.")
+                bullet("cursorarrow.rays", "Select text anywhere", "A small Bello Box toolbar can appear next to your selection.")
                 bullet("wand.and.stars", "Ask the AI", "Fix grammar, rewrite, summarize, or translate — then copy or replace in place.")
                 bullet("qrcode", "Make a QR code", "Turn a link or any text into a scannable QR code you can edit on the fly.")
             }
@@ -107,6 +108,40 @@ struct OnboardingView: View {
         }
     }
 
+    private var behaviorStep: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            stepHeader("Choose how Bello Box appears", systemImage: "switch.2")
+            Text("Keep the automatic hint on for quick mouse selections, or turn it off and use the keyboard shortcut only.")
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: 14) {
+                Toggle(isOn: $settings.floatingButtonEnabled) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Show auto hint after selecting text")
+                            .font(.headline)
+                        Text("Bello Box shows the tool board next to fresh text selections.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Toggle(isOn: $settings.globalHotkeyEnabled) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Enable global shortcut ⌃⌥⌘B")
+                            .font(.headline)
+                        Text("Press the shortcut to show the same tool board for the current selection.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .toggleStyle(.switch)
+            .padding(16)
+            .background(RoundedRectangle(cornerRadius: 12).fill(.primary.opacity(0.05)))
+        }
+    }
+
     private var providerStep: some View {
         VStack(alignment: .leading, spacing: 14) {
             stepHeader("Connect your AI", systemImage: "antenna.radiowaves.left.and.right")
@@ -123,14 +158,19 @@ struct OnboardingView: View {
             appBadge
             Text("You're all set")
                 .font(.system(size: 32, weight: .bold))
-            Text("Select text in any app, then click the Bello Box button that appears — or press ⌃⌥⌘B to summon it on the current selection.")
+            Text(doneSummary)
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 12) {
                 bullet("menubar.arrow.up.rectangle", "Find Bello Box in the menu bar", "The ✨ icon opens Settings and this guide anytime.")
-                bullet("keyboard", "Summon with a hotkey", "⌃⌥⌘B runs Bello Box on whatever you have selected.")
+                if settings.globalHotkeyEnabled {
+                    bullet("keyboard", "Summon with a hotkey", "⌃⌥⌘B shows the Bello Box tool board for whatever you have selected.")
+                }
+                if settings.floatingButtonEnabled {
+                    bullet("cursorarrow.rays", "Use auto hint", "Select text with the mouse and the Bello Box tool board appears nearby.")
+                }
             }
             .padding(.top, 4)
 
@@ -188,6 +228,19 @@ struct OnboardingView: View {
                     .font(.system(size: 48))
                     .foregroundStyle(BoxTheme.accent)
             }
+        }
+    }
+
+    private var doneSummary: String {
+        switch (settings.floatingButtonEnabled, settings.globalHotkeyEnabled) {
+        case (true, true):
+            return "Select text in any app and use the Bello Box button that appears — or press ⌃⌥⌘B to summon the tool board on the current selection."
+        case (true, false):
+            return "Select text in any app, then use the Bello Box button that appears next to your selection."
+        case (false, true):
+            return "Select text in any app, then press ⌃⌥⌘B to summon the Bello Box tool board."
+        case (false, false):
+            return "Open Bello Box from the menu bar when you need it. You can re-enable auto hint or the shortcut in Settings anytime."
         }
     }
 

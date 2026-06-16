@@ -14,7 +14,8 @@ final class SelectionMonitor {
     /// Virtual key code for "B" — the hotkey is ⌃⌥⌘B.
     private let hotkeyKeyCode: UInt16 = 11
 
-    var isEnabled = true
+    var selectionMonitoringEnabled = true
+    var hotkeyEnabled = true
     var onSelection: ((TextSelection) -> Void)?
     var onHotkey: (() -> Void)?
 
@@ -47,10 +48,10 @@ final class SelectionMonitor {
     }
 
     private func scheduleSelectionRead() {
-        guard isEnabled else { return }
+        guard selectionMonitoringEnabled else { return }
         debounce?.cancel()
         let work = DispatchWorkItem { [weak self] in
-            guard let self, self.isEnabled else { return }
+            guard let self, self.selectionMonitoringEnabled else { return }
             if let selection = self.accessibility.readSelection() {
                 self.onSelection?(selection)
             }
@@ -61,6 +62,7 @@ final class SelectionMonitor {
     }
 
     private func handleKey(_ event: NSEvent) {
+        guard hotkeyEnabled else { return }
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         guard flags == [.control, .option, .command], event.keyCode == hotkeyKeyCode else { return }
         onHotkey?()

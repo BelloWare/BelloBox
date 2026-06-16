@@ -35,13 +35,13 @@ final class SelectionOverlayController: NSObject {
             self?.handleSelection(selection)
         }
         monitor.onHotkey = { [weak self] in
-            self?.triggerOnCurrentSelection()
+            self?.triggerBoardOnCurrentSelection()
         }
     }
 
     func start() {
         lastTrusted = AccessibilityService.isTrusted
-        monitor.isEnabled = settings.floatingButtonEnabled
+        applyMonitorSettings()
         monitor.start()
         // Keyboard monitoring only takes effect once the process is trusted, so
         // re-establish the monitors when Accessibility is granted while running.
@@ -52,13 +52,22 @@ final class SelectionOverlayController: NSObject {
     /// is granted so the global keyboard monitor actually receives events.
     func restartMonitors() {
         monitor.stop()
-        monitor.isEnabled = settings.floatingButtonEnabled
+        applyMonitorSettings()
         monitor.start()
     }
 
     func setFloatingButtonEnabled(_ enabled: Bool) {
-        monitor.isEnabled = enabled
+        monitor.selectionMonitoringEnabled = enabled
         if !enabled { hideToolbar() }
+    }
+
+    func setGlobalHotkeyEnabled(_ enabled: Bool) {
+        monitor.hotkeyEnabled = enabled
+    }
+
+    private func applyMonitorSettings() {
+        monitor.selectionMonitoringEnabled = settings.floatingButtonEnabled
+        monitor.hotkeyEnabled = settings.globalHotkeyEnabled
     }
 
     private func startTrustWatcher() {
@@ -117,6 +126,14 @@ final class SelectionOverlayController: NSObject {
         guard let selection = nonEmpty(currentSelection()) else { NSSound.beep(); return }
         hideToolbar()
         showAIPopup(for: selection)
+    }
+
+    /// Used by the global hotkey: read the selection now and show the tool board.
+    func triggerBoardOnCurrentSelection() {
+        guard popupPanel == nil else { return }
+        guard let selection = nonEmpty(currentSelection()) else { NSSound.beep(); return }
+        pendingSelection = selection
+        showToolbar(for: selection)
     }
 
     /// Used by the menu: read the selection now and open the QR popup.
