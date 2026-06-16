@@ -22,11 +22,11 @@ struct MainView: View {
     private var howToText: String {
         switch (settings.floatingButtonEnabled, settings.globalHotkeyEnabled) {
         case (true, true):
-            return "Select text in any app — a floating toolbar appears with AI, QR, and Text Tools. Or press ⌃⌥⌘B to summon the same board on the current selection."
+            return "Select text in any app — a floating toolbar appears with AI, QR, and Text Tools. Or press \(settings.globalHotkey.displayString) to summon the same board on the current selection."
         case (true, false):
             return "Select text in any app — a floating toolbar appears with AI, QR, and Text Tools."
         case (false, true):
-            return "Select text in any app, then press ⌃⌥⌘B to summon the Bello Box board with AI, QR, and Text Tools."
+            return "Select text in any app, then press \(settings.globalHotkey.displayString) to summon the Bello Box board with AI, QR, and Text Tools."
         case (false, false):
             return "Auto hint and the global shortcut are both off. Open Settings to choose how Bello Box appears."
         }

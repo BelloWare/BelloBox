@@ -93,6 +93,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak overlay] enabled in overlay?.setGlobalHotkeyEnabled(enabled) }
             .store(in: &cancellables)
 
+        Publishers.CombineLatest(settings.$globalHotkeyKeyCode, settings.$globalHotkeyModifiersRawValue)
+            .receive(on: RunLoop.main)
+            .sink { [weak overlay, weak settings] _, _ in
+                guard let settings else { return }
+                overlay?.setGlobalHotkey(settings.globalHotkey)
+            }
+            .store(in: &cancellables)
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
             if self.settings.hasCompletedSetup {

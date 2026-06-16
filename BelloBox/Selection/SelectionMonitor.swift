@@ -11,11 +11,9 @@ final class SelectionMonitor {
     private var localKeyMonitor: Any?
     private var debounce: DispatchWorkItem?
 
-    /// Virtual key code for "B" — the hotkey is ⌃⌥⌘B.
-    private let hotkeyKeyCode: UInt16 = 11
-
     var selectionMonitoringEnabled = true
     var hotkeyEnabled = true
+    var hotkey = GlobalHotkey.default
     var onSelection: ((TextSelection) -> Void)?
     var onHotkey: (() -> Void)?
 
@@ -63,8 +61,7 @@ final class SelectionMonitor {
 
     private func handleKey(_ event: NSEvent) {
         guard hotkeyEnabled else { return }
-        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-        guard flags == [.control, .option, .command], event.keyCode == hotkeyKeyCode else { return }
+        guard hotkey.matches(event) else { return }
         onHotkey?()
     }
 }

@@ -52,7 +52,10 @@ struct SettingsView: View {
     private var behaviorSection: some View {
         Section("Behavior") {
             Toggle("Show auto hint after I select text", isOn: $settings.floatingButtonEnabled)
-            Toggle("Enable global shortcut ⌃⌥⌘B", isOn: $settings.globalHotkeyEnabled)
+            Toggle("Enable global shortcut \(settings.globalHotkey.displayString)", isOn: $settings.globalHotkeyEnabled)
+            LabeledContent("Shortcut") {
+                HotkeyRecorderView(settings: settings)
+            }
             Text("Auto hint shows the tool board after mouse selections. The shortcut can summon the same board on the current selection even when auto hint is off.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)

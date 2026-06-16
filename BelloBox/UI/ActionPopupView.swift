@@ -6,6 +6,7 @@ struct ActionPopupView: View {
     static let preferredSize = CGSize(width: 720, height: 760)
 
     @ObservedObject var viewModel: ActionPopupViewModel
+    @ObservedObject var settings: AppSettings
     var onMinimize: () -> Void = {}
 
     private let columns = [GridItem(.adaptive(minimum: 210), spacing: 10)]
@@ -172,9 +173,22 @@ struct ActionPopupView: View {
     }
 
     private var footerHint: some View {
-        Text("Tip: select text anywhere, then click the Bello Box button — or press ⌃⌥⌘B.")
+        Text(footerHintText)
             .font(.caption2)
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var footerHintText: String {
+        switch (settings.floatingButtonEnabled, settings.globalHotkeyEnabled) {
+        case (true, true):
+            return "Tip: select text anywhere, then click the Bello Box button — or press \(settings.globalHotkey.displayString)."
+        case (true, false):
+            return "Tip: select text anywhere, then click the Bello Box button."
+        case (false, true):
+            return "Tip: select text anywhere, then press \(settings.globalHotkey.displayString) to open the Bello Box board."
+        case (false, false):
+            return "Tip: turn on auto hint or the global shortcut in Settings to open Bello Box faster."
+        }
     }
 }

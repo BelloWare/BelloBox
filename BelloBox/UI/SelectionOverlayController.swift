@@ -65,9 +65,14 @@ final class SelectionOverlayController: NSObject {
         monitor.hotkeyEnabled = enabled
     }
 
+    func setGlobalHotkey(_ hotkey: GlobalHotkey) {
+        monitor.hotkey = hotkey
+    }
+
     private func applyMonitorSettings() {
         monitor.selectionMonitoringEnabled = settings.floatingButtonEnabled
         monitor.hotkeyEnabled = settings.globalHotkeyEnabled
+        monitor.hotkey = settings.globalHotkey
     }
 
     private func startTrustWatcher() {
@@ -227,6 +232,7 @@ final class SelectionOverlayController: NSObject {
         }
         let view = ActionPopupView(
             viewModel: viewModel,
+            settings: settings,
             onMinimize: { [weak self] in self?.minimizePopup() }
         )
         present(

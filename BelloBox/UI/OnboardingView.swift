@@ -111,7 +111,7 @@ struct OnboardingView: View {
     private var behaviorStep: some View {
         VStack(alignment: .leading, spacing: 18) {
             stepHeader("Choose how Bello Box appears", systemImage: "switch.2")
-            Text("Keep the automatic hint on for quick mouse selections, or turn it off and use the keyboard shortcut only.")
+            Text("Keep the automatic hint on for quick mouse selections, or turn it off and use a keyboard shortcut only.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -128,13 +128,17 @@ struct OnboardingView: View {
 
                 Toggle(isOn: $settings.globalHotkeyEnabled) {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("Enable global shortcut ⌃⌥⌘B")
+                        Text("Enable global shortcut \(settings.globalHotkey.displayString)")
                             .font(.headline)
                         Text("Press the shortcut to show the same tool board for the current selection.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
+
+                HotkeyRecorderView(settings: settings)
+                    .disabled(!settings.globalHotkeyEnabled)
+                    .padding(.leading, 44)
             }
             .toggleStyle(.switch)
             .padding(16)
@@ -166,7 +170,7 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 12) {
                 bullet("menubar.arrow.up.rectangle", "Find Bello Box in the menu bar", "The ✨ icon opens Settings and this guide anytime.")
                 if settings.globalHotkeyEnabled {
-                    bullet("keyboard", "Summon with a hotkey", "⌃⌥⌘B shows the Bello Box tool board for whatever you have selected.")
+                    bullet("keyboard", "Summon with a hotkey", "\(settings.globalHotkey.displayString) shows the Bello Box tool board for whatever you have selected.")
                 }
                 if settings.floatingButtonEnabled {
                     bullet("cursorarrow.rays", "Use auto hint", "Select text with the mouse and the Bello Box tool board appears nearby.")
@@ -234,11 +238,11 @@ struct OnboardingView: View {
     private var doneSummary: String {
         switch (settings.floatingButtonEnabled, settings.globalHotkeyEnabled) {
         case (true, true):
-            return "Select text in any app and use the Bello Box button that appears — or press ⌃⌥⌘B to summon the tool board on the current selection."
+            return "Select text in any app and use the Bello Box button that appears — or press \(settings.globalHotkey.displayString) to summon the tool board on the current selection."
         case (true, false):
             return "Select text in any app, then use the Bello Box button that appears next to your selection."
         case (false, true):
-            return "Select text in any app, then press ⌃⌥⌘B to summon the Bello Box tool board."
+            return "Select text in any app, then press \(settings.globalHotkey.displayString) to summon the Bello Box tool board."
         case (false, false):
             return "Open Bello Box from the menu bar when you need it. You can re-enable auto hint or the shortcut in Settings anytime."
         }

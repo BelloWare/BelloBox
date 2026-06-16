@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import AppKit
 
 enum AppearancePreference: String, CaseIterable, Identifiable {
     case system
@@ -41,6 +42,8 @@ final class AppSettings: ObservableObject {
         static let systemPrompt = "systemPrompt"
         static let floatingButtonEnabled = "floatingButtonEnabled"
         static let globalHotkeyEnabled = "globalHotkeyEnabled"
+        static let globalHotkeyKeyCode = "globalHotkeyKeyCode"
+        static let globalHotkeyModifiers = "globalHotkeyModifiers"
         static let hasCompletedSetup = "hasCompletedSetup"
         static let appearance = "appearance"
         static let codexPath = "codexPath"
@@ -72,6 +75,8 @@ final class AppSettings: ObservableObject {
     @Published var systemPrompt: String { didSet { defaults.set(systemPrompt, forKey: Keys.systemPrompt) } }
     @Published var floatingButtonEnabled: Bool { didSet { defaults.set(floatingButtonEnabled, forKey: Keys.floatingButtonEnabled) } }
     @Published var globalHotkeyEnabled: Bool { didSet { defaults.set(globalHotkeyEnabled, forKey: Keys.globalHotkeyEnabled) } }
+    @Published var globalHotkeyKeyCode: Int { didSet { defaults.set(globalHotkeyKeyCode, forKey: Keys.globalHotkeyKeyCode) } }
+    @Published var globalHotkeyModifiersRawValue: Int { didSet { defaults.set(globalHotkeyModifiersRawValue, forKey: Keys.globalHotkeyModifiers) } }
     @Published var appearance: AppearancePreference { didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) } }
     @Published var codexPath: String { didSet { defaults.set(codexPath, forKey: Keys.codexPath) } }
     @Published var codexModel: String { didSet { defaults.set(codexModel, forKey: Keys.codexModel) } }
@@ -99,6 +104,11 @@ final class AppSettings: ObservableObject {
         systemPrompt = defaults.string(forKey: Keys.systemPrompt) ?? Self.defaultSystemPrompt
         floatingButtonEnabled = (defaults.object(forKey: Keys.floatingButtonEnabled) as? Bool) ?? true
         globalHotkeyEnabled = (defaults.object(forKey: Keys.globalHotkeyEnabled) as? Bool) ?? true
+        let storedHotkeyKeyCode = defaults.object(forKey: Keys.globalHotkeyKeyCode) as? Int
+        let storedHotkeyModifiers = defaults.object(forKey: Keys.globalHotkeyModifiers) as? Int
+        let storedHotkey = Self.normalizedHotkey(keyCode: storedHotkeyKeyCode, modifiersRawValue: storedHotkeyModifiers)
+        globalHotkeyKeyCode = Int(storedHotkey.keyCode)
+        globalHotkeyModifiersRawValue = Int(storedHotkey.modifiers.rawValue)
         appearance = AppearancePreference(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         codexPath = defaults.string(forKey: Keys.codexPath) ?? ""
         let storedCodexModel = defaults.string(forKey: Keys.codexModel) ?? ""
@@ -140,11 +150,42 @@ final class AppSettings: ObservableObject {
 
     var isConfigured: Bool { currentConfig.isUsable }
 
+    var globalHotkey: GlobalHotkey {
+        GlobalHotkey(
+            keyCode: UInt16(clamping: globalHotkeyKeyCode),
+            modifiers: NSEvent.ModifierFlags(rawValue: UInt(globalHotkeyModifiersRawValue))
+        )
+    }
+
+    func setGlobalHotkey(_ hotkey: GlobalHotkey) {
+        globalHotkeyKeyCode = Int(hotkey.keyCode)
+        globalHotkeyModifiersRawValue = Int(hotkey.modifiers.rawValue)
+    }
+
+    func resetGlobalHotkey() {
+        setGlobalHotkey(.default)
+    }
+
     func resetSystemPrompt() { systemPrompt = Self.defaultSystemPrompt }
 
     /// Detects the codex binary off the main thread and stores it if found.
     func detectCodexPath() async {
         let path = await Task.detached { CodexCLI.detectPath() }.value
         if !path.isEmpty { codexPath = path }
+    }
+
+    private static func normalizedHotkey(keyCode: Int?, modifiersRawValue: Int?) -> GlobalHotkey {
+        guard
+            let keyCode,
+            (0...Int(UInt16.max)).contains(keyCode),
+            let modifiersRawValue,
+            modifiersRawValue >= 0
+        else { return .default }
+
+        let hotkey = GlobalHotkey(
+            keyCode: UInt16(keyCode),
+            modifiers: NSEvent.ModifierFlags(rawValue: UInt(modifiersRawValue))
+        )
+        return hotkey.isValid ? hotkey : .default
     }
 }
