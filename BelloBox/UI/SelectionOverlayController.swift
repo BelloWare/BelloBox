@@ -23,6 +23,7 @@ final class SelectionOverlayController: NSObject {
     private var popupMinimizedTitle = ""
     private var popupMinimizedSubtitle: (() -> String?)?
     private var screenshotOverlayEditorController: ScreenshotOverlayEditorController?
+    private var captureOverlayController: CaptureOverlayController?
     private var toolbarDismissMonitor: Any?
 
     private var pendingSelection: TextSelection?
@@ -284,13 +285,13 @@ final class SelectionOverlayController: NSObject {
     private func activateScreenshot() {
         let anchor = pendingSelection?.anchorRect
         hideToolbar()
-        showScreenshotChooser(anchorRect: anchor)
+        beginUnifiedScreenshotCapture(anchorRect: anchor)
     }
 
     private func activateRecording() {
         let anchor = pendingSelection?.anchorRect
         hideToolbar()
-        showRecordingChooser(anchorRect: anchor)
+        beginUnifiedRecordingCapture(anchorRect: anchor)
     }
 
     private func activateQR() {
@@ -386,7 +387,7 @@ final class SelectionOverlayController: NSObject {
 
     func triggerRecording(mode: RecordingCaptureMode? = nil) {
         hideToolbar()
-        showRecordingChooser(anchorRect: nil, initialMode: mode)
+        beginUnifiedRecordingCapture(anchorRect: nil)
     }
 
     func stopRecording() {
@@ -546,6 +547,60 @@ final class SelectionOverlayController: NSObject {
         )
     }
 
+    private func recordingTarget(for selection: CaptureSelection) -> RecordingTarget? {
+        switch selection {
+        case let .area(area):
+            return recordingTarget(for: area)
+        case let .window(window):
+            return recordingTarget(for: window)
+        case let .display(display):
+            return .display(displayID: display.displayID)
+        }
+    }
+
+    private func beginUnifiedRecordingCapture(anchorRect: CGRect?, options: RecordingOptions? = nil) {
+        let options = options ?? settings.recordingOptions
+        let permissions = recordingCoordinator.permissionState(options: options)
+        guard permissions.canRecordVideo else {
+            showRecordingPermissions(permissions: permissions, options: options, anchorRect: anchorRect) { [weak self] sanitized in
+                self?.beginUnifiedRecordingCapture(anchorRect: anchorRect, options: sanitized)
+            }
+            return
+        }
+
+        recordingCoordinator.showRecordingChooser(anchor: anchorRect)
+        hidePopup()
+        let controller = CaptureOverlayController(
+            screenCaptureService: screenCaptureService,
+            settings: settings,
+            macOCRService: macOCRService,
+            llmOCRService: llmOCRService
+        )
+        captureOverlayController = controller
+        controller.beginRecording(
+            initialOptions: options,
+            onRecord: { [weak self] selection, chosenOptions in
+                guard let self else { return }
+                self.captureOverlayController = nil
+                guard let target = self.recordingTarget(for: selection) else {
+                    self.showRecordingError("No display could be found for this recording target.", anchorRect: anchorRect)
+                    return
+                }
+                self.prepareRecording(options: chosenOptions, anchorRect: anchorRect) { preparedOptions in
+                    Task { await self.recordingCoordinator.start(target: target, options: preparedOptions) }
+                }
+            },
+            onError: { [weak self] message in
+                self?.captureOverlayController = nil
+                self?.showRecordingError(message, anchorRect: anchorRect)
+            },
+            onCancel: { [weak self] in
+                self?.captureOverlayController = nil
+                self?.recordingCoordinator.cancel()
+            }
+        )
+    }
+
     private func showRecordingWindowPicker(options: RecordingOptions, anchorRect: CGRect?) {
         let viewModel = WindowCapturePickerViewModel(service: screenCaptureService)
         viewModel.onCancel = { [weak self] in self?.hidePopup() }
@@ -656,7 +711,7 @@ final class SelectionOverlayController: NSObject {
 
     func triggerScreenshotCapture() {
         hideToolbar()
-        showScreenshotChooser(anchorRect: nil)
+        beginUnifiedScreenshotCapture(anchorRect: nil)
     }
 
     func triggerScrollingScreenshotCapture() {
@@ -670,16 +725,33 @@ final class SelectionOverlayController: NSObject {
             showScreenshotChooser(anchorRect: nil, initialMode: screenshotCaptureMode(from: settings.screenshotDefaultMode))
             return
         }
-        switch settings.screenshotDefaultMode {
-        case .area:
-            beginAreaCapture(anchorRect: nil)
-        case .window:
-            showWindowPicker(anchorRect: nil)
-        case .screen:
-            captureScreen(anchorRect: nil)
-        case .scrolling:
-            beginScrollingAreaCapture(anchorRect: nil)
+        beginUnifiedScreenshotCapture(anchorRect: nil)
+    }
+
+    private func beginUnifiedScreenshotCapture(anchorRect: CGRect?) {
+#if DEBUG
+        if let area = e2eRegionArea() {
+            Task { await self.captureArea(area, anchorRect: anchorRect) }
+            return
         }
+#endif
+        hidePopup()
+        let controller = CaptureOverlayController(
+            screenCaptureService: screenCaptureService,
+            settings: settings,
+            macOCRService: macOCRService,
+            llmOCRService: llmOCRService
+        )
+        captureOverlayController = controller
+        controller.beginScreenshot(
+            onError: { [weak self] message in
+                self?.captureOverlayController = nil
+                self?.showScreenshotError(message, anchorRect: anchorRect)
+            },
+            onCancel: { [weak self] in
+                self?.captureOverlayController = nil
+            }
+        )
     }
 
     private func showScreenshotChooser(anchorRect: CGRect?, initialMode: ScreenshotCaptureMode? = nil) {
@@ -910,6 +982,10 @@ final class SelectionOverlayController: NSObject {
 #if DEBUG
     private func runScreenshotE2EHooksIfNeeded() {
         let env = ProcessInfo.processInfo.environment
+        if let path = env["BELLOBOX_E2E_CAPTURE_OVERLAY_IMAGE"], !path.isEmpty {
+            openE2ECaptureOverlay(path: path)
+            return
+        }
         if let path = env["BELLOBOX_E2E_SCROLL_FRAMES_DIR"], !path.isEmpty {
             Task { await openE2EScrollingFrames(path: path) }
             return
@@ -944,6 +1020,51 @@ final class SelectionOverlayController: NSObject {
         let view = ScreenshotPopupView(viewModel: viewModel, onMinimize: { [weak self] in self?.minimizePopup() })
         present(view, size: ScreenshotPopupView.preferredSize, anchorRect: nil, minimizedIcon: "camera.viewfinder", minimizedTitle: "Screenshot")
         if runOCR { viewModel.runMacOCR() }
+    }
+
+    private func openE2ECaptureOverlay(path: String) {
+        guard let image = Self.cgImage(at: path),
+              let screen = NSScreen.main,
+              let displayID = ScreenCoordinateSpace.displayID(for: screen)
+        else { return }
+        hidePopup()
+        let scale = screen.frame.width > 0 ? CGFloat(image.width) / screen.frame.width : ScreenCoordinateSpace.backingScale(for: screen)
+        let snapshot = DisplaySnapshot(
+            displayID: displayID,
+            screenFrame: screen.frame,
+            scale: max(scale, 1),
+            image: image
+        )
+        let initialSelection = Self.e2eOverlaySelection(
+            raw: ProcessInfo.processInfo.environment["BELLOBOX_E2E_CAPTURE_OVERLAY_RECT"],
+            displayID: displayID
+        )
+        let controller = CaptureOverlayController(
+            screenCaptureService: screenCaptureService,
+            settings: settings,
+            macOCRService: macOCRService,
+            llmOCRService: llmOCRService
+        )
+        captureOverlayController = controller
+        controller.beginScreenshotForTesting(
+            snapshots: [snapshot],
+            initialSelection: initialSelection,
+            onError: { [weak self] message in
+                self?.captureOverlayController = nil
+                self?.showScreenshotError(message, anchorRect: nil)
+            },
+            onCancel: { [weak self] in
+                self?.captureOverlayController = nil
+            }
+        )
+    }
+
+    private static func e2eOverlaySelection(raw: String?, displayID: CGDirectDisplayID) -> CaptureSelection? {
+        guard let raw, !raw.isEmpty else { return nil }
+        let parts = raw.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
+        guard parts.count == 4 else { return nil }
+        let rect = CGRect(x: CGFloat(parts[0]), y: CGFloat(parts[1]), width: CGFloat(parts[2]), height: CGFloat(parts[3]))
+        return .area(CaptureArea(cocoaRect: rect, displayID: displayID))
     }
 
     private func openE2EScrollingFrames(path: String) async {

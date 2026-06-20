@@ -26,6 +26,7 @@ struct AnnotationCanvasView: View {
                 }
 
                 previewLayer(viewport: viewport)
+                inlineTextEditor(viewport: viewport)
             }
             .contentShape(Rectangle())
             .gesture(dragGesture(viewport: viewport))
@@ -76,6 +77,7 @@ struct AnnotationCanvasView: View {
     private func dragGesture(viewport: ImageViewport) -> some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
+                if viewModel.editingTextAnnotationID != nil { return }
                 let point = viewport.viewPointToImagePoint(value.location)
                 if dragStart == nil {
                     dragStart = viewport.viewPointToImagePoint(value.startLocation)
@@ -87,6 +89,7 @@ struct AnnotationCanvasView: View {
                 }
             }
             .onEnded { value in
+                if viewModel.editingTextAnnotationID != nil { return }
                 let end = viewport.viewPointToImagePoint(value.location)
                 guard let start = dragStart else { resetDrag(); return }
                 commit(start: start, end: end)
@@ -152,5 +155,88 @@ struct AnnotationCanvasView: View {
             last = point
         }
         return result
+    }
+
+    @ViewBuilder
+    private func inlineTextEditor(viewport: ImageViewport) -> some View {
+        if let frame = viewModel.visibleTextFrameForEditingAnnotation() {
+            let viewFrame = viewport.imageRectToViewRect(frame)
+            InlineAnnotationTextField(
+                text: Binding(
+                    get: { viewModel.textForEditingAnnotation() },
+                    set: { viewModel.updateEditingText($0) }
+                ),
+                onCommit: { viewModel.endTextEditing() }
+            )
+            .frame(width: max(viewFrame.width, 120), height: max(viewFrame.height, 30))
+            .position(x: viewFrame.midX, y: viewFrame.midY)
+        }
+    }
+}
+
+private struct InlineAnnotationTextField: NSViewRepresentable {
+    @Binding var text: String
+    var onCommit: () -> Void
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField(string: text)
+        field.delegate = context.coordinator
+        field.isBordered = true
+        field.isBezeled = true
+        field.drawsBackground = true
+        field.backgroundColor = NSColor.textBackgroundColor.withAlphaComponent(0.92)
+        field.font = .systemFont(ofSize: 18, weight: .semibold)
+        field.focusRingType = .exterior
+        DispatchQueue.main.async {
+            field.window?.makeFirstResponder(field)
+            field.currentEditor()?.selectAll(nil)
+        }
+        return field
+    }
+
+    func updateNSView(_ nsView: NSTextField, context: Context) {
+        if nsView.stringValue != text {
+            nsView.stringValue = text
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text, onCommit: onCommit)
+    }
+
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        @Binding var text: String
+        var onCommit: () -> Void
+
+        init(text: Binding<String>, onCommit: @escaping () -> Void) {
+            _text = text
+            self.onCommit = onCommit
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let field = notification.object as? NSTextField else { return }
+            text = field.stringValue
+        }
+
+        func controlTextDidEndEditing(_ notification: Notification) {
+            guard let info = notification.userInfo,
+                  let movement = info["NSTextMovement"] as? Int,
+                  movement == NSCancelTextMovement
+            else {
+                onCommit()
+                return
+            }
+            onCommit()
+        }
+
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            if commandSelector == #selector(NSResponder.insertNewline(_:)) ||
+                commandSelector == #selector(NSResponder.cancelOperation(_:)) {
+                text = control.stringValue
+                onCommit()
+                return true
+            }
+            return false
+        }
     }
 }

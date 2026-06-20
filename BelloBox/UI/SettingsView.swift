@@ -72,19 +72,13 @@ struct SettingsView: View {
 
     private var screenshotSection: some View {
         Section("Screenshot") {
-            Toggle("Include cursor in screenshots", isOn: $settings.screenshotIncludeCursor)
             Toggle("Auto-copy captured screenshot", isOn: $settings.screenshotAutoCopy)
             Toggle("Enable screenshot shortcut \(settings.screenshotHotkey.displayString)", isOn: $settings.screenshotHotkeyEnabled)
             LabeledContent("Screenshot shortcut") {
                 ScreenshotHotkeyRecorderView(settings: settings)
             }
 
-            Picker("Default capture", selection: $settings.screenshotDefaultMode) {
-                ForEach(ScreenshotDefaultMode.allCases) { mode in
-                    Text(mode.label).tag(mode)
-                }
-            }
-            Text("The screenshot shortcut starts the default capture mode above.")
+            Text("The screenshot shortcut opens the unified selector: hover a window, click blank space for the screen, or drag an area. Scrolling capture remains available from the menu.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
 

@@ -34,14 +34,8 @@ struct BelloBoxApp: App {
         Button("Capture Scrolling Screenshot…") {
             appDelegate.overlay?.triggerScrollingScreenshotCapture()
         }
-        Button("Record Area…") {
-            appDelegate.overlay?.triggerRecording(mode: .area)
-        }
-        Button("Record Window…") {
-            appDelegate.overlay?.triggerRecording(mode: .window)
-        }
         Button("Record Screen…") {
-            appDelegate.overlay?.triggerRecording(mode: .display)
+            appDelegate.overlay?.triggerRecording()
         }
         Button("Stop Recording") {
             appDelegate.overlay?.stopRecording()

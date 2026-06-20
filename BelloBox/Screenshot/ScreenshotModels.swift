@@ -102,6 +102,13 @@ struct ScreenshotDocument: Identifiable, Equatable {
     }
 }
 
+struct DisplaySnapshot {
+    var displayID: CGDirectDisplayID
+    var screenFrame: CGRect
+    var scale: CGFloat
+    var image: CGImage
+}
+
 enum ScreenshotSource: Equatable {
     case area(rect: CGRect, displayID: CGDirectDisplayID?)
     case window(title: String?, ownerName: String?, windowID: UInt32?)
@@ -135,6 +142,23 @@ struct CaptureWindow: Equatable, Identifiable {
 struct CaptureDisplay: Equatable {
     var displayID: CGDirectDisplayID
     var frame: CGRect
+}
+
+enum CaptureSelection: Equatable {
+    case area(CaptureArea)
+    case window(CaptureWindow)
+    case display(CaptureDisplay)
+
+    var cocoaRect: CGRect {
+        switch self {
+        case let .area(area):
+            return area.cocoaRect
+        case let .window(window):
+            return window.frame ?? .zero
+        case let .display(display):
+            return display.frame
+        }
+    }
 }
 
 enum ScreenshotCaptureMode: String, CaseIterable, Identifiable {

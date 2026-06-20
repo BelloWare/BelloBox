@@ -44,10 +44,67 @@ final class ScreenCaptureService {
     var beforeCapture: (() -> Void)?
     var afterCapture: (() -> Void)?
 
+    func captureDisplaySnapshots(options: CaptureOptions = .default) async throws -> [DisplaySnapshot] {
+        guard ScreenCapturePermission.isTrusted else { throw CaptureError.permissionDenied }
+        if options.hideBelloBoxWindows {
+            beforeCapture?()
+        }
+        defer {
+            if options.hideBelloBoxWindows {
+                afterCapture?()
+            }
+        }
+        if options.delayAfterHidingOverlays > 0 {
+            try? await Task.sleep(nanoseconds: UInt64(options.delayAfterHidingOverlays * 1_000_000_000))
+        }
+
+        var snapshots: [DisplaySnapshot] = []
+        for screen in NSScreen.screens {
+            guard let displayID = ScreenCoordinateSpace.displayID(for: screen) else { continue }
+            let image = try await captureDisplay(displayID, includeCursor: options.includeCursor)
+            try validate(image)
+            snapshots.append(DisplaySnapshot(
+                displayID: displayID,
+                screenFrame: screen.frame,
+                scale: ScreenCoordinateSpace.backingScale(for: screen),
+                image: image
+            ))
+        }
+        guard !snapshots.isEmpty else { throw CaptureError.noDisplayFound }
+        return snapshots
+    }
+
+    func document(fromSnapshot snapshot: DisplaySnapshot, cocoaRect: CGRect, source: ScreenshotSource) throws -> ScreenshotDocument {
+        let boundedRect = cocoaRect.intersection(snapshot.screenFrame).standardized
+        guard boundedRect.width >= 1, boundedRect.height >= 1 else {
+            throw CaptureError.captureFailed("The selected area was outside the display bounds.")
+        }
+        let pixelRect = ScreenCoordinateSpace.cocoaRectToDisplayPixelRect(
+            boundedRect,
+            screenFrame: snapshot.screenFrame,
+            scale: snapshot.scale
+        )
+        guard let crop = snapshot.image.cropping(to: pixelRect.integral) else {
+            throw CaptureError.captureFailed("The selected area was outside the display bounds.")
+        }
+        try validate(crop)
+        return ScreenshotDocument(
+            baseImage: crop,
+            scale: snapshot.scale,
+            source: source
+        )
+    }
+
     func capture(_ target: CaptureTarget, options: CaptureOptions = .default) async throws -> ScreenshotDocument {
         guard ScreenCapturePermission.isTrusted else { throw CaptureError.permissionDenied }
-        beforeCapture?()
-        defer { afterCapture?() }
+        if options.hideBelloBoxWindows {
+            beforeCapture?()
+        }
+        defer {
+            if options.hideBelloBoxWindows {
+                afterCapture?()
+            }
+        }
         if options.delayAfterHidingOverlays > 0 {
             try? await Task.sleep(nanoseconds: UInt64(options.delayAfterHidingOverlays * 1_000_000_000))
         }

@@ -23,6 +23,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var pendingTextLabel = "Label"
     @Published var llmConfirmation: LLMOCRConfirmation?
+    @Published var editingTextAnnotationID: UUID?
 
     private let settings: AppSettings
     private let macOCRService: MacVisionOCRService
@@ -74,9 +75,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
     func handleCanvasTap(visiblePoint: CGPoint) {
         switch activeTool {
         case .text:
-            let text = pendingTextLabel.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !text.isEmpty else { return }
-            addVisibleAnnotation(.text(text, origin: visiblePoint, maxWidth: 240))
+            beginTextAnnotation(atVisiblePoint: visiblePoint)
         case .eraser:
             eraseAnnotation(atVisiblePoint: visiblePoint)
         default:
@@ -103,6 +102,54 @@ final class ScreenshotPopupViewModel: ObservableObject {
     func addAnnotation(_ annotation: ScreenshotAnnotation) {
         pushUndo()
         document.annotations.append(annotation)
+        markOCRStale()
+    }
+
+    func beginTextAnnotation(atVisiblePoint point: CGPoint) {
+        pushUndo()
+        let annotation = ScreenshotAnnotation(
+            kind: .text("", origin: shiftVisiblePointToDocument(point), maxWidth: 260),
+            style: style
+        )
+        document.annotations.append(annotation)
+        editingTextAnnotationID = annotation.id
+        markOCRStale()
+    }
+
+    func textForEditingAnnotation() -> String {
+        guard let id = editingTextAnnotationID,
+              let annotation = document.annotations.first(where: { $0.id == id }),
+              case let .text(text, _, _) = annotation.kind
+        else { return "" }
+        return text
+    }
+
+    func visibleTextFrameForEditingAnnotation() -> CGRect? {
+        guard let id = editingTextAnnotationID,
+              let annotation = document.annotations.first(where: { $0.id == id }),
+              case let .text(_, origin, maxWidth) = annotation.kind
+        else { return nil }
+        let visibleOrigin = shiftDocumentPointToVisible(origin)
+        return CGRect(x: visibleOrigin.x, y: visibleOrigin.y, width: maxWidth, height: max(34, style.fontSize + 16))
+    }
+
+    func updateEditingText(_ text: String) {
+        guard let id = editingTextAnnotationID,
+              let index = document.annotations.firstIndex(where: { $0.id == id }),
+              case let .text(_, origin, maxWidth) = document.annotations[index].kind
+        else { return }
+        document.annotations[index].kind = .text(text, origin: origin, maxWidth: maxWidth)
+        markOCRStale()
+    }
+
+    func endTextEditing() {
+        guard let id = editingTextAnnotationID else { return }
+        if let index = document.annotations.firstIndex(where: { $0.id == id }),
+           case let .text(text, _, _) = document.annotations[index].kind,
+           text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            document.annotations.remove(at: index)
+        }
+        editingTextAnnotationID = nil
         markOCRStale()
     }
 
@@ -298,6 +345,11 @@ final class ScreenshotPopupViewModel: ObservableObject {
         return CGPoint(x: point.x + crop.minX, y: point.y + crop.minY)
     }
 
+    private func shiftDocumentPointToVisible(_ point: CGPoint) -> CGPoint {
+        guard let crop = document.cropRect else { return point }
+        return CGPoint(x: point.x - crop.minX, y: point.y - crop.minY)
+    }
+
     private func shiftVisibleRectToDocument(_ rect: CGRect) -> CGRect {
         guard let crop = document.cropRect else { return rect.standardized }
         return rect.offsetBy(dx: crop.minX, dy: crop.minY).standardized
@@ -321,7 +373,7 @@ struct ScreenshotPopupView: View {
                     onClose: viewModel.close
                 )
 
-                toolbar
+                AnnotationToolbarView(viewModel: viewModel)
 
                 HStack(alignment: .top, spacing: 12) {
                     AnnotationCanvasView(viewModel: viewModel)
@@ -349,59 +401,6 @@ struct ScreenshotPopupView: View {
                 )
                 .padding(32)
             }
-        }
-    }
-
-    private var toolbar: some View {
-        HStack(spacing: 6) {
-            ForEach(AnnotationTool.allCases) { tool in
-                Button {
-                    viewModel.activeTool = tool
-                } label: {
-                    Image(systemName: tool.symbol)
-                        .frame(width: 28, height: 26)
-                }
-                .buttonStyle(.plain)
-                .background(RoundedRectangle(cornerRadius: 7).fill(viewModel.activeTool == tool ? BoxTheme.accentSoft : .clear))
-                .help(tool.label)
-            }
-
-            Divider().frame(height: 24)
-
-            ColorPicker("Color", selection: Binding(
-                get: { Color(nsColor: viewModel.style.strokeColor.nsColor) },
-                set: { color in
-                    if let cgColor = color.cgColor, let nsColor = NSColor(cgColor: cgColor) {
-                        viewModel.style.strokeColor = CodableColor(nsColor)
-                    }
-                }
-            ))
-            .labelsHidden()
-            .frame(width: 34)
-
-            Slider(value: Binding(
-                get: { Double(viewModel.style.lineWidth) },
-                set: { viewModel.style.lineWidth = CGFloat($0) }
-            ), in: 1...12, step: 1)
-            .frame(width: 90)
-
-            TextField("Text", text: $viewModel.pendingTextLabel)
-                .textFieldStyle(.roundedBorder)
-                .frame(width: 120)
-
-            Spacer()
-
-            Button { viewModel.undo() } label: { Image(systemName: "arrow.uturn.backward") }
-                .buttonStyle(SecondaryButtonStyle())
-                .disabled(!viewModel.canUndo)
-                .keyboardShortcut("z", modifiers: .command)
-            Button { viewModel.redo() } label: { Image(systemName: "arrow.uturn.forward") }
-                .buttonStyle(SecondaryButtonStyle())
-                .disabled(!viewModel.canRedo)
-                .keyboardShortcut("Z", modifiers: [.command, .shift])
-            Button { viewModel.finish() } label: { Image(systemName: "checkmark") }
-                .buttonStyle(PrimaryButtonStyle())
-                .help("Copy image and finish")
         }
     }
 
