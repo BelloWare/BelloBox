@@ -10,10 +10,11 @@ enum BoxTheme {
 /// The floating toolbar that appears next to a fresh text selection. It offers
 /// the available tools (AI actions and QR code) without stealing focus.
 struct FloatingToolbarView: View {
-    static let preferredSize = CGSize(width: 204, height: 52)
+    static let preferredSize = CGSize(width: 248, height: 52)
 
     var onAI: () -> Void
     var onScreenshot: () -> Void
+    var onRecord: () -> Void
     var onQR: () -> Void
     var onTools: () -> Void
 
@@ -22,6 +23,8 @@ struct FloatingToolbarView: View {
             ToolIcon(symbol: "wand.and.stars", help: "Ask Bello Box AI about the selection", action: onAI)
             divider
             ToolIcon(symbol: "camera.viewfinder", help: "Capture, annotate, and OCR a screenshot", action: onScreenshot)
+            divider
+            ToolIcon(symbol: "record.circle", help: "Record screen video", action: onRecord)
             divider
             ToolIcon(symbol: "qrcode", help: "Generate a QR code from the selection", action: onQR)
             divider

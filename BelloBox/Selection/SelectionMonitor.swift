@@ -16,6 +16,7 @@ final class SelectionMonitor {
     private let hotkeySignature: OSType = 0x42425848 // "BBXH"
     private let boardHotkeyID: UInt32 = 1
     private let screenshotHotkeyID: UInt32 = 2
+    private let recordingHotkeyID: UInt32 = 3
 
     var selectionMonitoringEnabled = true
     var hotkeyEnabled = true {
@@ -30,9 +31,16 @@ final class SelectionMonitor {
     var screenshotHotkey = GlobalHotkey.defaultScreenshot {
         didSet { refreshHotkeyRegistrationIfNeeded() }
     }
+    var recordingHotkeyEnabled = false {
+        didSet { refreshHotkeyRegistrationIfNeeded() }
+    }
+    var recordingHotkey = GlobalHotkey.defaultRecording {
+        didSet { refreshHotkeyRegistrationIfNeeded() }
+    }
     var onSelection: ((TextSelection) -> Void)?
     var onHotkey: (() -> Void)?
     var onScreenshotHotkey: (() -> Void)?
+    var onRecordingHotkey: (() -> Void)?
 
     init(accessibility: AccessibilityService) {
         self.accessibility = accessibility
@@ -77,6 +85,8 @@ final class SelectionMonitor {
             onHotkey?()
         case screenshotHotkeyID:
             onScreenshotHotkey?()
+        case recordingHotkeyID:
+            onRecordingHotkey?()
         default:
             break
         }
@@ -89,7 +99,10 @@ final class SelectionMonitor {
     }
 
     private func installHotkeysIfNeeded() {
-        guard (hotkeyEnabled && hotkey.isValid) || (screenshotHotkeyEnabled && screenshotHotkey.isValid) else { return }
+        guard (hotkeyEnabled && hotkey.isValid)
+            || (screenshotHotkeyEnabled && screenshotHotkey.isValid)
+            || (recordingHotkeyEnabled && recordingHotkey.isValid)
+        else { return }
 
         var eventType = EventTypeSpec(
             eventClass: OSType(kEventClassKeyboard),
@@ -118,6 +131,15 @@ final class SelectionMonitor {
                 NSLog("Bello Box screenshot hotkey matches the board hotkey; screenshot hotkey was not registered.")
             } else {
                 register(screenshotHotkey, id: screenshotHotkeyID, label: "screenshot")
+            }
+        }
+        if recordingHotkeyEnabled, recordingHotkey.isValid {
+            if hotkeyEnabled, recordingHotkey == hotkey {
+                NSLog("Bello Box recording hotkey matches the board hotkey; recording hotkey was not registered.")
+            } else if screenshotHotkeyEnabled, recordingHotkey == screenshotHotkey {
+                NSLog("Bello Box recording hotkey matches the screenshot hotkey; recording hotkey was not registered.")
+            } else {
+                register(recordingHotkey, id: recordingHotkeyID, label: "recording")
             }
         }
 

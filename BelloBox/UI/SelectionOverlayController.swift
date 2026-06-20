@@ -12,6 +12,7 @@ final class SelectionOverlayController: NSObject {
     private let screenCaptureService = ScreenCaptureService()
     private let macOCRService = MacVisionOCRService()
     private lazy var llmOCRService = LLMOCRService(settings: settings)
+    private lazy var recordingCoordinator = RecordingCoordinator(settings: settings)
 
     private var toolbarPanel: FloatingButtonPanel?
     private var popupPanel: PopupPanel?
@@ -45,12 +46,18 @@ final class SelectionOverlayController: NSObject {
         monitor.onScreenshotHotkey = { [weak self] in
             self?.triggerScreenshotShortcut()
         }
+        monitor.onRecordingHotkey = { [weak self] in
+            self?.triggerRecording()
+        }
         screenCaptureService.beforeCapture = { [weak self] in
             self?.toolbarPanel?.orderOut(nil)
             self?.popupPanel?.orderOut(nil)
         }
         screenCaptureService.afterCapture = { [weak self] in
             self?.popupPanel?.orderFrontRegardless()
+        }
+        recordingCoordinator.onStateChange = { [weak self] state in
+            self?.handleRecordingState(state)
         }
     }
 
@@ -95,12 +102,24 @@ final class SelectionOverlayController: NSObject {
         monitor.screenshotHotkey = hotkey
     }
 
+    func setRecordingHotkeyEnabled(_ enabled: Bool) {
+        monitor.recordingHotkeyEnabled = enabled
+    }
+
+    func setRecordingHotkey(_ hotkey: GlobalHotkey) {
+        monitor.recordingHotkey = hotkey
+    }
+
+    var isRecording: Bool { recordingCoordinator.isRecording }
+
     private func applyMonitorSettings() {
         monitor.selectionMonitoringEnabled = settings.floatingButtonEnabled
         monitor.hotkeyEnabled = settings.globalHotkeyEnabled
         monitor.hotkey = settings.globalHotkey
         monitor.screenshotHotkeyEnabled = settings.screenshotHotkeyEnabled
         monitor.screenshotHotkey = settings.screenshotHotkey
+        monitor.recordingHotkeyEnabled = settings.recordingHotkeyEnabled
+        monitor.recordingHotkey = settings.recordingHotkey
     }
 
     private func startTrustWatcher() {
@@ -211,6 +230,7 @@ final class SelectionOverlayController: NSObject {
         let view = FloatingToolbarView(
             onAI: { [weak self] in self?.activateAI() },
             onScreenshot: { [weak self] in self?.activateScreenshot() },
+            onRecord: { [weak self] in self?.activateRecording() },
             onQR: { [weak self] in self?.activateQR() },
             onTools: { [weak self] in self?.activateTools() }
         )
@@ -263,6 +283,12 @@ final class SelectionOverlayController: NSObject {
         let anchor = pendingSelection?.anchorRect
         hideToolbar()
         showScreenshotChooser(anchorRect: anchor)
+    }
+
+    private func activateRecording() {
+        let anchor = pendingSelection?.anchorRect
+        hideToolbar()
+        showRecordingChooser(anchorRect: anchor)
     }
 
     private func activateQR() {
@@ -352,6 +378,267 @@ final class SelectionOverlayController: NSObject {
             minimizedIcon: "wrench.and.screwdriver",
             minimizedTitle: "Text Tools"
         )
+    }
+
+    // MARK: - Recording
+
+    func triggerRecording(mode: RecordingCaptureMode? = nil) {
+        hideToolbar()
+        showRecordingChooser(anchorRect: nil, initialMode: mode)
+    }
+
+    func stopRecording() {
+        recordingCoordinator.stop()
+        hidePopup()
+    }
+
+    private func showRecordingChooser(anchorRect: CGRect?, initialMode: RecordingCaptureMode? = nil) {
+        recordingCoordinator.showRecordingChooser(anchor: anchorRect)
+        let view = RecordingCaptureChooserView(
+            settings: settings,
+            initialMode: initialMode,
+            onArea: { [weak self] options in self?.prepareRecording(options: options, anchorRect: anchorRect) { self?.beginRecordingArea(options: $0, anchorRect: anchorRect) } },
+            onWindow: { [weak self] options in self?.prepareRecording(options: options, anchorRect: anchorRect) { self?.showRecordingWindowPicker(options: $0, anchorRect: anchorRect) } },
+            onDisplay: { [weak self] options in self?.prepareRecording(options: options, anchorRect: anchorRect) { self?.startDisplayRecording(options: $0, anchorRect: anchorRect) } },
+            onCancel: { [weak self] in
+                self?.recordingCoordinator.cancel()
+                self?.hidePopup()
+            }
+        )
+        present(
+            view,
+            size: RecordingCaptureChooserView.preferredSize,
+            anchorRect: anchorRect,
+            minimizedIcon: "record.circle",
+            minimizedTitle: "Record"
+        )
+    }
+
+    private func prepareRecording(options: RecordingOptions, anchorRect: CGRect?, start: @escaping (RecordingOptions) -> Void) {
+        let permissions = recordingCoordinator.permissionState(options: options)
+        if shouldShowRecordingPermissions(permissions, options: options) {
+            showRecordingPermissions(permissions: permissions, options: options, anchorRect: anchorRect, start: start)
+            return
+        }
+        start(options)
+    }
+
+    private func shouldShowRecordingPermissions(_ permissions: RecordingPermissionState, options: RecordingOptions) -> Bool {
+        if !permissions.canRecordVideo { return true }
+        if options.audioSource.includesMicrophone, permissions.microphone != .granted { return true }
+        if (options.clickOverlayMode.isEnabled || options.keystrokeMode != .off), permissions.inputMonitoring != .granted { return true }
+        if options.keystrokeMode == .allKeys, permissions.accessibility != .granted { return true }
+        return false
+    }
+
+    private func showRecordingPermissions(
+        permissions: RecordingPermissionState,
+        options: RecordingOptions,
+        anchorRect: CGRect?,
+        start: @escaping (RecordingOptions) -> Void
+    ) {
+        let view = RecordingPermissionView(
+            permissions: permissions,
+            onRequestScreenRecording: {
+                _ = ScreenCapturePermission.requestPrompt()
+                ScreenCapturePermission.openSettings()
+            },
+            onRequestMicrophone: {
+                Task { _ = await MicrophonePermission.request() }
+            },
+            onRequestInputMonitoring: {
+                _ = InputMonitoringPermission.request()
+            },
+            onOpenAccessibility: {
+                AccessibilityService.requestPermissionPrompt()
+                AccessibilityService.openAccessibilitySettings()
+            },
+            onContinueWithoutOptional: { [weak self] in
+                guard let self else { return }
+                let sanitized = self.recordingOptionsByRemovingUnavailableOptionalFeatures(options, permissions: RecordingPermissionState.current(options: options))
+                self.hidePopup()
+                self.prepareRecording(options: sanitized, anchorRect: anchorRect, start: start)
+            },
+            onCancel: { [weak self] in
+                self?.recordingCoordinator.cancel()
+                self?.hidePopup()
+            }
+        )
+        present(
+            view,
+            size: CGSize(width: 520, height: 420),
+            anchorRect: anchorRect,
+            minimizedIcon: "record.circle",
+            minimizedTitle: "Recording Permissions"
+        )
+    }
+
+    private func recordingOptionsByRemovingUnavailableOptionalFeatures(
+        _ options: RecordingOptions,
+        permissions: RecordingPermissionState
+    ) -> RecordingOptions {
+        var sanitized = options
+        if permissions.microphone != .granted {
+            switch sanitized.audioSource {
+            case .microphone:
+                sanitized.audioSource = .none
+            case .microphoneAndSystemAudio:
+                sanitized.audioSource = .systemAudio
+            case .none, .systemAudio:
+                break
+            }
+        }
+        if permissions.inputMonitoring != .granted {
+            sanitized.clickOverlayMode = .off
+            sanitized.keystrokeMode = .off
+        }
+        if permissions.accessibility != .granted, sanitized.keystrokeMode == .allKeys {
+            sanitized.keystrokeMode = .shortcutsOnly
+        }
+        return sanitized
+    }
+
+    private func beginRecordingArea(options: RecordingOptions, anchorRect: CGRect?) {
+#if DEBUG
+        if let area = e2eRegionArea(), let target = recordingTarget(for: area) {
+            Task { await recordingCoordinator.start(target: target, options: options) }
+            return
+        }
+#endif
+        hidePopup()
+        let controller = RegionCaptureOverlayController()
+        regionCaptureController = controller
+        controller.begin { [weak self] result in
+            guard let self else { return }
+            self.regionCaptureController = nil
+            switch result {
+            case let .success(area):
+                guard let target = self.recordingTarget(for: area) else {
+                    self.showRecordingError("No display could be found for this recording area.", anchorRect: anchorRect)
+                    return
+                }
+                Task { await self.recordingCoordinator.start(target: target, options: options) }
+            case let .failure(error):
+                self.showRecordingError(error.localizedDescription, anchorRect: anchorRect)
+            }
+        }
+    }
+
+    private func recordingTarget(for area: CaptureArea) -> RecordingTarget? {
+        guard let screen = area.displayID.flatMap(screen(for:)) ?? ScreenCoordinateSpace.displayForCocoaRect(area.cocoaRect),
+              let displayID = ScreenCoordinateSpace.displayID(for: screen)
+        else { return nil }
+        return .area(displayID: displayID, rectInScreenPoints: area.cocoaRect)
+    }
+
+    private func showRecordingWindowPicker(options: RecordingOptions, anchorRect: CGRect?) {
+        let viewModel = WindowCapturePickerViewModel(service: screenCaptureService)
+        viewModel.onCancel = { [weak self] in self?.hidePopup() }
+        viewModel.onSelect = { [weak self] window in
+            self?.hidePopup()
+            let target = RecordingTarget.window(
+                windowID: CGWindowID(window.windowID),
+                displayID: window.frame.flatMap { ScreenCoordinateSpace.displayForCocoaRect($0).flatMap(ScreenCoordinateSpace.displayID(for:)) },
+                frameInScreenPoints: window.frame
+            )
+            Task { await self?.recordingCoordinator.start(target: target, options: options) }
+        }
+        let view = WindowCapturePickerView(viewModel: viewModel)
+        present(
+            view,
+            size: WindowCapturePickerView.preferredSize,
+            anchorRect: anchorRect,
+            minimizedIcon: "record.circle",
+            minimizedTitle: "Record Window"
+        )
+    }
+
+    private func startDisplayRecording(options: RecordingOptions, anchorRect: CGRect?) {
+        hidePopup()
+        let screen = ScreenCoordinateSpace.screenContainingMouse()
+        guard let displayID = ScreenCoordinateSpace.displayID(for: screen) else {
+            showRecordingError("No display could be found for this recording.", anchorRect: anchorRect)
+            return
+        }
+        Task { await recordingCoordinator.start(target: .display(displayID: displayID), options: options) }
+    }
+
+    private func handleRecordingState(_ state: RecordingState) {
+        switch state {
+        case let .countingDown(seconds):
+            let view = RecordingCountdownView(secondsRemaining: seconds) { [weak self] in
+                self?.recordingCoordinator.cancel()
+                self?.hidePopup()
+            }
+            present(
+                view,
+                size: CGSize(width: 320, height: 240),
+                anchorRect: nil,
+                minimizedIcon: "record.circle",
+                minimizedTitle: "Recording"
+            )
+        case let .recording(runtime):
+            let view = RecordingHUDView(
+                runtime: runtime,
+                isPaused: false,
+                onPauseResume: { [weak self] in self?.recordingCoordinator.pause() },
+                onStop: { [weak self] in self?.recordingCoordinator.stop() }
+            )
+            present(
+                view,
+                size: CGSize(width: 520, height: 80),
+                anchorRect: nil,
+                minimizedIcon: "record.circle",
+                minimizedTitle: "Recording"
+            )
+        case let .paused(runtime):
+            let view = RecordingHUDView(
+                runtime: runtime,
+                isPaused: true,
+                onPauseResume: { [weak self] in self?.recordingCoordinator.resume() },
+                onStop: { [weak self] in self?.recordingCoordinator.stop() }
+            )
+            present(
+                view,
+                size: CGSize(width: 520, height: 80),
+                anchorRect: nil,
+                minimizedIcon: "record.circle",
+                minimizedTitle: "Recording"
+            )
+        case let .reviewing(url):
+            let viewModel = RecordingReviewViewModel(fileURL: url)
+            viewModel.onClose = { [weak self] in self?.hidePopup() }
+            let view = RecordingReviewView(viewModel: viewModel)
+            present(
+                view,
+                size: CGSize(width: 760, height: 430),
+                anchorRect: nil,
+                minimizedIcon: "play.rectangle",
+                minimizedTitle: "Recording"
+            )
+        case let .failed(message):
+            showRecordingError(message, anchorRect: nil)
+        case .idle, .requestingPermissions, .choosingTarget, .finishing:
+            break
+        }
+    }
+
+    private func showRecordingError(_ message: String, anchorRect: CGRect?) {
+        let view = RecordingErrorView(message: message) { [weak self] in
+            self?.recordingCoordinator.cancel()
+            self?.hidePopup()
+        }
+        present(
+            view,
+            size: CGSize(width: 420, height: 220),
+            anchorRect: anchorRect,
+            minimizedIcon: "record.circle",
+            minimizedTitle: "Recording"
+        )
+    }
+
+    private func screen(for displayID: CGDirectDisplayID) -> NSScreen? {
+        NSScreen.screens.first { ScreenCoordinateSpace.displayID(for: $0) == displayID }
     }
 
     // MARK: - Screenshots

@@ -4,6 +4,7 @@ import Carbon
 struct GlobalHotkey: Equatable {
     static let `default` = GlobalHotkey(keyCode: 11, modifiers: [.control, .option, .command])
     static let defaultScreenshot = GlobalHotkey(keyCode: 1, modifiers: [.control, .option, .command])
+    static let defaultRecording = GlobalHotkey(keyCode: 15, modifiers: [.control, .option, .command])
 
     let keyCode: UInt16
     let modifiers: NSEvent.ModifierFlags

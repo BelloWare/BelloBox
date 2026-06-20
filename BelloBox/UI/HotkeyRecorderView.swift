@@ -37,6 +37,24 @@ struct ScreenshotHotkeyRecorderView: View {
     }
 }
 
+struct RecordingHotkeyRecorderView: View {
+    @ObservedObject var settings: AppSettings
+
+    var body: some View {
+        HotkeyRecorderControl(
+            hotkey: settings.recordingHotkey,
+            defaultHotkey: .defaultRecording,
+            setHotkey: {
+                settings.setRecordingHotkey($0)
+                settings.recordingHotkeyEnabled = true
+            },
+            resetHotkey: {
+                settings.resetRecordingHotkey()
+            }
+        )
+    }
+}
+
 private struct HotkeyRecorderControl: View {
     var hotkey: GlobalHotkey
     var defaultHotkey: GlobalHotkey

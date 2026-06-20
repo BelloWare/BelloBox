@@ -7,6 +7,8 @@ struct SettingsView: View {
 
     @State private var accessibilityTrusted = AccessibilityService.isTrusted
     @State private var screenRecordingTrusted = ScreenCapturePermission.isTrusted
+    @State private var microphonePermission = MicrophonePermission.status()
+    @State private var inputMonitoringPermission = InputMonitoringPermission.status()
     private let permissionTimer = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -18,6 +20,7 @@ struct SettingsView: View {
             appearanceSection
             behaviorSection
             screenshotSection
+            recordingSection
             permissionSection
         }
         .formStyle(.grouped)
@@ -25,6 +28,8 @@ struct SettingsView: View {
         .onReceive(permissionTimer) { _ in
             accessibilityTrusted = AccessibilityService.isTrusted
             screenRecordingTrusted = ScreenCapturePermission.isTrusted
+            microphonePermission = MicrophonePermission.status()
+            inputMonitoringPermission = InputMonitoringPermission.status()
         }
     }
 
@@ -107,6 +112,63 @@ struct SettingsView: View {
         }
     }
 
+    private var recordingSection: some View {
+        Section("Recording") {
+            Toggle("Include cursor in recordings", isOn: $settings.recordingIncludeCursor)
+            AudioSourcePickerView(
+                audioSource: Binding(
+                    get: { settings.recordingAudioSource },
+                    set: { settings.recordingAudioSource = $0 }
+                ),
+                microphoneDeviceID: $settings.recordingLastMicrophoneDeviceID
+            )
+            Picker("Click overlays", selection: Binding(
+                get: { settings.recordingClickOverlayMode },
+                set: { settings.recordingClickOverlayMode = $0 }
+            )) {
+                ForEach(ClickOverlayMode.allCases) { mode in
+                    Text(mode.label).tag(mode)
+                }
+            }
+            Picker("Keystroke overlays", selection: Binding(
+                get: { settings.recordingKeystrokeMode },
+                set: { settings.recordingKeystrokeMode = $0 }
+            )) {
+                ForEach(KeystrokeCaptureMode.allCases) { mode in
+                    Text(mode.label).tag(mode)
+                }
+            }
+            Picker("Secure-field protection", selection: Binding(
+                get: { settings.recordingSecureFieldRedactionMode },
+                set: { settings.recordingSecureFieldRedactionMode = $0 }
+            )) {
+                ForEach(SecureFieldRedactionMode.allCases) { mode in
+                    Text(mode.label).tag(mode)
+                }
+            }
+            Picker("Quality", selection: Binding(
+                get: { settings.recordingQualityPreset },
+                set: { settings.recordingQualityPreset = $0 }
+            )) {
+                ForEach(RecordingQualityPreset.allCases) { preset in
+                    Text(preset.label).tag(preset)
+                }
+            }
+            Stepper(value: $settings.recordingCountdownSeconds, in: 0...10) {
+                Text("Countdown: \(settings.recordingCountdownSeconds)s")
+            }
+
+            Toggle("Enable recording shortcut \(settings.recordingHotkey.displayString)", isOn: $settings.recordingHotkeyEnabled)
+            LabeledContent("Recording shortcut") {
+                RecordingHotkeyRecorderView(settings: settings)
+            }
+
+            Text("Default keystroke capture is shortcuts-only. All-key overlays are explicit opt-in and are disabled when Accessibility is unavailable. Bello Box hides detected secure fields and suppresses key overlays while typing into them. Microphone audio may still include anything spoken aloud.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+    }
+
     private var permissionSection: some View {
         Section("Permissions") {
             permissionRow(
@@ -124,13 +186,37 @@ struct SettingsView: View {
             permissionRow(
                 title: "Screen Recording",
                 detail: screenRecordingTrusted
-                    ? "Granted — Bello Box can capture screenshots."
-                    : "Required for screenshots and scrolling capture.",
+                    ? "Granted — Bello Box can capture screenshots and recordings."
+                    : "Required for screenshots and recordings.",
                 trusted: screenRecordingTrusted,
                 actionTitle: "Grant…",
                 action: {
                     _ = ScreenCapturePermission.requestPrompt()
                     ScreenCapturePermission.openSettings()
+                }
+            )
+            permissionRow(
+                title: "Microphone",
+                detail: microphonePermission == .granted
+                    ? "Granted — Bello Box can record microphone audio when enabled."
+                    : "Optional for recording microphone audio.",
+                trusted: microphonePermission == .granted,
+                actionTitle: "Grant…",
+                action: {
+                    Task {
+                        microphonePermission = await MicrophonePermission.request()
+                    }
+                }
+            )
+            permissionRow(
+                title: "Input Monitoring",
+                detail: inputMonitoringPermission == .granted
+                    ? "Granted — Bello Box can show click and keyboard overlays while recording."
+                    : "Optional for click and keyboard overlays while recording.",
+                trusted: inputMonitoringPermission == .granted,
+                actionTitle: "Grant…",
+                action: {
+                    inputMonitoringPermission = InputMonitoringPermission.request()
                 }
             )
         }

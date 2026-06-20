@@ -85,6 +85,9 @@ final class AppSettings: ObservableObject {
         static let screenshotHotkeyEnabled = "screenshotHotkeyEnabled"
         static let screenshotHotkeyKeyCode = "screenshotHotkeyKeyCode"
         static let screenshotHotkeyModifiers = "screenshotHotkeyModifiers"
+        static let recordingHotkeyEnabled = "recordingHotkeyEnabled"
+        static let recordingHotkeyKeyCode = "recordingHotkeyKeyCode"
+        static let recordingHotkeyModifiers = "recordingHotkeyModifiers"
         static let hasCompletedSetup = "hasCompletedSetup"
         static let appearance = "appearance"
         static let codexPath = "codexPath"
@@ -103,6 +106,14 @@ final class AppSettings: ObservableObject {
         static let ocrShowTextRegions = "ocrShowTextRegions"
         static let llmOCRMaxUploadLongEdge = "llmOCRMaxUploadLongEdge"
         static let llmOCRIncludeLocalOCRHint = "llmOCRIncludeLocalOCRHint"
+        static let recordingIncludeCursor = "recordingIncludeCursor"
+        static let recordingAudioSource = "recordingAudioSource"
+        static let recordingClickOverlayMode = "recordingClickOverlayMode"
+        static let recordingKeystrokeMode = "recordingKeystrokeMode"
+        static let recordingSecureFieldRedactionMode = "recordingSecureFieldRedactionMode"
+        static let recordingQualityPreset = "recordingQualityPreset"
+        static let recordingCountdownSeconds = "recordingCountdownSeconds"
+        static let recordingLastMicrophoneDeviceID = "recordingLastMicrophoneDeviceID"
     }
 
     static let defaultSystemPrompt = """
@@ -136,6 +147,9 @@ final class AppSettings: ObservableObject {
     @Published var screenshotHotkeyEnabled: Bool { didSet { defaults.set(screenshotHotkeyEnabled, forKey: Keys.screenshotHotkeyEnabled) } }
     @Published var screenshotHotkeyKeyCode: Int { didSet { defaults.set(screenshotHotkeyKeyCode, forKey: Keys.screenshotHotkeyKeyCode) } }
     @Published var screenshotHotkeyModifiersRawValue: Int { didSet { defaults.set(screenshotHotkeyModifiersRawValue, forKey: Keys.screenshotHotkeyModifiers) } }
+    @Published var recordingHotkeyEnabled: Bool { didSet { defaults.set(recordingHotkeyEnabled, forKey: Keys.recordingHotkeyEnabled) } }
+    @Published var recordingHotkeyKeyCode: Int { didSet { defaults.set(recordingHotkeyKeyCode, forKey: Keys.recordingHotkeyKeyCode) } }
+    @Published var recordingHotkeyModifiersRawValue: Int { didSet { defaults.set(recordingHotkeyModifiersRawValue, forKey: Keys.recordingHotkeyModifiers) } }
     @Published var appearance: AppearancePreference { didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) } }
     @Published var codexPath: String { didSet { defaults.set(codexPath, forKey: Keys.codexPath) } }
     @Published var codexModel: String { didSet { defaults.set(codexModel, forKey: Keys.codexModel) } }
@@ -153,6 +167,14 @@ final class AppSettings: ObservableObject {
     @Published var ocrShowTextRegions: Bool { didSet { defaults.set(ocrShowTextRegions, forKey: Keys.ocrShowTextRegions) } }
     @Published var llmOCRMaxUploadLongEdge: Int { didSet { defaults.set(llmOCRMaxUploadLongEdge, forKey: Keys.llmOCRMaxUploadLongEdge) } }
     @Published var llmOCRIncludeLocalOCRHint: Bool { didSet { defaults.set(llmOCRIncludeLocalOCRHint, forKey: Keys.llmOCRIncludeLocalOCRHint) } }
+    @Published var recordingIncludeCursor: Bool { didSet { defaults.set(recordingIncludeCursor, forKey: Keys.recordingIncludeCursor) } }
+    @Published var recordingAudioSourceRawValue: String { didSet { defaults.set(recordingAudioSourceRawValue, forKey: Keys.recordingAudioSource) } }
+    @Published var recordingClickOverlayModeRawValue: String { didSet { defaults.set(recordingClickOverlayModeRawValue, forKey: Keys.recordingClickOverlayMode) } }
+    @Published var recordingKeystrokeModeRawValue: String { didSet { defaults.set(recordingKeystrokeModeRawValue, forKey: Keys.recordingKeystrokeMode) } }
+    @Published var recordingSecureFieldRedactionModeRawValue: String { didSet { defaults.set(recordingSecureFieldRedactionModeRawValue, forKey: Keys.recordingSecureFieldRedactionMode) } }
+    @Published var recordingQualityPresetRawValue: String { didSet { defaults.set(recordingQualityPresetRawValue, forKey: Keys.recordingQualityPreset) } }
+    @Published var recordingCountdownSeconds: Int { didSet { defaults.set(Self.normalizedCountdown(recordingCountdownSeconds), forKey: Keys.recordingCountdownSeconds) } }
+    @Published var recordingLastMicrophoneDeviceID: String? { didSet { defaults.set(recordingLastMicrophoneDeviceID, forKey: Keys.recordingLastMicrophoneDeviceID) } }
 
     /// API key for the currently-selected provider. Persisted to the Keychain.
     @Published var apiKey: String {
@@ -194,6 +216,16 @@ final class AppSettings: ObservableObject {
         )
         screenshotHotkeyKeyCode = Int(storedScreenshotHotkey.keyCode)
         screenshotHotkeyModifiersRawValue = Int(storedScreenshotHotkey.modifiers.rawValue)
+        recordingHotkeyEnabled = (defaults.object(forKey: Keys.recordingHotkeyEnabled) as? Bool) ?? false
+        let storedRecordingHotkeyKeyCode = defaults.object(forKey: Keys.recordingHotkeyKeyCode) as? Int
+        let storedRecordingHotkeyModifiers = defaults.object(forKey: Keys.recordingHotkeyModifiers) as? Int
+        let storedRecordingHotkey = Self.normalizedHotkey(
+            keyCode: storedRecordingHotkeyKeyCode,
+            modifiersRawValue: storedRecordingHotkeyModifiers,
+            defaultHotkey: .defaultRecording
+        )
+        recordingHotkeyKeyCode = Int(storedRecordingHotkey.keyCode)
+        recordingHotkeyModifiersRawValue = Int(storedRecordingHotkey.modifiers.rawValue)
         appearance = AppearancePreference(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         codexPath = defaults.string(forKey: Keys.codexPath) ?? ""
         let storedCodexModel = defaults.string(forKey: Keys.codexModel) ?? ""
@@ -217,6 +249,35 @@ final class AppSettings: ObservableObject {
         ocrShowTextRegions = (defaults.object(forKey: Keys.ocrShowTextRegions) as? Bool) ?? false
         llmOCRMaxUploadLongEdge = defaults.object(forKey: Keys.llmOCRMaxUploadLongEdge) as? Int ?? 2200
         llmOCRIncludeLocalOCRHint = (defaults.object(forKey: Keys.llmOCRIncludeLocalOCRHint) as? Bool) ?? true
+        recordingIncludeCursor = (defaults.object(forKey: Keys.recordingIncludeCursor) as? Bool) ?? RecordingOptions.default.includeCursor
+        recordingAudioSourceRawValue = Self.normalizedRawValue(
+            defaults.string(forKey: Keys.recordingAudioSource),
+            valid: RecordingAudioSource.allCases,
+            defaultValue: RecordingOptions.default.audioSource
+        )
+        recordingClickOverlayModeRawValue = Self.normalizedRawValue(
+            defaults.string(forKey: Keys.recordingClickOverlayMode),
+            valid: ClickOverlayMode.allCases,
+            defaultValue: RecordingOptions.default.clickOverlayMode
+        )
+        recordingKeystrokeModeRawValue = Self.normalizedRawValue(
+            defaults.string(forKey: Keys.recordingKeystrokeMode),
+            valid: KeystrokeCaptureMode.allCases,
+            defaultValue: RecordingOptions.default.keystrokeMode
+        )
+        recordingSecureFieldRedactionModeRawValue = Self.normalizedRawValue(
+            defaults.string(forKey: Keys.recordingSecureFieldRedactionMode),
+            valid: SecureFieldRedactionMode.allCases,
+            defaultValue: RecordingOptions.default.secureFieldRedactionMode
+        )
+        recordingQualityPresetRawValue = Self.normalizedRawValue(
+            defaults.string(forKey: Keys.recordingQualityPreset),
+            valid: RecordingQualityPreset.allCases,
+            defaultValue: RecordingOptions.default.quality
+        )
+        let storedCountdown = defaults.object(forKey: Keys.recordingCountdownSeconds) as? Int
+        recordingCountdownSeconds = Self.normalizedCountdown(storedCountdown ?? RecordingOptions.default.countdownSeconds)
+        recordingLastMicrophoneDeviceID = defaults.string(forKey: Keys.recordingLastMicrophoneDeviceID)
         apiKey = KeychainStore.get(account: KeychainStore.account(for: kind)) ?? ""
     }
 
@@ -270,6 +331,53 @@ final class AppSettings: ObservableObject {
         )
     }
 
+    var recordingHotkey: GlobalHotkey {
+        GlobalHotkey(
+            keyCode: UInt16(clamping: recordingHotkeyKeyCode),
+            modifiers: NSEvent.ModifierFlags(rawValue: UInt(recordingHotkeyModifiersRawValue))
+        )
+    }
+
+    var recordingAudioSource: RecordingAudioSource {
+        get { RecordingAudioSource(rawValue: recordingAudioSourceRawValue) ?? RecordingOptions.default.audioSource }
+        set { recordingAudioSourceRawValue = newValue.rawValue }
+    }
+
+    var recordingClickOverlayMode: ClickOverlayMode {
+        get { ClickOverlayMode(rawValue: recordingClickOverlayModeRawValue) ?? RecordingOptions.default.clickOverlayMode }
+        set { recordingClickOverlayModeRawValue = newValue.rawValue }
+    }
+
+    var recordingKeystrokeMode: KeystrokeCaptureMode {
+        get { KeystrokeCaptureMode(rawValue: recordingKeystrokeModeRawValue) ?? RecordingOptions.default.keystrokeMode }
+        set { recordingKeystrokeModeRawValue = newValue.rawValue }
+    }
+
+    var recordingSecureFieldRedactionMode: SecureFieldRedactionMode {
+        get { SecureFieldRedactionMode(rawValue: recordingSecureFieldRedactionModeRawValue) ?? RecordingOptions.default.secureFieldRedactionMode }
+        set { recordingSecureFieldRedactionModeRawValue = newValue.rawValue }
+    }
+
+    var recordingQualityPreset: RecordingQualityPreset {
+        get { RecordingQualityPreset(rawValue: recordingQualityPresetRawValue) ?? RecordingOptions.default.quality }
+        set { recordingQualityPresetRawValue = newValue.rawValue }
+    }
+
+    var recordingOptions: RecordingOptions {
+        RecordingOptions(
+            audioSource: recordingAudioSource,
+            microphoneDeviceID: recordingLastMicrophoneDeviceID,
+            includeCursor: recordingIncludeCursor,
+            clickOverlayMode: recordingClickOverlayMode,
+            keystrokeMode: recordingKeystrokeMode,
+            secureFieldRedactionMode: recordingSecureFieldRedactionMode,
+            quality: recordingQualityPreset,
+            countdownSeconds: Self.normalizedCountdown(recordingCountdownSeconds),
+            excludeBelloBoxWindows: true,
+            excludesCurrentProcessAudio: true
+        )
+    }
+
     func setGlobalHotkey(_ hotkey: GlobalHotkey) {
         globalHotkeyKeyCode = Int(hotkey.keyCode)
         globalHotkeyModifiersRawValue = Int(hotkey.modifiers.rawValue)
@@ -286,6 +394,27 @@ final class AppSettings: ObservableObject {
 
     func resetScreenshotHotkey() {
         setScreenshotHotkey(.defaultScreenshot)
+    }
+
+    func setRecordingHotkey(_ hotkey: GlobalHotkey) {
+        recordingHotkeyKeyCode = Int(hotkey.keyCode)
+        recordingHotkeyModifiersRawValue = Int(hotkey.modifiers.rawValue)
+    }
+
+    func resetRecordingHotkey() {
+        setRecordingHotkey(.defaultRecording)
+    }
+
+    func resetRecordingOptions() {
+        let defaults = RecordingOptions.default
+        recordingIncludeCursor = defaults.includeCursor
+        recordingAudioSource = defaults.audioSource
+        recordingClickOverlayMode = defaults.clickOverlayMode
+        recordingKeystrokeMode = defaults.keystrokeMode
+        recordingSecureFieldRedactionMode = defaults.secureFieldRedactionMode
+        recordingQualityPreset = defaults.quality
+        recordingCountdownSeconds = defaults.countdownSeconds
+        recordingLastMicrophoneDeviceID = defaults.microphoneDeviceID
     }
 
     func resetSystemPrompt() { systemPrompt = Self.defaultSystemPrompt }
@@ -338,5 +467,20 @@ final class AppSettings: ObservableObject {
     private static func normalizedTemperature(_ value: Double) -> Double {
         guard value.isFinite else { return 1.0 }
         return min(max((value * 100).rounded() / 100, 0), 2)
+    }
+
+    private static func normalizedCountdown(_ value: Int) -> Int {
+        min(max(value, 0), 10)
+    }
+
+    private static func normalizedRawValue<T: RawRepresentable & CaseIterable>(
+        _ rawValue: String?,
+        valid: T.AllCases,
+        defaultValue: T
+    ) -> String where T.RawValue == String {
+        guard let rawValue, valid.contains(where: { $0.rawValue == rawValue }) else {
+            return defaultValue.rawValue
+        }
+        return rawValue
     }
 }

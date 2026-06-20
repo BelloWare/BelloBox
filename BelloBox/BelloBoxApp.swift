@@ -34,6 +34,19 @@ struct BelloBoxApp: App {
         Button("Capture Scrolling Screenshot…") {
             appDelegate.overlay?.triggerScrollingScreenshotCapture()
         }
+        Button("Record Area…") {
+            appDelegate.overlay?.triggerRecording(mode: .area)
+        }
+        Button("Record Window…") {
+            appDelegate.overlay?.triggerRecording(mode: .window)
+        }
+        Button("Record Screen…") {
+            appDelegate.overlay?.triggerRecording(mode: .display)
+        }
+        Button("Stop Recording") {
+            appDelegate.overlay?.stopRecording()
+        }
+        .disabled(!(appDelegate.overlay?.isRecording ?? false))
         Button("Generate QR Code from Selection") {
             appDelegate.overlay?.triggerQROnCurrentSelection()
         }
@@ -117,6 +130,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak overlay, weak settings] _, _ in
                 guard let settings else { return }
                 overlay?.setScreenshotHotkey(settings.screenshotHotkey)
+            }
+            .store(in: &cancellables)
+
+        settings.$recordingHotkeyEnabled
+            .receive(on: RunLoop.main)
+            .sink { [weak overlay] enabled in overlay?.setRecordingHotkeyEnabled(enabled) }
+            .store(in: &cancellables)
+
+        Publishers.CombineLatest(settings.$recordingHotkeyKeyCode, settings.$recordingHotkeyModifiersRawValue)
+            .receive(on: RunLoop.main)
+            .sink { [weak overlay, weak settings] _, _ in
+                guard let settings else { return }
+                overlay?.setRecordingHotkey(settings.recordingHotkey)
             }
             .store(in: &cancellables)
 

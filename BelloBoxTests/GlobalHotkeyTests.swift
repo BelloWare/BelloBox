@@ -11,6 +11,10 @@ final class GlobalHotkeyTests: XCTestCase {
         XCTAssertEqual(GlobalHotkey.defaultScreenshot.displayString, "⌃⌥⌘S")
     }
 
+    func testDefaultRecordingDisplayString() {
+        XCTAssertEqual(GlobalHotkey.defaultRecording.displayString, "⌃⌥⌘R")
+    }
+
     func testMatchesConfiguredShortcut() {
         let event = keyEvent(keyCode: 11, modifiers: [.control, .option, .command])
         XCTAssertTrue(GlobalHotkey.default.matches(event))
@@ -19,6 +23,11 @@ final class GlobalHotkeyTests: XCTestCase {
     func testMatchesConfiguredScreenshotShortcut() {
         let event = keyEvent(keyCode: 1, modifiers: [.control, .option, .command])
         XCTAssertTrue(GlobalHotkey.defaultScreenshot.matches(event))
+    }
+
+    func testMatchesConfiguredRecordingShortcut() {
+        let event = keyEvent(keyCode: 15, modifiers: [.control, .option, .command])
+        XCTAssertTrue(GlobalHotkey.defaultRecording.matches(event))
     }
 
     func testRejectsDifferentModifiers() {
