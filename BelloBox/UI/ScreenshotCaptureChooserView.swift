@@ -40,7 +40,7 @@ struct ScreenshotCaptureChooserView: View {
             PopupHeader(
                 icon: "camera.viewfinder",
                 title: "Screenshot",
-                subtitle: "Capture, annotate, and OCR",
+                subtitle: "Capture and annotate",
                 onClose: viewModel.onClose
             )
 
@@ -65,7 +65,7 @@ struct ScreenshotCaptureChooserView: View {
 
             Spacer(minLength: 0)
 
-            Text("Screenshots and Mac OCR stay on this Mac. LLM OCR asks before upload.")
+            Text("Screenshots stay on this Mac. OCR is available from the screenshot editor and LLM OCR asks before upload.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -136,4 +136,3 @@ struct ScreenshotCaptureChooserView: View {
         }
     }
 }
-

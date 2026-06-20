@@ -22,7 +22,7 @@ struct FloatingToolbarView: View {
         HStack(spacing: 4) {
             ToolIcon(symbol: "wand.and.stars", help: "Ask Bello Box AI about the selection", action: onAI)
             divider
-            ToolIcon(symbol: "camera.viewfinder", help: "Capture, annotate, and OCR a screenshot", action: onScreenshot)
+            ToolIcon(symbol: "camera.viewfinder", help: "Capture and annotate a screenshot", action: onScreenshot)
             divider
             ToolIcon(symbol: "record.circle", help: "Record screen video", action: onRecord)
             divider

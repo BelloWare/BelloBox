@@ -11,8 +11,9 @@ struct OnboardingView: View {
 
     @State private var step = 0
     @State private var trusted = AccessibilityService.isTrusted
+    @State private var screenRecordingTrusted = ScreenCapturePermission.isTrusted
 
-    private let stepCount = 5
+    private let stepCount = 6
     private let poll = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -33,6 +34,7 @@ struct OnboardingView: View {
                 trusted = now
                 if now { onPermissionGranted() }
             }
+            screenRecordingTrusted = ScreenCapturePermission.isTrusted
         }
     }
 
@@ -44,7 +46,8 @@ struct OnboardingView: View {
         case 0: welcomeStep
         case 1: permissionStep
         case 2: behaviorStep
-        case 3: providerStep
+        case 3: captureShortcutStep
+        case 4: providerStep
         default: doneStep
         }
     }
@@ -62,7 +65,7 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 12) {
                 bullet("cursorarrow.rays", "Select text anywhere", "A small Bello Box toolbar can appear next to your selection.")
                 bullet("wand.and.stars", "Ask the AI", "Fix grammar, rewrite, summarize, or translate — then copy or replace in place.")
-                bullet("camera.viewfinder", "Capture screenshots", "Grab an area, window, screen, or scrolling page, then annotate and OCR it.")
+                bullet("camera.viewfinder", "Capture screenshots and recordings", "Grab an area, window, screen, or scrolling page, then annotate screenshots or record demos.")
                 bullet("qrcode", "Make a QR code", "Turn a link or any text into a scannable QR code you can edit on the fly.")
             }
             .padding(.top, 4)
@@ -75,28 +78,28 @@ struct OnboardingView: View {
             Text("Bello Box uses macOS Accessibility to read the text you select and paste replacements back. It only reads a selection when you ask it to. Nothing is sent anywhere except to the AI endpoint you configure.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Screenshots use macOS Screen Recording permission. Bello Box asks for that only when you use screenshot capture; Mac OCR stays on-device, and LLM OCR asks before uploading an image.")
+            Text("Screenshots and screen recordings use macOS Screen Recording permission. Bello Box can ask later when you first capture, or you can grant it now.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            HStack(spacing: 12) {
-                Image(systemName: trusted ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                    .font(.system(size: 26))
-                    .foregroundStyle(trusted ? .green : .orange)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(trusted ? "Accessibility access granted" : "Accessibility access needed")
-                        .font(.headline)
-                    Text(trusted
-                        ? "Bello Box is ready to read selections."
-                        : "Toggle Bello Box on under Privacy & Security → Accessibility.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-            }
-            .padding(14)
-            .background(RoundedRectangle(cornerRadius: 12).fill(.primary.opacity(0.05)))
+            permissionCard(
+                granted: trusted,
+                icon: trusted ? "checkmark.circle.fill" : "exclamationmark.circle.fill",
+                title: trusted ? "Accessibility access granted" : "Accessibility access needed",
+                detail: trusted
+                    ? "Bello Box is ready to read selections."
+                    : "Toggle Bello Box on under Privacy & Security → Accessibility."
+            )
+
+            permissionCard(
+                granted: screenRecordingTrusted,
+                icon: screenRecordingTrusted ? "checkmark.circle.fill" : "record.circle",
+                title: screenRecordingTrusted ? "Screen Recording granted" : "Screen Recording optional now",
+                detail: screenRecordingTrusted
+                    ? "Bello Box can capture screenshots and recordings."
+                    : "Grant it now if you plan to use screenshots or recordings right away."
+            )
 
             if !trusted {
                 Button {
@@ -109,6 +112,16 @@ struct OnboardingView: View {
                 Text("This window updates automatically once you grant access.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+            }
+
+            if !screenRecordingTrusted {
+                Button {
+                    _ = ScreenCapturePermission.requestPrompt()
+                    ScreenCapturePermission.openSettings()
+                } label: {
+                    Label("Open Screen Recording Settings", systemImage: "arrow.up.forward.app")
+                }
+                .controlSize(.large)
             }
         }
     }
@@ -151,6 +164,55 @@ struct OnboardingView: View {
         }
     }
 
+    private var captureShortcutStep: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            stepHeader("Set capture shortcuts", systemImage: "keyboard")
+            Text("Choose whether Bello Box should respond to global shortcuts for screenshots and screen recordings. You can change these later in Settings.")
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: 14) {
+                Toggle(isOn: $settings.screenshotHotkeyEnabled) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Enable screenshot shortcut \(settings.screenshotHotkey.displayString)")
+                            .font(.headline)
+                        Text("Starts your default screenshot capture mode.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                ScreenshotHotkeyRecorderView(settings: settings)
+                    .disabled(!settings.screenshotHotkeyEnabled)
+                    .padding(.leading, 44)
+
+                Picker("Default screenshot capture", selection: $settings.screenshotDefaultMode) {
+                    ForEach(ScreenshotDefaultMode.allCases) { mode in
+                        Text(mode.label).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                Divider()
+
+                Toggle(isOn: $settings.recordingHotkeyEnabled) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Enable recording shortcut \(settings.recordingHotkey.displayString)")
+                            .font(.headline)
+                        Text("Opens the recorder with area, window, and screen choices.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                RecordingHotkeyRecorderView(settings: settings)
+                    .disabled(!settings.recordingHotkeyEnabled)
+                    .padding(.leading, 44)
+            }
+            .toggleStyle(.switch)
+            .padding(16)
+            .background(RoundedRectangle(cornerRadius: 12).fill(.primary.opacity(0.05)))
+        }
+    }
+
     private var providerStep: some View {
         VStack(alignment: .leading, spacing: 14) {
             stepHeader("Connect your AI", systemImage: "antenna.radiowaves.left.and.right")
@@ -180,7 +242,7 @@ struct OnboardingView: View {
                 if settings.floatingButtonEnabled {
                     bullet("cursorarrow.rays", "Use auto hint", "Select text with the mouse and the Bello Box tool board appears nearby.")
                 }
-                bullet("camera.viewfinder", "Capture and OCR screenshots", "Screen Recording is requested lazily on first screenshot use. Mac OCR stays local; LLM OCR requires confirmation.")
+                bullet("camera.viewfinder", "Capture screenshots and recordings", "Screen Recording is requested lazily if you did not grant it yet. OCR only runs from the screenshot editor when you ask for it.")
             }
             .padding(.top, 4)
 
@@ -252,6 +314,24 @@ struct OnboardingView: View {
         case (false, false):
             return "Open Bello Box from the menu bar when you need it. You can re-enable auto hint or the shortcut in Settings anytime."
         }
+    }
+
+    private func permissionCard(granted: Bool, icon: String, title: String, detail: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 26))
+                .foregroundStyle(granted ? .green : .orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.headline)
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(.primary.opacity(0.05)))
     }
 
     private func stepHeader(_ title: String, systemImage: String) -> some View {

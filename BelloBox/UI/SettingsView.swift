@@ -74,7 +74,6 @@ struct SettingsView: View {
         Section("Screenshot") {
             Toggle("Include cursor in screenshots", isOn: $settings.screenshotIncludeCursor)
             Toggle("Auto-copy captured screenshot", isOn: $settings.screenshotAutoCopy)
-            Toggle("Auto-run local OCR after capture", isOn: $settings.screenshotAutoRunLocalOCR)
             Toggle("Enable screenshot shortcut \(settings.screenshotHotkey.displayString)", isOn: $settings.screenshotHotkeyEnabled)
             LabeledContent("Screenshot shortcut") {
                 ScreenshotHotkeyRecorderView(settings: settings)

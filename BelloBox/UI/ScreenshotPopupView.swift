@@ -47,9 +47,6 @@ final class ScreenshotPopupViewModel: ObservableObject {
         if settings.screenshotAutoCopy {
             copyRenderedImage()
         }
-        if settings.screenshotAutoRunLocalOCR {
-            runMacOCR()
-        }
     }
 
     var previewImage: CGImage {
@@ -229,6 +226,13 @@ final class ScreenshotPopupViewModel: ObservableObject {
         onClose()
     }
 
+    func finish() {
+        copyRenderedImage()
+        if errorMessage == nil {
+            onClose()
+        }
+    }
+
     private func wireOCRPanel() {
         ocrPanel.onRunMacOCR = { [weak self] in self?.runMacOCR() }
         ocrPanel.onRunLLMOCR = { [weak self] in self?.requestLLMOCR() }
@@ -395,6 +399,9 @@ struct ScreenshotPopupView: View {
                 .buttonStyle(SecondaryButtonStyle())
                 .disabled(!viewModel.canRedo)
                 .keyboardShortcut("Z", modifiers: [.command, .shift])
+            Button { viewModel.finish() } label: { Image(systemName: "checkmark") }
+                .buttonStyle(PrimaryButtonStyle())
+                .help("Copy image and finish")
         }
     }
 
@@ -410,6 +417,8 @@ struct ScreenshotPopupView: View {
             Button("Copy Image") { viewModel.copyRenderedImage() }
                 .buttonStyle(PrimaryButtonStyle())
             Button("Save PNG") { viewModel.saveRenderedImage() }
+                .buttonStyle(SecondaryButtonStyle())
+            Button("Done") { viewModel.finish() }
                 .buttonStyle(SecondaryButtonStyle())
         }
     }

@@ -98,7 +98,6 @@ final class AppSettings: ObservableObject {
         static let screenshotDefaultMode = "screenshotDefaultMode"
         static let scrollingScreenshotMaxFrames = "scrollingScreenshotMaxFrames"
         static let scrollingScreenshotAutoCompact = "scrollingScreenshotAutoCompact"
-        static let screenshotAutoRunLocalOCR = "screenshotAutoRunLocalOCR"
         static let ocrDefaultEngine = "ocrDefaultEngine"
         static let ocrRecognitionLevel = "ocrRecognitionLevel"
         static let ocrLanguageHints = "ocrLanguageHints"
@@ -159,7 +158,6 @@ final class AppSettings: ObservableObject {
     @Published var screenshotDefaultMode: ScreenshotDefaultMode { didSet { defaults.set(screenshotDefaultMode.rawValue, forKey: Keys.screenshotDefaultMode) } }
     @Published var scrollingScreenshotMaxFrames: Int { didSet { defaults.set(scrollingScreenshotMaxFrames, forKey: Keys.scrollingScreenshotMaxFrames) } }
     @Published var scrollingScreenshotAutoCompact: Bool { didSet { defaults.set(scrollingScreenshotAutoCompact, forKey: Keys.scrollingScreenshotAutoCompact) } }
-    @Published var screenshotAutoRunLocalOCR: Bool { didSet { defaults.set(screenshotAutoRunLocalOCR, forKey: Keys.screenshotAutoRunLocalOCR) } }
     @Published var ocrDefaultEngine: OCRDefaultEngine { didSet { defaults.set(ocrDefaultEngine.rawValue, forKey: Keys.ocrDefaultEngine) } }
     @Published var ocrRecognitionLevel: OCRRecognitionLevel { didSet { defaults.set(ocrRecognitionLevel.rawValue, forKey: Keys.ocrRecognitionLevel) } }
     @Published var ocrLanguageHints: [String] { didSet { defaults.set(ocrLanguageHints, forKey: Keys.ocrLanguageHints) } }
@@ -241,7 +239,6 @@ final class AppSettings: ObservableObject {
         screenshotDefaultMode = ScreenshotDefaultMode(rawValue: defaults.string(forKey: Keys.screenshotDefaultMode) ?? "") ?? .area
         scrollingScreenshotMaxFrames = defaults.object(forKey: Keys.scrollingScreenshotMaxFrames) as? Int ?? 20
         scrollingScreenshotAutoCompact = (defaults.object(forKey: Keys.scrollingScreenshotAutoCompact) as? Bool) ?? true
-        screenshotAutoRunLocalOCR = (defaults.object(forKey: Keys.screenshotAutoRunLocalOCR) as? Bool) ?? false
         ocrDefaultEngine = OCRDefaultEngine(rawValue: defaults.string(forKey: Keys.ocrDefaultEngine) ?? "") ?? .appleVision
         ocrRecognitionLevel = OCRRecognitionLevel(rawValue: defaults.string(forKey: Keys.ocrRecognitionLevel) ?? "") ?? .accurate
         ocrLanguageHints = defaults.stringArray(forKey: Keys.ocrLanguageHints) ?? []

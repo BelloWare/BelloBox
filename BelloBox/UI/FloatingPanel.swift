@@ -51,6 +51,32 @@ final class PopupPanel: NSPanel {
     override var canBecomeMain: Bool { false }
 }
 
+/// A compact editor anchored to the captured screenshot region. It can accept
+/// drawing input while staying above the source app.
+final class InlineScreenshotEditorPanel: NSPanel {
+    init(contentRect: NSRect) {
+        super.init(
+            contentRect: contentRect,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        isFloatingPanel = true
+        level = .statusBar
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+        isOpaque = false
+        backgroundColor = .clear
+        isMovableByWindowBackground = true
+        hasShadow = true
+        hidesOnDeactivate = false
+        isReleasedWhenClosed = false
+        animationBehavior = .utilityWindow
+    }
+
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+}
+
 /// Geometry helpers for placing overlays near a selection while keeping them
 /// fully on-screen.
 enum ScreenPlacement {

@@ -22,6 +22,7 @@ final class SelectionOverlayController: NSObject {
     private var popupMinimizedIcon = ""
     private var popupMinimizedTitle = ""
     private var popupMinimizedSubtitle: (() -> String?)?
+    private var inlineScreenshotPanel: InlineScreenshotEditorPanel?
     private var toolbarDismissMonitor: Any?
 
     private var pendingSelection: TextSelection?
@@ -52,9 +53,11 @@ final class SelectionOverlayController: NSObject {
         screenCaptureService.beforeCapture = { [weak self] in
             self?.toolbarPanel?.orderOut(nil)
             self?.popupPanel?.orderOut(nil)
+            self?.inlineScreenshotPanel?.orderOut(nil)
         }
         screenCaptureService.afterCapture = { [weak self] in
             self?.popupPanel?.orderFrontRegardless()
+            self?.inlineScreenshotPanel?.orderFrontRegardless()
         }
         recordingCoordinator.onStateChange = { [weak self] state in
             self?.handleRecordingState(state)
@@ -512,12 +515,17 @@ final class SelectionOverlayController: NSObject {
             guard let self else { return }
             self.regionCaptureController = nil
             switch result {
-            case let .success(area):
-                guard let target = self.recordingTarget(for: area) else {
-                    self.showRecordingError("No display could be found for this recording area.", anchorRect: anchorRect)
-                    return
+            case let .success(capture):
+                switch capture {
+                case let .area(area):
+                    guard let target = self.recordingTarget(for: area) else {
+                        self.showRecordingError("No display could be found for this recording area.", anchorRect: anchorRect)
+                        return
+                    }
+                    Task { await self.recordingCoordinator.start(target: target, options: options) }
+                case let .window(window):
+                    Task { await self.recordingCoordinator.start(target: self.recordingTarget(for: window), options: options) }
                 }
-                Task { await self.recordingCoordinator.start(target: target, options: options) }
             case let .failure(error):
                 self.showRecordingError(error.localizedDescription, anchorRect: anchorRect)
             }
@@ -531,17 +539,21 @@ final class SelectionOverlayController: NSObject {
         return .area(displayID: displayID, rectInScreenPoints: area.cocoaRect)
     }
 
+    private func recordingTarget(for window: CaptureWindow) -> RecordingTarget {
+        .window(
+            windowID: CGWindowID(window.windowID),
+            displayID: window.frame.flatMap { ScreenCoordinateSpace.displayForCocoaRect($0).flatMap(ScreenCoordinateSpace.displayID(for:)) },
+            frameInScreenPoints: window.frame
+        )
+    }
+
     private func showRecordingWindowPicker(options: RecordingOptions, anchorRect: CGRect?) {
         let viewModel = WindowCapturePickerViewModel(service: screenCaptureService)
         viewModel.onCancel = { [weak self] in self?.hidePopup() }
         viewModel.onSelect = { [weak self] window in
             self?.hidePopup()
-            let target = RecordingTarget.window(
-                windowID: CGWindowID(window.windowID),
-                displayID: window.frame.flatMap { ScreenCoordinateSpace.displayForCocoaRect($0).flatMap(ScreenCoordinateSpace.displayID(for:)) },
-                frameInScreenPoints: window.frame
-            )
-            Task { await self?.recordingCoordinator.start(target: target, options: options) }
+            guard let self else { return }
+            Task { await self.recordingCoordinator.start(target: self.recordingTarget(for: window), options: options) }
         }
         let view = WindowCapturePickerView(viewModel: viewModel)
         present(
@@ -711,8 +723,13 @@ final class SelectionOverlayController: NSObject {
             guard let self else { return }
             self.regionCaptureController = nil
             switch result {
-            case let .success(area):
-                Task { await self.captureArea(area, anchorRect: anchorRect) }
+            case let .success(capture):
+                switch capture {
+                case let .area(area):
+                    Task { await self.captureArea(area, anchorRect: anchorRect) }
+                case let .window(window):
+                    Task { await self.captureWindow(window, anchorRect: anchorRect, preferInlineFrame: window.frame) }
+                }
             case let .failure(error):
                 self.showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
             }
@@ -733,8 +750,13 @@ final class SelectionOverlayController: NSObject {
             guard let self else { return }
             self.regionCaptureController = nil
             switch result {
-            case let .success(area):
-                Task { await self.startScrollingCapture(target: .area(area), anchorRect: anchorRect) }
+            case let .success(capture):
+                switch capture {
+                case let .area(area):
+                    Task { await self.startScrollingCapture(target: .area(area), anchorRect: anchorRect) }
+                case let .window(window):
+                    Task { await self.startScrollingCapture(target: .window(window), anchorRect: anchorRect) }
+                }
             case let .failure(error):
                 self.showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
             }
@@ -747,7 +769,7 @@ final class SelectionOverlayController: NSObject {
                 .area(area),
                 options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.15)
             )
-            showScreenshotEditor(document: document, anchorRect: anchorRect)
+            showInlineScreenshotEditor(document: document, frame: area.cocoaRect)
         } catch {
             showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
         }
@@ -772,7 +794,7 @@ final class SelectionOverlayController: NSObject {
         viewModel.onCancel = { [weak self] in self?.hidePopup() }
         viewModel.onSelect = { [weak self] window in
             self?.hidePopup()
-            Task { await self?.captureWindow(window, anchorRect: anchorRect) }
+            Task { await self?.captureWindow(window, anchorRect: anchorRect, preferInlineFrame: window.frame) }
         }
         let view = WindowCapturePickerView(viewModel: viewModel)
         present(
@@ -784,13 +806,17 @@ final class SelectionOverlayController: NSObject {
         )
     }
 
-    private func captureWindow(_ window: CaptureWindow, anchorRect: CGRect?) async {
+    private func captureWindow(_ window: CaptureWindow, anchorRect: CGRect?, preferInlineFrame: CGRect? = nil) async {
         do {
             let document = try await screenCaptureService.capture(
                 .window(window),
                 options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.15)
             )
-            showScreenshotEditor(document: document, anchorRect: anchorRect)
+            if let frame = preferInlineFrame {
+                showInlineScreenshotEditor(document: document, frame: frame)
+            } else {
+                showScreenshotEditor(document: document, anchorRect: anchorRect)
+            }
         } catch {
             showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
         }
@@ -822,6 +848,45 @@ final class SelectionOverlayController: NSObject {
             minimizedIcon: "arrow.down.doc",
             minimizedTitle: "Scrolling Capture"
         )
+    }
+
+    private func showInlineScreenshotEditor(document: ScreenshotDocument, frame: CGRect) {
+        hidePopup()
+        let viewModel = ScreenshotPopupViewModel(
+            document: document,
+            settings: settings,
+            macOCRService: macOCRService,
+            llmOCRService: llmOCRService
+        )
+        viewModel.onClose = { [weak self] in self?.hideInlineScreenshotEditor() }
+
+        let screen = ScreenCoordinateSpace.displayForCocoaRect(frame) ?? ScreenPlacement.screen(containing: CGPoint(x: frame.midX, y: frame.midY))
+        let canvasSize = CGSize(
+            width: max(120, min(frame.width, screen.visibleFrame.width - 24)),
+            height: max(80, min(frame.height, screen.visibleFrame.height - InlineScreenshotEditorView.toolbarHeight - 44))
+        )
+        let panelSize = CGSize(
+            width: max(canvasSize.width + 20, InlineScreenshotEditorView.minimumWidth),
+            height: InlineScreenshotEditorView.toolbarHeight + max(canvasSize.height, InlineScreenshotEditorView.minimumCanvasHeight) + 42
+        )
+        let desiredOrigin = CGPoint(x: frame.minX, y: frame.minY)
+        let origin = ScreenPlacement.clamp(origin: desiredOrigin, size: panelSize, into: screen)
+
+        let view = InlineScreenshotEditorView(
+            viewModel: viewModel,
+            canvasSize: canvasSize,
+            onMinimize: nil
+        )
+        let panel = InlineScreenshotEditorPanel(contentRect: CGRect(origin: origin, size: panelSize))
+        panel.contentView = NSHostingView(rootView: view)
+        panel.setFrame(NSRect(origin: origin, size: panelSize), display: true)
+        panel.makeKeyAndOrderFront(nil)
+        inlineScreenshotPanel = panel
+    }
+
+    private func hideInlineScreenshotEditor() {
+        inlineScreenshotPanel?.orderOut(nil)
+        inlineScreenshotPanel = nil
     }
 
     private func showScreenshotEditor(document: ScreenshotDocument, anchorRect: CGRect?) {
@@ -1005,6 +1070,7 @@ final class SelectionOverlayController: NSObject {
     private func hidePopup() {
         popupPanel?.orderOut(nil)
         popupPanel = nil
+        hideInlineScreenshotEditor()
         popupFullContentView = nil
         popupFullSize = .zero
         popupIsMinimized = false
