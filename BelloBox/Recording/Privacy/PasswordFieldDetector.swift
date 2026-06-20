@@ -29,8 +29,10 @@ final class PasswordFieldDetector: PasswordFieldDetecting {
         let systemWide = AXUIElementCreateSystemWide()
         var focused: CFTypeRef?
         let result = AXUIElementCopyAttributeValue(systemWide, kAXFocusedUIElementAttribute as CFString, &focused)
-        guard result == .success else { return nil }
-        return focused.map { ($0 as! AXUIElement) }
+        guard result == .success,
+              let element = AccessibilityService.axElement(from: focused)
+        else { return nil }
+        return element
     }
 
     private func info(for element: AXUIElement, reason: SensitiveInputReason, confidence: Double) -> SensitiveFieldInfo {
@@ -75,8 +77,9 @@ final class PasswordFieldDetector: PasswordFieldDetecting {
               let sizeValue
         else { return nil }
 
-        let positionAX = positionValue as! AXValue
-        let sizeAX = sizeValue as! AXValue
+        guard let positionAX = AccessibilityService.axValue(from: positionValue),
+              let sizeAX = AccessibilityService.axValue(from: sizeValue)
+        else { return nil }
         var point = CGPoint.zero
         var size = CGSize.zero
         guard AXValueGetValue(positionAX, .cgPoint, &point),

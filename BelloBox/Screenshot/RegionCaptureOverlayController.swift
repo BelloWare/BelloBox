@@ -44,13 +44,24 @@ enum RegionCaptureGeometry {
 final class RegionCaptureOverlayController {
     private var windows: [RegionOverlayWindow] = []
     private var completion: ((Result<RegionCaptureResult, ScreenCaptureService.CaptureError>) -> Void)?
+    private var keyMonitor: Any?
+    private var hasFinished = false
+
+    deinit {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+        }
+    }
 
     func begin(completion: @escaping (Result<RegionCaptureResult, ScreenCaptureService.CaptureError>) -> Void) {
         cancel()
         self.completion = completion
+        hasFinished = false
+        installKeyMonitor()
         let capturableWindows = RegionWindowCatalog.currentWindows()
         for screen in NSScreen.screens {
             let window = RegionOverlayWindow(screen: screen)
+            window.onEscape = { [weak self] in self?.finish(.failure(.userCancelled)) }
             let view = RegionOverlayView(screen: screen, windows: capturableWindows)
             view.onComplete = { [weak self] result in self?.finish(result, screen: screen) }
             view.onCancel = { [weak self] in self?.finish(.failure(.userCancelled)) }
@@ -62,10 +73,20 @@ final class RegionCaptureOverlayController {
     }
 
     func cancel() {
-        for window in windows { window.orderOut(nil) }
-        windows.removeAll()
-        NSCursor.arrow.set()
+        cleanup()
         completion = nil
+        hasFinished = false
+    }
+
+    private func installKeyMonitor() {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+        }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
+            guard event.keyCode == 53 else { return event }
+            Task { @MainActor in self?.finish(.failure(.userCancelled)) }
+            return nil
+        }
     }
 
     private func finish(_ result: RegionCaptureResult, screen: NSScreen) {
@@ -82,16 +103,28 @@ final class RegionCaptureOverlayController {
     }
 
     private func finish(_ result: Result<RegionCaptureResult, ScreenCaptureService.CaptureError>) {
-        for window in windows { window.orderOut(nil) }
-        windows.removeAll()
-        NSCursor.arrow.set()
+        guard !hasFinished else { return }
+        hasFinished = true
+        cleanup()
         let completion = completion
         self.completion = nil
         completion?(result)
     }
+
+    private func cleanup() {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+            self.keyMonitor = nil
+        }
+        for window in windows { window.orderOut(nil) }
+        windows.removeAll()
+        NSCursor.arrow.set()
+    }
 }
 
 private final class RegionOverlayWindow: NSWindow {
+    var onEscape: (() -> Void)?
+
     init(screen: NSScreen) {
         super.init(
             contentRect: screen.frame,
@@ -110,6 +143,18 @@ private final class RegionOverlayWindow: NSWindow {
     }
 
     override var canBecomeKey: Bool { true }
+
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 53 {
+            onEscape?()
+        } else {
+            super.keyDown(with: event)
+        }
+    }
+
+    override func cancelOperation(_ sender: Any?) {
+        onEscape?()
+    }
 }
 
 private final class RegionOverlayView: NSView {
@@ -258,21 +303,8 @@ private enum RegionWindowCatalog {
                 ownerName: entry[kCGWindowOwnerName as String] as? String,
                 ownerBundleID: nil,
                 ownerProcessID: ownerPID.int32Value,
-                frame: cgWindowBoundsToCocoaRect(bounds)
+                frame: ScreenCoordinateSpace.cgWindowBoundsToCocoaRect(bounds)
             )
         }
-    }
-
-    static func cgWindowBoundsToCocoaRect(_ bounds: CGRect) -> CGRect {
-        let union = NSScreen.screens.reduce(CGRect.null) { partial, screen in
-            partial.union(screen.frame)
-        }
-        let maxY = union.isNull ? bounds.maxY : union.maxY
-        return CGRect(
-            x: bounds.minX,
-            y: maxY - bounds.maxY,
-            width: bounds.width,
-            height: bounds.height
-        ).standardized
     }
 }

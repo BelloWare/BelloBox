@@ -169,6 +169,8 @@ struct OnboardingView: View {
                 HotkeyRecorderView(settings: settings)
                     .disabled(!settings.globalHotkeyEnabled)
                     .padding(.leading, 44)
+
+                hotkeyConflictWarnings()
             }
             .toggleStyle(.switch)
             .padding(16)
@@ -247,6 +249,8 @@ struct OnboardingView: View {
                 RecordingHotkeyRecorderView(settings: settings)
                     .disabled(!settings.recordingHotkeyEnabled)
                     .padding(.leading, 44)
+
+                hotkeyConflictWarnings()
             }
             .toggleStyle(.switch)
             .padding(16)
@@ -393,6 +397,16 @@ struct OnboardingView: View {
                 Text(title).font(.headline)
                 Text(detail).font(.subheadline).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func hotkeyConflictWarnings() -> some View {
+        ForEach(settings.hotkeyConflictMessages, id: \.self) { message in
+            Label(message, systemImage: "exclamationmark.triangle.fill")
+                .font(.caption2)
+                .foregroundStyle(.orange)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

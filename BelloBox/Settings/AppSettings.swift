@@ -42,24 +42,6 @@ enum ScreenshotDefaultMode: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-enum OCRDefaultEngine: String, CaseIterable, Identifiable, Codable {
-    case appleVision
-    case askEachTime
-    case llm
-    case hybrid
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .appleVision: return "Mac OCR"
-        case .askEachTime: return "Ask"
-        case .llm: return "LLM OCR"
-        case .hybrid: return "Hybrid"
-        }
-    }
-}
-
 /// User-facing configuration, persisted to UserDefaults (API keys go to the
 /// Keychain). Per-provider base URL / model are kept independently so switching
 /// providers does not lose the other configuration.
@@ -99,7 +81,6 @@ final class AppSettings: ObservableObject {
         static let screenshotDefaultMode = "screenshotDefaultMode"
         static let scrollingScreenshotMaxFrames = "scrollingScreenshotMaxFrames"
         static let scrollingScreenshotAutoCompact = "scrollingScreenshotAutoCompact"
-        static let ocrDefaultEngine = "ocrDefaultEngine"
         static let ocrRecognitionLevel = "ocrRecognitionLevel"
         static let ocrLanguageHints = "ocrLanguageHints"
         static let ocrUseLanguageCorrection = "ocrUseLanguageCorrection"
@@ -160,7 +141,6 @@ final class AppSettings: ObservableObject {
     @Published var screenshotDefaultMode: ScreenshotDefaultMode { didSet { defaults.set(screenshotDefaultMode.rawValue, forKey: Keys.screenshotDefaultMode) } }
     @Published var scrollingScreenshotMaxFrames: Int { didSet { defaults.set(scrollingScreenshotMaxFrames, forKey: Keys.scrollingScreenshotMaxFrames) } }
     @Published var scrollingScreenshotAutoCompact: Bool { didSet { defaults.set(scrollingScreenshotAutoCompact, forKey: Keys.scrollingScreenshotAutoCompact) } }
-    @Published var ocrDefaultEngine: OCRDefaultEngine { didSet { defaults.set(ocrDefaultEngine.rawValue, forKey: Keys.ocrDefaultEngine) } }
     @Published var ocrRecognitionLevel: OCRRecognitionLevel { didSet { defaults.set(ocrRecognitionLevel.rawValue, forKey: Keys.ocrRecognitionLevel) } }
     @Published var ocrLanguageHints: [String] { didSet { defaults.set(ocrLanguageHints, forKey: Keys.ocrLanguageHints) } }
     @Published var ocrUseLanguageCorrection: Bool { didSet { defaults.set(ocrUseLanguageCorrection, forKey: Keys.ocrUseLanguageCorrection) } }
@@ -242,7 +222,6 @@ final class AppSettings: ObservableObject {
         screenshotDefaultMode = ScreenshotDefaultMode(rawValue: defaults.string(forKey: Keys.screenshotDefaultMode) ?? "") ?? .area
         scrollingScreenshotMaxFrames = defaults.object(forKey: Keys.scrollingScreenshotMaxFrames) as? Int ?? 20
         scrollingScreenshotAutoCompact = (defaults.object(forKey: Keys.scrollingScreenshotAutoCompact) as? Bool) ?? true
-        ocrDefaultEngine = OCRDefaultEngine(rawValue: defaults.string(forKey: Keys.ocrDefaultEngine) ?? "") ?? .appleVision
         ocrRecognitionLevel = OCRRecognitionLevel(rawValue: defaults.string(forKey: Keys.ocrRecognitionLevel) ?? "") ?? .accurate
         ocrLanguageHints = defaults.stringArray(forKey: Keys.ocrLanguageHints) ?? []
         ocrUseLanguageCorrection = (defaults.object(forKey: Keys.ocrUseLanguageCorrection) as? Bool) ?? true
@@ -376,6 +355,43 @@ final class AppSettings: ObservableObject {
             excludeBelloBoxWindows: true,
             excludesCurrentProcessAudio: true
         )
+    }
+
+    var hotkeyConflictMessages: [String] {
+        Self.hotkeyConflictMessages(
+            boardEnabled: globalHotkeyEnabled,
+            board: globalHotkey,
+            screenshotEnabled: screenshotHotkeyEnabled,
+            screenshot: screenshotHotkey,
+            recordingEnabled: recordingHotkeyEnabled,
+            recording: recordingHotkey
+        )
+    }
+
+    static func hotkeyConflictMessages(
+        boardEnabled: Bool,
+        board: GlobalHotkey,
+        screenshotEnabled: Bool,
+        screenshot: GlobalHotkey,
+        recordingEnabled: Bool,
+        recording: GlobalHotkey
+    ) -> [String] {
+        var assigned: [(name: String, hotkey: GlobalHotkey)] = []
+        var messages: [String] = []
+
+        func add(_ enabled: Bool, _ name: String, _ hotkey: GlobalHotkey) {
+            guard enabled, hotkey.isValid else { return }
+            if let existing = assigned.first(where: { $0.hotkey == hotkey }) {
+                messages.append("\(name) uses \(hotkey.displayString), which is already assigned to \(existing.name).")
+            } else {
+                assigned.append((name, hotkey))
+            }
+        }
+
+        add(boardEnabled, "Tool Board", board)
+        add(screenshotEnabled, "Screenshot", screenshot)
+        add(recordingEnabled, "Recording", recording)
+        return messages
     }
 
     func setGlobalHotkey(_ hotkey: GlobalHotkey) {

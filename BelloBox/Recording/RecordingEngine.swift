@@ -339,11 +339,12 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
             guard let display = content.displays.first(where: { $0.displayID == displayID }),
                   let screen = screen(for: displayID)
             else { throw RecordingEngineError.noDisplayFound }
+            let targetPixelSize = ScreenCoordinateSpace.displayPixelSize(for: displayID, fallbackScreen: screen)
             return descriptor(
                 display: display,
                 screen: screen,
                 sourceRect: nil,
-                targetPixelSize: CGSize(width: display.width, height: display.height),
+                targetPixelSize: targetPixelSize,
                 sourceScreenRect: screen.frame,
                 targetDescription: "Screen",
                 content: content,
@@ -353,14 +354,22 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
             guard let display = content.displays.first(where: { $0.displayID == displayID }),
                   let screen = screen(for: displayID)
             else { throw RecordingEngineError.noDisplayFound }
-            let localRect = displayLocalRect(fromCocoaRect: rect, on: screen)
-            let scale = ScreenCoordinateSpace.backingScale(for: screen)
+            let boundedRect = rect.intersection(screen.frame).standardized
+            guard boundedRect.width >= 1, boundedRect.height >= 1 else {
+                throw RecordingEngineError.streamFailed("The selected recording area was outside the display bounds.")
+            }
+            let localRect = displayLocalRect(fromCocoaRect: boundedRect, on: screen)
+            let targetPixelSize = ScreenCoordinateSpace.pixelSize(
+                forCocoaSize: boundedRect.size,
+                screenFrame: screen.frame,
+                displayPixelSize: ScreenCoordinateSpace.displayPixelSize(for: displayID, fallbackScreen: screen)
+            )
             return descriptor(
                 display: display,
                 screen: screen,
                 sourceRect: localRect,
-                targetPixelSize: CGSize(width: rect.width * scale, height: rect.height * scale),
-                sourceScreenRect: rect,
+                targetPixelSize: targetPixelSize,
+                sourceScreenRect: boundedRect,
                 targetDescription: "Area",
                 content: content,
                 options: options
@@ -369,12 +378,8 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
             guard let window = content.windows.first(where: { $0.windowID == windowID }) else {
                 throw RecordingEngineError.noWindowFound
             }
-            let sourceFrame = frame ?? window.frame
-            let scale = ScreenCoordinateSpace.displayForCocoaRect(sourceFrame).map(ScreenCoordinateSpace.backingScale(for:)) ?? 2
-            let targetSize = CGSize(
-                width: max(2, window.frame.width * scale),
-                height: max(2, window.frame.height * scale)
-            )
+            let sourceFrame = frame ?? ScreenCoordinateSpace.cgWindowBoundsToCocoaRect(window.frame)
+            let targetSize = windowTargetPixelSize(for: sourceFrame)
             let output = RecordingOutputSettings.make(for: targetSize, quality: options.quality)
             let configuration = configuration(output: output, options: options)
             let filter = SCContentFilter(desktopIndependentWindow: window)
@@ -386,6 +391,19 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
                 targetDescription: "Window"
             )
         }
+    }
+
+    private static func windowTargetPixelSize(for frame: CGRect) -> CGSize {
+        guard let screen = ScreenCoordinateSpace.displayForCocoaRect(frame),
+              let displayID = ScreenCoordinateSpace.displayID(for: screen)
+        else {
+            return CGSize(width: max(2, frame.width * 2), height: max(2, frame.height * 2))
+        }
+        return ScreenCoordinateSpace.pixelSize(
+            forCocoaSize: frame.size,
+            screenFrame: screen.frame,
+            displayPixelSize: ScreenCoordinateSpace.displayPixelSize(for: displayID, fallbackScreen: screen)
+        )
     }
 
     private static func descriptor(

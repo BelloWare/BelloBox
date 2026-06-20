@@ -127,9 +127,13 @@ final class ScreenCaptureService {
             guard let screen = area.displayID.flatMap(screen(for:)) ?? ScreenCoordinateSpace.displayForCocoaRect(area.cocoaRect),
                   let displayID = ScreenCoordinateSpace.displayID(for: screen)
             else { throw CaptureError.noDisplayFound }
+            let boundedRect = area.cocoaRect.intersection(screen.frame).standardized
+            guard boundedRect.width >= 1, boundedRect.height >= 1 else {
+                throw CaptureError.captureFailed("The selected area was outside the display bounds.")
+            }
             let image = try await captureDisplay(displayID, includeCursor: options.includeCursor)
             let pixelRect = ScreenCoordinateSpace.cocoaRectToImagePixelRect(
-                area.cocoaRect.intersection(screen.frame).standardized,
+                boundedRect,
                 screenFrame: screen.frame,
                 imageSize: CGSize(width: image.width, height: image.height)
             )
@@ -150,7 +154,7 @@ final class ScreenCaptureService {
             try validate(image)
             return ScreenshotDocument(
                 baseImage: image,
-                scale: 1,
+                scale: window.frame.map { Self.windowImageScale(image: image, frame: $0) } ?? 1,
                 source: .window(title: window.title, ownerName: window.ownerName, windowID: window.windowID)
             )
         }
@@ -169,13 +173,14 @@ final class ScreenCaptureService {
             guard window.windowID != 0 else { return nil }
             if window.owningApplication?.processID == ownPID { return nil }
             if window.frame.width <= 20 || window.frame.height <= 20 { return nil }
+            let cocoaFrame = ScreenCoordinateSpace.cgWindowBoundsToCocoaRect(window.frame)
             return CaptureWindow(
                 windowID: window.windowID,
                 title: window.title,
                 ownerName: window.owningApplication?.applicationName,
                 ownerBundleID: window.owningApplication?.bundleIdentifier,
                 ownerProcessID: window.owningApplication?.processID,
-                frame: window.frame
+                frame: cocoaFrame
             )
         }
         .sorted {
@@ -190,10 +195,11 @@ final class ScreenCaptureService {
         guard let display = content.displays.first(where: { $0.displayID == displayID }) else {
             throw CaptureError.noDisplayFound
         }
+        let pixelSize = ScreenCoordinateSpace.displayPixelSize(for: displayID, fallbackScreen: screen(for: displayID))
         let filter = SCContentFilter(display: display, excludingWindows: [])
         let configuration = SCStreamConfiguration()
-        configuration.width = max(1, display.width)
-        configuration.height = max(1, display.height)
+        configuration.width = max(1, Int(pixelSize.width.rounded()))
+        configuration.height = max(1, Int(pixelSize.height.rounded()))
         configuration.showsCursor = includeCursor
         configuration.capturesAudio = false
         return try await capture(filter: filter, configuration: configuration)
@@ -206,8 +212,10 @@ final class ScreenCaptureService {
         }
         let filter = SCContentFilter(desktopIndependentWindow: window)
         let configuration = SCStreamConfiguration()
-        configuration.width = max(1, Int(window.frame.width))
-        configuration.height = max(1, Int(window.frame.height))
+        let cocoaFrame = target.frame ?? ScreenCoordinateSpace.cgWindowBoundsToCocoaRect(window.frame)
+        let pixelSize = windowPixelSize(for: cocoaFrame)
+        configuration.width = max(1, Int(pixelSize.width.rounded()))
+        configuration.height = max(1, Int(pixelSize.height.rounded()))
         configuration.showsCursor = includeCursor
         configuration.capturesAudio = false
         return try await capture(filter: filter, configuration: configuration)
@@ -239,5 +247,23 @@ final class ScreenCaptureService {
     private func displayScale(displayID: CGDirectDisplayID, image: CGImage) -> CGFloat {
         guard let screen = screen(for: displayID) else { return 1 }
         return ScreenCoordinateSpace.imageScale(pixelWidth: image.width, screenFrame: screen.frame)
+    }
+
+    private func windowPixelSize(for cocoaFrame: CGRect) -> CGSize {
+        guard let screen = ScreenCoordinateSpace.displayForCocoaRect(cocoaFrame),
+              let displayID = ScreenCoordinateSpace.displayID(for: screen)
+        else {
+            return CGSize(width: max(1, cocoaFrame.width), height: max(1, cocoaFrame.height))
+        }
+        return ScreenCoordinateSpace.pixelSize(
+            forCocoaSize: cocoaFrame.size,
+            screenFrame: screen.frame,
+            displayPixelSize: ScreenCoordinateSpace.displayPixelSize(for: displayID, fallbackScreen: screen)
+        )
+    }
+
+    private static func windowImageScale(image: CGImage, frame: CGRect) -> CGFloat {
+        guard frame.width > 0 else { return 1 }
+        return CGFloat(image.width) / frame.width
     }
 }

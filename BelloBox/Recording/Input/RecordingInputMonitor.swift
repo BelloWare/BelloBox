@@ -271,9 +271,6 @@ final class RecordingInputMonitor {
     }
 
     private static func cocoaPoint(fromEventLocation location: CGPoint) -> CGPoint {
-        let primaryMaxY = NSScreen.screens.first(where: { $0.frame.origin == .zero })?.frame.maxY
-            ?? NSScreen.main?.frame.maxY
-            ?? 0
-        return CGPoint(x: location.x, y: primaryMaxY - location.y)
+        ScreenCoordinateSpace.topLeftPointToCocoaPoint(location)
     }
 }

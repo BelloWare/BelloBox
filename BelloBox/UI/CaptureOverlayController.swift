@@ -82,6 +82,7 @@ final class CaptureOverlayController {
         self.onError = onError
         self.onCancel = onCancel
         self.snapshots = snapshots
+        installKeyMonitor()
         showOverlayWindows(snapshots: snapshots)
         if let initialSelection,
            let selectedView = overlayViews.first(where: { $0.snapshot.displayID == snapshot(for: initialSelection)?.displayID }) ?? overlayViews.first {
@@ -102,6 +103,8 @@ final class CaptureOverlayController {
         overlayViews.removeAll()
         snapshots.removeAll()
         purpose = nil
+        onError = nil
+        onCancel = nil
         NSCursor.arrow.set()
     }
 
@@ -225,13 +228,14 @@ final class CaptureOverlayController {
                 macOCRService: macOCRService,
                 llmOCRService: llmOCRService
             )
-            viewModel.onClose = { [weak self] in self?.cancel() }
+            viewModel.onClose = { [weak self] in self?.cancelFromUser() }
             selectedView.showScreenshotEditor(viewModel: viewModel, selection: selection)
             refreshWindowScreenshotIfNeeded(selection: selection, viewModel: viewModel)
         } catch {
             let message = error.localizedDescription
+            let reportError = onError
             cancel()
-            onError?(message)
+            reportError?(message)
         }
     }
 
@@ -502,7 +506,7 @@ private final class CaptureOverlayView: NSView {
         path.stroke()
 
         guard lockedSelection == nil else { return }
-        let scale = ScreenCoordinateSpace.backingScale(for: screen)
+        let scale = snapshot.scale
         let text = "\(Int(selection.width * scale)) x \(Int(selection.height * scale))"
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 12, weight: .semibold),
@@ -698,22 +702,9 @@ private enum CaptureOverlayWindowCatalog {
                 ownerName: entry[kCGWindowOwnerName as String] as? String,
                 ownerBundleID: nil,
                 ownerProcessID: ownerPID.int32Value,
-                frame: cgWindowBoundsToCocoaRect(bounds)
+                frame: ScreenCoordinateSpace.cgWindowBoundsToCocoaRect(bounds)
             )
         }
-    }
-
-    private static func cgWindowBoundsToCocoaRect(_ bounds: CGRect) -> CGRect {
-        let union = NSScreen.screens.reduce(CGRect.null) { partial, screen in
-            partial.union(screen.frame)
-        }
-        let maxY = union.isNull ? bounds.maxY : union.maxY
-        return CGRect(
-            x: bounds.minX,
-            y: maxY - bounds.maxY,
-            width: bounds.width,
-            height: bounds.height
-        ).standardized
     }
 }
 

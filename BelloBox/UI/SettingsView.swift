@@ -134,6 +134,7 @@ struct SettingsView: View {
                     HotkeyRecorderView(settings: settings)
                         .disabled(!settings.globalHotkeyEnabled)
                 }
+                hotkeyConflictWarnings()
                 helpText("Auto hint appears after mouse selections. The shortcut summons the same board for the current selection.")
             }
 
@@ -162,6 +163,7 @@ struct SettingsView: View {
                     ScreenshotHotkeyRecorderView(settings: settings)
                         .disabled(!settings.screenshotHotkeyEnabled)
                 }
+                hotkeyConflictWarnings()
                 Toggle("Auto-copy captured screenshot", isOn: $settings.screenshotAutoCopy)
             }
 
@@ -232,6 +234,7 @@ struct SettingsView: View {
                 RecordingHotkeyRecorderView(settings: settings)
                     .disabled(!settings.recordingHotkeyEnabled)
             }
+            hotkeyConflictWarnings()
             helpText("Default keystroke capture is shortcuts-only. Bello Box suppresses printable key overlays while typing into secure fields.")
         }
     }
@@ -367,6 +370,16 @@ struct SettingsView: View {
             .font(.caption2)
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
+    }
+
+    @ViewBuilder
+    private func hotkeyConflictWarnings() -> some View {
+        ForEach(settings.hotkeyConflictMessages, id: \.self) { message in
+            Label(message, systemImage: "exclamationmark.triangle.fill")
+                .font(.caption2)
+                .foregroundStyle(.orange)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private func permissionRow(title: String, detail: String, trusted: Bool, actionTitle: String, action: @escaping () -> Void) -> some View {

@@ -57,10 +57,9 @@ final class AccessibilityService {
         let system = AXUIElementCreateSystemWide()
         var focused: CFTypeRef?
         guard AXUIElementCopyAttributeValue(system, kAXFocusedUIElementAttribute as CFString, &focused) == .success,
-              let value = focused,
-              CFGetTypeID(value) == AXUIElementGetTypeID()
+              let element = Self.axElement(from: focused)
         else { return nil }
-        return (value as! AXUIElement)
+        return element
     }
 
     private func selectionBounds(of element: AXUIElement) -> CGRect? {
@@ -82,7 +81,9 @@ final class AccessibilityService {
         else { return nil }
 
         var rect = CGRect.zero
-        guard AXValueGetValue((boundsValue as! AXValue), .cgRect, &rect) else { return nil }
+        guard let axValue = Self.axValue(from: boundsValue),
+              AXValueGetValue(axValue, .cgRect, &rect)
+        else { return nil }
         guard rect.width > 0 || rect.height > 0 else { return nil }
         return Self.cocoaRect(fromAXRect: rect)
     }
@@ -90,10 +91,7 @@ final class AccessibilityService {
     /// Converts an Accessibility rect (top-left origin, primary screen) into a
     /// Cocoa global screen rect (bottom-left origin).
     static func cocoaRect(fromAXRect ax: CGRect) -> CGRect {
-        let primaryMaxY = NSScreen.screens.first(where: { $0.frame.origin == .zero })?.frame.maxY
-            ?? NSScreen.main?.frame.maxY
-            ?? 0
-        return CGRect(x: ax.origin.x, y: primaryMaxY - ax.origin.y - ax.height, width: ax.width, height: ax.height)
+        ScreenCoordinateSpace.topLeftRectToCocoaRect(ax)
     }
 
     // MARK: - Acting on selection
@@ -142,5 +140,15 @@ final class AccessibilityService {
         up?.flags = .maskCommand
         down?.post(tap: .cgAnnotatedSessionEventTap)
         up?.post(tap: .cgAnnotatedSessionEventTap)
+    }
+
+    static func axElement(from value: CFTypeRef?) -> AXUIElement? {
+        guard let value, CFGetTypeID(value) == AXUIElementGetTypeID() else { return nil }
+        return unsafeBitCast(value, to: AXUIElement.self)
+    }
+
+    static func axValue(from value: CFTypeRef?) -> AXValue? {
+        guard let value, CFGetTypeID(value) == AXValueGetTypeID() else { return nil }
+        return unsafeBitCast(value, to: AXValue.self)
     }
 }
