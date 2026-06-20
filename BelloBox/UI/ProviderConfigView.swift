@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 /// Shared provider configuration UI used in Settings and onboarding: pick a
@@ -42,6 +43,9 @@ struct ProviderConfigView: View {
             }
 
             modelRow
+            if settings.providerKind.isHTTP {
+                temperatureRow
+            }
             if settings.providerKind == .codexCLI {
                 codexReasoningRow
             }
@@ -146,6 +150,37 @@ struct ProviderConfigView: View {
         }
     }
 
+    private var temperatureRow: some View {
+        labeledField("Temperature") {
+            VStack(alignment: .leading, spacing: 7) {
+                Picker("Temperature", selection: $settings.temperatureMode) {
+                    ForEach(TemperatureMode.allCases) { mode in
+                        Text(mode.label).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(maxWidth: 220)
+
+                if settings.temperatureMode == .custom {
+                    HStack(spacing: 10) {
+                        Slider(value: temperatureBinding, in: 0...temperatureMaximum, step: 0.1)
+                        Stepper(value: temperatureBinding, in: 0...temperatureMaximum, step: 0.1) {
+                            Text(temperatureText)
+                                .font(.system(.caption, design: .monospaced).weight(.semibold))
+                                .frame(width: 34, alignment: .trailing)
+                        }
+                        .fixedSize()
+                    }
+                }
+
+                Text(temperatureHelp)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     private var testRow: some View {
         HStack(spacing: 10) {
             Button {
@@ -200,6 +235,30 @@ struct ProviderConfigView: View {
         case .openAI: return ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1", "o3-mini", "gpt-3.5-turbo"]
         case .anthropic: return ["claude-3-5-haiku-latest", "claude-3-5-sonnet-latest", "claude-3-7-sonnet-latest", "claude-3-opus-latest"]
         case .codexCLI: return CodexCLI.presetModels
+        }
+    }
+
+    private var temperatureMaximum: Double {
+        settings.providerKind == .anthropic ? 1.0 : 2.0
+    }
+
+    private var temperatureBinding: Binding<Double> {
+        Binding(
+            get: { min(settings.temperature, temperatureMaximum) },
+            set: { settings.setTemperature(min($0, temperatureMaximum)) }
+        )
+    }
+
+    private var temperatureText: String {
+        String(format: "%.1f", min(settings.temperature, temperatureMaximum))
+    }
+
+    private var temperatureHelp: String {
+        switch settings.temperatureMode {
+        case .providerDefault:
+            return "Temperature is omitted so models that require their default sampling can run."
+        case .custom:
+            return "Temperature is sent with each request. Use 1.0 for endpoints that require the default value."
         }
     }
 

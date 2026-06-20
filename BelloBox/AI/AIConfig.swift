@@ -66,6 +66,20 @@ enum OpenAIAPIKind: String, CaseIterable, Codable, Identifiable {
     }
 }
 
+enum TemperatureMode: String, CaseIterable, Codable, Identifiable {
+    case providerDefault
+    case custom
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .providerDefault: return "Default"
+        case .custom: return "Custom"
+        }
+    }
+}
+
 /// A fully-resolved provider configuration used to issue one request.
 struct AIConfig: Equatable {
     var kind: ProviderKind
@@ -76,6 +90,7 @@ struct AIConfig: Equatable {
     var maxTokens: Int = 2048
     var codexReasoningEffort: String = "medium"
     var openAIAPIKind: OpenAIAPIKind = .chatCompletions
+    var temperature: Double?
 
     var isUsable: Bool {
         switch kind {

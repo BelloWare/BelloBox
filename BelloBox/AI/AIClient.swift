@@ -217,7 +217,9 @@ final class AIClient {
             "messages": messages,
             "stream": stream,
         ]
-        body["temperature"] = 0.3
+        if let temperature = config.temperature {
+            body["temperature"] = temperature
+        }
         request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [.sortedKeys])
         return request
     }
@@ -238,8 +240,10 @@ final class AIClient {
                 ],
             ],
             "stream": stream,
-            "temperature": 0.3,
         ]
+        if let temperature = config.temperature {
+            body["temperature"] = temperature
+        }
         let system = config.systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
         if !system.isEmpty {
             body["instructions"] = system
@@ -262,6 +266,9 @@ final class AIClient {
             "messages": [["role": "user", "content": userText]],
             "stream": stream,
         ]
+        if let temperature = config.temperature {
+            body["temperature"] = temperature
+        }
         let system = config.systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
         if !system.isEmpty {
             body["system"] = system

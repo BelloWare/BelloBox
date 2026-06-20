@@ -40,6 +40,8 @@ final class AppSettings: ObservableObject {
         static let openAIAPIKind = "openAIAPIKind"
         static let anthropicModel = "anthropicModel"
         static let systemPrompt = "systemPrompt"
+        static let temperatureMode = "temperatureMode"
+        static let temperature = "temperature"
         static let floatingButtonEnabled = "floatingButtonEnabled"
         static let globalHotkeyEnabled = "globalHotkeyEnabled"
         static let globalHotkeyKeyCode = "globalHotkeyKeyCode"
@@ -73,6 +75,8 @@ final class AppSettings: ObservableObject {
     @Published var openAIAPIKind: OpenAIAPIKind { didSet { defaults.set(openAIAPIKind.rawValue, forKey: Keys.openAIAPIKind) } }
     @Published var anthropicModel: String { didSet { defaults.set(anthropicModel, forKey: Keys.anthropicModel) } }
     @Published var systemPrompt: String { didSet { defaults.set(systemPrompt, forKey: Keys.systemPrompt) } }
+    @Published var temperatureMode: TemperatureMode { didSet { defaults.set(temperatureMode.rawValue, forKey: Keys.temperatureMode) } }
+    @Published var temperature: Double { didSet { defaults.set(Self.normalizedTemperature(temperature), forKey: Keys.temperature) } }
     @Published var floatingButtonEnabled: Bool { didSet { defaults.set(floatingButtonEnabled, forKey: Keys.floatingButtonEnabled) } }
     @Published var globalHotkeyEnabled: Bool { didSet { defaults.set(globalHotkeyEnabled, forKey: Keys.globalHotkeyEnabled) } }
     @Published var globalHotkeyKeyCode: Int { didSet { defaults.set(globalHotkeyKeyCode, forKey: Keys.globalHotkeyKeyCode) } }
@@ -102,6 +106,9 @@ final class AppSettings: ObservableObject {
         openAIAPIKind = OpenAIAPIKind(rawValue: defaults.string(forKey: Keys.openAIAPIKind) ?? "") ?? .chatCompletions
         anthropicModel = defaults.string(forKey: Keys.anthropicModel) ?? ProviderKind.anthropic.defaultModel
         systemPrompt = defaults.string(forKey: Keys.systemPrompt) ?? Self.defaultSystemPrompt
+        temperatureMode = TemperatureMode(rawValue: defaults.string(forKey: Keys.temperatureMode) ?? "") ?? .providerDefault
+        let storedTemperature = defaults.object(forKey: Keys.temperature) as? Double
+        temperature = Self.normalizedTemperature(storedTemperature ?? 1.0)
         floatingButtonEnabled = (defaults.object(forKey: Keys.floatingButtonEnabled) as? Bool) ?? true
         globalHotkeyEnabled = (defaults.object(forKey: Keys.globalHotkeyEnabled) as? Bool) ?? true
         let storedHotkeyKeyCode = defaults.object(forKey: Keys.globalHotkeyKeyCode) as? Int
@@ -132,10 +139,18 @@ final class AppSettings: ObservableObject {
                 model: openAIModel,
                 apiKey: apiKey,
                 systemPrompt: systemPrompt,
-                openAIAPIKind: openAIAPIKind
+                openAIAPIKind: openAIAPIKind,
+                temperature: resolvedTemperature(maximum: 2.0)
             )
         case .anthropic:
-            return AIConfig(kind: .anthropic, baseURL: anthropicBaseURL, model: anthropicModel, apiKey: apiKey, systemPrompt: systemPrompt)
+            return AIConfig(
+                kind: .anthropic,
+                baseURL: anthropicBaseURL,
+                model: anthropicModel,
+                apiKey: apiKey,
+                systemPrompt: systemPrompt,
+                temperature: resolvedTemperature(maximum: 1.0)
+            )
         case .codexCLI:
             return AIConfig(
                 kind: .codexCLI,
@@ -168,6 +183,10 @@ final class AppSettings: ObservableObject {
 
     func resetSystemPrompt() { systemPrompt = Self.defaultSystemPrompt }
 
+    func setTemperature(_ value: Double) {
+        temperature = Self.normalizedTemperature(value)
+    }
+
     /// Detects the codex binary off the main thread and stores it if found.
     func detectCodexPath() async {
         let path = await Task.detached { CodexCLI.detectPath() }.value
@@ -187,5 +206,15 @@ final class AppSettings: ObservableObject {
             modifiers: NSEvent.ModifierFlags(rawValue: UInt(modifiersRawValue))
         )
         return hotkey.isValid ? hotkey : .default
+    }
+
+    private func resolvedTemperature(maximum: Double) -> Double? {
+        guard temperatureMode == .custom else { return nil }
+        return min(Swift.max(Self.normalizedTemperature(temperature), 0), maximum)
+    }
+
+    private static func normalizedTemperature(_ value: Double) -> Double {
+        guard value.isFinite else { return 1.0 }
+        return min(max((value * 100).rounded() / 100, 0), 2)
     }
 }

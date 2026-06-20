@@ -6,6 +6,13 @@ final class AIClientTests: XCTestCase {
         AIConfig(kind: kind, baseURL: base, model: "m-1", apiKey: "sk-test", systemPrompt: "be terse")
     }
 
+    private func temporaryDefaults(_ name: String = UUID().uuidString) -> UserDefaults {
+        let suiteName = "BelloBoxTests.\(name)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        return defaults
+    }
+
     // MARK: - Endpoint construction
 
     func testEndpointTrimsTrailingSlash() throws {
@@ -15,6 +22,19 @@ final class AIClientTests: XCTestCase {
 
     func testEndpointRejectsSchemelessBase() {
         XCTAssertThrowsError(try AIClient.endpointURL(base: "not a url", path: "/messages"))
+    }
+
+    func testSettingsResolveTemperature() throws {
+        let settings = AppSettings(defaults: temporaryDefaults())
+        XCTAssertNil(settings.currentConfig.temperature)
+
+        settings.temperatureMode = .custom
+        settings.temperature = 0.8
+        XCTAssertEqual(try XCTUnwrap(settings.currentConfig.temperature), 0.8, accuracy: 0.0001)
+
+        settings.providerKind = .anthropic
+        settings.temperature = 1.7
+        XCTAssertEqual(try XCTUnwrap(settings.currentConfig.temperature), 1.0, accuracy: 0.0001)
     }
 
     // MARK: - OpenAI request
@@ -30,6 +50,7 @@ final class AIClientTests: XCTestCase {
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
         XCTAssertEqual(json["model"] as? String, "m-1")
         XCTAssertEqual(json["stream"] as? Bool, true)
+        XCTAssertNil(json["temperature"])
         let messages = try XCTUnwrap(json["messages"] as? [[String: Any]])
         XCTAssertEqual(messages.first?["role"] as? String, "system")
         XCTAssertEqual(messages.first?["content"] as? String, "be terse")
@@ -52,6 +73,7 @@ final class AIClientTests: XCTestCase {
         XCTAssertEqual(json["model"] as? String, "m-1")
         XCTAssertEqual(json["stream"] as? Bool, true)
         XCTAssertEqual(json["instructions"] as? String, "be terse")
+        XCTAssertNil(json["temperature"])
         let input = try XCTUnwrap(json["input"] as? [[String: Any]])
         XCTAssertEqual(input.first?["role"] as? String, "user")
         XCTAssertEqual(input.first?["content"] as? String, "hello")
@@ -71,9 +93,44 @@ final class AIClientTests: XCTestCase {
         XCTAssertEqual(json["model"] as? String, "m-1")
         XCTAssertEqual(json["system"] as? String, "be terse")
         XCTAssertNotNil(json["max_tokens"])
+        XCTAssertNil(json["temperature"])
         let messages = try XCTUnwrap(json["messages"] as? [[String: Any]])
         XCTAssertEqual(messages.count, 1)
         XCTAssertEqual(messages.first?["role"] as? String, "user")
+    }
+
+    func testCustomTemperatureInOpenAIChatRequest() throws {
+        var c = config(.openAI, base: "https://api.openai.com/v1")
+        c.temperature = 0.7
+
+        let request = try AIClient.openAIRequest(config: c, userText: "hello", stream: true)
+        let body = try XCTUnwrap(request.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        let temperature = try XCTUnwrap((json["temperature"] as? NSNumber)?.doubleValue)
+        XCTAssertEqual(temperature, 0.7, accuracy: 0.0001)
+    }
+
+    func testCustomTemperatureInOpenAIResponsesRequest() throws {
+        var c = config(.openAI, base: "https://api.openai.com/v1")
+        c.openAIAPIKind = .responses
+        c.temperature = 1.0
+
+        let request = try AIClient.openAIRequest(config: c, userText: "hello", stream: true)
+        let body = try XCTUnwrap(request.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        let temperature = try XCTUnwrap((json["temperature"] as? NSNumber)?.doubleValue)
+        XCTAssertEqual(temperature, 1.0, accuracy: 0.0001)
+    }
+
+    func testCustomTemperatureInAnthropicRequest() throws {
+        var c = config(.anthropic, base: "https://api.anthropic.com/v1")
+        c.temperature = 0.4
+
+        let request = try AIClient.anthropicRequest(config: c, userText: "hello", stream: true)
+        let body = try XCTUnwrap(request.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        let temperature = try XCTUnwrap((json["temperature"] as? NSNumber)?.doubleValue)
+        XCTAssertEqual(temperature, 0.4, accuracy: 0.0001)
     }
 
     // MARK: - SSE parsing
