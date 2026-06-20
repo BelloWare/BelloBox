@@ -89,6 +89,7 @@ final class AppSettings: ObservableObject {
         static let recordingHotkeyKeyCode = "recordingHotkeyKeyCode"
         static let recordingHotkeyModifiers = "recordingHotkeyModifiers"
         static let hasCompletedSetup = "hasCompletedSetup"
+        static let launchAtLoginEnabled = "launchAtLoginEnabled"
         static let appearance = "appearance"
         static let codexPath = "codexPath"
         static let codexModel = "codexModel"
@@ -149,6 +150,7 @@ final class AppSettings: ObservableObject {
     @Published var recordingHotkeyEnabled: Bool { didSet { defaults.set(recordingHotkeyEnabled, forKey: Keys.recordingHotkeyEnabled) } }
     @Published var recordingHotkeyKeyCode: Int { didSet { defaults.set(recordingHotkeyKeyCode, forKey: Keys.recordingHotkeyKeyCode) } }
     @Published var recordingHotkeyModifiersRawValue: Int { didSet { defaults.set(recordingHotkeyModifiersRawValue, forKey: Keys.recordingHotkeyModifiers) } }
+    @Published var launchAtLoginEnabled: Bool { didSet { defaults.set(launchAtLoginEnabled, forKey: Keys.launchAtLoginEnabled) } }
     @Published var appearance: AppearancePreference { didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) } }
     @Published var codexPath: String { didSet { defaults.set(codexPath, forKey: Keys.codexPath) } }
     @Published var codexModel: String { didSet { defaults.set(codexModel, forKey: Keys.codexModel) } }
@@ -224,6 +226,7 @@ final class AppSettings: ObservableObject {
         )
         recordingHotkeyKeyCode = Int(storedRecordingHotkey.keyCode)
         recordingHotkeyModifiersRawValue = Int(storedRecordingHotkey.modifiers.rawValue)
+        launchAtLoginEnabled = (defaults.object(forKey: Keys.launchAtLoginEnabled) as? Bool) ?? LaunchAtLoginController.isEnabled
         appearance = AppearancePreference(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         codexPath = defaults.string(forKey: Keys.codexPath) ?? ""
         let storedCodexModel = defaults.string(forKey: Keys.codexModel) ?? ""

@@ -66,7 +66,7 @@ final class ScreenCaptureService {
             snapshots.append(DisplaySnapshot(
                 displayID: displayID,
                 screenFrame: screen.frame,
-                scale: ScreenCoordinateSpace.backingScale(for: screen),
+                scale: ScreenCoordinateSpace.imageScale(pixelWidth: image.width, screenFrame: screen.frame),
                 image: image
             ))
         }
@@ -79,18 +79,23 @@ final class ScreenCaptureService {
         guard boundedRect.width >= 1, boundedRect.height >= 1 else {
             throw CaptureError.captureFailed("The selected area was outside the display bounds.")
         }
-        let pixelRect = ScreenCoordinateSpace.cocoaRectToDisplayPixelRect(
+        let pixelRect = ScreenCoordinateSpace.cocoaRectToImagePixelRect(
             boundedRect,
             screenFrame: snapshot.screenFrame,
-            scale: snapshot.scale
+            imageSize: CGSize(width: snapshot.image.width, height: snapshot.image.height)
         )
-        guard let crop = snapshot.image.cropping(to: pixelRect.integral) else {
+        let imageBounds = CGRect(x: 0, y: 0, width: snapshot.image.width, height: snapshot.image.height)
+        let cropRect = pixelRect.intersection(imageBounds).integral
+        guard cropRect.width > 0, cropRect.height > 0,
+              let crop = snapshot.image.cropping(to: cropRect)
+        else {
             throw CaptureError.captureFailed("The selected area was outside the display bounds.")
         }
+        let scale = ScreenCoordinateSpace.imageScale(pixelWidth: snapshot.image.width, screenFrame: snapshot.screenFrame)
         try validate(crop)
         return ScreenshotDocument(
             baseImage: crop,
-            scale: snapshot.scale,
+            scale: scale,
             source: source
         )
     }
@@ -115,7 +120,7 @@ final class ScreenCaptureService {
             try validate(image)
             return ScreenshotDocument(
                 baseImage: image,
-                scale: displayScale(displayID: display.displayID),
+                scale: displayScale(displayID: display.displayID, image: image),
                 source: .display(displayID: display.displayID)
             )
         case let .area(area):
@@ -123,12 +128,21 @@ final class ScreenCaptureService {
                   let displayID = ScreenCoordinateSpace.displayID(for: screen)
             else { throw CaptureError.noDisplayFound }
             let image = try await captureDisplay(displayID, includeCursor: options.includeCursor)
-            let pixelRect = ScreenCoordinateSpace.cocoaRectToDisplayPixelRect(area.cocoaRect, on: screen)
-            guard let crop = image.cropping(to: pixelRect.integral) else { throw CaptureError.captureFailed("The selected area was outside the display bounds.") }
+            let pixelRect = ScreenCoordinateSpace.cocoaRectToImagePixelRect(
+                area.cocoaRect.intersection(screen.frame).standardized,
+                screenFrame: screen.frame,
+                imageSize: CGSize(width: image.width, height: image.height)
+            )
+            let imageBounds = CGRect(x: 0, y: 0, width: image.width, height: image.height)
+            let cropRect = pixelRect.intersection(imageBounds).integral
+            guard cropRect.width > 0, cropRect.height > 0,
+                  let crop = image.cropping(to: cropRect)
+            else { throw CaptureError.captureFailed("The selected area was outside the display bounds.") }
+            let scale = ScreenCoordinateSpace.imageScale(pixelWidth: image.width, screenFrame: screen.frame)
             try validate(crop)
             return ScreenshotDocument(
                 baseImage: crop,
-                scale: ScreenCoordinateSpace.backingScale(for: screen),
+                scale: scale,
                 source: .area(rect: area.cocoaRect, displayID: displayID)
             )
         case let .window(window):
@@ -222,7 +236,8 @@ final class ScreenCaptureService {
         NSScreen.screens.first { ScreenCoordinateSpace.displayID(for: $0) == displayID }
     }
 
-    private func displayScale(displayID: CGDirectDisplayID) -> CGFloat {
-        screen(for: displayID).map(ScreenCoordinateSpace.backingScale(for:)) ?? 1
+    private func displayScale(displayID: CGDirectDisplayID, image: CGImage) -> CGFloat {
+        guard let screen = screen(for: displayID) else { return 1 }
+        return ScreenCoordinateSpace.imageScale(pixelWidth: image.width, screenFrame: screen.frame)
     }
 }

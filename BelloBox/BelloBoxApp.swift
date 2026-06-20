@@ -91,6 +91,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak self] preference in self?.applyAppearance(preference) }
             .store(in: &cancellables)
 
+        syncLaunchAtLoginFromSettings()
+        settings.$launchAtLoginEnabled
+            .removeDuplicates()
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] enabled in self?.applyLaunchAtLogin(enabled) }
+            .store(in: &cancellables)
+
         let overlay = SelectionOverlayController(settings: settings)
         overlay.openSettings = { [weak self] in self?.showSettings() }
         overlay.start()
@@ -209,6 +217,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .system: NSApp.appearance = nil
         case .light: NSApp.appearance = NSAppearance(named: .aqua)
         case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
+        }
+    }
+
+    private func syncLaunchAtLoginFromSettings() {
+        let actual = LaunchAtLoginController.isEnabled
+        if actual {
+            settings.launchAtLoginEnabled = true
+        } else if settings.launchAtLoginEnabled {
+            applyLaunchAtLogin(true)
+        }
+    }
+
+    private func applyLaunchAtLogin(_ enabled: Bool) {
+        do {
+            try LaunchAtLoginController.setEnabled(enabled)
+        } catch {
+            NSLog("Bello Box could not update launch-at-login: \(error.localizedDescription)")
+            let actual = LaunchAtLoginController.isEnabled
+            if settings.launchAtLoginEnabled != actual {
+                settings.launchAtLoginEnabled = actual
+            }
         }
     }
 

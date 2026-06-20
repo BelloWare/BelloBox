@@ -18,9 +18,11 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(34)
+            ScrollView {
+                content
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .padding(34)
+            }
 
             Divider()
             footer
@@ -134,6 +136,16 @@ struct OnboardingView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 14) {
+                Toggle(isOn: $settings.launchAtLoginEnabled) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Open Bello Box when I start my Mac")
+                            .font(.headline)
+                        Text("Keeps the menu-bar toolbox ready after sign-in.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 Toggle(isOn: $settings.floatingButtonEnabled) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Show auto hint after selecting text")
@@ -166,17 +178,35 @@ struct OnboardingView: View {
 
     private var captureShortcutStep: some View {
         VStack(alignment: .leading, spacing: 18) {
-            stepHeader("Set capture shortcuts", systemImage: "keyboard")
-            Text("Choose whether Bello Box should respond to global shortcuts for screenshots and screen recordings. You can change these later in Settings.")
+            stepHeader("Set up capture tools", systemImage: "camera.viewfinder")
+            Text("Screenshots and recordings use one capture overlay: hover to highlight a window, click to capture it, click blank space for the screen, or drag a custom rectangle.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 14) {
+                permissionCard(
+                    granted: screenRecordingTrusted,
+                    icon: screenRecordingTrusted ? "checkmark.circle.fill" : "record.circle",
+                    title: screenRecordingTrusted ? "Screen Recording granted" : "Screen Recording can be granted now",
+                    detail: screenRecordingTrusted
+                        ? "Bello Box can capture screenshots and recordings."
+                        : "You can continue now, but macOS will require this before the first capture."
+                )
+
+                if !screenRecordingTrusted {
+                    Button {
+                        _ = ScreenCapturePermission.requestPrompt()
+                        ScreenCapturePermission.openSettings()
+                    } label: {
+                        Label("Open Screen Recording Settings", systemImage: "arrow.up.forward.app")
+                    }
+                }
+
                 Toggle(isOn: $settings.screenshotHotkeyEnabled) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Enable screenshot shortcut \(settings.screenshotHotkey.displayString)")
                             .font(.headline)
-                        Text("Starts your default screenshot capture mode.")
+                        Text("Opens the capture overlay for window, screen, or rectangle screenshots.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -185,12 +215,23 @@ struct OnboardingView: View {
                     .disabled(!settings.screenshotHotkeyEnabled)
                     .padding(.leading, 44)
 
-                Picker("Default screenshot capture", selection: $settings.screenshotDefaultMode) {
-                    ForEach(ScreenshotDefaultMode.allCases) { mode in
-                        Text(mode.label).tag(mode)
+                Toggle(isOn: $settings.screenshotAutoCopy) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Auto-copy captured screenshots")
+                            .font(.headline)
+                        Text("Copies the image as soon as the screenshot editor opens.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
-                .pickerStyle(.segmented)
+
+                Stepper(value: $settings.scrollingScreenshotMaxFrames, in: 2...60) {
+                    Text("Scrolling screenshot max frames: \(settings.scrollingScreenshotMaxFrames)")
+                }
+
+                Toggle(isOn: $settings.scrollingScreenshotAutoCompact) {
+                    Text("Remove repeated sticky headers and footers")
+                }
 
                 Divider()
 
@@ -198,7 +239,7 @@ struct OnboardingView: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Enable recording shortcut \(settings.recordingHotkey.displayString)")
                             .font(.headline)
-                        Text("Opens the recorder with area, window, and screen choices.")
+                        Text("Opens the same capture overlay, then shows recording options inline.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

@@ -18,6 +18,7 @@ final class CaptureOverlayController {
     private var snapshots: [DisplaySnapshot] = []
     private var purpose: Purpose?
     private var captureTask: Task<Void, Never>?
+    private var keyMonitor: Any?
     private var onError: ((String) -> Void)?
     private var onCancel: (() -> Void)?
 
@@ -31,6 +32,12 @@ final class CaptureOverlayController {
         self.settings = settings
         self.macOCRService = macOCRService
         self.llmOCRService = llmOCRService
+    }
+
+    deinit {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+        }
     }
 
     func beginScreenshot(
@@ -86,6 +93,10 @@ final class CaptureOverlayController {
     func cancel() {
         captureTask?.cancel()
         captureTask = nil
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+            self.keyMonitor = nil
+        }
         for window in windows { window.orderOut(nil) }
         windows.removeAll()
         overlayViews.removeAll()
@@ -104,6 +115,7 @@ final class CaptureOverlayController {
         self.purpose = purpose
         self.onError = onError
         self.onCancel = onCancel
+        installKeyMonitor()
 
         captureTask = Task { @MainActor [weak self] in
             guard let self else { return }
@@ -129,6 +141,7 @@ final class CaptureOverlayController {
             else { continue }
 
             let window = CaptureOverlayWindow(screen: screen)
+            window.onEscape = { [weak self] in self?.cancelFromUser() }
             let overlayView = CaptureOverlayView(
                 screen: screen,
                 snapshot: snapshot,
@@ -139,8 +152,7 @@ final class CaptureOverlayController {
                 self?.handle(selection: selection, in: overlayView)
             }
             overlayView.onCancel = { [weak self] in
-                self?.onCancel?()
-                self?.cancel()
+                self?.cancelFromUser()
             }
             window.contentView = overlayView
             window.orderFrontRegardless()
@@ -150,6 +162,23 @@ final class CaptureOverlayController {
 
         windows.first?.makeKeyAndOrderFront(nil)
         NSCursor.crosshair.set()
+    }
+
+    private func installKeyMonitor() {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+        }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
+            guard event.keyCode == 53 else { return event }
+            Task { @MainActor in self?.cancelFromUser() }
+            return nil
+        }
+    }
+
+    private func cancelFromUser() {
+        guard captureTask != nil || purpose != nil || !windows.isEmpty else { return }
+        onCancel?()
+        cancel()
     }
 
     private func handle(selection: CaptureSelection, in selectedView: CaptureOverlayView) {
@@ -174,8 +203,7 @@ final class CaptureOverlayController {
                     onRecord(selection, options)
                 },
                 onCancel: { [weak self] in
-                    self?.onCancel?()
-                    self?.cancel()
+                    self?.cancelFromUser()
                 }
             )
         }
@@ -284,6 +312,8 @@ final class CaptureOverlayController {
 }
 
 private final class CaptureOverlayWindow: NSPanel {
+    var onEscape: (() -> Void)?
+
     init(screen: NSScreen) {
         super.init(
             contentRect: screen.frame,
@@ -303,6 +333,18 @@ private final class CaptureOverlayWindow: NSPanel {
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 53 {
+            onEscape?()
+        } else {
+            super.keyDown(with: event)
+        }
+    }
+
+    override func cancelOperation(_ sender: Any?) {
+        onEscape?()
+    }
 }
 
 private final class CaptureOverlayView: NSView {

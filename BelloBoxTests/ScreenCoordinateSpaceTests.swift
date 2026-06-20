@@ -26,5 +26,21 @@ final class ScreenCoordinateSpaceTests: XCTestCase {
         XCTAssertEqual(roundTrip.width, rect.width, accuracy: 0.5)
         XCTAssertEqual(roundTrip.height, rect.height, accuracy: 0.5)
     }
-}
 
+    func testCocoaToImagePixelsUsesActualCapturedImageSize() {
+        let screen = CGRect(x: 0, y: 0, width: 100, height: 80)
+        let rect = CGRect(x: 10, y: 20, width: 30, height: 15)
+        let pixels = ScreenCoordinateSpace.cocoaRectToImagePixelRect(
+            rect,
+            screenFrame: screen,
+            imageSize: CGSize(width: 250, height: 200)
+        )
+
+        XCTAssertEqual(pixels, CGRect(x: 25, y: 112, width: 75, height: 38))
+    }
+
+    func testImageScaleUsesCapturedPixelWidth() {
+        let screen = CGRect(x: 0, y: 0, width: 1440, height: 900)
+        XCTAssertEqual(ScreenCoordinateSpace.imageScale(pixelWidth: 2880, screenFrame: screen), 2)
+    }
+}

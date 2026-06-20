@@ -42,6 +42,7 @@
 		560E31713039B4C824B472A0 /* AnnotationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02DA3BB30C731B418E4A695 /* AnnotationModel.swift */; };
 		5658B8CE6BE47E3D8445C590 /* RecordingPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E4E018A6A6D23B482C29D96 /* RecordingPermission.swift */; };
 		57B1C2D3853B532B2FCF6E96 /* OnboardingWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB49A4D77D70434DB475B23 /* OnboardingWindowController.swift */; };
+		58CC640C94F07D4FB37EC9B3 /* LaunchAtLoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA409C8802B014BD73F6302F /* LaunchAtLoginController.swift */; };
 		5CA7A778EAF4461BCB65CB70 /* AudioSourcePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 630B21CF97B099B2E7E045CC /* AudioSourcePickerView.swift */; };
 		5CF181E4F89DE129AB9558FB /* RecordingCaptureChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58F78B5CDBEF3E5448FE12F0 /* RecordingCaptureChooserView.swift */; };
 		60698F968A37E3144D713AE8 /* AIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415C8271C74675B6CC66CEF6 /* AIConfig.swift */; };
@@ -220,6 +221,7 @@
 		D473E967C1F1CF7127A9CFD5 /* ScreenCoordinateSpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCoordinateSpace.swift; sourceTree = "<group>"; };
 		D5601FF6525CCBF605C9C911 /* OCRPromptTemplates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRPromptTemplates.swift; sourceTree = "<group>"; };
 		D6B603F0B5CD70E58101A9A9 /* AIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIClient.swift; sourceTree = "<group>"; };
+		DA409C8802B014BD73F6302F /* LaunchAtLoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginController.swift; sourceTree = "<group>"; };
 		DBA0CDE0F4FDCCC2F9D41E12 /* BelloBoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BelloBoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E02DA3BB30C731B418E4A695 /* AnnotationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationModel.swift; sourceTree = "<group>"; };
 		E7D78A765F8A05835AB80226 /* CaptureOverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureOverlayController.swift; sourceTree = "<group>"; };
@@ -273,6 +275,7 @@
 				F41CBE868D630B1299CC4901 /* AppSettings.swift */,
 				4E8CC4A4A9C50F407B0643F6 /* GlobalHotkey.swift */,
 				8937A9C45A6753018FD65683 /* KeychainStore.swift */,
+				DA409C8802B014BD73F6302F /* LaunchAtLoginController.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -643,6 +646,7 @@
 				1C9AE9128BA8A658B80F79A4 /* InputOverlayModels.swift in Sources */,
 				DF215D5B42CBFC5366CCCA4E /* KeychainStore.swift in Sources */,
 				38F72A0D7F1D63C2EFEBED6E /* LLMOCRService.swift in Sources */,
+				58CC640C94F07D4FB37EC9B3 /* LaunchAtLoginController.swift in Sources */,
 				98EAA5A5DC3F2B95CBC8CF6A /* MacVisionOCRService.swift in Sources */,
 				C9504D108080F783FA14E45F /* MainView.swift in Sources */,
 				A1B18391B3F4EF49E9C8077A /* MainWindowController.swift in Sources */,
@@ -815,7 +819,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 30;
+				CURRENT_PROJECT_VERSION = 31;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -835,7 +839,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.30;
+				MARKETING_VERSION = 0.0.31;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -881,7 +885,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 30;
+				CURRENT_PROJECT_VERSION = 31;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -895,7 +899,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.30;
+				MARKETING_VERSION = 0.0.31;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
