@@ -15,6 +15,9 @@ tool per button:
   (auto-detecting Base64 / URL / HTML / Hex), pretty-print (auto-detecting JSON /
   XML / HTML / brace code), hashes (MD5 / SHA-1 / SHA-256 / SHA-512), line ops,
   and a Count tab with a model-aware token estimate.
+- **Screenshot**: capture an area, window, screen, or scrolling page; annotate
+  with pen, arrows, rectangles, highlights, text, crop, and blur/redaction;
+  copy/save PNG; run local Mac OCR or explicit-confirmation LLM OCR.
 
 New tools are added by extending the toolbar in `FloatingButtonView.swift` and
 routing them in `SelectionOverlayController.swift`.
@@ -38,6 +41,20 @@ BelloBox/
 │   │   ├── AIConfig.swift          # ProviderKind, AIConfig, AIError
 │   │   ├── AIClient.swift          # request building + SSE streaming (OpenAI + Anthropic)
 │   │   └── QuickAction.swift       # one-click transformations + prompt builder
+│   ├── Screenshot/                 # Screenshot domain; keep separate from TextSelection
+│   │   ├── ScreenshotModels.swift  # capture/document/scrolling models
+│   │   ├── AnnotationModel.swift   # annotation value models
+│   │   ├── ScreenCaptureService.swift       # ScreenCaptureKit capture
+│   │   ├── RegionCaptureOverlayController.swift
+│   │   ├── WindowCapturePicker.swift
+│   │   ├── ScrollCaptureCoordinator.swift
+│   │   ├── ImageStitcher.swift
+│   │   ├── AnnotationRenderer.swift
+│   │   ├── ImageExportService.swift
+│   │   └── OCR/                    # Apple Vision + optional LLM OCR
+│   │       ├── MacVisionOCRService.swift
+│   │       ├── LLMOCRService.swift
+│   │       └── AIImageClient.swift # multimodal request builders only
 │   ├── Tools/
 │   │   ├── QRCodeGenerator.swift   # CoreImage QR rendering (NSImage / PNG)
 │   │   ├── TextTransforms.swift    # case / encode / decode / hash / lines / pretty-print
@@ -57,6 +74,12 @@ BelloBox/
 │       ├── ActionPopupViewModel.swift        # runs AI actions, streams result
 │       ├── QRCodePopupView.swift             # the QR popup + view model (editable text, copy/save)
 │       ├── TextToolsPopupView.swift          # the text-tools popup + view model (inline token-model picker)
+│       ├── ScreenshotCaptureChooserView.swift
+│       ├── ScreenshotPopupView.swift          # annotation/OCR editor
+│       ├── AnnotationCanvasView.swift
+│       ├── OCRPanelView.swift
+│       ├── OCRTextRegionsOverlayView.swift
+│       ├── ScrollingCaptureHUDView.swift
 │       ├── Theme.swift                       # design system: gradient, PopupHeader, popupCard, button styles, appear animation
 │       ├── MainView.swift                    # the home window (status, how-to, Settings / Updates)
 │       ├── MainWindowController.swift         # hosts the home window (centered)
@@ -78,6 +101,16 @@ BelloBox/
 - Bundle id: `com.ainoob.BelloBox`; Team: `43TXHV3TM3`.
 - Accessory app (`LSUIElement`), menu-bar only. Not sandboxed — it reads the
   selection from other apps over the Accessibility API and pastes replacements.
+- Screenshot capture requires Screen Recording permission and uses
+  ScreenCaptureKit as the primary path. Local annotation, stitching, and Mac OCR
+  stay on-device.
+- LLM OCR is the only approved screenshot-to-provider path. It must require
+  explicit user confirmation and upload the crop/redaction-aware OCR image, not
+  the raw screenshot. Do not log screenshots, Base64 image payloads, provider
+  OCR responses, or copied OCR text.
+- Do not thread screenshot/image state through `TextSelection`, QR, Text Tools,
+  or the text-only AI action models. Keep image logic in `BelloBox/Screenshot`
+  and `BelloBox/Screenshot/OCR`.
 - Sparkle: shared EdDSA public key `slSJ7z2j8RDa266+E/7To5AOOloc2YtiMUZUVEIhwNA=`
   (private key lives in the login keychain, `acct=ed25519`,
   `svce=https://sparkle-project.org`). Feed: `https://belloware.com/assets/bello_box.appcast.xml`.

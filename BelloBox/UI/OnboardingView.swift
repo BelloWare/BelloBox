@@ -62,6 +62,7 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 12) {
                 bullet("cursorarrow.rays", "Select text anywhere", "A small Bello Box toolbar can appear next to your selection.")
                 bullet("wand.and.stars", "Ask the AI", "Fix grammar, rewrite, summarize, or translate — then copy or replace in place.")
+                bullet("camera.viewfinder", "Capture screenshots", "Grab an area, window, screen, or scrolling page, then annotate and OCR it.")
                 bullet("qrcode", "Make a QR code", "Turn a link or any text into a scannable QR code you can edit on the fly.")
             }
             .padding(.top, 4)
@@ -72,6 +73,10 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 18) {
             stepHeader("Grant Accessibility access", systemImage: "lock.shield")
             Text("Bello Box uses macOS Accessibility to read the text you select and paste replacements back. It only reads a selection when you ask it to. Nothing is sent anywhere except to the AI endpoint you configure.")
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("Screenshots use macOS Screen Recording permission. Bello Box asks for that only when you use screenshot capture; Mac OCR stays on-device, and LLM OCR asks before uploading an image.")
+                .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -175,6 +180,7 @@ struct OnboardingView: View {
                 if settings.floatingButtonEnabled {
                     bullet("cursorarrow.rays", "Use auto hint", "Select text with the mouse and the Bello Box tool board appears nearby.")
                 }
+                bullet("camera.viewfinder", "Capture and OCR screenshots", "Screen Recording is requested lazily on first screenshot use. Mac OCR stays local; LLM OCR requires confirmation.")
             }
             .padding(.top, 4)
 

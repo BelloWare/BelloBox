@@ -24,6 +24,42 @@ enum AppearancePreference: String, CaseIterable, Identifiable {
     }
 }
 
+enum ScreenshotDefaultMode: String, CaseIterable, Identifiable, Codable {
+    case area
+    case window
+    case screen
+    case scrolling
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .area: return "Area"
+        case .window: return "Window"
+        case .screen: return "Screen"
+        case .scrolling: return "Scrolling"
+        }
+    }
+}
+
+enum OCRDefaultEngine: String, CaseIterable, Identifiable, Codable {
+    case appleVision
+    case askEachTime
+    case llm
+    case hybrid
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .appleVision: return "Mac OCR"
+        case .askEachTime: return "Ask"
+        case .llm: return "LLM OCR"
+        case .hybrid: return "Hybrid"
+        }
+    }
+}
+
 /// User-facing configuration, persisted to UserDefaults (API keys go to the
 /// Keychain). Per-provider base URL / model are kept independently so switching
 /// providers does not lose the other configuration.
@@ -46,11 +82,27 @@ final class AppSettings: ObservableObject {
         static let globalHotkeyEnabled = "globalHotkeyEnabled"
         static let globalHotkeyKeyCode = "globalHotkeyKeyCode"
         static let globalHotkeyModifiers = "globalHotkeyModifiers"
+        static let screenshotHotkeyEnabled = "screenshotHotkeyEnabled"
+        static let screenshotHotkeyKeyCode = "screenshotHotkeyKeyCode"
+        static let screenshotHotkeyModifiers = "screenshotHotkeyModifiers"
         static let hasCompletedSetup = "hasCompletedSetup"
         static let appearance = "appearance"
         static let codexPath = "codexPath"
         static let codexModel = "codexModel"
         static let codexReasoningEffort = "codexReasoningEffort"
+        static let screenshotIncludeCursor = "screenshotIncludeCursor"
+        static let screenshotAutoCopy = "screenshotAutoCopy"
+        static let screenshotDefaultMode = "screenshotDefaultMode"
+        static let scrollingScreenshotMaxFrames = "scrollingScreenshotMaxFrames"
+        static let scrollingScreenshotAutoCompact = "scrollingScreenshotAutoCompact"
+        static let screenshotAutoRunLocalOCR = "screenshotAutoRunLocalOCR"
+        static let ocrDefaultEngine = "ocrDefaultEngine"
+        static let ocrRecognitionLevel = "ocrRecognitionLevel"
+        static let ocrLanguageHints = "ocrLanguageHints"
+        static let ocrUseLanguageCorrection = "ocrUseLanguageCorrection"
+        static let ocrShowTextRegions = "ocrShowTextRegions"
+        static let llmOCRMaxUploadLongEdge = "llmOCRMaxUploadLongEdge"
+        static let llmOCRIncludeLocalOCRHint = "llmOCRIncludeLocalOCRHint"
     }
 
     static let defaultSystemPrompt = """
@@ -81,10 +133,26 @@ final class AppSettings: ObservableObject {
     @Published var globalHotkeyEnabled: Bool { didSet { defaults.set(globalHotkeyEnabled, forKey: Keys.globalHotkeyEnabled) } }
     @Published var globalHotkeyKeyCode: Int { didSet { defaults.set(globalHotkeyKeyCode, forKey: Keys.globalHotkeyKeyCode) } }
     @Published var globalHotkeyModifiersRawValue: Int { didSet { defaults.set(globalHotkeyModifiersRawValue, forKey: Keys.globalHotkeyModifiers) } }
+    @Published var screenshotHotkeyEnabled: Bool { didSet { defaults.set(screenshotHotkeyEnabled, forKey: Keys.screenshotHotkeyEnabled) } }
+    @Published var screenshotHotkeyKeyCode: Int { didSet { defaults.set(screenshotHotkeyKeyCode, forKey: Keys.screenshotHotkeyKeyCode) } }
+    @Published var screenshotHotkeyModifiersRawValue: Int { didSet { defaults.set(screenshotHotkeyModifiersRawValue, forKey: Keys.screenshotHotkeyModifiers) } }
     @Published var appearance: AppearancePreference { didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) } }
     @Published var codexPath: String { didSet { defaults.set(codexPath, forKey: Keys.codexPath) } }
     @Published var codexModel: String { didSet { defaults.set(codexModel, forKey: Keys.codexModel) } }
     @Published var codexReasoningEffort: String { didSet { defaults.set(codexReasoningEffort, forKey: Keys.codexReasoningEffort) } }
+    @Published var screenshotIncludeCursor: Bool { didSet { defaults.set(screenshotIncludeCursor, forKey: Keys.screenshotIncludeCursor) } }
+    @Published var screenshotAutoCopy: Bool { didSet { defaults.set(screenshotAutoCopy, forKey: Keys.screenshotAutoCopy) } }
+    @Published var screenshotDefaultMode: ScreenshotDefaultMode { didSet { defaults.set(screenshotDefaultMode.rawValue, forKey: Keys.screenshotDefaultMode) } }
+    @Published var scrollingScreenshotMaxFrames: Int { didSet { defaults.set(scrollingScreenshotMaxFrames, forKey: Keys.scrollingScreenshotMaxFrames) } }
+    @Published var scrollingScreenshotAutoCompact: Bool { didSet { defaults.set(scrollingScreenshotAutoCompact, forKey: Keys.scrollingScreenshotAutoCompact) } }
+    @Published var screenshotAutoRunLocalOCR: Bool { didSet { defaults.set(screenshotAutoRunLocalOCR, forKey: Keys.screenshotAutoRunLocalOCR) } }
+    @Published var ocrDefaultEngine: OCRDefaultEngine { didSet { defaults.set(ocrDefaultEngine.rawValue, forKey: Keys.ocrDefaultEngine) } }
+    @Published var ocrRecognitionLevel: OCRRecognitionLevel { didSet { defaults.set(ocrRecognitionLevel.rawValue, forKey: Keys.ocrRecognitionLevel) } }
+    @Published var ocrLanguageHints: [String] { didSet { defaults.set(ocrLanguageHints, forKey: Keys.ocrLanguageHints) } }
+    @Published var ocrUseLanguageCorrection: Bool { didSet { defaults.set(ocrUseLanguageCorrection, forKey: Keys.ocrUseLanguageCorrection) } }
+    @Published var ocrShowTextRegions: Bool { didSet { defaults.set(ocrShowTextRegions, forKey: Keys.ocrShowTextRegions) } }
+    @Published var llmOCRMaxUploadLongEdge: Int { didSet { defaults.set(llmOCRMaxUploadLongEdge, forKey: Keys.llmOCRMaxUploadLongEdge) } }
+    @Published var llmOCRIncludeLocalOCRHint: Bool { didSet { defaults.set(llmOCRIncludeLocalOCRHint, forKey: Keys.llmOCRIncludeLocalOCRHint) } }
 
     /// API key for the currently-selected provider. Persisted to the Keychain.
     @Published var apiKey: String {
@@ -116,6 +184,16 @@ final class AppSettings: ObservableObject {
         let storedHotkey = Self.normalizedHotkey(keyCode: storedHotkeyKeyCode, modifiersRawValue: storedHotkeyModifiers)
         globalHotkeyKeyCode = Int(storedHotkey.keyCode)
         globalHotkeyModifiersRawValue = Int(storedHotkey.modifiers.rawValue)
+        screenshotHotkeyEnabled = (defaults.object(forKey: Keys.screenshotHotkeyEnabled) as? Bool) ?? false
+        let storedScreenshotHotkeyKeyCode = defaults.object(forKey: Keys.screenshotHotkeyKeyCode) as? Int
+        let storedScreenshotHotkeyModifiers = defaults.object(forKey: Keys.screenshotHotkeyModifiers) as? Int
+        let storedScreenshotHotkey = Self.normalizedHotkey(
+            keyCode: storedScreenshotHotkeyKeyCode,
+            modifiersRawValue: storedScreenshotHotkeyModifiers,
+            defaultHotkey: .defaultScreenshot
+        )
+        screenshotHotkeyKeyCode = Int(storedScreenshotHotkey.keyCode)
+        screenshotHotkeyModifiersRawValue = Int(storedScreenshotHotkey.modifiers.rawValue)
         appearance = AppearancePreference(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         codexPath = defaults.string(forKey: Keys.codexPath) ?? ""
         let storedCodexModel = defaults.string(forKey: Keys.codexModel) ?? ""
@@ -126,6 +204,19 @@ final class AppSettings: ObservableObject {
         codexReasoningEffort = CodexCLI.reasoningEfforts.contains(storedEffort)
             ? storedEffort
             : CodexCLI.defaultReasoningEffort
+        screenshotIncludeCursor = (defaults.object(forKey: Keys.screenshotIncludeCursor) as? Bool) ?? false
+        screenshotAutoCopy = (defaults.object(forKey: Keys.screenshotAutoCopy) as? Bool) ?? false
+        screenshotDefaultMode = ScreenshotDefaultMode(rawValue: defaults.string(forKey: Keys.screenshotDefaultMode) ?? "") ?? .area
+        scrollingScreenshotMaxFrames = defaults.object(forKey: Keys.scrollingScreenshotMaxFrames) as? Int ?? 20
+        scrollingScreenshotAutoCompact = (defaults.object(forKey: Keys.scrollingScreenshotAutoCompact) as? Bool) ?? true
+        screenshotAutoRunLocalOCR = (defaults.object(forKey: Keys.screenshotAutoRunLocalOCR) as? Bool) ?? false
+        ocrDefaultEngine = OCRDefaultEngine(rawValue: defaults.string(forKey: Keys.ocrDefaultEngine) ?? "") ?? .appleVision
+        ocrRecognitionLevel = OCRRecognitionLevel(rawValue: defaults.string(forKey: Keys.ocrRecognitionLevel) ?? "") ?? .accurate
+        ocrLanguageHints = defaults.stringArray(forKey: Keys.ocrLanguageHints) ?? []
+        ocrUseLanguageCorrection = (defaults.object(forKey: Keys.ocrUseLanguageCorrection) as? Bool) ?? true
+        ocrShowTextRegions = (defaults.object(forKey: Keys.ocrShowTextRegions) as? Bool) ?? false
+        llmOCRMaxUploadLongEdge = defaults.object(forKey: Keys.llmOCRMaxUploadLongEdge) as? Int ?? 2200
+        llmOCRIncludeLocalOCRHint = (defaults.object(forKey: Keys.llmOCRIncludeLocalOCRHint) as? Bool) ?? true
         apiKey = KeychainStore.get(account: KeychainStore.account(for: kind)) ?? ""
     }
 
@@ -172,6 +263,13 @@ final class AppSettings: ObservableObject {
         )
     }
 
+    var screenshotHotkey: GlobalHotkey {
+        GlobalHotkey(
+            keyCode: UInt16(clamping: screenshotHotkeyKeyCode),
+            modifiers: NSEvent.ModifierFlags(rawValue: UInt(screenshotHotkeyModifiersRawValue))
+        )
+    }
+
     func setGlobalHotkey(_ hotkey: GlobalHotkey) {
         globalHotkeyKeyCode = Int(hotkey.keyCode)
         globalHotkeyModifiersRawValue = Int(hotkey.modifiers.rawValue)
@@ -181,10 +279,30 @@ final class AppSettings: ObservableObject {
         setGlobalHotkey(.default)
     }
 
+    func setScreenshotHotkey(_ hotkey: GlobalHotkey) {
+        screenshotHotkeyKeyCode = Int(hotkey.keyCode)
+        screenshotHotkeyModifiersRawValue = Int(hotkey.modifiers.rawValue)
+    }
+
+    func resetScreenshotHotkey() {
+        setScreenshotHotkey(.defaultScreenshot)
+    }
+
     func resetSystemPrompt() { systemPrompt = Self.defaultSystemPrompt }
 
     func setTemperature(_ value: Double) {
         temperature = Self.normalizedTemperature(value)
+    }
+
+    func setOCRLanguageHintsText(_ text: String) {
+        ocrLanguageHints = text
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    var ocrLanguageHintsText: String {
+        ocrLanguageHints.joined(separator: ", ")
     }
 
     /// Detects the codex binary off the main thread and stores it if found.
@@ -193,19 +311,23 @@ final class AppSettings: ObservableObject {
         if !path.isEmpty { codexPath = path }
     }
 
-    private static func normalizedHotkey(keyCode: Int?, modifiersRawValue: Int?) -> GlobalHotkey {
+    private static func normalizedHotkey(
+        keyCode: Int?,
+        modifiersRawValue: Int?,
+        defaultHotkey: GlobalHotkey = .default
+    ) -> GlobalHotkey {
         guard
             let keyCode,
             (0...Int(UInt16.max)).contains(keyCode),
             let modifiersRawValue,
             modifiersRawValue >= 0
-        else { return .default }
+        else { return defaultHotkey }
 
         let hotkey = GlobalHotkey(
             keyCode: UInt16(keyCode),
             modifiers: NSEvent.ModifierFlags(rawValue: UInt(modifiersRawValue))
         )
-        return hotkey.isValid ? hotkey : .default
+        return hotkey.isValid ? hotkey : defaultHotkey
     }
 
     private func resolvedTemperature(maximum: Double) -> Double? {

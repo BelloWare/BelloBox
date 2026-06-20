@@ -9,6 +9,9 @@ final class SelectionOverlayController: NSObject {
     private let accessibility = AccessibilityService()
     private let client = AIClient()
     private let monitor: SelectionMonitor
+    private let screenCaptureService = ScreenCaptureService()
+    private let macOCRService = MacVisionOCRService()
+    private lazy var llmOCRService = LLMOCRService(settings: settings)
 
     private var toolbarPanel: FloatingButtonPanel?
     private var popupPanel: PopupPanel?
@@ -23,6 +26,8 @@ final class SelectionOverlayController: NSObject {
     private var pendingSelection: TextSelection?
     private var trustWatcher: Timer?
     private var lastTrusted = false
+    private var regionCaptureController: RegionCaptureOverlayController?
+    private var scrollingCaptureCoordinator: ScrollCaptureCoordinator?
 
     /// Set by the app to open the Settings window.
     var openSettings: () -> Void = {}
@@ -37,6 +42,16 @@ final class SelectionOverlayController: NSObject {
         monitor.onHotkey = { [weak self] in
             self?.triggerBoardOnCurrentSelection()
         }
+        monitor.onScreenshotHotkey = { [weak self] in
+            self?.triggerScreenshotShortcut()
+        }
+        screenCaptureService.beforeCapture = { [weak self] in
+            self?.toolbarPanel?.orderOut(nil)
+            self?.popupPanel?.orderOut(nil)
+        }
+        screenCaptureService.afterCapture = { [weak self] in
+            self?.popupPanel?.orderFrontRegardless()
+        }
     }
 
     func start() {
@@ -46,6 +61,9 @@ final class SelectionOverlayController: NSObject {
         // Keyboard monitoring only takes effect once the process is trusted, so
         // re-establish the monitors when Accessibility is granted while running.
         if !lastTrusted { startTrustWatcher() }
+#if DEBUG
+        runScreenshotE2EHooksIfNeeded()
+#endif
     }
 
     /// Tears down and re-installs the event monitors. Needed after Accessibility
@@ -69,10 +87,20 @@ final class SelectionOverlayController: NSObject {
         monitor.hotkey = hotkey
     }
 
+    func setScreenshotHotkeyEnabled(_ enabled: Bool) {
+        monitor.screenshotHotkeyEnabled = enabled
+    }
+
+    func setScreenshotHotkey(_ hotkey: GlobalHotkey) {
+        monitor.screenshotHotkey = hotkey
+    }
+
     private func applyMonitorSettings() {
         monitor.selectionMonitoringEnabled = settings.floatingButtonEnabled
         monitor.hotkeyEnabled = settings.globalHotkeyEnabled
         monitor.hotkey = settings.globalHotkey
+        monitor.screenshotHotkeyEnabled = settings.screenshotHotkeyEnabled
+        monitor.screenshotHotkey = settings.screenshotHotkey
     }
 
     private func startTrustWatcher() {
@@ -182,6 +210,7 @@ final class SelectionOverlayController: NSObject {
 
         let view = FloatingToolbarView(
             onAI: { [weak self] in self?.activateAI() },
+            onScreenshot: { [weak self] in self?.activateScreenshot() },
             onQR: { [weak self] in self?.activateQR() },
             onTools: { [weak self] in self?.activateTools() }
         )
@@ -228,6 +257,12 @@ final class SelectionOverlayController: NSObject {
         guard let selection = pendingSelection else { return }
         hideToolbar()
         showAIPopup(for: selection)
+    }
+
+    private func activateScreenshot() {
+        let anchor = pendingSelection?.anchorRect
+        hideToolbar()
+        showScreenshotChooser(anchorRect: anchor)
     }
 
     private func activateQR() {
@@ -318,6 +353,290 @@ final class SelectionOverlayController: NSObject {
             minimizedTitle: "Text Tools"
         )
     }
+
+    // MARK: - Screenshots
+
+    func triggerScreenshotCapture() {
+        hideToolbar()
+        showScreenshotChooser(anchorRect: nil)
+    }
+
+    func triggerScrollingScreenshotCapture() {
+        hideToolbar()
+        showScreenshotChooser(anchorRect: nil, initialMode: .scrolling)
+    }
+
+    func triggerScreenshotShortcut() {
+        hideToolbar()
+        guard ScreenCapturePermission.isTrusted else {
+            showScreenshotChooser(anchorRect: nil, initialMode: screenshotCaptureMode(from: settings.screenshotDefaultMode))
+            return
+        }
+        switch settings.screenshotDefaultMode {
+        case .area:
+            beginAreaCapture(anchorRect: nil)
+        case .window:
+            showWindowPicker(anchorRect: nil)
+        case .screen:
+            captureScreen(anchorRect: nil)
+        case .scrolling:
+            beginScrollingAreaCapture(anchorRect: nil)
+        }
+    }
+
+    private func showScreenshotChooser(anchorRect: CGRect?, initialMode: ScreenshotCaptureMode? = nil) {
+        let viewModel = ScreenshotCaptureChooserViewModel()
+        viewModel.onClose = { [weak self] in self?.hidePopup() }
+        viewModel.onCaptureArea = { [weak self] in self?.beginAreaCapture(anchorRect: anchorRect) }
+        viewModel.onCaptureWindow = { [weak self] in self?.showWindowPicker(anchorRect: anchorRect) }
+        viewModel.onCaptureScreen = { [weak self] in self?.captureScreen(anchorRect: anchorRect) }
+        viewModel.onCaptureScrolling = { [weak self] in self?.beginScrollingAreaCapture(anchorRect: anchorRect) }
+        let view = ScreenshotCaptureChooserView(viewModel: viewModel, initialMode: initialMode)
+        present(
+            view,
+            size: ScreenshotCaptureChooserView.preferredSize,
+            anchorRect: anchorRect,
+            minimizedIcon: "camera.viewfinder",
+            minimizedTitle: "Screenshot"
+        )
+    }
+
+    private func screenshotCaptureMode(from mode: ScreenshotDefaultMode) -> ScreenshotCaptureMode {
+        switch mode {
+        case .area: return .area
+        case .window: return .window
+        case .screen: return .screen
+        case .scrolling: return .scrolling
+        }
+    }
+
+    private func beginAreaCapture(anchorRect: CGRect?) {
+#if DEBUG
+        if let area = e2eRegionArea() {
+            Task { await self.captureArea(area, anchorRect: anchorRect) }
+            return
+        }
+#endif
+        hidePopup()
+        let controller = RegionCaptureOverlayController()
+        regionCaptureController = controller
+        controller.begin { [weak self] result in
+            guard let self else { return }
+            self.regionCaptureController = nil
+            switch result {
+            case let .success(area):
+                Task { await self.captureArea(area, anchorRect: anchorRect) }
+            case let .failure(error):
+                self.showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
+            }
+        }
+    }
+
+    private func beginScrollingAreaCapture(anchorRect: CGRect?) {
+#if DEBUG
+        if let area = e2eRegionArea() {
+            Task { await self.startScrollingCapture(target: .area(area), anchorRect: anchorRect) }
+            return
+        }
+#endif
+        hidePopup()
+        let controller = RegionCaptureOverlayController()
+        regionCaptureController = controller
+        controller.begin { [weak self] result in
+            guard let self else { return }
+            self.regionCaptureController = nil
+            switch result {
+            case let .success(area):
+                Task { await self.startScrollingCapture(target: .area(area), anchorRect: anchorRect) }
+            case let .failure(error):
+                self.showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
+            }
+        }
+    }
+
+    private func captureArea(_ area: CaptureArea, anchorRect: CGRect?) async {
+        do {
+            let document = try await screenCaptureService.capture(
+                .area(area),
+                options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.15)
+            )
+            showScreenshotEditor(document: document, anchorRect: anchorRect)
+        } catch {
+            showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
+        }
+    }
+
+    private func captureScreen(anchorRect: CGRect?) {
+        hidePopup()
+        Task {
+            do {
+                let document = try await screenCaptureService.captureScreenUnderMouse(
+                    options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.15)
+                )
+                showScreenshotEditor(document: document, anchorRect: anchorRect)
+            } catch {
+                showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
+            }
+        }
+    }
+
+    private func showWindowPicker(anchorRect: CGRect?) {
+        let viewModel = WindowCapturePickerViewModel(service: screenCaptureService)
+        viewModel.onCancel = { [weak self] in self?.hidePopup() }
+        viewModel.onSelect = { [weak self] window in
+            self?.hidePopup()
+            Task { await self?.captureWindow(window, anchorRect: anchorRect) }
+        }
+        let view = WindowCapturePickerView(viewModel: viewModel)
+        present(
+            view,
+            size: WindowCapturePickerView.preferredSize,
+            anchorRect: anchorRect,
+            minimizedIcon: "macwindow",
+            minimizedTitle: "Window Capture"
+        )
+    }
+
+    private func captureWindow(_ window: CaptureWindow, anchorRect: CGRect?) async {
+        do {
+            let document = try await screenCaptureService.capture(
+                .window(window),
+                options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.15)
+            )
+            showScreenshotEditor(document: document, anchorRect: anchorRect)
+        } catch {
+            showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
+        }
+    }
+
+    private func startScrollingCapture(target: ScrollCaptureTarget, anchorRect: CGRect?) async {
+        let coordinator = ScrollCaptureCoordinator(target: target, service: screenCaptureService, settings: settings)
+        scrollingCaptureCoordinator = coordinator
+        do {
+            try await coordinator.captureInitialFrame()
+        } catch {
+            showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
+            return
+        }
+        let viewModel = ScrollingCaptureHUDViewModel(coordinator: coordinator)
+        viewModel.onCancel = { [weak self] in
+            self?.scrollingCaptureCoordinator = nil
+            self?.hidePopup()
+        }
+        viewModel.onFinished = { [weak self] document in
+            self?.scrollingCaptureCoordinator = nil
+            self?.showScreenshotEditor(document: document, anchorRect: anchorRect)
+        }
+        let view = ScrollingCaptureHUDView(viewModel: viewModel)
+        present(
+            view,
+            size: ScrollingCaptureHUDView.preferredSize,
+            anchorRect: anchorRect,
+            minimizedIcon: "arrow.down.doc",
+            minimizedTitle: "Scrolling Capture"
+        )
+    }
+
+    private func showScreenshotEditor(document: ScreenshotDocument, anchorRect: CGRect?) {
+        let viewModel = ScreenshotPopupViewModel(
+            document: document,
+            settings: settings,
+            macOCRService: macOCRService,
+            llmOCRService: llmOCRService
+        )
+        viewModel.onClose = { [weak self] in self?.hidePopup() }
+        let view = ScreenshotPopupView(
+            viewModel: viewModel,
+            onMinimize: { [weak self] in self?.minimizePopup() }
+        )
+        present(
+            view,
+            size: ScreenshotPopupView.preferredSize,
+            anchorRect: anchorRect,
+            minimizedIcon: "camera.viewfinder",
+            minimizedTitle: "Screenshot"
+        )
+    }
+
+    private func showScreenshotError(_ message: String, anchorRect: CGRect?) {
+        let viewModel = ScreenshotCaptureChooserViewModel()
+        viewModel.errorMessage = message
+        viewModel.onClose = { [weak self] in self?.hidePopup() }
+        viewModel.onCaptureArea = { [weak self] in self?.beginAreaCapture(anchorRect: anchorRect) }
+        viewModel.onCaptureWindow = { [weak self] in self?.showWindowPicker(anchorRect: anchorRect) }
+        viewModel.onCaptureScreen = { [weak self] in self?.captureScreen(anchorRect: anchorRect) }
+        viewModel.onCaptureScrolling = { [weak self] in self?.beginScrollingAreaCapture(anchorRect: anchorRect) }
+        let view = ScreenshotCaptureChooserView(viewModel: viewModel)
+        present(
+            view,
+            size: ScreenshotCaptureChooserView.preferredSize,
+            anchorRect: anchorRect,
+            minimizedIcon: "camera.viewfinder",
+            minimizedTitle: "Screenshot"
+        )
+    }
+
+#if DEBUG
+    private func runScreenshotE2EHooksIfNeeded() {
+        let env = ProcessInfo.processInfo.environment
+        if let path = env["BELLOBOX_E2E_SCROLL_FRAMES_DIR"], !path.isEmpty {
+            Task { await openE2EScrollingFrames(path: path) }
+            return
+        }
+        if let path = env["BELLOBOX_E2E_OCR_IMAGE"], !path.isEmpty {
+            Task { await openE2EScreenshot(path: path, runOCR: true) }
+            return
+        }
+        if let path = env["BELLOBOX_E2E_SCREENSHOT_IMAGE"], !path.isEmpty {
+            Task { await openE2EScreenshot(path: path, runOCR: false) }
+        }
+    }
+
+    private func e2eRegionArea() -> CaptureArea? {
+        guard let raw = ProcessInfo.processInfo.environment["BELLOBOX_E2E_REGION_RECT"] else { return nil }
+        let parts = raw.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
+        guard parts.count == 4 else { return nil }
+        let rect = CGRect(x: CGFloat(parts[0]), y: CGFloat(parts[1]), width: CGFloat(parts[2]), height: CGFloat(parts[3]))
+        return CaptureArea(cocoaRect: rect, displayID: ScreenCoordinateSpace.displayForCocoaRect(rect).flatMap(ScreenCoordinateSpace.displayID(for:)))
+    }
+
+    private func openE2EScreenshot(path: String, runOCR: Bool) async {
+        guard let image = Self.cgImage(at: path) else { return }
+        let document = ScreenshotDocument(baseImage: image, scale: 1, source: .importedClipboard)
+        let viewModel = ScreenshotPopupViewModel(
+            document: document,
+            settings: settings,
+            macOCRService: macOCRService,
+            llmOCRService: llmOCRService
+        )
+        viewModel.onClose = { [weak self] in self?.hidePopup() }
+        let view = ScreenshotPopupView(viewModel: viewModel, onMinimize: { [weak self] in self?.minimizePopup() })
+        present(view, size: ScreenshotPopupView.preferredSize, anchorRect: nil, minimizedIcon: "camera.viewfinder", minimizedTitle: "Screenshot")
+        if runOCR { viewModel.runMacOCR() }
+    }
+
+    private func openE2EScrollingFrames(path: String) async {
+        let url = URL(fileURLWithPath: path)
+        let files = (try? FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)) ?? []
+        let images = files
+            .filter { ["png", "jpg", "jpeg"].contains($0.pathExtension.lowercased()) }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+            .compactMap { Self.cgImage(at: $0.path) }
+        guard !images.isEmpty, let result = try? ImageStitcher.stitch(images) else { return }
+        let document = ScreenshotDocument(
+            baseImage: result.image,
+            scale: 1,
+            source: .scrolling(target: ScrollCaptureTargetSummary(title: "E2E", ownerName: nil, frame: nil), frameCount: images.count)
+        )
+        showScreenshotEditor(document: document, anchorRect: nil)
+    }
+
+    private static func cgImage(at path: String) -> CGImage? {
+        guard let image = NSImage(contentsOfFile: path) else { return nil }
+        var rect = CGRect(origin: .zero, size: image.size)
+        return image.cgImage(forProposedRect: &rect, context: nil, hints: nil)
+    }
+#endif
 
     private func present<V: View>(
         _ view: V,

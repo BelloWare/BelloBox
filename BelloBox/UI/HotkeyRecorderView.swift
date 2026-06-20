@@ -4,6 +4,45 @@ import SwiftUI
 struct HotkeyRecorderView: View {
     @ObservedObject var settings: AppSettings
 
+    var body: some View {
+        HotkeyRecorderControl(
+            hotkey: settings.globalHotkey,
+            defaultHotkey: .default,
+            setHotkey: {
+                settings.setGlobalHotkey($0)
+                settings.globalHotkeyEnabled = true
+            },
+            resetHotkey: {
+                settings.resetGlobalHotkey()
+            }
+        )
+    }
+}
+
+struct ScreenshotHotkeyRecorderView: View {
+    @ObservedObject var settings: AppSettings
+
+    var body: some View {
+        HotkeyRecorderControl(
+            hotkey: settings.screenshotHotkey,
+            defaultHotkey: .defaultScreenshot,
+            setHotkey: {
+                settings.setScreenshotHotkey($0)
+                settings.screenshotHotkeyEnabled = true
+            },
+            resetHotkey: {
+                settings.resetScreenshotHotkey()
+            }
+        )
+    }
+}
+
+private struct HotkeyRecorderControl: View {
+    var hotkey: GlobalHotkey
+    var defaultHotkey: GlobalHotkey
+    var setHotkey: (GlobalHotkey) -> Void
+    var resetHotkey: () -> Void
+
     @State private var isRecording = false
     @State private var localMonitor: Any?
     @State private var message: String?
@@ -11,7 +50,7 @@ struct HotkeyRecorderView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
-                Text(isRecording ? "Press shortcut…" : settings.globalHotkey.displayString)
+                Text(isRecording ? "Press shortcut…" : hotkey.displayString)
                     .font(.system(.body, design: .monospaced).weight(.semibold))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
@@ -24,10 +63,10 @@ struct HotkeyRecorderView: View {
                 }
 
                 Button("Reset") {
-                    settings.resetGlobalHotkey()
+                    resetHotkey()
                     message = nil
                 }
-                .disabled(settings.globalHotkey == .default)
+                .disabled(hotkey == defaultHotkey)
             }
 
             if let message {
@@ -60,8 +99,7 @@ struct HotkeyRecorderView: View {
             return
         }
 
-        settings.setGlobalHotkey(hotkey)
-        settings.globalHotkeyEnabled = true
+        setHotkey(hotkey)
         stopRecording()
     }
 

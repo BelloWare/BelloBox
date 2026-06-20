@@ -12,7 +12,7 @@ This document lists what BelloBox can do and how you interact with each feature.
 
 1. **Select text** in any app — a note, an email, a code comment, a web form.
 2. A small **floating toolbar** appears just above your selection with one button
-   per tool: **AI ✨**, **QR ▦**, and **Text Tools 🔧**.
+   per tool: **AI ✨**, **Screenshot 📸**, **QR ▦**, and **Text Tools 🔧**.
 3. **Click a tool** (or dismiss by clicking elsewhere). A popup opens next to the
    selection.
 4. Act on the result — most tools offer **Copy** and **Replace** (Replace pastes
@@ -102,6 +102,36 @@ categories offer **Copy** and **Replace**.
 
 ---
 
+## Tool 4 — Screenshot 📸
+
+Capture an **area**, **window**, **screen**, or **scrolling page**. Bello Box
+opens the image in an annotation editor with pen, arrows, rectangles,
+highlights, text labels, crop, blur/redaction, undo/redo, OCR, copy image, and
+save PNG.
+
+**Capture modes:**
+- **Area** — drag a screen region.
+- **Window** — choose a capturable app window.
+- **Screen** — capture the display under the mouse.
+- **Scrolling** — capture repeated frames while you scroll, then compact them
+  into one long screenshot by removing duplicated overlap and conservative
+  sticky headers.
+
+**OCR:**
+- **Mac OCR** uses Apple Vision locally and works offline.
+- **Improve with LLM OCR…** can use your configured OpenAI-compatible or
+  Anthropic-compatible vision model for difficult screenshots, tables,
+  handwriting, and messy layouts.
+- LLM OCR always shows a confirmation with provider, model, upload dimensions,
+  size, and thumbnail before sending anything.
+- The uploaded image applies crop and blur/redaction first, and decorative
+  annotations are excluded by default.
+
+OCR text is selectable and copyable as plain text or Markdown. Local OCR can
+also show line boxes over the image without baking those boxes into the export.
+
+---
+
 ## Home window
 
 Opening BelloBox (from Finder or Launchpad, or **Open BelloBox** in the menu)
@@ -133,8 +163,9 @@ app has nothing in the Dock).
 
 The ✨ menu-bar icon gives you:
 - **Open BelloBox** (the home window)
-- **Ask BelloBox About Selection**, **Generate QR Code from Selection**,
-  **Text Tools on Selection**
+- **Ask BelloBox About Selection**, **Capture Screenshot…**,
+  **Capture Scrolling Screenshot…**, **Generate QR Code from Selection**,
+  and **Text Tools on Selection**
 - **Set Up BelloBox…**, **Settings…**
 - **Check for Updates…**
 - **Quit**
@@ -148,8 +179,11 @@ BelloBox updates itself via [Sparkle](https://sparkle-project.org). Use
 
 - BelloBox needs **Accessibility** access to read the selected text and to paste
   replacements. It only reads the selection when you ask it to.
-- Text is sent only to the **AI endpoint you configure** — and the AI tool is the
-  only feature that uses the network. QR and Text Tools run entirely offline.
+- Screenshot capture needs **Screen Recording** permission. Capture, annotation,
+  scrolling stitch, and Mac OCR stay on your Mac.
+- Text is sent only to the **AI endpoint you configure**. Screenshot pixels are
+  sent only when you explicitly choose LLM OCR and confirm the redaction-aware
+  upload. QR and Text Tools run entirely offline.
 - Your API key is stored in the macOS **Keychain**.
 
 ## Requirements

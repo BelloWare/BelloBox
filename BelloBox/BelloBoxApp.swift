@@ -28,6 +28,12 @@ struct BelloBoxApp: App {
         Button("Ask Bello Box About Selection") {
             appDelegate.overlay?.triggerOnCurrentSelection()
         }
+        Button("Capture Screenshot…") {
+            appDelegate.overlay?.triggerScreenshotCapture()
+        }
+        Button("Capture Scrolling Screenshot…") {
+            appDelegate.overlay?.triggerScrollingScreenshotCapture()
+        }
         Button("Generate QR Code from Selection") {
             appDelegate.overlay?.triggerQROnCurrentSelection()
         }
@@ -98,6 +104,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak overlay, weak settings] _, _ in
                 guard let settings else { return }
                 overlay?.setGlobalHotkey(settings.globalHotkey)
+            }
+            .store(in: &cancellables)
+
+        settings.$screenshotHotkeyEnabled
+            .receive(on: RunLoop.main)
+            .sink { [weak overlay] enabled in overlay?.setScreenshotHotkeyEnabled(enabled) }
+            .store(in: &cancellables)
+
+        Publishers.CombineLatest(settings.$screenshotHotkeyKeyCode, settings.$screenshotHotkeyModifiersRawValue)
+            .receive(on: RunLoop.main)
+            .sink { [weak overlay, weak settings] _, _ in
+                guard let settings else { return }
+                overlay?.setScreenshotHotkey(settings.screenshotHotkey)
             }
             .store(in: &cancellables)
 

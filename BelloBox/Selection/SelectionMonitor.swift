@@ -8,13 +8,14 @@ final class SelectionMonitor {
     private let accessibility: AccessibilityService
 
     private var mouseUpMonitor: Any?
-    private var hotkeyRef: EventHotKeyRef?
+    private var hotkeyRefs: [UInt32: EventHotKeyRef] = [:]
     private var hotkeyHandlerRef: EventHandlerRef?
     private var debounce: DispatchWorkItem?
     private var isRunning = false
 
     private let hotkeySignature: OSType = 0x42425848 // "BBXH"
-    private let hotkeyID: UInt32 = 1
+    private let boardHotkeyID: UInt32 = 1
+    private let screenshotHotkeyID: UInt32 = 2
 
     var selectionMonitoringEnabled = true
     var hotkeyEnabled = true {
@@ -23,8 +24,15 @@ final class SelectionMonitor {
     var hotkey = GlobalHotkey.default {
         didSet { refreshHotkeyRegistrationIfNeeded() }
     }
+    var screenshotHotkeyEnabled = false {
+        didSet { refreshHotkeyRegistrationIfNeeded() }
+    }
+    var screenshotHotkey = GlobalHotkey.defaultScreenshot {
+        didSet { refreshHotkeyRegistrationIfNeeded() }
+    }
     var onSelection: ((TextSelection) -> Void)?
     var onHotkey: (() -> Void)?
+    var onScreenshotHotkey: (() -> Void)?
 
     init(accessibility: AccessibilityService) {
         self.accessibility = accessibility
@@ -36,7 +44,7 @@ final class SelectionMonitor {
         mouseUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
             self?.scheduleSelectionRead()
         }
-        installHotkeyIfNeeded()
+        installHotkeysIfNeeded()
     }
 
     func stop() {
@@ -63,18 +71,25 @@ final class SelectionMonitor {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.18, execute: work)
     }
 
-    private func handleRegisteredHotkey() {
-        onHotkey?()
+    private func handleRegisteredHotkey(id: UInt32) {
+        switch id {
+        case boardHotkeyID:
+            onHotkey?()
+        case screenshotHotkeyID:
+            onScreenshotHotkey?()
+        default:
+            break
+        }
     }
 
     private func refreshHotkeyRegistrationIfNeeded() {
         guard isRunning else { return }
         unregisterHotkey()
-        installHotkeyIfNeeded()
+        installHotkeysIfNeeded()
     }
 
-    private func installHotkeyIfNeeded() {
-        guard hotkeyEnabled, hotkey.isValid else { return }
+    private func installHotkeysIfNeeded() {
+        guard (hotkeyEnabled && hotkey.isValid) || (screenshotHotkeyEnabled && screenshotHotkey.isValid) else { return }
 
         var eventType = EventTypeSpec(
             eventClass: OSType(kEventClassKeyboard),
@@ -95,27 +110,43 @@ final class SelectionMonitor {
             return
         }
 
-        var carbonHotkeyID = EventHotKeyID(signature: hotkeySignature, id: hotkeyID)
+        if hotkeyEnabled, hotkey.isValid {
+            register(hotkey, id: boardHotkeyID, label: "board")
+        }
+        if screenshotHotkeyEnabled, screenshotHotkey.isValid {
+            if hotkeyEnabled, screenshotHotkey == hotkey {
+                NSLog("Bello Box screenshot hotkey matches the board hotkey; screenshot hotkey was not registered.")
+            } else {
+                register(screenshotHotkey, id: screenshotHotkeyID, label: "screenshot")
+            }
+        }
+
+        if hotkeyRefs.isEmpty { unregisterHotkey() }
+    }
+
+    private func register(_ hotkey: GlobalHotkey, id: UInt32, label: String) {
+        var ref: EventHotKeyRef?
+        var carbonHotkeyID = EventHotKeyID(signature: hotkeySignature, id: id)
         let registerStatus = RegisterEventHotKey(
             UInt32(hotkey.keyCode),
             hotkey.carbonModifiers,
             carbonHotkeyID,
             GetApplicationEventTarget(),
             0,
-            &hotkeyRef
+            &ref
         )
-        guard registerStatus == noErr else {
-            NSLog("Bello Box failed to register hotkey \(hotkey.displayString): \(registerStatus)")
-            unregisterHotkey()
+        guard registerStatus == noErr, let ref else {
+            NSLog("Bello Box failed to register \(label) hotkey \(hotkey.displayString): \(registerStatus)")
             return
         }
+        hotkeyRefs[id] = ref
     }
 
     private func unregisterHotkey() {
-        if let hotkeyRef {
-            UnregisterEventHotKey(hotkeyRef)
-            self.hotkeyRef = nil
+        for ref in hotkeyRefs.values {
+            UnregisterEventHotKey(ref)
         }
+        hotkeyRefs.removeAll()
         if let hotkeyHandlerRef {
             RemoveEventHandler(hotkeyHandlerRef)
             self.hotkeyHandlerRef = nil
@@ -135,11 +166,11 @@ final class SelectionMonitor {
             nil,
             &carbonHotkeyID
         )
-        guard status == noErr, carbonHotkeyID.id == 1 else { return noErr }
+        guard status == noErr else { return noErr }
 
         let monitor = Unmanaged<SelectionMonitor>.fromOpaque(userData).takeUnretainedValue()
         Task { @MainActor in
-            monitor.handleRegisteredHotkey()
+            monitor.handleRegisteredHotkey(id: carbonHotkeyID.id)
         }
         return noErr
     }
