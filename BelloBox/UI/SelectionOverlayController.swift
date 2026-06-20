@@ -22,7 +22,7 @@ final class SelectionOverlayController: NSObject {
     private var popupMinimizedIcon = ""
     private var popupMinimizedTitle = ""
     private var popupMinimizedSubtitle: (() -> String?)?
-    private var inlineScreenshotPanel: InlineScreenshotEditorPanel?
+    private var screenshotOverlayEditorController: ScreenshotOverlayEditorController?
     private var toolbarDismissMonitor: Any?
 
     private var pendingSelection: TextSelection?
@@ -53,11 +53,10 @@ final class SelectionOverlayController: NSObject {
         screenCaptureService.beforeCapture = { [weak self] in
             self?.toolbarPanel?.orderOut(nil)
             self?.popupPanel?.orderOut(nil)
-            self?.inlineScreenshotPanel?.orderOut(nil)
+            self?.screenshotOverlayEditorController?.close()
         }
         screenCaptureService.afterCapture = { [weak self] in
             self?.popupPanel?.orderFrontRegardless()
-            self?.inlineScreenshotPanel?.orderFrontRegardless()
         }
         recordingCoordinator.onStateChange = { [weak self] state in
             self?.handleRecordingState(state)
@@ -767,9 +766,9 @@ final class SelectionOverlayController: NSObject {
         do {
             let document = try await screenCaptureService.capture(
                 .area(area),
-                options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.15)
+                options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.05)
             )
-            showInlineScreenshotEditor(document: document, frame: area.cocoaRect)
+            showScreenshotOverlayEditor(document: document, frame: area.cocoaRect)
         } catch {
             showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
         }
@@ -810,10 +809,10 @@ final class SelectionOverlayController: NSObject {
         do {
             let document = try await screenCaptureService.capture(
                 .window(window),
-                options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.15)
+                options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.05)
             )
             if let frame = preferInlineFrame {
-                showInlineScreenshotEditor(document: document, frame: frame)
+                showScreenshotOverlayEditor(document: document, frame: frame)
             } else {
                 showScreenshotEditor(document: document, anchorRect: anchorRect)
             }
@@ -850,7 +849,7 @@ final class SelectionOverlayController: NSObject {
         )
     }
 
-    private func showInlineScreenshotEditor(document: ScreenshotDocument, frame: CGRect) {
+    private func showScreenshotOverlayEditor(document: ScreenshotDocument, frame: CGRect) {
         hidePopup()
         let viewModel = ScreenshotPopupViewModel(
             document: document,
@@ -858,35 +857,15 @@ final class SelectionOverlayController: NSObject {
             macOCRService: macOCRService,
             llmOCRService: llmOCRService
         )
-        viewModel.onClose = { [weak self] in self?.hideInlineScreenshotEditor() }
-
-        let screen = ScreenCoordinateSpace.displayForCocoaRect(frame) ?? ScreenPlacement.screen(containing: CGPoint(x: frame.midX, y: frame.midY))
-        let canvasSize = CGSize(
-            width: max(120, min(frame.width, screen.visibleFrame.width - 24)),
-            height: max(80, min(frame.height, screen.visibleFrame.height - InlineScreenshotEditorView.toolbarHeight - 44))
-        )
-        let panelSize = CGSize(
-            width: max(canvasSize.width + 20, InlineScreenshotEditorView.minimumWidth),
-            height: InlineScreenshotEditorView.toolbarHeight + max(canvasSize.height, InlineScreenshotEditorView.minimumCanvasHeight) + 42
-        )
-        let desiredOrigin = CGPoint(x: frame.minX, y: frame.minY)
-        let origin = ScreenPlacement.clamp(origin: desiredOrigin, size: panelSize, into: screen)
-
-        let view = InlineScreenshotEditorView(
-            viewModel: viewModel,
-            canvasSize: canvasSize,
-            onMinimize: nil
-        )
-        let panel = InlineScreenshotEditorPanel(contentRect: CGRect(origin: origin, size: panelSize))
-        panel.contentView = NSHostingView(rootView: view)
-        panel.setFrame(NSRect(origin: origin, size: panelSize), display: true)
-        panel.makeKeyAndOrderFront(nil)
-        inlineScreenshotPanel = panel
+        viewModel.onClose = { [weak self] in self?.hideScreenshotOverlayEditor() }
+        let controller = ScreenshotOverlayEditorController()
+        controller.show(viewModel: viewModel, captureFrame: frame)
+        screenshotOverlayEditorController = controller
     }
 
-    private func hideInlineScreenshotEditor() {
-        inlineScreenshotPanel?.orderOut(nil)
-        inlineScreenshotPanel = nil
+    private func hideScreenshotOverlayEditor() {
+        screenshotOverlayEditorController?.close()
+        screenshotOverlayEditorController = nil
     }
 
     private func showScreenshotEditor(document: ScreenshotDocument, anchorRect: CGRect?) {
@@ -1070,7 +1049,7 @@ final class SelectionOverlayController: NSObject {
     private func hidePopup() {
         popupPanel?.orderOut(nil)
         popupPanel = nil
-        hideInlineScreenshotEditor()
+        hideScreenshotOverlayEditor()
         popupFullContentView = nil
         popupFullSize = .zero
         popupIsMinimized = false
