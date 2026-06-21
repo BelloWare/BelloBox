@@ -3,18 +3,24 @@ import Foundation
 final class LLMOCRService: OCRService {
     static let maxUploadBytes = 20 * 1024 * 1024
 
-    private let settings: AppSettings
+    private let configProvider: () -> AIConfig
     private let client: AIImageClient
     private let macOCRService: MacVisionOCRService
 
     init(settings: AppSettings, client: AIImageClient = AIImageClient(), macOCRService: MacVisionOCRService = MacVisionOCRService()) {
-        self.settings = settings
+        self.configProvider = { settings.currentConfig }
+        self.client = client
+        self.macOCRService = macOCRService
+    }
+
+    init(config: AIConfig, client: AIImageClient = AIImageClient(), macOCRService: MacVisionOCRService = MacVisionOCRService()) {
+        self.configProvider = { config }
         self.client = client
         self.macOCRService = macOCRService
     }
 
     func recognize(document: ScreenshotDocument, options: OCROptions) async throws -> OCRResult {
-        let config = settings.currentConfig
+        let config = configProvider()
         guard config.kind != .codexCLI else {
             throw OCRError.unsupportedProvider("Codex app-server does not support image OCR yet. Use Mac OCR or an image-capable HTTP provider.")
         }

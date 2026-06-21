@@ -9,6 +9,10 @@ struct GlobalHotkey: Equatable {
     let keyCode: UInt16
     let modifiers: NSEvent.ModifierFlags
 
+    static func == (lhs: GlobalHotkey, rhs: GlobalHotkey) -> Bool {
+        lhs.keyCode == rhs.keyCode && lhs.normalizedModifiers == rhs.normalizedModifiers
+    }
+
     var displayString: String {
         let orderedModifiers: [(NSEvent.ModifierFlags, String)] = [
             (.control, "⌃"),
@@ -17,7 +21,7 @@ struct GlobalHotkey: Equatable {
             (.command, "⌘")
         ]
         let prefix = orderedModifiers
-            .filter { modifiers.contains($0.0) }
+            .filter { normalizedModifiers.contains($0.0) }
             .map(\.1)
             .joined()
         return prefix + Self.keyName(for: keyCode)
@@ -25,31 +29,38 @@ struct GlobalHotkey: Equatable {
 
     var isValid: Bool {
         !Self.modifierKeys.contains(keyCode)
-            && !modifiers.intersection([.control, .option, .shift, .command]).isEmpty
+            && !normalizedModifiers.isEmpty
     }
 
     var carbonModifiers: UInt32 {
         var result: UInt32 = 0
-        if modifiers.contains(.command) { result |= UInt32(cmdKey) }
-        if modifiers.contains(.option) { result |= UInt32(optionKey) }
-        if modifiers.contains(.control) { result |= UInt32(controlKey) }
-        if modifiers.contains(.shift) { result |= UInt32(shiftKey) }
+        if normalizedModifiers.contains(.command) { result |= UInt32(cmdKey) }
+        if normalizedModifiers.contains(.option) { result |= UInt32(optionKey) }
+        if normalizedModifiers.contains(.control) { result |= UInt32(controlKey) }
+        if normalizedModifiers.contains(.shift) { result |= UInt32(shiftKey) }
         return result
     }
 
     func matches(_ event: NSEvent) -> Bool {
         guard event.keyCode == keyCode, !event.isARepeat else { return false }
-        let pressed = event.modifierFlags.intersection([.control, .option, .shift, .command])
-        return pressed == modifiers
+        let pressed = event.modifierFlags.intersection(Self.shortcutModifiers)
+        return pressed == normalizedModifiers
     }
 
     static func from(event: NSEvent) -> GlobalHotkey? {
-        let pressed = event.modifierFlags.intersection([.control, .option, .shift, .command])
+        let pressed = event.modifierFlags.intersection(shortcutModifiers)
         let hotkey = GlobalHotkey(keyCode: event.keyCode, modifiers: pressed)
         return hotkey.isValid ? hotkey : nil
     }
 
+    private var normalizedModifiers: NSEvent.ModifierFlags {
+        modifiers.intersection(Self.shortcutModifiers)
+    }
+
+    private static let shortcutModifiers: NSEvent.ModifierFlags = [.control, .option, .shift, .command]
+
     private static let modifierKeys: Set<UInt16> = [
+        53, // Esc is reserved for cancel/close throughout the app.
         54, 55, 56, 57, 58, 59, 60, 61, 62
     ]
 

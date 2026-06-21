@@ -32,6 +32,13 @@ final class TextToolsPopupViewModel: ObservableObject {
     @Published var encodeMethod: TextEncoder.Method = .base64
     @Published var decodeFormat: TextDecoder.Format = .auto
     @Published var lineOp: LineTool.Operation = .sortAscending
+    @Published var tokenProvider: ProviderKind {
+        didSet {
+            guard tokenProvider != oldValue else { return }
+            tokenModel = Self.tokenModel(for: tokenProvider, settings: settings)
+        }
+    }
+    @Published var tokenModel: String
 
     private let selection: TextSelection
     private let accessibility: AccessibilityService
@@ -44,10 +51,12 @@ final class TextToolsPopupViewModel: ObservableObject {
         self.input = selection.text
         self.accessibility = accessibility
         self.settings = settings
+        self.tokenProvider = settings.providerKind
+        self.tokenModel = Self.tokenModel(for: settings.providerKind, settings: settings)
     }
 
-    var model: String { settings.currentConfig.model }
-    var provider: ProviderKind { settings.providerKind }
+    var model: String { tokenModel }
+    var provider: ProviderKind { tokenProvider }
 
     // Outputs
     var caseOutput: String { CaseConverter.convert(input, to: caseStyle) }
@@ -96,13 +105,23 @@ final class TextToolsPopupViewModel: ObservableObject {
     }
 
     func close() { onClose() }
+
+    private static func tokenModel(for provider: ProviderKind, settings: AppSettings) -> String {
+        switch provider {
+        case .openAI:
+            return settings.openAIModel
+        case .anthropic:
+            return settings.anthropicModel
+        case .codexCLI:
+            return settings.codexModel
+        }
+    }
 }
 
 struct TextToolsPopupView: View {
     static let preferredSize = CGSize(width: 720, height: 760)
 
     @ObservedObject var viewModel: TextToolsPopupViewModel
-    @ObservedObject var settings: AppSettings
     var onMinimize: () -> Void = {}
 
     var body: some View {
@@ -267,7 +286,7 @@ struct TextToolsPopupView: View {
     private var modelControl: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Token model").font(.caption2.bold()).foregroundStyle(.secondary)
-            Picker("Provider", selection: $settings.providerKind) {
+            Picker("Provider", selection: $viewModel.tokenProvider) {
                 ForEach(ProviderKind.allCases) { Text($0.shortName).tag($0) }
             }
             .pickerStyle(.segmented)
@@ -296,15 +315,11 @@ struct TextToolsPopupView: View {
     }
 
     private var modelBinding: Binding<String> {
-        switch settings.providerKind {
-        case .openAI: return $settings.openAIModel
-        case .anthropic: return $settings.anthropicModel
-        case .codexCLI: return $settings.codexModel
-        }
+        $viewModel.tokenModel
     }
 
     private var presetModels: [String] {
-        switch settings.providerKind {
+        switch viewModel.tokenProvider {
         case .openAI: return ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1", "o3-mini", "gpt-3.5-turbo"]
         case .anthropic: return ["claude-3-5-haiku-latest", "claude-3-5-sonnet-latest", "claude-3-7-sonnet-latest", "claude-3-opus-latest"]
         case .codexCLI: return CodexCLI.presetModels
@@ -312,11 +327,7 @@ struct TextToolsPopupView: View {
     }
 
     private func setModel(_ name: String) {
-        switch settings.providerKind {
-        case .openAI: settings.openAIModel = name
-        case .anthropic: settings.anthropicModel = name
-        case .codexCLI: settings.codexModel = name
-        }
+        viewModel.tokenModel = name
     }
 
     // MARK: - Reusable pieces

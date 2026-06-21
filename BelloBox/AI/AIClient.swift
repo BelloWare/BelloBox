@@ -3,7 +3,7 @@ import Foundation
 /// Issues chat requests against an OpenAI-compatible or Anthropic-compatible
 /// endpoint. Streaming is preferred so results appear live; `complete` offers a
 /// buffered convenience built on top of the same stream.
-final class AIClient {
+final class AIClient: @unchecked Sendable {
     private let session: URLSession
 
     init(session: URLSession = AIClient.makeSession()) {
@@ -32,7 +32,7 @@ final class AIClient {
             try await CodexAppServerClient().stream(config: config, userText: userText, onDelta: onDelta)
             return
         }
-        guard !config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        if config.kind == .anthropic, config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw AIError.missingAPIKey
         }
         let request: URLRequest
@@ -49,6 +49,9 @@ final class AIClient {
         do {
             (bytes, response) = try await session.bytes(for: request)
         } catch {
+            if Self.isCancellation(error) {
+                throw CancellationError()
+            }
             throw AIError.transport(error.localizedDescription)
         }
 
@@ -66,9 +69,15 @@ final class AIClient {
                 guard let payload = Self.ssePayload(line) else { continue }
                 switch config.kind {
                 case .openAI:
-                    if payload == "[DONE]" { return }
+                    if payload == "[DONE]" {
+                        if !sawAny { throw AIError.emptyResponse }
+                        return
+                    }
                     switch config.openAIAPIKind {
                     case .chatCompletions:
+                        if let message = Self.openAIStreamError(payload) {
+                            throw AIError.http(status: 200, message: message)
+                        }
                         if let text = Self.openAIDelta(payload), !text.isEmpty {
                             sawAny = true
                             onDelta(text)
@@ -80,6 +89,7 @@ final class AIClient {
                         case let .error(message):
                             throw AIError.http(status: 200, message: message)
                         case .stop:
+                            if !sawAny { throw AIError.emptyResponse }
                             return
                         case .ignore:
                             break
@@ -92,6 +102,7 @@ final class AIClient {
                     case let .error(message):
                         throw AIError.http(status: 200, message: message)
                     case .stop:
+                        if !sawAny { throw AIError.emptyResponse }
                         return
                     case .ignore:
                         break
@@ -103,6 +114,9 @@ final class AIClient {
         } catch let error as AIError {
             throw error
         } catch {
+            if Self.isCancellation(error) {
+                throw CancellationError()
+            }
             throw AIError.transport(error.localizedDescription)
         }
 
@@ -111,9 +125,11 @@ final class AIClient {
 
     /// Buffered variant returning the full text.
     func complete(config: AIConfig, userText: String) async throws -> String {
-        var buffer = ""
-        try await stream(config: config, userText: userText) { buffer += $0 }
-        return buffer
+        let buffer = LockedTextBuffer()
+        try await stream(config: config, userText: userText) { delta in
+            buffer.append(delta)
+        }
+        return buffer.value()
     }
 
     // MARK: - Codex app-server
@@ -137,7 +153,9 @@ final class AIClient {
         case .codexCLI:
             return CodexCLI.presetModels
         case .openAI:
-            return try await listHTTPModels(base: config.baseURL, headers: ["Authorization": "Bearer \(config.apiKey)"])
+            let key = config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+            let headers = key.isEmpty ? [:] : ["Authorization": "Bearer \(key)"]
+            return try await listHTTPModels(base: config.baseURL, headers: headers)
         case .anthropic:
             return try await listHTTPModels(base: config.baseURL, headers: [
                 "x-api-key": config.apiKey,
@@ -157,6 +175,9 @@ final class AIClient {
         do {
             (data, response) = try await session.data(for: request)
         } catch {
+            if Self.isCancellation(error) {
+                throw CancellationError()
+            }
             throw AIError.transport(error.localizedDescription)
         }
         guard let http = response as? HTTPURLResponse else {
@@ -183,7 +204,7 @@ final class AIClient {
     static func endpointURL(base: String, path: String) throws -> URL {
         var trimmed = base.trimmingCharacters(in: .whitespacesAndNewlines)
         while trimmed.hasSuffix("/") { trimmed.removeLast() }
-        guard let url = URL(string: trimmed + path), url.scheme != nil else {
+        guard AIConfig.isHTTPEndpoint(trimmed), let url = URL(string: trimmed + path) else {
             throw AIError.invalidEndpoint(base)
         }
         return url
@@ -203,7 +224,10 @@ final class AIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
+        let apiKey = config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !apiKey.isEmpty {
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        }
 
         var messages: [[String: Any]] = []
         let system = config.systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -229,7 +253,10 @@ final class AIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
+        let apiKey = config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !apiKey.isEmpty {
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        }
 
         var body: [String: Any] = [
             "model": config.model,
@@ -294,6 +321,24 @@ final class AIClient {
             let content = delta["content"] as? String
         else { return nil }
         return content
+    }
+
+    static func openAIStreamError(_ payload: String) -> String? {
+        guard
+            let data = payload.data(using: .utf8),
+            let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return nil }
+
+        if let error = obj["error"] as? [String: Any] {
+            return (error["message"] as? String)
+                ?? (error["code"] as? String)
+                ?? "The provider reported a stream error."
+        }
+        if let error = obj["error"] as? String { return error }
+        if obj["type"] as? String == "error" {
+            return (obj["message"] as? String) ?? "The provider reported a stream error."
+        }
+        return nil
     }
 
     enum OpenAIResponsesChunk: Equatable {
@@ -388,5 +433,29 @@ final class AIClient {
         if let message = obj["message"] as? String { return message }
         if let error = obj["error"] as? String { return error }
         return String(trimmed.prefix(400))
+    }
+
+    static func isCancellation(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        let nsError = error as NSError
+        return nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled
+    }
+}
+
+private final class LockedTextBuffer: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage = ""
+
+    func append(_ text: String) {
+        lock.lock()
+        storage += text
+        lock.unlock()
+    }
+
+    func value() -> String {
+        lock.lock()
+        let result = storage
+        lock.unlock()
+        return result
     }
 }

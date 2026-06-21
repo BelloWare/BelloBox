@@ -20,9 +20,13 @@ enum StitchError: LocalizedError, Equatable {
 
 enum ImageStitcher {
     static func stitch(_ frames: [CGImage], config: StitchConfig = .default) throws -> StitchResult {
+        if Task.isCancelled { throw CancellationError() }
         guard let first = frames.first else { throw StitchError.noFrames }
-        let normalized = try frames.map { image in
-            image.width == first.width ? image : try resize(image, width: first.width)
+        var normalized: [CGImage] = []
+        normalized.reserveCapacity(frames.count)
+        for image in frames {
+            if Task.isCancelled { throw CancellationError() }
+            normalized.append(image.width == first.width ? image : try resize(image, width: first.width))
         }
 
         var placements = [FramePlacement(frameIndex: 0, y: 0, overlapWithPrevious: 0, confidence: 1, croppedTop: 0, croppedBottom: 0)]
@@ -30,6 +34,7 @@ enum ImageStitcher {
         var warnings: [String] = []
 
         for index in 1..<normalized.count {
+            if Task.isCancelled { throw CancellationError() }
             let previous = normalized[index - 1]
             let current = normalized[index]
             let match = bestOverlap(previous: previous, current: current, config: config)
@@ -72,6 +77,7 @@ enum ImageStitcher {
         }
 
         for placement in placements {
+            if Task.isCancelled { throw CancellationError() }
             let image = normalized[placement.frameIndex]
             let cropTop = placement.croppedTop
             let cropBottom = placement.croppedBottom
@@ -114,7 +120,7 @@ enum ImageStitcher {
                 topRows: scaledOverlap,
                 sideInset: 8
             )
-            if best == nil || score < best!.score {
+            if best.map({ score < $0.score }) ?? true {
                 best = OverlapMatch(overlap: overlap, score: score)
             }
         }

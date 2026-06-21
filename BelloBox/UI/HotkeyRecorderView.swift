@@ -14,6 +14,11 @@ struct HotkeyRecorderView: View {
             },
             resetHotkey: {
                 settings.resetGlobalHotkey()
+            },
+            isEnabled: settings.globalHotkeyEnabled,
+            activeRecorderID: settings.activeShortcutRecorderID,
+            setActiveRecorderID: {
+                settings.activeShortcutRecorderID = $0
             }
         )
     }
@@ -32,6 +37,11 @@ struct ScreenshotHotkeyRecorderView: View {
             },
             resetHotkey: {
                 settings.resetScreenshotHotkey()
+            },
+            isEnabled: settings.screenshotHotkeyEnabled,
+            activeRecorderID: settings.activeShortcutRecorderID,
+            setActiveRecorderID: {
+                settings.activeShortcutRecorderID = $0
             }
         )
     }
@@ -50,6 +60,11 @@ struct RecordingHotkeyRecorderView: View {
             },
             resetHotkey: {
                 settings.resetRecordingHotkey()
+            },
+            isEnabled: settings.recordingHotkeyEnabled,
+            activeRecorderID: settings.activeShortcutRecorderID,
+            setActiveRecorderID: {
+                settings.activeShortcutRecorderID = $0
             }
         )
     }
@@ -60,8 +75,13 @@ private struct HotkeyRecorderControl: View {
     var defaultHotkey: GlobalHotkey
     var setHotkey: (GlobalHotkey) -> Void
     var resetHotkey: () -> Void
+    var isEnabled: Bool
+    var activeRecorderID: UUID?
+    var setActiveRecorderID: (UUID?) -> Void = { _ in }
 
+    @State private var recorderID = UUID()
     @State private var isRecording = false
+    @State private var ownsActiveRecorder = false
     @State private var localMonitor: Any?
     @State private var message: String?
 
@@ -93,11 +113,22 @@ private struct HotkeyRecorderControl: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .onChange(of: activeRecorderID) { activeID in
+            guard isRecording, activeID != recorderID else { return }
+            stopRecording(releaseActiveRecorder: false)
+        }
+        .onChange(of: isEnabled) { enabled in
+            if !enabled {
+                stopRecording()
+            }
+        }
         .onDisappear { stopRecording() }
     }
 
     private func startRecording() {
         stopRecording()
+        setActiveRecorderID(recorderID)
+        ownsActiveRecorder = true
         isRecording = true
         message = "Use at least one modifier: Control, Option, Shift, or Command. Press Esc to cancel."
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
@@ -121,12 +152,17 @@ private struct HotkeyRecorderControl: View {
         stopRecording()
     }
 
-    private func stopRecording() {
+    private func stopRecording(releaseActiveRecorder: Bool = true) {
+        let wasRecording = isRecording
         if let localMonitor {
             NSEvent.removeMonitor(localMonitor)
         }
         localMonitor = nil
         isRecording = false
         message = nil
+        if wasRecording, ownsActiveRecorder, releaseActiveRecorder {
+            setActiveRecorderID(nil)
+        }
+        ownsActiveRecorder = false
     }
 }

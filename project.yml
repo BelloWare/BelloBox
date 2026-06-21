@@ -8,8 +8,8 @@ configs:
   Release: release
 settings:
   base:
-    CURRENT_PROJECT_VERSION: 32
-    MARKETING_VERSION: 0.0.32
+    CURRENT_PROJECT_VERSION: 33
+    MARKETING_VERSION: 0.0.33
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: 43TXHV3TM3
   configs:
@@ -76,11 +76,13 @@ targets:
     postBuildScripts:
       - name: Embed Sparkle Framework
         shell: /bin/sh
+        basedOnDependencyAnalysis: false
         script: |
           set -euo pipefail
           SRC="$BUILT_PRODUCTS_DIR/PackageFrameworks/Sparkle.framework"
           DEST="$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/Sparkle.framework"
           if [ ! -d "$SRC" ]; then
+            echo "warning: Sparkle.framework not found at $SRC; skipping embed" >&2
             exit 0
           fi
           rm -rf "$DEST"

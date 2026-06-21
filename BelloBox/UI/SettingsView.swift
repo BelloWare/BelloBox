@@ -164,6 +164,7 @@ struct SettingsView: View {
                         .disabled(!settings.screenshotHotkeyEnabled)
                 }
                 hotkeyConflictWarnings()
+                Toggle("Include cursor in screenshots", isOn: $settings.screenshotIncludeCursor)
                 Toggle("Auto-copy captured screenshot", isOn: $settings.screenshotAutoCopy)
             }
 
@@ -215,6 +216,12 @@ struct SettingsView: View {
             )) {
                 ForEach(SecureFieldRedactionMode.allCases) { mode in
                     Text(mode.label).tag(mode)
+                }
+            }
+            if let warning = RecordingPrivacyNotice.secureFieldRedactionWarning(accessibilityTrusted: accessibilityTrusted) {
+                permissionWarning(warning) {
+                    AccessibilityService.requestPermissionPrompt()
+                    AccessibilityService.openAccessibilitySettings()
                 }
             }
             Picker("Quality", selection: Binding(
@@ -370,6 +377,23 @@ struct SettingsView: View {
             .font(.caption2)
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func permissionWarning(_ message: String, action: @escaping () -> Void) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "lock.slash")
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(message)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("Open Accessibility Settings", action: action)
+                    .font(.caption)
+            }
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.orange.opacity(0.10)))
     }
 
     @ViewBuilder

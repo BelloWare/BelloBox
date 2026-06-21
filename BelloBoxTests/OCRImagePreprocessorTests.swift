@@ -19,6 +19,78 @@ final class OCRImagePreprocessorTests: XCTestCase {
         XCTAssertFalse(b.appliedRedactions.isEmpty)
     }
 
+    func testAppliedRedactionsAreReportedInCroppedImageCoordinates() throws {
+        let doc = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.stripedImage(width: 120, height: 90),
+            scale: 1,
+            source: .importedClipboard,
+            annotations: [
+                ScreenshotAnnotation(kind: .blur(CGRect(x: 30, y: 20, width: 50, height: 40)), style: .redaction),
+            ],
+            cropRect: CGRect(x: 20, y: 10, width: 80, height: 60)
+        )
+
+        let prepared = try OCRImagePreprocessor.prepare(document: doc, options: .default, forExternalUpload: true)
+
+        XCTAssertEqual(prepared.appliedCrop, CGRect(x: 20, y: 10, width: 80, height: 60))
+        XCTAssertEqual(prepared.appliedRedactions, [CGRect(x: 10, y: 10, width: 50, height: 40)])
+    }
+
+    func testAppliedRedactionsClipToCropAndDropOutsideRedactions() throws {
+        let doc = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.stripedImage(width: 120, height: 90),
+            scale: 1,
+            source: .importedClipboard,
+            annotations: [
+                ScreenshotAnnotation(kind: .blur(CGRect(x: 10, y: 0, width: 30, height: 30)), style: .redaction),
+                ScreenshotAnnotation(kind: .blur(CGRect(x: 102, y: 75, width: 10, height: 8)), style: .redaction),
+            ],
+            cropRect: CGRect(x: 20, y: 10, width: 80, height: 60)
+        )
+
+        let prepared = try OCRImagePreprocessor.prepare(document: doc, options: .default, forExternalUpload: true)
+
+        XCTAssertEqual(prepared.appliedRedactions, [CGRect(x: 0, y: 0, width: 20, height: 20)])
+    }
+
+    func testAppliedRedactionsAreReportedInDownscaledImageCoordinates() throws {
+        var options = OCROptions.default
+        options.maxUploadLongEdge = 100
+        let doc = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.stripedImage(width: 400, height: 200),
+            scale: 1,
+            source: .importedClipboard,
+            annotations: [
+                ScreenshotAnnotation(kind: .blur(CGRect(x: 40, y: 20, width: 80, height: 40)), style: .redaction),
+            ]
+        )
+
+        let prepared = try OCRImagePreprocessor.prepare(document: doc, options: options, forExternalUpload: true)
+
+        XCTAssertNil(prepared.appliedCrop)
+        XCTAssertEqual(prepared.appliedRedactions, [CGRect(x: 10, y: 5, width: 20, height: 10)])
+    }
+
+    func testAppliedRedactionsAccountForCropAndDownscaleTogether() throws {
+        var options = OCROptions.default
+        options.maxUploadLongEdge = 100
+        let doc = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.stripedImage(width: 300, height: 240),
+            scale: 1,
+            source: .importedClipboard,
+            annotations: [
+                ScreenshotAnnotation(kind: .blur(CGRect(x: 80, y: 60, width: 120, height: 60)), style: .redaction),
+            ],
+            cropRect: CGRect(x: 60, y: 40, width: 200, height: 120)
+        )
+
+        let prepared = try OCRImagePreprocessor.prepare(document: doc, options: options, forExternalUpload: true)
+
+        XCTAssertEqual(prepared.image.width, 100)
+        XCTAssertEqual(prepared.image.height, 60)
+        XCTAssertEqual(prepared.appliedRedactions, [CGRect(x: 10, y: 10, width: 60, height: 30)])
+    }
+
     func testLargeExternalUploadIsDownscaledToMaxLongEdge() throws {
         var options = OCROptions.default
         options.maxUploadLongEdge = 100

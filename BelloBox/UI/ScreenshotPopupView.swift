@@ -2,6 +2,10 @@ import SwiftUI
 
 struct LLMOCRConfirmation: Identifiable, Equatable {
     let id = UUID()
+    var document: ScreenshotDocument
+    var options: OCROptions
+    var approvedConfig: AIConfig
+    var documentRevision: Int
     var image: CGImage
     var byteCount: Int
     var provider: ProviderKind
@@ -10,6 +14,7 @@ struct LLMOCRConfirmation: Identifiable, Equatable {
     var dimensions: CGSize
 
     static func == (lhs: LLMOCRConfirmation, rhs: LLMOCRConfirmation) -> Bool {
+        // CGImage is not Equatable; SwiftUI only needs confirmation identity here.
         lhs.id == rhs.id
     }
 }
@@ -21,33 +26,48 @@ final class ScreenshotPopupViewModel: ObservableObject {
     @Published var style: AnnotationStyle = .default
     @Published var ocrPanel = OCRPanelViewModel()
     @Published var errorMessage: String?
-    @Published var pendingTextLabel = "Label"
     @Published var llmConfirmation: LLMOCRConfirmation?
     @Published var editingTextAnnotationID: UUID?
 
     private let settings: AppSettings
-    private let macOCRService: MacVisionOCRService
-    private let llmOCRService: LLMOCRService
+    private let macOCRService: OCRService
+    private let makeLLMOCRService: (AIConfig) -> OCRService
     private var undoStack: [ScreenshotDocument] = []
     private var redoStack: [ScreenshotDocument] = []
+    private var ocrTask: Task<Void, Never>?
+    private var ocrRunID: UUID?
+    private var documentRevision = 0
+    private var isClosed = false
 
     var onClose: () -> Void = {}
 
     init(
         document: ScreenshotDocument,
         settings: AppSettings,
-        macOCRService: MacVisionOCRService = MacVisionOCRService(),
-        llmOCRService: LLMOCRService? = nil
+        macOCRService: OCRService = MacVisionOCRService(),
+        llmOCRService: OCRService? = nil,
+        llmOCRServiceFactory: ((AIConfig) -> OCRService)? = nil
     ) {
         self.document = document
         self.settings = settings
         self.macOCRService = macOCRService
-        self.llmOCRService = llmOCRService ?? LLMOCRService(settings: settings)
+        if let llmOCRServiceFactory {
+            self.makeLLMOCRService = llmOCRServiceFactory
+        } else if let llmOCRService {
+            self.makeLLMOCRService = { _ in llmOCRService }
+        } else {
+            self.makeLLMOCRService = { LLMOCRService(config: $0) }
+        }
         ocrPanel.showTextRegions = settings.ocrShowTextRegions
         wireOCRPanel()
+        syncOCRPanel()
         if settings.screenshotAutoCopy {
             copyRenderedImage()
         }
+    }
+
+    deinit {
+        ocrTask?.cancel()
     }
 
     var previewImage: CGImage {
@@ -63,6 +83,21 @@ final class ScreenshotPopupViewModel: ObservableObject {
 
     var canUndo: Bool { !undoStack.isEmpty }
     var canRedo: Bool { !redoStack.isEmpty }
+
+    @discardableResult
+    func refreshBaseCapture(from replacement: ScreenshotDocument, expectedDocumentID: UUID) -> Bool {
+        guard document.id == expectedDocumentID,
+              document.annotations.isEmpty,
+              document.cropRect == nil
+        else { return false }
+
+        document.baseImage = replacement.baseImage
+        document.scale = replacement.scale
+        document.source = replacement.source
+        documentRevision += 1
+        markOCRStale()
+        return true
+    }
 
     func addVisibleAnnotation(_ kind: AnnotationKind) {
         let shifted = shiftVisibleKindToDocument(kind)
@@ -138,6 +173,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
               let index = document.annotations.firstIndex(where: { $0.id == id }),
               case let .text(_, origin, maxWidth) = document.annotations[index].kind
         else { return }
+        documentRevision += 1
         document.annotations[index].kind = .text(text, origin: origin, maxWidth: maxWidth)
         markOCRStale()
     }
@@ -147,6 +183,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         if let index = document.annotations.firstIndex(where: { $0.id == id }),
            case let .text(text, _, _) = document.annotations[index].kind,
            text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            documentRevision += 1
             document.annotations.remove(at: index)
         }
         editingTextAnnotationID = nil
@@ -157,6 +194,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         guard let previous = undoStack.popLast() else { return }
         redoStack.append(document)
         document = previous
+        documentRevision += 1
         syncOCRPanel()
     }
 
@@ -164,6 +202,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         guard let next = redoStack.popLast() else { return }
         undoStack.append(document)
         document = next
+        documentRevision += 1
         syncOCRPanel()
     }
 
@@ -190,37 +229,36 @@ final class ScreenshotPopupViewModel: ObservableObject {
     }
 
     func runMacOCR() {
-        guard !ocrPanel.isRunning else { return }
-        ocrPanel.isRunning = true
-        ocrPanel.errorMessage = nil
         let snapshot = document
         let options = makeOCROptions(engine: .appleVision)
-        Task {
-            do {
-                let result = try await macOCRService.recognize(document: snapshot, options: options)
-                document.ocrResults.append(result)
-                document.activeOCRResultID = result.id
-                syncOCRPanel()
-            } catch {
-                ocrPanel.errorMessage = error.localizedDescription
-            }
-            ocrPanel.isRunning = false
-        }
+        startOCRTask(service: macOCRService, document: snapshot, options: options)
     }
 
     func requestLLMOCR() {
+        llmConfirmation = nil
+        ocrPanel.errorMessage = nil
         do {
+            let config = settings.currentConfig
+            guard config.kind != .codexCLI else {
+                throw OCRError.unsupportedProvider("Codex app-server does not support image OCR yet. Use Mac OCR or an image-capable HTTP provider.")
+            }
             let options = makeOCROptions(engine: .hybrid)
-            let prepared = try OCRImagePreprocessor.prepare(document: document, options: options, forExternalUpload: true)
+            let snapshot = document
+            let revision = documentRevision
+            let prepared = try OCRImagePreprocessor.prepare(document: snapshot, options: options, forExternalUpload: true)
             guard let data = prepared.encodedData else { throw OCRError.imageEncodingFailed }
             guard data.count <= LLMOCRService.maxUploadBytes else {
                 throw OCRError.requestTooLarge(maxBytes: LLMOCRService.maxUploadBytes)
             }
             llmConfirmation = LLMOCRConfirmation(
+                document: snapshot,
+                options: options,
+                approvedConfig: config,
+                documentRevision: revision,
                 image: prepared.image,
                 byteCount: data.count,
-                provider: settings.currentConfig.kind,
-                model: settings.currentConfig.model,
+                provider: config.kind,
+                model: config.model,
                 includesLocalHint: options.includeLocalOCRHintForLLM,
                 dimensions: prepared.pixelSize
             )
@@ -230,31 +268,22 @@ final class ScreenshotPopupViewModel: ObservableObject {
     }
 
     func confirmLLMOCR() {
+        guard let confirmation = llmConfirmation else { return }
         llmConfirmation = nil
-        runLLMOCR()
+        guard documentRevision == confirmation.documentRevision else {
+            ocrPanel.errorMessage = OCRError.staleResult.localizedDescription
+            return
+        }
+        startOCRTask(
+            service: makeLLMOCRService(confirmation.approvedConfig),
+            document: confirmation.document,
+            options: confirmation.options,
+            expectedRevision: confirmation.documentRevision
+        )
     }
 
     func cancelLLMOCR() {
         llmConfirmation = nil
-    }
-
-    func runLLMOCR() {
-        guard !ocrPanel.isRunning else { return }
-        ocrPanel.isRunning = true
-        ocrPanel.errorMessage = nil
-        let snapshot = document
-        let options = makeOCROptions(engine: .hybrid)
-        Task {
-            do {
-                let result = try await llmOCRService.recognize(document: snapshot, options: options)
-                document.ocrResults.append(result)
-                document.activeOCRResultID = result.id
-                syncOCRPanel()
-            } catch {
-                ocrPanel.errorMessage = error.localizedDescription
-            }
-            ocrPanel.isRunning = false
-        }
     }
 
     func copyOCRText() {
@@ -270,12 +299,18 @@ final class ScreenshotPopupViewModel: ObservableObject {
     }
 
     func close() {
+        guard !isClosed else { return }
+        isClosed = true
+        cancelOCRTask()
         onClose()
     }
 
     func finish() {
+        guard !isClosed else { return }
         copyRenderedImage()
         if errorMessage == nil {
+            isClosed = true
+            cancelOCRTask()
             onClose()
         }
     }
@@ -285,6 +320,71 @@ final class ScreenshotPopupViewModel: ObservableObject {
         ocrPanel.onRunLLMOCR = { [weak self] in self?.requestLLMOCR() }
         ocrPanel.onCopyPlainText = { [weak self] in self?.copyOCRText() }
         ocrPanel.onCopyMarkdown = { [weak self] in self?.copyOCRMarkdown() }
+    }
+
+    private func startOCRTask(
+        service: OCRService,
+        document snapshot: ScreenshotDocument,
+        options: OCROptions,
+        expectedRevision: Int? = nil
+    ) {
+        guard !ocrPanel.isRunning else { return }
+        let runID = UUID()
+        let expectedRevision = expectedRevision ?? documentRevision
+        ocrRunID = runID
+        ocrPanel.isRunning = true
+        ocrPanel.errorMessage = nil
+        ocrTask?.cancel()
+        ocrTask = Task { [weak self, service, snapshot, options, runID, expectedRevision] in
+            do {
+                let result = try await service.recognize(document: snapshot, options: options)
+                guard !Task.isCancelled else { return }
+                await MainActor.run {
+                    self?.completeOCRRun(runID, expectedRevision: expectedRevision, result: .success(result))
+                }
+            } catch is CancellationError {
+                await MainActor.run {
+                    self?.finishOCRRun(runID)
+                }
+            } catch {
+                guard !Task.isCancelled else { return }
+                await MainActor.run {
+                    self?.completeOCRRun(runID, expectedRevision: expectedRevision, result: .failure(error))
+                }
+            }
+        }
+    }
+
+    private func completeOCRRun(_ runID: UUID, expectedRevision: Int, result: Result<OCRResult, Error>) {
+        guard ocrRunID == runID else { return }
+        guard documentRevision == expectedRevision else {
+            ocrPanel.errorMessage = OCRError.staleResult.localizedDescription
+            finishOCRRun(runID)
+            return
+        }
+        switch result {
+        case let .success(ocrResult):
+            document.ocrResults.append(ocrResult)
+            document.activeOCRResultID = ocrResult.id
+            syncOCRPanel()
+        case let .failure(error):
+            ocrPanel.errorMessage = error.localizedDescription
+        }
+        finishOCRRun(runID)
+    }
+
+    private func finishOCRRun(_ runID: UUID) {
+        guard ocrRunID == runID else { return }
+        ocrPanel.isRunning = false
+        ocrRunID = nil
+        ocrTask = nil
+    }
+
+    private func cancelOCRTask() {
+        ocrRunID = nil
+        ocrTask?.cancel()
+        ocrTask = nil
+        ocrPanel.isRunning = false
     }
 
     private func makeOCROptions(engine: OCRRequestedEngine) -> OCROptions {
@@ -304,6 +404,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
     private func pushUndo() {
         undoStack.append(document)
         redoStack.removeAll()
+        documentRevision += 1
     }
 
     private func syncOCRPanel() {

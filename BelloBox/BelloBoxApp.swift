@@ -148,6 +148,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             .store(in: &cancellables)
 
+        settings.$activeShortcutRecorderID
+            .map { $0 != nil }
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak overlay] active in overlay?.setShortcutRecordingActive(active) }
+            .store(in: &cancellables)
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
             if self.settings.hasCompletedSetup {
@@ -206,7 +213,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func checkForUpdates() {
         guard updaterConfigured else { return }
-        NSApp.activate(ignoringOtherApps: true)
+        AppActivation.bringAppForward()
         updaterController?.checkForUpdates(nil)
     }
 

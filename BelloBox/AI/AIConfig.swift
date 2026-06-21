@@ -80,6 +80,40 @@ enum TemperatureMode: String, CaseIterable, Codable, Identifiable {
     }
 }
 
+enum CodexApprovalPolicy: String, CaseIterable, Codable, Identifiable {
+    case never
+    case onFailure = "on-failure"
+    case onRequest = "on-request"
+    case untrusted
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .never: return "Never"
+        case .onFailure: return "On failure"
+        case .onRequest: return "On request"
+        case .untrusted: return "Untrusted"
+        }
+    }
+}
+
+enum CodexSandboxMode: String, CaseIterable, Codable, Identifiable {
+    case readOnly = "read-only"
+    case workspaceWrite = "workspace-write"
+    case dangerFullAccess = "danger-full-access"
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .readOnly: return "Read only"
+        case .workspaceWrite: return "Workspace write"
+        case .dangerFullAccess: return "Full access"
+        }
+    }
+}
+
 /// A fully-resolved provider configuration used to issue one request.
 struct AIConfig: Equatable {
     var kind: ProviderKind
@@ -89,20 +123,35 @@ struct AIConfig: Equatable {
     var systemPrompt: String
     var maxTokens: Int = 2048
     var codexReasoningEffort: String = "medium"
+    var codexApprovalPolicy: CodexApprovalPolicy = .never
+    var codexSandboxMode: CodexSandboxMode = .readOnly
     var openAIAPIKind: OpenAIAPIKind = .chatCompletions
     var temperature: Double?
 
     var isUsable: Bool {
         switch kind {
-        case .openAI, .anthropic:
+        case .openAI:
+            return !model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                && AIConfig.isHTTPEndpoint(baseURL)
+        case .anthropic:
             return !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 && !model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                && URL(string: baseURL) != nil
+                && AIConfig.isHTTPEndpoint(baseURL)
         case .codexCLI:
             // Codex resolves `codex` from the user's shell, so it is always
             // attemptable; the connection test reports if it isn't installed.
             return true
         }
+    }
+
+    static func isHTTPEndpoint(_ value: String) -> Bool {
+        guard let components = URLComponents(string: value.trimmingCharacters(in: .whitespacesAndNewlines)),
+              let scheme = components.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              let host = components.host,
+              !host.isEmpty
+        else { return false }
+        return true
     }
 }
 

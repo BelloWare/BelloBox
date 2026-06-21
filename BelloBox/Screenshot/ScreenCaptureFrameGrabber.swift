@@ -5,27 +5,43 @@ import ScreenCaptureKit
 
 final class ScreenCaptureFrameGrabber: NSObject, SCStreamOutput, SCStreamDelegate {
     private let context = CIContext()
+    private let lock = NSLock()
     private var continuation: CheckedContinuation<CGImage, Error>?
     private var stream: SCStream?
+    private var timeoutTask: Task<Void, Never>?
 
     func capture(filter: SCContentFilter, configuration: SCStreamConfiguration) async throws -> CGImage {
-        try await withCheckedThrowingContinuation { continuation in
-            self.continuation = continuation
-            let queue = DispatchQueue(label: "BelloBox.ScreenCaptureFrameGrabber")
-            let stream = SCStream(filter: filter, configuration: configuration, delegate: self)
-            self.stream = stream
-            do {
-                try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: queue)
-                Task {
-                    do {
-                        try await stream.startCapture()
-                    } catch {
-                        self.finish(.failure(error))
-                    }
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                let queue = DispatchQueue(label: "BelloBox.ScreenCaptureFrameGrabber")
+                let stream = SCStream(filter: filter, configuration: configuration, delegate: self)
+                self.lock.lock()
+                self.continuation = continuation
+                self.stream = stream
+                self.timeoutTask = Task { [weak self] in
+                    try? await Task.sleep(nanoseconds: 10_000_000_000)
+                    self?.finish(.failure(ScreenCaptureService.CaptureError.captureFailed("Timed out waiting for a screenshot frame.")))
                 }
-            } catch {
-                self.finish(.failure(error))
+                self.lock.unlock()
+                if Task.isCancelled {
+                    self.finish(.failure(CancellationError()))
+                    return
+                }
+                do {
+                    try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: queue)
+                    Task {
+                        do {
+                            try await stream.startCapture()
+                        } catch {
+                            self.finish(.failure(error))
+                        }
+                    }
+                } catch {
+                    self.finish(.failure(error))
+                }
             }
+        } onCancel: {
+            finish(.failure(CancellationError()))
         }
     }
 
@@ -42,14 +58,18 @@ final class ScreenCaptureFrameGrabber: NSObject, SCStreamOutput, SCStreamDelegat
     }
 
     private func finish(_ result: Result<CGImage, Error>) {
-        guard let continuation else { return }
+        lock.lock()
+        guard let continuation else {
+            lock.unlock()
+            return
+        }
         self.continuation = nil
         let stream = self.stream
         self.stream = nil
-        Task {
-            try? await stream?.stopCapture()
-            continuation.resume(with: result)
-        }
+        timeoutTask?.cancel()
+        timeoutTask = nil
+        lock.unlock()
+        Task { try? await stream?.stopCapture() }
+        continuation.resume(with: result)
     }
 }
-

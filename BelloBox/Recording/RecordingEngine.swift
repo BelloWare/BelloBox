@@ -50,6 +50,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private let sessionID = RecordingSessionID()
     private let writerQueue = DispatchQueue(label: "BelloBox.Recording.Writer")
     private let renderer = RecordingFrameRenderer()
+    private let lifecycleLock = NSLock()
 
     private var stream: SCStream?
     private var writer: AVAssetWriter?
@@ -61,15 +62,19 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private var inputMonitor: RecordingInputMonitor?
     private var privacyGuard: PrivacyGuard?
     private var renderContext: RecordingFrameRenderContext?
-    private var runtimeState: RecordingRuntimeState?
 
     private var startedWriting = false
     private var startTime: CMTime?
     private var wroteVideoFrame = false
+    private var finishInitiated = false
+    private var discardOutputWhenFinished = false
+    private var finishCompleted = false
     private var finishing = false
     private var paused = false
+    private var lastSecureFieldHidden = false
 
     var onFailure: ((Error) -> Void)?
+    var onSecureFieldHiddenChange: ((Bool) -> Void)?
 
     init(target: RecordingTarget, options: RecordingOptions, outputURL: URL = RecordingEngine.defaultOutputURL()) {
         self.target = target
@@ -126,7 +131,6 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
             isInputOverlayEnabled: options.clickOverlayMode.isEnabled || options.keystrokeMode != .off,
             isSecureFieldHidden: false
         )
-        runtimeState = runtime
         return runtime
     }
 
@@ -137,7 +141,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 
     func stop() async throws -> URL {
-        finishing = true
+        markFinishing()
         inputMonitor?.stop()
         microphoneCapture?.stop()
         if let stream {
@@ -147,26 +151,22 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 
     func cancel() {
-        finishing = true
+        markFinishing()
         inputMonitor?.stop()
         microphoneCapture?.stop()
         Task { try? await stream?.stopCapture() }
         writerQueue.async { [weak self] in
-            self?.writer?.cancelWriting()
+            self?.cancelOrDiscardWriter()
         }
-        if captureURL != outputURL {
-            try? FileManager.default.removeItem(at: captureURL)
-        }
-        try? FileManager.default.removeItem(at: outputURL)
     }
 
     func stream(_ stream: SCStream, didStopWithError error: Error) {
-        guard !finishing else { return }
+        guard !isFinishing else { return }
         onFailure?(RecordingEngineError.streamFailed(error.localizedDescription))
     }
 
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of outputType: SCStreamOutputType) {
-        guard !finishing, sampleBuffer.isValid else { return }
+        guard !isFinishing, sampleBuffer.isValid else { return }
         switch outputType {
         case .screen:
             appendVideo(sampleBuffer)
@@ -220,6 +220,24 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         self.writer = writer
         self.videoInput = videoInput
         self.pixelBufferAdaptor = adaptor
+        self.finishInitiated = false
+        lifecycleLock.lock()
+        self.discardOutputWhenFinished = false
+        self.finishCompleted = false
+        lifecycleLock.unlock()
+    }
+
+    private func markFinishing() {
+        lifecycleLock.lock()
+        finishing = true
+        lifecycleLock.unlock()
+    }
+
+    private var isFinishing: Bool {
+        lifecycleLock.lock()
+        let value = finishing
+        lifecycleLock.unlock()
+        return value
     }
 
     private func addAudioInput(to writer: AVAssetWriter, output: RecordingOutputSettings) -> AVAssetWriterInput? {
@@ -238,7 +256,6 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
 
     private func appendVideo(_ sampleBuffer: CMSampleBuffer) {
         guard isCompleteFrame(sampleBuffer),
-              let writer,
               let videoInput,
               let adaptor = pixelBufferAdaptor,
               let pool = adaptor.pixelBufferPool,
@@ -256,6 +273,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         else { return }
 
         let sensitiveState = privacyGuard?.redactionState(now: pts) ?? .notSensitive
+        updateSecureFieldHiddenIfNeeded(sensitiveState.isSensitive)
         let events = inputMonitor?.eventStore.activeEvents(at: pts) ?? []
         renderer.render(
             sourcePixelBuffer: sourcePixelBuffer,
@@ -291,35 +309,82 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private func finishWriting() async throws -> URL {
         let capturedURL = try await finishWriter()
         guard options.audioSource == .microphoneAndSystemAudio else { return capturedURL }
-        return try await RecordingAudioMixer.mixIfNeeded(sourceURL: capturedURL, destinationURL: outputURL)
+        do {
+            return try await RecordingAudioMixer.mixIfNeeded(sourceURL: capturedURL, destinationURL: outputURL)
+        } catch {
+            if capturedURL != outputURL {
+                try? FileManager.default.removeItem(at: capturedURL)
+            }
+            throw error
+        }
     }
 
     private func finishWriter() async throws -> URL {
-        try await withCheckedThrowingContinuation { continuation in
-            writerQueue.async { [weak self] in
-                guard let self, let writer = self.writer else {
-                    continuation.resume(throwing: RecordingEngineError.cannotCreateOutput)
-                    return
-                }
-                guard self.startedWriting, self.wroteVideoFrame else {
-                    writer.cancelWriting()
-                    try? FileManager.default.removeItem(at: self.captureURL)
-                    try? FileManager.default.removeItem(at: self.outputURL)
-                    continuation.resume(throwing: RecordingEngineError.noFramesWritten)
-                    return
-                }
-                self.videoInput?.markAsFinished()
-                self.systemAudioInput?.markAsFinished()
-                self.microphoneAudioInput?.markAsFinished()
-                writer.finishWriting {
-                    if writer.status == .completed {
-                        continuation.resume(returning: self.captureURL)
-                    } else {
+        // AVAssetWriter cannot be cancelled once finishWriting has been issued.
+        // Cancellation before the completion marks the result for discard; cancellation
+        // after the completion removes the finished file. Exactly one side owns cleanup.
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                writerQueue.async { [weak self] in
+                    guard let self, let writer = self.writer else {
+                        continuation.resume(throwing: RecordingEngineError.cannotCreateOutput)
+                        return
+                    }
+
+                    switch writer.status {
+                    case .cancelled:
+                        self.removeOutputFiles()
+                        continuation.resume(throwing: CancellationError())
+                        return
+                    case .failed:
+                        self.removeOutputFiles()
                         continuation.resume(
                             throwing: RecordingEngineError.writerFailed(writer.error?.localizedDescription ?? "Unknown writer error.")
                         )
+                        return
+                    default:
+                        break
+                    }
+
+                    guard self.startedWriting, self.wroteVideoFrame else {
+                        if writer.status == .writing, !self.finishInitiated {
+                            writer.cancelWriting()
+                        }
+                        self.removeOutputFiles()
+                        continuation.resume(throwing: RecordingEngineError.noFramesWritten)
+                        return
+                    }
+                    self.videoInput?.markAsFinished()
+                    self.systemAudioInput?.markAsFinished()
+                    self.microphoneAudioInput?.markAsFinished()
+                    self.finishInitiated = true
+                    writer.finishWriting {
+                        self.writerQueue.async {
+                            let shouldDiscard = self.markFinishCompleted()
+                            switch writer.status {
+                            case .completed:
+                                if shouldDiscard {
+                                    self.removeOutputFiles()
+                                    continuation.resume(throwing: CancellationError())
+                                } else {
+                                    continuation.resume(returning: self.captureURL)
+                                }
+                            case .cancelled:
+                                self.removeOutputFiles()
+                                continuation.resume(throwing: CancellationError())
+                            default:
+                                self.removeOutputFiles()
+                                continuation.resume(
+                                    throwing: RecordingEngineError.writerFailed(writer.error?.localizedDescription ?? "Unknown writer error.")
+                                )
+                            }
+                        }
                     }
                 }
+            }
+        } onCancel: {
+            writerQueue.async { [weak self] in
+                self?.cancelOrDiscardWriter()
             }
         }
     }
@@ -330,6 +395,12 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
               let status = SCFrameStatus(rawValue: rawStatus)
         else { return true }
         return status == .complete || status == .started
+    }
+
+    private func updateSecureFieldHiddenIfNeeded(_ isHidden: Bool) {
+        guard lastSecureFieldHidden != isHidden else { return }
+        lastSecureFieldHidden = isHidden
+        onSecureFieldHiddenChange?(isHidden)
     }
 
     private static func resolve(target: RecordingTarget, options: RecordingOptions) async throws -> RecordingTargetDescriptor {
@@ -358,7 +429,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
             guard boundedRect.width >= 1, boundedRect.height >= 1 else {
                 throw RecordingEngineError.streamFailed("The selected recording area was outside the display bounds.")
             }
-            let localRect = displayLocalRect(fromCocoaRect: boundedRect, on: screen)
+            let localRect = RegionCaptureGeometry.globalCocoaRectToLocalFlipped(boundedRect, screenFrame: screen.frame)
             let targetPixelSize = ScreenCoordinateSpace.pixelSize(
                 forCocoaSize: boundedRect.size,
                 screenFrame: screen.frame,
@@ -462,15 +533,6 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         return configuration
     }
 
-    private static func displayLocalRect(fromCocoaRect rect: CGRect, on screen: NSScreen) -> CGRect {
-        CGRect(
-            x: rect.minX - screen.frame.minX,
-            y: screen.frame.maxY - rect.maxY,
-            width: rect.width,
-            height: rect.height
-        )
-    }
-
     private static func screen(for displayID: CGDirectDisplayID) -> NSScreen? {
         NSScreen.screens.first { ScreenCoordinateSpace.displayID(for: $0) == displayID }
     }
@@ -488,6 +550,49 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         let baseName = outputURL.deletingPathExtension().lastPathComponent
         return outputURL.deletingLastPathComponent()
             .appendingPathComponent("\(baseName)-tracks-\(UUID().uuidString).mov")
+    }
+
+    private func removeOutputFiles() {
+        if captureURL != outputURL {
+            try? FileManager.default.removeItem(at: captureURL)
+        }
+        try? FileManager.default.removeItem(at: outputURL)
+    }
+
+    private func markFinishCompleted() -> Bool {
+        lifecycleLock.lock()
+        finishCompleted = true
+        let shouldDiscard = discardOutputWhenFinished
+        lifecycleLock.unlock()
+        return shouldDiscard
+    }
+
+    private func requestDiscardAfterFinish() -> Bool {
+        lifecycleLock.lock()
+        if finishCompleted {
+            lifecycleLock.unlock()
+            return true
+        }
+        discardOutputWhenFinished = true
+        lifecycleLock.unlock()
+        return false
+    }
+
+    private func cancelOrDiscardWriter() {
+        guard let writer else {
+            removeOutputFiles()
+            return
+        }
+        if finishInitiated {
+            if requestDiscardAfterFinish() {
+                removeOutputFiles()
+            }
+            return
+        }
+        if writer.status == .writing {
+            writer.cancelWriting()
+        }
+        removeOutputFiles()
     }
 }
 
@@ -529,10 +634,6 @@ private final class MicrophoneSampleCapture: NSObject, AVCaptureAudioDataOutputS
     }
 
     private static func device(matching deviceID: String?) -> AVCaptureDevice? {
-        let devices = AVCaptureDevice.devices(for: .audio)
-        if let deviceID, let selected = devices.first(where: { $0.uniqueID == deviceID }) {
-            return selected
-        }
-        return AVCaptureDevice.default(for: .audio)
+        RecordingMicrophoneDevices.device(matching: deviceID)
     }
 }

@@ -25,26 +25,30 @@ enum ScreenCoordinateSpace {
 
     static func cocoaRectToDisplayPixelRect(_ rect: CGRect, screenFrame: CGRect, scale: CGFloat) -> CGRect {
         let scale = scale > 0 ? scale : 1
-        let x = (rect.minX - screenFrame.minX) * scale
-        let yFromTop = (screenFrame.maxY - rect.maxY) * scale
+        let x = ((rect.minX - screenFrame.minX) * scale).rounded(.down)
+        let maxX = ((rect.maxX - screenFrame.minX) * scale).rounded(.up)
+        let yFromTop = ((screenFrame.maxY - rect.maxY) * scale).rounded(.down)
+        let maxYFromTop = ((screenFrame.maxY - rect.minY) * scale).rounded(.up)
         return CGRect(
-            x: x.rounded(.down),
-            y: yFromTop.rounded(.down),
-            width: (rect.width * scale).rounded(.toNearestOrAwayFromZero),
-            height: (rect.height * scale).rounded(.toNearestOrAwayFromZero)
+            x: x,
+            y: yFromTop,
+            width: max(1, maxX - x),
+            height: max(1, maxYFromTop - yFromTop)
         ).standardized
     }
 
     static func cocoaRectToImagePixelRect(_ rect: CGRect, screenFrame: CGRect, imageSize: CGSize) -> CGRect {
         let xScale = imageSize.width > 0 && screenFrame.width > 0 ? imageSize.width / screenFrame.width : 1
         let yScale = imageSize.height > 0 && screenFrame.height > 0 ? imageSize.height / screenFrame.height : xScale
-        let x = (rect.minX - screenFrame.minX) * xScale
-        let yFromTop = (screenFrame.maxY - rect.maxY) * yScale
+        let x = ((rect.minX - screenFrame.minX) * xScale).rounded(.down)
+        let maxX = ((rect.maxX - screenFrame.minX) * xScale).rounded(.up)
+        let yFromTop = ((screenFrame.maxY - rect.maxY) * yScale).rounded(.down)
+        let maxYFromTop = ((screenFrame.maxY - rect.minY) * yScale).rounded(.up)
         return CGRect(
-            x: x.rounded(.down),
-            y: yFromTop.rounded(.down),
-            width: max(1, (rect.width * xScale).rounded(.toNearestOrAwayFromZero)),
-            height: max(1, (rect.height * yScale).rounded(.toNearestOrAwayFromZero))
+            x: x,
+            y: yFromTop,
+            width: max(1, maxX - x),
+            height: max(1, maxYFromTop - yFromTop)
         ).standardized
     }
 
@@ -86,6 +90,15 @@ enum ScreenCoordinateSpace {
     }
 
     static func topLeftPointToCocoaPoint(_ point: CGPoint, screenFrames: [CGRect]) -> CGPoint {
+        let maxY = primaryTopEdge(in: screenFrames) ?? point.y
+        return CGPoint(x: point.x, y: maxY - point.y)
+    }
+
+    static func cocoaPointToTopLeftPoint(_ point: CGPoint, screens: [NSScreen] = NSScreen.screens) -> CGPoint {
+        cocoaPointToTopLeftPoint(point, screenFrames: screens.map(\.frame))
+    }
+
+    static func cocoaPointToTopLeftPoint(_ point: CGPoint, screenFrames: [CGRect]) -> CGPoint {
         let maxY = primaryTopEdge(in: screenFrames) ?? point.y
         return CGPoint(x: point.x, y: maxY - point.y)
     }

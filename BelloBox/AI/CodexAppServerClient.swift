@@ -1,6 +1,20 @@
 import Foundation
 
-/// Minimal JSON-RPC client for `codex app-server --stdio`.
+enum CodexJSONRPCRequestID: Hashable, Equatable {
+    case int(Int64)
+    case string(String)
+
+    var jsonValue: Any {
+        switch self {
+        case let .int(value):
+            return value
+        case let .string(value):
+            return value
+        }
+    }
+}
+
+/// Minimal JSON-RPC client for `codex app-server` over its default stdio transport.
 ///
 /// Bello Box uses one short-lived app-server session per AI action. The app
 /// passes model, reasoning effort, approval, and sandbox parameters on the
@@ -21,6 +35,36 @@ final class CodexAppServerClient {
         return effort.isEmpty ? CodexCLI.defaultReasoningEffort : effort
     }
 
+    static func resolvedApprovalPolicy(_ config: AIConfig) -> CodexApprovalPolicy {
+        config.codexApprovalPolicy
+    }
+
+    static func resolvedSandboxMode(_ config: AIConfig) -> CodexSandboxMode {
+        config.codexSandboxMode
+    }
+
+    static func sandboxPolicy(mode: CodexSandboxMode, writableRoot: String) -> [String: Any] {
+        switch mode {
+        case .readOnly:
+            return [
+                "type": "readOnly",
+                "networkAccess": true,
+            ]
+        case .workspaceWrite:
+            return [
+                "type": "workspaceWrite",
+                "writableRoots": [writableRoot],
+                "networkAccess": true,
+                "excludeTmpdirEnvVar": false,
+                "excludeSlashTmp": false,
+            ]
+        case .dangerFullAccess:
+            return [
+                "type": "dangerFullAccess",
+            ]
+        }
+    }
+
     static func developerInstructions(system: String) -> String {
         let directive = "Output only the resulting text itself. Do not explain, do not comment, do not ask questions, and do not use code fences."
         let trimmed = system.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -28,7 +72,7 @@ final class CodexAppServerClient {
     }
 
     static func appServerCommand(_ pathOrCommand: String) -> String {
-        "\(AIClient.codexInvocation(pathOrCommand)) app-server --stdio"
+        "\(AIClient.codexInvocation(pathOrCommand)) app-server"
     }
 
     static func initializeParams() -> [String: Any] {
@@ -49,8 +93,8 @@ final class CodexAppServerClient {
         [
             "model": resolvedModel(config),
             "cwd": cwd,
-            "approvalPolicy": "never",
-            "sandbox": "read-only",
+            "approvalPolicy": resolvedApprovalPolicy(config).rawValue,
+            "sandbox": resolvedSandboxMode(config).rawValue,
             "ephemeral": true,
             "serviceName": "Bello Box",
             "developerInstructions": developerInstructions(system: config.systemPrompt),
@@ -68,11 +112,8 @@ final class CodexAppServerClient {
                 ],
             ],
             "cwd": cwd,
-            "approvalPolicy": "never",
-            "sandboxPolicy": [
-                "type": "readOnly",
-                "networkAccess": true,
-            ],
+            "approvalPolicy": resolvedApprovalPolicy(config).rawValue,
+            "sandboxPolicy": sandboxPolicy(mode: resolvedSandboxMode(config), writableRoot: cwd),
             "model": resolvedModel(config),
             "effort": resolvedReasoningEffort(config),
         ]
@@ -84,9 +125,12 @@ final class CodexAppServerClient {
         return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
     }
 
-    static func requestID(from value: Any?) -> Int? {
-        if let int = value as? Int { return int }
-        if let number = value as? NSNumber { return number.intValue }
+    static func requestID(from value: Any?) -> CodexJSONRPCRequestID? {
+        if value is Bool { return nil }
+        if let string = value as? String { return .string(string) }
+        if let int = value as? Int { return .int(Int64(int)) }
+        if let int64 = value as? Int64 { return .int(int64) }
+        if let number = value as? NSNumber { return .int(number.int64Value) }
         return nil
     }
 
@@ -135,6 +179,53 @@ final class CodexAppServerClient {
         let error = (turn["error"] as? [String: Any])?["message"] as? String
         return (status, error)
     }
+
+    static func completionError(status: String, error: String?, emittedText: String, completedText: String?) -> AIError? {
+        switch status {
+        case "completed":
+            let fallbackText = completedText?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return emittedText.isEmpty && fallbackText.isEmpty ? .emptyResponse : nil
+        case "failed":
+            return .transport(error ?? "Codex turn failed.")
+        default:
+            return .transport("Codex turn ended with status \(status).")
+        }
+    }
+
+    static func approvalDenialResult(forServerRequestMethod method: String) -> [String: Any]? {
+        switch method {
+        case "item/commandExecution/requestApproval",
+             "item/fileChange/requestApproval":
+            return ["decision": "denied"]
+        case "execCommandApproval",
+             "applyPatchApproval":
+            return ["decision": "abort"]
+        default:
+            return nil
+        }
+    }
+
+    static func unsupportedServerRequestMessage(method: String) -> String {
+        switch method {
+        case "item/commandExecution/requestApproval",
+             "item/fileChange/requestApproval",
+             "item/permissions/requestApproval",
+             "execCommandApproval",
+             "applyPatchApproval":
+            return "Codex requested interactive approval, but Bello Box cannot show approval prompts during text actions. Set Codex approvals to Never, then try again."
+        case "item/tool/requestUserInput",
+             "mcpServer/elicitation/request":
+            return "Codex requested interactive input, but Bello Box text actions cannot continue an interactive Codex session."
+        case "item/tool/call":
+            return "Codex requested a client-side tool call, but Bello Box does not expose Codex app-server tools."
+        case "account/chatgptAuthTokens/refresh":
+            return "Codex requested a ChatGPT token refresh. Open Codex directly to refresh your login, then try Bello Box again."
+        case "attestation/generate":
+            return "Codex requested attestation, but Bello Box does not provide app-server attestation."
+        default:
+            return "Codex app-server requested unsupported method \(method)."
+        }
+    }
 }
 
 private extension CodexAppServerClient {
@@ -152,12 +243,13 @@ private extension CodexAppServerClient {
         private var continuation: CheckedContinuation<Void, Error>?
         private var stdoutBuffer = ""
         private var stderrBuffer = ""
-        private var nextRequestID = 1
-        private var pending: [Int: String] = [:]
+        private var nextRequestID: Int64 = 1
+        private var pending: [CodexJSONRPCRequestID: String] = [:]
         private var threadID: String?
         private var emittedText = ""
         private var completedText: String?
         private var finished = false
+        private var timeoutWorkItem: DispatchWorkItem?
 
         init(config: AIConfig, userText: String, onDelta: @escaping (String) -> Void) {
             self.config = config
@@ -172,6 +264,7 @@ private extension CodexAppServerClient {
                         self.continuation = continuation
                         do {
                             try self.startLocked()
+                            self.startTimeoutLocked()
                             try self.sendLocked(method: "initialize", params: CodexAppServerClient.initializeParams())
                         } catch {
                             self.finishLocked(.failure(error))
@@ -227,18 +320,48 @@ private extension CodexAppServerClient {
             }
         }
 
+        private func startTimeoutLocked() {
+            timeoutWorkItem?.cancel()
+            let workItem = DispatchWorkItem { [weak self] in
+                self?.finishLocked(.failure(AIError.transport("Codex app-server timed out after 300 seconds.")))
+            }
+            timeoutWorkItem = workItem
+            queue.asyncAfter(deadline: .now() + 300, execute: workItem)
+        }
+
         private func sendLocked(method: String, params: [String: Any]) throws {
-            let id = nextRequestID
+            let id = CodexJSONRPCRequestID.int(nextRequestID)
             nextRequestID += 1
             pending[id] = method
             let message: [String: Any] = [
                 "method": method,
-                "id": id,
+                "id": id.jsonValue,
                 "params": params,
             ]
+            try writeJSONLocked(message)
+        }
+
+        private func sendResponseLocked(id: CodexJSONRPCRequestID, result: [String: Any]) throws {
+            try writeJSONLocked([
+                "id": id.jsonValue,
+                "result": result,
+            ])
+        }
+
+        private func sendErrorResponseLocked(id: CodexJSONRPCRequestID, message: String) throws {
+            try writeJSONLocked([
+                "id": id.jsonValue,
+                "error": [
+                    "code": -32000,
+                    "message": message,
+                ],
+            ])
+        }
+
+        private func writeJSONLocked(_ message: [String: Any]) throws {
             var data = try JSONSerialization.data(withJSONObject: message, options: [])
             data.append(contentsOf: [0x0A])
-            stdinPipe.fileHandleForWriting.write(data)
+            try stdinPipe.fileHandleForWriting.write(contentsOf: data)
         }
 
         private func handleStdoutLocked(_ data: Data) {
@@ -246,30 +369,55 @@ private extension CodexAppServerClient {
             let parts = stdoutBuffer.split(separator: "\n", omittingEmptySubsequences: false)
             guard stdoutBuffer.hasSuffix("\n") else {
                 stdoutBuffer = parts.last.map(String.init) ?? ""
-                for line in parts.dropLast() { handleLineLocked(String(line)) }
+                for line in parts.dropLast() {
+                    handleLineLocked(String(line))
+                }
                 return
             }
             stdoutBuffer = ""
-            for line in parts.dropLast() { handleLineLocked(String(line)) }
+            for line in parts.dropLast() {
+                handleLineLocked(String(line))
+            }
         }
 
         private func appendStderrLocked(_ data: Data) {
             stderrBuffer += String(data: data, encoding: .utf8) ?? ""
-            if stderrBuffer.count > 4_000 {
-                stderrBuffer = String(stderrBuffer.suffix(4_000))
+            if stderrBuffer.count > 4000 {
+                stderrBuffer = String(stderrBuffer.suffix(4000))
             }
         }
 
         private func handleLineLocked(_ line: String) {
+            guard !finished else { return }
             guard let message = CodexAppServerClient.jsonObject(from: line) else { return }
 
-            if let id = CodexAppServerClient.requestID(from: message["id"]),
-               let method = pending.removeValue(forKey: id) {
-                handleResponseLocked(message, for: method)
+            if let id = CodexAppServerClient.requestID(from: message["id"]) {
+                if let method = pending.removeValue(forKey: id) {
+                    handleResponseLocked(message, for: method)
+                    return
+                }
+                if let method = message["method"] as? String {
+                    handleServerRequestLocked(id: id, method: method)
+                }
                 return
             }
 
             handleNotificationLocked(message)
+        }
+
+        private func handleServerRequestLocked(id: CodexJSONRPCRequestID, method: String) {
+            let message = CodexAppServerClient.unsupportedServerRequestMessage(method: method)
+            do {
+                if let result = CodexAppServerClient.approvalDenialResult(forServerRequestMethod: method) {
+                    try sendResponseLocked(id: id, result: result)
+                } else {
+                    try sendErrorResponseLocked(id: id, message: message)
+                }
+            } catch {
+                finishLocked(.failure(error))
+                return
+            }
+            finishLocked(.failure(AIError.transport(message)))
         }
 
         private func handleResponseLocked(_ message: [String: Any], for method: String) {
@@ -312,16 +460,18 @@ private extension CodexAppServerClient {
             }
 
             if let completion = CodexAppServerClient.turnCompletion(from: message) {
-                switch completion.status {
-                case "completed":
+                if let error = CodexAppServerClient.completionError(
+                    status: completion.status,
+                    error: completion.error,
+                    emittedText: emittedText,
+                    completedText: completedText
+                ) {
+                    finishLocked(.failure(error))
+                } else {
                     if emittedText.isEmpty, let completedText, !completedText.isEmpty {
                         emitLocked(completedText)
                     }
                     finishLocked(.success(()))
-                case "failed":
-                    finishLocked(.failure(AIError.transport(completion.error ?? "Codex turn failed.")))
-                default:
-                    finishLocked(.failure(AIError.transport("Codex turn ended with status \(completion.status).")))
                 }
                 return
             }
@@ -355,6 +505,8 @@ private extension CodexAppServerClient {
         private func finishLocked(_ result: Result<Void, Error>) {
             guard !finished else { return }
             finished = true
+            timeoutWorkItem?.cancel()
+            timeoutWorkItem = nil
             stdoutPipe.fileHandleForReading.readabilityHandler = nil
             stderrPipe.fileHandleForReading.readabilityHandler = nil
             try? stdinPipe.fileHandleForWriting.close()

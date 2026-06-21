@@ -39,6 +39,26 @@ final class ScreenCoordinateSpaceTests: XCTestCase {
         XCTAssertEqual(pixels, CGRect(x: 25, y: 112, width: 75, height: 38))
     }
 
+    func testCocoaToDisplayPixelsCoversFractionalScaledEdges() {
+        let screen = CGRect(x: 0, y: 0, width: 100, height: 80)
+        let rect = CGRect(x: 10.2, y: 20.1, width: 30.2, height: 15.2)
+        let pixels = ScreenCoordinateSpace.cocoaRectToDisplayPixelRect(rect, screenFrame: screen, scale: 1.5)
+
+        XCTAssertEqual(pixels, CGRect(x: 15, y: 67, width: 46, height: 23))
+    }
+
+    func testCocoaToImagePixelsCoversFractionalCapturedImageEdges() {
+        let screen = CGRect(x: 0, y: 0, width: 100, height: 80)
+        let rect = CGRect(x: 10.2, y: 20.1, width: 30.2, height: 15.2)
+        let pixels = ScreenCoordinateSpace.cocoaRectToImagePixelRect(
+            rect,
+            screenFrame: screen,
+            imageSize: CGSize(width: 250, height: 200)
+        )
+
+        XCTAssertEqual(pixels, CGRect(x: 25, y: 111, width: 76, height: 39))
+    }
+
     func testImageScaleUsesCapturedPixelWidth() {
         let screen = CGRect(x: 0, y: 0, width: 1440, height: 900)
         XCTAssertEqual(ScreenCoordinateSpace.imageScale(pixelWidth: 2880, screenFrame: screen), 2)
@@ -75,6 +95,20 @@ final class ScreenCoordinateSpaceTests: XCTestCase {
         let cocoa = ScreenCoordinateSpace.topLeftPointToCocoaPoint(point, screenFrames: frames)
 
         XCTAssertEqual(cocoa, CGPoint(x: 250, y: 1200))
+    }
+
+    func testCocoaPointConvertsBackToTopLeftCoordinates() {
+        let frames = [
+            CGRect(x: 0, y: 0, width: 1440, height: 900),
+            CGRect(x: 0, y: 900, width: 1920, height: 1080),
+            CGRect(x: 0, y: -1080, width: 1920, height: 1080),
+        ]
+        let cocoa = CGPoint(x: 250, y: 1200)
+
+        let topLeft = ScreenCoordinateSpace.cocoaPointToTopLeftPoint(cocoa, screenFrames: frames)
+
+        XCTAssertEqual(topLeft, CGPoint(x: 250, y: -300))
+        XCTAssertEqual(ScreenCoordinateSpace.topLeftPointToCocoaPoint(topLeft, screenFrames: frames), cocoa)
     }
 
     func testCGWindowBoundsConvertForDisplayBelowPrimary() {

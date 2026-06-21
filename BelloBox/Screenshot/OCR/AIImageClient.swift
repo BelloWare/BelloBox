@@ -46,7 +46,7 @@ final class AIImageClient {
         guard config.kind != .codexCLI else {
             throw OCRError.unsupportedProvider("Codex app-server does not support image OCR yet. Use Mac OCR or an image-capable HTTP provider.")
         }
-        guard !config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        if config.kind == .anthropic, config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw AIError.missingAPIKey
         }
 
@@ -65,6 +65,9 @@ final class AIImageClient {
         do {
             (data, response) = try await session.data(for: request)
         } catch {
+            if AIClient.isCancellation(error) {
+                throw CancellationError()
+            }
             throw AIError.transport(error.localizedDescription)
         }
 
@@ -90,7 +93,10 @@ final class AIImageClient {
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
+            let apiKey = config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !apiKey.isEmpty {
+                request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            }
             request.httpBody = try JSONSerialization.data(
                 withJSONObject: openAIResponsesVisionBody(config: config, image: image, prompt: prompt, responseFormat: responseFormat),
                 options: [.sortedKeys]
@@ -101,7 +107,10 @@ final class AIImageClient {
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
+            let apiKey = config.apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !apiKey.isEmpty {
+                request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            }
             request.httpBody = try JSONSerialization.data(
                 withJSONObject: openAIChatVisionBody(config: config, image: image, prompt: prompt, stream: false),
                 options: [.sortedKeys]

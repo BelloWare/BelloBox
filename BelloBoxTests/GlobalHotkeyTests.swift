@@ -40,12 +40,28 @@ final class GlobalHotkeyTests: XCTestCase {
         XCTAssertNil(GlobalHotkey.from(event: event))
     }
 
+    func testRejectsEscapeShortcut() {
+        let event = keyEvent(keyCode: 53, modifiers: [.control, .option, .command])
+        XCTAssertNil(GlobalHotkey.from(event: event))
+        XCTAssertFalse(GlobalHotkey(keyCode: 53, modifiers: [.control, .option, .command]).isValid)
+    }
+
     func testAllowsCustomShortcut() {
         let event = keyEvent(keyCode: 40, modifiers: [.command, .shift])
         let hotkey = GlobalHotkey.from(event: event)
 
         XCTAssertEqual(hotkey?.displayString, "⇧⌘K")
         XCTAssertTrue(hotkey?.matches(event) == true)
+    }
+
+    func testIgnoresIrrelevantModifierFlagsWhenComparingAndMatching() {
+        let stored = GlobalHotkey(keyCode: 11, modifiers: [.control, .option, .command, .capsLock])
+        let normalized = GlobalHotkey.default
+        let event = keyEvent(keyCode: 11, modifiers: [.control, .option, .command])
+
+        XCTAssertEqual(stored, normalized)
+        XCTAssertEqual(stored.displayString, "⌃⌥⌘B")
+        XCTAssertTrue(stored.matches(event))
     }
 
     func testHotkeyConflictMessagesOnlyConsiderEnabledShortcuts() {
@@ -76,6 +92,16 @@ final class GlobalHotkeyTests: XCTestCase {
         XCTAssertTrue(messages[1].contains("Recording"))
     }
 
+    func testActiveShortcutRecorderIDIsNotPersisted() {
+        let defaults = temporaryDefaults("active-recorder")
+        let settings = AppSettings(defaults: defaults)
+        settings.activeShortcutRecorderID = UUID()
+
+        let reloaded = AppSettings(defaults: defaults)
+
+        XCTAssertNil(reloaded.activeShortcutRecorderID)
+    }
+
     private func keyEvent(keyCode: UInt16, modifiers: NSEvent.ModifierFlags) -> NSEvent {
         NSEvent.keyEvent(
             with: .keyDown,
@@ -89,5 +115,12 @@ final class GlobalHotkeyTests: XCTestCase {
             isARepeat: false,
             keyCode: keyCode
         )!
+    }
+
+    private func temporaryDefaults(_ name: String) -> UserDefaults {
+        let suiteName = "BelloBoxTests.GlobalHotkey.\(name).\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        return defaults
     }
 }

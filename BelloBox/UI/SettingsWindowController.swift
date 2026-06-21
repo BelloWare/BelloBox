@@ -9,7 +9,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     func show(settings: AppSettings) {
         if let window {
-            NSApp.activate(ignoringOtherApps: true)
+            AppActivation.bringAppForward()
             window.makeKeyAndOrderFront(nil)
             return
         }
@@ -20,11 +20,11 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         window.delegate = self
-        window.setContentSize(NSSize(width: 640, height: 720))
+        window.setContentSize(NSSize(width: 900, height: 720))
         window.center()
         self.window = window
 
-        NSApp.activate(ignoringOtherApps: true)
+        AppActivation.bringAppForward()
         window.makeKeyAndOrderFront(nil)
     }
 

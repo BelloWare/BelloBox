@@ -4,9 +4,21 @@ import SwiftUI
 @MainActor
 final class ScreenshotOverlayEditorController {
     private var windows: [ScreenshotOverlayEditorWindow] = []
+    private var keyMonitor: Any?
+    private var viewModel: ScreenshotPopupViewModel?
+    private var isClosing = false
+
+    deinit {
+        MainActor.assumeIsolated {
+            close()
+        }
+    }
 
     func show(viewModel: ScreenshotPopupViewModel, captureFrame: CGRect) {
         close()
+        self.viewModel = viewModel
+        installKeyMonitor(viewModel: viewModel)
+        AppActivation.bringAppForward()
         let targetScreen = ScreenCoordinateSpace.displayForCocoaRect(captureFrame)
             ?? ScreenPlacement.screen(containing: CGPoint(x: captureFrame.midX, y: captureFrame.midY))
 
@@ -32,18 +44,51 @@ final class ScreenshotOverlayEditorController {
     }
 
     func close() {
+        close(notifyViewModel: true)
+    }
+
+    func closeFromViewModel() {
+        close(notifyViewModel: false)
+    }
+
+    private func close(notifyViewModel: Bool) {
+        guard !isClosing else { return }
+        isClosing = true
+        let closingViewModel = viewModel
+        viewModel = nil
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+            self.keyMonitor = nil
+        }
         for window in windows {
             window.orderOut(nil)
         }
         windows.removeAll()
+        if notifyViewModel {
+            closingViewModel?.close()
+        }
+        isClosing = false
+    }
+
+    private func installKeyMonitor(viewModel: ScreenshotPopupViewModel) {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+        }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak viewModel] event in
+            guard event.keyCode == 53 else { return event }
+            Task { @MainActor in viewModel?.close() }
+            return nil
+        }
     }
 }
 
 private final class ScreenshotOverlayEditorWindow: NSPanel {
     init(screen: NSScreen) {
+        // This editor must activate so local Esc handling and inline text fields
+        // receive keyboard events while the full-screen overlay is open.
         super.init(
             contentRect: screen.frame,
-            styleMask: [.borderless, .nonactivatingPanel],
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
@@ -125,74 +170,13 @@ private struct ScreenshotOverlayEditorView: View {
                 .frame(width: 28, height: 28)
                 .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(BoxTheme.accentGradient))
 
-            ForEach(AnnotationTool.allCases) { tool in
-                Button {
-                    viewModel.activeTool = tool
-                } label: {
-                    Image(systemName: tool.symbol)
-                        .frame(width: 24, height: 24)
-                }
-                .buttonStyle(.plain)
-                .background(RoundedRectangle(cornerRadius: 7).fill(viewModel.activeTool == tool ? BoxTheme.accentSoft : .clear))
-                .help(tool.label)
-            }
-
-            Divider().frame(height: 24)
-
-            ColorPicker("Color", selection: Binding(
-                get: { Color(nsColor: viewModel.style.strokeColor.nsColor) },
-                set: { color in
-                    if let cgColor = color.cgColor, let nsColor = NSColor(cgColor: cgColor) {
-                        viewModel.style.strokeColor = CodableColor(nsColor)
-                    }
-                }
-            ))
-            .labelsHidden()
-            .frame(width: 30)
-
-            Slider(value: Binding(
-                get: { Double(viewModel.style.lineWidth) },
-                set: { viewModel.style.lineWidth = CGFloat($0) }
-            ), in: 1...12, step: 1)
-            .frame(width: 76)
-
-            TextField("Text", text: $viewModel.pendingTextLabel)
-                .textFieldStyle(.roundedBorder)
-                .frame(width: 104)
-
-            Spacer(minLength: 6)
-
-            iconButton("arrow.uturn.backward", help: "Undo", disabled: !viewModel.canUndo) { viewModel.undo() }
-                .keyboardShortcut("z", modifiers: .command)
-            iconButton("arrow.uturn.forward", help: "Redo", disabled: !viewModel.canRedo) { viewModel.redo() }
-                .keyboardShortcut("Z", modifiers: [.command, .shift])
-            iconButton("doc.on.doc", help: "Copy image") { viewModel.copyRenderedImage() }
-            iconButton("square.and.arrow.down", help: "Save PNG") { viewModel.saveRenderedImage() }
-            iconButton("xmark", help: "Close") { viewModel.close() }
-
-            Button { viewModel.finish() } label: {
-                Image(systemName: "checkmark")
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(PrimaryButtonStyle())
-            .keyboardShortcut(.defaultAction)
-            .help("Copy image and finish")
+            AnnotationToolbarView(viewModel: viewModel, showExportActions: true, onClose: viewModel.close)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.regularMaterial))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.white.opacity(0.14), lineWidth: 1))
         .shadow(color: .black.opacity(0.28), radius: 16, y: 8)
-    }
-
-    private func iconButton(_ systemName: String, help: String, disabled: Bool = false, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .frame(width: 24, height: 24)
-        }
-        .buttonStyle(SecondaryButtonStyle())
-        .disabled(disabled)
-        .help(help)
     }
 
     private func localSelectionFrame(in bounds: CGRect) -> CGRect {

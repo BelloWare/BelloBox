@@ -73,6 +73,36 @@ final class RecordingFrameRendererTests: XCTestCase {
         XCTAssertTrue(isDark(pixel(at: CGPoint(x: 50, y: 50), in: output)))
     }
 
+    func testKnownSensitiveFrameMapsFromOffsetSourceRectIntoScaledOutput() {
+        let source = makePixelBuffer(width: 100, height: 200, red: 255, green: 255, blue: 255)
+        let output = makePixelBuffer(width: 100, height: 200, red: 0, green: 0, blue: 0)
+        let context = RecordingFrameRenderContext(
+            sourceScreenRect: CGRect(x: 100, y: 200, width: 50, height: 100),
+            outputSize: CGSize(width: 100, height: 200),
+            clickOverlayMode: .off,
+            keystrokeMode: .off,
+            secureFieldRedactionMode: .visualFieldOnly
+        )
+
+        RecordingFrameRenderer().render(
+            sourcePixelBuffer: source,
+            into: output,
+            context: context,
+            overlayEvents: [],
+            sensitiveState: .sensitiveKnownFrame(
+                SensitiveFieldInfo(
+                    reason: .secureTextField,
+                    frameInScreenPoints: CGRect(x: 110, y: 220, width: 10, height: 10),
+                    owningAppBundleID: nil,
+                    confidence: 1.0
+                )
+            )
+        )
+
+        XCTAssertFalse(isDark(pixel(at: CGPoint(x: 30, y: 50), in: output)))
+        XCTAssertTrue(isDark(pixel(at: CGPoint(x: 30, y: 150), in: output)))
+    }
+
     private func render(
         sensitiveState: SensitiveInputState,
         overlayEvents: [TimedOverlayEvent]

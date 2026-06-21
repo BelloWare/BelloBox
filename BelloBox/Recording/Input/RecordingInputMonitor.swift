@@ -41,6 +41,10 @@ final class RecordingInputMonitor {
         self.privacyGuard = privacyGuard
     }
 
+    deinit {
+        stop()
+    }
+
     func start() {
         guard eventTap == nil else { return }
         guard options.clickOverlayMode.isEnabled || options.keystrokeMode != .off else { return }

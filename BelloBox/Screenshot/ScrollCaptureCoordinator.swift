@@ -7,12 +7,12 @@ final class ScrollCaptureCoordinator: ObservableObject {
     @Published var session: ScrollCaptureSession
     @Published var warning: String?
 
-    private let service: ScreenCaptureService
+    private let service: ScreenshotCapturing
     private let settings: AppSettings
 
     var settingsMaxFrames: Int { settings.scrollingScreenshotMaxFrames }
 
-    init(target: ScrollCaptureTarget, service: ScreenCaptureService, settings: AppSettings) {
+    init(target: ScrollCaptureTarget, service: ScreenshotCapturing, settings: AppSettings) {
         self.session = ScrollCaptureSession(
             target: target,
             direction: .down,
@@ -39,8 +39,26 @@ final class ScrollCaptureCoordinator: ObservableObject {
             warning = "Maximum frame count reached."
             return
         }
+        let cancelledStatus: ScrollCaptureStatus = session.frames.isEmpty ? .idle : .waitingForScroll
         session.status = .capturing
-        let document = try await service.capture(captureTarget, options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.1))
+        let document: ScreenshotDocument
+        do {
+            document = try await service.capture(
+                captureTarget,
+                options: CaptureOptions(
+                    includeCursor: settings.screenshotIncludeCursor,
+                    hideBelloBoxWindows: true,
+                    delayAfterHidingOverlays: 0.1
+                )
+            )
+            try Task.checkCancellation()
+        } catch is CancellationError {
+            session.status = cancelledStatus
+            throw CancellationError()
+        } catch {
+            session.status = .failed(error.localizedDescription)
+            throw error
+        }
         let frame = ScrollCapturedFrame(image: document.baseImage, targetRect: targetRect)
         if let previous = session.frames.last, previous.image.width == frame.image.width, previous.image.height == frame.image.height {
             if ImageStitcher.appearsUnchanged(previous: previous.image, current: frame.image) {
@@ -53,29 +71,58 @@ final class ScrollCaptureCoordinator: ObservableObject {
         session.status = .waitingForScroll
     }
 
-    func finish() throws -> ScreenshotDocument {
+    func finish() async throws -> ScreenshotDocument {
         session.status = .stitching
-        let result = try ImageStitcher.stitch(session.frames.map(\.image), config: session.config)
+        let frames = session.frames.map(\.image)
+        let config = session.config
+        let result: StitchResult
+        let stitchTask = Task.detached(priority: .userInitiated) {
+            try ImageStitcher.stitch(frames, config: config)
+        }
+        do {
+            result = try await withTaskCancellationHandler {
+                try await stitchTask.value
+            } onCancel: {
+                stitchTask.cancel()
+            }
+            try Task.checkCancellation()
+        } catch {
+            session.status = .waitingForScroll
+            throw error
+        }
         session.status = .finished
+        return Self.makeDocument(
+            from: result,
+            target: session.target.summary,
+            frameCount: session.frames.count
+        )
+    }
+
+    nonisolated static func makeDocument(
+        from result: StitchResult,
+        target: ScrollCaptureTargetSummary,
+        frameCount: Int,
+        createdAt: Date = Date()
+    ) -> ScreenshotDocument {
+        let warningResult = result.warnings.isEmpty ? nil : OCRResult(
+            id: UUID(),
+            engine: .appleVision(revision: nil, recognitionLevel: .accurate),
+            target: .fullImage,
+            plainText: "",
+            markdownText: nil,
+            regions: [],
+            languageHints: [],
+            imageDigest: "",
+            warnings: result.warnings,
+            createdAt: createdAt
+        )
         return ScreenshotDocument(
             baseImage: result.image,
             scale: 1,
-            source: .scrolling(target: session.target.summary, frameCount: session.frames.count),
-            ocrResults: result.warnings.isEmpty ? [] : [
-                OCRResult(
-                    id: UUID(),
-                    engine: .appleVision(revision: nil, recognitionLevel: .accurate),
-                    target: .fullImage,
-                    plainText: "",
-                    markdownText: nil,
-                    regions: [],
-                    languageHints: [],
-                    imageDigest: "",
-                    warnings: result.warnings,
-                    createdAt: Date()
-                ),
-            ],
-            activeOCRResultID: nil
+            source: .scrolling(target: target, frameCount: frameCount),
+            ocrResults: warningResult.map { [$0] } ?? [],
+            activeOCRResultID: warningResult?.id,
+            createdAt: createdAt
         )
     }
 
@@ -92,7 +139,7 @@ final class ScrollCaptureCoordinator: ObservableObject {
             warning = "Could not create an auto-scroll event. Use manual Capture Next."
             return
         }
-        event.location = targetCenter
+        event.location = ScreenCoordinateSpace.cocoaPointToTopLeftPoint(targetCenter)
         event.post(tap: .cghidEventTap)
     }
 

@@ -19,6 +19,7 @@ final class ActionPopupViewModel: ObservableObject {
     private let client: AIClient
     private let accessibility: AccessibilityService
     private var task: Task<Void, Never>?
+    private var runToken: UUID?
 
     /// Invoked when the popup wants to dismiss itself.
     var onClose: () -> Void = {}
@@ -62,9 +63,17 @@ final class ActionPopupViewModel: ObservableObject {
     private func runInstruction(_ instruction: String, replaces: Bool) {
         task?.cancel()
         guard settings.isConfigured else {
+            runToken = nil
+            task = nil
+            resultText = ""
+            isStreaming = false
+            didRun = true
+            lastActionReplaces = replaces
             errorMessage = "Add an API key for your provider in Bello Box settings first."
             return
         }
+        let token = UUID()
+        runToken = token
         resultText = ""
         errorMessage = nil
         isStreaming = true
@@ -77,18 +86,40 @@ final class ActionPopupViewModel: ObservableObject {
         task = Task { [weak self] in
             guard let self else { return }
             do {
-                try await self.client.stream(config: config, userText: payload) { delta in
-                    Task { @MainActor [weak self] in
-                        self?.resultText += delta
-                    }
+                for try await delta in self.deltaStream(config: config, userText: payload) {
+                    try Task.checkCancellation()
+                    guard self.runToken == token else { return }
+                    self.resultText += delta
                 }
+            } catch is CancellationError {
             } catch {
-                await MainActor.run { [weak self] in
-                    self?.errorMessage = (error as? AIError)?.errorDescription ?? error.localizedDescription
+                guard self.runToken == token else { return }
+                self.errorMessage = (error as? AIError)?.errorDescription ?? error.localizedDescription
+            }
+            if self.runToken == token {
+                self.runToken = nil
+                self.task = nil
+                self.isStreaming = false
+            }
+        }
+    }
+
+    private func deltaStream(config: AIConfig, userText: String) -> AsyncThrowingStream<String, Error> {
+        let client = client
+        return AsyncThrowingStream { continuation in
+            let producer = Task {
+                do {
+                    try await client.stream(config: config, userText: userText) { delta in
+                        guard !delta.isEmpty else { return }
+                        continuation.yield(delta)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
                 }
             }
-            await MainActor.run { [weak self] in
-                self?.isStreaming = false
+            continuation.onTermination = { @Sendable _ in
+                producer.cancel()
             }
         }
     }
@@ -117,12 +148,17 @@ final class ActionPopupViewModel: ObservableObject {
     }
 
     func cancel() {
+        runToken = nil
         task?.cancel()
+        task = nil
         isStreaming = false
     }
 
     func close() {
+        runToken = nil
         task?.cancel()
+        task = nil
+        isStreaming = false
         onClose()
     }
 }

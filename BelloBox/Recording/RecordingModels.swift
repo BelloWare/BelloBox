@@ -12,30 +12,6 @@ struct RecordingSessionID: Hashable, Codable {
     }
 }
 
-enum RecordingCaptureMode: String, Codable, CaseIterable, Identifiable {
-    case area
-    case window
-    case display
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .area: return "Area"
-        case .window: return "Window"
-        case .display: return "Screen"
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .area: return "selection.pin.in.out"
-        case .window: return "macwindow"
-        case .display: return "display"
-        }
-    }
-}
-
 enum RecordingTarget: Equatable {
     case area(displayID: CGDirectDisplayID, rectInScreenPoints: CGRect)
     case window(windowID: CGWindowID, displayID: CGDirectDisplayID?, frameInScreenPoints: CGRect?)
@@ -160,6 +136,15 @@ struct RecordingOptions: Equatable, Codable {
         excludeBelloBoxWindows: true,
         excludesCurrentProcessAudio: true
     )
+}
+
+enum RecordingPrivacyNotice {
+    static let secureFieldRedactionUnavailableMessage =
+        "Secure-field hiding needs Accessibility permission. Secure fields will be recorded until it is granted."
+
+    static func secureFieldRedactionWarning(accessibilityTrusted: Bool) -> String? {
+        accessibilityTrusted ? nil : secureFieldRedactionUnavailableMessage
+    }
 }
 
 struct RecordingOutputSettings: Equatable, Codable {

@@ -58,7 +58,7 @@ final class PasswordFieldDetector: PasswordFieldDetecting {
         .joined(separator: " ")
 
         guard !metadata.isEmpty else { return false }
-        return Self.sensitiveKeywords.contains { metadata.contains($0) }
+        return Self.metadataLooksSensitive(metadata)
     }
 
     private func stringAttribute(_ attribute: String, element: AXUIElement) -> String? {
@@ -88,12 +88,20 @@ final class PasswordFieldDetector: PasswordFieldDetecting {
         return AccessibilityService.cocoaRect(fromAXRect: CGRect(origin: point, size: size))
     }
 
-    private static let sensitiveKeywords = [
+    static func metadataLooksSensitive(_ metadata: String) -> Bool {
+        let normalized = metadata.lowercased()
+        return sensitivePhrases.contains { normalized.contains($0) }
+            || sensitiveTokens.contains { containsToken($0, in: normalized) }
+    }
+
+    private static func containsToken(_ token: String, in metadata: String) -> Bool {
+        let pattern = "(?<![a-z0-9])" + NSRegularExpression.escapedPattern(for: token) + "(?![a-z0-9])"
+        return metadata.range(of: pattern, options: .regularExpression) != nil
+    }
+
+    private static let sensitivePhrases = [
         "password",
         "passcode",
-        "pin",
-        "2fa",
-        "otp",
         "one-time code",
         "verification code",
         "secret",
@@ -104,10 +112,16 @@ final class PasswordFieldDetector: PasswordFieldDetecting {
         "seed phrase",
         "mnemonic",
         "social security",
-        "ssn",
         "credit card",
         "card number",
-        "cvv",
         "security code"
+    ]
+
+    private static let sensitiveTokens = [
+        "pin",
+        "2fa",
+        "otp",
+        "ssn",
+        "cvv"
     ]
 }

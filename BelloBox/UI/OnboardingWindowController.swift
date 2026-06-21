@@ -14,7 +14,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         self.onClosed = onClosed
 
         if let window {
-            NSApp.activate(ignoringOtherApps: true)
+            AppActivation.bringAppForward()
             window.makeKeyAndOrderFront(nil)
             return
         }
@@ -35,7 +35,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         window.center()
         self.window = window
 
-        NSApp.activate(ignoringOtherApps: true)
+        AppActivation.bringAppForward()
         window.makeKeyAndOrderFront(nil)
     }
 

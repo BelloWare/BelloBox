@@ -1,13 +1,36 @@
 import SwiftUI
 
 struct RecordingPermissionView: View {
-    let permissions: RecordingPermissionState
+    let options: RecordingOptions
     var onRequestScreenRecording: () -> Void
     var onRequestMicrophone: () -> Void
     var onRequestInputMonitoring: () -> Void
     var onOpenAccessibility: () -> Void
     var onContinueWithoutOptional: () -> Void
     var onCancel: () -> Void
+
+    @State private var permissions: RecordingPermissionState
+    private let permissionTimer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+
+    init(
+        permissions: RecordingPermissionState,
+        options: RecordingOptions,
+        onRequestScreenRecording: @escaping () -> Void,
+        onRequestMicrophone: @escaping () -> Void,
+        onRequestInputMonitoring: @escaping () -> Void,
+        onOpenAccessibility: @escaping () -> Void,
+        onContinueWithoutOptional: @escaping () -> Void,
+        onCancel: @escaping () -> Void
+    ) {
+        self.options = options
+        self.onRequestScreenRecording = onRequestScreenRecording
+        self.onRequestMicrophone = onRequestMicrophone
+        self.onRequestInputMonitoring = onRequestInputMonitoring
+        self.onOpenAccessibility = onOpenAccessibility
+        self.onContinueWithoutOptional = onContinueWithoutOptional
+        self.onCancel = onCancel
+        _permissions = State(initialValue: permissions)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -43,10 +66,17 @@ struct RecordingPermissionView: View {
                 action: onOpenAccessibility
             )
 
-            Text("Bello Box hides detected secure fields and suppresses key overlays while typing into them. Microphone audio may still include anything spoken aloud.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+            if let warning = secureFieldRedactionWarning {
+                Label(warning, systemImage: "lock.slash")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("Bello Box hides detected secure fields and suppresses key overlays while typing into them. Microphone audio may still include anything spoken aloud.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             HStack {
                 Button("Cancel", action: onCancel)
@@ -60,6 +90,13 @@ struct RecordingPermissionView: View {
         .padding(18)
         .frame(width: 520, height: 420)
         .popupCard()
+        .onReceive(permissionTimer) { _ in
+            permissions = RecordingPermissionState.current(options: options)
+        }
+    }
+
+    private var secureFieldRedactionWarning: String? {
+        RecordingPrivacyNotice.secureFieldRedactionWarning(accessibilityTrusted: permissions.accessibility == .granted)
     }
 
     private func permissionRow(title: String, detail: String, status: PermissionStatus, action: @escaping () -> Void) -> some View {

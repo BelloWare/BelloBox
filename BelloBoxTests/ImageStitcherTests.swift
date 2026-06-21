@@ -39,6 +39,25 @@ final class ImageStitcherTests: XCTestCase {
         XCTAssertTrue(result.warnings.contains { $0.contains("nearly unchanged") })
     }
 
+    func testStitchWarningsAreActiveInScrollingDocument() throws {
+        let image = ScreenshotTestHelpers.stripedImage(width: 90, height: 180)
+        let result = StitchResult(
+            image: image,
+            placements: [],
+            warnings: ["Frame 2 appears nearly unchanged from the previous frame."]
+        )
+
+        let document = ScrollCaptureCoordinator.makeDocument(
+            from: result,
+            target: ScrollCaptureTargetSummary(title: "Page", ownerName: "Browser", frame: nil),
+            frameCount: 2,
+            createdAt: Date(timeIntervalSince1970: 12)
+        )
+
+        XCTAssertEqual(document.ocrResults.count, 1)
+        XCTAssertEqual(document.activeOCRResult?.warnings, result.warnings)
+    }
+
     func testStickyHeaderIsRemovedWhenRepeatedConservatively() throws {
         let first = imageWithHeader(width: 100, height: 200, bodyColor: .red)
         let second = imageWithHeader(width: 100, height: 200, bodyColor: .blue)
@@ -60,6 +79,27 @@ final class ImageStitcherTests: XCTestCase {
         let second = ScreenshotTestHelpers.stripedImage(width: 90, height: 180)
         let result = try ImageStitcher.stitch([first, second])
         XCTAssertEqual(result.image.width, 120)
+    }
+
+    func testStitchRespectsCancellationBeforeWork() async {
+        let image = ScreenshotTestHelpers.stripedImage(width: 120, height: 180)
+        let task = Task {
+            while !Task.isCancelled {
+                await Task.yield()
+            }
+            _ = try ImageStitcher.stitch([image])
+        }
+
+        task.cancel()
+
+        do {
+            try await task.value
+            XCTFail("Expected stitch to throw CancellationError.")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Expected CancellationError, got \(error).")
+        }
     }
 
     private func imageWithHeader(width: Int, height: Int, bodyColor: NSColor) -> CGImage {

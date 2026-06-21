@@ -12,6 +12,8 @@ struct ProviderConfigView: View {
     @State private var loadError: String?
     @State private var isTesting = false
     @State private var testState: TestState = .idle
+    @State private var modelLoadToken = UUID()
+    @State private var testToken = UUID()
 
     enum TestState: Equatable {
         case idle
@@ -28,10 +30,17 @@ struct ProviderConfigView: View {
             }
             .pickerStyle(.segmented)
             .onChange(of: settings.providerKind) { _ in
-                models = []
-                loadError = nil
-                testState = .idle
+                resetTransientState(clearModels: true)
             }
+            .onChange(of: settings.openAIBaseURL) { _ in resetIfActiveProvider(.openAI, clearModels: true) }
+            .onChange(of: settings.anthropicBaseURL) { _ in resetIfActiveProvider(.anthropic, clearModels: true) }
+            .onChange(of: settings.apiKey) { _ in resetIfActiveHTTPProvider(clearModels: true) }
+            .onChange(of: settings.openAIAPIKind) { _ in resetIfActiveProvider(.openAI, clearModels: true) }
+            .onChange(of: settings.codexPath) { _ in resetIfActiveProvider(.codexCLI, clearModels: false) }
+            .onChange(of: settings.codexModel) { _ in resetIfActiveProvider(.codexCLI, clearModels: false) }
+            .onChange(of: settings.codexReasoningEffort) { _ in resetIfActiveProvider(.codexCLI, clearModels: false) }
+            .onChange(of: settings.codexApprovalPolicy) { _ in resetIfActiveProvider(.codexCLI, clearModels: false) }
+            .onChange(of: settings.codexSandboxMode) { _ in resetIfActiveProvider(.codexCLI, clearModels: false) }
 
             if settings.providerKind == .codexCLI {
                 codexFields
@@ -48,6 +57,7 @@ struct ProviderConfigView: View {
             }
             if settings.providerKind == .codexCLI {
                 codexReasoningRow
+                codexPolicyRows
             }
             testRow
 
@@ -71,7 +81,7 @@ struct ProviderConfigView: View {
                 }
             }
             labeledField("API key") {
-                SecureField("Paste your key", text: $settings.apiKey)
+                SecureField(apiKeyPlaceholder, text: $settings.apiKey)
                     .textFieldStyle(.roundedBorder)
             }
         }
@@ -127,7 +137,7 @@ struct ProviderConfigView: View {
                     } label: {
                         if isLoadingModels { ProgressView().controlSize(.small) } else { Text("Load") }
                     }
-                    .disabled(isLoadingModels || settings.apiKey.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(isLoadingModels || modelLoadRequiresAPIKey)
                     .help("Fetch the available models from the endpoint")
                 }
             }
@@ -150,6 +160,37 @@ struct ProviderConfigView: View {
         }
     }
 
+    private var codexPolicyRows: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 10) {
+                labeledField("Sandbox") {
+                    Picker("Sandbox", selection: $settings.codexSandboxMode) {
+                        ForEach(CodexCLI.sandboxModes) { mode in
+                            Text(mode.label).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(maxWidth: 190, alignment: .leading)
+                }
+
+                labeledField("Approvals") {
+                    Picker("Approvals", selection: $settings.codexApprovalPolicy) {
+                        ForEach(CodexCLI.approvalPolicies) { policy in
+                            Text(policy.label).tag(policy)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(maxWidth: 190, alignment: .leading)
+                }
+            }
+
+            Text(codexPolicyHelp)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
     private var temperatureRow: some View {
         labeledField("Temperature") {
             VStack(alignment: .leading, spacing: 7) {
@@ -163,8 +204,8 @@ struct ProviderConfigView: View {
 
                 if settings.temperatureMode == .custom {
                     HStack(spacing: 10) {
-                        Slider(value: temperatureBinding, in: 0...temperatureMaximum, step: 0.1)
-                        Stepper(value: temperatureBinding, in: 0...temperatureMaximum, step: 0.1) {
+                        Slider(value: temperatureBinding, in: 0 ... temperatureMaximum, step: 0.1)
+                        Stepper(value: temperatureBinding, in: 0 ... temperatureMaximum, step: 0.1) {
                             Text(temperatureText)
                                 .font(.system(.caption, design: .monospaced).weight(.semibold))
                                 .frame(width: 34, alignment: .trailing)
@@ -242,6 +283,14 @@ struct ProviderConfigView: View {
         settings.providerKind == .anthropic ? 1.0 : 2.0
     }
 
+    private var apiKeyPlaceholder: String {
+        settings.providerKind == .openAI ? "Optional for local endpoints" : "Paste your key"
+    }
+
+    private var modelLoadRequiresAPIKey: Bool {
+        settings.providerKind == .anthropic && settings.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     private var temperatureBinding: Binding<Double> {
         Binding(
             get: { min(settings.temperature, temperatureMaximum) },
@@ -278,6 +327,20 @@ struct ProviderConfigView: View {
         }
     }
 
+    private var codexPolicyHelp: String {
+        let sandboxHelp: String
+        switch settings.codexSandboxMode {
+        case .readOnly:
+            sandboxHelp = "Read only is safest for text actions. Codex can read context but cannot write files."
+        case .workspaceWrite:
+            sandboxHelp = "Workspace write allows Codex to write only inside Bello Box's temporary action folder."
+        case .dangerFullAccess:
+            sandboxHelp = "Full access lets Codex run without filesystem sandboxing. Use only with trusted prompts."
+        }
+        guard settings.codexApprovalPolicy != .never else { return sandboxHelp }
+        return "\(sandboxHelp) Bello Box does not show interactive Codex approval prompts; set approvals to Never for text actions."
+    }
+
     // MARK: - Actions
 
     private func resetEndpoint() {
@@ -300,15 +363,19 @@ struct ProviderConfigView: View {
     }
 
     private func loadModels() {
+        let token = UUID()
+        modelLoadToken = token
         isLoadingModels = true
         loadError = nil
         let config = settings.currentConfig
-        Task {
+        Task { @MainActor in
             do {
                 let list = try await AIClient().listModels(config: config)
+                guard finishModelLoadIfCurrent(token: token) else { return }
                 models = list
                 if list.isEmpty { loadError = "No models returned." }
             } catch {
+                guard finishModelLoadIfCurrent(token: token) else { return }
                 loadError = (error as? AIError)?.errorDescription ?? error.localizedDescription
             }
             isLoadingModels = false
@@ -316,19 +383,56 @@ struct ProviderConfigView: View {
     }
 
     private func runTest() {
+        let token = UUID()
+        testToken = token
         isTesting = true
         testState = .idle
         let config = settings.currentConfig
-        Task {
+        Task { @MainActor in
             do {
                 let reply = try await AIClient().complete(config: config, userText: "Reply with a short, friendly hello.")
+                guard finishTestIfCurrent(token: token, config: config) else { return }
                 let trimmed = reply.trimmingCharacters(in: .whitespacesAndNewlines)
                 testState = .success(trimmed.isEmpty ? "Connected" : String(trimmed.prefix(60)))
             } catch {
+                guard finishTestIfCurrent(token: token, config: config) else { return }
                 testState = .failure((error as? AIError)?.errorDescription ?? error.localizedDescription)
             }
             isTesting = false
         }
+    }
+
+    private func resetTransientState(clearModels: Bool) {
+        modelLoadToken = UUID()
+        testToken = UUID()
+        if clearModels { models = [] }
+        loadError = nil
+        isLoadingModels = false
+        isTesting = false
+        testState = .idle
+    }
+
+    private func resetIfActiveProvider(_ provider: ProviderKind, clearModels: Bool) {
+        guard settings.providerKind == provider else { return }
+        resetTransientState(clearModels: clearModels)
+    }
+
+    private func resetIfActiveHTTPProvider(clearModels: Bool) {
+        guard settings.providerKind.isHTTP else { return }
+        resetTransientState(clearModels: clearModels)
+    }
+
+    private func finishModelLoadIfCurrent(token: UUID) -> Bool {
+        modelLoadToken == token
+    }
+
+    private func finishTestIfCurrent(token: UUID, config: AIConfig) -> Bool {
+        guard testToken == token else { return false }
+        guard settings.currentConfig == config else {
+            isTesting = false
+            return false
+        }
+        return true
     }
 
     @ViewBuilder

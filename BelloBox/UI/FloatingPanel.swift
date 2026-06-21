@@ -83,11 +83,18 @@ enum ScreenPlacement {
     }
 
     static func clamp(origin: CGPoint, size: CGSize, into screen: NSScreen) -> CGPoint {
-        let visible = screen.visibleFrame
+        clamp(origin: origin, size: size, visibleFrame: screen.visibleFrame)
+    }
+
+    static func clamp(origin: CGPoint, size: CGSize, visibleFrame visible: CGRect) -> CGPoint {
         var x = origin.x
         var y = origin.y
-        x = min(max(x, visible.minX + 6), visible.maxX - size.width - 6)
-        y = min(max(y, visible.minY + 6), visible.maxY - size.height - 6)
+        let minX = visible.minX + 6
+        let minY = visible.minY + 6
+        let maxX = max(minX, visible.maxX - size.width - 6)
+        let maxY = max(minY, visible.maxY - size.height - 6)
+        x = min(max(x, minX), maxX)
+        y = min(max(y, minY), maxY)
         return CGPoint(x: x, y: y)
     }
 }

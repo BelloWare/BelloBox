@@ -5,41 +5,6 @@ enum RegionCaptureResult: Equatable {
     case window(CaptureWindow)
 }
 
-enum RegionCaptureGeometry {
-    static let dragThreshold: CGFloat = 6
-
-    static func selectionRect(from start: CGPoint, to end: CGPoint) -> CGRect {
-        CGRect(
-            x: min(start.x, end.x),
-            y: min(start.y, end.y),
-            width: abs(start.x - end.x),
-            height: abs(start.y - end.y)
-        )
-    }
-
-    static func localFlippedPointToGlobalCocoa(_ point: CGPoint, screenFrame: CGRect) -> CGPoint {
-        CGPoint(x: screenFrame.minX + point.x, y: screenFrame.maxY - point.y)
-    }
-
-    static func localFlippedRectToGlobalCocoa(_ rect: CGRect, screenFrame: CGRect) -> CGRect {
-        CGRect(
-            x: screenFrame.minX + rect.minX,
-            y: screenFrame.maxY - rect.maxY,
-            width: rect.width,
-            height: rect.height
-        ).standardized
-    }
-
-    static func globalCocoaRectToLocalFlipped(_ rect: CGRect, screenFrame: CGRect) -> CGRect {
-        CGRect(
-            x: rect.minX - screenFrame.minX,
-            y: screenFrame.maxY - rect.maxY,
-            width: rect.width,
-            height: rect.height
-        ).standardized
-    }
-}
-
 @MainActor
 final class RegionCaptureOverlayController {
     private var windows: [RegionOverlayWindow] = []
@@ -48,8 +13,11 @@ final class RegionCaptureOverlayController {
     private var hasFinished = false
 
     deinit {
-        if let keyMonitor {
-            NSEvent.removeMonitor(keyMonitor)
+        // SelectionOverlayController owns and releases this UI controller on the main actor.
+        // Deinit cannot call an actor-isolated method directly, but teardown must still
+        // order out screen-level panels if a controller is replaced unexpectedly.
+        MainActor.assumeIsolated {
+            cancel()
         }
     }
 
@@ -58,12 +26,13 @@ final class RegionCaptureOverlayController {
         self.completion = completion
         hasFinished = false
         installKeyMonitor()
-        let capturableWindows = RegionWindowCatalog.currentWindows()
+        let capturableWindows = CaptureWindowCatalog.currentWindows()
+        AppActivation.bringAppForward()
         for screen in NSScreen.screens {
             let window = RegionOverlayWindow(screen: screen)
             window.onEscape = { [weak self] in self?.finish(.failure(.userCancelled)) }
             let view = RegionOverlayView(screen: screen, windows: capturableWindows)
-            view.onComplete = { [weak self] result in self?.finish(result, screen: screen) }
+            view.onComplete = { [weak self] result in self?.finish(result) }
             view.onCancel = { [weak self] in self?.finish(.failure(.userCancelled)) }
             window.contentView = view
             window.makeKeyAndOrderFront(nil)
@@ -89,10 +58,12 @@ final class RegionCaptureOverlayController {
         }
     }
 
-    private func finish(_ result: RegionCaptureResult, screen: NSScreen) {
+    private func finish(_ result: RegionCaptureResult) {
         switch result {
         case let .area(area):
-            guard area.cocoaRect.width >= 8, area.cocoaRect.height >= 8 else {
+            guard area.cocoaRect.width >= RegionCaptureGeometry.minimumAreaSize,
+                  area.cocoaRect.height >= RegionCaptureGeometry.minimumAreaSize
+            else {
                 finish(.failure(.userCancelled))
                 return
             }
@@ -202,20 +173,28 @@ private final class RegionOverlayView: NSView {
 
     override func mouseUp(with event: NSEvent) {
         currentPoint = localPoint(for: event)
-        guard let startPoint, let currentPoint else {
-            onCancel?()
-            return
-        }
-        let localRect = RegionCaptureGeometry.selectionRect(from: startPoint, to: currentPoint)
-        if localRect.width < RegionCaptureGeometry.dragThreshold,
-           localRect.height < RegionCaptureGeometry.dragThreshold,
-           let hoveredWindow {
-            onComplete?(.window(hoveredWindow))
+        let endPoint = currentPoint ?? localPoint(for: event)
+        guard let displayID = ScreenCoordinateSpace.displayID(for: screen),
+              let selection = CaptureSelectionResolver.resolve(
+                startLocal: startPoint,
+                endLocal: endPoint,
+                hoveredWindow: hoveredWindow,
+                screenFrame: screen.frame,
+                displayID: displayID
+              )
+        else {
+            resetInteraction(at: endPoint)
             return
         }
 
-        let cocoa = RegionCaptureGeometry.localFlippedRectToGlobalCocoa(localRect, screenFrame: screen.frame)
-        onComplete?(.area(CaptureArea(cocoaRect: cocoa, displayID: ScreenCoordinateSpace.displayID(for: screen))))
+        switch selection {
+        case let .area(area):
+            onComplete?(.area(area))
+        case let .window(window):
+            onComplete?(.window(window))
+        case .display:
+            resetInteraction(at: endPoint)
+        }
     }
 
     override func draw(_ dirtyRect: NSRect) {
@@ -247,7 +226,7 @@ private final class RegionOverlayView: NSView {
 
     private var selectionRect: CGRect? {
         guard let startPoint, let currentPoint else { return nil }
-        return RegionCaptureGeometry.selectionRect(from: startPoint, to: currentPoint)
+        return RegionCaptureGeometry.clampedSelectionRect(from: startPoint, to: currentPoint, bounds: bounds)
     }
 
     private var activeRect: CGRect? {
@@ -273,38 +252,12 @@ private final class RegionOverlayView: NSView {
         }
         needsDisplay = true
     }
-}
 
-private enum RegionWindowCatalog {
-    static func currentWindows() -> [CaptureWindow] {
-        let ownPID = ProcessInfo.processInfo.processIdentifier
-        guard let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else {
-            return []
-        }
-
-        return info.compactMap { entry in
-            guard
-                let windowNumber = entry[kCGWindowNumber as String] as? NSNumber,
-                let ownerPID = entry[kCGWindowOwnerPID as String] as? NSNumber,
-                ownerPID.int32Value != ownPID,
-                let layer = entry[kCGWindowLayer as String] as? NSNumber,
-                layer.intValue == 0,
-                let alpha = entry[kCGWindowAlpha as String] as? NSNumber,
-                alpha.doubleValue > 0.01,
-                let boundsDictionary = entry[kCGWindowBounds as String] as? [String: Any],
-                let bounds = CGRect(dictionaryRepresentation: boundsDictionary as CFDictionary),
-                bounds.width > 20,
-                bounds.height > 20
-            else { return nil }
-
-            return CaptureWindow(
-                windowID: windowNumber.uint32Value,
-                title: entry[kCGWindowName as String] as? String,
-                ownerName: entry[kCGWindowOwnerName as String] as? String,
-                ownerBundleID: nil,
-                ownerProcessID: ownerPID.int32Value,
-                frame: ScreenCoordinateSpace.cgWindowBoundsToCocoaRect(bounds)
-            )
-        }
+    private func resetInteraction(at point: CGPoint) {
+        startPoint = nil
+        currentPoint = nil
+        hoveredWindow = nil
+        updateHover(at: point)
+        needsDisplay = true
     }
 }

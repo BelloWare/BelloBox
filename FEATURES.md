@@ -1,10 +1,10 @@
-# BelloBox — Features
+# Bello Box — Features
 
-BelloBox is a macOS menu-bar **toolbox for the text you have selected**. Select
+Bello Box is a macOS menu-bar **toolbox for the text you have selected**. Select
 text in any app and a small floating toolbar appears next to it; each button is a
 tool. Results can be copied or pasted straight back in place.
 
-This document lists what BelloBox can do and how you interact with each feature.
+This document lists what Bello Box can do and how you interact with each feature.
 
 ---
 
@@ -40,7 +40,7 @@ Ask a configurable AI to act on the selected text. The answer **streams in live*
 - Explain
 - Translate to English
 
-**Custom instruction:** type anything into the "Ask BelloBox to…" field
+**Custom instruction:** type anything into the "Ask Bello Box to…" field
 (e.g. "make this a bullet list", "rephrase as a friendly reply") and run it.
 
 **After a result:**
@@ -48,13 +48,13 @@ Ask a configurable AI to act on the selected text. The answer **streams in live*
 - **Replace** your original selection with it (⌘↩).
 
 **Bring your own AI** (set up once in Settings or onboarding):
-- **API format:** OpenAI-compatible, Anthropic-compatible, or the local **Codex CLI**.
+- **API format:** OpenAI-compatible, Anthropic-compatible, or the local **Codex app-server**.
 - **Endpoint:** any base URL — works with OpenAI, Anthropic, OpenRouter, Groq,
   together.ai, and local servers like Ollama or LM Studio.
-- **Codex CLI:** runs your local `codex` via your login shell (so it matches your
-  terminal — same codex, same config) with your existing Codex login. No API key
-  and no path to set; an optional command field is there if you need a specific
-  binary.
+- **Codex app-server:** runs your local `codex app-server` via your login shell
+  with your existing Codex login. Bello Box passes model, reasoning effort,
+  sandbox, and approval policy per request; an optional command field is there
+  if you need a specific binary.
 - **Load models:** fetch the available models from the endpoint and pick one
   (Codex offers preset models).
 - **Model** and **API key** (the key is stored in your macOS Keychain).
@@ -110,9 +110,9 @@ highlights, text labels, crop, blur/redaction, undo/redo, OCR, copy image, and
 save PNG.
 
 **Capture modes:**
-- **Area** — drag a screen region.
-- **Window** — choose a capturable app window.
-- **Screen** — capture the display under the mouse.
+- **Area** — drag a screen region; tiny pointer jitter still behaves like a click.
+- **Window** — hover a window to highlight it, then click to capture it.
+- **Screen** — click blank space to capture the display.
 - **Scrolling** — capture repeated frames while you scroll, then compact them
   into one long screenshot by removing duplicated overlap and conservative
   sticky headers.
@@ -134,7 +134,7 @@ also show line boxes over the image without baking those boxes into the export.
 
 ## Home window
 
-Opening BelloBox (from Finder or Launchpad, or **Open BelloBox** in the menu)
+Opening Bello Box (from Finder or Launchpad, or **Open Bello Box** in the menu)
 shows a home window with:
 
 - The app version and a one-line description.
@@ -143,41 +143,42 @@ shows a home window with:
 - A short how-to.
 - Buttons for **Settings**, the **Setup Guide**, and **Check for Updates**.
 
-It opens centered, and re-opening the app brings it back (handy, since a menu-bar
-app has nothing in the Dock).
+It opens centered, and re-opening the app brings it back. The app uses a regular
+Dock icon whenever the main app is running.
 
 ## Appearance / Themes
 
 - Choose **System**, **Light**, or **Dark** in **Settings → Appearance**.
-- "System" follows your macOS setting; Light/Dark force BelloBox either way.
+- "System" follows your macOS setting; Light/Dark force Bello Box either way.
 
 ## Onboarding
 
-- On first launch a short guide walks you through what BelloBox does, granting
-  Accessibility, and connecting your AI provider (load the model list and run a
-  "say hi" test to confirm it works).
+- On first launch a short guide walks you through what Bello Box does, granting
+  Accessibility and Screen Recording, launch-at-login, auto hint behavior,
+  global shortcuts for the tool board, screenshots, and recordings, and
+  connecting your AI provider.
 - You can **Skip** the setup and configure it later.
-- Reopen it anytime from the menu bar → **Set Up BelloBox…**.
+- Reopen it anytime from the menu bar → **Set Up Bello Box…**.
 
 ## Menu bar
 
 The ✨ menu-bar icon gives you:
-- **Open BelloBox** (the home window)
-- **Ask BelloBox About Selection**, **Capture Screenshot…**,
+- **Open Bello Box** (the home window)
+- **Ask Bello Box About Selection**, **Capture Screenshot…**,
   **Capture Scrolling Screenshot…**, **Generate QR Code from Selection**,
   and **Text Tools on Selection**
-- **Set Up BelloBox…**, **Settings…**
+- **Set Up Bello Box…**, **Settings…**
 - **Check for Updates…**
 - **Quit**
 
 ## Updates
 
-BelloBox updates itself via [Sparkle](https://sparkle-project.org). Use
+Bello Box updates itself via [Sparkle](https://sparkle-project.org). Use
 **Check for Updates…**, or let automatic checks handle it.
 
 ## Permissions & privacy
 
-- BelloBox needs **Accessibility** access to read the selected text and to paste
+- Bello Box needs **Accessibility** access to read the selected text and to paste
   replacements. It only reads the selection when you ask it to.
 - Screenshot capture needs **Screen Recording** permission. Capture, annotation,
   scrolling stitch, and Mac OCR stay on your Mac.

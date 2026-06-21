@@ -6,6 +6,8 @@ import UniformTypeIdentifiers
 @MainActor
 final class QRCodePopupViewModel: ObservableObject {
     @Published var text: String
+    @Published var statusMessage: String?
+    @Published var errorMessage: String?
 
     var onClose: () -> Void = {}
 
@@ -19,21 +21,40 @@ final class QRCodePopupViewModel: ObservableObject {
     var isTooLong: Bool { byteCount > QRCodeGenerator.maxByteCount }
 
     func copyImage() {
-        guard let image else { return }
+        statusMessage = nil
+        errorMessage = nil
+        guard let image else {
+            errorMessage = "There is no QR image to copy."
+            return
+        }
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.writeObjects([image])
+        if pasteboard.writeObjects([image]) {
+            statusMessage = "Copied QR image."
+        } else {
+            errorMessage = "Could not copy the QR image."
+        }
     }
 
     func save() {
-        guard let data = QRCodeGenerator.pngData(for: text) else { return }
+        statusMessage = nil
+        errorMessage = nil
+        guard let data = QRCodeGenerator.pngData(for: text) else {
+            errorMessage = "There is no QR image to save."
+            return
+        }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.png]
         panel.nameFieldStringValue = "qr-code.png"
         panel.canCreateDirectories = true
         panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
-            try? data.write(to: url)
+            do {
+                try data.write(to: url, options: .atomic)
+                Task { @MainActor in self.statusMessage = "Saved to \(url.lastPathComponent)." }
+            } catch {
+                Task { @MainActor in self.errorMessage = "Could not save QR image: \(error.localizedDescription)" }
+            }
         }
     }
 
@@ -53,6 +74,7 @@ struct QRCodePopupView: View {
             header
             qrArea
             editor
+            messageArea
             footer
         }
         .padding(16)
@@ -104,6 +126,21 @@ struct QRCodePopupView: View {
                 .scrollContentBackground(.hidden)
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 9).fill(.primary.opacity(0.05)))
+        }
+    }
+
+    @ViewBuilder
+    private var messageArea: some View {
+        if let error = viewModel.errorMessage {
+            Label(error, systemImage: "exclamationmark.triangle.fill")
+                .font(.caption)
+                .foregroundStyle(.orange)
+                .textSelection(.enabled)
+        } else if let status = viewModel.statusMessage {
+            Label(status, systemImage: "checkmark.circle.fill")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
         }
     }
 

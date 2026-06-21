@@ -9,23 +9,56 @@ final class WindowCapturePickerViewModel: ObservableObject {
     var onSelect: (CaptureWindow) -> Void = { _ in }
     var onCancel: () -> Void = {}
 
-    private let service: ScreenCaptureService
+    private let service: CapturableWindowProviding
+    private var loadTask: Task<Void, Never>?
 
-    init(service: ScreenCaptureService) {
+    init(service: CapturableWindowProviding) {
         self.service = service
     }
 
+    deinit {
+        loadTask?.cancel()
+    }
+
     func load() {
+        loadTask?.cancel()
         isLoading = true
         errorMessage = nil
-        Task {
+        loadTask = Task { [weak self, service] in
             do {
-                windows = try await service.capturableWindows()
-                if windows.isEmpty { errorMessage = "No capturable windows found." }
+                let windows = try await service.capturableWindows()
+                guard !Task.isCancelled else { return }
+                self?.completeLoad(.success(windows))
+            } catch is CancellationError {
+                return
             } catch {
-                errorMessage = error.localizedDescription
+                guard !Task.isCancelled else { return }
+                self?.completeLoad(.failure(error))
             }
-            isLoading = false
+        }
+    }
+
+    func cancel() {
+        cancelLoad()
+        onCancel()
+    }
+
+    func cancelLoad() {
+        loadTask?.cancel()
+        loadTask = nil
+        isLoading = false
+    }
+
+    private func completeLoad(_ result: Result<[CaptureWindow], Error>) {
+        guard loadTask != nil else { return }
+        loadTask = nil
+        isLoading = false
+        switch result {
+        case let .success(windows):
+            self.windows = windows
+            if windows.isEmpty { errorMessage = "No capturable windows found." }
+        case let .failure(error):
+            errorMessage = error.localizedDescription
         }
     }
 }
@@ -41,7 +74,7 @@ struct WindowCapturePickerView: View {
                 icon: "macwindow",
                 title: "Choose Window",
                 subtitle: "Capture a visible window",
-                onClose: viewModel.onCancel
+                onClose: viewModel.cancel
             )
 
             if viewModel.isLoading {
@@ -84,4 +117,3 @@ struct WindowCapturePickerView: View {
         .onAppear { viewModel.load() }
     }
 }
-

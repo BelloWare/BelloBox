@@ -2,18 +2,42 @@ import AppKit
 import Combine
 import Foundation
 
+protocol RecordingEngineControlling: AnyObject {
+    var onFailure: ((Error) -> Void)? { get set }
+    var onSecureFieldHiddenChange: ((Bool) -> Void)? { get set }
+
+    func start() async throws -> RecordingRuntimeState
+    func setPaused(_ paused: Bool)
+    func stop() async throws -> URL
+    func cancel()
+}
+
+extension RecordingEngine: RecordingEngineControlling {}
+
 @MainActor
 final class RecordingCoordinator: ObservableObject {
     @Published private(set) var state: RecordingState = .idle
 
     private let settings: AppSettings
-    private var activeEngine: RecordingEngine?
+    private let makeEngine: (RecordingTarget, RecordingOptions) -> any RecordingEngineControlling
+    private let permissionProvider: (RecordingOptions) -> RecordingPermissionState
+    private var activeEngine: (any RecordingEngineControlling)?
+    private var finishTask: Task<Void, Never>?
     private var startToken = UUID()
+    private var latestSecureFieldHidden = false
 
     var onStateChange: ((RecordingState) -> Void)?
 
-    init(settings: AppSettings) {
+    init(
+        settings: AppSettings,
+        makeEngine: @escaping (RecordingTarget, RecordingOptions) -> any RecordingEngineControlling = {
+            RecordingEngine(target: $0, options: $1)
+        },
+        permissionProvider: @escaping (RecordingOptions) -> RecordingPermissionState = RecordingPermissionState.current(options:)
+    ) {
         self.settings = settings
+        self.makeEngine = makeEngine
+        self.permissionProvider = permissionProvider
     }
 
     var isRecording: Bool {
@@ -30,15 +54,18 @@ final class RecordingCoordinator: ObservableObject {
     }
 
     func permissionState(options: RecordingOptions) -> RecordingPermissionState {
-        RecordingPermissionState.current(options: options)
+        permissionProvider(options)
     }
 
     func start(target: RecordingTarget, options: RecordingOptions) async {
         let token = UUID()
         startToken = token
+        latestSecureFieldHidden = false
+        finishTask?.cancel()
+        finishTask = nil
         activeEngine?.cancel()
         activeEngine = nil
-        let permissionState = RecordingPermissionState.current(options: options)
+        let permissionState = permissionProvider(options)
         guard permissionState.canRecordVideo else {
             setState(.failed("Screen Recording permission is required to record video."))
             return
@@ -54,24 +81,33 @@ final class RecordingCoordinator: ObservableObject {
         }
         guard startToken == token else { return }
 
-        let engine = RecordingEngine(target: target, options: options)
+        let engine = makeEngine(target, options)
         engine.onFailure = { [weak self] error in
             Task { @MainActor in
-                self?.activeEngine?.cancel()
-                self?.activeEngine = nil
-                self?.setState(.failed(error.localizedDescription))
+                guard let self, self.startToken == token else { return }
+                self.activeEngine?.cancel()
+                self.activeEngine = nil
+                self.setState(.failed(error.localizedDescription))
+            }
+        }
+        engine.onSecureFieldHiddenChange = { [weak self] hidden in
+            Task { @MainActor in
+                guard let self, self.startToken == token else { return }
+                self.updateSecureFieldHidden(hidden)
             }
         }
         activeEngine = engine
 
         do {
-            let runtime = try await engine.start()
+            var runtime = try await engine.start()
             guard startToken == token else {
                 engine.cancel()
                 return
             }
+            runtime.isSecureFieldHidden = latestSecureFieldHidden
             setState(.recording(runtime))
         } catch {
+            guard startToken == token else { return }
             engine.cancel()
             activeEngine = nil
             setState(.failed(error.localizedDescription))
@@ -93,19 +129,31 @@ final class RecordingCoordinator: ObservableObject {
     }
 
     func stop() {
-        startToken = UUID()
+        if case .finishing = state { return }
+        let token = UUID()
+        startToken = token
         guard let engine = activeEngine else {
             setState(.idle)
             return
         }
         setState(.finishing)
-        activeEngine = nil
-        Task {
+        finishTask?.cancel()
+        finishTask = Task {
             do {
                 let url = try await engine.stop()
+                guard startToken == token else { return }
+                if let activeEngine, activeEngine === engine {
+                    self.activeEngine = nil
+                }
+                finishTask = nil
                 setState(.reviewing(url))
             } catch {
+                guard startToken == token else { return }
                 engine.cancel()
+                if let activeEngine, activeEngine === engine {
+                    self.activeEngine = nil
+                }
+                finishTask = nil
                 setState(.failed(error.localizedDescription))
             }
         }
@@ -113,6 +161,9 @@ final class RecordingCoordinator: ObservableObject {
 
     func cancel() {
         startToken = UUID()
+        latestSecureFieldHidden = false
+        finishTask?.cancel()
+        finishTask = nil
         activeEngine?.cancel()
         activeEngine = nil
         setState(.idle)
@@ -121,5 +172,21 @@ final class RecordingCoordinator: ObservableObject {
     private func setState(_ newState: RecordingState) {
         state = newState
         onStateChange?(newState)
+    }
+
+    private func updateSecureFieldHidden(_ hidden: Bool) {
+        latestSecureFieldHidden = hidden
+        switch state {
+        case var .recording(runtime):
+            guard runtime.isSecureFieldHidden != hidden else { return }
+            runtime.isSecureFieldHidden = hidden
+            setState(.recording(runtime))
+        case var .paused(runtime):
+            guard runtime.isSecureFieldHidden != hidden else { return }
+            runtime.isSecureFieldHidden = hidden
+            setState(.paused(runtime))
+        default:
+            break
+        }
     }
 }

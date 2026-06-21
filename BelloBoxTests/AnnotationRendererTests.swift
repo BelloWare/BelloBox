@@ -50,6 +50,36 @@ final class AnnotationRendererTests: XCTestCase {
         XCTAssertEqual(rendered.height, 80)
     }
 
+    func testWrappedTextAnnotationRendersBeyondFirstLine() throws {
+        let text = Array(repeating: "wrapped", count: 28).joined(separator: " ")
+        let doc = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.image(width: 140, height: 220),
+            scale: 1,
+            source: .importedClipboard,
+            annotations: [
+                ScreenshotAnnotation(
+                    kind: .text(text, origin: CGPoint(x: 10, y: 8), maxWidth: 54),
+                    style: AnnotationStyle(
+                        strokeColor: CodableColor(red: 0, green: 0, blue: 0, alpha: 1),
+                        fillColor: nil,
+                        lineWidth: 1,
+                        opacity: 1,
+                        fontSize: 18
+                    )
+                )
+            ]
+        )
+
+        let rendered = try AnnotationRenderer.render(doc)
+        var changedPixels = 0
+        for y in 80..<180 {
+            for x in 10..<70 where ScreenshotTestHelpers.pixel(rendered, x: x, y: y) != ScreenshotTestHelpers.pixel(doc.baseImage, x: x, y: y) {
+                changedPixels += 1
+            }
+        }
+        XCTAssertGreaterThan(changedPixels, 0)
+    }
+
     func testRedactionChangesUnderlyingPixelsForOCRUpload() throws {
         let doc = ScreenshotDocument(
             baseImage: ScreenshotTestHelpers.stripedImage(width: 80, height: 80),

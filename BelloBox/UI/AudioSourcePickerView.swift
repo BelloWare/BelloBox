@@ -1,18 +1,4 @@
-import AVFoundation
 import SwiftUI
-
-struct RecordingMicrophoneDevice: Identifiable, Equatable {
-    let id: String
-    let name: String
-}
-
-enum RecordingMicrophoneDevices {
-    static func available() -> [RecordingMicrophoneDevice] {
-        AVCaptureDevice.devices(for: .audio)
-            .map { RecordingMicrophoneDevice(id: $0.uniqueID, name: $0.localizedName) }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-    }
-}
 
 struct AudioSourcePickerView: View {
     @Binding var audioSource: RecordingAudioSource

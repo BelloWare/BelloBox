@@ -36,6 +36,7 @@ struct SensitiveFieldInfo: Equatable {
 final class PrivacyGuard {
     private let detector: PasswordFieldDetecting
     private let options: RecordingOptions
+    private let lock = NSLock()
     private var lastSensitiveState: SensitiveInputState = .notSensitive
     private var lastSensitiveTime: CMTime?
     private let hysteresisDuration = CMTime(seconds: 0.5, preferredTimescale: 600)
@@ -46,6 +47,12 @@ final class PrivacyGuard {
     }
 
     func update(now: CMTime) -> SensitiveInputState {
+        lock.lock()
+        defer { lock.unlock() }
+        return updateLocked(now: now)
+    }
+
+    private func updateLocked(now: CMTime) -> SensitiveInputState {
         let current = detector.currentSensitiveInputState()
         if current.isSensitive {
             lastSensitiveState = current

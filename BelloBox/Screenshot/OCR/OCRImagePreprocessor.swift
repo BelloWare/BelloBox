@@ -27,15 +27,12 @@ struct PreparedOCRImage {
 
 enum OCRImagePreprocessor {
     static func prepare(document: ScreenshotDocument, options: OCROptions, forExternalUpload: Bool) throws -> PreparedOCRImage {
+        let cropRect = effectiveCropRect(for: document, target: options.target)
         let image = try AnnotationRenderer.renderForOCR(
             document,
             target: options.target,
             includeDecorativeAnnotations: false
         )
-        let redactions = document.annotations.compactMap { annotation -> CGRect? in
-            if case let .blur(rect) = annotation.kind { return rect }
-            return nil
-        }
         var warnings: [String] = []
         var outputImage = image
 
@@ -46,6 +43,12 @@ enum OCRImagePreprocessor {
                 warnings.append("Image was downscaled before LLM OCR upload.")
             }
         }
+        let redactions = appliedRedactions(
+            from: document.annotations,
+            cropRect: cropRect,
+            renderedSize: CGSize(width: image.width, height: image.height),
+            outputSize: CGSize(width: outputImage.width, height: outputImage.height)
+        )
 
         let encoded = try ImageExportService.pngData(from: outputImage)
         let digest = sha256(encoded)
@@ -55,7 +58,7 @@ enum OCRImagePreprocessor {
             mimeType: forExternalUpload ? "image/png" : nil,
             pixelSize: CGSize(width: outputImage.width, height: outputImage.height),
             digest: digest,
-            appliedCrop: cropRect(for: document, target: options.target),
+            appliedCrop: cropRect == fullImageRect(for: document) ? nil : cropRect,
             appliedRedactions: redactions,
             warnings: warnings
         )
@@ -65,15 +68,53 @@ enum OCRImagePreprocessor {
         SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 
-    private static func cropRect(for document: ScreenshotDocument, target: OCRTarget) -> CGRect? {
+    private static func effectiveCropRect(for document: ScreenshotDocument, target: OCRTarget) -> CGRect {
+        let full = fullImageRect(for: document)
         switch target {
         case .fullImage:
-            return document.cropRect
+            return (document.cropRect ?? full).intersection(full).integral
         case let .crop(rect):
-            return rect.rect
+            return rect.rect.intersection(full).integral
         case let .visibleAfterRedactions(crop):
-            return crop?.rect ?? document.cropRect
+            return (crop?.rect ?? document.cropRect ?? full).intersection(full).integral
         }
+    }
+
+    private static func fullImageRect(for document: ScreenshotDocument) -> CGRect {
+        CGRect(origin: .zero, size: document.imageSize).integral
+    }
+
+    private static func appliedRedactions(
+        from annotations: [ScreenshotAnnotation],
+        cropRect: CGRect,
+        renderedSize: CGSize,
+        outputSize: CGSize
+    ) -> [CGRect] {
+        // The redaction pixels are enforced by AnnotationRenderer; these rects
+        // report the same regions in the final prepared image coordinate space.
+        annotations.compactMap { annotation -> CGRect? in
+            guard case let .blur(rect) = annotation.kind else { return nil }
+            let clipped = rect.intersection(cropRect)
+            guard clipped.width > 0, clipped.height > 0 else { return nil }
+            let shifted = clipped.offsetBy(dx: -cropRect.minX, dy: -cropRect.minY)
+            return scaledPixelRect(shifted, from: renderedSize, to: outputSize)
+        }
+    }
+
+    private static func scaledPixelRect(_ rect: CGRect, from sourceSize: CGSize, to outputSize: CGSize) -> CGRect {
+        guard sourceSize.width > 0, sourceSize.height > 0 else { return .zero }
+        let scaleX = outputSize.width / sourceSize.width
+        let scaleY = outputSize.height / sourceSize.height
+        let minX = floor(rect.minX * scaleX)
+        let minY = floor(rect.minY * scaleY)
+        let maxX = ceil(rect.maxX * scaleX)
+        let maxY = ceil(rect.maxY * scaleY)
+        return CGRect(
+            x: minX,
+            y: minY,
+            width: max(0, min(outputSize.width, maxX) - max(0, minX)),
+            height: max(0, min(outputSize.height, maxY) - max(0, minY))
+        )
     }
 
     private static func downscale(_ image: CGImage, maxLongEdge: Int) throws -> CGImage {
@@ -99,4 +140,3 @@ enum OCRImagePreprocessor {
         return scaled
     }
 }
-

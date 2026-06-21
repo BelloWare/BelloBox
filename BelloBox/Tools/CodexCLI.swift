@@ -9,6 +9,10 @@ enum CodexCLI {
     static let presetModels = [defaultModel, "gpt-5-codex", "gpt-5", "o4-mini", "o3", "gpt-4.1"]
     static let defaultReasoningEffort = "medium"
     static let reasoningEfforts = ["low", "medium", "high", "xhigh"]
+    static let defaultApprovalPolicy = CodexApprovalPolicy.never
+    static let approvalPolicies = CodexApprovalPolicy.allCases
+    static let defaultSandboxMode = CodexSandboxMode.readOnly
+    static let sandboxModes = CodexSandboxMode.allCases
 
     static func candidatePaths() -> [String] {
         let home = FileManager.default.homeDirectoryForCurrentUser.path

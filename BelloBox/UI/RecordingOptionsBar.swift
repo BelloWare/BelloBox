@@ -37,50 +37,50 @@ struct RecordingOptionsBar: View {
                 .help("Cancel")
             }
 
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 8) {
-                    AudioSourcePickerView(
-                        audioSource: $options.audioSource,
-                        microphoneDeviceID: $options.microphoneDeviceID
-                    )
-                    Toggle("Cursor", isOn: $options.includeCursor)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: 12) {
+                    audioColumn.frame(width: 220, alignment: .leading)
+                    inputColumn.frame(width: 190, alignment: .leading)
+                    qualityColumn.frame(width: 220, alignment: .leading)
                 }
-                .frame(width: 220, alignment: .leading)
 
+                VStack(alignment: .leading, spacing: 12) {
+                    audioColumn
+                    Divider()
+                    inputColumn
+                    Divider()
+                    qualityColumn
+                }
+            }
+
+            DisclosureGroup(privacyDisclosureTitle, isExpanded: $showAdvanced) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Toggle("Clicks", isOn: Binding(
-                        get: { options.clickOverlayMode != .off },
-                        set: { options.clickOverlayMode = $0 ? .ringsAndLabels : .off }
-                    ))
-                    Picker("Keys", selection: $options.keystrokeMode) {
-                        ForEach(KeystrokeCaptureMode.allCases) { mode in
+                    Picker("Redaction", selection: $options.secureFieldRedactionMode) {
+                        ForEach(SecureFieldRedactionMode.allCases) { mode in
                             Text(mode.label).tag(mode)
                         }
                     }
-                    .frame(width: 190)
-                }
+                    .frame(width: 260)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Picker("Quality", selection: $options.quality) {
-                        ForEach(RecordingQualityPreset.allCases) { preset in
-                            Text(preset.label).tag(preset)
+                    if let warning = secureFieldRedactionWarning {
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "lock.slash")
+                                .foregroundStyle(.orange)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(warning)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Button("Open Accessibility Settings") {
+                                    AccessibilityService.openAccessibilitySettings()
+                                }
+                                .buttonStyle(.link)
+                            }
                         }
-                    }
-                    .pickerStyle(.segmented)
-                    Stepper(value: $options.countdownSeconds, in: 0...10) {
-                        Text("Countdown \(options.countdownSeconds)s")
-                    }
-                }
-                .frame(width: 220)
-            }
-
-            DisclosureGroup("Privacy: secure fields are hidden", isExpanded: $showAdvanced) {
-                Picker("Redaction", selection: $options.secureFieldRedactionMode) {
-                    ForEach(SecureFieldRedactionMode.allCases) { mode in
-                        Text(mode.label).tag(mode)
+                        .padding(8)
+                        .frame(maxWidth: 360, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.orange.opacity(0.10)))
                     }
                 }
-                .frame(width: 260)
             }
             .font(.caption)
 
@@ -95,10 +95,58 @@ struct RecordingOptionsBar: View {
             }
         }
         .padding(14)
-        .frame(width: 760)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.regularMaterial))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.white.opacity(0.14), lineWidth: 1))
         .shadow(color: .black.opacity(0.28), radius: 16, y: 8)
+    }
+
+    private var audioColumn: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            AudioSourcePickerView(
+                audioSource: $options.audioSource,
+                microphoneDeviceID: $options.microphoneDeviceID
+            )
+            Toggle("Cursor", isOn: $options.includeCursor)
+        }
+    }
+
+    private var inputColumn: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Toggle("Clicks", isOn: Binding(
+                get: { options.clickOverlayMode != .off },
+                set: { options.clickOverlayMode = $0 ? .ringsAndLabels : .off }
+            ))
+            Picker("Keys", selection: $options.keystrokeMode) {
+                ForEach(KeystrokeCaptureMode.allCases) { mode in
+                    Text(mode.label).tag(mode)
+                }
+            }
+        }
+    }
+
+    private var qualityColumn: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Picker("Quality", selection: $options.quality) {
+                ForEach(RecordingQualityPreset.allCases) { preset in
+                    Text(preset.label).tag(preset)
+                }
+            }
+            .pickerStyle(.segmented)
+            Stepper(value: $options.countdownSeconds, in: 0...10) {
+                Text("Countdown \(options.countdownSeconds)s")
+            }
+        }
+    }
+
+    private var secureFieldRedactionWarning: String? {
+        RecordingPrivacyNotice.secureFieldRedactionWarning(accessibilityTrusted: AccessibilityService.isTrusted)
+    }
+
+    private var privacyDisclosureTitle: String {
+        secureFieldRedactionWarning == nil
+            ? "Privacy: secure fields are hidden"
+            : "Privacy: secure-field hiding needs Accessibility"
     }
 
     private func persistDefaults() {

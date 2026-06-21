@@ -14,6 +14,16 @@ struct CaptureOptions: Equatable {
 }
 
 @MainActor
+protocol ScreenshotCapturing {
+    func capture(_ target: CaptureTarget, options: CaptureOptions) async throws -> ScreenshotDocument
+}
+
+@MainActor
+protocol CapturableWindowProviding {
+    func capturableWindows() async throws -> [CaptureWindow]
+}
+
+@MainActor
 final class ScreenCaptureService {
     enum CaptureError: LocalizedError, Equatable {
         case permissionDenied
@@ -55,7 +65,7 @@ final class ScreenCaptureService {
             }
         }
         if options.delayAfterHidingOverlays > 0 {
-            try? await Task.sleep(nanoseconds: UInt64(options.delayAfterHidingOverlays * 1_000_000_000))
+            try await Task.sleep(nanoseconds: UInt64(options.delayAfterHidingOverlays * 1_000_000_000))
         }
 
         var snapshots: [DisplaySnapshot] = []
@@ -111,7 +121,7 @@ final class ScreenCaptureService {
             }
         }
         if options.delayAfterHidingOverlays > 0 {
-            try? await Task.sleep(nanoseconds: UInt64(options.delayAfterHidingOverlays * 1_000_000_000))
+            try await Task.sleep(nanoseconds: UInt64(options.delayAfterHidingOverlays * 1_000_000_000))
         }
 
         switch target {
@@ -228,6 +238,12 @@ final class ScreenCaptureService {
             }
             return try await ScreenCaptureFrameGrabber().capture(filter: filter, configuration: configuration)
         } catch {
+            if error is CancellationError {
+                throw error
+            }
+            if let captureError = error as? CaptureError {
+                throw captureError
+            }
             throw CaptureError.captureFailed(error.localizedDescription)
         }
     }
@@ -267,3 +283,5 @@ final class ScreenCaptureService {
         return CGFloat(image.width) / frame.width
     }
 }
+
+extension ScreenCaptureService: ScreenshotCapturing, CapturableWindowProviding {}

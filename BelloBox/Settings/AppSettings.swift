@@ -1,6 +1,6 @@
-import Foundation
-import Combine
 import AppKit
+import Combine
+import Foundation
 
 enum AppearancePreference: String, CaseIterable, Identifiable {
     case system
@@ -15,6 +15,7 @@ enum AppearancePreference: String, CaseIterable, Identifiable {
         case .dark: return "Dark"
         }
     }
+
     var symbol: String {
         switch self {
         case .system: return "circle.lefthalf.filled"
@@ -76,6 +77,8 @@ final class AppSettings: ObservableObject {
         static let codexPath = "codexPath"
         static let codexModel = "codexModel"
         static let codexReasoningEffort = "codexReasoningEffort"
+        static let codexApprovalPolicy = "codexApprovalPolicy"
+        static let codexSandboxMode = "codexSandboxMode"
         static let screenshotIncludeCursor = "screenshotIncludeCursor"
         static let screenshotAutoCopy = "screenshotAutoCopy"
         static let screenshotDefaultMode = "screenshotDefaultMode"
@@ -120,7 +123,14 @@ final class AppSettings: ObservableObject {
     @Published var anthropicModel: String { didSet { defaults.set(anthropicModel, forKey: Keys.anthropicModel) } }
     @Published var systemPrompt: String { didSet { defaults.set(systemPrompt, forKey: Keys.systemPrompt) } }
     @Published var temperatureMode: TemperatureMode { didSet { defaults.set(temperatureMode.rawValue, forKey: Keys.temperatureMode) } }
-    @Published var temperature: Double { didSet { defaults.set(Self.normalizedTemperature(temperature), forKey: Keys.temperature) } }
+    @Published var temperature: Double {
+        didSet {
+            let normalized = Self.normalizedTemperature(temperature)
+            if temperature != normalized { temperature = normalized }
+            defaults.set(normalized, forKey: Keys.temperature)
+        }
+    }
+
     @Published var floatingButtonEnabled: Bool { didSet { defaults.set(floatingButtonEnabled, forKey: Keys.floatingButtonEnabled) } }
     @Published var globalHotkeyEnabled: Bool { didSet { defaults.set(globalHotkeyEnabled, forKey: Keys.globalHotkeyEnabled) } }
     @Published var globalHotkeyKeyCode: Int { didSet { defaults.set(globalHotkeyKeyCode, forKey: Keys.globalHotkeyKeyCode) } }
@@ -136,16 +146,32 @@ final class AppSettings: ObservableObject {
     @Published var codexPath: String { didSet { defaults.set(codexPath, forKey: Keys.codexPath) } }
     @Published var codexModel: String { didSet { defaults.set(codexModel, forKey: Keys.codexModel) } }
     @Published var codexReasoningEffort: String { didSet { defaults.set(codexReasoningEffort, forKey: Keys.codexReasoningEffort) } }
+    @Published var codexApprovalPolicy: CodexApprovalPolicy { didSet { defaults.set(codexApprovalPolicy.rawValue, forKey: Keys.codexApprovalPolicy) } }
+    @Published var codexSandboxMode: CodexSandboxMode { didSet { defaults.set(codexSandboxMode.rawValue, forKey: Keys.codexSandboxMode) } }
     @Published var screenshotIncludeCursor: Bool { didSet { defaults.set(screenshotIncludeCursor, forKey: Keys.screenshotIncludeCursor) } }
     @Published var screenshotAutoCopy: Bool { didSet { defaults.set(screenshotAutoCopy, forKey: Keys.screenshotAutoCopy) } }
     @Published var screenshotDefaultMode: ScreenshotDefaultMode { didSet { defaults.set(screenshotDefaultMode.rawValue, forKey: Keys.screenshotDefaultMode) } }
-    @Published var scrollingScreenshotMaxFrames: Int { didSet { defaults.set(scrollingScreenshotMaxFrames, forKey: Keys.scrollingScreenshotMaxFrames) } }
+    @Published var scrollingScreenshotMaxFrames: Int {
+        didSet {
+            let normalized = Self.normalizedScrollingMaxFrames(scrollingScreenshotMaxFrames)
+            if scrollingScreenshotMaxFrames != normalized { scrollingScreenshotMaxFrames = normalized }
+            defaults.set(normalized, forKey: Keys.scrollingScreenshotMaxFrames)
+        }
+    }
+
     @Published var scrollingScreenshotAutoCompact: Bool { didSet { defaults.set(scrollingScreenshotAutoCompact, forKey: Keys.scrollingScreenshotAutoCompact) } }
     @Published var ocrRecognitionLevel: OCRRecognitionLevel { didSet { defaults.set(ocrRecognitionLevel.rawValue, forKey: Keys.ocrRecognitionLevel) } }
     @Published var ocrLanguageHints: [String] { didSet { defaults.set(ocrLanguageHints, forKey: Keys.ocrLanguageHints) } }
     @Published var ocrUseLanguageCorrection: Bool { didSet { defaults.set(ocrUseLanguageCorrection, forKey: Keys.ocrUseLanguageCorrection) } }
     @Published var ocrShowTextRegions: Bool { didSet { defaults.set(ocrShowTextRegions, forKey: Keys.ocrShowTextRegions) } }
-    @Published var llmOCRMaxUploadLongEdge: Int { didSet { defaults.set(llmOCRMaxUploadLongEdge, forKey: Keys.llmOCRMaxUploadLongEdge) } }
+    @Published var llmOCRMaxUploadLongEdge: Int {
+        didSet {
+            let normalized = Self.normalizedLLMOCRMaxUploadLongEdge(llmOCRMaxUploadLongEdge)
+            if llmOCRMaxUploadLongEdge != normalized { llmOCRMaxUploadLongEdge = normalized }
+            defaults.set(normalized, forKey: Keys.llmOCRMaxUploadLongEdge)
+        }
+    }
+
     @Published var llmOCRIncludeLocalOCRHint: Bool { didSet { defaults.set(llmOCRIncludeLocalOCRHint, forKey: Keys.llmOCRIncludeLocalOCRHint) } }
     @Published var recordingIncludeCursor: Bool { didSet { defaults.set(recordingIncludeCursor, forKey: Keys.recordingIncludeCursor) } }
     @Published var recordingAudioSourceRawValue: String { didSet { defaults.set(recordingAudioSourceRawValue, forKey: Keys.recordingAudioSource) } }
@@ -153,8 +179,16 @@ final class AppSettings: ObservableObject {
     @Published var recordingKeystrokeModeRawValue: String { didSet { defaults.set(recordingKeystrokeModeRawValue, forKey: Keys.recordingKeystrokeMode) } }
     @Published var recordingSecureFieldRedactionModeRawValue: String { didSet { defaults.set(recordingSecureFieldRedactionModeRawValue, forKey: Keys.recordingSecureFieldRedactionMode) } }
     @Published var recordingQualityPresetRawValue: String { didSet { defaults.set(recordingQualityPresetRawValue, forKey: Keys.recordingQualityPreset) } }
-    @Published var recordingCountdownSeconds: Int { didSet { defaults.set(Self.normalizedCountdown(recordingCountdownSeconds), forKey: Keys.recordingCountdownSeconds) } }
+    @Published var recordingCountdownSeconds: Int {
+        didSet {
+            let normalized = Self.normalizedCountdown(recordingCountdownSeconds)
+            if recordingCountdownSeconds != normalized { recordingCountdownSeconds = normalized }
+            defaults.set(normalized, forKey: Keys.recordingCountdownSeconds)
+        }
+    }
+
     @Published var recordingLastMicrophoneDeviceID: String? { didSet { defaults.set(recordingLastMicrophoneDeviceID, forKey: Keys.recordingLastMicrophoneDeviceID) } }
+    @Published var activeShortcutRecorderID: UUID?
 
     /// API key for the currently-selected provider. Persisted to the Keychain.
     @Published var apiKey: String {
@@ -217,16 +251,18 @@ final class AppSettings: ObservableObject {
         codexReasoningEffort = CodexCLI.reasoningEfforts.contains(storedEffort)
             ? storedEffort
             : CodexCLI.defaultReasoningEffort
+        codexApprovalPolicy = CodexApprovalPolicy(rawValue: defaults.string(forKey: Keys.codexApprovalPolicy) ?? "") ?? CodexCLI.defaultApprovalPolicy
+        codexSandboxMode = CodexSandboxMode(rawValue: defaults.string(forKey: Keys.codexSandboxMode) ?? "") ?? CodexCLI.defaultSandboxMode
         screenshotIncludeCursor = (defaults.object(forKey: Keys.screenshotIncludeCursor) as? Bool) ?? false
         screenshotAutoCopy = (defaults.object(forKey: Keys.screenshotAutoCopy) as? Bool) ?? false
         screenshotDefaultMode = ScreenshotDefaultMode(rawValue: defaults.string(forKey: Keys.screenshotDefaultMode) ?? "") ?? .area
-        scrollingScreenshotMaxFrames = defaults.object(forKey: Keys.scrollingScreenshotMaxFrames) as? Int ?? 20
+        scrollingScreenshotMaxFrames = Self.normalizedScrollingMaxFrames(defaults.object(forKey: Keys.scrollingScreenshotMaxFrames) as? Int ?? 20)
         scrollingScreenshotAutoCompact = (defaults.object(forKey: Keys.scrollingScreenshotAutoCompact) as? Bool) ?? true
         ocrRecognitionLevel = OCRRecognitionLevel(rawValue: defaults.string(forKey: Keys.ocrRecognitionLevel) ?? "") ?? .accurate
         ocrLanguageHints = defaults.stringArray(forKey: Keys.ocrLanguageHints) ?? []
         ocrUseLanguageCorrection = (defaults.object(forKey: Keys.ocrUseLanguageCorrection) as? Bool) ?? true
         ocrShowTextRegions = (defaults.object(forKey: Keys.ocrShowTextRegions) as? Bool) ?? false
-        llmOCRMaxUploadLongEdge = defaults.object(forKey: Keys.llmOCRMaxUploadLongEdge) as? Int ?? 2200
+        llmOCRMaxUploadLongEdge = Self.normalizedLLMOCRMaxUploadLongEdge(defaults.object(forKey: Keys.llmOCRMaxUploadLongEdge) as? Int ?? OCROptions.default.maxUploadLongEdge)
         llmOCRIncludeLocalOCRHint = (defaults.object(forKey: Keys.llmOCRIncludeLocalOCRHint) as? Bool) ?? true
         recordingIncludeCursor = (defaults.object(forKey: Keys.recordingIncludeCursor) as? Bool) ?? RecordingOptions.default.includeCursor
         recordingAudioSourceRawValue = Self.normalizedRawValue(
@@ -258,6 +294,7 @@ final class AppSettings: ObservableObject {
         recordingCountdownSeconds = Self.normalizedCountdown(storedCountdown ?? RecordingOptions.default.countdownSeconds)
         recordingLastMicrophoneDeviceID = defaults.string(forKey: Keys.recordingLastMicrophoneDeviceID)
         apiKey = KeychainStore.get(account: KeychainStore.account(for: kind)) ?? ""
+        persistLoadedValues()
     }
 
     /// The resolved configuration for the active provider.
@@ -289,7 +326,9 @@ final class AppSettings: ObservableObject {
                 model: codexModel,
                 apiKey: "",
                 systemPrompt: systemPrompt,
-                codexReasoningEffort: codexReasoningEffort
+                codexReasoningEffort: codexReasoningEffort,
+                codexApprovalPolicy: codexApprovalPolicy,
+                codexSandboxMode: codexSandboxMode
             )
         }
     }
@@ -463,7 +502,7 @@ final class AppSettings: ObservableObject {
     ) -> GlobalHotkey {
         guard
             let keyCode,
-            (0...Int(UInt16.max)).contains(keyCode),
+            (0 ... Int(UInt16.max)).contains(keyCode),
             let modifiersRawValue,
             modifiersRawValue >= 0
         else { return defaultHotkey }
@@ -489,6 +528,14 @@ final class AppSettings: ObservableObject {
         min(max(value, 0), 10)
     }
 
+    private static func normalizedScrollingMaxFrames(_ value: Int) -> Int {
+        min(max(value, 2), 60)
+    }
+
+    private static func normalizedLLMOCRMaxUploadLongEdge(_ value: Int) -> Int {
+        min(max(value, 800), 5000)
+    }
+
     private static func normalizedRawValue<T: RawRepresentable & CaseIterable>(
         _ rawValue: String?,
         valid: T.AllCases,
@@ -498,5 +545,71 @@ final class AppSettings: ObservableObject {
             return defaultValue.rawValue
         }
         return rawValue
+    }
+
+    private func persistLoadedValues() {
+        persistLoadedString(providerKind.rawValue, forKey: Keys.provider)
+        persistLoadedString(openAIAPIKind.rawValue, forKey: Keys.openAIAPIKind)
+        persistLoadedString(temperatureMode.rawValue, forKey: Keys.temperatureMode)
+        persistLoadedDouble(temperature, forKey: Keys.temperature)
+
+        persistLoadedHotkey(
+            keyCode: globalHotkeyKeyCode,
+            modifiers: globalHotkeyModifiersRawValue,
+            keyCodeKey: Keys.globalHotkeyKeyCode,
+            modifiersKey: Keys.globalHotkeyModifiers
+        )
+        persistLoadedHotkey(
+            keyCode: screenshotHotkeyKeyCode,
+            modifiers: screenshotHotkeyModifiersRawValue,
+            keyCodeKey: Keys.screenshotHotkeyKeyCode,
+            modifiersKey: Keys.screenshotHotkeyModifiers
+        )
+        persistLoadedHotkey(
+            keyCode: recordingHotkeyKeyCode,
+            modifiers: recordingHotkeyModifiersRawValue,
+            keyCodeKey: Keys.recordingHotkeyKeyCode,
+            modifiersKey: Keys.recordingHotkeyModifiers
+        )
+
+        persistLoadedString(codexModel, forKey: Keys.codexModel)
+        persistLoadedString(codexReasoningEffort, forKey: Keys.codexReasoningEffort)
+        persistLoadedString(codexApprovalPolicy.rawValue, forKey: Keys.codexApprovalPolicy)
+        persistLoadedString(codexSandboxMode.rawValue, forKey: Keys.codexSandboxMode)
+        persistLoadedString(screenshotDefaultMode.rawValue, forKey: Keys.screenshotDefaultMode)
+        persistLoadedInt(scrollingScreenshotMaxFrames, forKey: Keys.scrollingScreenshotMaxFrames)
+        persistLoadedInt(llmOCRMaxUploadLongEdge, forKey: Keys.llmOCRMaxUploadLongEdge)
+
+        persistLoadedString(recordingAudioSourceRawValue, forKey: Keys.recordingAudioSource)
+        persistLoadedString(recordingClickOverlayModeRawValue, forKey: Keys.recordingClickOverlayMode)
+        persistLoadedString(recordingKeystrokeModeRawValue, forKey: Keys.recordingKeystrokeMode)
+        persistLoadedString(recordingSecureFieldRedactionModeRawValue, forKey: Keys.recordingSecureFieldRedactionMode)
+        persistLoadedString(recordingQualityPresetRawValue, forKey: Keys.recordingQualityPreset)
+        persistLoadedInt(recordingCountdownSeconds, forKey: Keys.recordingCountdownSeconds)
+    }
+
+    private func persistLoadedString(_ value: String, forKey key: String) {
+        guard defaults.object(forKey: key) != nil, defaults.string(forKey: key) != value else { return }
+        defaults.set(value, forKey: key)
+    }
+
+    private func persistLoadedInt(_ value: Int, forKey key: String) {
+        guard defaults.object(forKey: key) != nil, defaults.integer(forKey: key) != value else { return }
+        defaults.set(value, forKey: key)
+    }
+
+    private func persistLoadedDouble(_ value: Double, forKey key: String) {
+        guard defaults.object(forKey: key) != nil, defaults.double(forKey: key) != value else { return }
+        defaults.set(value, forKey: key)
+    }
+
+    private func persistLoadedHotkey(keyCode: Int, modifiers: Int, keyCodeKey: String, modifiersKey: String) {
+        guard defaults.object(forKey: keyCodeKey) != nil || defaults.object(forKey: modifiersKey) != nil else { return }
+        if defaults.integer(forKey: keyCodeKey) != keyCode {
+            defaults.set(keyCode, forKey: keyCodeKey)
+        }
+        if defaults.integer(forKey: modifiersKey) != modifiers {
+            defaults.set(modifiers, forKey: modifiersKey)
+        }
     }
 }

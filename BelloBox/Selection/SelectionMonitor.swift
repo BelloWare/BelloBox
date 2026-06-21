@@ -37,6 +37,9 @@ final class SelectionMonitor {
     var recordingHotkey = GlobalHotkey.defaultRecording {
         didSet { refreshHotkeyRegistrationIfNeeded() }
     }
+    var hotkeysSuspended = false {
+        didSet { refreshHotkeyRegistrationIfNeeded() }
+    }
     var onSelection: ((TextSelection) -> Void)?
     var onHotkey: (() -> Void)?
     var onScreenshotHotkey: (() -> Void)?
@@ -44,6 +47,12 @@ final class SelectionMonitor {
 
     init(accessibility: AccessibilityService) {
         self.accessibility = accessibility
+    }
+
+    deinit {
+        MainActor.assumeIsolated {
+            stop()
+        }
     }
 
     func start() {
@@ -99,6 +108,7 @@ final class SelectionMonitor {
     }
 
     private func installHotkeysIfNeeded() {
+        guard !hotkeysSuspended else { return }
         guard (hotkeyEnabled && hotkey.isValid)
             || (screenshotHotkeyEnabled && screenshotHotkey.isValid)
             || (recordingHotkeyEnabled && recordingHotkey.isValid)
@@ -148,7 +158,7 @@ final class SelectionMonitor {
 
     private func register(_ hotkey: GlobalHotkey, id: UInt32, label: String) {
         var ref: EventHotKeyRef?
-        var carbonHotkeyID = EventHotKeyID(signature: hotkeySignature, id: id)
+        let carbonHotkeyID = EventHotKeyID(signature: hotkeySignature, id: id)
         let registerStatus = RegisterEventHotKey(
             UInt32(hotkey.keyCode),
             hotkey.carbonModifiers,

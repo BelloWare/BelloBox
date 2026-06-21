@@ -125,7 +125,7 @@ enum AnnotationRenderer {
             guard case let .blur(rect) = annotation.kind else { continue }
             let cgRect = coreGraphicsRect(rect, imageHeight: imageHeight)
             context.saveGState()
-            context.setFillColor(annotation.style.fillColor?.cgColor ?? AnnotationStyle.redaction.fillColor!.cgColor)
+            context.setFillColor(redactionFillColor(for: annotation.style).cgColor)
             context.fill(cgRect)
             context.setStrokeColor(NSColor.white.withAlphaComponent(0.16).cgColor)
             context.setLineWidth(1)
@@ -139,6 +139,10 @@ enum AnnotationRenderer {
             context.strokePath()
             context.restoreGState()
         }
+    }
+
+    private static func redactionFillColor(for style: AnnotationStyle) -> CodableColor {
+        style.fillColor ?? AnnotationStyle.redaction.fillColor ?? CodableColor(red: 0.16, green: 0.16, blue: 0.16, alpha: 1)
     }
 
     private static func drawHighlights(_ annotations: [ScreenshotAnnotation], in context: CGContext, imageHeight: CGFloat) {
@@ -195,15 +199,23 @@ enum AnnotationRenderer {
                 .paragraphStyle: paragraph,
             ]
             let attr = NSAttributedString(string: text, attributes: attributes)
-            let rect = CGRect(
-                x: origin.x,
-                y: imageHeight - origin.y - annotation.style.fontSize * 1.3,
-                width: maxWidth,
-                height: max(annotation.style.fontSize * 2.4, 44)
-            )
+            let textHeight = textDrawingHeight(for: attr, maxWidth: maxWidth, minimumHeight: annotation.style.fontSize * 1.4)
+            let rect = CGRect(x: origin.x, y: imageHeight - origin.y - textHeight, width: maxWidth, height: textHeight)
             attr.draw(in: rect)
         }
         NSGraphicsContext.restoreGraphicsState()
+    }
+
+    private static func textDrawingHeight(
+        for attributedString: NSAttributedString,
+        maxWidth: CGFloat,
+        minimumHeight: CGFloat
+    ) -> CGFloat {
+        let measured = attributedString.boundingRect(
+            with: CGSize(width: max(1, maxWidth), height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        )
+        return max(ceil(measured.height) + 4, ceil(minimumHeight))
     }
 
     private static func drawArrow(from start: CGPoint, to end: CGPoint, in context: CGContext) {
@@ -251,4 +263,3 @@ enum AnnotationRenderer {
         return scaled
     }
 }
-

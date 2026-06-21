@@ -217,6 +217,16 @@ struct OnboardingView: View {
                     .disabled(!settings.screenshotHotkeyEnabled)
                     .padding(.leading, 44)
 
+                Toggle(isOn: $settings.screenshotIncludeCursor) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Include cursor in screenshots")
+                            .font(.headline)
+                        Text("Useful when the pointer location is part of what you are explaining.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 Toggle(isOn: $settings.screenshotAutoCopy) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Auto-copy captured screenshots")
@@ -280,7 +290,7 @@ struct OnboardingView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 12) {
-                bullet("menubar.arrow.up.rectangle", "Find Bello Box in the menu bar", "The ✨ icon opens Settings and this guide anytime.")
+                bullet("menubar.arrow.up.rectangle", "Find Bello Box in the menu bar", "The Bello Box icon opens Settings and this guide anytime.")
                 if settings.globalHotkeyEnabled {
                     bullet("keyboard", "Summon with a hotkey", "\(settings.globalHotkey.displayString) shows the Bello Box tool board for whatever you have selected.")
                 }

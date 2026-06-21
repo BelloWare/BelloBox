@@ -23,6 +23,12 @@ struct RecordingHUDView: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.orange)
             }
+            if let warning = secureFieldRedactionWarning {
+                Label("Secure-field hiding off", systemImage: "lock.slash")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.orange)
+                    .help(warning)
+            }
             Button(isPaused ? "Resume" : "Pause", action: onPauseResume)
                 .buttonStyle(SecondaryButtonStyle())
                 .controlSize(.small)
@@ -49,6 +55,10 @@ struct RecordingHUDView: View {
 
     private static let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
+    private var secureFieldRedactionWarning: String? {
+        RecordingPrivacyNotice.secureFieldRedactionWarning(accessibilityTrusted: AccessibilityService.isTrusted)
+    }
+
     private func statusIcon(enabled: Bool, symbol: String, help: String) -> some View {
         Image(systemName: symbol)
             .font(.caption.weight(.semibold))
@@ -73,13 +83,52 @@ struct RecordingCountdownView: View {
                 .font(.system(size: 72, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(BoxTheme.accent)
-            Text("Bello Box hides detected secure fields and suppresses key overlays while typing into them.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            if let warning = secureFieldRedactionWarning {
+                Label(warning, systemImage: "lock.slash")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("Bello Box hides detected secure fields and suppresses key overlays while typing into them.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .padding(20)
-        .frame(width: 320, height: 240)
+        .frame(width: secureFieldRedactionWarning == nil ? 320 : 340, height: secureFieldRedactionWarning == nil ? 240 : 280)
+        .popupCard()
+    }
+
+    private var secureFieldRedactionWarning: String? {
+        RecordingPrivacyNotice.secureFieldRedactionWarning(accessibilityTrusted: AccessibilityService.isTrusted)
+    }
+}
+
+struct RecordingFinishingView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "record.circle")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 30, height: 30)
+                    .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(BoxTheme.accentGradient))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Finishing Recording").font(.headline)
+                    Text("Saving movie").font(.caption2).foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            ProgressView()
+                .controlSize(.large)
+            Text("Preparing the recording file.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(20)
+        .frame(width: 320, height: 190)
         .popupCard()
     }
 }

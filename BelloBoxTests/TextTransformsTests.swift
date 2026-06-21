@@ -105,4 +105,30 @@ final class TextTransformsTests: XCTestCase {
         XCTAssertGreaterThan(anthropic, 0)
         XCTAssertGreaterThan(anthropic, o200k)
     }
+
+    @MainActor
+    func testTextToolsTokenPickerDoesNotMutateProviderSettings() {
+        let suiteName = "BelloBoxTests.text-tools-token-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        let settings = AppSettings(defaults: defaults)
+        settings.providerKind = .openAI
+        settings.openAIModel = "gpt-4o-mini"
+        settings.anthropicModel = "claude-3-5-haiku-latest"
+
+        let viewModel = TextToolsPopupViewModel(
+            selection: TextSelection(text: "hello world", anchorRect: nil, appName: nil, bundleID: nil, pid: nil),
+            settings: settings,
+            accessibility: AccessibilityService()
+        )
+
+        viewModel.tokenProvider = .anthropic
+        viewModel.tokenModel = "claude-3-5-sonnet-latest"
+
+        XCTAssertEqual(settings.providerKind, .openAI)
+        XCTAssertEqual(settings.openAIModel, "gpt-4o-mini")
+        XCTAssertEqual(settings.anthropicModel, "claude-3-5-haiku-latest")
+        XCTAssertEqual(viewModel.provider, .anthropic)
+        XCTAssertEqual(viewModel.model, "claude-3-5-sonnet-latest")
+    }
 }
