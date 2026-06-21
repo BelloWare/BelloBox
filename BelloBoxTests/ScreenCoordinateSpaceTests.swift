@@ -76,6 +76,26 @@ final class ScreenCoordinateSpaceTests: XCTestCase {
         XCTAssertEqual(size.height, 37.5)
     }
 
+    func testResolvedDisplayPixelSizePrefersBackingScaleWhenCoreGraphicsReportsPointSize() {
+        let size = ScreenCoordinateSpace.resolvedDisplayPixelSize(
+            cgPixelSize: CGSize(width: 1728, height: 992),
+            screenFrame: CGRect(x: 0, y: 0, width: 1728, height: 992),
+            backingScale: 2
+        )
+
+        XCTAssertEqual(size, CGSize(width: 3456, height: 1984))
+    }
+
+    func testResolvedDisplayPixelSizeKeepsLargerCoreGraphicsPixelSize() {
+        let size = ScreenCoordinateSpace.resolvedDisplayPixelSize(
+            cgPixelSize: CGSize(width: 5120, height: 2880),
+            screenFrame: CGRect(x: 0, y: 0, width: 2560, height: 1440),
+            backingScale: 1
+        )
+
+        XCTAssertEqual(size, CGSize(width: 5120, height: 2880))
+    }
+
     func testCGWindowBoundsConvertUsingPrimaryScreenTopEdge() {
         let frames = [CGRect(x: 0, y: 0, width: 1440, height: 900)]
         let bounds = CGRect(x: 100, y: 80, width: 300, height: 200)

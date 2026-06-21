@@ -76,7 +76,7 @@ final class ScreenshotOverlayEditorController {
         }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak viewModel] event in
             guard event.keyCode == 53 else { return event }
-            Task { @MainActor in viewModel?.close() }
+            Task { @MainActor in viewModel?.handleEscape() }
             return nil
         }
     }
@@ -123,12 +123,19 @@ private struct ScreenshotOverlayEditorView: View {
     @ObservedObject var viewModel: ScreenshotPopupViewModel
     var screenFrame: CGRect
     var captureFrame: CGRect
+    @State private var toolbarOriginOverride: CGPoint?
+    @State private var toolbarDragStartOrigin: CGPoint?
 
     var body: some View {
         GeometryReader { geometry in
             let bounds = CGRect(origin: .zero, size: geometry.size)
             let selected = localSelectionFrame(in: bounds)
-            let toolbar = toolbarFrame(selection: selected, bounds: bounds)
+            let defaultToolbar = toolbarFrame(selection: selected, bounds: bounds)
+            let toolbar = clampedToolbarFrame(
+                origin: toolbarOriginOverride ?? defaultToolbar.origin,
+                size: defaultToolbar.size,
+                bounds: bounds
+            )
             let error = errorFrame(toolbar: toolbar, bounds: bounds)
 
             ZStack(alignment: .topLeading) {
@@ -144,6 +151,7 @@ private struct ScreenshotOverlayEditorView: View {
                 editorToolbar
                     .frame(width: toolbar.width, height: toolbar.height)
                     .position(x: toolbar.midX, y: toolbar.midY)
+                    .gesture(toolbarDragGesture(current: toolbar, bounds: bounds))
 
                 if let message = viewModel.errorMessage {
                     Label(message, systemImage: "exclamationmark.triangle.fill")
@@ -158,7 +166,13 @@ private struct ScreenshotOverlayEditorView: View {
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
-            .onExitCommand(perform: viewModel.close)
+            .onExitCommand(perform: viewModel.handleEscape)
+            .alert("Discard screenshot edits?", isPresented: $viewModel.showDiscardCloseConfirmation) {
+                Button("Keep Editing", role: .cancel) { viewModel.cancelDiscardClose() }
+                Button("Discard", role: .destructive) { viewModel.confirmDiscardAndClose() }
+            } message: {
+                Text("Your screenshot annotations and crop changes will be lost.")
+            }
         }
     }
 
@@ -170,7 +184,7 @@ private struct ScreenshotOverlayEditorView: View {
                 .frame(width: 28, height: 28)
                 .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(BoxTheme.accentGradient))
 
-            AnnotationToolbarView(viewModel: viewModel, showExportActions: true, onClose: viewModel.close)
+            AnnotationToolbarView(viewModel: viewModel, showExportActions: true, onClose: viewModel.requestClose)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
@@ -196,6 +210,44 @@ private struct ScreenshotOverlayEditorView: View {
         }
         y = min(max(y, bounds.minY + Self.inset), bounds.maxY - Self.toolbarHeight - Self.inset)
         return CGRect(x: x, y: y, width: width, height: Self.toolbarHeight)
+    }
+
+    private func clampedToolbarFrame(origin: CGPoint, size: CGSize, bounds: CGRect) -> CGRect {
+        let width = min(size.width, max(1, bounds.width - Self.inset * 2))
+        let height = min(size.height, max(1, bounds.height - Self.inset * 2))
+        let minX = bounds.minX + Self.inset
+        let minY = bounds.minY + Self.inset
+        let maxX = max(minX, bounds.maxX - width - Self.inset)
+        let maxY = max(minY, bounds.maxY - height - Self.inset)
+        let x = min(max(origin.x, minX), maxX)
+        let y = min(max(origin.y, minY), maxY)
+        return CGRect(x: x, y: y, width: width, height: height)
+    }
+
+    private func toolbarDragGesture(current: CGRect, bounds: CGRect) -> some Gesture {
+        DragGesture(minimumDistance: 2)
+            .onChanged { value in
+                if toolbarDragStartOrigin == nil {
+                    toolbarDragStartOrigin = current.origin
+                }
+                let start = toolbarDragStartOrigin ?? current.origin
+                toolbarOriginOverride = clampedToolbarFrame(
+                    origin: CGPoint(
+                        x: start.x + value.translation.width,
+                        y: start.y + value.translation.height
+                    ),
+                    size: current.size,
+                    bounds: bounds
+                ).origin
+            }
+            .onEnded { _ in
+                toolbarDragStartOrigin = nil
+                toolbarOriginOverride = clampedToolbarFrame(
+                    origin: toolbarOriginOverride ?? current.origin,
+                    size: current.size,
+                    bounds: bounds
+                ).origin
+            }
     }
 
     private func errorFrame(toolbar: CGRect, bounds: CGRect) -> CGRect {

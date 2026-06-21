@@ -161,5 +161,12 @@ struct ImageViewport: Equatable {
         let b = imagePointToViewPoint(CGPoint(x: rect.maxX, y: rect.maxY))
         return CGRect(x: a.x, y: a.y, width: b.x - a.x, height: b.y - a.y).standardized
     }
-}
 
+    func viewTranslationToImageTranslation(_ translation: CGSize) -> CGSize {
+        guard fittedImageRect.width > 0, fittedImageRect.height > 0 else { return .zero }
+        return CGSize(
+            width: translation.width / fittedImageRect.width * imageSize.width,
+            height: translation.height / fittedImageRect.height * imageSize.height
+        )
+    }
+}

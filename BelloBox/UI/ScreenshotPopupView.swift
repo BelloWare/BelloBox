@@ -19,6 +19,11 @@ struct LLMOCRConfirmation: Identifiable, Equatable {
     }
 }
 
+struct VisibleTextAnnotationFrame: Identifiable, Equatable {
+    var id: UUID
+    var frame: CGRect
+}
+
 @MainActor
 final class ScreenshotPopupViewModel: ObservableObject {
     @Published var document: ScreenshotDocument
@@ -28,16 +33,20 @@ final class ScreenshotPopupViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var llmConfirmation: LLMOCRConfirmation?
     @Published var editingTextAnnotationID: UUID?
+    @Published var showDiscardCloseConfirmation = false
 
     private let settings: AppSettings
     private let macOCRService: OCRService
     private let makeLLMOCRService: (AIConfig) -> OCRService
+    private let originalAnnotations: [ScreenshotAnnotation]
+    private let originalCropRect: CGRect?
     private var undoStack: [ScreenshotDocument] = []
     private var redoStack: [ScreenshotDocument] = []
     private var ocrTask: Task<Void, Never>?
     private var ocrRunID: UUID?
     private var documentRevision = 0
     private var isClosed = false
+    private var movingTextAnnotationID: UUID?
 
     var onClose: () -> Void = {}
 
@@ -51,6 +60,8 @@ final class ScreenshotPopupViewModel: ObservableObject {
         self.document = document
         self.settings = settings
         self.macOCRService = macOCRService
+        self.originalAnnotations = document.annotations
+        self.originalCropRect = document.cropRect
         if let llmOCRServiceFactory {
             self.makeLLMOCRService = llmOCRServiceFactory
         } else if let llmOCRService {
@@ -83,6 +94,27 @@ final class ScreenshotPopupViewModel: ObservableObject {
 
     var canUndo: Bool { !undoStack.isEmpty }
     var canRedo: Bool { !redoStack.isEmpty }
+    var hasImageEdits: Bool {
+        document.annotations != originalAnnotations || document.cropRect != originalCropRect
+    }
+
+    var visibleTextAnnotationFrames: [VisibleTextAnnotationFrame] {
+        document.annotations.compactMap { annotation in
+            guard annotation.id != editingTextAnnotationID,
+                  case let .text(_, origin, maxWidth) = annotation.kind
+            else { return nil }
+            let visibleOrigin = shiftDocumentPointToVisible(origin)
+            return VisibleTextAnnotationFrame(
+                id: annotation.id,
+                frame: CGRect(
+                    x: visibleOrigin.x,
+                    y: visibleOrigin.y,
+                    width: maxWidth,
+                    height: max(34, annotation.style.fontSize + 16)
+                )
+            )
+        }
+    }
 
     @discardableResult
     func refreshBaseCapture(from replacement: ScreenshotDocument, expectedDocumentID: UUID) -> Bool {
@@ -178,6 +210,11 @@ final class ScreenshotPopupViewModel: ObservableObject {
         markOCRStale()
     }
 
+    func moveEditingText(toVisibleOrigin origin: CGPoint) {
+        guard let id = editingTextAnnotationID else { return }
+        moveTextAnnotation(id: id, toVisibleOrigin: origin, recordUndoIfNeeded: false)
+    }
+
     func endTextEditing() {
         guard let id = editingTextAnnotationID else { return }
         if let index = document.annotations.firstIndex(where: { $0.id == id }),
@@ -188,6 +225,37 @@ final class ScreenshotPopupViewModel: ObservableObject {
         }
         editingTextAnnotationID = nil
         markOCRStale()
+    }
+
+    func cancelTextEditing() {
+        guard let id = editingTextAnnotationID else { return }
+        if let index = document.annotations.firstIndex(where: { $0.id == id }) {
+            documentRevision += 1
+            document.annotations.remove(at: index)
+        }
+        editingTextAnnotationID = nil
+        collapseUndoIfCurrentDocumentMatchesTop()
+        redoStack.removeAll()
+        markOCRStale()
+    }
+
+    func beginMovingTextAnnotation(id: UUID) {
+        guard movingTextAnnotationID != id,
+              editingTextAnnotationID != id,
+              document.annotations.contains(where: { $0.id == id })
+        else { return }
+        pushUndo()
+        movingTextAnnotationID = id
+    }
+
+    func moveTextAnnotation(id: UUID, toVisibleOrigin origin: CGPoint) {
+        moveTextAnnotation(id: id, toVisibleOrigin: origin, recordUndoIfNeeded: true)
+    }
+
+    func endMovingTextAnnotation(id: UUID) {
+        if movingTextAnnotationID == id {
+            movingTextAnnotationID = nil
+        }
     }
 
     func undo() {
@@ -305,6 +373,32 @@ final class ScreenshotPopupViewModel: ObservableObject {
         onClose()
     }
 
+    func requestClose() {
+        guard !isClosed else { return }
+        if editingTextAnnotationID != nil {
+            cancelTextEditing()
+            return
+        }
+        if hasImageEdits {
+            showDiscardCloseConfirmation = true
+        } else {
+            close()
+        }
+    }
+
+    func handleEscape() {
+        requestClose()
+    }
+
+    func cancelDiscardClose() {
+        showDiscardCloseConfirmation = false
+    }
+
+    func confirmDiscardAndClose() {
+        showDiscardCloseConfirmation = false
+        close()
+    }
+
     func finish() {
         guard !isClosed else { return }
         copyRenderedImage()
@@ -407,6 +501,44 @@ final class ScreenshotPopupViewModel: ObservableObject {
         documentRevision += 1
     }
 
+    private func collapseUndoIfCurrentDocumentMatchesTop() {
+        guard let previous = undoStack.last,
+              previous.annotations == document.annotations,
+              previous.cropRect == document.cropRect
+        else { return }
+        undoStack.removeLast()
+    }
+
+    private func moveTextAnnotation(id: UUID, toVisibleOrigin origin: CGPoint, recordUndoIfNeeded: Bool) {
+        guard let index = document.annotations.firstIndex(where: { $0.id == id }),
+              case let .text(text, _, maxWidth) = document.annotations[index].kind
+        else { return }
+        if recordUndoIfNeeded, movingTextAnnotationID != id {
+            beginMovingTextAnnotation(id: id)
+        }
+        let visibleOrigin = clampedVisibleTextOrigin(
+            origin,
+            maxWidth: maxWidth,
+            fontSize: document.annotations[index].style.fontSize
+        )
+        document.annotations[index].kind = .text(
+            text,
+            origin: shiftVisiblePointToDocument(visibleOrigin),
+            maxWidth: maxWidth
+        )
+        documentRevision += 1
+        markOCRStale()
+    }
+
+    private func clampedVisibleTextOrigin(_ origin: CGPoint, maxWidth: CGFloat, fontSize: CGFloat) -> CGPoint {
+        let size = visibleImageSize
+        let height = max(34, fontSize + 16)
+        return CGPoint(
+            x: min(max(origin.x, 0), max(0, size.width - maxWidth)),
+            y: min(max(origin.y, 0), max(0, size.height - height))
+        )
+    }
+
     private func syncOCRPanel() {
         ocrPanel.result = document.activeOCRResult
         ocrPanel.showTextRegions = settings.ocrShowTextRegions || ocrPanel.showTextRegions
@@ -471,7 +603,7 @@ struct ScreenshotPopupView: View {
                     title: "Screenshot",
                     subtitle: sourceSummary,
                     onMinimize: onMinimize,
-                    onClose: viewModel.close
+                    onClose: viewModel.requestClose
                 )
 
                 AnnotationToolbarView(viewModel: viewModel)
@@ -492,7 +624,13 @@ struct ScreenshotPopupView: View {
             .padding(16)
             .frame(width: Self.preferredSize.width, height: Self.preferredSize.height)
             .popupCard()
-            .onExitCommand(perform: viewModel.close)
+            .onExitCommand(perform: viewModel.handleEscape)
+            .alert("Discard screenshot edits?", isPresented: $viewModel.showDiscardCloseConfirmation) {
+                Button("Keep Editing", role: .cancel) { viewModel.cancelDiscardClose() }
+                Button("Discard", role: .destructive) { viewModel.confirmDiscardAndClose() }
+            } message: {
+                Text("Your screenshot annotations and crop changes will be lost.")
+            }
 
             if let confirmation = viewModel.llmConfirmation {
                 LLMOCRConfirmationView(

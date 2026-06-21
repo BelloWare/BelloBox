@@ -6,6 +6,9 @@ struct AnnotationCanvasView: View {
     @State private var dragStart: CGPoint?
     @State private var dragCurrent: CGPoint?
     @State private var freehandPoints: [CGPoint] = []
+    @State private var committedTextDragID: UUID?
+    @State private var committedTextDragStartOrigin: CGPoint?
+    @State private var editingTextDragStartOrigin: CGPoint?
 
     var body: some View {
         GeometryReader { geometry in
@@ -26,11 +29,53 @@ struct AnnotationCanvasView: View {
                 }
 
                 previewLayer(viewport: viewport)
+                draggableTextAnnotationLayer(viewport: viewport)
                 inlineTextEditor(viewport: viewport)
             }
             .contentShape(Rectangle())
             .gesture(dragGesture(viewport: viewport))
         }
+    }
+
+    @ViewBuilder
+    private func draggableTextAnnotationLayer(viewport: ImageViewport) -> some View {
+        if viewModel.activeTool == .select || viewModel.activeTool == .text {
+            ForEach(viewModel.visibleTextAnnotationFrames) { annotation in
+                let viewFrame = viewport.imageRectToViewRect(annotation.frame)
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(Color.clear)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .stroke(BoxTheme.accent.opacity(committedTextDragID == annotation.id ? 0.95 : 0.42), lineWidth: 1.5)
+                    )
+                    .frame(width: max(viewFrame.width, 44), height: max(viewFrame.height, 30))
+                    .position(x: viewFrame.midX, y: viewFrame.midY)
+                    .contentShape(Rectangle())
+                    .gesture(committedTextDragGesture(annotation: annotation, viewport: viewport))
+            }
+        }
+    }
+
+    private func committedTextDragGesture(annotation: VisibleTextAnnotationFrame, viewport: ImageViewport) -> some Gesture {
+        DragGesture(minimumDistance: 2)
+            .onChanged { value in
+                if committedTextDragID != annotation.id {
+                    committedTextDragID = annotation.id
+                    committedTextDragStartOrigin = annotation.frame.origin
+                    viewModel.beginMovingTextAnnotation(id: annotation.id)
+                }
+                let start = committedTextDragStartOrigin ?? annotation.frame.origin
+                let delta = viewport.viewTranslationToImageTranslation(value.translation)
+                viewModel.moveTextAnnotation(
+                    id: annotation.id,
+                    toVisibleOrigin: CGPoint(x: start.x + delta.width, y: start.y + delta.height)
+                )
+            }
+            .onEnded { _ in
+                viewModel.endMovingTextAnnotation(id: annotation.id)
+                committedTextDragID = nil
+                committedTextDragStartOrigin = nil
+            }
     }
 
     @ViewBuilder
@@ -161,22 +206,57 @@ struct AnnotationCanvasView: View {
     private func inlineTextEditor(viewport: ImageViewport) -> some View {
         if let frame = viewModel.visibleTextFrameForEditingAnnotation() {
             let viewFrame = viewport.imageRectToViewRect(frame)
-            InlineAnnotationTextField(
-                text: Binding(
-                    get: { viewModel.textForEditingAnnotation() },
-                    set: { viewModel.updateEditingText($0) }
-                ),
-                onCommit: { viewModel.endTextEditing() }
-            )
-            .frame(width: max(viewFrame.width, 120), height: max(viewFrame.height, 30))
+            let fieldWidth = max(viewFrame.width, 120)
+            let fieldHeight = max(viewFrame.height, 30)
+            ZStack(alignment: .topLeading) {
+                InlineAnnotationTextField(
+                    text: Binding(
+                        get: { viewModel.textForEditingAnnotation() },
+                        set: { viewModel.updateEditingText($0) }
+                    ),
+                    onCommit: { viewModel.endTextEditing() },
+                    onCancel: { viewModel.cancelTextEditing() }
+                )
+                .frame(width: fieldWidth, height: fieldHeight)
+
+                Image(systemName: "arrow.up.and.down.and.arrow.left.and.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 22, height: 22)
+                    .background(Circle().fill(BoxTheme.accentGradient))
+                    .overlay(Circle().strokeBorder(.white.opacity(0.45), lineWidth: 1))
+                    .shadow(color: .black.opacity(0.28), radius: 5, y: 2)
+                    .offset(x: -10, y: -10)
+                    .contentShape(Circle())
+                    .gesture(editingTextDragGesture(frame: frame, viewport: viewport))
+            }
+            .frame(width: fieldWidth, height: fieldHeight)
             .position(x: viewFrame.midX, y: viewFrame.midY)
         }
+    }
+
+    private func editingTextDragGesture(frame: CGRect, viewport: ImageViewport) -> some Gesture {
+        DragGesture(minimumDistance: 2)
+            .onChanged { value in
+                if editingTextDragStartOrigin == nil {
+                    editingTextDragStartOrigin = frame.origin
+                }
+                let start = editingTextDragStartOrigin ?? frame.origin
+                let delta = viewport.viewTranslationToImageTranslation(value.translation)
+                viewModel.moveEditingText(
+                    toVisibleOrigin: CGPoint(x: start.x + delta.width, y: start.y + delta.height)
+                )
+            }
+            .onEnded { _ in
+                editingTextDragStartOrigin = nil
+            }
     }
 }
 
 private struct InlineAnnotationTextField: NSViewRepresentable {
     @Binding var text: String
     var onCommit: () -> Void
+    var onCancel: () -> Void
 
     func makeNSView(context: Context) -> NSTextField {
         let field = NSTextField(string: text)
@@ -201,16 +281,19 @@ private struct InlineAnnotationTextField: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, onCommit: onCommit)
+        Coordinator(text: $text, onCommit: onCommit, onCancel: onCancel)
     }
 
     final class Coordinator: NSObject, NSTextFieldDelegate {
         @Binding var text: String
         var onCommit: () -> Void
+        var onCancel: () -> Void
+        var didCancel = false
 
-        init(text: Binding<String>, onCommit: @escaping () -> Void) {
+        init(text: Binding<String>, onCommit: @escaping () -> Void, onCancel: @escaping () -> Void) {
             _text = text
             self.onCommit = onCommit
+            self.onCancel = onCancel
         }
 
         func controlTextDidChange(_ notification: Notification) {
@@ -226,14 +309,21 @@ private struct InlineAnnotationTextField: NSViewRepresentable {
                 onCommit()
                 return
             }
-            onCommit()
+            if !didCancel {
+                onCancel()
+            }
+            didCancel = false
         }
 
         func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-            if commandSelector == #selector(NSResponder.insertNewline(_:)) ||
-                commandSelector == #selector(NSResponder.cancelOperation(_:)) {
+            if commandSelector == #selector(NSResponder.insertNewline(_:)) {
                 text = control.stringValue
                 onCommit()
+                return true
+            }
+            if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
+                didCancel = true
+                onCancel()
                 return true
             }
             return false

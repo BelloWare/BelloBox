@@ -67,14 +67,25 @@ enum ScreenCoordinateSpace {
     }
 
     static func displayPixelSize(for displayID: CGDirectDisplayID, fallbackScreen screen: NSScreen? = nil) -> CGSize {
-        let width = CGDisplayPixelsWide(displayID)
-        let height = CGDisplayPixelsHigh(displayID)
-        if width > 0, height > 0 {
-            return CGSize(width: width, height: height)
+        let cgPixelSize = CGSize(width: CGDisplayPixelsWide(displayID), height: CGDisplayPixelsHigh(displayID))
+        guard let screen else {
+            return cgPixelSize.width > 0 && cgPixelSize.height > 0 ? cgPixelSize : .zero
         }
-        guard let screen else { return .zero }
-        let scale = backingScale(for: screen)
-        return CGSize(width: screen.frame.width * scale, height: screen.frame.height * scale)
+        return resolvedDisplayPixelSize(
+            cgPixelSize: cgPixelSize,
+            screenFrame: screen.frame,
+            backingScale: backingScale(for: screen)
+        )
+    }
+
+    static func resolvedDisplayPixelSize(cgPixelSize: CGSize, screenFrame: CGRect, backingScale: CGFloat) -> CGSize {
+        let scale = backingScale > 0 ? backingScale : 1
+        let backingSize = CGSize(width: max(1, screenFrame.width * scale), height: max(1, screenFrame.height * scale))
+        guard cgPixelSize.width > 0, cgPixelSize.height > 0 else { return backingSize }
+        return CGSize(
+            width: max(cgPixelSize.width, backingSize.width),
+            height: max(cgPixelSize.height, backingSize.height)
+        )
     }
 
     static func cgWindowBoundsToCocoaRect(_ bounds: CGRect, screens: [NSScreen] = NSScreen.screens) -> CGRect {
