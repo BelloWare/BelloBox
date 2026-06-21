@@ -155,6 +155,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak overlay] active in overlay?.setShortcutRecordingActive(active) }
             .store(in: &cancellables)
 
+#if DEBUG
+        runE2EPermissionBootstrapIfNeeded()
+#endif
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
             if self.settings.hasCompletedSetup {
@@ -247,6 +251,69 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
+
+#if DEBUG
+    private func runE2EPermissionBootstrapIfNeeded() {
+        let env = ProcessInfo.processInfo.environment
+        guard env["BELLOBOX_E2E_REQUEST_PERMISSIONS"] == "1" ||
+              env["BELLOBOX_E2E_PERMISSION_MARKER"] != nil
+        else { return }
+
+        Task { @MainActor in
+            let before = e2ePermissionStatusLines(prefix: "before")
+            writeE2EPermissionMarker(phase: "before-requests", lines: before)
+
+            if env["BELLOBOX_E2E_REQUEST_PERMISSIONS"] == "1" {
+                if !AccessibilityService.isTrusted {
+                    AccessibilityService.requestPermissionPrompt()
+                }
+                if !ScreenCapturePermission.isTrusted {
+                    _ = ScreenCapturePermission.requestPrompt()
+                }
+                if InputMonitoringPermission.status() != .granted {
+                    _ = InputMonitoringPermission.request()
+                }
+                if MicrophonePermission.status() == .notDetermined {
+                    _ = await MicrophonePermission.request()
+                }
+            }
+
+            let after = e2ePermissionStatusLines(prefix: "after")
+            writeE2EPermissionMarker(phase: "after-requests", lines: before + after)
+        }
+    }
+
+    private func e2ePermissionStatusLines(prefix: String) -> [String] {
+        [
+            "\(prefix).accessibility=\(AccessibilityService.isTrusted ? "granted" : "missing")",
+            "\(prefix).screenRecording=\(ScreenCapturePermission.isTrusted ? "granted" : "missing")",
+            "\(prefix).inputMonitoring=\(String(describing: InputMonitoringPermission.status()))",
+            "\(prefix).microphone=\(String(describing: MicrophonePermission.status()))",
+        ]
+    }
+
+    private func writeE2EPermissionMarker(phase: String, lines: [String]) {
+        let env = ProcessInfo.processInfo.environment
+        guard let path = env["BELLOBOX_E2E_PERMISSION_MARKER"],
+              !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else { return }
+
+        let url = URL(fileURLWithPath: path)
+        let payload = ([
+            "kind=permission-bootstrap",
+            "phase=\(phase)",
+            "bundleID=\(Bundle.main.bundleIdentifier ?? "unknown")",
+            "timestamp=\(Date().timeIntervalSince1970)",
+        ] + lines).joined(separator: "\n")
+
+        do {
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try payload.write(to: url, atomically: true, encoding: .utf8)
+        } catch {
+            NSLog("BelloBox E2E permission marker failed: \(error.localizedDescription)")
+        }
+    }
+#endif
 
     private func applyApplicationIcon() {
         let rawName = (Bundle.main.object(forInfoDictionaryKey: "CFBundleIconFile") as? String) ?? "AppIcon"

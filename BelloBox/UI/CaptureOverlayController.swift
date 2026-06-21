@@ -284,6 +284,9 @@ final class CaptureOverlayController {
                 self?.cancelFromUser()
             }
             selectedView.showScreenshotEditor(viewModel: viewModel, selection: selection)
+#if DEBUG
+            writeE2EOverlayExportIfNeeded(viewModel: viewModel, selection: selection)
+#endif
             refreshWindowScreenshotIfNeeded(selection: selection, viewModel: viewModel)
         } catch {
             let message = error.localizedDescription
@@ -366,6 +369,89 @@ final class CaptureOverlayController {
             return title.isEmpty ? "Record Window" : title
         }
     }
+
+#if DEBUG
+    private func writeE2EOverlayExportIfNeeded(viewModel: ScreenshotPopupViewModel, selection: CaptureSelection) {
+        let env = ProcessInfo.processInfo.environment
+        let outputPath = env["BELLOBOX_E2E_CAPTURE_OVERLAY_OUTPUT"]
+        let markerPath = env["BELLOBOX_E2E_CAPTURE_OVERLAY_MARKER"]
+        guard outputPath?.isEmpty == false || markerPath?.isEmpty == false else { return }
+
+        do {
+            let size = viewModel.visibleImageSize
+            let rect = CGRect(
+                x: max(4, size.width * 0.08),
+                y: max(4, size.height * 0.08),
+                width: max(20, min(96, size.width * 0.35)),
+                height: max(18, min(64, size.height * 0.25))
+            )
+            viewModel.addVisibleAnnotation(.rectangle(rect))
+            viewModel.beginTextAnnotation(atVisiblePoint: CGPoint(x: rect.minX + 6, y: min(size.height - 34, rect.maxY + 8)))
+            viewModel.updateEditingText("E2E")
+            viewModel.endTextEditing()
+
+            let rendered = try AnnotationRenderer.render(viewModel.document)
+            if let outputPath, !outputPath.isEmpty {
+                try Self.writePNG(rendered, to: outputPath)
+            }
+            Self.writeE2EMarker(
+                markerPath,
+                lines: [
+                    "kind=capture-overlay-screenshot",
+                    "status=success",
+                    "selection=\(Self.serialize(selection.cocoaRect))",
+                    "imageWidth=\(rendered.width)",
+                    "imageHeight=\(rendered.height)",
+                    "annotationCount=\(viewModel.document.annotations.count)",
+                    "fileSize=\(Self.fileSize(at: outputPath))",
+                ]
+            )
+        } catch {
+            Self.writeE2EMarker(
+                markerPath,
+                lines: [
+                    "kind=capture-overlay-screenshot",
+                    "status=failure",
+                    "error=\(error.localizedDescription)",
+                ]
+            )
+        }
+        e2eQuitIfRequested()
+    }
+
+    private func e2eQuitIfRequested() {
+        let env = ProcessInfo.processInfo.environment
+        guard env["BELLOBOX_E2E_QUIT_AFTER_HOOKS"] == "1" || env["BELLOBOX_E2E_QUIT_AFTER_E2E"] == "1" else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            NSApp.terminate(nil)
+        }
+    }
+
+    private static func writePNG(_ image: CGImage, to path: String) throws {
+        let url = URL(fileURLWithPath: path)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try ImageExportService.pngData(from: image).write(to: url, options: .atomic)
+    }
+
+    private static func writeE2EMarker(_ path: String?, lines: [String]) {
+        guard let path, !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        let url = URL(fileURLWithPath: path)
+        let payload = (lines + ["timestamp=\(Date().timeIntervalSince1970)"]).joined(separator: "\n")
+        try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? payload.write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    private static func fileSize(at path: String?) -> Int {
+        guard let path, !path.isEmpty,
+              let size = try? FileManager.default.attributesOfItem(atPath: path)[.size] as? NSNumber
+        else { return 0 }
+        return size.intValue
+    }
+
+    private static func serialize(_ rect: CGRect) -> String {
+        "\(rect.origin.x),\(rect.origin.y),\(rect.size.width),\(rect.size.height)"
+    }
+#endif
 }
 
 private final class CaptureOverlayWindow: NSPanel {

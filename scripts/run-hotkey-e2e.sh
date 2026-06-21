@@ -66,6 +66,7 @@ sleep 1.5
 fail() {
   echo "$1" >&2
   echo "This test requires permission for the test runner to synthesize shortcuts." >&2
+  echo "If Bello Box permissions are missing, run ./scripts/request-e2e-permissions.sh first." >&2
   echo "--- Bello Box log ---" >&2
   cat "$APP_LOG" >&2 || true
   exit 1

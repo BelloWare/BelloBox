@@ -72,6 +72,15 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private var finishing = false
     private var paused = false
     private var lastSecureFieldHidden = false
+#if DEBUG
+    private var debugScreenSampleCount = 0
+    private var debugImageBufferFrameCount = 0
+    private var debugWriterReadyFrameCount = 0
+    private var debugAppendedFrameCount = 0
+    private var debugScreenStatusCounts: [String: Int] = [:]
+    private var debugLastScreenFrameStatus = "none"
+    private var debugLastVideoDropReason = "none"
+#endif
 
     var onFailure: ((Error) -> Void)?
     var onSecureFieldHiddenChange: ((Bool) -> Void)?
@@ -179,6 +188,28 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         }
     }
 
+#if DEBUG
+    var diagnosticsSummary: String {
+        writerQueue.sync {
+            let statuses = debugScreenStatusCounts
+                .sorted { $0.key < $1.key }
+                .map { "\($0.key):\($0.value)" }
+                .joined(separator: "|")
+            return [
+                "screenSamples=\(debugScreenSampleCount)",
+                "imageBufferFrames=\(debugImageBufferFrameCount)",
+                "writerReadyFrames=\(debugWriterReadyFrameCount)",
+                "appendedFrames=\(debugAppendedFrameCount)",
+                "lastStatus=\(debugLastScreenFrameStatus)",
+                "statuses=\(statuses.isEmpty ? "none" : statuses)",
+                "lastDrop=\(debugLastVideoDropReason)",
+                "startedWriting=\(startedWriting)",
+                "wroteVideoFrame=\(wroteVideoFrame)"
+            ].joined(separator: ",")
+        }
+    }
+#endif
+
     private func prepareWriter(descriptor: RecordingTargetDescriptor) throws {
         try? FileManager.default.removeItem(at: captureURL)
         try? FileManager.default.removeItem(at: outputURL)
@@ -255,22 +286,74 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 
     private func appendVideo(_ sampleBuffer: CMSampleBuffer) {
-        guard isCompleteFrame(sampleBuffer),
+        let status = Self.frameStatus(sampleBuffer)
+        let sourcePixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+#if DEBUG
+        let statusDescription = Self.frameStatusDescription(status)
+        debugScreenSampleCount += 1
+        debugLastScreenFrameStatus = statusDescription
+        debugScreenStatusCounts[statusDescription, default: 0] += 1
+        if sourcePixelBuffer != nil {
+            debugImageBufferFrameCount += 1
+        }
+#endif
+        guard Self.isRenderableFrame(status: status, hasImageBuffer: sourcePixelBuffer != nil) else {
+#if DEBUG
+            debugLastVideoDropReason = "non-renderable status \(statusDescription)"
+#endif
+            return
+        }
+        guard
               let videoInput,
               let adaptor = pixelBufferAdaptor,
-              let pool = adaptor.pixelBufferPool,
-              let sourcePixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-        else { return }
+              let sourcePixelBuffer
+        else {
+#if DEBUG
+            debugLastVideoDropReason = "missing writer resources or image buffer"
+#endif
+            return
+        }
+#if DEBUG
+        debugWriterReadyFrameCount += 1
+#endif
 
         let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         startWriterIfNeeded(at: pts)
-        guard startedWriting, !paused, videoInput.isReadyForMoreMediaData else { return }
+        guard startedWriting else {
+#if DEBUG
+            debugLastVideoDropReason = "writer did not start"
+#endif
+            return
+        }
+        guard !paused else {
+#if DEBUG
+            debugLastVideoDropReason = "recording paused"
+#endif
+            return
+        }
+        guard videoInput.isReadyForMoreMediaData else {
+#if DEBUG
+            debugLastVideoDropReason = "video input not ready"
+#endif
+            return
+        }
 
         var renderedPixelBuffer: CVPixelBuffer?
+        guard let pool = adaptor.pixelBufferPool else {
+#if DEBUG
+            debugLastVideoDropReason = "pixel buffer pool not ready"
+#endif
+            return
+        }
         guard CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool, &renderedPixelBuffer) == kCVReturnSuccess,
               let renderedPixelBuffer,
               let renderContext
-        else { return }
+        else {
+#if DEBUG
+            debugLastVideoDropReason = "could not allocate rendered pixel buffer"
+#endif
+            return
+        }
 
         let sensitiveState = privacyGuard?.redactionState(now: pts) ?? .notSensitive
         updateSecureFieldHiddenIfNeeded(sensitiveState.isSensitive)
@@ -285,6 +368,14 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
 
         if adaptor.append(renderedPixelBuffer, withPresentationTime: pts) {
             wroteVideoFrame = true
+#if DEBUG
+            debugAppendedFrameCount += 1
+            debugLastVideoDropReason = "none"
+#endif
+        } else {
+#if DEBUG
+            debugLastVideoDropReason = "asset writer rejected rendered frame"
+#endif
         }
     }
 
@@ -389,13 +480,45 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         }
     }
 
-    private func isCompleteFrame(_ sampleBuffer: CMSampleBuffer) -> Bool {
-        guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
-              let rawStatus = attachments.first?[SCStreamFrameInfo.status] as? Int,
-              let status = SCFrameStatus(rawValue: rawStatus)
-        else { return true }
-        return status == .complete || status == .started
+    private static func isRenderableFrame(status: SCFrameStatus?, hasImageBuffer: Bool) -> Bool {
+        guard let status else { return true }
+        switch status {
+        case .complete, .started:
+            return true
+        case .idle:
+            return hasImageBuffer
+        default:
+            return false
+        }
     }
+
+    private static func frameStatus(_ sampleBuffer: CMSampleBuffer) -> SCFrameStatus? {
+        guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
+              let rawStatus = attachments.first?[SCStreamFrameInfo.status]
+        else { return nil }
+        if let value = rawStatus as? Int {
+            return SCFrameStatus(rawValue: value)
+        }
+        if let number = rawStatus as? NSNumber {
+            return SCFrameStatus(rawValue: number.intValue)
+        }
+        return nil
+    }
+
+#if DEBUG
+    private static func frameStatusDescription(_ status: SCFrameStatus?) -> String {
+        guard let status else { return "missing" }
+        switch status {
+        case .complete: return "complete"
+        case .idle: return "idle"
+        case .blank: return "blank"
+        case .suspended: return "suspended"
+        case .started: return "started"
+        case .stopped: return "stopped"
+        default: return "\(status)"
+        }
+    }
+#endif
 
     private func updateSecureFieldHiddenIfNeeded(_ isHidden: Bool) {
         guard lastSecureFieldHidden != isHidden else { return }

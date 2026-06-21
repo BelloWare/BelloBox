@@ -31,6 +31,9 @@ final class SelectionOverlayController: NSObject {
     private var lastTrusted = false
     private var regionCaptureController: RegionCaptureOverlayController?
     private var scrollingCaptureCoordinator: ScrollCaptureCoordinator?
+#if DEBUG
+    private var e2eRecordingPulseWindow: NSWindow?
+#endif
 
     /// Set by the app to open the Settings window.
     var openSettings: () -> Void = {}
@@ -72,7 +75,7 @@ final class SelectionOverlayController: NSObject {
         // re-establish the monitors when Accessibility is granted while running.
         if !lastTrusted { startTrustWatcher() }
 #if DEBUG
-        runScreenshotE2EHooksIfNeeded()
+        runE2EHooksIfNeeded()
 #endif
     }
 
@@ -942,6 +945,12 @@ final class SelectionOverlayController: NSObject {
     }
 
 #if DEBUG
+    private func runE2EHooksIfNeeded() {
+        if runRealScreenshotE2EHookIfNeeded() { return }
+        if runRealRecordingE2EHookIfNeeded() { return }
+        runScreenshotE2EHooksIfNeeded()
+    }
+
     @discardableResult
     private func writeE2EHotkeyMarkerIfNeeded(kind: String) -> Bool {
         let env = ProcessInfo.processInfo.environment
@@ -955,6 +964,171 @@ final class SelectionOverlayController: NSObject {
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? payload.write(to: url, atomically: true, encoding: .utf8)
         return env["BELLOBOX_E2E_HOTKEY_MARKERS_ONLY"] == "1"
+    }
+
+    @discardableResult
+    private func runRealScreenshotE2EHookIfNeeded() -> Bool {
+        let env = ProcessInfo.processInfo.environment
+        guard let outputPath = env["BELLOBOX_E2E_REAL_SCREENSHOT_OUTPUT"], !outputPath.isEmpty else { return false }
+        let markerPath = env["BELLOBOX_E2E_REAL_SCREENSHOT_MARKER"]
+
+        Task { @MainActor in
+            do {
+                guard ScreenCapturePermission.isTrusted else {
+                    throw ScreenCaptureService.CaptureError.permissionDenied
+                }
+                guard let screen = NSScreen.main,
+                      let displayID = ScreenCoordinateSpace.displayID(for: screen),
+                      let rect = e2eCaptureRect(on: screen, defaultSize: CGSize(width: 320, height: 200))
+                else {
+                    throw ScreenCaptureService.CaptureError.noDisplayFound
+                }
+
+                let document = try await screenCaptureService.capture(
+                    .area(CaptureArea(cocoaRect: rect, displayID: displayID)),
+                    options: CaptureOptions(includeCursor: false, hideBelloBoxWindows: false, delayAfterHidingOverlays: 0)
+                )
+                let rendered = try AnnotationRenderer.render(document)
+                try Self.writePNG(rendered, to: outputPath)
+                Self.writeE2EMarker(
+                    markerPath,
+                    lines: [
+                        "kind=real-screenshot",
+                        "status=success",
+                        "path=\(outputPath)",
+                        "rect=\(Self.serialize(rect))",
+                        "scale=\(document.scale)",
+                        "imageWidth=\(rendered.width)",
+                        "imageHeight=\(rendered.height)",
+                        "fileSize=\(Self.fileSize(at: outputPath))",
+                    ]
+                )
+            } catch {
+                Self.writeE2EMarker(
+                    markerPath,
+                    lines: [
+                        "kind=real-screenshot",
+                        "status=failure",
+                        "error=\(error.localizedDescription)",
+                    ]
+                )
+            }
+            e2eQuitIfRequested()
+        }
+        return true
+    }
+
+    @discardableResult
+    private func runRealRecordingE2EHookIfNeeded() -> Bool {
+        let env = ProcessInfo.processInfo.environment
+        guard let outputPath = env["BELLOBOX_E2E_REAL_RECORDING_OUTPUT"], !outputPath.isEmpty else { return false }
+        let markerPath = env["BELLOBOX_E2E_REAL_RECORDING_MARKER"]
+        let duration = max(0.6, min(5, Double(env["BELLOBOX_E2E_RECORDING_DURATION"] ?? "") ?? 1.2))
+        let showOwnPulse = env["BELLOBOX_E2E_RECORDING_OWN_PULSE"] == "1"
+
+        Task { @MainActor in
+            var engineForDiagnostics: RecordingEngine?
+            do {
+                guard ScreenCapturePermission.isTrusted else {
+                    throw RecordingEngineError.permissionDenied
+                }
+                guard let screen = NSScreen.main,
+                      let displayID = ScreenCoordinateSpace.displayID(for: screen),
+                      let rect = e2eCaptureRect(on: screen, defaultSize: CGSize(width: 360, height: 220))
+                else {
+                    throw RecordingEngineError.noDisplayFound
+                }
+
+                let options = RecordingOptions(
+                    audioSource: .none,
+                    microphoneDeviceID: nil,
+                    includeCursor: false,
+                    clickOverlayMode: .off,
+                    keystrokeMode: .off,
+                    secureFieldRedactionMode: .strict,
+                    quality: .compact,
+                    countdownSeconds: 0,
+                    excludeBelloBoxWindows: false,
+                    excludesCurrentProcessAudio: true
+                )
+                let engine = RecordingEngine(
+                    target: .area(displayID: displayID, rectInScreenPoints: rect),
+                    options: options,
+                    outputURL: URL(fileURLWithPath: outputPath)
+                )
+                engineForDiagnostics = engine
+
+                if showOwnPulse {
+                    showE2ERecordingPulseWindow(in: rect)
+                }
+                let runtime = try await engine.start()
+                try await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+                let movieURL = try await engine.stop()
+                if showOwnPulse {
+                    hideE2ERecordingPulseWindow()
+                }
+                Self.writeE2EMarker(
+                    markerPath,
+                    lines: [
+                        "kind=real-recording",
+                        "status=success",
+                        "path=\(movieURL.path)",
+                        "rect=\(Self.serialize(rect))",
+                        "duration=\(duration)",
+                        "target=\(runtime.targetDescription)",
+                        "fileSize=\(Self.fileSize(at: movieURL.path))",
+                    ]
+                )
+            } catch {
+                if showOwnPulse {
+                    hideE2ERecordingPulseWindow()
+                }
+                let diagnostics = engineForDiagnostics?.diagnosticsSummary ?? "none"
+                let lines = [
+                    "kind=real-recording",
+                    "status=failure",
+                    "error=\(error.localizedDescription)",
+                    "diagnostics=\(diagnostics)",
+                ]
+                Self.writeE2EMarker(
+                    markerPath,
+                    lines: lines
+                )
+            }
+            e2eQuitIfRequested()
+        }
+        return true
+    }
+
+    private func showE2ERecordingPulseWindow(in rect: CGRect) {
+        hideE2ERecordingPulseWindow()
+        let width = min(max(120, rect.width * 0.45), rect.width)
+        let height = min(max(90, rect.height * 0.45), rect.height)
+        let windowRect = CGRect(
+            x: rect.midX - width / 2,
+            y: rect.midY - height / 2,
+            width: width,
+            height: height
+        )
+        let window = NSWindow(
+            contentRect: windowRect,
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
+        window.level = .floating
+        window.isOpaque = true
+        window.backgroundColor = .systemOrange
+        window.hasShadow = false
+        window.isReleasedWhenClosed = false
+        window.contentView = E2ERecordingPulseView(frame: CGRect(origin: .zero, size: windowRect.size))
+        window.orderFrontRegardless()
+        e2eRecordingPulseWindow = window
+    }
+
+    private func hideE2ERecordingPulseWindow() {
+        e2eRecordingPulseWindow?.orderOut(nil)
+        e2eRecordingPulseWindow = nil
     }
 
     private func runScreenshotE2EHooksIfNeeded() {
@@ -1020,7 +1194,8 @@ final class SelectionOverlayController: NSObject {
         )
         let initialSelection = Self.e2eOverlaySelection(
             raw: ProcessInfo.processInfo.environment["BELLOBOX_E2E_CAPTURE_OVERLAY_RECT"],
-            displayID: displayID
+            displayID: displayID,
+            screenFrame: screen.frame
         )
         let controller = CaptureOverlayController(
             screenCaptureService: screenCaptureService,
@@ -1042,8 +1217,19 @@ final class SelectionOverlayController: NSObject {
         )
     }
 
-    private static func e2eOverlaySelection(raw: String?, displayID: CGDirectDisplayID) -> CaptureSelection? {
-        guard let raw, !raw.isEmpty else { return nil }
+    private static func e2eOverlaySelection(raw: String?, displayID: CGDirectDisplayID, screenFrame: CGRect) -> CaptureSelection? {
+        guard let raw, !raw.isEmpty else {
+            guard ProcessInfo.processInfo.environment["BELLOBOX_E2E_CAPTURE_OVERLAY_AUTO_SELECT"] == "1" else { return nil }
+            let width = min(max(180, screenFrame.width * 0.28), 420)
+            let height = min(max(120, screenFrame.height * 0.22), 280)
+            let rect = CGRect(
+                x: screenFrame.midX - width / 2,
+                y: screenFrame.midY - height / 2,
+                width: width,
+                height: height
+            )
+            return .area(CaptureArea(cocoaRect: rect, displayID: displayID))
+        }
         let parts = raw.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
         guard parts.count == 4 else { return nil }
         let rect = CGRect(x: CGFloat(parts[0]), y: CGFloat(parts[1]), width: CGFloat(parts[2]), height: CGFloat(parts[3]))
@@ -1070,6 +1256,58 @@ final class SelectionOverlayController: NSObject {
         guard let image = NSImage(contentsOfFile: path) else { return nil }
         var rect = CGRect(origin: .zero, size: image.size)
         return image.cgImage(forProposedRect: &rect, context: nil, hints: nil)
+    }
+
+    private func e2eCaptureRect(on screen: NSScreen, defaultSize: CGSize) -> CGRect? {
+        if let raw = ProcessInfo.processInfo.environment["BELLOBOX_E2E_CAPTURE_RECT"], !raw.isEmpty {
+            let parts = raw.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
+            guard parts.count == 4 else { return nil }
+            return CGRect(x: CGFloat(parts[0]), y: CGFloat(parts[1]), width: CGFloat(parts[2]), height: CGFloat(parts[3]))
+                .intersection(screen.frame)
+                .standardized
+        }
+
+        let width = min(defaultSize.width, max(80, screen.frame.width * 0.4))
+        let height = min(defaultSize.height, max(80, screen.frame.height * 0.3))
+        return CGRect(
+            x: screen.frame.midX - width / 2,
+            y: screen.frame.midY - height / 2,
+            width: width,
+            height: height
+        )
+    }
+
+    private func e2eQuitIfRequested() {
+        let env = ProcessInfo.processInfo.environment
+        guard env["BELLOBOX_E2E_QUIT_AFTER_HOOKS"] == "1" || env["BELLOBOX_E2E_QUIT_AFTER_E2E"] == "1" else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            NSApp.terminate(nil)
+        }
+    }
+
+    private static func writePNG(_ image: CGImage, to path: String) throws {
+        let url = URL(fileURLWithPath: path)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try ImageExportService.pngData(from: image).write(to: url, options: .atomic)
+    }
+
+    private static func writeE2EMarker(_ path: String?, lines: [String]) {
+        guard let path, !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        let url = URL(fileURLWithPath: path)
+        let payload = (lines + ["timestamp=\(Date().timeIntervalSince1970)"]).joined(separator: "\n")
+        try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? payload.write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    private static func fileSize(at path: String?) -> Int {
+        guard let path, !path.isEmpty,
+              let size = try? FileManager.default.attributesOfItem(atPath: path)[.size] as? NSNumber
+        else { return 0 }
+        return size.intValue
+    }
+
+    private static func serialize(_ rect: CGRect) -> String {
+        "\(rect.origin.x),\(rect.origin.y),\(rect.size.width),\(rect.size.height)"
     }
 #endif
 
@@ -1172,3 +1410,39 @@ final class SelectionOverlayController: NSObject {
         onDismiss?()
     }
 }
+
+#if DEBUG
+private final class E2ERecordingPulseView: NSView {
+    private var timer: Timer?
+    private var tick = 0
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        timer = Timer.scheduledTimer(withTimeInterval: 0.12, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            tick += 1
+            needsDisplay = true
+        }
+        RunLoop.main.add(timer!, forMode: .common)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    deinit {
+        timer?.invalidate()
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let palette: [NSColor] = [.systemOrange, .systemBlue, .systemGreen, .systemPink]
+        palette[tick % palette.count].setFill()
+        bounds.fill()
+
+        NSColor.white.withAlphaComponent(0.9).setStroke()
+        let inset = CGFloat(8 + (tick % 6) * 3)
+        let ring = NSBezierPath(ovalIn: bounds.insetBy(dx: inset, dy: inset))
+        ring.lineWidth = 6
+        ring.stroke()
+    }
+}
+#endif
