@@ -5,7 +5,6 @@ final class OCRPanelViewModel: ObservableObject {
     @Published var result: OCRResult?
     @Published var isRunning = false
     @Published var showTextRegions = false
-    @Published var selectedRegionID: UUID?
     @Published var errorMessage: String?
     @Published var activeDisplayMode: OCRDisplayMode = .text
 
@@ -103,4 +102,3 @@ struct OCRPanelView: View {
         }
     }
 }
-

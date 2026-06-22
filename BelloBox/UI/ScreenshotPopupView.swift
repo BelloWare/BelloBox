@@ -217,13 +217,19 @@ final class ScreenshotPopupViewModel: ObservableObject {
 
     func endTextEditing() {
         guard let id = editingTextAnnotationID else { return }
+        var removedEmptyAnnotation = false
         if let index = document.annotations.firstIndex(where: { $0.id == id }),
            case let .text(text, _, _) = document.annotations[index].kind,
            text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             documentRevision += 1
             document.annotations.remove(at: index)
+            removedEmptyAnnotation = true
         }
         editingTextAnnotationID = nil
+        if removedEmptyAnnotation {
+            collapseUndoIfCurrentDocumentMatchesTop()
+            redoStack.removeAll()
+        }
         markOCRStale()
     }
 

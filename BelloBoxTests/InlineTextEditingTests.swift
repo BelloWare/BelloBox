@@ -42,6 +42,23 @@ final class InlineTextEditingTests: XCTestCase {
         XCTAssertTrue(viewModel.document.annotations.isEmpty)
     }
 
+    func testEmptyTextAnnotationCommitDoesNotLeaveUndoEntry() {
+        let settings = AppSettings(defaults: temporaryDefaults())
+        let document = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.image(width: 200, height: 120),
+            scale: 1,
+            source: .importedClipboard
+        )
+        let viewModel = ScreenshotPopupViewModel(document: document, settings: settings)
+
+        viewModel.beginTextAnnotation(atVisiblePoint: CGPoint(x: 20, y: 30))
+        viewModel.endTextEditing()
+
+        XCTAssertFalse(viewModel.canUndo)
+        viewModel.undo()
+        XCTAssertTrue(viewModel.document.annotations.isEmpty)
+    }
+
     func testEscapeCancelsTextInsertionWithoutClosingScreenshot() {
         let settings = AppSettings(defaults: temporaryDefaults())
         let document = ScreenshotDocument(

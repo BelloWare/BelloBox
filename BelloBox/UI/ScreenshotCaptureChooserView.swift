@@ -3,7 +3,6 @@ import SwiftUI
 @MainActor
 final class ScreenshotCaptureChooserViewModel: ObservableObject {
     @Published var hasScreenRecordingPermission = ScreenCapturePermission.isTrusted
-    @Published var isCapturing = false
     @Published var errorMessage: String?
 
     var onCaptureArea: () -> Void = {}
@@ -34,6 +33,7 @@ struct ScreenshotCaptureChooserView: View {
 
     @ObservedObject var viewModel: ScreenshotCaptureChooserViewModel
     var initialMode: ScreenshotCaptureMode?
+    @State private var pendingInitialModeTask: Task<Void, Never>?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -54,7 +54,7 @@ struct ScreenshotCaptureChooserView: View {
                 modeButton(.screen, action: viewModel.onCaptureScreen)
                 modeButton(.scrolling, action: viewModel.onCaptureScrolling)
             }
-            .disabled(!viewModel.hasScreenRecordingPermission || viewModel.isCapturing)
+            .disabled(!viewModel.hasScreenRecordingPermission)
 
             if let error = viewModel.errorMessage {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
@@ -76,10 +76,21 @@ struct ScreenshotCaptureChooserView: View {
         .onAppear {
             viewModel.refreshPermission()
             if let initialMode, viewModel.hasScreenRecordingPermission {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                pendingInitialModeTask?.cancel()
+                pendingInitialModeTask = Task { @MainActor in
+                    do {
+                        try await Task.sleep(nanoseconds: 100_000_000)
+                    } catch {
+                        return
+                    }
+                    guard !Task.isCancelled else { return }
                     trigger(initialMode)
                 }
             }
+        }
+        .onDisappear {
+            pendingInitialModeTask?.cancel()
+            pendingInitialModeTask = nil
         }
     }
 

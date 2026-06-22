@@ -5,15 +5,15 @@ final class LLMOCRService: OCRService {
 
     private let configProvider: () -> AIConfig
     private let client: AIImageClient
-    private let macOCRService: MacVisionOCRService
+    private let macOCRService: OCRService
 
-    init(settings: AppSettings, client: AIImageClient = AIImageClient(), macOCRService: MacVisionOCRService = MacVisionOCRService()) {
+    init(settings: AppSettings, client: AIImageClient = AIImageClient(), macOCRService: OCRService = MacVisionOCRService()) {
         self.configProvider = { settings.currentConfig }
         self.client = client
         self.macOCRService = macOCRService
     }
 
-    init(config: AIConfig, client: AIImageClient = AIImageClient(), macOCRService: MacVisionOCRService = MacVisionOCRService()) {
+    init(config: AIConfig, client: AIImageClient = AIImageClient(), macOCRService: OCRService = MacVisionOCRService()) {
         self.configProvider = { config }
         self.client = client
         self.macOCRService = macOCRService
@@ -31,10 +31,17 @@ final class LLMOCRService: OCRService {
             if localResult == nil, options.engine == .hybrid {
                 var localOptions = options
                 localOptions.engine = .appleVision
-                localResult = try? await macOCRService.recognize(document: document, options: localOptions)
+                do {
+                    localResult = try await macOCRService.recognize(document: document, options: localOptions)
+                } catch is CancellationError {
+                    throw CancellationError()
+                } catch {
+                    localResult = nil
+                }
             }
         }
 
+        try Task.checkCancellation()
         let prepared = try OCRImagePreprocessor.prepare(document: document, options: options, forExternalUpload: true)
         guard let data = prepared.encodedData, let mimeType = prepared.mimeType else {
             throw OCRError.imageEncodingFailed
@@ -61,6 +68,7 @@ final class LLMOCRService: OCRService {
             prompt = OCRPromptTemplates.tableMarkdown(localOCRHint: localHint)
         }
 
+        try Task.checkCancellation()
         let raw = try await client.completeVision(config: config, image: payload, prompt: prompt, responseFormat: .json)
         let parsed = try AIImageClient.parseLLMOCRResponse(raw)
 

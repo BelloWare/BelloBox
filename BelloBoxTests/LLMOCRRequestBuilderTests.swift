@@ -1,3 +1,4 @@
+import CoreGraphics
 import XCTest
 @testable import BelloBox
 
@@ -104,6 +105,52 @@ final class LLMOCRRequestBuilderTests: XCTestCase {
         } catch {
             XCTFail("Unexpected error: \(error)")
         }
+    }
+
+    func testHybridLocalOCRCancellationDoesNotUploadImage() async throws {
+        var networkCalled = false
+        LLMOCRMockURLProtocol.handler = { request in
+            networkCalled = true
+            let response = HTTPURLResponse(
+                url: request.url ?? URL(string: "https://api.example.com/v1/responses")!,
+                statusCode: 200,
+                httpVersion: "HTTP/1.1",
+                headerFields: ["Content-Type": "application/json"]
+            )!
+            return (response, Data(#"{"output_text":"{}"}"#.utf8))
+        }
+        defer { LLMOCRMockURLProtocol.handler = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [LLMOCRMockURLProtocol.self]
+        let service = LLMOCRService(
+            config: AIConfig(kind: .openAI, baseURL: "https://api.example.com/v1", model: "m", apiKey: "", systemPrompt: ""),
+            client: AIImageClient(session: URLSession(configuration: configuration)),
+            macOCRService: CancellingOCRService()
+        )
+        let document = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.image(width: 24, height: 24),
+            scale: 1,
+            source: .importedClipboard
+        )
+        var options = OCROptions.default
+        options.engine = .hybrid
+        options.includeLocalOCRHintForLLM = true
+
+        do {
+            _ = try await service.recognize(document: document, options: options)
+            XCTFail("Expected cancellation")
+        } catch is CancellationError {
+            XCTAssertFalse(networkCalled)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+}
+
+private final class CancellingOCRService: OCRService {
+    func recognize(document: ScreenshotDocument, options: OCROptions) async throws -> OCRResult {
+        throw CancellationError()
     }
 }
 

@@ -42,8 +42,12 @@ final class MacVisionOCRService: OCRService {
     }
 
     private func performVisionOCR(on image: CGImage, options: OCROptions) async throws -> [VNRecognizedTextObservation] {
-        try await Task.detached(priority: .userInitiated) {
+        let requestBox = VisionRequestCancellationBox()
+        let task = Task.detached(priority: .userInitiated) {
+            try Task.checkCancellation()
             let request = VNRecognizeTextRequest()
+            requestBox.set(request)
+            defer { requestBox.clear(request) }
             request.recognitionLevel = options.recognitionLevel == .fast ? .fast : .accurate
             request.usesLanguageCorrection = options.usesLanguageCorrection
             if !options.languageHints.isEmpty {
@@ -57,12 +61,49 @@ final class MacVisionOCRService: OCRService {
 
             let handler = VNImageRequestHandler(cgImage: image, options: [:])
             do {
+                try Task.checkCancellation()
                 try handler.perform([request])
+                try Task.checkCancellation()
             } catch {
+                if Task.isCancelled {
+                    throw CancellationError()
+                }
                 throw OCRError.failed(error.localizedDescription)
             }
             return request.results ?? []
-        }.value
+        }
+
+        return try await withTaskCancellationHandler {
+            try await task.value
+        } onCancel: {
+            requestBox.cancel()
+            task.cancel()
+        }
     }
 }
 
+private final class VisionRequestCancellationBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var request: VNRequest?
+
+    func set(_ request: VNRequest) {
+        lock.lock()
+        self.request = request
+        lock.unlock()
+    }
+
+    func clear(_ request: VNRequest) {
+        lock.lock()
+        if self.request === request {
+            self.request = nil
+        }
+        lock.unlock()
+    }
+
+    func cancel() {
+        lock.lock()
+        let request = request
+        lock.unlock()
+        request?.cancel()
+    }
+}

@@ -6,13 +6,15 @@ import UniformTypeIdentifiers
 final class RecordingReviewViewModel: ObservableObject {
     let fileURL: URL
     let player: AVPlayer
+    private let removeRecording: (URL) throws -> Void
     @Published var statusMessage: String?
     @Published var errorMessage: String?
     var onClose: () -> Void = {}
 
-    init(fileURL: URL) {
+    init(fileURL: URL, removeRecording: @escaping (URL) throws -> Void = { try FileManager.default.removeItem(at: $0) }) {
         self.fileURL = fileURL
         self.player = AVPlayer(url: fileURL)
+        self.removeRecording = removeRecording
     }
 
     var fileName: String { fileURL.lastPathComponent }
@@ -63,9 +65,15 @@ final class RecordingReviewViewModel: ObservableObject {
     }
 
     func discard() {
+        statusMessage = nil
+        errorMessage = nil
         player.pause()
-        try? FileManager.default.removeItem(at: fileURL)
-        onClose()
+        do {
+            try removeRecording(fileURL)
+            onClose()
+        } catch {
+            errorMessage = "Could not discard recording: \(error.localizedDescription)"
+        }
     }
 }
 

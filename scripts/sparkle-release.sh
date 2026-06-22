@@ -198,14 +198,6 @@ DMG_PATH="$OUT_DIR/${DMG_NAME_PREFIX}-${MARKETING_VERSION}.dmg"
 echo "Version: $MARKETING_VERSION ($CURRENT_PROJECT_VERSION)"
 echo "Creating DMG: $DMG_PATH"
 
-DMG_STAGING="$(mktemp -d)"
-DMG_RENDER="$(mktemp -d)"
-RW_DMG_BASE="$(mktemp -u "$OUT_DIR/${DMG_NAME_PREFIX}-${MARKETING_VERSION}.rw.XXXXXX")"
-RW_DMG_PATH="${RW_DMG_BASE}.dmg"
-ATTACH_PLIST="$(mktemp)"
-DMG_MOUNT_POINT=""
-DMG_DEVICE=""
-
 APP_ICON_NAME="$(defaults read "$APP_PATH/Contents/Info" CFBundleIconFile 2>/dev/null || echo "AppIcon")"
 if [[ "$APP_ICON_NAME" != *.icns ]]; then
   APP_ICON_NAME="${APP_ICON_NAME}.icns"
@@ -216,13 +208,21 @@ if [[ ! -f "$APP_ICON_PATH" ]]; then
   exit 1
 fi
 
+DMG_STAGING="$(mktemp -d)"
+DMG_RENDER="$(mktemp -d)"
+RW_DMG_DIR="$(mktemp -d "$OUT_DIR/${DMG_NAME_PREFIX}-${MARKETING_VERSION}.rw.XXXXXX")"
+RW_DMG_PATH="$RW_DMG_DIR/${DMG_NAME_PREFIX}-${MARKETING_VERSION}.rw.dmg"
+ATTACH_PLIST="$(mktemp)"
+DMG_MOUNT_POINT=""
+DMG_DEVICE=""
+
 cleanup_dmg_build() {
   if [[ -n "$DMG_DEVICE" ]]; then
     hdiutil detach "$DMG_DEVICE" >/dev/null 2>&1 || hdiutil detach -force "$DMG_DEVICE" >/dev/null 2>&1 || true
   elif [[ -n "$DMG_MOUNT_POINT" ]]; then
     hdiutil detach "$DMG_MOUNT_POINT" >/dev/null 2>&1 || hdiutil detach -force "$DMG_MOUNT_POINT" >/dev/null 2>&1 || true
   fi
-  rm -rf "$DMG_STAGING" "$DMG_RENDER" "$ATTACH_PLIST" "$RW_DMG_PATH"
+  rm -rf "$DMG_STAGING" "$DMG_RENDER" "$ATTACH_PLIST" "$RW_DMG_DIR"
 }
 trap cleanup_dmg_build EXIT
 

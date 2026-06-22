@@ -36,4 +36,39 @@ final class RecordingReviewViewModelTests: XCTestCase {
         let existing = try String(contentsOf: source, encoding: .utf8)
         XCTAssertEqual(existing, "keep me")
     }
+
+    func testDiscardFailureKeepsReviewOpenAndShowsError() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("BelloBoxTests.\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let source = directory.appendingPathComponent("source.mov")
+        try Data("recording".utf8).write(to: source)
+        let viewModel = RecordingReviewViewModel(
+            fileURL: source,
+            removeRecording: { _ in throw CocoaError(.fileWriteNoPermission) }
+        )
+        var closeCount = 0
+        viewModel.onClose = { closeCount += 1 }
+
+        viewModel.discard()
+
+        XCTAssertEqual(closeCount, 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: source.path))
+        XCTAssertTrue(viewModel.errorMessage?.hasPrefix("Could not discard recording:") == true)
+    }
+
+    func testDiscardSuccessClosesReview() throws {
+        let source = FileManager.default.temporaryDirectory
+            .appendingPathComponent("BelloBoxTests-\(UUID().uuidString).mov")
+        let viewModel = RecordingReviewViewModel(fileURL: source, removeRecording: { _ in })
+        var closeCount = 0
+        viewModel.onClose = { closeCount += 1 }
+
+        viewModel.discard()
+
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertEqual(closeCount, 1)
+    }
 }

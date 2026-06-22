@@ -12,7 +12,8 @@ This document lists what Bello Box can do and how you interact with each feature
 
 1. **Select text** in any app — a note, an email, a code comment, a web form.
 2. A small **floating toolbar** appears just above your selection with one button
-   per tool: **AI ✨**, **Screenshot 📸**, **QR ▦**, and **Text Tools 🔧**.
+   per tool: **AI ✨**, **Screenshot 📸**, **Record ⏺**, **QR ▦**, and
+   **Text Tools 🔧**.
 3. **Click a tool** (or dismiss by clicking elsewhere). A popup opens next to the
    selection.
 4. Act on the result — most tools offer **Copy** and **Replace** (Replace pastes
@@ -130,6 +131,18 @@ save PNG.
 OCR text is selectable and copyable as plain text or Markdown. Local OCR can
 also show line boxes over the image without baking those boxes into the export.
 
+## Tool 5 — Recording ⏺
+
+Start a screen recording from the toolbar, capture chooser, menu bar, or global
+recording shortcut.
+
+- Capture an **area**, **window**, or **screen**.
+- Choose no audio, microphone, Mac audio, or mic + Mac audio.
+- Configure cursor, click rings, keystroke overlays, secure-field redaction,
+  countdown, quality, and whether Bello Box windows are excluded.
+- Pause/resume or stop from the recording HUD; review the movie afterward to
+  save, copy, reveal, or discard it.
+
 ---
 
 ## Home window
@@ -165,8 +178,8 @@ Dock icon whenever the main app is running.
 The ✨ menu-bar icon gives you:
 - **Open Bello Box** (the home window)
 - **Ask Bello Box About Selection**, **Capture Screenshot…**,
-  **Capture Scrolling Screenshot…**, **Generate QR Code from Selection**,
-  and **Text Tools on Selection**
+  **Capture Scrolling Screenshot…**, **Record Screen…**, **Stop Recording**,
+  **Generate QR Code from Selection**, and **Text Tools on Selection**
 - **Set Up Bello Box…**, **Settings…**
 - **Check for Updates…**
 - **Quit**

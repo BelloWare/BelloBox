@@ -70,7 +70,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private var discardOutputWhenFinished = false
     private var finishCompleted = false
     private var finishing = false
-    private var paused = false
+    private var pauseTimeline = RecordingPauseTimeline()
     private var lastSecureFieldHidden = false
 #if DEBUG
     private var debugScreenSampleCount = 0
@@ -145,7 +145,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
 
     func setPaused(_ paused: Bool) {
         writerQueue.async { [weak self] in
-            self?.paused = paused
+            self?.pauseTimeline.setPaused(paused, at: CMClockGetTime(CMClockGetHostTimeClock()))
         }
     }
 
@@ -251,6 +251,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         self.writer = writer
         self.videoInput = videoInput
         self.pixelBufferAdaptor = adaptor
+        self.pauseTimeline = RecordingPauseTimeline()
         self.finishInitiated = false
         lifecycleLock.lock()
         self.discardOutputWhenFinished = false
@@ -318,16 +319,17 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
 #endif
 
         let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-        startWriterIfNeeded(at: pts)
-        guard startedWriting else {
+        guard !pauseTimeline.isPaused else {
 #if DEBUG
-            debugLastVideoDropReason = "writer did not start"
+            debugLastVideoDropReason = "recording paused"
 #endif
             return
         }
-        guard !paused else {
+        let writePTS = pauseTimeline.outputTimeForWriting(sourceTime: pts)
+        startWriterIfNeeded(at: writePTS)
+        guard startedWriting else {
 #if DEBUG
-            debugLastVideoDropReason = "recording paused"
+            debugLastVideoDropReason = "writer did not start"
 #endif
             return
         }
@@ -366,7 +368,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
             sensitiveState: sensitiveState
         )
 
-        if adaptor.append(renderedPixelBuffer, withPresentationTime: pts) {
+        if adaptor.append(renderedPixelBuffer, withPresentationTime: writePTS) {
             wroteVideoFrame = true
 #if DEBUG
             debugAppendedFrameCount += 1
@@ -380,10 +382,15 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 
     private func appendAudio(_ sampleBuffer: CMSampleBuffer, to input: AVAssetWriterInput?) {
-        guard startedWriting, !paused, let input, input.isReadyForMoreMediaData else { return }
+        guard startedWriting, !pauseTimeline.isPaused, let input, input.isReadyForMoreMediaData else { return }
         let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-        if let startTime, CMTimeCompare(pts, startTime) < 0 { return }
-        input.append(sampleBuffer)
+        let writePTS = pauseTimeline.outputTimeForWriting(sourceTime: pts)
+        if let startTime, CMTimeCompare(writePTS, startTime) < 0 { return }
+        guard let adjustedSampleBuffer = Self.sampleBuffer(sampleBuffer, subtractingPresentationOffset: pauseTimeline.accumulatedDuration) else {
+            onFailure?(RecordingEngineError.writerFailed("Could not retime audio after pause."))
+            return
+        }
+        input.append(adjustedSampleBuffer)
     }
 
     private func startWriterIfNeeded(at time: CMTime) {
@@ -395,6 +402,59 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         } else {
             onFailure?(RecordingEngineError.writerFailed(writer.error?.localizedDescription ?? "Unknown writer error."))
         }
+    }
+
+    private static func sampleBuffer(_ sampleBuffer: CMSampleBuffer, subtractingPresentationOffset offset: CMTime) -> CMSampleBuffer? {
+        guard CMTimeCompare(offset, .zero) != 0 else { return sampleBuffer }
+
+        var entryCount = 0
+        let countStatus = CMSampleBufferGetSampleTimingInfoArray(
+            sampleBuffer,
+            entryCount: 0,
+            arrayToFill: nil,
+            entriesNeededOut: &entryCount
+        )
+        guard countStatus == noErr, entryCount > 0 else { return nil }
+
+        var timing = Array(
+            repeating: CMSampleTimingInfo(
+                duration: .invalid,
+                presentationTimeStamp: .invalid,
+                decodeTimeStamp: .invalid
+            ),
+            count: entryCount
+        )
+        let timingStatus = timing.withUnsafeMutableBufferPointer { pointer in
+            CMSampleBufferGetSampleTimingInfoArray(
+                sampleBuffer,
+                entryCount: entryCount,
+                arrayToFill: pointer.baseAddress,
+                entriesNeededOut: &entryCount
+            )
+        }
+        guard timingStatus == noErr else { return nil }
+
+        for index in timing.indices {
+            if timing[index].presentationTimeStamp.isValid {
+                timing[index].presentationTimeStamp = CMTimeSubtract(timing[index].presentationTimeStamp, offset)
+            }
+            if timing[index].decodeTimeStamp.isValid {
+                timing[index].decodeTimeStamp = CMTimeSubtract(timing[index].decodeTimeStamp, offset)
+            }
+        }
+
+        var adjustedSampleBuffer: CMSampleBuffer?
+        let copyStatus = timing.withUnsafeBufferPointer { pointer in
+            CMSampleBufferCreateCopyWithNewTiming(
+                allocator: kCFAllocatorDefault,
+                sampleBuffer: sampleBuffer,
+                sampleTimingEntryCount: timing.count,
+                sampleTimingArray: pointer.baseAddress,
+                sampleBufferOut: &adjustedSampleBuffer
+            )
+        }
+        guard copyStatus == noErr else { return nil }
+        return adjustedSampleBuffer
     }
 
     private func finishWriting() async throws -> URL {
@@ -716,6 +776,35 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
             writer.cancelWriting()
         }
         removeOutputFiles()
+    }
+}
+
+struct RecordingPauseTimeline {
+    private(set) var accumulatedDuration: CMTime = .zero
+    private var pauseBeganAt: CMTime?
+    private var pendingPauseBeganAt: CMTime?
+    private(set) var isPaused = false
+
+    mutating func setPaused(_ shouldPause: Bool, at sourceTime: CMTime) {
+        guard isPaused != shouldPause else { return }
+        if shouldPause {
+            pauseBeganAt = pendingPauseBeganAt ?? sourceTime
+            pendingPauseBeganAt = nil
+        } else if let pauseBeganAt {
+            pendingPauseBeganAt = pauseBeganAt
+            self.pauseBeganAt = nil
+        }
+        isPaused = shouldPause
+    }
+
+    mutating func outputTimeForWriting(sourceTime: CMTime) -> CMTime {
+        if let pendingPauseBeganAt {
+            if CMTimeCompare(sourceTime, pendingPauseBeganAt) > 0 {
+                accumulatedDuration = CMTimeAdd(accumulatedDuration, CMTimeSubtract(sourceTime, pendingPauseBeganAt))
+            }
+            self.pendingPauseBeganAt = nil
+        }
+        return CMTimeSubtract(sourceTime, accumulatedDuration)
     }
 }
 
