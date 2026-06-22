@@ -287,7 +287,7 @@ DMG_MOUNT_POINT=""
 
 rm -f "$DMG_PATH"
 hdiutil convert "$RW_DMG_PATH" -format UDZO -imagekey zlib-level=9 -o "${DMG_PATH%.dmg}" >/dev/null
-rm -rf "$DMG_STAGING" "$DMG_RENDER" "$ATTACH_PLIST" "$RW_DMG_PATH"
+rm -rf "$DMG_STAGING" "$DMG_RENDER" "$ATTACH_PLIST" "$RW_DMG_DIR"
 trap - EXIT
 
 if [[ "$NOTARIZE" == "1" ]]; then
