@@ -6,6 +6,13 @@ final class CaptureOverlayController {
     private enum Purpose {
         case screenshot
         case recording(RecordingOptions, (CaptureSelection, RecordingOptions) -> Void)
+
+        var diagnosticsName: String {
+            switch self {
+            case .screenshot: return "screenshot"
+            case .recording: return "recording"
+            }
+        }
     }
 
     private let screenCaptureService: ScreenCaptureService
@@ -88,7 +95,7 @@ final class CaptureOverlayController {
         self.snapshots = snapshots
         showOverlayWindows(snapshots: snapshots)
         if let initialSelection,
-           let selectedView = overlayViews.first(where: { $0.snapshot.displayID == snapshot(for: initialSelection)?.displayID }) ?? overlayViews.first {
+           let selectedView = overlayViews.first(where: { $0.snapshot?.displayID == snapshot(for: initialSelection)?.displayID }) ?? overlayViews.first {
             handle(selection: initialSelection, in: selectedView)
         }
     }
@@ -131,6 +138,14 @@ final class CaptureOverlayController {
         self.purpose = purpose
         self.onError = onError
         self.onCancel = onCancel
+        logDiagnostics(
+            "overlay.begin",
+            [
+                "purpose=\(purpose.diagnosticsName)",
+                "mouse=\(Self.serialize(NSEvent.mouseLocation))",
+                "screens=\(Self.screenSummary())",
+            ]
+        )
 
         captureToken += 1
         let token = captureToken
@@ -139,6 +154,13 @@ final class CaptureOverlayController {
             do {
                 let snapshots = try await screenCaptureService.captureDisplaySnapshots(options: options)
                 guard !Task.isCancelled, self.captureToken == token else { return }
+                self.logDiagnostics(
+                    "snapshots.captured",
+                    [
+                        "count=\(snapshots.count)",
+                        "snapshots=\(Self.snapshotSummary(snapshots))",
+                    ]
+                )
                 self.snapshots = snapshots
                 self.showOverlayWindows(snapshots: snapshots)
                 if self.captureToken == token {
@@ -146,6 +168,7 @@ final class CaptureOverlayController {
                 }
             } catch {
                 guard !Task.isCancelled, self.captureToken == token else { return }
+                self.logDiagnostics("snapshots.error", ["error=\(error.localizedDescription)"])
                 self.cancel()
                 onError(error.localizedDescription)
             }
@@ -154,11 +177,31 @@ final class CaptureOverlayController {
 
     private func showOverlayWindows(snapshots: [DisplaySnapshot]) {
         let capturableWindows = CaptureWindowCatalog.currentWindows()
+        var snapshotsByDisplayID: [CGDirectDisplayID: DisplaySnapshot] = [:]
+        for snapshot in snapshots {
+            snapshotsByDisplayID[snapshot.displayID] = snapshot
+        }
+
+        logDiagnostics(
+            "overlay.createWindows",
+            [
+                "screenCount=\(NSScreen.screens.count)",
+                "capturableWindowCount=\(capturableWindows.count)",
+            ]
+        )
 
         for screen in NSScreen.screens {
-            guard let displayID = ScreenCoordinateSpace.displayID(for: screen),
-                  let snapshot = snapshots.first(where: { $0.displayID == displayID })
-            else { continue }
+            let displayID = ScreenCoordinateSpace.displayID(for: screen)
+            let snapshot = displayID.flatMap { snapshotsByDisplayID[$0] }
+            if snapshot == nil {
+                logDiagnostics(
+                    "overlay.missingSnapshot",
+                    [
+                        "displayID=\(displayID.map { String($0) } ?? "nil")",
+                        "frame=\(Self.serialize(screen.frame))",
+                    ]
+                )
+            }
 
             let window = CaptureOverlayWindow(screen: screen)
             window.onEscape = { [weak self] in self?.cancelFromUser() }
@@ -190,7 +233,8 @@ final class CaptureOverlayController {
         AppActivation.bringAppForward()
         installKeyMonitor()
         installResignActiveObserver()
-        windows.first?.makeKeyAndOrderFront(nil)
+        orderOverlayWindowsFront(keyWindow: window(containing: NSEvent.mouseLocation) ?? windows.first)
+        logDiagnostics("overlay.ready", ["windowCount=\(windows.count)"])
         NSCursor.crosshair.set()
     }
 
@@ -236,6 +280,7 @@ final class CaptureOverlayController {
     private func handle(selection: CaptureSelection, in selectedView: CaptureOverlayView) {
         guard let purpose else { return }
         selectedView.window?.makeKeyAndOrderFront(nil)
+        logDiagnostics("selection.lock", ["selection=\(Self.describe(selection))"])
 
         for overlayView in overlayViews {
             overlayView.lock(selection: overlayView === selectedView ? selection : nil)
@@ -264,29 +309,15 @@ final class CaptureOverlayController {
     private func showScreenshotEditor(for selection: CaptureSelection, in selectedView: CaptureOverlayView) {
         do {
             guard let snapshot = snapshot(for: selection) else {
-                throw ScreenCaptureService.CaptureError.noDisplayFound
+                captureScreenshotForMissingSnapshot(selection: selection, in: selectedView)
+                return
             }
             let document = try screenCaptureService.document(
                 fromSnapshot: snapshot,
                 cocoaRect: selection.cocoaRect,
                 source: screenshotSource(for: selection)
             )
-            let viewModel = ScreenshotPopupViewModel(
-                document: document,
-                settings: settings,
-                macOCRService: macOCRService
-            )
-            activeScreenshotViewModel = viewModel
-            viewModel.onClose = { [weak self, weak viewModel] in
-                if self?.activeScreenshotViewModel === viewModel {
-                    self?.activeScreenshotViewModel = nil
-                }
-                self?.cancelFromUser()
-            }
-            selectedView.showScreenshotEditor(viewModel: viewModel, selection: selection)
-#if DEBUG
-            writeE2EOverlayExportIfNeeded(viewModel: viewModel, selection: selection)
-#endif
+            let viewModel = installScreenshotEditor(document: document, selection: selection, in: selectedView)
             refreshWindowScreenshotIfNeeded(selection: selection, viewModel: viewModel)
         } catch {
             let message = error.localizedDescription
@@ -294,6 +325,69 @@ final class CaptureOverlayController {
             cancel()
             reportError?(message)
         }
+    }
+
+    private func captureScreenshotForMissingSnapshot(selection: CaptureSelection, in selectedView: CaptureOverlayView) {
+        let target = captureTarget(for: selection)
+        let selectedWindow = selectedView.window
+        logDiagnostics("snapshot.fallbackCapture", ["selection=\(Self.describe(selection))"])
+        captureTask?.cancel()
+        captureTask = Task { @MainActor [weak self, weak selectedView, weak selectedWindow] in
+            guard let self, let selectedView else { return }
+            do {
+                self.orderOverlayWindowsOut()
+                let document = try await self.screenCaptureService.capture(
+                    target,
+                    options: CaptureOptions(
+                        includeCursor: self.settings.screenshotIncludeCursor,
+                        hideBelloBoxWindows: false,
+                        delayAfterHidingOverlays: 0.05
+                    )
+                )
+                guard !Task.isCancelled else { return }
+                self.orderOverlayWindowsFront(keyWindow: selectedWindow)
+                _ = self.installScreenshotEditor(document: document, selection: selection, in: selectedView)
+                self.captureTask = nil
+            } catch {
+                guard !Task.isCancelled else { return }
+                self.logDiagnostics("snapshot.fallbackCapture.error", ["error=\(error.localizedDescription)"])
+                let reportError = self.onError
+                self.cancel()
+                reportError?(error.localizedDescription)
+            }
+        }
+    }
+
+    @discardableResult
+    private func installScreenshotEditor(
+        document: ScreenshotDocument,
+        selection: CaptureSelection,
+        in selectedView: CaptureOverlayView
+    ) -> ScreenshotPopupViewModel {
+        let viewModel = ScreenshotPopupViewModel(
+            document: document,
+            settings: settings,
+            macOCRService: macOCRService
+        )
+        activeScreenshotViewModel = viewModel
+        viewModel.onClose = { [weak self, weak viewModel] in
+            if self?.activeScreenshotViewModel === viewModel {
+                self?.activeScreenshotViewModel = nil
+            }
+            self?.cancelFromUser()
+        }
+        selectedView.showScreenshotEditor(viewModel: viewModel, selection: selection)
+#if DEBUG
+        writeE2EOverlayExportIfNeeded(viewModel: viewModel, selection: selection)
+#endif
+        logDiagnostics(
+            "editor.inline",
+            [
+                "selection=\(Self.describe(selection))",
+                "image=\(document.baseImage.width)x\(document.baseImage.height)",
+            ]
+        )
+        return viewModel
     }
 
     private func refreshWindowScreenshotIfNeeded(selection: CaptureSelection, viewModel: ScreenshotPopupViewModel) {
@@ -354,6 +448,72 @@ final class CaptureOverlayController {
         case let .window(window):
             return .window(title: window.title, ownerName: window.ownerName, windowID: window.windowID)
         }
+    }
+
+    private func captureTarget(for selection: CaptureSelection) -> CaptureTarget {
+        switch selection {
+        case let .area(area):
+            return .area(area)
+        case let .display(display):
+            return .display(display)
+        case let .window(window):
+            return .window(window)
+        }
+    }
+
+    private func orderOverlayWindowsOut() {
+        for window in windows {
+            window.orderOut(nil)
+        }
+    }
+
+    private func orderOverlayWindowsFront(keyWindow: NSWindow?) {
+        for window in windows {
+            window.orderFrontRegardless()
+        }
+        keyWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    private func window(containing point: CGPoint) -> CaptureOverlayWindow? {
+        windows.first { $0.frame.contains(point) }
+    }
+
+    private func logDiagnostics(_ event: String, _ details: [String] = []) {
+        CaptureDiagnostics.log(event, enabled: settings.captureDiagnosticsEnabled, details: details)
+    }
+
+    private static func screenSummary() -> String {
+        NSScreen.screens.map { screen in
+            let displayID = ScreenCoordinateSpace.displayID(for: screen).map { String($0) } ?? "nil"
+            return "id=\(displayID),frame=\(serialize(screen.frame)),scale=\(ScreenCoordinateSpace.backingScale(for: screen))"
+        }
+        .joined(separator: ";")
+    }
+
+    private static func snapshotSummary(_ snapshots: [DisplaySnapshot]) -> String {
+        snapshots.map { snapshot in
+            "id=\(snapshot.displayID),frame=\(serialize(snapshot.screenFrame)),scale=\(snapshot.scale),image=\(snapshot.image.width)x\(snapshot.image.height)"
+        }
+        .joined(separator: ";")
+    }
+
+    private static func describe(_ selection: CaptureSelection) -> String {
+        switch selection {
+        case let .area(area):
+            return "area(displayID=\(area.displayID.map { String($0) } ?? "nil"),rect=\(serialize(area.cocoaRect)))"
+        case let .display(display):
+            return "display(id=\(display.displayID),frame=\(serialize(display.frame)))"
+        case let .window(window):
+            return "window(id=\(window.windowID),owner=\(window.ownerName ?? ""),title=\(window.title ?? ""),frame=\(window.frame.map { serialize($0) } ?? "nil"))"
+        }
+    }
+
+    private static func serialize(_ point: CGPoint) -> String {
+        "\(Int(point.x.rounded())),\(Int(point.y.rounded()))"
+    }
+
+    private static func serialize(_ rect: CGRect) -> String {
+        "\(Int(rect.origin.x.rounded())),\(Int(rect.origin.y.rounded())),\(Int(rect.size.width.rounded())),\(Int(rect.size.height.rounded()))"
     }
 
     private func label(for selection: CaptureSelection) -> String {
@@ -448,9 +608,6 @@ final class CaptureOverlayController {
         return size.intValue
     }
 
-    private static func serialize(_ rect: CGRect) -> String {
-        "\(rect.origin.x),\(rect.origin.y),\(rect.size.width),\(rect.size.height)"
-    }
 #endif
 }
 
@@ -492,7 +649,7 @@ private final class CaptureOverlayWindow: NSPanel {
 
 private final class CaptureOverlayView: NSView {
     let screen: NSScreen
-    let snapshot: DisplaySnapshot
+    let snapshot: DisplaySnapshot?
     let windows: [CaptureWindow]
 
     var onSelection: ((CaptureSelection) -> Void)?
@@ -505,7 +662,7 @@ private final class CaptureOverlayView: NSView {
     private var accessoryView: NSView?
     fileprivate var hasLockedSelection: Bool { lockedSelection != nil }
 
-    init(screen: NSScreen, snapshot: DisplaySnapshot, windows: [CaptureWindow]) {
+    init(screen: NSScreen, snapshot: DisplaySnapshot?, windows: [CaptureWindow]) {
         self.screen = screen
         self.snapshot = snapshot
         self.windows = windows
@@ -517,6 +674,8 @@ private final class CaptureOverlayView: NSView {
 
     override var acceptsFirstResponder: Bool { true }
     override var isFlipped: Bool { true }
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
     func lock(selection: CaptureSelection?) {
         lockedSelection = selection
@@ -623,6 +782,7 @@ private final class CaptureOverlayView: NSView {
     }
 
     private func drawSnapshot() {
+        guard let snapshot else { return }
         let image = NSImage(cgImage: snapshot.image, size: screen.frame.size)
         NSGraphicsContext.current?.imageInterpolation = .high
         image.draw(in: bounds)
@@ -646,7 +806,7 @@ private final class CaptureOverlayView: NSView {
         path.stroke()
 
         guard lockedSelection == nil else { return }
-        let scale = snapshot.scale
+        let scale = snapshot?.scale ?? ScreenCoordinateSpace.backingScale(for: screen)
         let text = "\(Int(selection.width * scale)) x \(Int(selection.height * scale))"
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 12, weight: .semibold),

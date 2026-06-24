@@ -37,11 +37,12 @@ struct MainView: View {
             header
             statusCard
             howToCard
+            shortcutsCard
             Spacer(minLength: 0)
             actions
         }
         .padding(24)
-        .frame(width: 600, height: 640)
+        .frame(width: 660, height: 720)
         .onReceive(timer) { _ in trusted = AccessibilityService.isTrusted }
     }
 
@@ -133,6 +134,58 @@ struct MainView: View {
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BoxTheme.accentSoft.opacity(0.5)))
+    }
+
+    private var shortcutsCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Image(systemName: "keyboard")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(BoxTheme.accent)
+                    .frame(width: 30, height: 30)
+                    .background(Circle().fill(BoxTheme.accentSoft))
+                Text("Configured shortcuts").font(.callout.weight(.semibold))
+                Spacer()
+            }
+
+            shortcutRow(
+                title: "Tool board",
+                detail: "Show tools for the current selection",
+                enabled: settings.globalHotkeyEnabled,
+                value: settings.globalHotkey.displayString
+            )
+            shortcutRow(
+                title: "Screenshot",
+                detail: "Open the capture overlay",
+                enabled: settings.screenshotHotkeyEnabled,
+                value: settings.screenshotHotkey.displayString
+            )
+            shortcutRow(
+                title: "Recording",
+                detail: "Choose a recording target",
+                enabled: settings.recordingHotkeyEnabled,
+                value: settings.recordingHotkey.displayString
+            )
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.primary.opacity(0.045)))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.primary.opacity(0.06), lineWidth: 1))
+    }
+
+    private func shortcutRow(title: String, detail: String, enabled: Bool, value: String) -> some View {
+        HStack(alignment: .center, spacing: 10) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.caption.weight(.semibold))
+                Text(detail).font(.caption2).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(enabled ? value : "Off")
+                .font(.caption.monospaced().weight(.semibold))
+                .foregroundStyle(enabled ? .primary : .secondary)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(enabled ? BoxTheme.accentSoft : Color.primary.opacity(0.06)))
+        }
     }
 
     private var actions: some View {

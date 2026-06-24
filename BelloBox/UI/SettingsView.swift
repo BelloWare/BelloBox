@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var screenRecordingTrusted = ScreenCapturePermission.isTrusted
     @State private var microphonePermission = MicrophonePermission.status()
     @State private var inputMonitoringPermission = InputMonitoringPermission.status()
+    @State private var diagnosticsExportMessage: String?
     private let permissionTimer = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -180,6 +181,23 @@ struct SettingsView: View {
                 }
                 Toggle("Remove repeated sticky headers/footers", isOn: $settings.scrollingScreenshotAutoCompact)
                 helpText("Scrolling capture stays available from the menu. OCR only runs from the screenshot editor when you ask for it.")
+            }
+
+            settingsSection("Diagnostics", subtitle: "Capture display metadata when screenshot behavior needs debugging.", systemImage: "stethoscope") {
+                Toggle("Enable screenshot diagnostics logging", isOn: $settings.captureDiagnosticsEnabled)
+                HStack(spacing: 10) {
+                    Button {
+                        exportCaptureDiagnostics()
+                    } label: {
+                        Label("Export Diagnostics Log…", systemImage: "square.and.arrow.up")
+                    }
+                    if let diagnosticsExportMessage {
+                        Text(diagnosticsExportMessage)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                helpText("Logs include display IDs, screen frames, overlay decisions, and capture errors only. Bello Box does not log screenshot pixels, OCR text, image payloads, or API keys.")
             }
         }
     }
@@ -424,6 +442,21 @@ struct SettingsView: View {
             }
         }
         .padding(.vertical, 3)
+    }
+
+    private func exportCaptureDiagnostics() {
+        let panel = NSSavePanel()
+        panel.title = "Export Bello Box Diagnostics"
+        panel.nameFieldStringValue = "bello-box-capture-diagnostics.log"
+        panel.canCreateDirectories = true
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try CaptureDiagnostics.exportLog(to: url)
+            diagnosticsExportMessage = "Exported."
+        } catch {
+            diagnosticsExportMessage = error.localizedDescription
+        }
     }
 }
 

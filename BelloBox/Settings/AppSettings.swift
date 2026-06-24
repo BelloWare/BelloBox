@@ -82,6 +82,7 @@ final class AppSettings: ObservableObject {
         static let screenshotIncludeCursor = "screenshotIncludeCursor"
         static let screenshotAutoCopy = "screenshotAutoCopy"
         static let screenshotDefaultMode = "screenshotDefaultMode"
+        static let captureDiagnosticsEnabled = "captureDiagnosticsEnabled"
         static let scrollingScreenshotMaxFrames = "scrollingScreenshotMaxFrames"
         static let scrollingScreenshotAutoCompact = "scrollingScreenshotAutoCompact"
         static let ocrRecognitionLevel = "ocrRecognitionLevel"
@@ -151,6 +152,7 @@ final class AppSettings: ObservableObject {
     @Published var screenshotIncludeCursor: Bool { didSet { defaults.set(screenshotIncludeCursor, forKey: Keys.screenshotIncludeCursor) } }
     @Published var screenshotAutoCopy: Bool { didSet { defaults.set(screenshotAutoCopy, forKey: Keys.screenshotAutoCopy) } }
     @Published var screenshotDefaultMode: ScreenshotDefaultMode { didSet { defaults.set(screenshotDefaultMode.rawValue, forKey: Keys.screenshotDefaultMode) } }
+    @Published var captureDiagnosticsEnabled: Bool { didSet { defaults.set(captureDiagnosticsEnabled, forKey: Keys.captureDiagnosticsEnabled) } }
     @Published var scrollingScreenshotMaxFrames: Int {
         didSet {
             let normalized = Self.normalizedScrollingMaxFrames(scrollingScreenshotMaxFrames)
@@ -256,6 +258,7 @@ final class AppSettings: ObservableObject {
         screenshotIncludeCursor = (defaults.object(forKey: Keys.screenshotIncludeCursor) as? Bool) ?? false
         screenshotAutoCopy = (defaults.object(forKey: Keys.screenshotAutoCopy) as? Bool) ?? false
         screenshotDefaultMode = ScreenshotDefaultMode(rawValue: defaults.string(forKey: Keys.screenshotDefaultMode) ?? "") ?? .area
+        captureDiagnosticsEnabled = (defaults.object(forKey: Keys.captureDiagnosticsEnabled) as? Bool) ?? false
         scrollingScreenshotMaxFrames = Self.normalizedScrollingMaxFrames(defaults.object(forKey: Keys.scrollingScreenshotMaxFrames) as? Int ?? 20)
         scrollingScreenshotAutoCompact = (defaults.object(forKey: Keys.scrollingScreenshotAutoCompact) as? Bool) ?? true
         ocrRecognitionLevel = OCRRecognitionLevel(rawValue: defaults.string(forKey: Keys.ocrRecognitionLevel) ?? "") ?? .accurate

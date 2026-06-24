@@ -33,7 +33,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false
         window.delegate = self
-        window.setContentSize(NSSize(width: 600, height: 640))
+        window.setContentSize(NSSize(width: 660, height: 720))
         window.center()
         self.window = window
 

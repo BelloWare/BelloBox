@@ -69,18 +69,27 @@ final class ScreenCaptureService {
         }
 
         var snapshots: [DisplaySnapshot] = []
+        var firstCaptureError: Error?
         for screen in NSScreen.screens {
             guard let displayID = ScreenCoordinateSpace.displayID(for: screen) else { continue }
-            let image = try await captureDisplay(displayID, includeCursor: options.includeCursor)
-            try validate(image)
-            snapshots.append(DisplaySnapshot(
-                displayID: displayID,
-                screenFrame: screen.frame,
-                scale: ScreenCoordinateSpace.imageScale(pixelWidth: image.width, screenFrame: screen.frame),
-                image: image
-            ))
+            do {
+                let image = try await captureDisplay(displayID, includeCursor: options.includeCursor)
+                try validate(image)
+                snapshots.append(DisplaySnapshot(
+                    displayID: displayID,
+                    screenFrame: screen.frame,
+                    scale: ScreenCoordinateSpace.imageScale(pixelWidth: image.width, screenFrame: screen.frame),
+                    image: image
+                ))
+            } catch {
+                if firstCaptureError == nil {
+                    firstCaptureError = error
+                }
+            }
         }
-        guard !snapshots.isEmpty else { throw CaptureError.noDisplayFound }
+        if snapshots.isEmpty {
+            throw firstCaptureError ?? CaptureError.noDisplayFound
+        }
         return snapshots
     }
 

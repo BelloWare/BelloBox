@@ -75,6 +75,17 @@ final class RecordingOptionsTests: XCTestCase {
         XCTAssertEqual(AppSettings(defaults: highDefaults).llmOCRMaxUploadLongEdge, 5000)
     }
 
+    func testCaptureDiagnosticsSettingPersists() {
+        let defaults = temporaryDefaults("capture-diagnostics")
+        let settings = AppSettings(defaults: defaults)
+
+        XCTAssertFalse(settings.captureDiagnosticsEnabled)
+        settings.captureDiagnosticsEnabled = true
+
+        XCTAssertTrue(defaults.bool(forKey: "captureDiagnosticsEnabled"))
+        XCTAssertTrue(AppSettings(defaults: defaults).captureDiagnosticsEnabled)
+    }
+
     func testSettingsPersistNormalizedValuesLoadedFromDefaults() {
         let defaults = temporaryDefaults("persisted-normalization")
         defaults.set("bad-provider", forKey: "provider")
