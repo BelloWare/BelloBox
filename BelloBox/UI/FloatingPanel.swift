@@ -55,7 +55,7 @@ final class PopupPanel: NSPanel {
 /// fully on-screen.
 enum ScreenPlacement {
     static func screen(containing point: CGPoint) -> NSScreen {
-        NSScreen.screens.first { $0.frame.contains(point) } ?? NSScreen.main ?? NSScreen.screens[0]
+        ScreenCoordinateSpace.screen(containingOrNearestTo: point)
     }
 
     /// Origin (bottom-left) for the action button, placed just above the end of

@@ -21,4 +21,14 @@ final class ScreenPlacementTests: XCTestCase {
 
         XCTAssertEqual(origin, CGPoint(x: 6, y: 6))
     }
+
+    func testClampKeepsPopupInsideNegativeOriginVisibleFrame() {
+        let origin = ScreenPlacement.clamp(
+            origin: CGPoint(x: -1700, y: 500),
+            size: CGSize(width: 300, height: 180),
+            visibleFrame: CGRect(x: -1600, y: 0, width: 1600, height: 900)
+        )
+
+        XCTAssertEqual(origin, CGPoint(x: -1594, y: 500))
+    }
 }

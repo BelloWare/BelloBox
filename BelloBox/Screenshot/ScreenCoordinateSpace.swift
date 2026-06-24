@@ -3,13 +3,43 @@ import CoreGraphics
 
 enum ScreenCoordinateSpace {
     static func displayForCocoaRect(_ rect: CGRect) -> NSScreen? {
-        let candidates = NSScreen.screens
-            .map { screen in (screen, screen.frame.intersection(rect).area) }
-            .filter { $0.1 > 0 }
-            .sorted { $0.1 > $1.1 }
-        if let best = candidates.first?.0 { return best }
-        let midpoint = CGPoint(x: rect.midX, y: rect.midY)
-        return NSScreen.screens.first { $0.frame.contains(midpoint) } ?? NSScreen.main
+        let screens = NSScreen.screens
+        guard let frame = screenFrame(for: rect, in: screens.map(\.frame)) else {
+            return NSScreen.main
+        }
+        return screens.first { $0.frame == frame } ?? NSScreen.main
+    }
+
+    static func screen(containingOrNearestTo point: CGPoint) -> NSScreen {
+        let screens = NSScreen.screens
+        if let frame = screenFrame(containingOrNearestTo: point, in: screens.map(\.frame)),
+           let screen = screens.first(where: { $0.frame == frame }) {
+            return screen
+        }
+        if let main = NSScreen.main { return main }
+        precondition(!screens.isEmpty, "No screens are available.")
+        return screens[0]
+    }
+
+    static func screenFrame(for rect: CGRect, in screenFrames: [CGRect]) -> CGRect? {
+        guard !screenFrames.isEmpty, !rect.isNull else { return nil }
+        let rect = rect.standardized
+        let candidates = screenFrames
+            .map { frame in (frame: frame, area: frame.intersection(rect).area) }
+            .filter { $0.area > 0 }
+            .sorted { $0.area > $1.area }
+        if let best = candidates.first?.frame { return best }
+        return screenFrame(containingOrNearestTo: CGPoint(x: rect.midX, y: rect.midY), in: screenFrames)
+    }
+
+    static func screenFrame(containingOrNearestTo point: CGPoint, in screenFrames: [CGRect]) -> CGRect? {
+        guard !screenFrames.isEmpty else { return nil }
+        if let containing = screenFrames.first(where: { $0.contains(point) }) {
+            return containing
+        }
+        return screenFrames.min { lhs, rhs in
+            lhs.distanceSquared(to: point) < rhs.distanceSquared(to: point)
+        }
     }
 
     static func displayID(for screen: NSScreen) -> CGDirectDisplayID? {
@@ -150,8 +180,7 @@ enum ScreenCoordinateSpace {
     }
 
     static func screenContainingMouse() -> NSScreen {
-        let mouse = NSEvent.mouseLocation
-        return NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main ?? NSScreen.screens[0]
+        screen(containingOrNearestTo: NSEvent.mouseLocation)
     }
 }
 
@@ -159,5 +188,27 @@ private extension CGRect {
     var area: CGFloat {
         guard !isNull, !isEmpty else { return 0 }
         return width * height
+    }
+
+    func distanceSquared(to point: CGPoint) -> CGFloat {
+        let dx: CGFloat
+        if point.x < minX {
+            dx = minX - point.x
+        } else if point.x > maxX {
+            dx = point.x - maxX
+        } else {
+            dx = 0
+        }
+
+        let dy: CGFloat
+        if point.y < minY {
+            dy = minY - point.y
+        } else if point.y > maxY {
+            dy = point.y - maxY
+        } else {
+            dy = 0
+        }
+
+        return dx * dx + dy * dy
     }
 }

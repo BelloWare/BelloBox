@@ -154,4 +154,40 @@ final class ScreenCoordinateSpaceTests: XCTestCase {
 
         XCTAssertEqual(rect, CGRect(x: 240, y: 1200, width: 500, height: 200))
     }
+
+    func testScreenFrameChoosesLargestIntersectionForCrossDisplayRect() {
+        let frames = [
+            CGRect(x: 0, y: 0, width: 1000, height: 800),
+            CGRect(x: 1000, y: 0, width: 900, height: 800),
+        ]
+        let rect = CGRect(x: 900, y: 100, width: 320, height: 200)
+
+        let frame = ScreenCoordinateSpace.screenFrame(for: rect, in: frames)
+
+        XCTAssertEqual(frame, frames[1])
+    }
+
+    func testScreenFrameFallsBackToNearestDisplayForPointInGap() {
+        let frames = [
+            CGRect(x: 0, y: 0, width: 1000, height: 800),
+            CGRect(x: 1120, y: 0, width: 900, height: 800),
+        ]
+        let pointInGapCloserToRightDisplay = CGPoint(x: 1085, y: 400)
+
+        let frame = ScreenCoordinateSpace.screenFrame(containingOrNearestTo: pointInGapCloserToRightDisplay, in: frames)
+
+        XCTAssertEqual(frame, frames[1])
+    }
+
+    func testScreenFrameFallsBackToNearestNegativeOriginDisplayForOffscreenRect() {
+        let frames = [
+            CGRect(x: -1280, y: 0, width: 1280, height: 800),
+            CGRect(x: 0, y: 0, width: 1440, height: 900),
+        ]
+        let rectJustPastLeftDisplay = CGRect(x: -1360, y: 300, width: 40, height: 40)
+
+        let frame = ScreenCoordinateSpace.screenFrame(for: rectJustPastLeftDisplay, in: frames)
+
+        XCTAssertEqual(frame, frames[0])
+    }
 }
