@@ -704,7 +704,7 @@ final class SelectionOverlayController: NSObject {
         beginUnifiedScreenshotCapture(anchorRect: nil)
     }
 
-    private func beginUnifiedScreenshotCapture(anchorRect: CGRect?) {
+    private func beginUnifiedScreenshotCapture(anchorRect: CGRect?, policy: CaptureSelectionPolicy = .any) {
 #if DEBUG
         if let area = e2eRegionArea() {
             Task { await self.captureArea(area, anchorRect: anchorRect) }
@@ -720,6 +720,7 @@ final class SelectionOverlayController: NSObject {
         )
         captureOverlayController = controller
         controller.beginScreenshot(
+            policy: policy,
             onError: { [weak self] message in
                 self?.captureOverlayController = nil
                 self?.showScreenshotError(message, anchorRect: anchorRect)
@@ -734,8 +735,8 @@ final class SelectionOverlayController: NSObject {
         let viewModel = ScreenshotCaptureChooserViewModel()
         viewModel.onClose = { [weak self] in self?.hidePopup() }
         viewModel.onCaptureArea = { [weak self] in self?.beginAreaCapture(anchorRect: anchorRect) }
-        viewModel.onCaptureWindow = { [weak self] in self?.showWindowPicker(anchorRect: anchorRect) }
-        viewModel.onCaptureScreen = { [weak self] in self?.captureScreen(anchorRect: anchorRect) }
+        viewModel.onCaptureWindow = { [weak self] in self?.beginWindowCapture(anchorRect: anchorRect) }
+        viewModel.onCaptureScreen = { [weak self] in self?.beginScreenCapture(anchorRect: anchorRect) }
         viewModel.onCaptureScrolling = { [weak self] in self?.beginScrollingAreaCapture(anchorRect: anchorRect) }
         let view = ScreenshotCaptureChooserView(viewModel: viewModel, initialMode: initialMode)
         present(
@@ -757,7 +758,15 @@ final class SelectionOverlayController: NSObject {
     }
 
     private func beginAreaCapture(anchorRect: CGRect?) {
-        beginUnifiedScreenshotCapture(anchorRect: anchorRect)
+        beginUnifiedScreenshotCapture(anchorRect: anchorRect, policy: .areaOnly)
+    }
+
+    private func beginWindowCapture(anchorRect: CGRect?) {
+        beginUnifiedScreenshotCapture(anchorRect: anchorRect, policy: .windowOnly)
+    }
+
+    private func beginScreenCapture(anchorRect: CGRect?) {
+        beginUnifiedScreenshotCapture(anchorRect: anchorRect, policy: .displayOnly)
     }
 
     private func beginScrollingAreaCapture(anchorRect: CGRect?) {
@@ -799,20 +808,6 @@ final class SelectionOverlayController: NSObject {
             showScreenshotOverlayEditor(document: document, frame: area.cocoaRect)
         } catch {
             showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
-        }
-    }
-
-    private func captureScreen(anchorRect: CGRect?) {
-        hidePopup()
-        Task {
-            do {
-                let document = try await screenCaptureService.captureScreenUnderMouse(
-                    options: CaptureOptions(includeCursor: settings.screenshotIncludeCursor, hideBelloBoxWindows: true, delayAfterHidingOverlays: 0.15)
-                )
-                showScreenshotEditor(document: document, anchorRect: anchorRect)
-            } catch {
-                showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
-            }
         }
     }
 
@@ -931,8 +926,8 @@ final class SelectionOverlayController: NSObject {
         viewModel.errorMessage = message
         viewModel.onClose = { [weak self] in self?.hidePopup() }
         viewModel.onCaptureArea = { [weak self] in self?.beginAreaCapture(anchorRect: anchorRect) }
-        viewModel.onCaptureWindow = { [weak self] in self?.showWindowPicker(anchorRect: anchorRect) }
-        viewModel.onCaptureScreen = { [weak self] in self?.captureScreen(anchorRect: anchorRect) }
+        viewModel.onCaptureWindow = { [weak self] in self?.beginWindowCapture(anchorRect: anchorRect) }
+        viewModel.onCaptureScreen = { [weak self] in self?.beginScreenCapture(anchorRect: anchorRect) }
         viewModel.onCaptureScrolling = { [weak self] in self?.beginScrollingAreaCapture(anchorRect: anchorRect) }
         let view = ScreenshotCaptureChooserView(viewModel: viewModel)
         present(

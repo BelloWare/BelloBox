@@ -161,6 +161,14 @@ enum CaptureSelection: Equatable {
     }
 }
 
+enum CaptureSelectionPolicy: Equatable {
+    case any
+    case areaOnly
+    case windowOnly
+    case displayOnly
+    case areaOrWindow
+}
+
 enum ScreenshotCaptureMode: String, CaseIterable, Identifiable {
     case area
     case window

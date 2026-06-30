@@ -53,6 +53,7 @@ final class ScreenCaptureService {
 
     var beforeCapture: (() -> Void)?
     var afterCapture: (() -> Void)?
+    private var cachedShareableContent: (date: Date, content: SCShareableContent)?
 
     func captureDisplaySnapshots(options: CaptureOptions = .default) async throws -> [DisplaySnapshot] {
         guard ScreenCapturePermission.isTrusted else { throw CaptureError.permissionDenied }
@@ -143,9 +144,23 @@ final class ScreenCaptureService {
                 source: .display(displayID: display.displayID)
             )
         case let .area(area):
-            guard let screen = area.displayID.flatMap(screen(for:)) ?? ScreenCoordinateSpace.displayForCocoaRect(area.cocoaRect),
-                  let displayID = ScreenCoordinateSpace.displayID(for: screen)
-            else { throw CaptureError.noDisplayFound }
+            let screen: NSScreen
+            let displayID: CGDirectDisplayID
+            if let explicitDisplayID = area.displayID {
+                guard let explicitScreen = self.screen(for: explicitDisplayID) else {
+                    throw CaptureError.noDisplayFound
+                }
+                screen = explicitScreen
+                displayID = explicitDisplayID
+            } else {
+                guard let resolvedScreen = ScreenCoordinateSpace.strictDisplayForCocoaRect(area.cocoaRect),
+                      let resolvedDisplayID = ScreenCoordinateSpace.displayID(for: resolvedScreen)
+                else {
+                    throw CaptureError.noDisplayFound
+                }
+                screen = resolvedScreen
+                displayID = resolvedDisplayID
+            }
             let boundedRect = area.cocoaRect.intersection(screen.frame).standardized
             guard boundedRect.width >= 1, boundedRect.height >= 1 else {
                 throw CaptureError.captureFailed("The selected area was outside the display bounds.")
@@ -257,8 +272,14 @@ final class ScreenCaptureService {
         }
     }
 
-    private func shareableContent() async throws -> SCShareableContent {
-        try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+    private func shareableContent(maxAge: TimeInterval = 0.35) async throws -> SCShareableContent {
+        if let cachedShareableContent,
+           Date().timeIntervalSince(cachedShareableContent.date) <= maxAge {
+            return cachedShareableContent.content
+        }
+        let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+        cachedShareableContent = (Date(), content)
+        return content
     }
 
     private func validate(_ image: CGImage) throws {

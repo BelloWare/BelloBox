@@ -12,7 +12,7 @@ struct AnnotationCanvasView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let image = viewModel.previewImage
+            let image = viewModel.basePreviewImage()
             let imageSize = viewModel.visibleImageSize
             let viewport = ImageViewport(imageSize: imageSize, viewSize: geometry.size)
 
@@ -28,12 +28,82 @@ struct AnnotationCanvasView: View {
                     OCRTextRegionsOverlayView(regions: result.regions, viewport: viewport)
                 }
 
+                committedAnnotationLayer(viewport: viewport)
                 previewLayer(viewport: viewport)
                 draggableTextAnnotationLayer(viewport: viewport)
                 inlineTextEditor(viewport: viewport)
             }
             .contentShape(Rectangle())
             .gesture(dragGesture(viewport: viewport))
+        }
+    }
+
+    @ViewBuilder
+    private func committedAnnotationLayer(viewport: ImageViewport) -> some View {
+        ForEach(viewModel.visibleAnnotations) { annotation in
+            committedAnnotationView(annotation, viewport: viewport)
+        }
+    }
+
+    @ViewBuilder
+    private func committedAnnotationView(_ annotation: ScreenshotAnnotation, viewport: ImageViewport) -> some View {
+        let stroke = Color(nsColor: annotation.style.strokeColor.nsColor)
+        let fill = annotation.style.fillColor.map { Color(nsColor: $0.nsColor) }
+        let lineWidth = max(annotation.style.lineWidth, 1)
+        switch annotation.kind {
+        case let .freehand(points):
+            if points.count > 1 {
+                Path { path in
+                    path.move(to: viewport.imagePointToViewPoint(points[0]))
+                    for point in points.dropFirst() {
+                        path.addLine(to: viewport.imagePointToViewPoint(point))
+                    }
+                }
+                .stroke(stroke.opacity(annotation.style.opacity), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
+            }
+        case let .arrow(start, end):
+            Path { path in
+                let from = viewport.imagePointToViewPoint(start)
+                let to = viewport.imagePointToViewPoint(end)
+                path.move(to: from)
+                path.addLine(to: to)
+                let angle = atan2(to.y - from.y, to.x - from.x)
+                let headLength = max(10, lineWidth * 3)
+                let spread = CGFloat.pi / 7
+                path.move(to: to)
+                path.addLine(to: CGPoint(x: to.x - cos(angle - spread) * headLength, y: to.y - sin(angle - spread) * headLength))
+                path.move(to: to)
+                path.addLine(to: CGPoint(x: to.x - cos(angle + spread) * headLength, y: to.y - sin(angle + spread) * headLength))
+            }
+            .stroke(stroke.opacity(annotation.style.opacity), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
+        case let .rectangle(rect):
+            let viewRect = viewport.imageRectToViewRect(rect)
+            Rectangle()
+                .fill((fill ?? Color.clear).opacity(annotation.style.opacity))
+                .overlay(Rectangle().stroke(stroke.opacity(annotation.style.opacity), lineWidth: lineWidth))
+                .frame(width: viewRect.width, height: viewRect.height)
+                .position(x: viewRect.midX, y: viewRect.midY)
+        case let .highlight(rect):
+            let viewRect = viewport.imageRectToViewRect(rect)
+            Rectangle()
+                .fill((fill ?? Color.yellow).opacity(annotation.style.opacity))
+                .frame(width: viewRect.width, height: viewRect.height)
+                .position(x: viewRect.midX, y: viewRect.midY)
+        case let .text(text, origin, maxWidth):
+            let point = viewport.imagePointToViewPoint(origin)
+            let width = viewport.imageRectToViewRect(CGRect(x: origin.x, y: origin.y, width: maxWidth, height: 1)).width
+            Text(text)
+                .font(.system(size: annotation.style.fontSize, weight: .semibold))
+                .foregroundStyle(stroke.opacity(annotation.style.opacity))
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(width: max(width, 44), alignment: .topLeading)
+                .position(x: point.x + max(width, 44) / 2, y: point.y + max(34, annotation.style.fontSize + 16) / 2)
+        case let .blur(rect):
+            let viewRect = viewport.imageRectToViewRect(rect)
+            Rectangle()
+                .fill(Color.black.opacity(0.68))
+                .frame(width: viewRect.width, height: viewRect.height)
+                .position(x: viewRect.midX, y: viewRect.midY)
         }
     }
 

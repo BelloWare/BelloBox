@@ -10,6 +10,12 @@ enum ScreenCoordinateSpace {
         return screens.first { $0.frame == frame } ?? NSScreen.main
     }
 
+    static func strictDisplayForCocoaRect(_ rect: CGRect) -> NSScreen? {
+        let screens = NSScreen.screens
+        guard let frame = strictScreenFrame(for: rect, in: screens.map(\.frame)) else { return nil }
+        return screens.first { $0.frame == frame }
+    }
+
     static func screen(containingOrNearestTo point: CGPoint) -> NSScreen {
         let screens = NSScreen.screens
         if let frame = screenFrame(containingOrNearestTo: point, in: screens.map(\.frame)),
@@ -30,6 +36,16 @@ enum ScreenCoordinateSpace {
             .sorted { $0.area > $1.area }
         if let best = candidates.first?.frame { return best }
         return screenFrame(containingOrNearestTo: CGPoint(x: rect.midX, y: rect.midY), in: screenFrames)
+    }
+
+    static func strictScreenFrame(for rect: CGRect, in screenFrames: [CGRect]) -> CGRect? {
+        guard !screenFrames.isEmpty, !rect.isNull else { return nil }
+        let rect = rect.standardized
+        return screenFrames
+            .map { frame in (frame: frame, area: frame.intersection(rect).area) }
+            .filter { $0.area > 0 }
+            .sorted { $0.area > $1.area }
+            .first?.frame
     }
 
     static func screenFrame(containingOrNearestTo point: CGPoint, in screenFrames: [CGRect]) -> CGRect? {

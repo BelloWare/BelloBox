@@ -190,4 +190,28 @@ final class ScreenCoordinateSpaceTests: XCTestCase {
 
         XCTAssertEqual(frame, frames[0])
     }
+
+    func testStrictScreenFrameReturnsNilForOffscreenRect() {
+        let frames = [
+            CGRect(x: -1280, y: 0, width: 1280, height: 800),
+            CGRect(x: 0, y: 0, width: 1440, height: 900),
+        ]
+        let rectJustPastLeftDisplay = CGRect(x: -1360, y: 300, width: 40, height: 40)
+
+        let frame = ScreenCoordinateSpace.strictScreenFrame(for: rectJustPastLeftDisplay, in: frames)
+
+        XCTAssertNil(frame)
+    }
+
+    func testStrictScreenFrameChoosesLargestIntersection() {
+        let frames = [
+            CGRect(x: 0, y: 0, width: 1000, height: 800),
+            CGRect(x: 1000, y: 0, width: 900, height: 800),
+        ]
+        let rect = CGRect(x: 900, y: 100, width: 320, height: 200)
+
+        let frame = ScreenCoordinateSpace.strictScreenFrame(for: rect, in: frames)
+
+        XCTAssertEqual(frame, frames[1])
+    }
 }

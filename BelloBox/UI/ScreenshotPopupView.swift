@@ -24,6 +24,13 @@ struct VisibleTextAnnotationFrame: Identifiable, Equatable {
     var frame: CGRect
 }
 
+private struct BasePreviewKey: Equatable {
+    var imageWidth: Int
+    var imageHeight: Int
+    var cropRect: CGRect?
+    var revision: Int
+}
+
 @MainActor
 final class ScreenshotPopupViewModel: ObservableObject {
     @Published var document: ScreenshotDocument
@@ -45,6 +52,9 @@ final class ScreenshotPopupViewModel: ObservableObject {
     private var ocrTask: Task<Void, Never>?
     private var ocrRunID: UUID?
     private var documentRevision = 0
+    private var basePreviewRevision = 0
+    private var cachedBasePreviewKey: BasePreviewKey?
+    private var cachedBasePreview: CGImage?
     private var isClosed = false
     private var movingTextAnnotationID: UUID?
 
@@ -81,8 +91,28 @@ final class ScreenshotPopupViewModel: ObservableObject {
         ocrTask?.cancel()
     }
 
-    var previewImage: CGImage {
-        (try? AnnotationRenderer.render(document)) ?? document.baseImage
+    func basePreviewImage() -> CGImage {
+        let key = BasePreviewKey(
+            imageWidth: document.baseImage.width,
+            imageHeight: document.baseImage.height,
+            cropRect: document.cropRect,
+            revision: basePreviewRevision
+        )
+        if cachedBasePreviewKey == key, let cachedBasePreview {
+            return cachedBasePreview
+        }
+        let image: CGImage
+        if let crop = document.cropRect?.integral,
+           crop.width > 0,
+           crop.height > 0,
+           let cropped = document.baseImage.cropping(to: crop.intersection(CGRect(origin: .zero, size: document.imageSize)).integral) {
+            image = cropped
+        } else {
+            image = document.baseImage
+        }
+        cachedBasePreviewKey = key
+        cachedBasePreview = image
+        return image
     }
 
     var visibleImageSize: CGSize {
@@ -116,6 +146,15 @@ final class ScreenshotPopupViewModel: ObservableObject {
         }
     }
 
+    var visibleAnnotations: [ScreenshotAnnotation] {
+        document.annotations.compactMap { annotation in
+            guard annotation.id != editingTextAnnotationID else { return nil }
+            var copy = annotation
+            copy.kind = shiftDocumentKindToVisible(annotation.kind)
+            return copy
+        }
+    }
+
     @discardableResult
     func refreshBaseCapture(from replacement: ScreenshotDocument, expectedDocumentID: UUID) -> Bool {
         guard document.id == expectedDocumentID,
@@ -127,6 +166,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         document.scale = replacement.scale
         document.source = replacement.source
         documentRevision += 1
+        basePreviewRevision += 1
         markOCRStale()
         return true
     }
@@ -163,6 +203,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         guard docRect.width >= 4, docRect.height >= 4 else { return }
         pushUndo()
         document.cropRect = docRect
+        basePreviewRevision += 1
         markOCRStale()
     }
 
@@ -269,6 +310,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         redoStack.append(document)
         document = previous
         documentRevision += 1
+        basePreviewRevision += 1
         syncOCRPanel()
     }
 
@@ -277,6 +319,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         undoStack.append(document)
         document = next
         documentRevision += 1
+        basePreviewRevision += 1
         syncOCRPanel()
     }
 
@@ -579,6 +622,23 @@ final class ScreenshotPopupViewModel: ObservableObject {
         }
     }
 
+    private func shiftDocumentKindToVisible(_ kind: AnnotationKind) -> AnnotationKind {
+        switch kind {
+        case let .freehand(points):
+            return .freehand(points: points.map(shiftDocumentPointToVisible))
+        case let .arrow(start, end):
+            return .arrow(start: shiftDocumentPointToVisible(start), end: shiftDocumentPointToVisible(end))
+        case let .rectangle(rect):
+            return .rectangle(shiftDocumentRectToVisible(rect))
+        case let .highlight(rect):
+            return .highlight(shiftDocumentRectToVisible(rect))
+        case let .text(text, origin, maxWidth):
+            return .text(text, origin: shiftDocumentPointToVisible(origin), maxWidth: maxWidth)
+        case let .blur(rect):
+            return .blur(shiftDocumentRectToVisible(rect))
+        }
+    }
+
     private func shiftVisiblePointToDocument(_ point: CGPoint) -> CGPoint {
         guard let crop = document.cropRect else { return point }
         return CGPoint(x: point.x + crop.minX, y: point.y + crop.minY)
@@ -592,6 +652,11 @@ final class ScreenshotPopupViewModel: ObservableObject {
     private func shiftVisibleRectToDocument(_ rect: CGRect) -> CGRect {
         guard let crop = document.cropRect else { return rect.standardized }
         return rect.offsetBy(dx: crop.minX, dy: crop.minY).standardized
+    }
+
+    private func shiftDocumentRectToVisible(_ rect: CGRect) -> CGRect {
+        guard let crop = document.cropRect else { return rect.standardized }
+        return rect.offsetBy(dx: -crop.minX, dy: -crop.minY).standardized
     }
 }
 

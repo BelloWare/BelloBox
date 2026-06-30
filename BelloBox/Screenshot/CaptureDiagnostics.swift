@@ -65,3 +65,17 @@ enum CaptureDiagnostics {
         }
     }
 }
+
+struct CaptureTiming {
+    let name: String
+    private let start = Date()
+
+    init(_ name: String) {
+        self.name = name
+    }
+
+    func finish(_ details: [String] = [], enabled: Bool) {
+        let elapsedMs = Int((Date().timeIntervalSince(start) * 1000).rounded())
+        CaptureDiagnostics.log(name, enabled: enabled, details: details + ["elapsedMs=\(elapsedMs)"])
+    }
+}

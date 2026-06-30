@@ -44,6 +44,19 @@ final class CaptureOverlayAccessoryLayoutTests: XCTestCase {
         wait(for: [cancelled], timeout: 1)
     }
 
+    func testCaptureOverlayCanStartWithoutDisplaySnapshots() {
+        let controller = makeController()
+        defer { controller.cancel() }
+
+        controller.beginScreenshotForTesting(
+            snapshots: [],
+            onError: { XCTFail("Unexpected capture overlay error: \($0)") },
+            onCancel: {}
+        )
+
+        XCTAssertEqual(controller.debugOverlayWindowCount, NSScreen.screens.count)
+    }
+
     func testCaptureOverlayKeepsInlineEditorWhenAppResignsActiveAfterSelection() throws {
         let controller = makeController()
         defer { controller.cancel() }

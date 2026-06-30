@@ -30,14 +30,20 @@ final class RegionCaptureOverlayController {
         AppActivation.bringAppForward()
         for screen in NSScreen.screens {
             let window = RegionOverlayWindow(screen: screen)
+            window.setFrame(screen.frame, display: true)
             window.onEscape = { [weak self] in self?.finish(.failure(.userCancelled)) }
-            let view = RegionOverlayView(screen: screen, windows: capturableWindows)
+            let windowsForScreen = capturableWindows.filter { window in
+                guard let frame = window.frame else { return false }
+                return frame.intersects(screen.frame)
+            }
+            let view = RegionOverlayView(screen: screen, windows: windowsForScreen)
             view.onComplete = { [weak self] result in self?.finish(result) }
             view.onCancel = { [weak self] in self?.finish(.failure(.userCancelled)) }
             window.contentView = view
-            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
             windows.append(window)
         }
+        (window(containing: NSEvent.mouseLocation) ?? windows.first)?.makeKeyAndOrderFront(nil)
         NSCursor.crosshair.set()
     }
 
@@ -91,6 +97,10 @@ final class RegionCaptureOverlayController {
         windows.removeAll()
         NSCursor.arrow.set()
     }
+
+    private func window(containing point: CGPoint) -> RegionOverlayWindow? {
+        windows.first { $0.frame.contains(point) }
+    }
 }
 
 private final class RegionOverlayWindow: NSWindow {
@@ -111,6 +121,7 @@ private final class RegionOverlayWindow: NSWindow {
         acceptsMouseMovedEvents = true
         hasShadow = false
         isReleasedWhenClosed = false
+        setFrame(screen.frame, display: true)
     }
 
     override var canBecomeKey: Bool { true }
@@ -150,6 +161,8 @@ private final class RegionOverlayView: NSView {
     override var acceptsFirstResponder: Bool { true }
     override var isFlipped: Bool { true }
 
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     override func keyDown(with event: NSEvent) {
         if event.keyCode == 53 { onCancel?() } else { super.keyDown(with: event) }
     }
@@ -180,7 +193,8 @@ private final class RegionOverlayView: NSView {
                 endLocal: endPoint,
                 hoveredWindow: hoveredWindow,
                 screenFrame: screen.frame,
-                displayID: displayID
+                displayID: displayID,
+                policy: .areaOrWindow
               )
         else {
             resetInteraction(at: endPoint)

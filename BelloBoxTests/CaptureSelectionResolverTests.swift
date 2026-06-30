@@ -177,4 +177,109 @@ final class CaptureSelectionResolverTests: XCTestCase {
 
         XCTAssertNil(selection)
     }
+
+    func testDisplayOnlyClickReturnsClickedDisplay() {
+        let selection = CaptureSelectionResolver.resolve(
+            startLocal: CGPoint(x: 20, y: 20),
+            endLocal: CGPoint(x: 21, y: 21),
+            hoveredWindow: nil,
+            screenFrame: screen,
+            displayID: displayID,
+            policy: .displayOnly
+        )
+
+        XCTAssertEqual(selection, .display(CaptureDisplay(displayID: displayID, frame: screen)))
+    }
+
+    func testDisplayOnlyDragStillReturnsClickedDisplay() {
+        let selection = CaptureSelectionResolver.resolve(
+            startLocal: CGPoint(x: 20, y: 20),
+            endLocal: CGPoint(x: 420, y: 320),
+            hoveredWindow: nil,
+            screenFrame: screen,
+            displayID: displayID,
+            policy: .displayOnly
+        )
+
+        XCTAssertEqual(selection, .display(CaptureDisplay(displayID: displayID, frame: screen)))
+    }
+
+    func testWindowOnlyBlankClickReturnsNil() {
+        let selection = CaptureSelectionResolver.resolve(
+            startLocal: CGPoint(x: 20, y: 20),
+            endLocal: CGPoint(x: 21, y: 21),
+            hoveredWindow: nil,
+            screenFrame: screen,
+            displayID: displayID,
+            policy: .windowOnly
+        )
+
+        XCTAssertNil(selection)
+    }
+
+    func testWindowOnlyHoveredClickReturnsWindow() {
+        let window = CaptureWindow(
+            windowID: 11,
+            title: "Notes",
+            ownerName: "Notes",
+            ownerBundleID: nil,
+            ownerProcessID: nil,
+            frame: CGRect(x: 80, y: 520, width: 340, height: 220)
+        )
+
+        let selection = CaptureSelectionResolver.resolve(
+            startLocal: CGPoint(x: 90, y: 170),
+            endLocal: CGPoint(x: 92, y: 172),
+            hoveredWindow: window,
+            screenFrame: screen,
+            displayID: displayID,
+            policy: .windowOnly
+        )
+
+        XCTAssertEqual(selection, .window(window))
+    }
+
+    func testAreaOnlyClickReturnsNil() {
+        let selection = CaptureSelectionResolver.resolve(
+            startLocal: CGPoint(x: 20, y: 20),
+            endLocal: CGPoint(x: 21, y: 21),
+            hoveredWindow: nil,
+            screenFrame: screen,
+            displayID: displayID,
+            policy: .areaOnly
+        )
+
+        XCTAssertNil(selection)
+    }
+
+    func testAreaOnlyDragReturnsAreaOnSecondaryDisplayWithNegativeOrigin() {
+        let secondary = CGRect(x: -1280, y: 0, width: 1280, height: 800)
+
+        let selection = CaptureSelectionResolver.resolve(
+            startLocal: CGPoint(x: 100, y: 120),
+            endLocal: CGPoint(x: 360, y: 320),
+            hoveredWindow: nil,
+            screenFrame: secondary,
+            displayID: displayID,
+            policy: .areaOnly
+        )
+
+        XCTAssertEqual(selection, .area(CaptureArea(
+            cocoaRect: CGRect(x: -1180, y: 480, width: 260, height: 200),
+            displayID: displayID
+        )))
+    }
+
+    func testAreaOrWindowDoesNotReturnDisplayForBlankClick() {
+        let selection = CaptureSelectionResolver.resolve(
+            startLocal: CGPoint(x: 20, y: 20),
+            endLocal: CGPoint(x: 21, y: 21),
+            hoveredWindow: nil,
+            screenFrame: screen,
+            displayID: displayID,
+            policy: .areaOrWindow
+        )
+
+        XCTAssertNil(selection)
+    }
 }
