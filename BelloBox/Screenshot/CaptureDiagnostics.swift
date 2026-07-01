@@ -40,6 +40,31 @@ enum CaptureDiagnostics {
         try FileManager.default.copyItem(at: logURL, to: destination)
     }
 
+    static func readLogTail(maxBytes: Int = 64 * 1024, from url: URL = logURL) -> String? {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard maxBytes > 0,
+              FileManager.default.fileExists(atPath: url.path),
+              let handle = try? FileHandle(forReadingFrom: url)
+        else { return nil }
+        defer { try? handle.close() }
+
+        let fileSize = (try? handle.seekToEnd()) ?? 0
+        let start = fileSize > UInt64(maxBytes) ? fileSize - UInt64(maxBytes) : 0
+        do {
+            try handle.seek(toOffset: start)
+            let data = try handle.readToEnd() ?? Data()
+            guard var text = String(data: data, encoding: .utf8) else { return nil }
+            if start > 0 {
+                text = "[last \(maxBytes) bytes of \(fileSize) byte log]\n" + text
+            }
+            return text
+        } catch {
+            return nil
+        }
+    }
+
     static func write(_ text: String, enabled: Bool, to url: URL) {
         guard enabled else { return }
         append(text, to: url)

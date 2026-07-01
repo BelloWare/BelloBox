@@ -11,6 +11,7 @@ struct MainView: View {
     var onCheckForUpdates: () -> Void
 
     @State private var trusted = AccessibilityService.isTrusted
+    @State private var debugCopyMessage: String?
     private let timer = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
 
     private var versionText: String {
@@ -189,16 +190,35 @@ struct MainView: View {
     }
 
     private var actions: some View {
-        HStack(spacing: 10) {
-            Button { onOpenGuide() } label: { Label("Setup Guide", systemImage: "sparkles") }
-                .buttonStyle(SecondaryButtonStyle())
-            if canCheckForUpdates {
-                Button { onCheckForUpdates() } label: { Label("Check for Updates", systemImage: "arrow.triangle.2.circlepath") }
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                Button { onOpenGuide() } label: { Label("Setup Guide", systemImage: "sparkles") }
                     .buttonStyle(SecondaryButtonStyle())
+                if canCheckForUpdates {
+                    Button { onCheckForUpdates() } label: { Label("Check for Updates", systemImage: "arrow.triangle.2.circlepath") }
+                        .buttonStyle(SecondaryButtonStyle())
+                }
+                Button { copyDebugInfo() } label: { Label("Copy Debug Info", systemImage: "doc.on.doc") }
+                    .buttonStyle(SecondaryButtonStyle())
+                Spacer()
+                Button { onOpenSettings() } label: { Label("Settings", systemImage: "gearshape") }
+                    .buttonStyle(PrimaryButtonStyle())
             }
-            Spacer()
-            Button { onOpenSettings() } label: { Label("Settings", systemImage: "gearshape") }
-                .buttonStyle(PrimaryButtonStyle())
+            if let debugCopyMessage {
+                Text(debugCopyMessage)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func copyDebugInfo() {
+        let report = DebugInfoCollector.report(settings: settings)
+        NSPasteboard.general.clearContents()
+        if NSPasteboard.general.setString(report, forType: .string) {
+            debugCopyMessage = "Debug info copied. Send it after reproducing the multi-monitor issue."
+        } else {
+            debugCopyMessage = "Could not copy debug info."
         }
     }
 }
