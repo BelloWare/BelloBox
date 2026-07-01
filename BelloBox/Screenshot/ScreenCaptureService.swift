@@ -214,9 +214,12 @@ final class ScreenCaptureService {
                 ownerName: window.owningApplication?.applicationName,
                 ownerBundleID: window.owningApplication?.bundleIdentifier,
                 ownerProcessID: window.owningApplication?.processID,
-                frame: cocoaFrame
+                frame: cocoaFrame,
+                captureMode: .independentWindow,
+                allowsVisibleFrameFallback: Self.coversDisplay(cocoaFrame)
             )
         }
+        .includingSystemSurfaces()
         .sorted {
             let left = "\($0.ownerName ?? "") \($0.title ?? "")"
             let right = "\($1.ownerName ?? "") \($1.title ?? "")"
@@ -240,8 +243,15 @@ final class ScreenCaptureService {
     }
 
     private func captureWindow(_ target: CaptureWindow, includeCursor: Bool) async throws -> CGImage {
+        if target.captureMode == .visibleFrame {
+            return try await captureVisibleFrame(of: target, includeCursor: includeCursor)
+        }
+
         let content = try await shareableContent()
         guard let window = content.windows.first(where: { $0.windowID == target.windowID }) else {
+            if target.allowsVisibleFrameFallback {
+                return try await captureVisibleFrame(of: target, includeCursor: includeCursor)
+            }
             throw CaptureError.noWindowFound
         }
         let filter = SCContentFilter(desktopIndependentWindow: window)
@@ -253,6 +263,31 @@ final class ScreenCaptureService {
         configuration.showsCursor = includeCursor
         configuration.capturesAudio = false
         return try await capture(filter: filter, configuration: configuration)
+    }
+
+    private func captureVisibleFrame(of target: CaptureWindow, includeCursor: Bool) async throws -> CGImage {
+        guard let frame = target.frame else { throw CaptureError.noWindowFound }
+        guard let screen = ScreenCoordinateSpace.strictDisplayForCocoaRect(frame),
+              let displayID = ScreenCoordinateSpace.displayID(for: screen)
+        else { throw CaptureError.noDisplayFound }
+        let boundedRect = frame.intersection(screen.frame).standardized
+        guard boundedRect.width >= 1, boundedRect.height >= 1 else {
+            throw CaptureError.captureFailed("The selected window was outside the display bounds.")
+        }
+        let image = try await captureDisplay(displayID, includeCursor: includeCursor)
+        let pixelRect = ScreenCoordinateSpace.cocoaRectToImagePixelRect(
+            boundedRect,
+            screenFrame: screen.frame,
+            imageSize: CGSize(width: image.width, height: image.height)
+        )
+        let imageBounds = CGRect(x: 0, y: 0, width: image.width, height: image.height)
+        let cropRect = pixelRect.intersection(imageBounds).integral
+        guard cropRect.width > 0, cropRect.height > 0,
+              let crop = image.cropping(to: cropRect)
+        else {
+            throw CaptureError.captureFailed("The selected window was outside the display bounds.")
+        }
+        return crop
     }
 
     private func capture(filter: SCContentFilter, configuration: SCStreamConfiguration) async throws -> CGImage {
@@ -312,6 +347,26 @@ final class ScreenCaptureService {
         guard frame.width > 0 else { return 1 }
         return CGFloat(image.width) / frame.width
     }
+
+    private static func coversDisplay(_ rect: CGRect) -> Bool {
+        NSScreen.screens.contains { screen in
+            let inset: CGFloat = 2
+            return abs(rect.minX - screen.frame.minX) <= inset
+                && abs(rect.minY - screen.frame.minY) <= inset
+                && abs(rect.width - screen.frame.width) <= inset * 2
+                && abs(rect.height - screen.frame.height) <= inset * 2
+        }
+    }
 }
 
 extension ScreenCaptureService: ScreenshotCapturing, CapturableWindowProviding {}
+
+private extension Array where Element == CaptureWindow {
+    func includingSystemSurfaces() -> [CaptureWindow] {
+        let existingIDs = Set(map(\.windowID))
+        let systemSurfaces = CaptureWindowCatalog.currentWindows().filter { window in
+            window.captureMode == .visibleFrame && !existingIDs.contains(window.windowID)
+        }
+        return self + systemSurfaces
+    }
+}

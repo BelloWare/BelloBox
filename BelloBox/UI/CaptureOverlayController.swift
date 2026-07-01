@@ -514,7 +514,7 @@ final class CaptureOverlayController {
         case let .display(display):
             return "display(id=\(display.displayID),frame=\(serialize(display.frame)))"
         case let .window(window):
-            return "window(id=\(window.windowID),owner=\(window.ownerName ?? ""),title=\(window.title ?? ""),frame=\(window.frame.map { serialize($0) } ?? "nil"))"
+            return "window(id=\(window.windowID),owner=\(window.ownerName ?? ""),title=\(window.title ?? ""),mode=\(window.captureMode),layer=\(window.layer.map { String($0) } ?? "nil"),frame=\(window.frame.map { serialize($0) } ?? "nil"))"
         }
     }
 

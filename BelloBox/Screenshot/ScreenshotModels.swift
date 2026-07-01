@@ -135,8 +135,16 @@ struct CaptureWindow: Equatable, Identifiable {
     var ownerBundleID: String?
     var ownerProcessID: pid_t?
     var frame: CGRect?
+    var captureMode: CaptureWindowCaptureMode = .independentWindow
+    var layer: Int? = nil
+    var allowsVisibleFrameFallback: Bool = false
 
     var id: UInt32 { windowID }
+}
+
+enum CaptureWindowCaptureMode: Equatable {
+    case independentWindow
+    case visibleFrame
 }
 
 struct CaptureDisplay: Equatable {

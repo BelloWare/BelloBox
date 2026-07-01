@@ -121,6 +121,7 @@
 		F01E97565C63BC311C263F42 /* RegionCaptureGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55E83D1693A5BB0C69E5B7A4 /* RegionCaptureGeometry.swift */; };
 		F0D11BAE30BD34488AA595F7 /* ScreenshotTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FD06039C7B11E24A182A64 /* ScreenshotTestHelpers.swift */; };
 		F2553E50B9A982F0B6949ABD /* RecordingAudioMixerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BA85CB3178120FD6DD4FC0 /* RecordingAudioMixerTests.swift */; };
+		F28D4EC5A3F3646BD78C9699 /* CaptureWindowCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903B684DB18A687B4A1E903F /* CaptureWindowCatalogTests.swift */; };
 		F5011C90BD3A77C2323798B9 /* RecordingFrameRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635232F920A7544875DC69D2 /* RecordingFrameRendererTests.swift */; };
 		F5AC7B2FC27357EEB864DDC6 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1DF2470EFA12544D457904 /* Theme.swift */; };
 		F6B4C9CF5C1E289C2F89FD9B /* InputMonitoringPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581020D60194A389BD24052A /* InputMonitoringPermission.swift */; };
@@ -221,6 +222,7 @@
 		8CA850EB1D33D0564BD7E758 /* AnnotationCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationCanvasView.swift; sourceTree = "<group>"; };
 		8DE8FD65641DAB71FA4741B6 /* RecordingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingEngine.swift; sourceTree = "<group>"; };
 		8EFF40A619A96B7CF8B0773A /* ScreenshotModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotModels.swift; sourceTree = "<group>"; };
+		903B684DB18A687B4A1E903F /* CaptureWindowCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureWindowCatalogTests.swift; sourceTree = "<group>"; };
 		9234F007847335F7AF1AB87D /* RecordingEngineE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingEngineE2ETests.swift; sourceTree = "<group>"; };
 		92CF009E56B87169B4330D59 /* DebugInfoCollectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugInfoCollectorTests.swift; sourceTree = "<group>"; };
 		95D9CE5279414592D4099D52 /* TokenEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenEstimator.swift; sourceTree = "<group>"; };
@@ -419,6 +421,7 @@
 				B7A64C64C5BBBE170D579562 /* CaptureDiagnosticsTests.swift */,
 				71670C38C4EE6391E2155DD4 /* CaptureOverlayAccessoryLayoutTests.swift */,
 				4DD467DF3048C8C12B6882B2 /* CaptureSelectionResolverTests.swift */,
+				903B684DB18A687B4A1E903F /* CaptureWindowCatalogTests.swift */,
 				92CF009E56B87169B4330D59 /* DebugInfoCollectorTests.swift */,
 				7444E37F5DF2A31A4A93146A /* GlobalHotkeyTests.swift */,
 				16058521ABE8B312367423C8 /* ImageExportServiceTests.swift */,
@@ -661,6 +664,7 @@
 				D04475B9E10F30DEA473C3F1 /* CaptureDiagnosticsTests.swift in Sources */,
 				E6D46761FB03789D91C8992F /* CaptureOverlayAccessoryLayoutTests.swift in Sources */,
 				30B8A340EC641A843D68A58C /* CaptureSelectionResolverTests.swift in Sources */,
+				F28D4EC5A3F3646BD78C9699 /* CaptureWindowCatalogTests.swift in Sources */,
 				3489FD327C260048AA9EF200 /* DebugInfoCollectorTests.swift in Sources */,
 				E383F4CBB9F4D1BA9CBC50D7 /* GlobalHotkeyTests.swift in Sources */,
 				A197916DFCD24A89E79BB2E3 /* ImageExportServiceTests.swift in Sources */,
@@ -904,7 +908,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 40;
+				CURRENT_PROJECT_VERSION = 41;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -924,7 +928,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.40;
+				MARKETING_VERSION = 0.0.41;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -970,7 +974,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 40;
+				CURRENT_PROJECT_VERSION = 41;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -984,7 +988,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.40;
+				MARKETING_VERSION = 0.0.41;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

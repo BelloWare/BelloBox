@@ -27,7 +27,6 @@ final class RegionCaptureOverlayController {
         hasFinished = false
         installKeyMonitor()
         let capturableWindows = CaptureWindowCatalog.currentWindows()
-        AppActivation.bringAppForward()
         for screen in NSScreen.screens {
             let window = RegionOverlayWindow(screen: screen)
             window.setFrame(screen.frame, display: true)
@@ -43,6 +42,7 @@ final class RegionCaptureOverlayController {
             window.orderFrontRegardless()
             windows.append(window)
         }
+        AppActivation.bringAppForward()
         (window(containing: NSEvent.mouseLocation) ?? windows.first)?.makeKeyAndOrderFront(nil)
         NSCursor.crosshair.set()
     }

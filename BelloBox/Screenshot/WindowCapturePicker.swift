@@ -93,12 +93,12 @@ struct WindowCapturePickerView: View {
                         viewModel.onSelect(window)
                     } label: {
                         HStack(spacing: 10) {
-                            Image(systemName: "macwindow")
+                            Image(systemName: symbol(for: window))
                                 .foregroundStyle(BoxTheme.accent)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(window.title?.isEmpty == false ? window.title! : "Untitled Window")
+                                Text(title(for: window))
                                     .lineLimit(1)
-                                Text(window.ownerName ?? "Unknown app")
+                                Text(subtitle(for: window))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
@@ -115,5 +115,27 @@ struct WindowCapturePickerView: View {
         .frame(width: Self.preferredSize.width, height: Self.preferredSize.height)
         .popupCard()
         .onAppear { viewModel.load() }
+    }
+
+    private func symbol(for window: CaptureWindow) -> String {
+        window.captureMode == .visibleFrame ? "menubar.rectangle" : "macwindow"
+    }
+
+    private func title(for window: CaptureWindow) -> String {
+        if let title = window.title, !title.isEmpty {
+            return title
+        }
+        if window.captureMode == .visibleFrame {
+            return "System Surface"
+        }
+        return "Untitled Window"
+    }
+
+    private func subtitle(for window: CaptureWindow) -> String {
+        let owner = window.ownerName ?? "Unknown app"
+        if window.captureMode == .visibleFrame {
+            return "\(owner) - visible frame capture"
+        }
+        return owner
     }
 }
