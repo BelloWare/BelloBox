@@ -75,23 +75,27 @@ enum DebugInfoCollector {
     private static func screenSection() -> String {
         let mouse = NSEvent.mouseLocation
         let mainDisplayID = CGMainDisplayID()
+        let onlineDisplayIDs = onlineDisplayIDs()
+        let onlineDisplayIDSet = Set(onlineDisplayIDs)
         var items: [String] = [
             "mouse=\(format(mouse))",
             "nsscreenCount=\(NSScreen.screens.count)",
-            "cgOnlineDisplayCount=\(onlineDisplayIDs().count)",
+            "cgOnlineDisplayCount=\(onlineDisplayIDs.count)",
             "cgMainDisplayID=\(mainDisplayID)",
         ]
 
         for (index, screen) in NSScreen.screens.enumerated() {
             let displayID = ScreenCoordinateSpace.displayID(for: screen)
             let pixelSize = displayID.map { ScreenCoordinateSpace.displayPixelSize(for: $0, fallbackScreen: screen) } ?? .zero
+            let cgBounds = displayID.map { CGDisplayBounds($0) } ?? .null
+            let isOnline = displayID.map { onlineDisplayIDSet.contains($0) } ?? false
             let isMain = displayID == mainDisplayID
             items.append(
-                "nsscreen[\(index)]=displayID:\(displayID.map(String.init) ?? "nil"),name:\(screen.localizedName),frame:\(format(screen.frame)),visibleFrame:\(format(screen.visibleFrame)),scale:\(ScreenCoordinateSpace.backingScale(for: screen)),pixels:\(format(pixelSize)),isMain:\(isMain)"
+                "nsscreen[\(index)]=displayID:\(displayID.map(String.init) ?? "nil"),name:\(screen.localizedName),frame:\(format(screen.frame)),visibleFrame:\(format(screen.visibleFrame)),scale:\(ScreenCoordinateSpace.backingScale(for: screen)),pixels:\(format(pixelSize)),cgBounds:\(format(cgBounds)),cgOnline:\(isOnline),isMain:\(isMain)"
             )
         }
 
-        for (index, displayID) in onlineDisplayIDs().enumerated() {
+        for (index, displayID) in onlineDisplayIDs.enumerated() {
             items.append(
                 "cgDisplay[\(index)]=displayID:\(displayID),bounds:\(format(CGDisplayBounds(displayID))),pixels:\(CGDisplayPixelsWide(displayID))x\(CGDisplayPixelsHigh(displayID)),active:\(CGDisplayIsActive(displayID) != 0),asleep:\(CGDisplayIsAsleep(displayID) != 0),rotation:\(CGDisplayRotation(displayID))"
             )

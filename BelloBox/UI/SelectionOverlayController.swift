@@ -972,30 +972,65 @@ final class SelectionOverlayController: NSObject {
                 guard ScreenCapturePermission.isTrusted else {
                     throw ScreenCaptureService.CaptureError.permissionDenied
                 }
-                guard let screen = NSScreen.main,
-                      let displayID = ScreenCoordinateSpace.displayID(for: screen),
-                      let rect = e2eCaptureRect(on: screen, defaultSize: CGSize(width: 320, height: 200))
-                else {
+                let screens = NSScreen.screens
+                guard !screens.isEmpty else {
                     throw ScreenCaptureService.CaptureError.noDisplayFound
                 }
 
-                let document = try await screenCaptureService.capture(
-                    .area(CaptureArea(cocoaRect: rect, displayID: displayID)),
-                    options: CaptureOptions(includeCursor: false, hideBelloBoxWindows: false, delayAfterHidingOverlays: 0)
-                )
-                let rendered = try AnnotationRenderer.render(document)
-                try Self.writePNG(rendered, to: outputPath)
+                var markerLines: [String] = [
+                    "kind=real-screenshot",
+                    "status=success",
+                    "displayCount=\(screens.count)",
+                ]
+                var primaryOutputPath = outputPath
+
+                for (index, screen) in screens.enumerated() {
+                    guard let displayID = ScreenCoordinateSpace.displayID(for: screen),
+                          let rect = e2eCaptureRect(on: screen, defaultSize: CGSize(width: 320, height: 200))
+                    else {
+                        throw ScreenCaptureService.CaptureError.noDisplayFound
+                    }
+
+                    let document = try await screenCaptureService.capture(
+                        .area(CaptureArea(cocoaRect: rect, displayID: displayID)),
+                        options: CaptureOptions(includeCursor: false, hideBelloBoxWindows: false, delayAfterHidingOverlays: 0)
+                    )
+                    let rendered = try AnnotationRenderer.render(document)
+                    let displayOutputPath = Self.e2eDisplayOutputPath(basePath: outputPath, displayIndex: index, displayID: displayID)
+                    if index == 0 {
+                        primaryOutputPath = displayOutputPath
+                    }
+                    try Self.writePNG(rendered, to: displayOutputPath)
+
+                    let expected = Self.e2eExpectedImageRect(for: rect, on: screen, displayID: displayID)
+                    let dimensionsMatch = rendered.width == Int(expected.width) && rendered.height == Int(expected.height)
+                    guard dimensionsMatch else {
+                        throw ScreenCaptureService.CaptureError.captureFailed(
+                            "Display \(displayID) produced \(rendered.width)x\(rendered.height), expected \(Int(expected.width))x\(Int(expected.height))."
+                        )
+                    }
+
+                    markerLines += [
+                        "display[\(index)].status=success",
+                        "display[\(index)].displayID=\(displayID)",
+                        "display[\(index)].screenFrame=\(Self.serialize(screen.frame))",
+                        "display[\(index)].rect=\(Self.serialize(rect))",
+                        "display[\(index)].scale=\(document.scale)",
+                        "display[\(index)].expectedWidth=\(Int(expected.width))",
+                        "display[\(index)].expectedHeight=\(Int(expected.height))",
+                        "display[\(index)].imageWidth=\(rendered.width)",
+                        "display[\(index)].imageHeight=\(rendered.height)",
+                        "display[\(index)].dimensionMatches=\(dimensionsMatch)",
+                        "display[\(index)].path=\(displayOutputPath)",
+                        "display[\(index)].fileSize=\(Self.fileSize(at: displayOutputPath))",
+                    ]
+                }
+
                 Self.writeE2EMarker(
                     markerPath,
-                    lines: [
-                        "kind=real-screenshot",
-                        "status=success",
-                        "path=\(outputPath)",
-                        "rect=\(Self.serialize(rect))",
-                        "scale=\(document.scale)",
-                        "imageWidth=\(rendered.width)",
-                        "imageHeight=\(rendered.height)",
-                        "fileSize=\(Self.fileSize(at: outputPath))",
+                    lines: markerLines + [
+                        "path=\(primaryOutputPath)",
+                        "fileSize=\(Self.fileSize(at: primaryOutputPath))",
                     ]
                 )
             } catch {
@@ -1128,6 +1163,10 @@ final class SelectionOverlayController: NSObject {
 
     private func runScreenshotE2EHooksIfNeeded() {
         let env = ProcessInfo.processInfo.environment
+        if env["BELLOBOX_E2E_CAPTURE_OVERLAY_SIMULATED_DISPLAYS"] == "1" {
+            openE2ESimulatedMultiDisplayCaptureOverlay()
+            return
+        }
         if let path = env["BELLOBOX_E2E_CAPTURE_OVERLAY_IMAGE"], !path.isEmpty {
             openE2ECaptureOverlay(path: path)
             return
@@ -1212,6 +1251,48 @@ final class SelectionOverlayController: NSObject {
         )
     }
 
+    private func openE2ESimulatedMultiDisplayCaptureOverlay() {
+        hidePopup()
+        let primary = DisplaySnapshot(
+            displayID: 9_001,
+            screenFrame: CGRect(x: 0, y: 0, width: 360, height: 240),
+            scale: 1,
+            image: Self.e2eSolidImage(width: 360, height: 240, color: NSColor(calibratedRed: 0.78, green: 0.12, blue: 0.10, alpha: 1))
+        )
+        let secondaryLeft = DisplaySnapshot(
+            displayID: 9_002,
+            screenFrame: CGRect(x: -320, y: 0, width: 320, height: 220),
+            scale: 2,
+            image: Self.e2eSolidImage(width: 640, height: 440, color: NSColor(calibratedRed: 0.10, green: 0.70, blue: 0.28, alpha: 1))
+        )
+        let upper = DisplaySnapshot(
+            displayID: 9_003,
+            screenFrame: CGRect(x: 0, y: 240, width: 260, height: 180),
+            scale: 1.5,
+            image: Self.e2eSolidImage(width: 390, height: 270, color: NSColor(calibratedRed: 0.10, green: 0.24, blue: 0.78, alpha: 1))
+        )
+        let selectionRect = CGRect(x: -260, y: 70, width: 120, height: 70)
+        let initialSelection = CaptureSelection.area(CaptureArea(cocoaRect: selectionRect, displayID: secondaryLeft.displayID))
+        let controller = CaptureOverlayController(
+            screenCaptureService: screenCaptureService,
+            settings: settings,
+            macOCRService: macOCRService
+        )
+        captureOverlayController?.cancel()
+        captureOverlayController = controller
+        controller.beginScreenshotForTesting(
+            snapshots: [primary, secondaryLeft, upper],
+            initialSelection: initialSelection,
+            onError: { [weak self] message in
+                self?.captureOverlayController = nil
+                self?.showScreenshotError(message, anchorRect: nil)
+            },
+            onCancel: { [weak self] in
+                self?.captureOverlayController = nil
+            }
+        )
+    }
+
     private static func e2eOverlaySelection(raw: String?, displayID: CGDirectDisplayID, screenFrame: CGRect) -> CaptureSelection? {
         guard let raw, !raw.isEmpty else {
             guard ProcessInfo.processInfo.environment["BELLOBOX_E2E_CAPTURE_OVERLAY_AUTO_SELECT"] == "1" else { return nil }
@@ -1229,6 +1310,21 @@ final class SelectionOverlayController: NSObject {
         guard parts.count == 4 else { return nil }
         let rect = CGRect(x: CGFloat(parts[0]), y: CGFloat(parts[1]), width: CGFloat(parts[2]), height: CGFloat(parts[3]))
         return .area(CaptureArea(cocoaRect: rect, displayID: displayID))
+    }
+
+    private static func e2eSolidImage(width: Int, height: Int, color: NSColor) -> CGImage {
+        let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        )!
+        context.setFillColor(color.cgColor)
+        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        return context.makeImage()!
     }
 
     private func openE2EScrollingFrames(path: String) async {
@@ -1253,13 +1349,44 @@ final class SelectionOverlayController: NSObject {
         return image.cgImage(forProposedRect: &rect, context: nil, hints: nil)
     }
 
+    private static func e2eDisplayOutputPath(
+        basePath: String,
+        displayIndex: Int,
+        displayID: CGDirectDisplayID
+    ) -> String {
+        guard displayIndex > 0 else { return basePath }
+        let url = URL(fileURLWithPath: basePath)
+        let baseName = url.deletingPathExtension().lastPathComponent
+        let ext = url.pathExtension.isEmpty ? "png" : url.pathExtension
+        return url
+            .deletingLastPathComponent()
+            .appendingPathComponent("\(baseName)-display-\(displayIndex)-\(displayID)")
+            .appendingPathExtension(ext)
+            .path
+    }
+
+    private static func e2eExpectedImageRect(
+        for rect: CGRect,
+        on screen: NSScreen,
+        displayID: CGDirectDisplayID
+    ) -> CGRect {
+        let pixelSize = ScreenCoordinateSpace.displayPixelSize(for: displayID, fallbackScreen: screen)
+        return ScreenCoordinateSpace.cocoaRectToImagePixelRect(
+            rect,
+            screenFrame: screen.frame,
+            imageSize: pixelSize
+        ).integral
+    }
+
     private func e2eCaptureRect(on screen: NSScreen, defaultSize: CGSize) -> CGRect? {
         if let raw = ProcessInfo.processInfo.environment["BELLOBOX_E2E_CAPTURE_RECT"], !raw.isEmpty {
             let parts = raw.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
             guard parts.count == 4 else { return nil }
-            return CGRect(x: CGFloat(parts[0]), y: CGFloat(parts[1]), width: CGFloat(parts[2]), height: CGFloat(parts[3]))
+            let rect = CGRect(x: CGFloat(parts[0]), y: CGFloat(parts[1]), width: CGFloat(parts[2]), height: CGFloat(parts[3]))
                 .intersection(screen.frame)
                 .standardized
+            guard rect.width >= 1, rect.height >= 1 else { return nil }
+            return rect
         }
 
         let width = min(defaultSize.width, max(80, screen.frame.width * 0.4))

@@ -103,7 +103,7 @@ final class RegionCaptureOverlayController {
     }
 }
 
-private final class RegionOverlayWindow: NSWindow {
+private final class RegionOverlayWindow: NSPanel {
     var onEscape: (() -> Void)?
 
     init(screen: NSScreen) {
@@ -120,6 +120,7 @@ private final class RegionOverlayWindow: NSWindow {
         ignoresMouseEvents = false
         acceptsMouseMovedEvents = true
         hasShadow = false
+        hidesOnDeactivate = false
         isReleasedWhenClosed = false
         setFrame(screen.frame, display: true)
     }

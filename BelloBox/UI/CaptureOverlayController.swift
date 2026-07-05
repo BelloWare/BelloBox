@@ -570,6 +570,9 @@ final class CaptureOverlayController {
                     "kind=capture-overlay-screenshot",
                     "status=success",
                     "selection=\(Self.serialize(selection.cocoaRect))",
+                    "selectionDisplayID=\(Self.selectionDisplayID(selection).map { String($0) } ?? "nil")",
+                    "documentSource=\(Self.describe(viewModel.document.source))",
+                    "baseImageColorTag=\(Self.colorTag(for: viewModel.document.baseImage))",
                     "imageWidth=\(rendered.width)",
                     "imageHeight=\(rendered.height)",
                     "annotationCount=\(viewModel.document.annotations.count)",
@@ -618,6 +621,66 @@ final class CaptureOverlayController {
         return size.intValue
     }
 
+    private static func selectionDisplayID(_ selection: CaptureSelection) -> CGDirectDisplayID? {
+        switch selection {
+        case let .area(area):
+            return area.displayID
+        case let .display(display):
+            return display.displayID
+        case .window:
+            return nil
+        }
+    }
+
+    private static func describe(_ source: ScreenshotSource) -> String {
+        switch source {
+        case let .area(rect, displayID):
+            return "area(displayID=\(displayID.map { String($0) } ?? "nil"),rect=\(serialize(rect)))"
+        case let .display(displayID):
+            return "display(id=\(displayID.map { String($0) } ?? "nil"))"
+        case let .window(title, ownerName, windowID):
+            return "window(id=\(windowID.map { String($0) } ?? "nil"),owner=\(ownerName ?? ""),title=\(title ?? ""))"
+        case let .scrolling(target, frameCount):
+            return "scrolling(title=\(target.title ?? ""),frames=\(frameCount))"
+        case .importedClipboard:
+            return "importedClipboard"
+        }
+    }
+
+    private static func colorTag(for image: CGImage) -> String {
+        let pixel = samplePixel(image)
+        if pixel.green > 130, pixel.red < 100, pixel.blue < 120 {
+            return "secondary-left"
+        }
+        if pixel.red > 130, pixel.green < 100, pixel.blue < 100 {
+            return "primary"
+        }
+        if pixel.blue > 130, pixel.red < 100 {
+            return "upper"
+        }
+        return "\(pixel.red),\(pixel.green),\(pixel.blue),\(pixel.alpha)"
+    }
+
+    private static func samplePixel(_ image: CGImage) -> (red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8) {
+        var data = [UInt8](repeating: 0, count: 4)
+        guard image.width > 0, image.height > 0,
+              let context = CGContext(
+                data: &data,
+                width: 1,
+                height: 1,
+                bitsPerComponent: 8,
+                bytesPerRow: 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              )
+        else { return (0, 0, 0, 0) }
+        let x = image.width / 2
+        let y = image.height / 2
+        context.translateBy(x: CGFloat(-x), y: CGFloat(y - image.height + 1))
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        return (data[0], data[1], data[2], data[3])
+    }
+
 #endif
 }
 
@@ -636,6 +699,7 @@ private final class CaptureOverlayWindow: NSPanel {
         isOpaque = false
         backgroundColor = .clear
         hasShadow = false
+        hidesOnDeactivate = false
         isReleasedWhenClosed = false
         ignoresMouseEvents = false
         acceptsMouseMovedEvents = true

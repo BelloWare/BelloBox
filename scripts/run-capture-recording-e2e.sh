@@ -98,6 +98,50 @@ assert_file_min_size() {
   fi
 }
 
+marker_value() {
+  local marker="$1"
+  local key="$2"
+  awk -F= -v key="$key" '$1 == key {print substr($0, index($0, "=") + 1); exit}' "$marker"
+}
+
+assert_real_screenshot_marker() {
+  local marker="$1"
+  local label="$2"
+  local count
+  count="$(marker_value "$marker" "displayCount")"
+  if [[ ! "$count" =~ ^[0-9]+$ ]] || (( count < 1 )); then
+    echo "$label failed: marker did not include a valid displayCount." >&2
+    exit 1
+  fi
+
+  for ((i = 0; i < count; i++)); do
+    if [[ "$(marker_value "$marker" "display[$i].status")" != "success" ]]; then
+      echo "$label failed: display[$i] did not report success." >&2
+      exit 1
+    fi
+    if [[ "$(marker_value "$marker" "display[$i].dimensionMatches")" != "true" ]]; then
+      echo "$label failed: display[$i] dimensions did not match expected crop size." >&2
+      exit 1
+    fi
+    local path
+    path="$(marker_value "$marker" "display[$i].path")"
+    assert_file_min_size "$path" 1024 "$label display[$i]"
+  done
+}
+
+assert_marker_value() {
+  local marker="$1"
+  local key="$2"
+  local expected="$3"
+  local label="$4"
+  local actual
+  actual="$(marker_value "$marker" "$key")"
+  if [[ "$actual" != "$expected" ]]; then
+    echo "$label failed: expected $key=$expected, got ${actual:-<missing>}." >&2
+    exit 1
+  fi
+}
+
 wait_for_file() {
   local path="$1"
   local label="$2"
@@ -166,6 +210,8 @@ REAL_SCREENSHOT="$RUN_ROOT/real-screenshot.png"
 REAL_SCREENSHOT_MARKER="$RUN_ROOT/real-screenshot.marker"
 OVERLAY_SCREENSHOT="$RUN_ROOT/overlay-screenshot.png"
 OVERLAY_SCREENSHOT_MARKER="$RUN_ROOT/overlay-screenshot.marker"
+MULTI_OVERLAY_SCREENSHOT="$RUN_ROOT/overlay-multi-screenshot.png"
+MULTI_OVERLAY_SCREENSHOT_MARKER="$RUN_ROOT/overlay-multi-screenshot.marker"
 RECORDING_MOV="$RUN_ROOT/recording.mov"
 RECORDING_MARKER="$RUN_ROOT/recording.marker"
 
@@ -176,6 +222,7 @@ launch_app_for_marker \
   BELLOBOX_E2E_REAL_SCREENSHOT_OUTPUT="$REAL_SCREENSHOT" \
   BELLOBOX_E2E_REAL_SCREENSHOT_MARKER="$REAL_SCREENSHOT_MARKER"
 assert_file_min_size "$REAL_SCREENSHOT" 1024 "Real screenshot E2E"
+assert_real_screenshot_marker "$REAL_SCREENSHOT_MARKER" "Real screenshot E2E"
 
 launch_app_for_marker \
   "Capture overlay screenshot E2E" \
@@ -186,6 +233,19 @@ launch_app_for_marker \
   BELLOBOX_E2E_CAPTURE_OVERLAY_OUTPUT="$OVERLAY_SCREENSHOT" \
   BELLOBOX_E2E_CAPTURE_OVERLAY_MARKER="$OVERLAY_SCREENSHOT_MARKER"
 assert_file_min_size "$OVERLAY_SCREENSHOT" 1024 "Capture overlay screenshot E2E"
+
+launch_app_for_marker \
+  "Capture overlay multi-display E2E" \
+  "$MULTI_OVERLAY_SCREENSHOT_MARKER" \
+  30 \
+  BELLOBOX_E2E_CAPTURE_OVERLAY_SIMULATED_DISPLAYS=1 \
+  BELLOBOX_E2E_CAPTURE_OVERLAY_OUTPUT="$MULTI_OVERLAY_SCREENSHOT" \
+  BELLOBOX_E2E_CAPTURE_OVERLAY_MARKER="$MULTI_OVERLAY_SCREENSHOT_MARKER"
+assert_file_min_size "$MULTI_OVERLAY_SCREENSHOT" 1024 "Capture overlay multi-display E2E"
+assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "selectionDisplayID" "9002" "Capture overlay multi-display E2E"
+assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "baseImageColorTag" "secondary-left" "Capture overlay multi-display E2E"
+assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "imageWidth" "240" "Capture overlay multi-display E2E"
+assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "imageHeight" "140" "Capture overlay multi-display E2E"
 
 start_recording_fixture
 launch_app_for_marker \

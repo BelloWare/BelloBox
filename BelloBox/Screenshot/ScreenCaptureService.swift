@@ -228,18 +228,128 @@ final class ScreenCaptureService {
     }
 
     private func captureDisplay(_ displayID: CGDirectDisplayID, includeCursor: Bool) async throws -> CGImage {
-        let content = try await shareableContent()
-        guard let display = content.displays.first(where: { $0.displayID == displayID }) else {
+        let requestedBounds = CGDisplayBounds(displayID)
+        let content: SCShareableContent
+        do {
+            content = try await shareableContent()
+        } catch {
+            if error is CancellationError { throw error }
+            return try legacyCaptureDisplay(
+                displayID,
+                reason: "shareableContentFailed error=\(error.localizedDescription)",
+                requestedBounds: requestedBounds,
+                originalError: error
+            )
+        }
+        let initialCandidates = Self.displayCandidates(from: content.displays)
+        logDisplayCapture(
+            "displayCapture.resolve.initial",
+            [
+                "requestedDisplayID=\(displayID)",
+                "requestedBounds=\(Self.serialize(requestedBounds))",
+                "availableSCKDisplayIDs=\(Self.displayIDSummary(initialCandidates))",
+            ]
+        )
+
+        let refreshedContent: SCShareableContent?
+        let refreshedCandidates: [DisplayCaptureCandidate]?
+        if initialCandidates.contains(where: { $0.displayID == displayID }) {
+            refreshedContent = nil
+            refreshedCandidates = nil
+        } else {
+            do {
+                refreshedContent = try await shareableContent(forceRefresh: true)
+                refreshedCandidates = refreshedContent.map { Self.displayCandidates(from: $0.displays) }
+            } catch {
+                if error is CancellationError { throw error }
+                return try legacyCaptureDisplay(
+                    displayID,
+                    reason: "shareableContentRefreshFailed error=\(error.localizedDescription)",
+                    requestedBounds: requestedBounds,
+                    originalError: error
+                )
+            }
+            logDisplayCapture(
+                "displayCapture.resolve.refreshed",
+                [
+                    "requestedDisplayID=\(displayID)",
+                    "availableSCKDisplayIDs=\(Self.displayIDSummary(refreshedCandidates ?? []))",
+                ]
+            )
+        }
+
+        let resolution = DisplayCaptureResolver.resolve(
+            requestedDisplayID: displayID,
+            requestedBounds: requestedBounds,
+            initialCandidates: initialCandidates,
+            refreshedCandidates: refreshedCandidates,
+            legacyFallbackAvailable: true
+        )
+        let contentForCapture: SCShareableContent
+        let candidate: DisplayCaptureCandidate
+        let matchPath: DisplayCaptureResolver.MatchPath
+        switch resolution {
+        case let .screenCaptureKit(resolvedCandidate, source, path):
+            candidate = resolvedCandidate
+            contentForCapture = (source == .refreshed ? refreshedContent : content) ?? content
+            matchPath = path
+        case let .legacyFallback(reason):
+            return try legacyCaptureDisplay(
+                displayID,
+                reason: "resolver=\(reason)",
+                requestedBounds: requestedBounds
+            )
+        case .noDisplayFound:
             throw CaptureError.noDisplayFound
         }
+
+        guard let display = contentForCapture.displays.first(where: { $0.displayID == candidate.displayID }) else {
+            return try legacyCaptureDisplay(
+                displayID,
+                reason: "resolvedSCKDisplayMissing path=\(matchPath) resolvedDisplayID=\(candidate.displayID)",
+                requestedBounds: requestedBounds
+            )
+        }
+
         let pixelSize = ScreenCoordinateSpace.displayPixelSize(for: displayID, fallbackScreen: screen(for: displayID))
-        let filter = SCContentFilter(display: display, excludingWindows: [])
+        let filter = SCContentFilter(display: display, excludingApplications: [], exceptingWindows: [])
         let configuration = SCStreamConfiguration()
         configuration.width = max(1, Int(pixelSize.width.rounded()))
         configuration.height = max(1, Int(pixelSize.height.rounded()))
         configuration.showsCursor = includeCursor
         configuration.capturesAudio = false
-        return try await capture(filter: filter, configuration: configuration)
+        logDisplayCapture(
+            "displayCapture.sck.begin",
+            [
+                "requestedDisplayID=\(displayID)",
+                "resolvedDisplayID=\(display.displayID)",
+                "matchPath=\(matchPath)",
+                "resolvedFrame=\(Self.serialize(candidate.frame))",
+                "configuration=\(configuration.width)x\(configuration.height)",
+                "filter=excludingApplications",
+            ]
+        )
+        do {
+            let image = try await capture(filter: filter, configuration: configuration)
+            logDisplayCapture(
+                "displayCapture.sck.success",
+                [
+                    "requestedDisplayID=\(displayID)",
+                    "resolvedDisplayID=\(display.displayID)",
+                    "matchPath=\(matchPath)",
+                    "outputPixels=\(image.width)x\(image.height)",
+                ]
+            )
+            return image
+        } catch {
+            if error is CancellationError { throw error }
+            return try legacyCaptureDisplay(
+                displayID,
+                reason: "sckCaptureFailed path=\(matchPath) resolvedDisplayID=\(display.displayID) error=\(error.localizedDescription)",
+                requestedBounds: requestedBounds,
+                originalError: error
+            )
+        }
     }
 
     private func captureWindow(_ target: CaptureWindow, includeCursor: Bool) async throws -> CGImage {
@@ -307,7 +417,12 @@ final class ScreenCaptureService {
         }
     }
 
-    private func shareableContent(maxAge: TimeInterval = 0.35) async throws -> SCShareableContent {
+    private func shareableContent(maxAge: TimeInterval = 0.35, forceRefresh: Bool = false) async throws -> SCShareableContent {
+        if forceRefresh {
+            let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+            cachedShareableContent = (Date(), content)
+            return content
+        }
         if let cachedShareableContent,
            Date().timeIntervalSince(cachedShareableContent.date) <= maxAge {
             return cachedShareableContent.content
@@ -356,6 +471,63 @@ final class ScreenCaptureService {
                 && abs(rect.width - screen.frame.width) <= inset * 2
                 && abs(rect.height - screen.frame.height) <= inset * 2
         }
+    }
+
+    private func legacyCaptureDisplay(
+        _ displayID: CGDirectDisplayID,
+        reason: String,
+        requestedBounds: CGRect,
+        originalError: Error? = nil
+    ) throws -> CGImage {
+        logDisplayCapture(
+            "displayCapture.legacy.begin",
+            [
+                "requestedDisplayID=\(displayID)",
+                "requestedBounds=\(Self.serialize(requestedBounds))",
+                "reason=\(reason)",
+            ]
+        )
+        guard let image = CGDisplayCreateImage(displayID) else {
+            logDisplayCapture(
+                "displayCapture.legacy.failure",
+                [
+                    "requestedDisplayID=\(displayID)",
+                    "reason=\(reason)",
+                    "originalError=\(originalError?.localizedDescription ?? "none")",
+                ]
+            )
+            if let originalError {
+                throw CaptureError.captureFailed("ScreenCaptureKit failed and the legacy display capture fallback was unavailable. \(originalError.localizedDescription)")
+            }
+            throw CaptureError.noDisplayFound
+        }
+        logDisplayCapture(
+            "displayCapture.legacy.success",
+            [
+                "requestedDisplayID=\(displayID)",
+                "reason=\(reason)",
+                "outputPixels=\(image.width)x\(image.height)",
+            ]
+        )
+        return image
+    }
+
+    private func logDisplayCapture(_ event: String, _ details: [String]) {
+        CaptureDiagnostics.log(event, enabled: true, details: details)
+    }
+
+    private static func displayCandidates(from displays: [SCDisplay]) -> [DisplayCaptureCandidate] {
+        displays.map { DisplayCaptureCandidate(displayID: $0.displayID, frame: $0.frame) }
+    }
+
+    private static func displayIDSummary(_ candidates: [DisplayCaptureCandidate]) -> String {
+        candidates
+            .map { "\($0.displayID)@\(serialize($0.frame))" }
+            .joined(separator: ";")
+    }
+
+    private static func serialize(_ rect: CGRect) -> String {
+        "\(Int(rect.origin.x.rounded())),\(Int(rect.origin.y.rounded())),\(Int(rect.size.width.rounded())),\(Int(rect.size.height.rounded()))"
     }
 }
 

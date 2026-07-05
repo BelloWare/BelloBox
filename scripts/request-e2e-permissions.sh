@@ -10,6 +10,7 @@ APP_LOG="$RUN_ROOT/bellobox.log"
 KEEP_APP_RUNNING="${BELLOBOX_E2E_KEEP_APP_RUNNING:-1}"
 REQUEST_PERMISSIONS="${BELLOBOX_E2E_REQUEST_PERMISSIONS:-1}"
 REQUIRE_PERMISSIONS="${BELLOBOX_E2E_REQUIRE_PERMISSIONS:-0}"
+REQUIRE_MICROPHONE="${BELLOBOX_E2E_REQUIRE_MICROPHONE:-0}"
 WAIT_SECONDS="${BELLOBOX_E2E_PERMISSION_WAIT_SECONDS:-12}"
 
 cd "$ROOT"
@@ -91,7 +92,12 @@ if [[ "$REQUIRE_PERMISSIONS" == "1" ]]; then
   fi
 
   missing=()
-  for permission in accessibility screenRecording inputMonitoring microphone; do
+  required_permissions=(accessibility screenRecording inputMonitoring)
+  if [[ "$REQUIRE_MICROPHONE" == "1" ]]; then
+    required_permissions+=(microphone)
+  fi
+
+  for permission in "${required_permissions[@]}"; do
     value="$(permission_value "$permission")"
     if [[ "$value" != "granted" ]]; then
       missing+=("$permission=${value:-missing}")
