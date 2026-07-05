@@ -31,4 +31,21 @@ final class CaptureDiagnosticsTests: XCTestCase {
         XCTAssertTrue(tail.contains("third-line"))
         XCTAssertFalse(tail.contains("first-line"))
     }
+
+    func testWriteTrimsLogToRecentWholeLinesWhenCapIsExceeded() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("BelloBoxTests-\(UUID().uuidString)", isDirectory: true)
+        let url = directory.appendingPathComponent("capture.log")
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let text = (1...8)
+            .map { "line-\($0)-xxxxxxxx\n" }
+            .joined()
+
+        CaptureDiagnostics.write(text, enabled: true, to: url, maximumLogBytes: 90, retainedLogBytes: 45)
+
+        let contents = try String(contentsOf: url, encoding: .utf8)
+        XCTAssertEqual(contents, "line-7-xxxxxxxx\nline-8-xxxxxxxx\n")
+        XCTAssertLessThanOrEqual(contents.utf8.count, 45)
+    }
 }

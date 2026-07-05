@@ -1,6 +1,9 @@
 import Foundation
 
 enum CaptureDiagnostics {
+    private static let maximumLogBytes = 4 * 1024 * 1024
+    private static let retainedLogBytes = 2 * 1024 * 1024
+
     enum ExportError: LocalizedError {
         case noLogFile
 
@@ -27,7 +30,7 @@ enum CaptureDiagnostics {
         guard enabled else { return }
         let timestamp = ISO8601DateFormatter().string(from: Date())
         let line = ([timestamp, event] + details).joined(separator: " | ") + "\n"
-        append(line, to: logURL)
+        append(line, to: logURL, maximumLogBytes: maximumLogBytes, retainedLogBytes: retainedLogBytes)
     }
 
     static func exportLog(to destination: URL) throws {
@@ -65,12 +68,28 @@ enum CaptureDiagnostics {
         }
     }
 
-    static func write(_ text: String, enabled: Bool, to url: URL) {
+    static func write(
+        _ text: String,
+        enabled: Bool,
+        to url: URL,
+        maximumLogBytes: Int? = nil,
+        retainedLogBytes: Int? = nil
+    ) {
         guard enabled else { return }
-        append(text, to: url)
+        append(
+            text,
+            to: url,
+            maximumLogBytes: maximumLogBytes ?? Self.maximumLogBytes,
+            retainedLogBytes: retainedLogBytes ?? Self.retainedLogBytes
+        )
     }
 
-    private static func append(_ text: String, to url: URL) {
+    private static func append(
+        _ text: String,
+        to url: URL,
+        maximumLogBytes: Int,
+        retainedLogBytes: Int
+    ) {
         lock.lock()
         defer { lock.unlock() }
 
@@ -85,9 +104,36 @@ enum CaptureDiagnostics {
             } else {
                 try data.write(to: url, options: .atomic)
             }
+            try trimIfNeeded(url, maximumLogBytes: maximumLogBytes, retainedLogBytes: retainedLogBytes)
         } catch {
             NSLog("Bello Box capture diagnostics write failed: \(error.localizedDescription)")
         }
+    }
+
+    private static func trimIfNeeded(_ url: URL, maximumLogBytes: Int, retainedLogBytes: Int) throws {
+        guard maximumLogBytes > 0,
+              retainedLogBytes > 0,
+              retainedLogBytes < maximumLogBytes
+        else { return }
+
+        let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+        guard let fileSize = attributes[.size] as? NSNumber,
+              fileSize.intValue > maximumLogBytes,
+              let handle = try? FileHandle(forReadingFrom: url)
+        else { return }
+        defer { try? handle.close() }
+
+        let offset = max(0, fileSize.intValue - retainedLogBytes)
+        try handle.seek(toOffset: UInt64(offset))
+        var data = try handle.readToEnd() ?? Data()
+        if offset > 0 {
+            if let newlineIndex = data.firstIndex(of: UInt8(ascii: "\n")) {
+                data.removeSubrange(...newlineIndex)
+            } else {
+                data.removeAll()
+            }
+        }
+        try data.write(to: url, options: .atomic)
     }
 }
 
