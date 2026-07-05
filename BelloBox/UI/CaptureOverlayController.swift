@@ -736,6 +736,7 @@ private final class CaptureOverlayView: NSView {
     private var hoveredWindow: CaptureWindow?
     private var lockedSelection: CaptureSelection?
     private var accessoryView: NSView?
+    private var trackingArea: NSTrackingArea?
     fileprivate var hasLockedSelection: Bool { lockedSelection != nil }
 
     init(screen: NSScreen, snapshot: DisplaySnapshot?, windows: [CaptureWindow], policy: CaptureSelectionPolicy) {
@@ -801,6 +802,27 @@ private final class CaptureOverlayView: NSView {
     override func mouseMoved(with event: NSEvent) {
         guard lockedSelection == nil else { return }
         updateHover(at: localPoint(for: event))
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        guard lockedSelection == nil else { return }
+        hoveredWindow = nil
+        needsDisplay = true
+    }
+
+    override func updateTrackingAreas() {
+        if let trackingArea {
+            removeTrackingArea(trackingArea)
+        }
+        let area = NSTrackingArea(
+            rect: bounds,
+            options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(area)
+        trackingArea = area
+        super.updateTrackingAreas()
     }
 
     override func mouseDown(with event: NSEvent) {

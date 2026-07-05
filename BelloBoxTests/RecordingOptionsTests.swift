@@ -86,6 +86,17 @@ final class RecordingOptionsTests: XCTestCase {
         XCTAssertTrue(AppSettings(defaults: defaults).captureDiagnosticsEnabled)
     }
 
+    func testScreenshotCaptureEngineSettingPersists() {
+        let defaults = temporaryDefaults("capture-engine")
+        let settings = AppSettings(defaults: defaults)
+
+        XCTAssertEqual(settings.screenshotCaptureEngine, .auto)
+        settings.screenshotCaptureEngine = .legacy
+
+        XCTAssertEqual(defaults.string(forKey: "screenshotCaptureEngine"), ScreenshotCaptureEngine.legacy.rawValue)
+        XCTAssertEqual(AppSettings(defaults: defaults).screenshotCaptureEngine, .legacy)
+    }
+
     func testSettingsPersistNormalizedValuesLoadedFromDefaults() {
         let defaults = temporaryDefaults("persisted-normalization")
         defaults.set("bad-provider", forKey: "provider")
@@ -103,6 +114,7 @@ final class RecordingOptionsTests: XCTestCase {
         defaults.set("ask-every-time", forKey: "codexApprovalPolicy")
         defaults.set("write-everywhere", forKey: "codexSandboxMode")
         defaults.set("bad-screenshot-mode", forKey: "screenshotDefaultMode")
+        defaults.set("bad-capture-engine", forKey: "screenshotCaptureEngine")
         defaults.set(0, forKey: "scrollingScreenshotMaxFrames")
         defaults.set(99999, forKey: "llmOCRMaxUploadLongEdge")
         defaults.set("bad-quality", forKey: "recordingQualityPreset")
@@ -126,6 +138,7 @@ final class RecordingOptionsTests: XCTestCase {
         XCTAssertEqual(defaults.string(forKey: "codexApprovalPolicy"), CodexCLI.defaultApprovalPolicy.rawValue)
         XCTAssertEqual(defaults.string(forKey: "codexSandboxMode"), CodexCLI.defaultSandboxMode.rawValue)
         XCTAssertEqual(defaults.string(forKey: "screenshotDefaultMode"), ScreenshotDefaultMode.area.rawValue)
+        XCTAssertEqual(defaults.string(forKey: "screenshotCaptureEngine"), ScreenshotCaptureEngine.auto.rawValue)
         XCTAssertEqual(defaults.integer(forKey: "scrollingScreenshotMaxFrames"), 2)
         XCTAssertEqual(defaults.integer(forKey: "llmOCRMaxUploadLongEdge"), 5000)
         XCTAssertEqual(defaults.string(forKey: "recordingQualityPreset"), RecordingOptions.default.quality.rawValue)
@@ -141,6 +154,7 @@ final class RecordingOptionsTests: XCTestCase {
         XCTAssertNil(defaults.object(forKey: "codexModel"))
         XCTAssertNil(defaults.object(forKey: "codexApprovalPolicy"))
         XCTAssertNil(defaults.object(forKey: "codexSandboxMode"))
+        XCTAssertNil(defaults.object(forKey: "screenshotCaptureEngine"))
         XCTAssertNil(defaults.object(forKey: "scrollingScreenshotMaxFrames"))
         XCTAssertNil(defaults.object(forKey: "llmOCRMaxUploadLongEdge"))
         XCTAssertNil(defaults.object(forKey: "recordingCountdownSeconds"))

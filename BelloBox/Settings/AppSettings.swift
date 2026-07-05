@@ -82,6 +82,7 @@ final class AppSettings: ObservableObject {
         static let screenshotIncludeCursor = "screenshotIncludeCursor"
         static let screenshotAutoCopy = "screenshotAutoCopy"
         static let screenshotDefaultMode = "screenshotDefaultMode"
+        static let screenshotCaptureEngine = "screenshotCaptureEngine"
         static let captureDiagnosticsEnabled = "captureDiagnosticsEnabled"
         static let scrollingScreenshotMaxFrames = "scrollingScreenshotMaxFrames"
         static let scrollingScreenshotAutoCompact = "scrollingScreenshotAutoCompact"
@@ -152,6 +153,7 @@ final class AppSettings: ObservableObject {
     @Published var screenshotIncludeCursor: Bool { didSet { defaults.set(screenshotIncludeCursor, forKey: Keys.screenshotIncludeCursor) } }
     @Published var screenshotAutoCopy: Bool { didSet { defaults.set(screenshotAutoCopy, forKey: Keys.screenshotAutoCopy) } }
     @Published var screenshotDefaultMode: ScreenshotDefaultMode { didSet { defaults.set(screenshotDefaultMode.rawValue, forKey: Keys.screenshotDefaultMode) } }
+    @Published var screenshotCaptureEngine: ScreenshotCaptureEngine { didSet { defaults.set(screenshotCaptureEngine.rawValue, forKey: Keys.screenshotCaptureEngine) } }
     @Published var captureDiagnosticsEnabled: Bool { didSet { defaults.set(captureDiagnosticsEnabled, forKey: Keys.captureDiagnosticsEnabled) } }
     @Published var scrollingScreenshotMaxFrames: Int {
         didSet {
@@ -258,6 +260,7 @@ final class AppSettings: ObservableObject {
         screenshotIncludeCursor = (defaults.object(forKey: Keys.screenshotIncludeCursor) as? Bool) ?? false
         screenshotAutoCopy = (defaults.object(forKey: Keys.screenshotAutoCopy) as? Bool) ?? false
         screenshotDefaultMode = ScreenshotDefaultMode(rawValue: defaults.string(forKey: Keys.screenshotDefaultMode) ?? "") ?? .area
+        screenshotCaptureEngine = ScreenshotCaptureEngine(rawValue: defaults.string(forKey: Keys.screenshotCaptureEngine) ?? "") ?? .auto
         captureDiagnosticsEnabled = (defaults.object(forKey: Keys.captureDiagnosticsEnabled) as? Bool) ?? false
         scrollingScreenshotMaxFrames = Self.normalizedScrollingMaxFrames(defaults.object(forKey: Keys.scrollingScreenshotMaxFrames) as? Int ?? 20)
         scrollingScreenshotAutoCompact = (defaults.object(forKey: Keys.scrollingScreenshotAutoCompact) as? Bool) ?? true
@@ -580,6 +583,7 @@ final class AppSettings: ObservableObject {
         persistLoadedString(codexApprovalPolicy.rawValue, forKey: Keys.codexApprovalPolicy)
         persistLoadedString(codexSandboxMode.rawValue, forKey: Keys.codexSandboxMode)
         persistLoadedString(screenshotDefaultMode.rawValue, forKey: Keys.screenshotDefaultMode)
+        persistLoadedString(screenshotCaptureEngine.rawValue, forKey: Keys.screenshotCaptureEngine)
         persistLoadedInt(scrollingScreenshotMaxFrames, forKey: Keys.scrollingScreenshotMaxFrames)
         persistLoadedInt(llmOCRMaxUploadLongEdge, forKey: Keys.llmOCRMaxUploadLongEdge)
 

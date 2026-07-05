@@ -53,45 +53,33 @@ final class ScreenCaptureService {
 
     var beforeCapture: (() -> Void)?
     var afterCapture: (() -> Void)?
+    private let captureEngineProvider: () -> ScreenshotCaptureEngine
     private var cachedShareableContent: (date: Date, content: SCShareableContent)?
+    private var screenParametersObserver: NSObjectProtocol?
 
-    func captureDisplaySnapshots(options: CaptureOptions = .default) async throws -> [DisplaySnapshot] {
-        guard ScreenCapturePermission.isTrusted else { throw CaptureError.permissionDenied }
-        if options.hideBelloBoxWindows {
-            beforeCapture?()
-        }
-        defer {
-            if options.hideBelloBoxWindows {
-                afterCapture?()
+    init(captureEngineProvider: @escaping () -> ScreenshotCaptureEngine = { AppSettings.shared.screenshotCaptureEngine }) {
+        self.captureEngineProvider = captureEngineProvider
+        screenParametersObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.cachedShareableContent = nil
+                DisplayCaptureTrustCache.shared.invalidateAll()
+                CaptureDiagnostics.log(
+                    "displayCapture.verify.cacheInvalidated",
+                    enabled: true,
+                    details: ["reason=screenParametersChanged"]
+                )
             }
         }
-        if options.delayAfterHidingOverlays > 0 {
-            try await Task.sleep(nanoseconds: UInt64(options.delayAfterHidingOverlays * 1_000_000_000))
-        }
+    }
 
-        var snapshots: [DisplaySnapshot] = []
-        var firstCaptureError: Error?
-        for screen in NSScreen.screens {
-            guard let displayID = ScreenCoordinateSpace.displayID(for: screen) else { continue }
-            do {
-                let image = try await captureDisplay(displayID, includeCursor: options.includeCursor)
-                try validate(image)
-                snapshots.append(DisplaySnapshot(
-                    displayID: displayID,
-                    screenFrame: screen.frame,
-                    scale: ScreenCoordinateSpace.imageScale(pixelWidth: image.width, screenFrame: screen.frame),
-                    image: image
-                ))
-            } catch {
-                if firstCaptureError == nil {
-                    firstCaptureError = error
-                }
-            }
+    deinit {
+        if let screenParametersObserver {
+            NotificationCenter.default.removeObserver(screenParametersObserver)
         }
-        if snapshots.isEmpty {
-            throw firstCaptureError ?? CaptureError.noDisplayFound
-        }
-        return snapshots
     }
 
     func document(fromSnapshot snapshot: DisplaySnapshot, cocoaRect: CGRect, source: ScreenshotSource) throws -> ScreenshotDocument {
@@ -229,6 +217,45 @@ final class ScreenCaptureService {
 
     private func captureDisplay(_ displayID: CGDirectDisplayID, includeCursor: Bool) async throws -> CGImage {
         let requestedBounds = CGDisplayBounds(displayID)
+        let topology = DisplayCaptureTopology.current()
+        let engineSetting = captureEngineProvider()
+        let cachedVerdict = DisplayCaptureTrustCache.shared.cachedVerdict(displayID: displayID, topology: topology)
+        var engineDecision = DisplayCaptureEnginePolicy.decision(
+            setting: engineSetting,
+            cachedVerdict: cachedVerdict,
+            legacyAvailable: true
+        )
+
+        if engineDecision.engine == .legacy {
+            if let image = legacyCaptureDisplayIfAvailable(
+                displayID,
+                reason: "engineSetting=\(engineSetting.rawValue) cachedVerify=\(engineDecision.verify.rawValue)",
+                requestedBounds: requestedBounds,
+                topology: topology,
+                verify: engineDecision.verify,
+                sckAvailability: engineSetting == .legacy ? .skipped : .available
+            ) {
+                return image
+            }
+            if engineSetting == .legacy {
+                throw CaptureError.noDisplayFound
+            }
+            logDisplayCapture(
+                "displayCapture.verify.legacyUnavailable",
+                [
+                    "requestedDisplayID=\(displayID)",
+                    "topology=\(topology.description)",
+                    "cachedVerify=\(engineDecision.verify.rawValue)",
+                    "fallback=screenCaptureKit",
+                ]
+            )
+            engineDecision = DisplayCaptureEnginePolicy.Decision(
+                engine: .sck,
+                verify: engineDecision.verify,
+                usesCachedVerdict: engineDecision.usesCachedVerdict
+            )
+        }
+
         let content: SCShareableContent
         do {
             content = try await shareableContent()
@@ -238,7 +265,10 @@ final class ScreenCaptureService {
                 displayID,
                 reason: "shareableContentFailed error=\(error.localizedDescription)",
                 requestedBounds: requestedBounds,
-                originalError: error
+                originalError: error,
+                topology: topology,
+                verify: .skipped,
+                sckAvailability: .unavailable
             )
         }
         let initialCandidates = Self.displayCandidates(from: content.displays)
@@ -266,7 +296,10 @@ final class ScreenCaptureService {
                     displayID,
                     reason: "shareableContentRefreshFailed error=\(error.localizedDescription)",
                     requestedBounds: requestedBounds,
-                    originalError: error
+                    originalError: error,
+                    topology: topology,
+                    verify: .skipped,
+                    sckAvailability: .unavailable
                 )
             }
             logDisplayCapture(
@@ -297,7 +330,10 @@ final class ScreenCaptureService {
             return try legacyCaptureDisplay(
                 displayID,
                 reason: "resolver=\(reason)",
-                requestedBounds: requestedBounds
+                requestedBounds: requestedBounds,
+                topology: topology,
+                verify: .skipped,
+                sckAvailability: .unavailable
             )
         case .noDisplayFound:
             throw CaptureError.noDisplayFound
@@ -307,7 +343,10 @@ final class ScreenCaptureService {
             return try legacyCaptureDisplay(
                 displayID,
                 reason: "resolvedSCKDisplayMissing path=\(matchPath) resolvedDisplayID=\(candidate.displayID)",
-                requestedBounds: requestedBounds
+                requestedBounds: requestedBounds,
+                topology: topology,
+                verify: .skipped,
+                sckAvailability: .unavailable
             )
         }
 
@@ -324,6 +363,9 @@ final class ScreenCaptureService {
                 "requestedDisplayID=\(displayID)",
                 "resolvedDisplayID=\(display.displayID)",
                 "matchPath=\(matchPath)",
+                "engine=sck",
+                "verify=\(engineDecision.verify.logValue)",
+                "engineSetting=\(engineSetting.rawValue)",
                 "resolvedFrame=\(Self.serialize(candidate.frame))",
                 "configuration=\(configuration.width)x\(configuration.height)",
                 "filter=excludingApplications",
@@ -331,23 +373,38 @@ final class ScreenCaptureService {
         )
         do {
             let image = try await capture(filter: filter, configuration: configuration)
+            let verifiedImage = verifyScreenCaptureKitDisplayImage(
+                image,
+                displayID: displayID,
+                resolvedDisplayID: display.displayID,
+                matchPath: matchPath,
+                requestedBounds: requestedBounds,
+                topology: topology,
+                engineSetting: engineSetting,
+                cachedVerdict: cachedVerdict
+            )
             logDisplayCapture(
                 "displayCapture.sck.success",
                 [
                     "requestedDisplayID=\(displayID)",
                     "resolvedDisplayID=\(display.displayID)",
                     "matchPath=\(matchPath)",
-                    "outputPixels=\(image.width)x\(image.height)",
+                    "engine=\(verifiedImage.engine.rawValue)",
+                    "verify=\(verifiedImage.verdict.logValue)",
+                    "outputPixels=\(verifiedImage.image.width)x\(verifiedImage.image.height)",
                 ]
             )
-            return image
+            return verifiedImage.image
         } catch {
             if error is CancellationError { throw error }
             return try legacyCaptureDisplay(
                 displayID,
                 reason: "sckCaptureFailed path=\(matchPath) resolvedDisplayID=\(display.displayID) error=\(error.localizedDescription)",
                 requestedBounds: requestedBounds,
-                originalError: error
+                originalError: error,
+                topology: topology,
+                verify: .skipped,
+                sckAvailability: .available
             )
         }
     }
@@ -473,17 +530,197 @@ final class ScreenCaptureService {
         }
     }
 
+    private struct VerifiedDisplayImage {
+        var image: CGImage
+        var verdict: DisplayCaptureVerificationVerdict
+        var engine: DisplayCaptureChosenEngine
+    }
+
+    private func verifyScreenCaptureKitDisplayImage(
+        _ image: CGImage,
+        displayID: CGDirectDisplayID,
+        resolvedDisplayID: CGDirectDisplayID,
+        matchPath: DisplayCaptureResolver.MatchPath,
+        requestedBounds: CGRect,
+        topology: DisplayCaptureTopology,
+        engineSetting: ScreenshotCaptureEngine,
+        cachedVerdict: DisplayCaptureVerificationVerdict?
+    ) -> VerifiedDisplayImage {
+        if engineSetting == .screenCaptureKit {
+            DisplayCaptureTrustCache.shared.record(
+                displayID: displayID,
+                topology: topology,
+                sckAvailability: .available,
+                verificationVerdict: .skipped,
+                chosenEngine: .sck,
+                reason: "engineSetting=screenCaptureKit"
+            )
+            return VerifiedDisplayImage(image: image, verdict: .skipped, engine: .sck)
+        }
+
+        switch cachedVerdict {
+        case .match:
+            DisplayCaptureTrustCache.shared.record(
+                displayID: displayID,
+                topology: topology,
+                sckAvailability: .available,
+                verificationVerdict: .match,
+                chosenEngine: .sck,
+                reason: "cachedMatch"
+            )
+            return VerifiedDisplayImage(image: image, verdict: .match, engine: .sck)
+        case .mismatch:
+            DisplayCaptureTrustCache.shared.record(
+                displayID: displayID,
+                topology: topology,
+                sckAvailability: .available,
+                verificationVerdict: .mismatch,
+                chosenEngine: .sck,
+                reason: "cachedMismatchLegacyUnavailable"
+            )
+            return VerifiedDisplayImage(image: image, verdict: .mismatch, engine: .sck)
+        case .unverified:
+            DisplayCaptureTrustCache.shared.record(
+                displayID: displayID,
+                topology: topology,
+                sckAvailability: .available,
+                verificationVerdict: .unverified,
+                chosenEngine: .sck,
+                reason: "cachedUnverified"
+            )
+            return VerifiedDisplayImage(image: image, verdict: .unverified, engine: .sck)
+        case .skipped, .none:
+            break
+        }
+
+        logDisplayCapture(
+            "displayCapture.verify.legacy.begin",
+            [
+                "requestedDisplayID=\(displayID)",
+                "resolvedDisplayID=\(resolvedDisplayID)",
+                "matchPath=\(matchPath)",
+                "requestedBounds=\(Self.serialize(requestedBounds))",
+                "topology=\(topology.description)",
+            ]
+        )
+        guard let legacyImage = CGDisplayCreateImage(displayID) else {
+            logDisplayCapture(
+                "displayCapture.verify.legacyUnavailable",
+                [
+                    "requestedDisplayID=\(displayID)",
+                    "resolvedDisplayID=\(resolvedDisplayID)",
+                    "matchPath=\(matchPath)",
+                    "topology=\(topology.description)",
+                    "fallback=screenCaptureKit",
+                ]
+            )
+            DisplayCaptureTrustCache.shared.record(
+                displayID: displayID,
+                topology: topology,
+                sckAvailability: .available,
+                verificationVerdict: .unverified,
+                chosenEngine: .sck,
+                reason: "legacyVerificationUnavailable"
+            )
+            return VerifiedDisplayImage(image: image, verdict: .unverified, engine: .sck)
+        }
+
+        guard let comparison = ImageFingerprintComparator.compare(image, legacyImage) else {
+            logDisplayCapture(
+                "displayCapture.verify.unavailable",
+                [
+                    "requestedDisplayID=\(displayID)",
+                    "resolvedDisplayID=\(resolvedDisplayID)",
+                    "matchPath=\(matchPath)",
+                    "fallback=screenCaptureKit",
+                ]
+            )
+            DisplayCaptureTrustCache.shared.record(
+                displayID: displayID,
+                topology: topology,
+                sckAvailability: .available,
+                verificationVerdict: .unverified,
+                chosenEngine: .sck,
+                reason: "fingerprintUnavailable"
+            )
+            return VerifiedDisplayImage(image: image, verdict: .unverified, engine: .sck)
+        }
+
+        let comparisonDetails = [
+            "requestedDisplayID=\(displayID)",
+            "resolvedDisplayID=\(resolvedDisplayID)",
+            "matchPath=\(matchPath)",
+            "rawMAD=\(Self.serialize(comparison.rawMeanAbsoluteDifference))",
+            "normalizedMAD=\(Self.serialize(comparison.normalizedMeanAbsoluteDifference))",
+            "offset=\(comparison.offsetX),\(comparison.offsetY)",
+        ]
+        if comparison.matches {
+            logDisplayCapture("displayCapture.verify.match", comparisonDetails)
+            DisplayCaptureTrustCache.shared.record(
+                displayID: displayID,
+                topology: topology,
+                sckAvailability: .available,
+                verificationVerdict: .match,
+                chosenEngine: .sck,
+                reason: "fingerprintMatch"
+            )
+            return VerifiedDisplayImage(image: image, verdict: .match, engine: .sck)
+        }
+
+        logDisplayCapture("displayCapture.verify.mismatch", comparisonDetails + ["fallback=legacy"])
+        DisplayCaptureTrustCache.shared.record(
+            displayID: displayID,
+            topology: topology,
+            sckAvailability: .available,
+            verificationVerdict: .mismatch,
+            chosenEngine: .legacy,
+            reason: "fingerprintMismatch"
+        )
+        return VerifiedDisplayImage(image: legacyImage, verdict: .mismatch, engine: .legacy)
+    }
+
     private func legacyCaptureDisplay(
         _ displayID: CGDirectDisplayID,
         reason: String,
         requestedBounds: CGRect,
-        originalError: Error? = nil
+        originalError: Error? = nil,
+        topology: DisplayCaptureTopology,
+        verify: DisplayCaptureVerificationVerdict,
+        sckAvailability: DisplayCaptureSCKAvailability
     ) throws -> CGImage {
+        guard let image = legacyCaptureDisplayIfAvailable(
+            displayID,
+            reason: reason,
+            requestedBounds: requestedBounds,
+            topology: topology,
+            verify: verify,
+            sckAvailability: sckAvailability,
+            originalError: originalError
+        ) else {
+            if let originalError {
+                throw CaptureError.captureFailed("ScreenCaptureKit failed and the legacy display capture fallback was unavailable. \(originalError.localizedDescription)")
+            }
+            throw CaptureError.noDisplayFound
+        }
+        return image
+    }
+
+    private func legacyCaptureDisplayIfAvailable(
+        _ displayID: CGDirectDisplayID,
+        reason: String,
+        requestedBounds: CGRect,
+        topology: DisplayCaptureTopology,
+        verify: DisplayCaptureVerificationVerdict,
+        sckAvailability: DisplayCaptureSCKAvailability,
+        originalError: Error? = nil
+    ) -> CGImage? {
         logDisplayCapture(
             "displayCapture.legacy.begin",
             [
                 "requestedDisplayID=\(displayID)",
                 "requestedBounds=\(Self.serialize(requestedBounds))",
+                "engine=legacy",
+                "verify=\(verify.logValue)",
                 "reason=\(reason)",
             ]
         )
@@ -496,18 +733,34 @@ final class ScreenCaptureService {
                     "originalError=\(originalError?.localizedDescription ?? "none")",
                 ]
             )
-            if let originalError {
-                throw CaptureError.captureFailed("ScreenCaptureKit failed and the legacy display capture fallback was unavailable. \(originalError.localizedDescription)")
-            }
-            throw CaptureError.noDisplayFound
+            DisplayCaptureTrustCache.shared.record(
+                displayID: displayID,
+                topology: topology,
+                sckAvailability: sckAvailability,
+                verificationVerdict: verify == .mismatch ? .mismatch : .unverified,
+                chosenEngine: .legacy,
+                reason: "legacyUnavailable \(reason)",
+                cacheVerdict: verify == .mismatch
+            )
+            return nil
         }
         logDisplayCapture(
             "displayCapture.legacy.success",
             [
                 "requestedDisplayID=\(displayID)",
                 "reason=\(reason)",
+                "engine=legacy",
+                "verify=\(verify.logValue)",
                 "outputPixels=\(image.width)x\(image.height)",
             ]
+        )
+        DisplayCaptureTrustCache.shared.record(
+            displayID: displayID,
+            topology: topology,
+            sckAvailability: sckAvailability,
+            verificationVerdict: verify,
+            chosenEngine: .legacy,
+            reason: reason
         )
         return image
     }
@@ -528,6 +781,10 @@ final class ScreenCaptureService {
 
     private static func serialize(_ rect: CGRect) -> String {
         "\(Int(rect.origin.x.rounded())),\(Int(rect.origin.y.rounded())),\(Int(rect.size.width.rounded())),\(Int(rect.size.height.rounded()))"
+    }
+
+    private static func serialize(_ value: Double) -> String {
+        String(format: "%.4f", value)
     }
 }
 

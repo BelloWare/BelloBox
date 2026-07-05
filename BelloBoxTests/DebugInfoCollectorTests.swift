@@ -17,10 +17,15 @@ final class DebugInfoCollectorTests: XCTestCase {
         XCTAssertTrue(report.contains("== Permissions =="))
         XCTAssertTrue(report.contains("== Settings =="))
         XCTAssertTrue(report.contains("== Screens =="))
+        XCTAssertTrue(report.contains("== Capture Self-Test =="))
         XCTAssertTrue(report.contains("captureDiagnosticsEnabled=true"))
         XCTAssertTrue(report.contains("screenshotHotkeyEnabled=true"))
+        XCTAssertTrue(report.contains("screenshotCaptureEngine=auto"))
         XCTAssertTrue(report.contains("nsscreenCount="))
         XCTAssertTrue(report.contains("cgOnlineDisplayCount="))
+        XCTAssertTrue(report.contains("sckAvailable:"))
+        XCTAssertTrue(report.contains("verification:"))
+        XCTAssertTrue(report.contains("chosenEngine:"))
         XCTAssertTrue(report.contains("overlay.ready"))
     }
 

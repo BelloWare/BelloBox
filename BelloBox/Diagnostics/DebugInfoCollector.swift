@@ -9,6 +9,7 @@ enum DebugInfoCollector {
         sections.append(permissionSection())
         sections.append(settingsSection(settings))
         sections.append(screenSection())
+        sections.append(captureSelfTestSection(settings))
         sections.append(diagnosticsSection(diagnosticsLogTail))
         return sections.joined(separator: "\n\n") + "\n"
     }
@@ -61,6 +62,7 @@ enum DebugInfoCollector {
                 "screenshotIncludeCursor=\(settings.screenshotIncludeCursor)",
                 "screenshotAutoCopy=\(settings.screenshotAutoCopy)",
                 "screenshotDefaultMode=\(settings.screenshotDefaultMode.rawValue)",
+                "screenshotCaptureEngine=\(settings.screenshotCaptureEngine.rawValue)",
                 "captureDiagnosticsEnabled=\(settings.captureDiagnosticsEnabled)",
                 "scrollingScreenshotMaxFrames=\(settings.scrollingScreenshotMaxFrames)",
                 "scrollingScreenshotAutoCompact=\(settings.scrollingScreenshotAutoCompact)",
@@ -102,6 +104,42 @@ enum DebugInfoCollector {
         }
 
         return lines(title: "Screens", items)
+    }
+
+    private static func captureSelfTestSection(_ settings: AppSettings) -> String {
+        let topology = DisplayCaptureTopology.current()
+        var items: [String] = [
+            "topology=\(topology.description.isEmpty ? "none" : topology.description)",
+            "setting=\(settings.screenshotCaptureEngine.rawValue)",
+        ]
+
+        for (index, screen) in NSScreen.screens.enumerated() {
+            guard let displayID = ScreenCoordinateSpace.displayID(for: screen) else {
+                let decision = DisplayCaptureEnginePolicy.decision(
+                    setting: settings.screenshotCaptureEngine,
+                    cachedVerdict: nil,
+                    legacyAvailable: true
+                )
+                items.append("captureSelfTest[\(index)]=displayID:nil,sckAvailable:unverified,verification:unverified,chosenEngine:\(decision.engine.rawValue),reason:noDisplayID")
+                continue
+            }
+            let report = DisplayCaptureTrustCache.shared.report(displayID: displayID, topology: topology)
+            let cachedVerdict = DisplayCaptureTrustCache.shared.cachedVerdict(displayID: displayID, topology: topology)
+            let decision = DisplayCaptureEnginePolicy.decision(
+                setting: settings.screenshotCaptureEngine,
+                cachedVerdict: cachedVerdict,
+                legacyAvailable: true
+            )
+            let sckAvailability = report?.sckAvailability.rawValue ?? "unverified"
+            let verification = report?.verificationVerdict.rawValue ?? "unverified"
+            let chosenEngine = report?.chosenEngine.rawValue ?? decision.engine.rawValue
+            let reason = report?.reason ?? (cachedVerdict == nil ? "noCachedVerification" : "cachedVerification")
+            items.append(
+                "captureSelfTest[\(index)]=displayID:\(displayID),sckAvailable:\(sckAvailability),verification:\(verification),chosenEngine:\(chosenEngine),reason:\(reason)"
+            )
+        }
+
+        return lines(title: "Capture Self-Test", items)
     }
 
     private static func diagnosticsSection(_ diagnosticsLogTail: String?) -> String {

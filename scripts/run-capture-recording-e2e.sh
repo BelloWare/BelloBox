@@ -123,6 +123,10 @@ assert_real_screenshot_marker() {
       echo "$label failed: display[$i] dimensions did not match expected crop size." >&2
       exit 1
     fi
+    if [[ "$(marker_value "$marker" "display[$i].contentMatches")" != "true" ]]; then
+      echo "$label failed: display[$i] content did not match expected E2E color." >&2
+      exit 1
+    fi
     local path
     path="$(marker_value "$marker" "display[$i].path")"
     assert_file_min_size "$path" 1024 "$label display[$i]"

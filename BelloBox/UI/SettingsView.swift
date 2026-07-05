@@ -180,6 +180,13 @@ struct SettingsView: View {
                     Text("Scrolling max frames: \(settings.scrollingScreenshotMaxFrames)")
                 }
                 Toggle("Remove repeated sticky headers/footers", isOn: $settings.scrollingScreenshotAutoCompact)
+                Divider()
+                Picker("Advanced capture engine", selection: $settings.screenshotCaptureEngine) {
+                    ForEach(ScreenshotCaptureEngine.allCases) { engine in
+                        Text(engine.label).tag(engine)
+                    }
+                }
+                .pickerStyle(.menu)
                 helpText("Scrolling capture stays available from the menu. OCR only runs from the screenshot editor when you ask for it.")
             }
 

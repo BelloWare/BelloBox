@@ -100,6 +100,8 @@
 		BD3E28C2EAF68B105B6D9AA6 /* OCRImagePreprocessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8A9544E2A9E55028C5C851 /* OCRImagePreprocessor.swift */; };
 		C36FFB3EAF52A6AF12914153 /* ImageStitcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 464C266C76D1BDC07A36F458 /* ImageStitcherTests.swift */; };
 		C5A1C2D3E4F54A6B8C901234 /* DisplayCaptureResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A1C2D3E4F54A6B8C901233 /* DisplayCaptureResolver.swift */; };
+		D1C0DE570000000000000002 /* DisplayCaptureVerification.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C0DE570000000000000001 /* DisplayCaptureVerification.swift */; };
+		D1C0DE570000000000000004 /* DisplayCaptureVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C0DE570000000000000003 /* DisplayCaptureVerificationTests.swift */; };
 		C9504D108080F783FA14E45F /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2F6B9E2B89DE9CC44770BC /* MainView.swift */; };
 		CCF8B797BCB3CFF736B03FF1 /* ImageExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52C255C5A75B832D28A4603A /* ImageExportService.swift */; };
 		CE20A4C222D02942E0B8636A /* GlobalHotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8CC4A4A9C50F407B0643F6 /* GlobalHotkey.swift */; };
@@ -252,6 +254,8 @@
 		BC035EEF5CE979E67A450095 /* SelectionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionMonitor.swift; sourceTree = "<group>"; };
 		BC2042F219F24BE5591E7CF7 /* AIImageClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIImageClient.swift; sourceTree = "<group>"; };
 		C5A1C2D3E4F54A6B8C901233 /* DisplayCaptureResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCaptureResolver.swift; sourceTree = "<group>"; };
+		D1C0DE570000000000000001 /* DisplayCaptureVerification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCaptureVerification.swift; sourceTree = "<group>"; };
+		D1C0DE570000000000000003 /* DisplayCaptureVerificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCaptureVerificationTests.swift; sourceTree = "<group>"; };
 		BE10E7985012CECD32EA5D16 /* ScreenCapturePermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapturePermission.swift; sourceTree = "<group>"; };
 		BE297DCA6981DB4DE6124FBE /* RecordingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingCoordinator.swift; sourceTree = "<group>"; };
 		C066B72E31963A9607EC0C03 /* OCRImagePreprocessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRImagePreprocessorTests.swift; sourceTree = "<group>"; };
@@ -303,6 +307,7 @@
 				433D0D3593C6BD69229898FB /* CaptureSelectionResolver.swift */,
 				D435BC123B789A7484F28A56 /* CaptureWindowCatalog.swift */,
 				C5A1C2D3E4F54A6B8C901233 /* DisplayCaptureResolver.swift */,
+				D1C0DE570000000000000001 /* DisplayCaptureVerification.swift */,
 				52C255C5A75B832D28A4603A /* ImageExportService.swift */,
 				EE4863A41970D411485F0485 /* ImageStitcher.swift */,
 				55E83D1693A5BB0C69E5B7A4 /* RegionCaptureGeometry.swift */,
@@ -431,6 +436,7 @@
 				903B684DB18A687B4A1E903F /* CaptureWindowCatalogTests.swift */,
 				92CF009E56B87169B4330D59 /* DebugInfoCollectorTests.swift */,
 				4B4F3E4B2E5E4E599F072B22 /* DisplayCaptureResolverTests.swift */,
+				D1C0DE570000000000000003 /* DisplayCaptureVerificationTests.swift */,
 				7444E37F5DF2A31A4A93146A /* GlobalHotkeyTests.swift */,
 				16058521ABE8B312367423C8 /* ImageExportServiceTests.swift */,
 				464C266C76D1BDC07A36F458 /* ImageStitcherTests.swift */,
@@ -676,6 +682,7 @@
 				F28D4EC5A3F3646BD78C9699 /* CaptureWindowCatalogTests.swift in Sources */,
 				3489FD327C260048AA9EF200 /* DebugInfoCollectorTests.swift in Sources */,
 				4B4F3E4C2E5E4E599F072B22 /* DisplayCaptureResolverTests.swift in Sources */,
+				D1C0DE570000000000000004 /* DisplayCaptureVerificationTests.swift in Sources */,
 				E383F4CBB9F4D1BA9CBC50D7 /* GlobalHotkeyTests.swift in Sources */,
 				A197916DFCD24A89E79BB2E3 /* ImageExportServiceTests.swift in Sources */,
 				C36FFB3EAF52A6AF12914153 /* ImageStitcherTests.swift in Sources */,
@@ -733,6 +740,7 @@
 				0EE2FDA3D7C15AF542D25FF6 /* CaptureSelectionResolver.swift in Sources */,
 				EA35BAD2192ADD8192309D79 /* CaptureWindowCatalog.swift in Sources */,
 				C5A1C2D3E4F54A6B8C901234 /* DisplayCaptureResolver.swift in Sources */,
+				D1C0DE570000000000000002 /* DisplayCaptureVerification.swift in Sources */,
 				010389B759714F75DDC1DB16 /* CodexAppServerClient.swift in Sources */,
 				4CD21CD523F082696F720893 /* CodexCLI.swift in Sources */,
 				EDE4DAF00D574527E17AEF23 /* DebugInfoCollector.swift in Sources */,

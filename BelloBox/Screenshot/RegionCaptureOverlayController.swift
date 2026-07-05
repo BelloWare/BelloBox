@@ -149,6 +149,7 @@ private final class RegionOverlayView: NSView {
     private var startPoint: CGPoint?
     private var currentPoint: CGPoint?
     private var hoveredWindow: CaptureWindow?
+    private var trackingArea: NSTrackingArea?
 
     init(screen: NSScreen, windows: [CaptureWindow]) {
         self.screen = screen
@@ -170,6 +171,26 @@ private final class RegionOverlayView: NSView {
 
     override func mouseMoved(with event: NSEvent) {
         updateHover(at: localPoint(for: event))
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        hoveredWindow = nil
+        needsDisplay = true
+    }
+
+    override func updateTrackingAreas() {
+        if let trackingArea {
+            removeTrackingArea(trackingArea)
+        }
+        let area = NSTrackingArea(
+            rect: bounds,
+            options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(area)
+        trackingArea = area
+        super.updateTrackingAreas()
     }
 
     override func mouseDown(with event: NSEvent) {

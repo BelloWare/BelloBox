@@ -32,6 +32,7 @@ final class SelectionOverlayController: NSObject {
     private var regionCaptureController: RegionCaptureOverlayController?
     private var scrollingCaptureCoordinator: ScrollCaptureCoordinator?
 #if DEBUG
+    private var e2eScreenshotPulseWindow: NSWindow?
     private var e2eRecordingPulseWindow: NSWindow?
 #endif
 
@@ -968,6 +969,7 @@ final class SelectionOverlayController: NSObject {
         let markerPath = env["BELLOBOX_E2E_REAL_SCREENSHOT_MARKER"]
 
         Task { @MainActor in
+            var markerLines: [String] = ["kind=real-screenshot"]
             do {
                 guard ScreenCapturePermission.isTrusted else {
                     throw ScreenCaptureService.CaptureError.permissionDenied
@@ -977,11 +979,13 @@ final class SelectionOverlayController: NSObject {
                     throw ScreenCaptureService.CaptureError.noDisplayFound
                 }
 
-                var markerLines: [String] = [
-                    "kind=real-screenshot",
+                markerLines += [
                     "status=success",
                     "displayCount=\(screens.count)",
                 ]
+                if let virtualDisplayStatus = Self.e2eVirtualDisplayStatusIfRequested() {
+                    markerLines.append("virtualDisplay=\(virtualDisplayStatus)")
+                }
                 var primaryOutputPath = outputPath
 
                 for (index, screen) in screens.enumerated() {
@@ -990,6 +994,11 @@ final class SelectionOverlayController: NSObject {
                     else {
                         throw ScreenCaptureService.CaptureError.noDisplayFound
                     }
+
+                    let expectedColor = Self.e2eScreenshotColor(for: index)
+                    showE2EScreenshotPulseWindow(in: rect, color: expectedColor)
+                    defer { hideE2EScreenshotPulseWindow() }
+                    try await Task.sleep(nanoseconds: 200_000_000)
 
                     let document = try await screenCaptureService.capture(
                         .area(CaptureArea(cocoaRect: rect, displayID: displayID)),
@@ -1004,11 +1013,10 @@ final class SelectionOverlayController: NSObject {
 
                     let expected = Self.e2eExpectedImageRect(for: rect, on: screen, displayID: displayID)
                     let dimensionsMatch = rendered.width == Int(expected.width) && rendered.height == Int(expected.height)
-                    guard dimensionsMatch else {
-                        throw ScreenCaptureService.CaptureError.captureFailed(
-                            "Display \(displayID) produced \(rendered.width)x\(rendered.height), expected \(Int(expected.width))x\(Int(expected.height))."
-                        )
-                    }
+                    let expectedSample = RGBColorSample(expectedColor)
+                    let averageSample = ImageColorAnalyzer.averageColor(rendered)
+                    let colorDistance = averageSample?.distance(to: expectedSample) ?? .infinity
+                    let contentMatches = colorDistance <= 0.25
 
                     markerLines += [
                         "display[\(index)].status=success",
@@ -1021,9 +1029,24 @@ final class SelectionOverlayController: NSObject {
                         "display[\(index)].imageWidth=\(rendered.width)",
                         "display[\(index)].imageHeight=\(rendered.height)",
                         "display[\(index)].dimensionMatches=\(dimensionsMatch)",
+                        "display[\(index)].expectedColor=\(expectedSample.diagnosticString)",
+                        "display[\(index)].averageColor=\(averageSample?.diagnosticString ?? "nil")",
+                        "display[\(index)].colorDistance=\(Self.serialize(colorDistance))",
+                        "display[\(index)].contentMatches=\(contentMatches)",
                         "display[\(index)].path=\(displayOutputPath)",
                         "display[\(index)].fileSize=\(Self.fileSize(at: displayOutputPath))",
                     ]
+
+                    guard dimensionsMatch else {
+                        throw ScreenCaptureService.CaptureError.captureFailed(
+                            "Display \(displayID) produced \(rendered.width)x\(rendered.height), expected \(Int(expected.width))x\(Int(expected.height))."
+                        )
+                    }
+                    guard contentMatches else {
+                        throw ScreenCaptureService.CaptureError.captureFailed(
+                            "Display \(displayID) content color did not match the E2E marker window."
+                        )
+                    }
                 }
 
                 Self.writeE2EMarker(
@@ -1034,10 +1057,11 @@ final class SelectionOverlayController: NSObject {
                     ]
                 )
             } catch {
+                hideE2EScreenshotPulseWindow()
+                let linesWithoutStatus = markerLines.filter { !$0.hasPrefix("status=") }
                 Self.writeE2EMarker(
                     markerPath,
-                    lines: [
-                        "kind=real-screenshot",
+                    lines: linesWithoutStatus + [
                         "status=failure",
                         "error=\(error.localizedDescription)",
                     ]
@@ -1159,6 +1183,56 @@ final class SelectionOverlayController: NSObject {
     private func hideE2ERecordingPulseWindow() {
         e2eRecordingPulseWindow?.orderOut(nil)
         e2eRecordingPulseWindow = nil
+    }
+
+    private func showE2EScreenshotPulseWindow(in rect: CGRect, color: NSColor) {
+        hideE2EScreenshotPulseWindow()
+        let window = NSWindow(
+            contentRect: rect,
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
+        window.level = .screenSaver
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        window.ignoresMouseEvents = true
+        window.isOpaque = true
+        window.backgroundColor = color
+        window.hasShadow = false
+        window.isReleasedWhenClosed = false
+        window.contentView = E2ESolidColorView(color: color, frame: CGRect(origin: .zero, size: rect.size))
+        window.orderFrontRegardless()
+        window.displayIfNeeded()
+        e2eScreenshotPulseWindow = window
+    }
+
+    private func hideE2EScreenshotPulseWindow() {
+        e2eScreenshotPulseWindow?.orderOut(nil)
+        e2eScreenshotPulseWindow = nil
+    }
+
+    private static func e2eScreenshotColor(for index: Int) -> NSColor {
+        let colors = [
+            NSColor(calibratedRed: 0.92, green: 0.12, blue: 0.18, alpha: 1),
+            NSColor(calibratedRed: 0.10, green: 0.70, blue: 0.28, alpha: 1),
+            NSColor(calibratedRed: 0.08, green: 0.32, blue: 0.92, alpha: 1),
+            NSColor(calibratedRed: 0.90, green: 0.62, blue: 0.08, alpha: 1),
+        ]
+        return colors[index % colors.count]
+    }
+
+    private static func e2eVirtualDisplayStatusIfRequested() -> String? {
+        guard ProcessInfo.processInfo.environment["BELLOBOX_E2E_VIRTUAL_DISPLAY"] == "1" else { return nil }
+        let classNames = ["CGVirtualDisplay", "CGVirtualDisplayDescriptor", "CGVirtualDisplaySettings", "CGVirtualDisplayMode"]
+        let missing = classNames.filter { NSClassFromString($0) == nil }
+        if missing.isEmpty {
+            let reason = "skipped(classesPresentPrivateAPIUnstable)"
+            NSLog("Bello Box E2E virtual display \(reason)")
+            return reason
+        }
+        let reason = "skipped(missing:\(missing.joined(separator: ",")))"
+        NSLog("Bello Box E2E virtual display \(reason)")
+        return reason
     }
 
     private func runScreenshotE2EHooksIfNeeded() {
@@ -1431,6 +1505,10 @@ final class SelectionOverlayController: NSObject {
     private static func serialize(_ rect: CGRect) -> String {
         "\(rect.origin.x),\(rect.origin.y),\(rect.size.width),\(rect.size.height)"
     }
+
+    private static func serialize(_ value: Double) -> String {
+        String(format: "%.4f", value)
+    }
 #endif
 
     private func present<V: View>(
@@ -1534,6 +1612,24 @@ final class SelectionOverlayController: NSObject {
 }
 
 #if DEBUG
+private final class E2ESolidColorView: NSView {
+    private let color: NSColor
+
+    init(color: NSColor, frame frameRect: NSRect) {
+        self.color = color
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layer?.backgroundColor = color.cgColor
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func draw(_ dirtyRect: NSRect) {
+        color.setFill()
+        bounds.fill()
+    }
+}
+
 private final class E2ERecordingPulseView: NSView {
     private var timer: Timer?
     private var tick = 0
