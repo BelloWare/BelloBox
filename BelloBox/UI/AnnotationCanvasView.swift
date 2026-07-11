@@ -231,7 +231,9 @@ struct AnnotationCanvasView: View {
 
         switch viewModel.activeTool {
         case .pen:
-            viewModel.addVisibleAnnotation(.freehand(points: simplify(freehandPoints)))
+            let points = simplify(freehandPoints)
+            guard points.count > 1 else { return }
+            viewModel.addVisibleAnnotation(.freehand(points: points))
         case .arrow:
             viewModel.addVisibleAnnotation(.arrow(start: start, end: end))
         case .rectangle:

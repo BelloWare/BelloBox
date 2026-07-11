@@ -32,6 +32,21 @@ final class CaptureDiagnosticsTests: XCTestCase {
         XCTAssertFalse(tail.contains("first-line"))
     }
 
+    func testReadLogTailDoesNotDropLogWhenStartSplitsUTF8Scalar() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("BelloBoxTests-\(UUID().uuidString)", isDirectory: true)
+        let url = directory.appendingPathComponent("capture.log")
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try "prefix 🙂 tail\n".write(to: url, atomically: true, encoding: .utf8)
+
+        let tail = try XCTUnwrap(CaptureDiagnostics.readLogTail(maxBytes: 8, from: url))
+
+        XCTAssertTrue(tail.contains("[last 8 bytes"))
+        XCTAssertTrue(tail.contains("tail"))
+    }
+
     func testWriteTrimsLogToRecentWholeLinesWhenCapIsExceeded() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("BelloBoxTests-\(UUID().uuidString)", isDirectory: true)

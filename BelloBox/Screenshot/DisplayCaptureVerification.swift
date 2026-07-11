@@ -290,18 +290,21 @@ enum ImageFingerprintComparator {
             )
         }
 
+        let lhsStats = FingerprintStats(fingerprint: lhs)
+        let rhsStats = FingerprintStats(fingerprint: rhs)
         let offsets = [-1, 0, 1]
-        var best = difference(lhs, rhs, offsetX: 0, offsetY: 0)
+        var best = difference(lhs, rhs, lhsStats: lhsStats, rhsStats: rhsStats, offsetX: 0, offsetY: 0)
         for offsetY in offsets {
             for offsetX in offsets {
-                let candidate = difference(lhs, rhs, offsetX: offsetX, offsetY: offsetY)
+                guard offsetX != 0 || offsetY != 0 else { continue }
+                let candidate = difference(lhs, rhs, lhsStats: lhsStats, rhsStats: rhsStats, offsetX: offsetX, offsetY: offsetY)
                 if candidate.normalizedMeanAbsoluteDifference < best.normalizedMeanAbsoluteDifference {
                     best = candidate
                 }
             }
         }
 
-        let lowContrast = lhs.standardDeviation < 0.02 && rhs.standardDeviation < 0.02
+        let lowContrast = lhsStats.standardDeviation < 0.02 && rhsStats.standardDeviation < 0.02
         let matches = lowContrast
             ? best.rawMeanAbsoluteDifference <= rawThreshold
             : (best.normalizedMeanAbsoluteDifference <= normalizedThreshold || best.rawMeanAbsoluteDifference <= rawThreshold)
@@ -324,14 +327,16 @@ enum ImageFingerprintComparator {
     private static func difference(
         _ lhs: ImageLumaFingerprint,
         _ rhs: ImageLumaFingerprint,
+        lhsStats: FingerprintStats,
+        rhsStats: FingerprintStats,
         offsetX: Int,
         offsetY: Int
     ) -> ImageFingerprintComparison {
         let gridSize = lhs.gridSize
-        let lhsMean = lhs.mean
-        let rhsMean = rhs.mean
-        let lhsStdDev = max(lhs.standardDeviation, 0.08)
-        let rhsStdDev = max(rhs.standardDeviation, 0.08)
+        let lhsMean = lhsStats.mean
+        let rhsMean = rhsStats.mean
+        let lhsStdDev = max(lhsStats.standardDeviation, 0.08)
+        let rhsStdDev = max(rhsStats.standardDeviation, 0.08)
         var rawTotal = 0.0
         var normalizedTotal = 0.0
         var count = 0
@@ -366,6 +371,23 @@ enum ImageFingerprintComparator {
             offsetX: offsetX,
             offsetY: offsetY
         )
+    }
+
+    private struct FingerprintStats {
+        var mean: Double
+        var standardDeviation: Double
+
+        init(fingerprint: ImageLumaFingerprint) {
+            guard !fingerprint.luma.isEmpty else {
+                mean = 0
+                standardDeviation = 0
+                return
+            }
+            let computedMean = fingerprint.luma.reduce(0, +) / Double(fingerprint.luma.count)
+            let variance = fingerprint.luma.reduce(0) { $0 + pow($1 - computedMean, 2) } / Double(fingerprint.luma.count)
+            mean = computedMean
+            standardDeviation = sqrt(variance)
+        }
     }
 }
 

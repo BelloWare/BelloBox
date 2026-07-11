@@ -166,6 +166,32 @@ final class CaptureSelectionResolverTests: XCTestCase {
         XCTAssertEqual(selection, .window(window))
     }
 
+    func testClickOnHoveredWindowOnNegativeOriginDisplaySelectsWindow() {
+        let secondary = CGRect(x: -1280, y: 0, width: 1280, height: 800)
+        let window = CaptureWindow(
+            windowID: 8,
+            title: "Browser",
+            ownerName: "Safari",
+            ownerBundleID: nil,
+            ownerProcessID: nil,
+            frame: CGRect(x: -1180, y: 500, width: 420, height: 220)
+        )
+        let localPoint = RegionCaptureGeometry.globalCocoaPointToLocalFlipped(
+            CGPoint(x: -1100, y: 620),
+            screenFrame: secondary
+        )
+
+        let selection = CaptureSelectionResolver.resolve(
+            startLocal: localPoint,
+            endLocal: CGPoint(x: localPoint.x + 2, y: localPoint.y + 2),
+            hoveredWindow: window,
+            screenFrame: secondary,
+            displayID: displayID
+        )
+
+        XCTAssertEqual(selection, .window(window))
+    }
+
     func testSkinnyDragReturnsNilInsteadOfArea() {
         let selection = CaptureSelectionResolver.resolve(
             startLocal: CGPoint(x: 200, y: 200),

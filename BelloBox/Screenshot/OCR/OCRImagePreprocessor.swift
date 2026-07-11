@@ -50,12 +50,12 @@ enum OCRImagePreprocessor {
             outputSize: CGSize(width: outputImage.width, height: outputImage.height)
         )
 
-        let encoded = try ImageExportService.pngData(from: outputImage)
-        let digest = sha256(encoded)
+        let encoded = forExternalUpload ? try ImageExportService.pngData(from: outputImage) : nil
+        let digest = try encoded.map(sha256) ?? imageDigest(outputImage)
         return PreparedOCRImage(
             image: outputImage,
-            encodedData: forExternalUpload ? encoded : nil,
-            mimeType: forExternalUpload ? "image/png" : nil,
+            encodedData: encoded,
+            mimeType: encoded == nil ? nil : "image/png",
             pixelSize: CGSize(width: outputImage.width, height: outputImage.height),
             digest: digest,
             appliedCrop: cropRect == fullImageRect(for: document) ? nil : cropRect,
@@ -65,7 +65,44 @@ enum OCRImagePreprocessor {
     }
 
     static func sha256(_ data: Data) -> String {
-        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        hexEncode(SHA256.hash(data: data))
+    }
+
+    private static let hexDigits = Array("0123456789abcdef".utf8)
+
+    private static func hexEncode<S: Sequence>(_ bytes: S) -> String where S.Element == UInt8 {
+        var output: [UInt8] = []
+        output.reserveCapacity(bytes.underestimatedCount * 2)
+        for byte in bytes {
+            output.append(hexDigits[Int(byte >> 4)])
+            output.append(hexDigits[Int(byte & 0x0f)])
+        }
+        return String(decoding: output, as: UTF8.self)
+    }
+
+    private static func imageDigest(_ image: CGImage) throws -> String {
+        let bytesPerPixel = 4
+        let bytesPerRow = max(1, image.width) * bytesPerPixel
+        var pixels = Data(count: bytesPerRow * max(1, image.height))
+        let rendered = pixels.withUnsafeMutableBytes { pointer -> Bool in
+            guard let baseAddress = pointer.baseAddress,
+                  let context = CGContext(
+                    data: baseAddress,
+                    width: image.width,
+                    height: image.height,
+                    bitsPerComponent: 8,
+                    bytesPerRow: bytesPerRow,
+                    space: CGColorSpaceCreateDeviceRGB(),
+                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+                  )
+            else { return false }
+            context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+            return true
+        }
+        guard rendered else { throw AnnotationRenderError.cannotCreateContext }
+        var digestInput = Data("\(image.width)x\(image.height)\n".utf8)
+        digestInput.append(pixels)
+        return sha256(digestInput)
     }
 
     private static func effectiveCropRect(for document: ScreenshotDocument, target: OCRTarget) -> CGRect {

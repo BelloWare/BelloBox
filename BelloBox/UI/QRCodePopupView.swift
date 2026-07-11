@@ -5,9 +5,18 @@ import UniformTypeIdentifiers
 /// Holds the (editable) text encoded in the QR popup.
 @MainActor
 final class QRCodePopupViewModel: ObservableObject {
-    @Published var text: String
+    @Published var text: String {
+        didSet {
+            guard text != oldValue else { return }
+            cachedImageText = nil
+            cachedImage = nil
+        }
+    }
     @Published var statusMessage: String?
     @Published var errorMessage: String?
+
+    private var cachedImageText: String?
+    private var cachedImage: NSImage?
 
     var onClose: () -> Void = {}
 
@@ -15,7 +24,15 @@ final class QRCodePopupViewModel: ObservableObject {
         self.text = text
     }
 
-    var image: NSImage? { QRCodeGenerator.image(for: text) }
+    var image: NSImage? {
+        if cachedImageText == text {
+            return cachedImage
+        }
+        let image = QRCodeGenerator.image(for: text)
+        cachedImageText = text
+        cachedImage = image
+        return image
+    }
     var byteCount: Int { text.utf8.count }
     var isEmpty: Bool { text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     var isTooLong: Bool { byteCount > QRCodeGenerator.maxByteCount }

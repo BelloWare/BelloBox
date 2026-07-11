@@ -12,6 +12,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
         canCheckForUpdates: Bool,
         onOpenSettings: @escaping () -> Void,
         onOpenGuide: @escaping () -> Void,
+        onOpenTokenUsage: @escaping () -> Void,
         onCheckForUpdates: @escaping () -> Void
     ) {
         if let window {
@@ -25,6 +26,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
             canCheckForUpdates: canCheckForUpdates,
             onOpenSettings: onOpenSettings,
             onOpenGuide: onOpenGuide,
+            onOpenTokenUsage: onOpenTokenUsage,
             onCheckForUpdates: onCheckForUpdates
         )
         let hosting = NSHostingController(rootView: view)

@@ -21,39 +21,43 @@ enum StitchError: LocalizedError, Equatable {
 enum ImageStitcher {
     static func stitch(_ frames: [CGImage], config: StitchConfig = .default) throws -> StitchResult {
         if Task.isCancelled { throw CancellationError() }
-        guard let first = frames.first else { throw StitchError.noFrames }
-        var normalized: [CGImage] = []
+        let orderedFrames = orderedFramesForStitching(frames, direction: config.direction)
+        guard let firstEntry = orderedFrames.first else { throw StitchError.noFrames }
+        let first = firstEntry.image
+        var normalized: [(frameIndex: Int, image: CGImage)] = []
         normalized.reserveCapacity(frames.count)
-        for image in frames {
+        for entry in orderedFrames {
             if Task.isCancelled { throw CancellationError() }
-            normalized.append(image.width == first.width ? image : try resize(image, width: first.width))
+            let image = entry.image.width == first.width ? entry.image : try resize(entry.image, width: first.width)
+            normalized.append((frameIndex: entry.frameIndex, image: image))
         }
 
-        var placements = [FramePlacement(frameIndex: 0, y: 0, overlapWithPrevious: 0, confidence: 1, croppedTop: 0, croppedBottom: 0)]
+        var placements = [FramePlacement(frameIndex: firstEntry.frameIndex, y: 0, overlapWithPrevious: 0, confidence: 1, croppedTop: 0, croppedBottom: 0)]
         var y = first.height
         var warnings: [String] = []
 
         for index in 1..<normalized.count {
             if Task.isCancelled { throw CancellationError() }
-            let previous = normalized[index - 1]
-            let current = normalized[index]
+            let previous = normalized[index - 1].image
+            let currentEntry = normalized[index]
+            let current = currentEntry.image
             let match = bestOverlap(previous: previous, current: current, config: config)
             let overlap = match?.overlap ?? 0
             let confidence = match.map { 1 - $0.score } ?? 0
             if match == nil {
-                warnings.append("Frame \(index + 1) did not have a confident overlap; it was appended without compaction.")
+                warnings.append("Frame \(currentEntry.frameIndex + 1) did not have a confident overlap; it was appended without compaction.")
             } else if appearsUnchanged(previous: previous, current: current) {
-                warnings.append("Frame \(index + 1) appears nearly unchanged from the previous frame.")
+                warnings.append("Frame \(currentEntry.frameIndex + 1) appears nearly unchanged from the previous frame.")
             } else if overlap > Int(CGFloat(current.height) * 0.88) {
-                warnings.append("Frame \(index + 1) appears nearly unchanged from the previous frame.")
+                warnings.append("Frame \(currentEntry.frameIndex + 1) appears nearly unchanged from the previous frame.")
             }
 
             var croppedTop = overlap
-            if config.removeRepeatedHeaderFooter, let header = repeatedHeaderHeight(first: normalized[0], current: current) {
+            if config.removeRepeatedHeaderFooter, let header = repeatedHeaderHeight(first: normalized[0].image, current: current) {
                 croppedTop = max(croppedTop, header)
             }
             placements.append(FramePlacement(
-                frameIndex: index,
+                frameIndex: currentEntry.frameIndex,
                 y: y - croppedTop,
                 overlapWithPrevious: overlap,
                 confidence: confidence,
@@ -76,9 +80,9 @@ enum ImageStitcher {
             throw StitchError.cannotRender
         }
 
-        for placement in placements {
+        for (placementOrder, placement) in placements.enumerated() {
             if Task.isCancelled { throw CancellationError() }
-            let image = normalized[placement.frameIndex]
+            let image = normalized[placementOrder].image
             let cropTop = placement.croppedTop
             let cropBottom = placement.croppedBottom
             let cropHeight = image.height - cropTop - cropBottom
@@ -91,6 +95,19 @@ enum ImageStitcher {
 
         guard let image = context.makeImage() else { throw StitchError.cannotRender }
         return StitchResult(image: image, placements: placements, warnings: warnings)
+    }
+
+    private static func orderedFramesForStitching(
+        _ frames: [CGImage],
+        direction: ScrollDirection
+    ) -> [(frameIndex: Int, image: CGImage)] {
+        let indexed = frames.enumerated().map { (frameIndex: $0.offset, image: $0.element) }
+        switch direction {
+        case .down:
+            return indexed
+        case .up:
+            return Array(indexed.reversed())
+        }
     }
 
     static func appearsUnchanged(previous: CGImage, current: CGImage, downsampleWidth: Int = 420, threshold: Double = 0.015) -> Bool {

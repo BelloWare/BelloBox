@@ -100,35 +100,45 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         let descriptor = try await Self.resolve(target: target, options: options)
         try prepareWriter(descriptor: descriptor)
 
-        self.privacyGuard = PrivacyGuard(detector: PasswordFieldDetector(), options: options)
-        let inputMonitor = RecordingInputMonitor(options: options, privacyGuard: privacyGuard)
-        inputMonitor.start()
-        self.inputMonitor = inputMonitor
-        self.renderContext = RecordingFrameRenderContext(
-            sourceScreenRect: descriptor.sourceScreenRect,
-            outputSize: CGSize(width: descriptor.outputSettings.width, height: descriptor.outputSettings.height),
-            clickOverlayMode: options.clickOverlayMode,
-            keystrokeMode: options.keystrokeMode,
-            secureFieldRedactionMode: options.secureFieldRedactionMode
-        )
+        var createdStream: SCStream?
+        do {
+            self.privacyGuard = PrivacyGuard(detector: PasswordFieldDetector(), options: options)
+            let inputMonitor = RecordingInputMonitor(options: options, privacyGuard: privacyGuard)
+            inputMonitor.start()
+            self.inputMonitor = inputMonitor
+            self.renderContext = RecordingFrameRenderContext(
+                sourceScreenRect: descriptor.sourceScreenRect,
+                outputSize: CGSize(width: descriptor.outputSettings.width, height: descriptor.outputSettings.height),
+                clickOverlayMode: options.clickOverlayMode,
+                keystrokeMode: options.keystrokeMode,
+                secureFieldRedactionMode: options.secureFieldRedactionMode
+            )
 
-        let stream = SCStream(filter: descriptor.filter, configuration: descriptor.configuration, delegate: self)
-        try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: writerQueue)
-        if options.audioSource.includesSystemAudio {
-            try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: writerQueue)
-        }
-        if options.audioSource.includesMicrophone {
-            if #available(macOS 15.0, *) {
-                try stream.addStreamOutput(self, type: .microphone, sampleHandlerQueue: writerQueue)
-            } else {
-                microphoneCapture = try MicrophoneSampleCapture(deviceID: options.microphoneDeviceID, queue: writerQueue) { [weak self] sampleBuffer in
-                    self?.appendAudio(sampleBuffer, to: self?.microphoneAudioInput)
-                }
-                microphoneCapture?.start()
+            let stream = SCStream(filter: descriptor.filter, configuration: descriptor.configuration, delegate: self)
+            createdStream = stream
+            try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: writerQueue)
+            if options.audioSource.includesSystemAudio {
+                try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: writerQueue)
             }
+            if options.audioSource.includesMicrophone {
+                if #available(macOS 15.0, *) {
+                    try stream.addStreamOutput(self, type: .microphone, sampleHandlerQueue: writerQueue)
+                } else {
+                    microphoneCapture = try MicrophoneSampleCapture(deviceID: options.microphoneDeviceID, queue: writerQueue) { [weak self] sampleBuffer in
+                        self?.appendAudio(sampleBuffer, to: self?.microphoneAudioInput)
+                    }
+                    microphoneCapture?.start()
+                }
+            }
+            self.stream = stream
+            try await stream.startCapture()
+        } catch {
+            if let createdStream {
+                try? await createdStream.stopCapture()
+            }
+            cleanupAfterFailedStart()
+            throw error
         }
-        self.stream = stream
-        try await stream.startCapture()
 
         let runtime = RecordingRuntimeState(
             sessionID: sessionID,
@@ -146,6 +156,24 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     func setPaused(_ paused: Bool) {
         writerQueue.async { [weak self] in
             self?.pauseTimeline.setPaused(paused, at: CMClockGetTime(CMClockGetHostTimeClock()))
+        }
+    }
+
+    private func cleanupAfterFailedStart() {
+        inputMonitor?.stop()
+        inputMonitor = nil
+        microphoneCapture?.stop()
+        microphoneCapture = nil
+        stream = nil
+        privacyGuard = nil
+        renderContext = nil
+        writerQueue.sync {
+            cancelOrDiscardWriter()
+            writer = nil
+            videoInput = nil
+            pixelBufferAdaptor = nil
+            systemAudioInput = nil
+            microphoneAudioInput = nil
         }
     }
 

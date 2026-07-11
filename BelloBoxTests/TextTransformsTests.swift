@@ -73,6 +73,7 @@ final class TextTransformsTests: XCTestCase {
     func testStats() {
         XCTAssertEqual(TextStats.characters("abc"), 3)
         XCTAssertEqual(TextStats.words("a b  c"), 3)
+        XCTAssertEqual(TextStats.words("a\u{00a0}b\u{2003}c"), 3)
         XCTAssertEqual(TextStats.lines("a\nb\nc"), 3)
         XCTAssertEqual(TextStats.charactersNoSpaces("a b c"), 3)
     }

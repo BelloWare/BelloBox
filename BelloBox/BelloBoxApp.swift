@@ -52,6 +52,8 @@ struct BelloBoxApp: App {
 
         Divider()
 
+        Button("Codex Token Usage…") { appDelegate.showCodexTokenUsage() }
+
         Button("Set Up Bello Box…") { appDelegate.showOnboarding() }
 
         Button("Settings…") { appDelegate.showSettings() }
@@ -77,6 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let onboarding = OnboardingWindowController()
     private let mainWindow = MainWindowController()
     private let settingsWindow = SettingsWindowController()
+    private let codexTokenUsageWindow = CodexTokenUsageWindowController()
     private var updaterController: SPUStandardUpdaterController?
     private var cancellables = Set<AnyCancellable>()
 
@@ -188,6 +191,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             canCheckForUpdates: updaterConfigured,
             onOpenSettings: { [weak self] in self?.showSettings() },
             onOpenGuide: { [weak self] in self?.showOnboarding() },
+            onOpenTokenUsage: { [weak self] in self?.showCodexTokenUsage() },
             onCheckForUpdates: { [weak self] in self?.checkForUpdates() }
         )
     }
@@ -202,6 +206,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showSettings() {
         settingsWindow.show(settings: settings)
+    }
+
+    func showCodexTokenUsage() {
+        codexTokenUsageWindow.show()
     }
 
     // MARK: - Updates

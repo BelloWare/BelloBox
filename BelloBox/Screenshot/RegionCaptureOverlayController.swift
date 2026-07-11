@@ -10,6 +10,8 @@ final class RegionCaptureOverlayController {
     private var windows: [RegionOverlayWindow] = []
     private var completion: ((Result<RegionCaptureResult, ScreenCaptureService.CaptureError>) -> Void)?
     private var keyMonitor: Any?
+    private var localMouseMoveMonitor: Any?
+    private var globalMouseMoveMonitor: Any?
     private var hasFinished = false
 
     deinit {
@@ -26,6 +28,7 @@ final class RegionCaptureOverlayController {
         self.completion = completion
         hasFinished = false
         installKeyMonitor()
+        installMouseMoveMonitors()
         let capturableWindows = CaptureWindowCatalog.currentWindows()
         for screen in NSScreen.screens {
             let window = RegionOverlayWindow(screen: screen)
@@ -44,6 +47,7 @@ final class RegionCaptureOverlayController {
         }
         AppActivation.bringAppForward()
         (window(containing: NSEvent.mouseLocation) ?? windows.first)?.makeKeyAndOrderFront(nil)
+        updateHoverForCurrentMouseLocation()
         NSCursor.crosshair.set()
     }
 
@@ -61,6 +65,31 @@ final class RegionCaptureOverlayController {
             guard event.keyCode == 53 else { return event }
             Task { @MainActor in self?.finish(.failure(.userCancelled)) }
             return nil
+        }
+    }
+
+    private func installMouseMoveMonitors() {
+        if let localMouseMoveMonitor {
+            NSEvent.removeMonitor(localMouseMoveMonitor)
+        }
+        if let globalMouseMoveMonitor {
+            NSEvent.removeMonitor(globalMouseMoveMonitor)
+        }
+        localMouseMoveMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved]) { [weak self] event in
+            self?.updateHoverForCurrentMouseLocation()
+            return event
+        }
+        globalMouseMoveMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateHoverForCurrentMouseLocation()
+            }
+        }
+    }
+
+    private func updateHoverForCurrentMouseLocation() {
+        let point = NSEvent.mouseLocation
+        for window in windows {
+            (window.contentView as? RegionOverlayView)?.updateHoverFromGlobalMouseLocation(point)
         }
     }
 
@@ -92,6 +121,14 @@ final class RegionCaptureOverlayController {
         if let keyMonitor {
             NSEvent.removeMonitor(keyMonitor)
             self.keyMonitor = nil
+        }
+        if let localMouseMoveMonitor {
+            NSEvent.removeMonitor(localMouseMoveMonitor)
+            self.localMouseMoveMonitor = nil
+        }
+        if let globalMouseMoveMonitor {
+            NSEvent.removeMonitor(globalMouseMoveMonitor)
+            self.globalMouseMoveMonitor = nil
         }
         for window in windows { window.orderOut(nil) }
         windows.removeAll()
@@ -282,11 +319,26 @@ private final class RegionOverlayView: NSView {
     private func updateHover(at point: CGPoint) {
         guard startPoint == nil else { return }
         let cocoa = RegionCaptureGeometry.localFlippedPointToGlobalCocoa(point, screenFrame: screen.frame)
+        let previousHover = hoveredWindow
         hoveredWindow = windows.first { window in
             guard let frame = window.frame else { return false }
             return frame.contains(cocoa)
         }
-        needsDisplay = true
+        if previousHover != hoveredWindow {
+            needsDisplay = true
+        }
+    }
+
+    fileprivate func updateHoverFromGlobalMouseLocation(_ point: CGPoint) {
+        let local = RegionCaptureGeometry.globalCocoaPointToLocalFlipped(point, screenFrame: screen.frame)
+        guard bounds.contains(local) else {
+            if hoveredWindow != nil {
+                hoveredWindow = nil
+                needsDisplay = true
+            }
+            return
+        }
+        updateHover(at: local)
     }
 
     private func resetInteraction(at point: CGPoint) {

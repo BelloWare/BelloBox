@@ -27,6 +27,8 @@ final class CaptureOverlayController {
     private var captureToken = 0
     private var refreshTask: Task<Void, Never>?
     private var keyMonitor: Any?
+    private var localMouseMoveMonitor: Any?
+    private var globalMouseMoveMonitor: Any?
     private var activeScreenshotViewModel: ScreenshotPopupViewModel?
     private var onError: ((String) -> Void)?
     private var onCancel: (() -> Void)?
@@ -113,6 +115,14 @@ final class CaptureOverlayController {
         if let keyMonitor {
             NSEvent.removeMonitor(keyMonitor)
             self.keyMonitor = nil
+        }
+        if let localMouseMoveMonitor {
+            NSEvent.removeMonitor(localMouseMoveMonitor)
+            self.localMouseMoveMonitor = nil
+        }
+        if let globalMouseMoveMonitor {
+            NSEvent.removeMonitor(globalMouseMoveMonitor)
+            self.globalMouseMoveMonitor = nil
         }
         if let resignActiveObserver {
             NotificationCenter.default.removeObserver(resignActiveObserver)
@@ -218,8 +228,10 @@ final class CaptureOverlayController {
 
         AppActivation.bringAppForward()
         installKeyMonitor()
+        installMouseMoveMonitors()
         installResignActiveObserver()
         orderOverlayWindowsFront(keyWindow: window(containing: NSEvent.mouseLocation) ?? windows.first)
+        updateHoverForCurrentMouseLocation()
         overlayTiming?.finish(
             [
                 "windowCount=\(windows.count)",
@@ -248,6 +260,31 @@ final class CaptureOverlayController {
             guard event.keyCode == 53 else { return event }
             Task { @MainActor in self?.cancelFromUser() }
             return nil
+        }
+    }
+
+    private func installMouseMoveMonitors() {
+        if let localMouseMoveMonitor {
+            NSEvent.removeMonitor(localMouseMoveMonitor)
+        }
+        if let globalMouseMoveMonitor {
+            NSEvent.removeMonitor(globalMouseMoveMonitor)
+        }
+        localMouseMoveMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved]) { [weak self] event in
+            self?.updateHoverForCurrentMouseLocation()
+            return event
+        }
+        globalMouseMoveMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateHoverForCurrentMouseLocation()
+            }
+        }
+    }
+
+    private func updateHoverForCurrentMouseLocation() {
+        let point = NSEvent.mouseLocation
+        for overlayView in overlayViews {
+            overlayView.updateHoverFromGlobalMouseLocation(point)
         }
     }
 
@@ -945,16 +982,34 @@ private final class CaptureOverlayView: NSView {
     private func updateHover(at point: CGPoint) {
         guard startPoint == nil else { return }
         guard policy == .any || policy == .windowOnly || policy == .areaOrWindow else {
-            hoveredWindow = nil
-            needsDisplay = true
+            if hoveredWindow != nil {
+                hoveredWindow = nil
+                needsDisplay = true
+            }
             return
         }
         let cocoa = RegionCaptureGeometry.localFlippedPointToGlobalCocoa(point, screenFrame: screen.frame)
+        let previousHover = hoveredWindow
         hoveredWindow = windows.first { window in
             guard let frame = window.frame else { return false }
             return frame.contains(cocoa)
         }
-        needsDisplay = true
+        if previousHover != hoveredWindow {
+            needsDisplay = true
+        }
+    }
+
+    fileprivate func updateHoverFromGlobalMouseLocation(_ point: CGPoint) {
+        guard lockedSelection == nil else { return }
+        let local = RegionCaptureGeometry.globalCocoaPointToLocalFlipped(point, screenFrame: screen.frame)
+        guard bounds.contains(local) else {
+            if hoveredWindow != nil {
+                hoveredWindow = nil
+                needsDisplay = true
+            }
+            return
+        }
+        updateHover(at: local)
     }
 
     private func resetInteraction(at point: CGPoint) {

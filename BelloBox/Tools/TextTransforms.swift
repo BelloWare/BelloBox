@@ -50,10 +50,11 @@ enum CaseConverter {
                 .joined(separator: " ")
         case .sentence:
             var out = ""
+            out.reserveCapacity(text.count)
             var capitalize = true
             for ch in text.lowercased() {
                 if capitalize, ch.isLetter {
-                    out += ch.uppercased()
+                    out.append(contentsOf: ch.uppercased())
                     capitalize = false
                 } else {
                     out.append(ch)
@@ -101,19 +102,20 @@ enum TextEncoder {
         case .html:
             return htmlEscape(text)
         case .hex:
-            return Data(text.utf8).map { String(format: "%02x", $0) }.joined()
+            return HexCodec.encode(Data(text.utf8))
         }
     }
 
     static func htmlEscape(_ s: String) -> String {
         var out = ""
+        out.reserveCapacity(s.count)
         for ch in s {
             switch ch {
-            case "&": out += "&amp;"
-            case "<": out += "&lt;"
-            case ">": out += "&gt;"
-            case "\"": out += "&quot;"
-            case "'": out += "&#39;"
+            case "&": out.append(contentsOf: "&amp;")
+            case "<": out.append(contentsOf: "&lt;")
+            case ">": out.append(contentsOf: "&gt;")
+            case "\"": out.append(contentsOf: "&quot;")
+            case "'": out.append(contentsOf: "&#39;")
             default: out.append(ch)
             }
         }
@@ -124,6 +126,8 @@ enum TextEncoder {
 // MARK: - Decoding (with auto-detection)
 
 enum TextDecoder {
+    private static let numericEntityRegex = try? NSRegularExpression(pattern: "&#(x?)([0-9A-Fa-f]+);")
+
     struct Decoded: Equatable {
         let format: String
         let output: String
@@ -201,22 +205,23 @@ enum TextDecoder {
             result = result.replacingOccurrences(of: entity, with: value)
         }
         // Numeric entities &#NN; and &#xHH;
-        if let regex = try? NSRegularExpression(pattern: "&#(x?)([0-9A-Fa-f]+);") {
+        if let regex = numericEntityRegex {
             let ns = result as NSString
             var output = ""
+            output.reserveCapacity(result.count)
             var lastEnd = 0
             for match in regex.matches(in: result, range: NSRange(location: 0, length: ns.length)) {
-                output += ns.substring(with: NSRange(location: lastEnd, length: match.range.location - lastEnd))
+                output.append(contentsOf: ns.substring(with: NSRange(location: lastEnd, length: match.range.location - lastEnd)))
                 let isHex = ns.substring(with: match.range(at: 1)) == "x"
                 let digits = ns.substring(with: match.range(at: 2))
                 if let code = UInt32(digits, radix: isHex ? 16 : 10), let scalar = Unicode.Scalar(code) {
                     output.append(Character(scalar))
                 } else {
-                    output += ns.substring(with: match.range)
+                    output.append(contentsOf: ns.substring(with: match.range))
                 }
                 lastEnd = match.range.location + match.range.length
             }
-            output += ns.substring(from: lastEnd)
+            output.append(contentsOf: ns.substring(from: lastEnd))
             result = output
         }
         return result
@@ -267,7 +272,7 @@ enum HashTool {
     }
 
     private static func hex<D: Sequence>(_ digest: D) -> String where D.Element == UInt8 {
-        digest.map { String(format: "%02x", $0) }.joined()
+        HexCodec.encode(digest)
     }
 }
 
@@ -316,13 +321,27 @@ enum TextStats {
     }
 
     static func words(_ s: String) -> Int {
-        s.split { $0 == " " || $0 == "\n" || $0 == "\t" || $0 == "\r" }.count
+        s.split { $0.isWhitespace }.count
     }
 
     static func lines(_ s: String) -> Int {
         if s.isEmpty { return 0 }
         let normalized = s.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
         return normalized.components(separatedBy: "\n").count
+    }
+}
+
+private enum HexCodec {
+    private static let digits = Array("0123456789abcdef".utf8)
+
+    static func encode<S: Sequence>(_ bytes: S) -> String where S.Element == UInt8 {
+        var output: [UInt8] = []
+        output.reserveCapacity(bytes.underestimatedCount * 2)
+        for byte in bytes {
+            output.append(digits[Int(byte >> 4)])
+            output.append(digits[Int(byte & 0x0f)])
+        }
+        return String(decoding: output, as: UTF8.self)
     }
 }
 

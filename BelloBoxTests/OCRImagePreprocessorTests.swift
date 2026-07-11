@@ -2,6 +2,13 @@ import XCTest
 @testable import BelloBox
 
 final class OCRImagePreprocessorTests: XCTestCase {
+    func testSHA256DigestUsesLowercaseHex() {
+        XCTAssertEqual(
+            OCRImagePreprocessor.sha256(Data("abc".utf8)),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        )
+    }
+
     func testCropChangesOutputDimensions() throws {
         let doc = ScreenshotDocument(baseImage: ScreenshotTestHelpers.image(width: 100, height: 100), scale: 1, source: .importedClipboard, cropRect: CGRect(x: 10, y: 10, width: 40, height: 30))
         let prepared = try OCRImagePreprocessor.prepare(document: doc, options: .default, forExternalUpload: false)
@@ -15,6 +22,21 @@ final class OCRImagePreprocessorTests: XCTestCase {
         let plain = ScreenshotDocument(baseImage: base, scale: 1, source: .importedClipboard)
         let a = try OCRImagePreprocessor.prepare(document: plain, options: .default, forExternalUpload: true)
         let b = try OCRImagePreprocessor.prepare(document: redacted, options: .default, forExternalUpload: true)
+        XCTAssertNotEqual(a.digest, b.digest)
+        XCTAssertFalse(b.appliedRedactions.isEmpty)
+    }
+
+    func testLocalPreparationDoesNotEncodeUploadPayloadButDigestTracksRedactions() throws {
+        let base = ScreenshotTestHelpers.stripedImage(width: 80, height: 80)
+        let redacted = ScreenshotDocument(baseImage: base, scale: 1, source: .importedClipboard, annotations: [ScreenshotAnnotation(kind: .blur(CGRect(x: 5, y: 5, width: 20, height: 20)), style: .redaction)])
+        let plain = ScreenshotDocument(baseImage: base, scale: 1, source: .importedClipboard)
+
+        let a = try OCRImagePreprocessor.prepare(document: plain, options: .default, forExternalUpload: false)
+        let b = try OCRImagePreprocessor.prepare(document: redacted, options: .default, forExternalUpload: false)
+
+        XCTAssertNil(a.encodedData)
+        XCTAssertNil(a.mimeType)
+        XCTAssertFalse(a.digest.isEmpty)
         XCTAssertNotEqual(a.digest, b.digest)
         XCTAssertFalse(b.appliedRedactions.isEmpty)
     }

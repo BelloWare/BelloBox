@@ -20,25 +20,46 @@ final class SelectionMonitor {
 
     var selectionMonitoringEnabled = true
     var hotkeyEnabled = true {
-        didSet { refreshHotkeyRegistrationIfNeeded() }
+        didSet {
+            guard hotkeyEnabled != oldValue else { return }
+            refreshHotkeyRegistrationIfNeeded()
+        }
     }
     var hotkey = GlobalHotkey.default {
-        didSet { refreshHotkeyRegistrationIfNeeded() }
+        didSet {
+            guard hotkey != oldValue else { return }
+            refreshHotkeyRegistrationIfNeeded()
+        }
     }
     var screenshotHotkeyEnabled = false {
-        didSet { refreshHotkeyRegistrationIfNeeded() }
+        didSet {
+            guard screenshotHotkeyEnabled != oldValue else { return }
+            refreshHotkeyRegistrationIfNeeded()
+        }
     }
     var screenshotHotkey = GlobalHotkey.defaultScreenshot {
-        didSet { refreshHotkeyRegistrationIfNeeded() }
+        didSet {
+            guard screenshotHotkey != oldValue else { return }
+            refreshHotkeyRegistrationIfNeeded()
+        }
     }
     var recordingHotkeyEnabled = false {
-        didSet { refreshHotkeyRegistrationIfNeeded() }
+        didSet {
+            guard recordingHotkeyEnabled != oldValue else { return }
+            refreshHotkeyRegistrationIfNeeded()
+        }
     }
     var recordingHotkey = GlobalHotkey.defaultRecording {
-        didSet { refreshHotkeyRegistrationIfNeeded() }
+        didSet {
+            guard recordingHotkey != oldValue else { return }
+            refreshHotkeyRegistrationIfNeeded()
+        }
     }
     var hotkeysSuspended = false {
-        didSet { refreshHotkeyRegistrationIfNeeded() }
+        didSet {
+            guard hotkeysSuspended != oldValue else { return }
+            refreshHotkeyRegistrationIfNeeded()
+        }
     }
     var onSelection: ((TextSelection) -> Void)?
     var onHotkey: (() -> Void)?

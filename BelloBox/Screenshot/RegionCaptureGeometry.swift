@@ -31,6 +31,10 @@ enum RegionCaptureGeometry {
         CGPoint(x: screenFrame.minX + point.x, y: screenFrame.maxY - point.y)
     }
 
+    static func globalCocoaPointToLocalFlipped(_ point: CGPoint, screenFrame: CGRect) -> CGPoint {
+        CGPoint(x: point.x - screenFrame.minX, y: screenFrame.maxY - point.y)
+    }
+
     static func localFlippedRectToGlobalCocoa(_ rect: CGRect, screenFrame: CGRect) -> CGRect {
         CGRect(
             x: screenFrame.minX + rect.minX,

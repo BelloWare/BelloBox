@@ -113,6 +113,7 @@ final class AppSettings: ObservableObject {
 
     @Published var providerKind: ProviderKind {
         didSet {
+            guard providerKind != oldValue else { return }
             defaults.set(providerKind.rawValue, forKey: Keys.provider)
             apiKey = KeychainStore.get(account: KeychainStore.account(for: providerKind)) ?? ""
         }
@@ -196,7 +197,10 @@ final class AppSettings: ObservableObject {
 
     /// API key for the currently-selected provider. Persisted to the Keychain.
     @Published var apiKey: String {
-        didSet { KeychainStore.set(apiKey, account: KeychainStore.account(for: providerKind)) }
+        didSet {
+            guard apiKey != oldValue else { return }
+            KeychainStore.set(apiKey, account: KeychainStore.account(for: providerKind))
+        }
     }
 
     var hasCompletedSetup: Bool {

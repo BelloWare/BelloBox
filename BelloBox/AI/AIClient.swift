@@ -444,17 +444,17 @@ final class AIClient: @unchecked Sendable {
 
 private final class LockedTextBuffer: @unchecked Sendable {
     private let lock = NSLock()
-    private var storage = ""
+    private var chunks: [String] = []
 
     func append(_ text: String) {
         lock.lock()
-        storage += text
+        chunks.append(text)
         lock.unlock()
     }
 
     func value() -> String {
         lock.lock()
-        let result = storage
+        let result = chunks.joined()
         lock.unlock()
         return result
     }

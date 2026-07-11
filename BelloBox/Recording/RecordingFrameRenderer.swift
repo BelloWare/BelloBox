@@ -15,6 +15,12 @@ struct RecordingFrameRenderContext: Equatable {
 final class RecordingFrameRenderer {
     private let ciContext = CIContext()
     private let colorSpace = CGColorSpaceCreateDeviceRGB()
+    private let bubbleFont = CTFontCreateWithName("SF Pro Rounded" as CFString, 18, nil)
+
+    private struct RedactionLayout {
+        var fullFrame: Bool
+        var rects: [CGRect]
+    }
 
     func render(
         sourcePixelBuffer: CVPixelBuffer,
@@ -51,23 +57,27 @@ final class RecordingFrameRenderer {
               )
         else { return }
 
-        drawPrivacyRedaction(sensitiveState, in: cgContext, context: context, outputSize: CGSize(width: width, height: height))
+        let redactionLayout = redactionLayout(
+            for: sensitiveState,
+            context: context,
+            outputSize: CGSize(width: width, height: height)
+        )
+        drawPrivacyRedaction(redactionLayout, in: cgContext, outputSize: CGSize(width: width, height: height))
         drawOverlays(
             overlayEvents,
             sensitiveState: sensitiveState,
             in: cgContext,
             context: context,
-            outputSize: CGSize(width: width, height: height)
+            outputSize: CGSize(width: width, height: height),
+            redactionLayout: redactionLayout
         )
     }
 
     private func drawPrivacyRedaction(
-        _ state: SensitiveInputState,
+        _ layout: RedactionLayout,
         in cgContext: CGContext,
-        context: RecordingFrameRenderContext,
         outputSize: CGSize
     ) {
-        let layout = redactionLayout(for: state, context: context, outputSize: outputSize)
         if layout.fullFrame {
             fillFullFrame(in: cgContext, outputSize: outputSize)
             return
@@ -84,9 +94,9 @@ final class RecordingFrameRenderer {
         sensitiveState: SensitiveInputState,
         in cgContext: CGContext,
         context: RecordingFrameRenderContext,
-        outputSize: CGSize
+        outputSize: CGSize,
+        redactionLayout layout: RedactionLayout
     ) {
-        let layout = redactionLayout(for: sensitiveState, context: context, outputSize: outputSize)
         for event in events {
             switch event.kind {
             case let .click(click):
@@ -149,9 +159,8 @@ final class RecordingFrameRenderer {
     }
 
     private func drawBubble(_ label: String, near point: CGPoint, in cgContext: CGContext, centered: Bool = false) {
-        let font = CTFontCreateWithName("SF Pro Rounded" as CFString, 18, nil)
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
+            .font: bubbleFont,
             .foregroundColor: NSColor.white
         ]
         let attributed = NSAttributedString(string: label, attributes: attributes)
@@ -183,21 +192,23 @@ final class RecordingFrameRenderer {
         for state: SensitiveInputState,
         context: RecordingFrameRenderContext,
         outputSize: CGSize
-    ) -> (fullFrame: Bool, rects: [CGRect]) {
+    ) -> RedactionLayout {
         switch state {
         case .notSensitive, .detectorUnavailable:
-            return (false, [])
+            return RedactionLayout(fullFrame: false, rects: [])
         case let .sensitiveKnownFrame(info):
             guard let frame = info.frameInScreenPoints, !frame.isNull, !frame.isEmpty else {
-                return (context.secureFieldRedactionMode == .strict, [])
+                return RedactionLayout(fullFrame: context.secureFieldRedactionMode == .strict, rects: [])
             }
             let bounds = CGRect(origin: .zero, size: outputSize)
             let rect = pixelRect(for: frame, sourceScreenRect: context.sourceScreenRect, outputSize: outputSize)
                 .insetBy(dx: -8, dy: -8)
                 .intersection(bounds)
-            return rect.isNull || rect.isEmpty ? (false, []) : (false, [rect])
+            return rect.isNull || rect.isEmpty
+                ? RedactionLayout(fullFrame: false, rects: [])
+                : RedactionLayout(fullFrame: false, rects: [rect])
         case .sensitiveUnknownFrame:
-            return (context.secureFieldRedactionMode == .strict, [])
+            return RedactionLayout(fullFrame: context.secureFieldRedactionMode == .strict, rects: [])
         }
     }
 

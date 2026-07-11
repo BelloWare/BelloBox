@@ -19,7 +19,11 @@ final class ScreenCaptureFrameGrabber: NSObject, SCStreamOutput, SCStreamDelegat
                 self.continuation = continuation
                 self.stream = stream
                 self.timeoutTask = Task { [weak self] in
-                    try? await Task.sleep(nanoseconds: 10_000_000_000)
+                    do {
+                        try await Task.sleep(nanoseconds: 10_000_000_000)
+                    } catch {
+                        return
+                    }
                     self?.finish(.failure(ScreenCaptureService.CaptureError.captureFailed("Timed out waiting for a screenshot frame.")))
                 }
                 self.lock.unlock()

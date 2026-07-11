@@ -74,12 +74,19 @@ final class RecordingCoordinator: ObservableObject {
         let seconds = max(0, options.countdownSeconds)
         if seconds > 0 {
             for value in stride(from: seconds, through: 1, by: -1) {
-                guard startToken == token else { return }
+                guard startToken == token, !Task.isCancelled else { return }
                 setState(.countingDown(value))
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                do {
+                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                } catch {
+                    if startToken == token {
+                        setState(.idle)
+                    }
+                    return
+                }
             }
         }
-        guard startToken == token else { return }
+        guard startToken == token, !Task.isCancelled else { return }
 
         let engine = makeEngine(target, options)
         engine.onFailure = { [weak self] error in

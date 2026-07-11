@@ -8,6 +8,7 @@ struct MainView: View {
     var canCheckForUpdates: Bool
     var onOpenSettings: () -> Void
     var onOpenGuide: () -> Void
+    var onOpenTokenUsage: () -> Void
     var onCheckForUpdates: () -> Void
 
     @State private var trusted = AccessibilityService.isTrusted
@@ -193,6 +194,8 @@ struct MainView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
                 Button { onOpenGuide() } label: { Label("Setup Guide", systemImage: "sparkles") }
+                    .buttonStyle(SecondaryButtonStyle())
+                Button { onOpenTokenUsage() } label: { Label("Token Usage", systemImage: "chart.xyaxis.line") }
                     .buttonStyle(SecondaryButtonStyle())
                 if canCheckForUpdates {
                     Button { onCheckForUpdates() } label: { Label("Check for Updates", systemImage: "arrow.triangle.2.circlepath") }

@@ -198,6 +198,53 @@ final class InlineTextEditingTests: XCTestCase {
         XCTAssertEqual(restoredOrigin, CGPoint(x: 20, y: 30))
     }
 
+    func testMovingCommittedTextAnnotationToSamePositionDoesNotCreateUndoEntry() {
+        let settings = AppSettings(defaults: temporaryDefaults())
+        let document = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.image(width: 400, height: 240),
+            scale: 1,
+            source: .importedClipboard
+        )
+        let viewModel = ScreenshotPopupViewModel(document: document, settings: settings)
+
+        viewModel.beginTextAnnotation(atVisiblePoint: CGPoint(x: 20, y: 30))
+        viewModel.updateEditingText("Label")
+        viewModel.endTextEditing()
+        guard let id = viewModel.document.annotations.first?.id else {
+            return XCTFail("Expected a text annotation")
+        }
+
+        viewModel.moveTextAnnotation(id: id, toVisibleOrigin: CGPoint(x: 20, y: 30))
+        viewModel.endMovingTextAnnotation(id: id)
+        viewModel.undo()
+
+        XCTAssertTrue(viewModel.document.annotations.isEmpty)
+    }
+
+    func testStartingCommittedTextDragWithoutMovementDoesNotCreateUndoEntry() {
+        let settings = AppSettings(defaults: temporaryDefaults())
+        let document = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.image(width: 400, height: 240),
+            scale: 1,
+            source: .importedClipboard
+        )
+        let viewModel = ScreenshotPopupViewModel(document: document, settings: settings)
+
+        viewModel.beginTextAnnotation(atVisiblePoint: CGPoint(x: 20, y: 30))
+        viewModel.updateEditingText("Label")
+        viewModel.endTextEditing()
+        guard let id = viewModel.document.annotations.first?.id else {
+            return XCTFail("Expected a text annotation")
+        }
+
+        viewModel.beginMovingTextAnnotation(id: id)
+        viewModel.moveTextAnnotation(id: id, toVisibleOrigin: CGPoint(x: 20, y: 30))
+        viewModel.endMovingTextAnnotation(id: id)
+        viewModel.undo()
+
+        XCTAssertTrue(viewModel.document.annotations.isEmpty)
+    }
+
     func testRedactionInCroppedImageMapsVisibleRectToDocumentRect() {
         let settings = AppSettings(defaults: temporaryDefaults())
         let document = ScreenshotDocument(

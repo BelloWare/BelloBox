@@ -14,6 +14,25 @@ enum CodexJSONRPCRequestID: Hashable, Equatable {
     }
 }
 
+struct CodexJSONLineBuffer {
+    private var data = Data()
+
+    mutating func append(_ chunk: Data) -> [String] {
+        data.append(chunk)
+        var lines: [String] = []
+        var lineStart = data.startIndex
+        while let newlineIndex = data[lineStart...].firstIndex(of: UInt8(ascii: "\n")) {
+            let lineData = data[lineStart..<newlineIndex]
+            lines.append(String(data: lineData, encoding: .utf8) ?? String(decoding: lineData, as: UTF8.self))
+            lineStart = data.index(after: newlineIndex)
+        }
+        if lineStart > data.startIndex {
+            data.removeSubrange(data.startIndex..<lineStart)
+        }
+        return lines
+    }
+}
+
 /// Minimal JSON-RPC client for `codex app-server` over its default stdio transport.
 ///
 /// Bello Box uses one short-lived app-server session per AI action. The app
@@ -241,12 +260,12 @@ private extension CodexAppServerClient {
         private let cwd = NSTemporaryDirectory()
 
         private var continuation: CheckedContinuation<Void, Error>?
-        private var stdoutBuffer = ""
+        private var stdoutBuffer = CodexJSONLineBuffer()
         private var stderrBuffer = ""
         private var nextRequestID: Int64 = 1
         private var pending: [CodexJSONRPCRequestID: String] = [:]
         private var threadID: String?
-        private var emittedText = ""
+        private var emittedTextChunks: [String] = []
         private var completedText: String?
         private var finished = false
         private var timeoutWorkItem: DispatchWorkItem?
@@ -365,23 +384,13 @@ private extension CodexAppServerClient {
         }
 
         private func handleStdoutLocked(_ data: Data) {
-            stdoutBuffer += String(data: data, encoding: .utf8) ?? ""
-            let parts = stdoutBuffer.split(separator: "\n", omittingEmptySubsequences: false)
-            guard stdoutBuffer.hasSuffix("\n") else {
-                stdoutBuffer = parts.last.map(String.init) ?? ""
-                for line in parts.dropLast() {
-                    handleLineLocked(String(line))
-                }
-                return
-            }
-            stdoutBuffer = ""
-            for line in parts.dropLast() {
-                handleLineLocked(String(line))
+            for line in stdoutBuffer.append(data) {
+                handleLineLocked(line)
             }
         }
 
         private func appendStderrLocked(_ data: Data) {
-            stderrBuffer += String(data: data, encoding: .utf8) ?? ""
+            stderrBuffer += String(decoding: data, as: UTF8.self)
             if stderrBuffer.count > 4000 {
                 stderrBuffer = String(stderrBuffer.suffix(4000))
             }
@@ -463,12 +472,12 @@ private extension CodexAppServerClient {
                 if let error = CodexAppServerClient.completionError(
                     status: completion.status,
                     error: completion.error,
-                    emittedText: emittedText,
+                    emittedText: emittedTextLocked(),
                     completedText: completedText
                 ) {
                     finishLocked(.failure(error))
                 } else {
-                    if emittedText.isEmpty, let completedText, !completedText.isEmpty {
+                    if emittedTextChunks.isEmpty, let completedText, !completedText.isEmpty {
                         emitLocked(completedText)
                     }
                     finishLocked(.success(()))
@@ -485,17 +494,23 @@ private extension CodexAppServerClient {
 
         private func reconcileCompletedTextLocked(_ text: String) {
             guard !text.isEmpty else { return }
-            if emittedText.isEmpty {
+            if emittedTextChunks.isEmpty {
                 emitLocked(text)
-            } else if text.hasPrefix(emittedText) {
+            } else {
+                let emittedText = emittedTextLocked()
+                guard text.hasPrefix(emittedText) else { return }
                 let suffix = String(text.dropFirst(emittedText.count))
                 if !suffix.isEmpty { emitLocked(suffix) }
             }
         }
 
         private func emitLocked(_ delta: String) {
-            emittedText += delta
+            emittedTextChunks.append(delta)
             onDelta(delta)
+        }
+
+        private func emittedTextLocked() -> String {
+            emittedTextChunks.joined()
         }
 
         private func stderrTailLocked() -> String {

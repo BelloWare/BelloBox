@@ -57,6 +57,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
     private var cachedBasePreview: CGImage?
     private var isClosed = false
     private var movingTextAnnotationID: UUID?
+    private var movingTextUndoPushed = false
 
     var onClose: () -> Void = {}
 
@@ -244,8 +245,9 @@ final class ScreenshotPopupViewModel: ObservableObject {
     func updateEditingText(_ text: String) {
         guard let id = editingTextAnnotationID,
               let index = document.annotations.firstIndex(where: { $0.id == id }),
-              case let .text(_, origin, maxWidth) = document.annotations[index].kind
+              case let .text(currentText, origin, maxWidth) = document.annotations[index].kind
         else { return }
+        guard currentText != text else { return }
         documentRevision += 1
         document.annotations[index].kind = .text(text, origin: origin, maxWidth: maxWidth)
         markOCRStale()
@@ -291,8 +293,8 @@ final class ScreenshotPopupViewModel: ObservableObject {
               editingTextAnnotationID != id,
               document.annotations.contains(where: { $0.id == id })
         else { return }
-        pushUndo()
         movingTextAnnotationID = id
+        movingTextUndoPushed = false
     }
 
     func moveTextAnnotation(id: UUID, toVisibleOrigin origin: CGPoint) {
@@ -302,6 +304,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
     func endMovingTextAnnotation(id: UUID) {
         if movingTextAnnotationID == id {
             movingTextAnnotationID = nil
+            movingTextUndoPushed = false
         }
     }
 
@@ -560,22 +563,35 @@ final class ScreenshotPopupViewModel: ObservableObject {
 
     private func moveTextAnnotation(id: UUID, toVisibleOrigin origin: CGPoint, recordUndoIfNeeded: Bool) {
         guard let index = document.annotations.firstIndex(where: { $0.id == id }),
-              case let .text(text, _, maxWidth) = document.annotations[index].kind
+              case let .text(text, currentOrigin, maxWidth) = document.annotations[index].kind
         else { return }
-        if recordUndoIfNeeded, movingTextAnnotationID != id {
-            beginMovingTextAnnotation(id: id)
-        }
         let visibleOrigin = clampedVisibleTextOrigin(
             origin,
             maxWidth: maxWidth,
             fontSize: document.annotations[index].style.fontSize
         )
+        let documentOrigin = shiftVisiblePointToDocument(visibleOrigin)
+        guard currentOrigin != documentOrigin else { return }
+        var didAdvanceRevision = false
+        if recordUndoIfNeeded {
+            if movingTextAnnotationID != id {
+                movingTextAnnotationID = id
+                movingTextUndoPushed = false
+            }
+            if !movingTextUndoPushed {
+                pushUndo()
+                movingTextUndoPushed = true
+                didAdvanceRevision = true
+            }
+        }
+        if !didAdvanceRevision {
+            documentRevision += 1
+        }
         document.annotations[index].kind = .text(
             text,
-            origin: shiftVisiblePointToDocument(visibleOrigin),
+            origin: documentOrigin,
             maxWidth: maxWidth
         )
-        documentRevision += 1
         markOCRStale()
     }
 

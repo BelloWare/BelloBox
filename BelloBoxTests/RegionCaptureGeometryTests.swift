@@ -43,4 +43,24 @@ final class RegionCaptureGeometryTests: XCTestCase {
 
         XCTAssertEqual(local, CGRect(x: 120, y: 160, width: 360, height: 240))
     }
+
+    func testGlobalCocoaPointConvertsToLocalFlippedOnNegativeOriginDisplay() {
+        let screenFrame = CGRect(x: -1280, y: 0, width: 1280, height: 800)
+        let point = CGPoint(x: -1180, y: 680)
+
+        let local = RegionCaptureGeometry.globalCocoaPointToLocalFlipped(point, screenFrame: screenFrame)
+
+        XCTAssertEqual(local, CGPoint(x: 100, y: 120))
+        XCTAssertEqual(RegionCaptureGeometry.localFlippedPointToGlobalCocoa(local, screenFrame: screenFrame), point)
+    }
+
+    func testGlobalCocoaPointConvertsToLocalFlippedOnDisplayAbovePrimary() {
+        let screenFrame = CGRect(x: 0, y: 900, width: 1440, height: 900)
+        let point = CGPoint(x: 50, y: 1700)
+
+        let local = RegionCaptureGeometry.globalCocoaPointToLocalFlipped(point, screenFrame: screenFrame)
+
+        XCTAssertEqual(local, CGPoint(x: 50, y: 100))
+        XCTAssertEqual(RegionCaptureGeometry.localFlippedPointToGlobalCocoa(local, screenFrame: screenFrame), point)
+    }
 }

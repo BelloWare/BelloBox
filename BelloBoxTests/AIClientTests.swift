@@ -435,6 +435,28 @@ final class AIClientTests: XCTestCase {
         XCTAssertEqual(CodexAppServerClient.turnCompletion(from: turn)?.status, "completed")
     }
 
+    func testCodexLineBufferKeepsUTF8ScalarSplitAcrossChunks() throws {
+        var buffer = CodexJSONLineBuffer()
+        let line = #"{"method":"item/agentMessage/delta","params":{"delta":"🙂"}}"# + "\n"
+        let bytes = Array(line.utf8)
+        let splitIndex = try XCTUnwrap(bytes.firstIndex(of: 0xF0)).advanced(by: 2)
+
+        XCTAssertTrue(buffer.append(Data(bytes[..<splitIndex])).isEmpty)
+        let lines = buffer.append(Data(bytes[splitIndex...]))
+
+        XCTAssertEqual(lines, [String(line.dropLast())])
+        let message = try XCTUnwrap(CodexAppServerClient.jsonObject(from: lines[0]))
+        XCTAssertEqual(CodexAppServerClient.agentMessageDelta(from: message), "🙂")
+    }
+
+    func testCodexLineBufferEmitsCompleteLinesAndKeepsSuffix() {
+        var buffer = CodexJSONLineBuffer()
+
+        XCTAssertEqual(buffer.append(Data("one\ntwo\nthr".utf8)), ["one", "two"])
+        XCTAssertTrue(buffer.append(Data()).isEmpty)
+        XCTAssertEqual(buffer.append(Data("ee\n".utf8)), ["three"])
+    }
+
     func testCodexAppServerParsesThreadAndErrors() throws {
         let response = try XCTUnwrap(CodexAppServerClient.jsonObject(
             from: #"{"id":2,"result":{"thread":{"id":"thread-1"}}}"#

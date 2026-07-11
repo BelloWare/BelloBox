@@ -34,6 +34,9 @@ enum CaptureDiagnostics {
     }
 
     static func exportLog(to destination: URL) throws {
+        lock.lock()
+        defer { lock.unlock() }
+
         guard FileManager.default.fileExists(atPath: logURL.path) else {
             throw ExportError.noLogFile
         }
@@ -58,7 +61,7 @@ enum CaptureDiagnostics {
         do {
             try handle.seek(toOffset: start)
             let data = try handle.readToEnd() ?? Data()
-            guard var text = String(data: data, encoding: .utf8) else { return nil }
+            var text = String(decoding: data, as: UTF8.self)
             if start > 0 {
                 text = "[last \(maxBytes) bytes of \(fileSize) byte log]\n" + text
             }

@@ -74,6 +74,38 @@ final class RecordingCoordinatorTests: XCTestCase {
         XCTAssertFalse(secondEngine.didCancel)
     }
 
+    func testCancelledCountdownDoesNotStartEngine() async {
+        let settings = AppSettings(defaults: temporaryDefaults())
+        let engine = MockRecordingEngine(label: "Mock")
+        let coordinator = RecordingCoordinator(
+            settings: settings,
+            makeEngine: { _, _ in engine },
+            permissionProvider: { _ in .grantedForTests }
+        )
+        let countdownStarted = expectation(description: "countdown started")
+        coordinator.onStateChange = { state in
+            if case .countingDown = state {
+                countdownStarted.fulfill()
+            }
+        }
+        var options = RecordingOptions.default
+        options.countdownSeconds = 3
+
+        let task = Task { @MainActor in
+            await coordinator.start(target: .display(displayID: CGDirectDisplayID(1)), options: options)
+        }
+        await fulfillment(of: [countdownStarted], timeout: 1)
+
+        task.cancel()
+        await task.value
+
+        XCTAssertEqual(engine.startCallCount, 0)
+        guard case .idle = coordinator.state else {
+            XCTFail("Cancelled countdown should return to idle.")
+            return
+        }
+    }
+
     private func temporaryDefaults() -> UserDefaults {
         let suiteName = "BelloBoxTests.RecordingCoordinator.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -95,13 +127,15 @@ private final class MockRecordingEngine: RecordingEngineControlling {
     let stopStarted = XCTestExpectation(description: "stop started")
     private var stopContinuation: CheckedContinuation<URL, Error>?
     private(set) var didCancel = false
+    private(set) var startCallCount = 0
 
     init(label: String) {
         targetDescription = label
     }
 
     func start() async throws -> RecordingRuntimeState {
-        RecordingRuntimeState(
+        startCallCount += 1
+        return RecordingRuntimeState(
             sessionID: RecordingSessionID(),
             startedAt: Date(),
             targetDescription: targetDescription,

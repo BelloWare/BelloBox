@@ -10,6 +10,19 @@ final class ImageStitcherTests: XCTestCase {
         XCTAssertEqual(result.image.height, 300, accuracy: 8)
     }
 
+    func testUpwardFramesAreReorderedBeforeStitching() throws {
+        let full = ScreenshotTestHelpers.stripedImage(width: 120, height: 300)
+        let top = try XCTUnwrap(full.cropping(to: CGRect(x: 0, y: 0, width: 120, height: 200)))
+        let bottom = try XCTUnwrap(full.cropping(to: CGRect(x: 0, y: 100, width: 120, height: 200)))
+        var config = StitchConfig.default
+        config.direction = .up
+
+        let result = try ImageStitcher.stitch([bottom, top], config: config)
+
+        XCTAssertEqual(result.image.height, 300, accuracy: 8)
+        XCTAssertEqual(result.placements.map(\.frameIndex), [1, 0])
+    }
+
     func testThreeOverlappingFramesStitchIntoExpectedHeight() throws {
         let full = ScreenshotTestHelpers.stripedImage(width: 120, height: 460)
         let first = try XCTUnwrap(full.cropping(to: CGRect(x: 0, y: 0, width: 120, height: 220)))

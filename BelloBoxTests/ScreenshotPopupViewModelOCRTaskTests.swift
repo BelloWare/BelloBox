@@ -258,6 +258,41 @@ final class ScreenshotPopupViewModelOCRTaskTests: XCTestCase {
         XCTAssertEqual(viewModel.ocrPanel.errorMessage, OCRError.staleResult.localizedDescription)
     }
 
+    func testCommittedTextMoveDuringPendingOCRDiscardsStaleResult() async throws {
+        let service = ControllableOCRService()
+        let viewModel = ScreenshotPopupViewModel(
+            document: ScreenshotDocument(
+                baseImage: ScreenshotTestHelpers.image(width: 120, height: 80),
+                scale: 1,
+                source: .importedClipboard
+            ),
+            settings: AppSettings(defaults: temporaryDefaults("stale-running-ocr-text-drag")),
+            macOCRService: service
+        )
+
+        viewModel.beginTextAnnotation(atVisiblePoint: CGPoint(x: 10, y: 10))
+        viewModel.updateEditingText("Label")
+        viewModel.endTextEditing()
+        let id = try XCTUnwrap(viewModel.document.annotations.first?.id)
+
+        viewModel.beginMovingTextAnnotation(id: id)
+        viewModel.moveTextAnnotation(id: id, toVisibleOrigin: CGPoint(x: 20, y: 20))
+
+        viewModel.runMacOCR()
+        await service.waitUntilStarted()
+        XCTAssertTrue(viewModel.ocrPanel.isRunning)
+
+        viewModel.moveTextAnnotation(id: id, toVisibleOrigin: CGPoint(x: 40, y: 30))
+        viewModel.endMovingTextAnnotation(id: id)
+        service.succeed()
+        await waitUntilOCRSettles(viewModel)
+
+        XCTAssertFalse(viewModel.ocrPanel.isRunning)
+        XCTAssertTrue(viewModel.document.ocrResults.isEmpty)
+        XCTAssertNil(viewModel.document.activeOCRResultID)
+        XCTAssertEqual(viewModel.ocrPanel.errorMessage, OCRError.staleResult.localizedDescription)
+    }
+
     func testBaseCaptureRefreshRejectsPendingLLMOCRConfirmation() {
         let defaults = temporaryDefaults("refresh-stale-llm-confirmation")
         defaults.set(ProviderKind.openAI.rawValue, forKey: "provider")

@@ -54,11 +54,21 @@ final class ScreenCaptureService {
     var beforeCapture: (() -> Void)?
     var afterCapture: (() -> Void)?
     private let captureEngineProvider: () -> ScreenshotCaptureEngine
+    private let diagnosticsEnabledProvider: () -> Bool
+    private let diagnosticsWriter: (String, Bool, [String]) -> Void
     private var cachedShareableContent: (date: Date, content: SCShareableContent)?
     private var screenParametersObserver: NSObjectProtocol?
 
-    init(captureEngineProvider: @escaping () -> ScreenshotCaptureEngine = { AppSettings.shared.screenshotCaptureEngine }) {
+    init(
+        captureEngineProvider: @escaping () -> ScreenshotCaptureEngine = { AppSettings.shared.screenshotCaptureEngine },
+        diagnosticsEnabledProvider: @escaping () -> Bool = { AppSettings.shared.captureDiagnosticsEnabled },
+        diagnosticsWriter: @escaping (String, Bool, [String]) -> Void = { event, enabled, details in
+            CaptureDiagnostics.log(event, enabled: enabled, details: details)
+        }
+    ) {
         self.captureEngineProvider = captureEngineProvider
+        self.diagnosticsEnabledProvider = diagnosticsEnabledProvider
+        self.diagnosticsWriter = diagnosticsWriter
         screenParametersObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
             object: nil,
@@ -67,10 +77,10 @@ final class ScreenCaptureService {
             Task { @MainActor in
                 self?.cachedShareableContent = nil
                 DisplayCaptureTrustCache.shared.invalidateAll()
-                CaptureDiagnostics.log(
+                self?.diagnosticsWriter(
                     "displayCapture.verify.cacheInvalidated",
-                    enabled: true,
-                    details: ["reason=screenParametersChanged"]
+                    self?.diagnosticsEnabledProvider() ?? false,
+                    ["reason=screenParametersChanged"]
                 )
             }
         }
@@ -350,7 +360,10 @@ final class ScreenCaptureService {
             )
         }
 
-        let pixelSize = ScreenCoordinateSpace.displayPixelSize(for: displayID, fallbackScreen: screen(for: displayID))
+        let pixelSize = ScreenCoordinateSpace.displayPixelSize(
+            for: display.displayID,
+            fallbackScreen: screen(for: display.displayID) ?? screen(for: displayID)
+        )
         let filter = SCContentFilter(display: display, excludingApplications: [], exceptingWindows: [])
         let configuration = SCStreamConfiguration()
         configuration.width = max(1, Int(pixelSize.width.rounded()))
@@ -766,8 +779,14 @@ final class ScreenCaptureService {
     }
 
     private func logDisplayCapture(_ event: String, _ details: [String]) {
-        CaptureDiagnostics.log(event, enabled: true, details: details)
+        diagnosticsWriter(event, diagnosticsEnabledProvider(), details)
     }
+
+#if DEBUG
+    func debugLogDisplayCaptureForTesting(_ event: String, details: [String] = []) {
+        logDisplayCapture(event, details)
+    }
+#endif
 
     private static func displayCandidates(from displays: [SCDisplay]) -> [DisplayCaptureCandidate] {
         displays.map { DisplayCaptureCandidate(displayID: $0.displayID, frame: $0.frame) }
