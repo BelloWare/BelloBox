@@ -97,19 +97,12 @@ struct CodexTokenUsageDashboardView: View {
             .accessibilityIdentifier("codexUsageModelPicker")
 
             Spacer()
-
-            Button { viewModel.goBack() } label: {
-                Label("Back", systemImage: "chevron.left")
-            }
-            .buttonStyle(SecondaryButtonStyle())
-            .disabled(viewModel.zoomStack.isEmpty)
-            .accessibilityIdentifier("codexUsageBackButton")
         }
     }
 
     private var summary: some View {
         let report = viewModel.report
-        let rates = viewModel.outputRates
+        let rates = report.activeOutputAverages
         return VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 metricCard(title: "Total", value: report.total.totalTokens)
@@ -119,22 +112,21 @@ struct CodexTokenUsageDashboardView: View {
                 metricCard(title: "Uncached", value: report.total.uncachedInputTokens)
             }
             HStack(spacing: 10) {
-                rateCard(title: "Output / minute", value: rates.perMinute)
-                rateCard(title: "Output / hour", value: rates.perHour)
-                rateCard(title: "Output / day", value: rates.perDay)
-                HStack {
-                    Text("Visible range")
-                        .font(.caption.weight(.semibold))
-                    Spacer()
-                    Text(dateRangeText(report.range))
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                }
-                .padding(10)
-                .frame(maxWidth: .infinity)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.primary.opacity(0.045)))
+                rateCard(
+                    title: "Output / active min",
+                    value: rates.perMinute,
+                    help: "Average output tokens across wall-clock minutes containing reported output. This is usage, not streaming speed."
+                )
+                rateCard(
+                    title: "Output / active hour",
+                    value: rates.perHour,
+                    help: "Average output tokens across wall-clock hours containing reported output. This is usage, not streaming speed."
+                )
+                rateCard(
+                    title: "Output / active day",
+                    value: rates.perDay,
+                    help: "Average output tokens across wall-clock days containing reported output. This is usage, not streaming speed."
+                )
             }
         }
     }
@@ -146,42 +138,36 @@ struct CodexTokenUsageDashboardView: View {
                 Text("\(viewModel.selectedMetric.title) by \(report.resolvedInterval.title.lowercased())")
                     .font(.headline)
                 Spacer()
-                Text("\(report.events.count) token events")
+                Text("\(report.eventCount) token events")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            GeometryReader { geometry in
-                ZStack(alignment: .topLeading) {
-                    if report.buckets.isEmpty {
-                        emptyChart
-                    } else {
-                        Chart(report.buckets) { bucket in
-                            BarMark(
-                                x: .value("Time", bucket.start),
-                                y: .value(viewModel.selectedMetric.title, viewModel.selectedMetric.value(in: bucket.usage))
-                            )
-                            .foregroundStyle(BoxTheme.accentGradient)
-                            .cornerRadius(2)
-                        }
-                        .chartXScale(domain: report.range.start...report.range.end)
-                        .chartYAxis {
-                            AxisMarks(position: .leading)
+            chartRangeIndicator
+
+            Group {
+                if viewModel.isLoading && !viewModel.hasCompletedInitialLoad {
+                    loadingChart
+                } else if report.buckets.isEmpty {
+                    emptyChart
+                } else {
+                    Chart(report.buckets) { bucket in
+                        BarMark(
+                            x: .value("Time", bucket.start),
+                            y: .value(viewModel.selectedMetric.title, viewModel.selectedMetric.value(in: bucket.usage))
+                        )
+                        .foregroundStyle(BoxTheme.accentGradient)
+                        .cornerRadius(2)
+                    }
+                    .chartXScale(domain: report.range.start...report.range.end)
+                    .chartYAxis {
+                        AxisMarks(position: .leading)
+                    }
+                    .chartOverlay { proxy in
+                        GeometryReader { geometry in
+                            chartInteractionOverlay(plotFrame: geometry[proxy.plotAreaFrame])
                         }
                     }
-
-                    if let selection = dragSelection(in: geometry.size) {
-                        Rectangle()
-                            .fill(BoxTheme.accent.opacity(0.18))
-                            .overlay(Rectangle().stroke(BoxTheme.accent.opacity(0.5), lineWidth: 1))
-                            .frame(width: selection.width, height: geometry.size.height)
-                            .offset(x: selection.minX)
-                    }
-
-                    Rectangle()
-                        .fill(.clear)
-                        .contentShape(Rectangle())
-                        .gesture(chartDragGesture(width: geometry.size.width))
                 }
             }
             .frame(height: 280)
@@ -204,6 +190,43 @@ struct CodexTokenUsageDashboardView: View {
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.primary.opacity(0.06), lineWidth: 1))
     }
 
+    private var chartRangeIndicator: some View {
+        HStack(spacing: 7) {
+            Image(systemName: viewModel.zoomStack.isEmpty ? "calendar" : "viewfinder")
+                .foregroundStyle(viewModel.zoomStack.isEmpty ? Color.secondary : BoxTheme.accent)
+            Text(viewModel.zoomStack.isEmpty ? "Showing" : "Selected range")
+                .fontWeight(.semibold)
+            Text(dateRangeText(viewModel.visibleRange))
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Spacer()
+            if !viewModel.zoomStack.isEmpty {
+                Button { viewModel.goBack() } label: {
+                    Label("Previous range", systemImage: "arrow.uturn.backward")
+                }
+                .buttonStyle(.borderless)
+                .accessibilityIdentifier("codexUsageBackButton")
+            }
+        }
+        .font(.caption)
+        .accessibilityIdentifier("codexUsageSelectedRange")
+    }
+
+    private var loadingChart: some View {
+        VStack(spacing: 9) {
+            ProgressView()
+                .controlSize(.regular)
+            Text("Loading local Codex usage…")
+                .font(.callout.weight(.medium))
+            Text("Scanning recent rollout files")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("codexUsageChartLoading")
+    }
+
     private var emptyChart: some View {
         VStack(spacing: 8) {
             Image(systemName: "chart.bar.xaxis")
@@ -216,6 +239,40 @@ struct CodexTokenUsageDashboardView: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func chartInteractionOverlay(plotFrame: CGRect) -> some View {
+        ZStack(alignment: .topLeading) {
+            if let selection = dragSelection(width: plotFrame.width) {
+                Rectangle()
+                    .fill(BoxTheme.accent.opacity(0.24))
+                    .overlay(Rectangle().stroke(BoxTheme.accent, lineWidth: 2))
+                    .frame(width: selection.width, height: plotFrame.height)
+                    .offset(x: plotFrame.minX + selection.minX, y: plotFrame.minY)
+                    .allowsHitTesting(false)
+            }
+
+            if let dragRange = dragDateRange(width: plotFrame.width) {
+                Text(dateRangeText(dragRange))
+                    .font(.caption2.monospacedDigit().weight(.semibold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(BoxTheme.accent.opacity(0.5), lineWidth: 1)
+                    )
+                    .position(x: plotFrame.midX, y: plotFrame.minY + 16)
+                    .allowsHitTesting(false)
+            }
+
+            Rectangle()
+                .fill(.clear)
+                .contentShape(Rectangle())
+                .frame(width: plotFrame.width, height: plotFrame.height)
+                .offset(x: plotFrame.minX, y: plotFrame.minY)
+                .gesture(chartDragGesture(width: plotFrame.width))
+        }
     }
 
     private var modelBreakdown: some View {
@@ -289,7 +346,7 @@ struct CodexTokenUsageDashboardView: View {
         .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.primary.opacity(0.045)))
     }
 
-    private func rateCard(title: String, value: Double) -> some View {
+    private func rateCard(title: String, value: Double, help: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.caption.weight(.semibold))
@@ -300,6 +357,7 @@ struct CodexTokenUsageDashboardView: View {
         .padding(10)
         .frame(width: 150, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(BoxTheme.accentSoft))
+        .help(help)
     }
 
     private func errorView(_ error: String) -> some View {
@@ -348,12 +406,19 @@ struct CodexTokenUsageDashboardView: View {
             }
     }
 
-    private func dragSelection(in size: CGSize) -> (minX: CGFloat, width: CGFloat)? {
+    private func dragSelection(width: CGFloat) -> (minX: CGFloat, width: CGFloat)? {
         guard let start = dragStartX, let current = dragCurrentX else { return nil }
-        let minX = clamp(min(start, current), min: 0, max: size.width)
-        let maxX = clamp(max(start, current), min: 0, max: size.width)
+        let minX = clamp(min(start, current), min: 0, max: width)
+        let maxX = clamp(max(start, current), min: 0, max: width)
         guard maxX > minX else { return nil }
         return (minX, maxX - minX)
+    }
+
+    private func dragDateRange(width: CGFloat) -> DateInterval? {
+        guard let start = dragStartX, let current = dragCurrentX, abs(current - start) >= 8 else { return nil }
+        let startDate = date(at: clamp(start, min: 0, max: width), width: width)
+        let endDate = date(at: clamp(current, min: 0, max: width), width: width)
+        return DateInterval(start: min(startDate, endDate), end: max(startDate, endDate))
     }
 
     private func date(at x: CGFloat, width: CGFloat) -> Date {

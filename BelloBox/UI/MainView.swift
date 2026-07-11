@@ -38,13 +38,14 @@ struct MainView: View {
         VStack(alignment: .leading, spacing: 18) {
             header
             statusCard
+            tokenUsageCard
             howToCard
             shortcutsCard
             Spacer(minLength: 0)
             actions
         }
         .padding(24)
-        .frame(width: 660, height: 720)
+        .frame(width: 660, height: 780)
         .onReceive(timer) { _ in trusted = AccessibilityService.isTrusted }
     }
 
@@ -138,6 +139,41 @@ struct MainView: View {
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BoxTheme.accentSoft.opacity(0.5)))
     }
 
+    private var tokenUsageCard: some View {
+        Button { onOpenTokenUsage() } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "chart.xyaxis.line")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 38, height: 38)
+                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(BoxTheme.accentGradient))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Codex Token Usage")
+                        .font(.callout.weight(.semibold))
+                    Text("Local usage history")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text("Open")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(BoxTheme.accent)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(12)
+            .contentShape(Rectangle())
+            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.primary.opacity(0.045)))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(.primary.opacity(0.06), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("mainTokenUsageButton")
+    }
+
     private var shortcutsCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
@@ -194,8 +230,6 @@ struct MainView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
                 Button { onOpenGuide() } label: { Label("Setup Guide", systemImage: "sparkles") }
-                    .buttonStyle(SecondaryButtonStyle())
-                Button { onOpenTokenUsage() } label: { Label("Token Usage", systemImage: "chart.xyaxis.line") }
                     .buttonStyle(SecondaryButtonStyle())
                 if canCheckForUpdates {
                     Button { onCheckForUpdates() } label: { Label("Check for Updates", systemImage: "arrow.triangle.2.circlepath") }

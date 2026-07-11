@@ -1,6 +1,6 @@
 import Foundation
 
-struct CodexTokenUsage: Equatable, Sendable {
+struct CodexTokenUsage: Equatable, Hashable, Sendable {
     var inputTokens: Int
     var cachedInputTokens: Int
     var outputTokens: Int
@@ -249,13 +249,22 @@ struct CodexTokenUsageModelTotal: Identifiable, Equatable, Sendable {
     var id: String { modelName }
 }
 
+struct CodexTokenUsageActiveOutputAverages: Equatable, Sendable {
+    let perMinute: Double
+    let perHour: Double
+    let perDay: Double
+
+    static let zero = CodexTokenUsageActiveOutputAverages(perMinute: 0, perHour: 0, perDay: 0)
+}
+
 struct CodexTokenUsageReport: Equatable, Sendable {
     let range: DateInterval
     let resolvedInterval: CodexTokenUsageInterval
-    let events: [CodexTokenUsageEvent]
+    let eventCount: Int
     let buckets: [CodexTokenUsageBucket]
     let total: CodexTokenUsage
     let modelTotals: [CodexTokenUsageModelTotal]
+    let activeOutputAverages: CodexTokenUsageActiveOutputAverages
 }
 
 struct CodexTokenUsageUnreadableFile: Equatable, Sendable {
@@ -266,10 +275,19 @@ struct CodexTokenUsageUnreadableFile: Equatable, Sendable {
 struct CodexTokenUsageScanResult: Equatable, Sendable {
     let codexHome: URL
     let filesScanned: Int
+    let bytesRead: Int64
+    let candidateBytes: Int64
     let unreadableFiles: [CodexTokenUsageUnreadableFile]
     let events: [CodexTokenUsageEvent]
 
     static func empty(codexHome: URL = CodexTokenUsageStore.defaultCodexHome()) -> CodexTokenUsageScanResult {
-        CodexTokenUsageScanResult(codexHome: codexHome, filesScanned: 0, unreadableFiles: [], events: [])
+        CodexTokenUsageScanResult(
+            codexHome: codexHome,
+            filesScanned: 0,
+            bytesRead: 0,
+            candidateBytes: 0,
+            unreadableFiles: [],
+            events: []
+        )
     }
 }
