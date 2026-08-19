@@ -14,6 +14,10 @@ final class RegionCaptureOverlayController {
     private var globalMouseMoveMonitor: Any?
     private var hasFinished = false
 
+#if DEBUG
+    var debugOverlayWindows: [NSWindow] { windows.map { $0 as NSWindow } }
+#endif
+
     deinit {
         // SelectionOverlayController owns and releases this UI controller on the main actor.
         // Deinit cannot call an actor-isolated method directly, but teardown must still
@@ -45,7 +49,6 @@ final class RegionCaptureOverlayController {
             window.orderFrontRegardless()
             windows.append(window)
         }
-        AppActivation.bringAppForward()
         (window(containing: NSEvent.mouseLocation) ?? windows.first)?.makeKeyAndOrderFront(nil)
         updateHoverForCurrentMouseLocation()
         NSCursor.crosshair.set()
@@ -146,19 +149,11 @@ private final class RegionOverlayWindow: NSPanel {
     init(screen: NSScreen) {
         super.init(
             contentRect: screen.frame,
-            styleMask: [.borderless],
+            styleMask: CaptureOverlayPanelConfiguration.styleMask,
             backing: .buffered,
             defer: false
         )
-        level = .screenSaver
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
-        isOpaque = false
-        backgroundColor = .clear
-        ignoresMouseEvents = false
-        acceptsMouseMovedEvents = true
-        hasShadow = false
-        hidesOnDeactivate = false
-        isReleasedWhenClosed = false
+        CaptureOverlayPanelConfiguration.apply(to: self)
         setFrame(screen.frame, display: true)
     }
 

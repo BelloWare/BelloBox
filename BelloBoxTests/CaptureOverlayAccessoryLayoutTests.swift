@@ -55,6 +55,17 @@ final class CaptureOverlayAccessoryLayoutTests: XCTestCase {
         )
 
         XCTAssertEqual(controller.debugOverlayWindowCount, NSScreen.screens.count)
+        assertSystemOverlayPresentation(controller.debugOverlayWindows)
+    }
+
+    func testScrollingRegionCaptureUsesSystemOverlayPresentationOnEveryDisplay() {
+        let controller = RegionCaptureOverlayController()
+        defer { controller.cancel() }
+
+        controller.begin { _ in }
+
+        XCTAssertEqual(controller.debugOverlayWindows.count, NSScreen.screens.count)
+        assertSystemOverlayPresentation(controller.debugOverlayWindows)
     }
 
     func testCaptureOverlayKeepsInlineEditorWhenAppResignsActiveAfterSelection() throws {
@@ -77,12 +88,64 @@ final class CaptureOverlayAccessoryLayoutTests: XCTestCase {
         wait(for: [cancelled], timeout: 0.2)
     }
 
+    func testNonactivatingCaptureOverlayStillHandlesEscape() throws {
+        let controller = makeController()
+        defer { controller.cancel() }
+        let cancelled = expectation(description: "capture overlay cancelled by Escape")
+
+        controller.beginScreenshotForTesting(
+            snapshots: [],
+            onError: { XCTFail("Unexpected capture overlay error: \($0)") },
+            onCancel: { cancelled.fulfill() }
+        )
+
+        let keyWindow = try XCTUnwrap(controller.debugOverlayWindows.first(where: \.isKeyWindow))
+        let event = try XCTUnwrap(
+            NSEvent.keyEvent(
+                with: .keyDown,
+                location: .zero,
+                modifierFlags: [],
+                timestamp: 0,
+                windowNumber: keyWindow.windowNumber,
+                context: nil,
+                characters: "\u{1B}",
+                charactersIgnoringModifiers: "\u{1B}",
+                isARepeat: false,
+                keyCode: 53
+            )
+        )
+        keyWindow.sendEvent(event)
+
+        wait(for: [cancelled], timeout: 1)
+        XCTAssertTrue(controller.debugOverlayWindows.isEmpty)
+    }
+
     private func makeController() -> CaptureOverlayController {
         CaptureOverlayController(
             screenCaptureService: ScreenCaptureService(),
             settings: AppSettings(defaults: temporaryDefaults()),
             macOCRService: MacVisionOCRService()
         )
+    }
+
+    private func assertSystemOverlayPresentation(
+        _ windows: [NSWindow],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertFalse(windows.isEmpty, file: file, line: line)
+        for window in windows {
+            XCTAssertTrue(window.styleMask.contains(.nonactivatingPanel), file: file, line: line)
+            XCTAssertEqual(window.level, .screenSaver, file: file, line: line)
+            XCTAssertTrue(window.collectionBehavior.contains(.canJoinAllSpaces), file: file, line: line)
+            XCTAssertTrue(window.collectionBehavior.contains(.canJoinAllApplications), file: file, line: line)
+            XCTAssertTrue(window.collectionBehavior.contains(.fullScreenAuxiliary), file: file, line: line)
+            XCTAssertTrue(window.collectionBehavior.contains(.stationary), file: file, line: line)
+            XCTAssertTrue(window.collectionBehavior.contains(.ignoresCycle), file: file, line: line)
+            XCTAssertTrue((window as? NSPanel)?.isFloatingPanel == true, file: file, line: line)
+            XCTAssertTrue(window.isVisible, file: file, line: line)
+            XCTAssertEqual(window.frame, window.screen?.frame, file: file, line: line)
+        }
     }
 
     private func snapshotForMainScreen() throws -> DisplaySnapshot {

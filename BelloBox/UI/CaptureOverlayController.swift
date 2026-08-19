@@ -47,6 +47,7 @@ final class CaptureOverlayController {
 
 #if DEBUG
     var debugOverlayWindowCount: Int { windows.count }
+    var debugOverlayWindows: [NSWindow] { windows.map { $0 as NSWindow } }
 #endif
 
     deinit {
@@ -226,12 +227,20 @@ final class CaptureOverlayController {
             return
         }
 
-        AppActivation.bringAppForward()
         installKeyMonitor()
         installMouseMoveMonitors()
         installResignActiveObserver()
         orderOverlayWindowsFront(keyWindow: window(containing: NSEvent.mouseLocation) ?? windows.first)
         updateHoverForCurrentMouseLocation()
+        logDiagnostics(
+            "overlay.windowsReady",
+            [
+                "appActive=\(NSApp.isActive)",
+                "activationPolicy=\(NSApp.activationPolicy().rawValue)",
+                "separateSpaces=\(NSScreen.screensHaveSeparateSpaces)",
+                "windows=\(Self.overlayWindowSummary(windows))",
+            ]
+        )
         overlayTiming?.finish(
             [
                 "windowCount=\(windows.count)",
@@ -544,6 +553,23 @@ final class CaptureOverlayController {
         .joined(separator: ";")
     }
 
+    private static func overlayWindowSummary(_ windows: [CaptureOverlayWindow]) -> String {
+        windows.map { window in
+            let displayID = window.screen.flatMap(ScreenCoordinateSpace.displayID(for:)).map(String.init) ?? "nil"
+            return [
+                "displayID=\(displayID)",
+                "frame=\(serialize(window.frame))",
+                "visible=\(window.isVisible)",
+                "key=\(window.isKeyWindow)",
+                "activeSpace=\(window.isOnActiveSpace)",
+                "level=\(window.level.rawValue)",
+                "style=\(window.styleMask.rawValue)",
+                "collection=\(window.collectionBehavior.rawValue)",
+            ].joined(separator: ",")
+        }
+        .joined(separator: ";")
+    }
+
     private static func describe(_ selection: CaptureSelection) -> String {
         switch selection {
         case let .area(area):
@@ -727,24 +753,15 @@ private final class CaptureOverlayWindow: NSPanel {
     init(screen: NSScreen) {
         super.init(
             contentRect: screen.frame,
-            styleMask: [.borderless],
+            styleMask: CaptureOverlayPanelConfiguration.styleMask,
             backing: .buffered,
             defer: false
         )
-        level = .screenSaver
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
-        isOpaque = false
-        backgroundColor = .clear
-        hasShadow = false
-        hidesOnDeactivate = false
-        isReleasedWhenClosed = false
-        ignoresMouseEvents = false
-        acceptsMouseMovedEvents = true
+        CaptureOverlayPanelConfiguration.apply(to: self)
         setFrame(screen.frame, display: true)
     }
 
     override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { true }
 
     override func keyDown(with event: NSEvent) {
         if event.keyCode == 53 {

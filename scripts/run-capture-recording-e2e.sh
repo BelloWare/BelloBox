@@ -24,20 +24,24 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if command -v xcodegen >/dev/null 2>&1; then
-  xcodegen generate >/dev/null
-fi
-
 echo "Checking Bello Box capture/recording permissions..."
 BELLOBOX_E2E_REQUEST_PERMISSIONS=0 \
 BELLOBOX_E2E_REQUIRE_PERMISSIONS=1 \
 BELLOBOX_E2E_KEEP_APP_RUNNING=0 \
 ./scripts/request-e2e-permissions.sh >/dev/null
 
-BUILD_SETTINGS="$(xcodebuild -project BelloBox.xcodeproj -scheme BelloBox -configuration Debug -showBuildSettings)"
-TARGET_BUILD_DIR="$(awk -F' = ' '/ TARGET_BUILD_DIR = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
-FULL_PRODUCT_NAME="$(awk -F' = ' '/ FULL_PRODUCT_NAME = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
-APP_PATH="$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME"
+APP_PATH="${BELLOBOX_E2E_APP_PATH:-}"
+if [[ -z "$APP_PATH" ]]; then
+  BUILD_SETTINGS="$(xcodebuild -project BelloBox.xcodeproj -scheme BelloBox -configuration Debug -showBuildSettings)"
+  TARGET_BUILD_DIR="$(awk -F' = ' '/ TARGET_BUILD_DIR = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
+  FULL_PRODUCT_NAME="$(awk -F' = ' '/ FULL_PRODUCT_NAME = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
+  APP_PATH="$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME"
+fi
+
+if [[ ! -x "$APP_PATH/Contents/MacOS/Bello Box" ]]; then
+  echo "Bello Box executable not found in $APP_PATH." >&2
+  exit 1
+fi
 
 mkdir -p "$HOME_DIR/Library/Preferences"
 HOME="$HOME_DIR" defaults write com.ainoob.BelloBox hasCompletedSetup -bool true

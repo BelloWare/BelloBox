@@ -220,7 +220,10 @@ final class SelectionOverlayController: NSObject {
         guard popupPanel == nil else { return }
         guard let selection = nonEmpty(currentSelection()) else { NSSound.beep(); return }
         pendingSelection = selection
-        showToolbar(for: selection)
+        showToolbar(
+            for: selection,
+            timestampSummary: TimestampSummary.make(from: selection.text)
+        )
     }
 
     /// Used by the menu: read the selection now and open the QR popup.
@@ -248,7 +251,7 @@ final class SelectionOverlayController: NSObject {
 
     // MARK: - Floating toolbar
 
-    private func showToolbar(for selection: TextSelection) {
+    private func showToolbar(for selection: TextSelection, timestampSummary: TimestampSummary? = nil) {
         hideToolbar()
 
         let view = FloatingToolbarView(
@@ -256,11 +259,16 @@ final class SelectionOverlayController: NSObject {
             onScreenshot: { [weak self] in self?.activateScreenshot() },
             onRecord: { [weak self] in self?.activateRecording() },
             onQR: { [weak self] in self?.activateQR() },
-            onTools: { [weak self] in self?.activateTools() }
+            onTools: { [weak self] in self?.activateTools() },
+            timestampSummary: timestampSummary
         )
         let hosting = NSHostingView(rootView: view)
         var size = hosting.fittingSize
-        if size.width < 1 || size.height < 1 { size = FloatingToolbarView.preferredSize }
+        if size.width < 1 || size.height < 1 {
+            size = timestampSummary == nil
+                ? FloatingToolbarView.preferredSize
+                : FloatingToolbarView.timestampPreferredSize
+        }
 
         let origin = ScreenPlacement.buttonOrigin(
             anchorRect: selection.anchorRect,
@@ -273,27 +281,32 @@ final class SelectionOverlayController: NSObject {
         panel.orderFrontRegardless()
         toolbarPanel = panel
 #if DEBUG
-        writeE2EToolbarMarker(selection: selection)
+        writeE2EToolbarMarker(selection: selection, timestampSummary: timestampSummary)
 #endif
 
         installToolbarDismissMonitor()
     }
 
 #if DEBUG
-    private func writeE2EToolbarMarker(selection: TextSelection) {
+    private func writeE2EToolbarMarker(selection: TextSelection, timestampSummary: TimestampSummary?) {
         guard
             let path = ProcessInfo.processInfo.environment["BELLOBOX_E2E_TOOLBAR_MARKER"],
             !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         else { return }
 
         let url = URL(fileURLWithPath: path)
-        let payload = [
+        var payload = [
             "shownAt=\(Date().timeIntervalSince1970)",
             "appName=\(selection.appName ?? "")",
-            "text=\(selection.text)"
-        ].joined(separator: "\n")
+            "text=\(selection.text)",
+            "timestampDetected=\(timestampSummary != nil)",
+        ]
+        if let timestampSummary {
+            payload.append("timestamp.relative=\(timestampSummary.relativeTime)")
+            payload.append("timestamp.local=\(timestampSummary.localDateTime)")
+        }
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try? payload.write(to: url, atomically: true, encoding: .utf8)
+        try? payload.joined(separator: "\n").write(to: url, atomically: true, encoding: .utf8)
     }
 #endif
 

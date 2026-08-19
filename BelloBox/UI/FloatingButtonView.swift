@@ -11,14 +11,89 @@ enum BoxTheme {
 /// the available tools (AI actions and QR code) without stealing focus.
 struct FloatingToolbarView: View {
     static let preferredSize = CGSize(width: 248, height: 52)
+    static let timestampPreferredSize = CGSize(width: 330, height: 104)
 
     var onAI: () -> Void
     var onScreenshot: () -> Void
     var onRecord: () -> Void
     var onQR: () -> Void
     var onTools: () -> Void
+    var timestampSummary: TimestampSummary? = nil
 
     var body: some View {
+        Group {
+            if let timestampSummary {
+                timestampToolbar(timestampSummary)
+            } else {
+                actionToolbar
+            }
+        }
+    }
+
+    private var actionToolbar: some View {
+        actionButtons
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(
+                Capsule().fill(
+                    LinearGradient(colors: [BoxTheme.accent, BoxTheme.accentDeep], startPoint: .top, endPoint: .bottom)
+                )
+            )
+            .overlay(Capsule().strokeBorder(.white.opacity(0.22), lineWidth: 0.5))
+            .shadow(color: .black.opacity(0.22), radius: 5, y: 2)
+            .padding(5)
+    }
+
+    private func timestampToolbar(_ summary: TimestampSummary) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 9) {
+                Image(systemName: "clock")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(.white.opacity(0.14)))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(summary.relativeTime)
+                        .font(.system(size: 13, weight: .semibold))
+                    Text(summary.localDateTime)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.white.opacity(0.82))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Selected timestamp")
+            .accessibilityValue("\(summary.relativeTime), \(summary.localDateTime)")
+
+            Rectangle()
+                .fill(.white.opacity(0.24))
+                .frame(height: 1)
+
+            actionButtons
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+        }
+        .frame(width: 320)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(
+                LinearGradient(colors: [BoxTheme.accent, BoxTheme.accentDeep], startPoint: .top, endPoint: .bottom)
+            )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(.white.opacity(0.22), lineWidth: 0.5)
+        )
+        .shadow(color: .black.opacity(0.22), radius: 5, y: 2)
+        .padding(5)
+    }
+
+    private var actionButtons: some View {
         HStack(spacing: 4) {
             ToolIcon(symbol: "wand.and.stars", help: "Ask Bello Box AI about the selection", action: onAI)
             divider
@@ -30,16 +105,6 @@ struct FloatingToolbarView: View {
             divider
             ToolIcon(symbol: "wrench.and.screwdriver", help: "Text tools (case, encode, hash, count…)", action: onTools)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
-        .background(
-            Capsule().fill(
-                LinearGradient(colors: [BoxTheme.accent, BoxTheme.accentDeep], startPoint: .top, endPoint: .bottom)
-            )
-        )
-        .overlay(Capsule().strokeBorder(.white.opacity(0.22), lineWidth: 0.5))
-        .shadow(color: .black.opacity(0.22), radius: 5, y: 2)
-        .padding(5)
     }
 
     private var divider: some View {

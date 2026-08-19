@@ -15,20 +15,28 @@ WAIT_SECONDS="${BELLOBOX_E2E_PERMISSION_WAIT_SECONDS:-12}"
 
 cd "$ROOT"
 
-if command -v xcodegen >/dev/null 2>&1; then
-  xcodegen generate >/dev/null
+APP_PATH="${BELLOBOX_E2E_APP_PATH:-}"
+if [[ -z "$APP_PATH" ]]; then
+  if command -v xcodegen >/dev/null 2>&1; then
+    xcodegen generate >/dev/null
+  fi
+
+  xcodebuild build \
+    -project BelloBox.xcodeproj \
+    -scheme BelloBox \
+    -configuration Debug \
+    -destination 'platform=macOS' >/dev/null
+
+  BUILD_SETTINGS="$(xcodebuild -project BelloBox.xcodeproj -scheme BelloBox -configuration Debug -showBuildSettings)"
+  TARGET_BUILD_DIR="$(awk -F' = ' '/ TARGET_BUILD_DIR = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
+  FULL_PRODUCT_NAME="$(awk -F' = ' '/ FULL_PRODUCT_NAME = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
+  APP_PATH="$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME"
 fi
 
-xcodebuild build \
-  -project BelloBox.xcodeproj \
-  -scheme BelloBox \
-  -configuration Debug \
-  -destination 'platform=macOS' >/dev/null
-
-BUILD_SETTINGS="$(xcodebuild -project BelloBox.xcodeproj -scheme BelloBox -configuration Debug -showBuildSettings)"
-TARGET_BUILD_DIR="$(awk -F' = ' '/ TARGET_BUILD_DIR = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
-FULL_PRODUCT_NAME="$(awk -F' = ' '/ FULL_PRODUCT_NAME = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
-APP_PATH="$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME"
+if [[ ! -x "$APP_PATH/Contents/MacOS/Bello Box" ]]; then
+  echo "Bello Box executable not found in $APP_PATH." >&2
+  exit 1
+fi
 
 mkdir -p "$HOME_DIR/Library/Preferences"
 HOME="$HOME_DIR" defaults write com.ainoob.BelloBox hasCompletedSetup -bool true

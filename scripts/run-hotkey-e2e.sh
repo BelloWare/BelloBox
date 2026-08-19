@@ -21,20 +21,28 @@ trap cleanup EXIT
 
 cd "$ROOT"
 
-if command -v xcodegen >/dev/null 2>&1; then
-  xcodegen generate >/dev/null
+APP_PATH="${BELLOBOX_E2E_APP_PATH:-}"
+if [[ -z "$APP_PATH" ]]; then
+  if command -v xcodegen >/dev/null 2>&1; then
+    xcodegen generate >/dev/null
+  fi
+
+  xcodebuild build \
+    -project BelloBox.xcodeproj \
+    -scheme BelloBox \
+    -configuration Debug \
+    -destination 'platform=macOS' >/dev/null
+
+  BUILD_SETTINGS="$(xcodebuild -project BelloBox.xcodeproj -scheme BelloBox -configuration Debug -showBuildSettings)"
+  TARGET_BUILD_DIR="$(awk -F' = ' '/ TARGET_BUILD_DIR = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
+  FULL_PRODUCT_NAME="$(awk -F' = ' '/ FULL_PRODUCT_NAME = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
+  APP_PATH="$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME"
 fi
 
-xcodebuild build \
-  -project BelloBox.xcodeproj \
-  -scheme BelloBox \
-  -configuration Debug \
-  -destination 'platform=macOS' >/dev/null
-
-BUILD_SETTINGS="$(xcodebuild -project BelloBox.xcodeproj -scheme BelloBox -configuration Debug -showBuildSettings)"
-TARGET_BUILD_DIR="$(awk -F' = ' '/ TARGET_BUILD_DIR = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
-FULL_PRODUCT_NAME="$(awk -F' = ' '/ FULL_PRODUCT_NAME = / {print $2; exit}' <<<"$BUILD_SETTINGS")"
-APP_PATH="$TARGET_BUILD_DIR/$FULL_PRODUCT_NAME"
+if [[ ! -x "$APP_PATH/Contents/MacOS/Bello Box" ]]; then
+  echo "Bello Box executable not found in $APP_PATH." >&2
+  exit 1
+fi
 
 mkdir -p "$HOME_DIR/Library/Preferences"
 HOME="$HOME_DIR" defaults write com.ainoob.BelloBox hasCompletedSetup -bool true
@@ -57,7 +65,7 @@ BELLOBOX_E2E_TOOLBAR_MARKER="$MARKER" \
 BELLOBOX_E2E_SCREENSHOT_HOTKEY_MARKER="$SCREENSHOT_MARKER" \
 BELLOBOX_E2E_RECORDING_HOTKEY_MARKER="$RECORDING_MARKER" \
 BELLOBOX_E2E_HOTKEY_MARKERS_ONLY=1 \
-BELLOBOX_E2E_SELECTION_TEXT="Bello Box shortcut e2e" \
+BELLOBOX_E2E_SELECTION_TEXT="1704067200" \
 "$APP_PATH/Contents/MacOS/Bello Box" >"$APP_LOG" 2>&1 &
 APP_PID=$!
 
@@ -103,7 +111,14 @@ wait_for_marker() {
 }
 
 press_hotkey 11
-wait_for_marker "$MARKER" "Bello Box shortcut e2e" "global shortcut showed the toolbar"
+wait_for_marker "$MARKER" "text=1704067200" "global shortcut showed the toolbar"
+grep -q "timestampDetected=true" "$MARKER" \
+  || fail "Hotkey E2E failed: shortcut toolbar did not detect the selected timestamp."
+grep -q "timestamp.relative=" "$MARKER" \
+  || fail "Hotkey E2E failed: shortcut toolbar did not format relative time."
+grep -q "timestamp.local=" "$MARKER" \
+  || fail "Hotkey E2E failed: shortcut toolbar did not format local date and time."
+echo "Hotkey E2E passed: selected timestamp details were shown."
 
 press_hotkey 1
 wait_for_marker "$SCREENSHOT_MARKER" "kind=screenshot" "screenshot shortcut callback fired"
