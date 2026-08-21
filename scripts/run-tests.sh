@@ -12,6 +12,7 @@ if command -v xcodegen >/dev/null 2>&1; then
 fi
 
 DESTINATION="${DESTINATION:-platform=macOS}"
+export BELLOBOX_DISABLE_KEYCHAIN=1
 
 xcodebuild test \
   -project BelloBox.xcodeproj \

@@ -25,6 +25,58 @@ final class FloatingButtonPanel: NSPanel {
     override var canBecomeMain: Bool { false }
 }
 
+/// A controller-owned tooltip for the non-activating floating toolbar. Native
+/// AppKit help tags are not reliably delivered while another app remains key.
+final class FloatingTooltipPanel: NSPanel {
+    private let label = NSTextField(wrappingLabelWithString: "")
+    private let container = NSView()
+
+    init() {
+        super.init(
+            contentRect: .zero,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        level = NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 1)
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+        isOpaque = false
+        backgroundColor = .clear
+        hasShadow = true
+        ignoresMouseEvents = true
+        hidesOnDeactivate = false
+        isReleasedWhenClosed = false
+
+        container.wantsLayer = true
+        container.layer?.backgroundColor = NSColor(calibratedWhite: 0.12, alpha: 0.97).cgColor
+        container.layer?.cornerRadius = 6
+        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .white
+        label.maximumNumberOfLines = 2
+        label.preferredMaxLayoutWidth = 320
+        label.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 9),
+            label.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -9),
+            label.topAnchor.constraint(equalTo: container.topAnchor, constant: 6),
+            label.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -6),
+            label.widthAnchor.constraint(lessThanOrEqualToConstant: 320),
+        ])
+        contentView = container
+    }
+
+    func update(text: String) {
+        label.stringValue = text
+        container.layoutSubtreeIfNeeded()
+        let fittingSize = container.fittingSize
+        setContentSize(NSSize(width: ceil(fittingSize.width), height: ceil(fittingSize.height)))
+    }
+
+    override var canBecomeKey: Bool { false }
+    override var canBecomeMain: Bool { false }
+}
+
 /// The interactive popup. It can become key so the user can type a custom
 /// instruction without pulling focus away from the app containing the selection.
 final class PopupPanel: NSPanel {

@@ -14,6 +14,7 @@ final class SelectionOverlayController: NSObject {
     private lazy var recordingCoordinator = RecordingCoordinator(settings: settings)
 
     private var toolbarPanel: FloatingButtonPanel?
+    private var toolbarTooltipPanel: FloatingTooltipPanel?
     private var popupPanel: PopupPanel?
     private var popupFullContentView: NSView?
     private var popupFullSize: CGSize = .zero
@@ -38,6 +39,8 @@ final class SelectionOverlayController: NSObject {
 
     /// Set by the app to open the Settings window.
     var openSettings: () -> Void = {}
+    /// Set by the app to open the persistent world clock at a selected instant.
+    var openWorldClock: (Date) -> Void = { _ in }
 
     init(settings: AppSettings) {
         self.settings = settings
@@ -56,7 +59,7 @@ final class SelectionOverlayController: NSObject {
             self?.triggerRecording()
         }
         screenCaptureService.beforeCapture = { [weak self] in
-            self?.toolbarPanel?.orderOut(nil)
+            self?.hideToolbar()
             self?.popupPanel?.orderOut(nil)
             self?.screenshotOverlayEditorController?.close()
         }
@@ -260,6 +263,8 @@ final class SelectionOverlayController: NSObject {
             onRecord: { [weak self] in self?.activateRecording() },
             onQR: { [weak self] in self?.activateQR() },
             onTools: { [weak self] in self?.activateTools() },
+            onOpenWorldClock: { [weak self] date in self?.activateWorldClock(at: date) },
+            onHoverHelp: { [weak self] text in self?.updateToolbarTooltip(text) },
             timestampSummary: timestampSummary
         )
         let hosting = NSHostingView(rootView: view)
@@ -340,11 +345,42 @@ final class SelectionOverlayController: NSObject {
         showTextToolsPopup(for: selection)
     }
 
+    private func activateWorldClock(at date: Date) {
+        hideToolbar()
+        openWorldClock(date)
+    }
+
+    private func updateToolbarTooltip(_ text: String?) {
+        guard let text, !text.isEmpty, let toolbarPanel else {
+            toolbarTooltipPanel?.orderOut(nil)
+            return
+        }
+
+        let tooltip = toolbarTooltipPanel ?? FloatingTooltipPanel()
+        toolbarTooltipPanel = tooltip
+        tooltip.update(text: text)
+
+        let mouse = NSEvent.mouseLocation
+        let screen = ScreenPlacement.screen(containing: mouse)
+        let size = tooltip.frame.size
+        var origin = CGPoint(
+            x: mouse.x - size.width / 2,
+            y: toolbarPanel.frame.maxY + 7
+        )
+        if origin.y + size.height > screen.visibleFrame.maxY - 6 {
+            origin.y = toolbarPanel.frame.minY - size.height - 7
+        }
+        origin = ScreenPlacement.clamp(origin: origin, size: size, into: screen)
+        tooltip.setFrameOrigin(origin)
+        tooltip.orderFrontRegardless()
+    }
+
     private func hideToolbar() {
         if let monitor = toolbarDismissMonitor {
             NSEvent.removeMonitor(monitor)
             toolbarDismissMonitor = nil
         }
+        toolbarTooltipPanel?.orderOut(nil)
         toolbarPanel?.orderOut(nil)
         toolbarPanel = nil
     }

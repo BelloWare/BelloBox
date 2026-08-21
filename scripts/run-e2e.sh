@@ -15,6 +15,10 @@ echo "Running Bello Box hotkey E2E..."
 ./scripts/run-hotkey-e2e.sh
 
 echo
+echo "Running Bello Box world-clock E2E..."
+./scripts/run-world-clock-e2e.sh
+
+echo
 echo "Running Bello Box capture/recording E2E..."
 ./scripts/run-capture-recording-e2e.sh
 

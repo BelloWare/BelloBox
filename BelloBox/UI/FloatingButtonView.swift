@@ -18,7 +18,11 @@ struct FloatingToolbarView: View {
     var onRecord: () -> Void
     var onQR: () -> Void
     var onTools: () -> Void
+    var onOpenWorldClock: (Date) -> Void = { _ in }
+    var onHoverHelp: (String?) -> Void = { _ in }
     var timestampSummary: TimestampSummary? = nil
+
+    @State private var timestampHovering = false
 
     var body: some View {
         Group {
@@ -46,30 +50,45 @@ struct FloatingToolbarView: View {
 
     private func timestampToolbar(_ summary: TimestampSummary) -> some View {
         VStack(spacing: 0) {
-            HStack(spacing: 9) {
-                Image(systemName: "clock")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 28, height: 28)
-                    .background(Circle().fill(.white.opacity(0.14)))
+            Button {
+                onOpenWorldClock(summary.date)
+            } label: {
+                HStack(spacing: 9) {
+                    Image(systemName: "clock")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 28, height: 28)
+                        .background(Circle().fill(.white.opacity(0.14)))
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(summary.relativeTime)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(summary.relativeTime)
+                            .font(.system(size: 13, weight: .semibold))
+                        Text(summary.localDateTime)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.white.opacity(0.82))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Image(systemName: "globe")
                         .font(.system(size: 13, weight: .semibold))
-                    Text(summary.localDateTime)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.white.opacity(0.82))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .foregroundStyle(.white.opacity(0.86))
                 }
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(.white.opacity(timestampHovering ? 0.10 : 0))
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
+            .buttonStyle(.plain)
+            .onHover { hovering in
+                timestampHovering = hovering
+                onHoverHelp(hovering ? "Open this time in World Clock" : nil)
+            }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Selected timestamp")
-            .accessibilityValue("\(summary.relativeTime), \(summary.localDateTime)")
+            .accessibilityValue("\(summary.relativeTime), \(summary.localDateTime). Open in World Clock.")
 
             Rectangle()
                 .fill(.white.opacity(0.24))
@@ -95,15 +114,15 @@ struct FloatingToolbarView: View {
 
     private var actionButtons: some View {
         HStack(spacing: 4) {
-            ToolIcon(symbol: "wand.and.stars", help: "Ask Bello Box AI about the selection", action: onAI)
+            ToolIcon(symbol: "wand.and.stars", help: "Ask Bello Box AI about the selection", onHoverHelp: onHoverHelp, action: onAI)
             divider
-            ToolIcon(symbol: "camera.viewfinder", help: "Capture and annotate a screenshot", action: onScreenshot)
+            ToolIcon(symbol: "camera.viewfinder", help: "Capture and annotate a screenshot", onHoverHelp: onHoverHelp, action: onScreenshot)
             divider
-            ToolIcon(symbol: "record.circle", help: "Record screen video", action: onRecord)
+            ToolIcon(symbol: "record.circle", help: "Record screen video", onHoverHelp: onHoverHelp, action: onRecord)
             divider
-            ToolIcon(symbol: "qrcode", help: "Generate a QR code from the selection", action: onQR)
+            ToolIcon(symbol: "qrcode", help: "Generate a QR code from the selection", onHoverHelp: onHoverHelp, action: onQR)
             divider
-            ToolIcon(symbol: "wrench.and.screwdriver", help: "Text tools (case, encode, hash, count…)", action: onTools)
+            ToolIcon(symbol: "wrench.and.screwdriver", help: "Text tools (case, encode, hash, count…)", onHoverHelp: onHoverHelp, action: onTools)
         }
     }
 
@@ -115,6 +134,7 @@ struct FloatingToolbarView: View {
 private struct ToolIcon: View {
     let symbol: String
     let help: String
+    let onHoverHelp: (String?) -> Void
     let action: () -> Void
 
     @State private var hovering = false
@@ -132,8 +152,12 @@ private struct ToolIcon: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help(help)
-        .onHover { hovering = $0 }
+        .accessibilityLabel(help)
+        .onHover { isHovering in
+            hovering = isHovering
+            onHoverHelp(isHovering ? help : nil)
+        }
+        .onDisappear { onHoverHelp(nil) }
         .animation(.easeOut(duration: 0.1), value: hovering)
     }
 }

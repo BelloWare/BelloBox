@@ -52,6 +52,7 @@ struct BelloBoxApp: App {
 
         Divider()
 
+        Button("World Clock…") { appDelegate.showWorldClock() }
         Button("Codex Token Usage…") { appDelegate.showCodexTokenUsage() }
 
         Button("Set Up Bello Box…") { appDelegate.showOnboarding() }
@@ -80,6 +81,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let mainWindow = MainWindowController()
     private let settingsWindow = SettingsWindowController()
     private let codexTokenUsageWindow = CodexTokenUsageWindowController()
+    private let worldClockWindow = WorldClockWindowController()
     private var updaterController: SPUStandardUpdaterController?
     private var cancellables = Set<AnyCancellable>()
 
@@ -104,6 +106,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let overlay = SelectionOverlayController(settings: settings)
         overlay.openSettings = { [weak self] in self?.showSettings() }
+        overlay.openWorldClock = { [weak self] date in self?.showWorldClock(seedDate: date) }
         overlay.start()
         self.overlay = overlay
 
@@ -164,6 +167,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
+#if DEBUG
+            if ProcessInfo.processInfo.environment["BELLOBOX_E2E_OPEN_WORLD_CLOCK"] == "1" {
+                let seed = ProcessInfo.processInfo.environment["BELLOBOX_E2E_WORLD_CLOCK_SEED"]
+                    .flatMap(Double.init)
+                    .map { Date(timeIntervalSince1970: $0) }
+                self.showWorldClock(seedDate: seed)
+                return
+            }
+#endif
             if self.settings.hasCompletedSetup {
                 if !AccessibilityService.isTrusted { AccessibilityService.requestPermissionPrompt() }
                 self.showMainWindow()
@@ -192,6 +204,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             onOpenSettings: { [weak self] in self?.showSettings() },
             onOpenGuide: { [weak self] in self?.showOnboarding() },
             onOpenTokenUsage: { [weak self] in self?.showCodexTokenUsage() },
+            onOpenWorldClock: { [weak self] in self?.showWorldClock() },
             onCheckForUpdates: { [weak self] in self?.checkForUpdates() }
         )
     }
@@ -210,6 +223,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showCodexTokenUsage() {
         codexTokenUsageWindow.show()
+    }
+
+    func showWorldClock(seedDate: Date? = nil) {
+        worldClockWindow.show(
+            settings: settings,
+            seedDate: seedDate,
+            onOpenSettings: { [weak self] in self?.showSettings() }
+        )
     }
 
     // MARK: - Updates

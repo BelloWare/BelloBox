@@ -10,7 +10,10 @@ enum KeychainStore {
 
     @discardableResult
     static func set(_ value: String, account: String) -> Bool {
-        queue.sync {
+#if DEBUG
+        if isDisabledForAutomatedTests { return true }
+#endif
+        return queue.sync {
             let query: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: service,
@@ -29,7 +32,10 @@ enum KeychainStore {
     }
 
     static func get(account: String) -> String? {
-        queue.sync {
+#if DEBUG
+        if isDisabledForAutomatedTests { return nil }
+#endif
+        return queue.sync {
             let query: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: service,
@@ -45,4 +51,15 @@ enum KeychainStore {
             return string
         }
     }
+
+#if DEBUG
+    /// Instrumented test hosts have a different code signature and can block on
+    /// the user's API-key ACL before XCTest starts. Tests opt into an empty,
+    /// non-persistent keychain with this environment variable.
+    private static var isDisabledForAutomatedTests: Bool {
+        let environment = ProcessInfo.processInfo.environment
+        return environment["BELLOBOX_DISABLE_KEYCHAIN"] == "1"
+            || environment.keys.contains("XCTestConfigurationFilePath")
+    }
+#endif
 }

@@ -9,6 +9,7 @@ struct MainView: View {
     var onOpenSettings: () -> Void
     var onOpenGuide: () -> Void
     var onOpenTokenUsage: () -> Void
+    var onOpenWorldClock: () -> Void
     var onCheckForUpdates: () -> Void
 
     @State private var trusted = AccessibilityService.isTrusted
@@ -38,7 +39,7 @@ struct MainView: View {
         VStack(alignment: .leading, spacing: 18) {
             header
             statusCard
-            tokenUsageCard
+            utilitiesRow
             howToCard
             shortcutsCard
             Spacer(minLength: 0)
@@ -139,25 +140,48 @@ struct MainView: View {
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BoxTheme.accentSoft.opacity(0.5)))
     }
 
-    private var tokenUsageCard: some View {
-        Button { onOpenTokenUsage() } label: {
+    private var utilitiesRow: some View {
+        HStack(spacing: 10) {
+            utilityButton(
+                title: "Codex Token Usage",
+                subtitle: "Local usage history",
+                symbol: "chart.xyaxis.line",
+                accessibilityID: "mainTokenUsageButton",
+                action: onOpenTokenUsage
+            )
+            utilityButton(
+                title: "World Clock",
+                subtitle: "Find meeting times",
+                symbol: "globe.americas.fill",
+                accessibilityID: "mainWorldClockButton",
+                action: onOpenWorldClock
+            )
+        }
+    }
+
+    private func utilityButton(
+        title: String,
+        subtitle: String,
+        symbol: String,
+        accessibilityID: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: "chart.xyaxis.line")
+                Image(systemName: symbol)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(width: 38, height: 38)
                     .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(BoxTheme.accentGradient))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Codex Token Usage")
+                    Text(title)
                         .font(.callout.weight(.semibold))
-                    Text("Local usage history")
+                        .lineLimit(1)
+                    Text(subtitle)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Text("Open")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(BoxTheme.accent)
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
@@ -171,7 +195,7 @@ struct MainView: View {
             )
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier("mainTokenUsageButton")
+        .accessibilityIdentifier(accessibilityID)
     }
 
     private var shortcutsCard: some View {

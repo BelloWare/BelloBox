@@ -61,6 +61,7 @@ osascript -e 'tell application "Bello Box" to quit' >/dev/null 2>&1 || true
 pkill -x "Bello Box" >/dev/null 2>&1 || true
 
 HOME="$HOME_DIR" \
+BELLOBOX_DISABLE_KEYCHAIN=1 \
 BELLOBOX_E2E_TOOLBAR_MARKER="$MARKER" \
 BELLOBOX_E2E_SCREENSHOT_HOTKEY_MARKER="$SCREENSHOT_MARKER" \
 BELLOBOX_E2E_RECORDING_HOTKEY_MARKER="$RECORDING_MARKER" \
@@ -119,6 +120,69 @@ grep -q "timestamp.relative=" "$MARKER" \
 grep -q "timestamp.local=" "$MARKER" \
   || fail "Hotkey E2E failed: shortcut toolbar did not format local date and time."
 echo "Hotkey E2E passed: selected timestamp details were shown."
+
+TOOLBAR_BUTTON_CENTER="$(osascript <<'APPLESCRIPT'
+tell application "System Events"
+    tell process "Bello Box"
+        repeat with candidateWindow in windows
+            if name of candidateWindow is "" then
+                try
+                    -- The timestamp summary is button 1; screenshot is button 3.
+                    set targetButton to button 3 of group 1 of candidateWindow
+                    set buttonPosition to position of targetButton
+                    set buttonSize to size of targetButton
+                    set centerX to (item 1 of buttonPosition) + ((item 1 of buttonSize) / 2)
+                    set centerY to (item 2 of buttonPosition) + ((item 2 of buttonSize) / 2)
+                    return (centerX as text) & "," & (centerY as text)
+                end try
+            end if
+        end repeat
+    end tell
+end tell
+return "missing"
+APPLESCRIPT
+)"
+
+[[ "$TOOLBAR_BUTTON_CENTER" != "missing" ]] \
+  || fail "Hotkey E2E failed: the floating toolbar was not exposed to Accessibility."
+
+TOOLTIP_X="${TOOLBAR_BUTTON_CENTER%,*}"
+TOOLTIP_Y="${TOOLBAR_BUTTON_CENTER#*,}"
+swift -e '
+    import CoreGraphics
+    import Foundation
+    let point = CGPoint(
+        x: Double(CommandLine.arguments[1])!,
+        y: Double(CommandLine.arguments[2])!
+    )
+    CGWarpMouseCursorPosition(point)
+    CGEvent(
+        mouseEventSource: nil,
+        mouseType: .mouseMoved,
+        mouseCursorPosition: point,
+        mouseButton: .left
+    )?.post(tap: .cghidEventTap)
+' "$TOOLTIP_X" "$TOOLTIP_Y"
+sleep 0.4
+
+TOOLTIP_TEXT="$(osascript <<'APPLESCRIPT'
+tell application "System Events"
+    tell process "Bello Box"
+        repeat with candidateWindow in windows
+            try
+                set candidateText to value of static text 1 of candidateWindow
+                if candidateText is "Capture and annotate a screenshot" then return candidateText
+            end try
+        end repeat
+    end tell
+end tell
+return "missing"
+APPLESCRIPT
+)"
+
+[[ "$TOOLTIP_TEXT" == "Capture and annotate a screenshot" ]] \
+  || fail "Hotkey E2E failed: hovering over the screenshot tool did not show its tooltip."
+echo "Hotkey E2E passed: floating toolbar hover help was visible."
 
 press_hotkey 1
 wait_for_marker "$SCREENSHOT_MARKER" "kind=screenshot" "screenshot shortcut callback fired"
