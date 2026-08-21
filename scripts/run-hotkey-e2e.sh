@@ -65,7 +65,7 @@ BELLOBOX_E2E_TOOLBAR_MARKER="$MARKER" \
 BELLOBOX_E2E_SCREENSHOT_HOTKEY_MARKER="$SCREENSHOT_MARKER" \
 BELLOBOX_E2E_RECORDING_HOTKEY_MARKER="$RECORDING_MARKER" \
 BELLOBOX_E2E_HOTKEY_MARKERS_ONLY=1 \
-BELLOBOX_E2E_SELECTION_TEXT="1704067200" \
+BELLOBOX_E2E_SELECTION_TEXT="2024-01-01T00:00:00.000Z" \
 "$APP_PATH/Contents/MacOS/Bello Box" >"$APP_LOG" 2>&1 &
 APP_PID=$!
 
@@ -111,7 +111,7 @@ wait_for_marker() {
 }
 
 press_hotkey 11
-wait_for_marker "$MARKER" "text=1704067200" "global shortcut showed the toolbar"
+wait_for_marker "$MARKER" "text=2024-01-01T00:00:00.000Z" "global shortcut showed the toolbar"
 grep -q "timestampDetected=true" "$MARKER" \
   || fail "Hotkey E2E failed: shortcut toolbar did not detect the selected timestamp."
 grep -q "timestamp.relative=" "$MARKER" \
