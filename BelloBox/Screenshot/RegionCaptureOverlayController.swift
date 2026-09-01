@@ -16,6 +16,8 @@ final class RegionCaptureOverlayController {
 
 #if DEBUG
     var debugOverlayWindows: [NSWindow] { windows.map { $0 as NSWindow } }
+    /// Dim band frames per overlay view, in each view's unflipped coordinates.
+    var debugDimBandFrames: [[CGRect]] { windows.compactMap { ($0.contentView as? RegionOverlayView)?.dimBandFrames } }
 #endif
 
     deinit {
@@ -178,16 +180,22 @@ private final class RegionOverlayView: NSView {
     var onComplete: ((RegionCaptureResult) -> Void)?
     var onCancel: (() -> Void)?
 
+    private let dimmingView: CaptureDimmingView
     private var startPoint: CGPoint?
     private var currentPoint: CGPoint?
     private var hoveredWindow: CaptureWindow?
     private var trackingArea: NSTrackingArea?
+    fileprivate var dimBandFrames: [CGRect] { dimmingView.dimBandFrames }
 
     init(screen: NSScreen, windows: [CaptureWindow]) {
         self.screen = screen
         self.windows = windows
-        super.init(frame: CGRect(origin: .zero, size: screen.frame.size))
+        let frame = CGRect(origin: .zero, size: screen.frame.size)
+        dimmingView = CaptureDimmingView(frame: frame, contentsScale: ScreenCoordinateSpace.backingScale(for: screen))
+        super.init(frame: frame)
         wantsLayer = true
+        addSubview(dimmingView)
+        refreshChrome()
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -196,6 +204,20 @@ private final class RegionOverlayView: NSView {
     override var isFlipped: Bool { true }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        window?.invalidateCursorRects(for: self)
+    }
+
+    override func resetCursorRects() {
+        super.resetCursorRects()
+        addCursorRect(bounds, cursor: .crosshair)
+    }
+
+    override func cursorUpdate(with event: NSEvent) {
+        NSCursor.crosshair.set()
+    }
 
     override func keyDown(with event: NSEvent) {
         if event.keyCode == 53 { onCancel?() } else { super.keyDown(with: event) }
@@ -206,8 +228,10 @@ private final class RegionOverlayView: NSView {
     }
 
     override func mouseExited(with event: NSEvent) {
-        hoveredWindow = nil
-        needsDisplay = true
+        if hoveredWindow != nil {
+            hoveredWindow = nil
+            refreshChrome()
+        }
     }
 
     override func updateTrackingAreas() {
@@ -216,7 +240,7 @@ private final class RegionOverlayView: NSView {
         }
         let area = NSTrackingArea(
             rect: bounds,
-            options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .inVisibleRect],
+            options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .cursorUpdate, .inVisibleRect],
             owner: self,
             userInfo: nil
         )
@@ -230,12 +254,12 @@ private final class RegionOverlayView: NSView {
         updateHover(at: point)
         startPoint = point
         currentPoint = point
-        needsDisplay = true
+        refreshChrome()
     }
 
     override func mouseDragged(with event: NSEvent) {
         currentPoint = localPoint(for: event)
-        needsDisplay = true
+        refreshChrome()
     }
 
     override func mouseUp(with event: NSEvent) {
@@ -265,33 +289,6 @@ private final class RegionOverlayView: NSView {
         }
     }
 
-    override func draw(_ dirtyRect: NSRect) {
-        NSColor.black.withAlphaComponent(0.34).setFill()
-        if let selection = activeRect {
-            let dimPath = NSBezierPath(rect: bounds)
-            dimPath.append(NSBezierPath(rect: selection))
-            dimPath.windingRule = .evenOdd
-            dimPath.fill()
-        } else {
-            bounds.fill()
-        }
-
-        guard let selection = activeRect else { return }
-        NSColor(calibratedRed: 0.95, green: 0.42, blue: 0.08, alpha: 1).setStroke()
-        let path = NSBezierPath(rect: selection)
-        path.lineWidth = 2
-        path.stroke()
-
-        let scale = ScreenCoordinateSpace.backingScale(for: screen)
-        let text = "\(Int(selection.width * scale)) × \(Int(selection.height * scale))"
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 12, weight: .semibold),
-            .foregroundColor: NSColor.white,
-            .backgroundColor: NSColor.black.withAlphaComponent(0.55),
-        ]
-        text.draw(at: CGPoint(x: selection.minX + 8, y: max(selection.minY - 22, 8)), withAttributes: attrs)
-    }
-
     private var selectionRect: CGRect? {
         guard let startPoint, let currentPoint else { return nil }
         return RegionCaptureGeometry.clampedSelectionRect(from: startPoint, to: currentPoint, bounds: bounds)
@@ -307,6 +304,20 @@ private final class RegionOverlayView: NSView {
         return local.intersection(bounds)
     }
 
+    /// Pushes the current selection into the layer-backed chrome. Cheap enough to call on
+    /// every mouse event.
+    private func refreshChrome() {
+        let selection = activeRect.flatMap { $0.isNull || $0.isEmpty ? nil : $0 }
+        let label = selection.map {
+            CaptureDimmingView.sizeLabel(for: $0, scale: ScreenCoordinateSpace.backingScale(for: screen))
+        }
+        dimmingView.update(
+            selection: selection.map { CaptureDimmingView.flip($0, height: bounds.height) },
+            borderWidth: 2,
+            label: label
+        )
+    }
+
     private func localPoint(for event: NSEvent) -> CGPoint {
         convert(event.locationInWindow, from: nil)
     }
@@ -320,7 +331,7 @@ private final class RegionOverlayView: NSView {
             return frame.contains(cocoa)
         }
         if previousHover != hoveredWindow {
-            needsDisplay = true
+            refreshChrome()
         }
     }
 
@@ -329,7 +340,7 @@ private final class RegionOverlayView: NSView {
         guard bounds.contains(local) else {
             if hoveredWindow != nil {
                 hoveredWindow = nil
-                needsDisplay = true
+                refreshChrome()
             }
             return
         }
@@ -341,6 +352,6 @@ private final class RegionOverlayView: NSView {
         currentPoint = nil
         hoveredWindow = nil
         updateHover(at: point)
-        needsDisplay = true
+        refreshChrome()
     }
 }

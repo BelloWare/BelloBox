@@ -48,6 +48,11 @@ final class CaptureOverlayController {
 #if DEBUG
     var debugOverlayWindowCount: Int { windows.count }
     var debugOverlayWindows: [NSWindow] { windows.map { $0 as NSWindow } }
+    /// Dim band frames per overlay view, in each view's unflipped coordinates.
+    var debugDimBandFrames: [[CGRect]] { overlayViews.map(\.dimBandFrames) }
+    /// The visible selection cut-out per overlay view, in flipped local coordinates.
+    var debugSelectionFrames: [CGRect?] { overlayViews.map(\.visibleSelectionFrame) }
+    var debugActiveScreenshotViewModel: ScreenshotPopupViewModel? { activeScreenshotViewModel }
 #endif
 
     deinit {
@@ -295,6 +300,13 @@ final class CaptureOverlayController {
         for overlayView in overlayViews {
             overlayView.updateHoverFromGlobalMouseLocation(point)
         }
+        // Cursor rects only apply to the key window, so keep the crosshair on every
+        // display while the user is still choosing a selection.
+        if activeScreenshotViewModel == nil,
+           overlayViews.allSatisfy({ !$0.hasLockedSelection }),
+           window(containing: point) != nil {
+            NSCursor.crosshair.set()
+        }
     }
 
     private func installResignActiveObserver() {
@@ -333,6 +345,7 @@ final class CaptureOverlayController {
         for overlayView in overlayViews {
             overlayView.lock(selection: overlayView === selectedView ? selection : nil)
         }
+        NSCursor.arrow.set()
 
         switch purpose {
         case .screenshot:
@@ -360,11 +373,22 @@ final class CaptureOverlayController {
                 captureSelectedScreenshot(selection: selection, in: selectedView)
                 return
             }
-            let document = try screenCaptureService.document(
-                fromSnapshot: snapshot,
-                cocoaRect: selection.cocoaRect,
-                source: screenshotSource(for: selection)
-            )
+            let document: ScreenshotDocument
+            switch selection {
+            case .area, .display:
+                // Keep the whole display so the selection can be resized in the editor.
+                document = try screenCaptureService.displayDocument(
+                    fromSnapshot: snapshot,
+                    selectionCocoaRect: selection.cocoaRect,
+                    source: screenshotSource(for: selection)
+                )
+            case .window:
+                document = try screenCaptureService.document(
+                    fromSnapshot: snapshot,
+                    cocoaRect: selection.cocoaRect,
+                    source: screenshotSource(for: selection)
+                )
+            }
             let viewModel = installScreenshotEditor(document: document, selection: selection, in: selectedView)
             refreshWindowScreenshotIfNeeded(selection: selection, viewModel: viewModel)
         } catch {
@@ -376,7 +400,6 @@ final class CaptureOverlayController {
     }
 
     private func captureSelectedScreenshot(selection: CaptureSelection, in selectedView: CaptureOverlayView) {
-        let target = captureTarget(for: selection)
         let selectedWindow = selectedView.window
         logDiagnostics("capture.selected.begin", ["selection=\(Self.describe(selection))"])
         let timing = CaptureTiming("capture.selected.done")
@@ -384,15 +407,25 @@ final class CaptureOverlayController {
         captureTask = Task { @MainActor [weak self, weak selectedView, weak selectedWindow] in
             guard let self, let selectedView else { return }
             do {
-                self.orderOverlayWindowsOut()
-                let document = try await self.screenCaptureService.capture(
-                    target,
-                    options: CaptureOptions(
-                        includeCursor: self.settings.screenshotIncludeCursor,
-                        hideBelloBoxWindows: false,
-                        delayAfterHidingOverlays: 0.05
-                    )
+                // Only the display being captured needs its overlay hidden. The other
+                // displays stay dimmed, so the overlay never flashes screen-wide.
+                self.orderOverlayWindowsOut(intersecting: selection.cocoaRect)
+                let options = CaptureOptions(
+                    includeCursor: self.settings.screenshotIncludeCursor,
+                    hideBelloBoxWindows: false,
+                    delayAfterHidingOverlays: 0.05
                 )
+                let document: ScreenshotDocument
+                switch selection {
+                case let .area(area):
+                    // Capture the whole display and keep the selection as the crop, so the
+                    // editor can grow or move it without capturing again.
+                    document = try await self.screenCaptureService.captureAreaWithinDisplay(area, options: options)
+                case let .display(display):
+                    document = try await self.screenCaptureService.capture(.display(display), options: options)
+                case let .window(window):
+                    document = try await self.screenCaptureService.capture(.window(window), options: options)
+                }
                 guard !Task.isCancelled else { return }
                 self.orderOverlayWindowsFront(keyWindow: selectedWindow)
                 _ = self.installScreenshotEditor(document: document, selection: selection, in: selectedView)
@@ -400,6 +433,7 @@ final class CaptureOverlayController {
                     [
                         "selection=\(Self.describe(selection))",
                         "image=\(document.baseImage.width)x\(document.baseImage.height)",
+                        "crop=\(document.cropRect.map { Self.serialize($0) } ?? "none")",
                     ],
                     enabled: self.settings.captureDiagnosticsEnabled
                 )
@@ -423,7 +457,8 @@ final class CaptureOverlayController {
         let viewModel = ScreenshotPopupViewModel(
             document: document,
             settings: settings,
-            macOCRService: macOCRService
+            macOCRService: macOCRService,
+            allowsSelectionAdjustment: Self.selectionIsAdjustable(selection)
         )
         activeScreenshotViewModel = viewModel
         viewModel.onClose = { [weak self, weak viewModel] in
@@ -506,19 +541,23 @@ final class CaptureOverlayController {
         }
     }
 
-    private func captureTarget(for selection: CaptureSelection) -> CaptureTarget {
+    /// Area and screen captures keep the entire display image, so their selection can be
+    /// resized or moved afterwards. Window captures are occlusion-free window images that
+    /// cannot grow beyond the window.
+    private static func selectionIsAdjustable(_ selection: CaptureSelection) -> Bool {
         switch selection {
-        case let .area(area):
-            return .area(area)
-        case let .display(display):
-            return .display(display)
-        case let .window(window):
-            return .window(window)
+        case .area, .display:
+            return true
+        case .window:
+            return false
         }
     }
 
-    private func orderOverlayWindowsOut() {
+    /// Hides overlay windows. With `rect`, only windows whose display intersects the
+    /// selection are hidden; the remaining displays keep their dim.
+    private func orderOverlayWindowsOut(intersecting rect: CGRect? = nil) {
         for window in windows {
+            if let rect, !rect.isEmpty, !window.frame.intersects(rect) { continue }
             window.orderOut(nil)
         }
     }
@@ -627,6 +666,8 @@ final class CaptureOverlayController {
             if let outputPath, !outputPath.isEmpty {
                 try Self.writePNG(rendered, to: outputPath)
             }
+            let visibleColorTag = Self.colorTag(for: viewModel.basePreviewImage())
+            let annotationCount = viewModel.document.annotations.count
             Self.writeE2EMarker(
                 markerPath,
                 lines: [
@@ -635,12 +676,12 @@ final class CaptureOverlayController {
                     "selection=\(Self.serialize(selection.cocoaRect))",
                     "selectionDisplayID=\(Self.selectionDisplayID(selection).map { String($0) } ?? "nil")",
                     "documentSource=\(Self.describe(viewModel.document.source))",
-                    "baseImageColorTag=\(Self.colorTag(for: viewModel.document.baseImage))",
+                    "baseImageColorTag=\(visibleColorTag)",
                     "imageWidth=\(rendered.width)",
                     "imageHeight=\(rendered.height)",
-                    "annotationCount=\(viewModel.document.annotations.count)",
+                    "annotationCount=\(annotationCount)",
                     "fileSize=\(Self.fileSize(at: outputPath))",
-                ]
+                ] + e2eSelectionAdjustmentLines(viewModel: viewModel)
             )
         } catch {
             Self.writeE2EMarker(
@@ -653,6 +694,36 @@ final class CaptureOverlayController {
             )
         }
         e2eQuitIfRequested()
+    }
+
+    /// Exercises the post-capture resize path the same way the handles do: shrink the
+    /// selection by 20 px on the right and bottom, render, then undo and render again.
+    private func e2eSelectionAdjustmentLines(viewModel: ScreenshotPopupViewModel) -> [String] {
+        guard viewModel.supportsSelectionAdjustment else { return ["resizeSupported=false"] }
+        do {
+            let crop = viewModel.selectionCropRect
+            let shrunk = CGRect(
+                x: crop.minX,
+                y: crop.minY,
+                width: max(1, crop.width - 20),
+                height: max(1, crop.height - 20)
+            )
+            viewModel.beginSelectionAdjustment()
+            viewModel.setSelectionCropRect(shrunk)
+            viewModel.endSelectionAdjustment()
+            let resized = try AnnotationRenderer.render(viewModel.document)
+            viewModel.undo()
+            let restored = try AnnotationRenderer.render(viewModel.document)
+            return [
+                "resizeSupported=true",
+                "resizedImageWidth=\(resized.width)",
+                "resizedImageHeight=\(resized.height)",
+                "undoRestoredWidth=\(restored.width)",
+                "undoRestoredHeight=\(restored.height)",
+            ]
+        } catch {
+            return ["resizeSupported=true", "resizeError=\(error.localizedDescription)"]
+        }
     }
 
     private func e2eQuitIfRequested() {
@@ -785,21 +856,35 @@ private final class CaptureOverlayView: NSView {
     var onSelection: ((CaptureSelection) -> Void)?
     var onCancel: (() -> Void)?
 
+    private let dimmingView: CaptureDimmingView
     private var startPoint: CGPoint?
     private var currentPoint: CGPoint?
     private var hoveredWindow: CaptureWindow?
     private var lockedSelection: CaptureSelection?
+    private var lockedLocalRect: CGRect?
+    /// Once any display locks a selection, every overlay stops accepting new drags so a
+    /// second editor can never be opened from another screen.
+    private var interactionLocked = false
     private var accessoryView: NSView?
     private var trackingArea: NSTrackingArea?
     fileprivate var hasLockedSelection: Bool { lockedSelection != nil }
+    fileprivate var dimBandFrames: [CGRect] { dimmingView.dimBandFrames }
+    fileprivate var visibleSelectionFrame: CGRect? {
+        dimmingView.selectionFrame.map { CaptureDimmingView.flip($0, height: bounds.height) }
+    }
 
     init(screen: NSScreen, snapshot: DisplaySnapshot?, windows: [CaptureWindow], policy: CaptureSelectionPolicy) {
         self.screen = screen
         self.snapshot = snapshot
         self.windows = windows
         self.policy = policy
-        super.init(frame: CGRect(origin: .zero, size: screen.frame.size))
+        let frame = CGRect(origin: .zero, size: screen.frame.size)
+        dimmingView = CaptureDimmingView(frame: frame, contentsScale: ScreenCoordinateSpace.backingScale(for: screen))
+        super.init(frame: frame)
         wantsLayer = true
+        dimmingView.snapshotImage = snapshot?.image
+        addSubview(dimmingView)
+        refreshChrome()
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -809,12 +894,43 @@ private final class CaptureOverlayView: NSView {
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        window?.invalidateCursorRects(for: self)
+    }
+
+    override func resetCursorRects() {
+        super.resetCursorRects()
+        guard !interactionLocked else { return }
+        addCursorRect(bounds, cursor: .crosshair)
+    }
+
+    override func cursorUpdate(with event: NSEvent) {
+        if interactionLocked {
+            super.cursorUpdate(with: event)
+        } else {
+            NSCursor.crosshair.set()
+        }
+    }
+
+    /// Locks every overlay. The selected display shows its selection; the others keep a
+    /// full dim and stop reacting to the mouse.
     func lock(selection: CaptureSelection?) {
         lockedSelection = selection
+        lockedLocalRect = selection.map { localRect(for: $0.cocoaRect) }
+        interactionLocked = true
         startPoint = nil
         currentPoint = nil
         hoveredWindow = nil
-        needsDisplay = true
+        window?.invalidateCursorRects(for: self)
+        refreshChrome()
+    }
+
+    /// Called by the inline editor whenever the user resizes or moves the selection.
+    func updateLockedSelection(localRect: CGRect) {
+        guard interactionLocked, lockedSelection != nil else { return }
+        lockedLocalRect = localRect.intersection(bounds).standardized
+        refreshChrome()
     }
 
     func showScreenshotEditor(viewModel: ScreenshotPopupViewModel, selection: CaptureSelection) {
@@ -823,6 +939,9 @@ private final class CaptureOverlayView: NSView {
                 viewModel: viewModel,
                 screenFrame: screen.frame,
                 selectionFrame: selection.cocoaRect,
+                onSelectionFrameChanged: { [weak self] localRect in
+                    self?.updateLockedSelection(localRect: localRect)
+                },
                 onCancel: viewModel.close
             )
         )
@@ -854,14 +973,16 @@ private final class CaptureOverlayView: NSView {
     }
 
     override func mouseMoved(with event: NSEvent) {
-        guard lockedSelection == nil else { return }
+        guard !interactionLocked else { return }
         updateHover(at: localPoint(for: event))
     }
 
     override func mouseExited(with event: NSEvent) {
-        guard lockedSelection == nil else { return }
-        hoveredWindow = nil
-        needsDisplay = true
+        guard !interactionLocked else { return }
+        if hoveredWindow != nil {
+            hoveredWindow = nil
+            refreshChrome()
+        }
     }
 
     override func updateTrackingAreas() {
@@ -870,7 +991,7 @@ private final class CaptureOverlayView: NSView {
         }
         let area = NSTrackingArea(
             rect: bounds,
-            options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .inVisibleRect],
+            options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited, .cursorUpdate, .inVisibleRect],
             owner: self,
             userInfo: nil
         )
@@ -880,22 +1001,22 @@ private final class CaptureOverlayView: NSView {
     }
 
     override func mouseDown(with event: NSEvent) {
-        guard lockedSelection == nil else { return }
+        guard !interactionLocked else { return }
         let point = localPoint(for: event)
         updateHover(at: point)
         startPoint = point
         currentPoint = point
-        needsDisplay = true
+        refreshChrome()
     }
 
     override func mouseDragged(with event: NSEvent) {
-        guard lockedSelection == nil else { return }
+        guard !interactionLocked else { return }
         currentPoint = localPoint(for: event)
-        needsDisplay = true
+        refreshChrome()
     }
 
     override func mouseUp(with event: NSEvent) {
-        guard lockedSelection == nil else { return }
+        guard !interactionLocked else { return }
         currentPoint = localPoint(for: event)
         guard let displayID = ScreenCoordinateSpace.displayID(for: screen),
               let selection = CaptureSelectionResolver.resolve(
@@ -913,14 +1034,9 @@ private final class CaptureOverlayView: NSView {
         onSelection?(selection)
     }
 
-    override func draw(_ dirtyRect: NSRect) {
-        drawSnapshot()
-        drawDimAndSelection()
-    }
-
     private var activeRect: CGRect? {
-        if let lockedSelection {
-            return localRect(for: lockedSelection.cocoaRect)
+        if interactionLocked {
+            return lockedLocalRect
         }
         switch policy {
         case .displayOnly:
@@ -951,39 +1067,20 @@ private final class CaptureOverlayView: NSView {
         return selection
     }
 
-    private func drawSnapshot() {
-        guard let snapshot else { return }
-        let image = NSImage(cgImage: snapshot.image, size: screen.frame.size)
-        NSGraphicsContext.current?.imageInterpolation = .high
-        image.draw(in: bounds)
-    }
-
-    private func drawDimAndSelection() {
-        NSColor.black.withAlphaComponent(0.34).setFill()
-        if let selection = activeRect, !selection.isEmpty {
-            let dimPath = NSBezierPath(rect: bounds)
-            dimPath.append(NSBezierPath(rect: selection))
-            dimPath.windingRule = .evenOdd
-            dimPath.fill()
-        } else {
-            bounds.fill()
+    /// Pushes the current selection into the layer-backed chrome. Cheap enough to call on
+    /// every mouse event; nothing is rasterised.
+    private func refreshChrome() {
+        let selection = activeRect.flatMap { $0.isNull || $0.isEmpty ? nil : $0 }
+        var label: String?
+        if let selection, !interactionLocked {
+            let scale = snapshot?.scale ?? ScreenCoordinateSpace.backingScale(for: screen)
+            label = CaptureDimmingView.sizeLabel(for: selection, scale: scale)
         }
-
-        guard let selection = activeRect, !selection.isEmpty else { return }
-        NSColor(calibratedRed: 0.95, green: 0.42, blue: 0.08, alpha: 1).setStroke()
-        let path = NSBezierPath(rect: selection)
-        path.lineWidth = lockedSelection == nil ? 2 : 2.5
-        path.stroke()
-
-        guard lockedSelection == nil else { return }
-        let scale = snapshot?.scale ?? ScreenCoordinateSpace.backingScale(for: screen)
-        let text = "\(Int(selection.width * scale)) x \(Int(selection.height * scale))"
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 12, weight: .semibold),
-            .foregroundColor: NSColor.white,
-            .backgroundColor: NSColor.black.withAlphaComponent(0.55),
-        ]
-        text.draw(at: CGPoint(x: selection.minX + 8, y: max(selection.minY - 22, 8)), withAttributes: attrs)
+        dimmingView.update(
+            selection: selection.map { CaptureDimmingView.flip($0, height: bounds.height) },
+            borderWidth: interactionLocked ? 2.5 : 2,
+            label: label
+        )
     }
 
     private func localPoint(for event: NSEvent) -> CGPoint {
@@ -1001,7 +1098,7 @@ private final class CaptureOverlayView: NSView {
         guard policy == .any || policy == .windowOnly || policy == .areaOrWindow else {
             if hoveredWindow != nil {
                 hoveredWindow = nil
-                needsDisplay = true
+                refreshChrome()
             }
             return
         }
@@ -1012,17 +1109,17 @@ private final class CaptureOverlayView: NSView {
             return frame.contains(cocoa)
         }
         if previousHover != hoveredWindow {
-            needsDisplay = true
+            refreshChrome()
         }
     }
 
     fileprivate func updateHoverFromGlobalMouseLocation(_ point: CGPoint) {
-        guard lockedSelection == nil else { return }
+        guard !interactionLocked else { return }
         let local = RegionCaptureGeometry.globalCocoaPointToLocalFlipped(point, screenFrame: screen.frame)
         guard bounds.contains(local) else {
             if hoveredWindow != nil {
                 hoveredWindow = nil
-                needsDisplay = true
+                refreshChrome()
             }
             return
         }
@@ -1034,7 +1131,7 @@ private final class CaptureOverlayView: NSView {
         currentPoint = nil
         hoveredWindow = nil
         updateHover(at: point)
-        needsDisplay = true
+        refreshChrome()
     }
 
     private func installHostingView<Content: View>(_ content: Content) {
@@ -1069,16 +1166,26 @@ struct CaptureOverlayAccessoryLayout {
     }
 }
 
+private struct SelectionAdjustmentState {
+    var startRect: CGRect
+    /// nil while the whole selection is being moved.
+    var handle: SelectionHandle?
+}
+
 private struct CaptureScreenshotOverlaySurface: View {
     @ObservedObject var viewModel: ScreenshotPopupViewModel
     var screenFrame: CGRect
     var selectionFrame: CGRect
+    /// Reports the selection frame (flipped local points) whenever it changes, so the
+    /// dim cut-out behind the editor follows resizes, moves, crops and undo.
+    var onSelectionFrameChanged: (CGRect) -> Void
     var onCancel: () -> Void
+    @State private var adjustment: SelectionAdjustmentState?
 
     var body: some View {
         GeometryReader { geometry in
             let bounds = CGRect(origin: .zero, size: geometry.size)
-            let selected = localSelectionFrame(in: bounds)
+            let selected = currentSelectionFrame(in: bounds)
             let toolbar = CaptureOverlayAccessoryLayout.frame(
                 selection: selected,
                 bounds: bounds,
@@ -1088,7 +1195,7 @@ private struct CaptureScreenshotOverlaySurface: View {
             ZStack(alignment: .topLeading) {
                 Color.clear
 
-                AnnotationCanvasView(viewModel: viewModel)
+                AnnotationCanvasView(viewModel: viewModel, selectionMoveHandler: moveHandler(bounds: bounds))
                     .frame(width: max(selected.width, 1), height: max(selected.height, 1))
                     .clipShape(Rectangle())
                     .overlay(Rectangle().strokeBorder(BoxTheme.accent, lineWidth: 2))
@@ -1108,16 +1215,118 @@ private struct CaptureScreenshotOverlaySurface: View {
                         .frame(width: min(toolbar.width, bounds.width - 24), alignment: .leading)
                         .position(x: toolbar.midX, y: min(toolbar.maxY + 28, bounds.maxY - 28))
                 }
+
+                // Handles sit above the toolbar: when the toolbar has to be clamped inside a
+                // tall selection it must not cover the bottom handles.
+                if viewModel.supportsSelectionAdjustment {
+                    ForEach(SelectionHandle.allCases, id: \.self) { handle in
+                        SelectionHandleView(handle: handle, isActive: adjustment?.handle == handle)
+                            .position(SelectionResizeGeometry.handlePosition(handle, in: selected))
+                            .gesture(handleDragGesture(handle, bounds: bounds))
+                    }
+                }
             }
             .onExitCommand(perform: onCancel)
+            .onAppear { onSelectionFrameChanged(selected) }
+            .onChange(of: viewModel.document.cropRect) { _ in
+                onSelectionFrameChanged(currentSelectionFrame(in: bounds))
+            }
         }
     }
 
-    private func localSelectionFrame(in bounds: CGRect) -> CGRect {
-        RegionCaptureGeometry
+    /// Adjustable documents keep the whole display as their base image, so the on-screen
+    /// frame is simply the crop rect converted from pixels to points. Window captures
+    /// keep the fixed frame they were selected with.
+    private func currentSelectionFrame(in bounds: CGRect) -> CGRect {
+        if viewModel.supportsSelectionAdjustment {
+            let scale = pixelsPerPoint(in: bounds)
+            let crop = viewModel.selectionCropRect
+            let local = CGRect(
+                x: crop.minX / scale.width,
+                y: crop.minY / scale.height,
+                width: crop.width / scale.width,
+                height: crop.height / scale.height
+            )
+            let clipped = local.intersection(bounds).standardized
+            return clipped.isNull ? local.standardized : clipped
+        }
+        return RegionCaptureGeometry
             .globalCocoaRectToLocalFlipped(selectionFrame, screenFrame: screenFrame)
             .intersection(bounds)
             .standardized
+    }
+
+    private func moveHandler(bounds: CGRect) -> SelectionMoveGestureHandler? {
+        guard viewModel.supportsSelectionAdjustment else { return nil }
+        return SelectionMoveGestureHandler(
+            onBegin: {
+                adjustment = SelectionAdjustmentState(startRect: currentSelectionFrame(in: bounds), handle: nil)
+                viewModel.beginSelectionAdjustment()
+            },
+            onChange: { translation in
+                guard let adjustment, adjustment.handle == nil else { return }
+                applySelection(
+                    localRect: SelectionResizeGeometry.movedRect(
+                        from: adjustment.startRect,
+                        translation: translation,
+                        bounds: bounds
+                    )
+                )
+            },
+            onEnd: {
+                viewModel.endSelectionAdjustment()
+                adjustment = nil
+            }
+        )
+    }
+
+    private func handleDragGesture(_ handle: SelectionHandle, bounds: CGRect) -> some Gesture {
+        // Global coordinates keep `translation` stable while the handle itself moves.
+        DragGesture(minimumDistance: 0, coordinateSpace: .global)
+            .onChanged { value in
+                if adjustment == nil {
+                    adjustment = SelectionAdjustmentState(startRect: currentSelectionFrame(in: bounds), handle: handle)
+                    viewModel.beginSelectionAdjustment()
+                }
+                guard let adjustment, adjustment.handle == handle else { return }
+                let rect = SelectionResizeGeometry.resizedRect(
+                    from: adjustment.startRect,
+                    handle: handle,
+                    translation: value.translation,
+                    bounds: bounds,
+                    minimumSize: RegionCaptureGeometry.minimumAreaSize
+                )
+                applySelection(localRect: rect)
+            }
+            .onEnded { _ in
+                viewModel.endSelectionAdjustment()
+                adjustment = nil
+            }
+    }
+
+    private func applySelection(localRect: CGRect) {
+        let bounds = CGRect(origin: .zero, size: CGSize(width: screenFrame.width, height: screenFrame.height))
+        let scale = pixelsPerPoint(in: bounds)
+        viewModel.setSelectionCropRect(
+            CGRect(
+                x: localRect.minX * scale.width,
+                y: localRect.minY * scale.height,
+                width: localRect.width * scale.width,
+                height: localRect.height * scale.height
+            )
+        )
+    }
+
+    /// The base image of an adjustable document covers the whole display, so map each
+    /// axis independently (the same way the crop was computed) rather than assuming one
+    /// uniform scale.
+    private func pixelsPerPoint(in bounds: CGRect) -> CGSize {
+        let imageSize = viewModel.document.imageSize
+        let fallback = max(viewModel.document.scale, 0.01)
+        return CGSize(
+            width: bounds.width > 0 && imageSize.width > 0 ? imageSize.width / bounds.width : fallback,
+            height: bounds.height > 0 && imageSize.height > 0 ? imageSize.height / bounds.height : fallback
+        )
     }
 
     private func errorLabel(_ message: String) -> some View {
@@ -1128,6 +1337,32 @@ private struct CaptureScreenshotOverlaySurface: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
             .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.regularMaterial))
+    }
+}
+
+private struct SelectionHandleView: View {
+    var handle: SelectionHandle
+    var isActive: Bool
+
+    var body: some View {
+        let diameter: CGFloat = isActive ? 14 : 11
+        Circle()
+            .fill(Color.white)
+            .overlay(Circle().strokeBorder(BoxTheme.accent, lineWidth: isActive ? 2.5 : 1.5))
+            .shadow(color: .black.opacity(0.35), radius: 2, y: 1)
+            .frame(width: diameter, height: diameter)
+            .frame(width: 22, height: 22)
+            .contentShape(Rectangle())
+            .onHover { inside in
+                // set() rather than push()/pop(): the hosting view can be torn down while
+                // the pointer rests on a handle, which would leave a pushed cursor behind.
+                (inside ? Self.cursor(for: handle) : NSCursor.arrow).set()
+            }
+    }
+
+    private static func cursor(for handle: SelectionHandle) -> NSCursor {
+        if handle.isCorner { return .crosshair }
+        return handle.movesLeftEdge || handle.movesRightEdge ? .resizeLeftRight : .resizeUpDown
     }
 }
 

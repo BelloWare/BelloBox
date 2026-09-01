@@ -142,7 +142,10 @@ enum AnnotationRenderer {
     }
 
     private static func redactionFillColor(for style: AnnotationStyle) -> CodableColor {
-        style.fillColor ?? AnnotationStyle.redaction.fillColor ?? CodableColor(red: 0.16, green: 0.16, blue: 0.16, alpha: 1)
+        // Redactions must hide what is underneath, so the fill is always opaque.
+        var fill = style.fillColor ?? AnnotationStyle.redactionFillColor
+        fill.alpha = 1
+        return fill
     }
 
     private static func drawHighlights(_ annotations: [ScreenshotAnnotation], in context: CGContext, imageHeight: CGFloat) {

@@ -25,10 +25,14 @@ struct AnnotationToolbarView: View {
                 get: { Color(nsColor: viewModel.style.strokeColor.nsColor) },
                 set: { color in
                     if let cgColor = color.cgColor, let nsColor = NSColor(cgColor: cgColor) {
-                        viewModel.style.strokeColor = CodableColor(nsColor)
+                        // Strokes are always fully opaque; the picker's opacity slider is
+                        // disabled so lines and masks never see through.
+                        var stroke = CodableColor(nsColor)
+                        stroke.alpha = 1
+                        viewModel.style.strokeColor = stroke
                     }
                 }
-            ))
+            ), supportsOpacity: false)
             .labelsHidden()
             .frame(width: 34)
 

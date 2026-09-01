@@ -118,6 +118,59 @@ final class ScreenCaptureService {
         )
     }
 
+    /// Builds a document that keeps the entire display image and expresses the selection
+    /// as the crop rect, so the editor can grow or move the selection afterwards without
+    /// capturing again. A selection covering the whole display leaves the crop unset.
+    func displayDocument(fromSnapshot snapshot: DisplaySnapshot, selectionCocoaRect: CGRect, source: ScreenshotSource) throws -> ScreenshotDocument {
+        try validate(snapshot.image)
+        let imageSize = CGSize(width: snapshot.image.width, height: snapshot.image.height)
+        let cropRect = try Self.selectionPixelRect(
+            selectionCocoaRect,
+            screenFrame: snapshot.screenFrame,
+            imageSize: imageSize
+        )
+        let scale = ScreenCoordinateSpace.imageScale(pixelWidth: snapshot.image.width, screenFrame: snapshot.screenFrame)
+        let fullImage = CGRect(origin: .zero, size: imageSize)
+        return ScreenshotDocument(
+            baseImage: snapshot.image,
+            scale: scale,
+            source: source,
+            cropRect: cropRect == fullImage ? nil : cropRect
+        )
+    }
+
+    /// Captures the whole display hosting `area` and returns a display-backed document
+    /// whose crop rect is the selected area (see `displayDocument(fromSnapshot:...)`).
+    func captureAreaWithinDisplay(_ area: CaptureArea, options: CaptureOptions = .default) async throws -> ScreenshotDocument {
+        guard ScreenCapturePermission.isTrusted else { throw CaptureError.permissionDenied }
+        if options.hideBelloBoxWindows {
+            beforeCapture?()
+        }
+        defer {
+            if options.hideBelloBoxWindows {
+                afterCapture?()
+            }
+        }
+        if options.delayAfterHidingOverlays > 0 {
+            try await Task.sleep(nanoseconds: UInt64(options.delayAfterHidingOverlays * 1_000_000_000))
+        }
+
+        let (screen, displayID) = try resolveDisplay(for: area)
+        let image = try await captureDisplay(displayID, includeCursor: options.includeCursor)
+        try validate(image)
+        let snapshot = DisplaySnapshot(
+            displayID: displayID,
+            screenFrame: screen.frame,
+            scale: ScreenCoordinateSpace.imageScale(pixelWidth: image.width, screenFrame: screen.frame),
+            image: image
+        )
+        return try displayDocument(
+            fromSnapshot: snapshot,
+            selectionCocoaRect: area.cocoaRect,
+            source: .area(rect: area.cocoaRect, displayID: displayID)
+        )
+    }
+
     func capture(_ target: CaptureTarget, options: CaptureOptions = .default) async throws -> ScreenshotDocument {
         guard ScreenCapturePermission.isTrusted else { throw CaptureError.permissionDenied }
         if options.hideBelloBoxWindows {
@@ -142,23 +195,7 @@ final class ScreenCaptureService {
                 source: .display(displayID: display.displayID)
             )
         case let .area(area):
-            let screen: NSScreen
-            let displayID: CGDirectDisplayID
-            if let explicitDisplayID = area.displayID {
-                guard let explicitScreen = self.screen(for: explicitDisplayID) else {
-                    throw CaptureError.noDisplayFound
-                }
-                screen = explicitScreen
-                displayID = explicitDisplayID
-            } else {
-                guard let resolvedScreen = ScreenCoordinateSpace.strictDisplayForCocoaRect(area.cocoaRect),
-                      let resolvedDisplayID = ScreenCoordinateSpace.displayID(for: resolvedScreen)
-                else {
-                    throw CaptureError.noDisplayFound
-                }
-                screen = resolvedScreen
-                displayID = resolvedDisplayID
-            }
+            let (screen, displayID) = try resolveDisplay(for: area)
             let boundedRect = area.cocoaRect.intersection(screen.frame).standardized
             guard boundedRect.width >= 1, boundedRect.height >= 1 else {
                 throw CaptureError.captureFailed("The selected area was outside the display bounds.")
@@ -500,6 +537,38 @@ final class ScreenCaptureService {
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
         cachedShareableContent = (Date(), content)
         return content
+    }
+
+    private func resolveDisplay(for area: CaptureArea) throws -> (screen: NSScreen, displayID: CGDirectDisplayID) {
+        if let explicitDisplayID = area.displayID {
+            guard let explicitScreen = screen(for: explicitDisplayID) else {
+                throw CaptureError.noDisplayFound
+            }
+            return (explicitScreen, explicitDisplayID)
+        }
+        guard let resolvedScreen = ScreenCoordinateSpace.strictDisplayForCocoaRect(area.cocoaRect),
+              let resolvedDisplayID = ScreenCoordinateSpace.displayID(for: resolvedScreen)
+        else {
+            throw CaptureError.noDisplayFound
+        }
+        return (resolvedScreen, resolvedDisplayID)
+    }
+
+    private static func selectionPixelRect(_ cocoaRect: CGRect, screenFrame: CGRect, imageSize: CGSize) throws -> CGRect {
+        let boundedRect = cocoaRect.intersection(screenFrame).standardized
+        guard boundedRect.width >= 1, boundedRect.height >= 1 else {
+            throw CaptureError.captureFailed("The selected area was outside the display bounds.")
+        }
+        let pixelRect = ScreenCoordinateSpace.cocoaRectToImagePixelRect(
+            boundedRect,
+            screenFrame: screenFrame,
+            imageSize: imageSize
+        )
+        let cropRect = pixelRect.intersection(CGRect(origin: .zero, size: imageSize)).integral
+        guard cropRect.width > 0, cropRect.height > 0 else {
+            throw CaptureError.captureFailed("The selected area was outside the display bounds.")
+        }
+        return cropRect
     }
 
     private func validate(_ image: CGImage) throws {

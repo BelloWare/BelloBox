@@ -58,6 +58,9 @@ final class ScreenshotPopupViewModel: ObservableObject {
     private var isClosed = false
     private var movingTextAnnotationID: UUID?
     private var movingTextUndoPushed = false
+    private let allowsSelectionAdjustment: Bool
+    private var isAdjustingSelection = false
+    private var selectionAdjustmentUndoPushed = false
 
     var onClose: () -> Void = {}
 
@@ -66,11 +69,13 @@ final class ScreenshotPopupViewModel: ObservableObject {
         settings: AppSettings,
         macOCRService: OCRService = MacVisionOCRService(),
         llmOCRService: OCRService? = nil,
-        llmOCRServiceFactory: ((AIConfig) -> OCRService)? = nil
+        llmOCRServiceFactory: ((AIConfig) -> OCRService)? = nil,
+        allowsSelectionAdjustment: Bool = false
     ) {
         self.document = document
         self.settings = settings
         self.macOCRService = macOCRService
+        self.allowsSelectionAdjustment = allowsSelectionAdjustment
         self.originalAnnotations = document.annotations
         self.originalCropRect = document.cropRect
         if let llmOCRServiceFactory {
@@ -203,9 +208,64 @@ final class ScreenshotPopupViewModel: ObservableObject {
         let docRect = shiftVisibleRectToDocument(rect).intersection(CGRect(origin: .zero, size: document.imageSize)).integral
         guard docRect.width >= 4, docRect.height >= 4 else { return }
         pushUndo()
-        document.cropRect = docRect
-        basePreviewRevision += 1
+        replaceCropRect(with: docRect)
         markOCRStale()
+    }
+
+    /// Whether the base image covers the whole display, so the selection can be resized
+    /// or moved within it after capture.
+    var supportsSelectionAdjustment: Bool { allowsSelectionAdjustment }
+
+    /// The current selection in base-image pixels.
+    var selectionCropRect: CGRect {
+        document.cropRect ?? CGRect(origin: .zero, size: document.imageSize)
+    }
+
+    /// The smallest selection the handles may produce, in base-image pixels.
+    var minimumSelectionPixelSize: CGSize {
+        let edge = max(4, (RegionCaptureGeometry.minimumAreaSize * max(document.scale, 1)).rounded())
+        return CGSize(width: edge, height: edge)
+    }
+
+    /// Starts an interactive resize or move. Only the first change inside a session
+    /// records an undo step, so a whole drag reverts with a single undo.
+    func beginSelectionAdjustment() {
+        guard allowsSelectionAdjustment, !isAdjustingSelection else { return }
+        isAdjustingSelection = true
+        selectionAdjustmentUndoPushed = false
+    }
+
+    /// Sets the selection in base-image pixels, clamped to the image and the minimum
+    /// size. Annotations keep their document coordinates, so they stay attached to the
+    /// pixels they were drawn on.
+    func setSelectionCropRect(_ rect: CGRect) {
+        guard allowsSelectionAdjustment else { return }
+        let imageBounds = CGRect(origin: .zero, size: document.imageSize)
+        let clamped = SelectionResizeGeometry
+            .clamped(rect, in: imageBounds, minimumSize: minimumSelectionPixelSize)
+            .integral
+            .intersection(imageBounds)
+        guard !clamped.isNull, clamped.width >= 1, clamped.height >= 1 else { return }
+        let newCrop: CGRect? = clamped == imageBounds ? nil : clamped
+        guard newCrop != document.cropRect else { return }
+        if isAdjustingSelection {
+            if selectionAdjustmentUndoPushed {
+                documentRevision += 1
+            } else {
+                pushUndo()
+                selectionAdjustmentUndoPushed = true
+            }
+        } else {
+            pushUndo()
+        }
+        replaceCropRect(with: newCrop)
+        markOCRStale()
+    }
+
+    func endSelectionAdjustment() {
+        guard isAdjustingSelection else { return }
+        isAdjustingSelection = false
+        selectionAdjustmentUndoPushed = false
     }
 
     func addAnnotation(_ annotation: ScreenshotAnnotation) {
@@ -602,6 +662,33 @@ final class ScreenshotPopupViewModel: ObservableObject {
             x: min(max(origin.x, 0), max(0, size.width - maxWidth)),
             y: min(max(origin.y, 0), max(0, size.height - height))
         )
+    }
+
+    /// Changes the crop and keeps OCR region boxes, which are stored in the visible
+    /// image's coordinates, over the same pixels they were recognised on.
+    private func replaceCropRect(with newCrop: CGRect?) {
+        let oldOrigin = document.cropRect?.origin ?? .zero
+        let newOrigin = newCrop?.origin ?? .zero
+        let delta = CGPoint(x: oldOrigin.x - newOrigin.x, y: oldOrigin.y - newOrigin.y)
+        document.cropRect = newCrop
+        basePreviewRevision += 1
+        guard delta != .zero, !document.ocrResults.isEmpty else { return }
+        document.ocrResults = document.ocrResults.map { result in
+            var copy = result
+            copy.regions = Self.shiftRegions(result.regions, by: delta)
+            return copy
+        }
+    }
+
+    private static func shiftRegions(_ regions: [OCRTextRegion], by delta: CGPoint) -> [OCRTextRegion] {
+        regions.map { region in
+            var copy = region
+            if let box = region.boundingBox?.rect {
+                copy.boundingBox = CGRectCodable(box.offsetBy(dx: delta.x, dy: delta.y))
+            }
+            copy.children = shiftRegions(region.children, by: delta)
+            return copy
+        }
     }
 
     private func syncOCRPanel() {

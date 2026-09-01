@@ -2,7 +2,10 @@ import SwiftUI
 
 struct AnnotationCanvasView: View {
     @ObservedObject var viewModel: ScreenshotPopupViewModel
+    /// When set, dragging the canvas in Select mode moves the whole capture selection.
+    var selectionMoveHandler: SelectionMoveGestureHandler? = nil
 
+    @State private var isMovingSelection = false
     @State private var dragStart: CGPoint?
     @State private var dragCurrent: CGPoint?
     @State private var freehandPoints: [CGPoint] = []
@@ -34,13 +37,19 @@ struct AnnotationCanvasView: View {
                 inlineTextEditor(viewport: viewport)
             }
             .contentShape(Rectangle())
-            .gesture(dragGesture(viewport: viewport))
+            .gesture(dragGesture(viewport: viewport, geometry: geometry))
         }
     }
 
+    /// Mirrors AnnotationRenderer's pass order: redactions are painted first and every
+    /// decorative annotation on top, so the preview matches the exported image.
     @ViewBuilder
     private func committedAnnotationLayer(viewport: ImageViewport) -> some View {
-        ForEach(viewModel.visibleAnnotations) { annotation in
+        let annotations = viewModel.visibleAnnotations
+        ForEach(annotations.filter(\.isRedaction)) { annotation in
+            committedAnnotationView(annotation, viewport: viewport)
+        }
+        ForEach(annotations.filter { !$0.isRedaction }) { annotation in
             committedAnnotationView(annotation, viewport: viewport)
         }
     }
@@ -100,9 +109,7 @@ struct AnnotationCanvasView: View {
                 .position(x: point.x + max(width, 44) / 2, y: point.y + max(34, annotation.style.fontSize + 16) / 2)
         case let .blur(rect):
             let viewRect = viewport.imageRectToViewRect(rect)
-            Rectangle()
-                .fill(Color.black.opacity(0.68))
-                .frame(width: viewRect.width, height: viewRect.height)
+            RedactionMaskView(size: viewRect.size, hatchStep: redactionHatchStep(viewport: viewport))
                 .position(x: viewRect.midX, y: viewRect.midY)
         }
     }
@@ -179,9 +186,7 @@ struct AnnotationCanvasView: View {
                     .frame(width: rect.width, height: rect.height)
                     .position(x: rect.midX, y: rect.midY)
             case .blur:
-                Rectangle()
-                    .fill(Color.black.opacity(0.68))
-                    .frame(width: rect.width, height: rect.height)
+                RedactionMaskView(size: rect.size, hatchStep: redactionHatchStep(viewport: viewport))
                     .position(x: rect.midX, y: rect.midY)
             default:
                 EmptyView()
@@ -189,13 +194,24 @@ struct AnnotationCanvasView: View {
         }
     }
 
-    private func dragGesture(viewport: ImageViewport) -> some Gesture {
-        DragGesture(minimumDistance: 0)
+    private func dragGesture(viewport: ImageViewport, geometry: GeometryProxy) -> some Gesture {
+        // Global coordinates keep `translation` stable while the canvas itself moves
+        // during a selection drag; local points are derived from the canvas origin.
+        DragGesture(minimumDistance: 0, coordinateSpace: .global)
             .onChanged { value in
                 if viewModel.editingTextAnnotationID != nil { return }
-                let point = viewport.viewPointToImagePoint(value.location)
+                if viewModel.activeTool == .select, let handler = selectionMoveHandler {
+                    if !isMovingSelection {
+                        isMovingSelection = true
+                        handler.onBegin()
+                    }
+                    handler.onChange(value.translation)
+                    return
+                }
+                let origin = geometry.frame(in: .global).origin
+                let point = viewport.viewPointToImagePoint(Self.localPoint(value.location, origin: origin))
                 if dragStart == nil {
-                    dragStart = viewport.viewPointToImagePoint(value.startLocation)
+                    dragStart = viewport.viewPointToImagePoint(Self.localPoint(value.startLocation, origin: origin))
                     freehandPoints = []
                 }
                 dragCurrent = point
@@ -204,12 +220,28 @@ struct AnnotationCanvasView: View {
                 }
             }
             .onEnded { value in
+                if isMovingSelection {
+                    isMovingSelection = false
+                    selectionMoveHandler?.onEnd()
+                    resetDrag()
+                    return
+                }
                 if viewModel.editingTextAnnotationID != nil { return }
-                let end = viewport.viewPointToImagePoint(value.location)
+                let origin = geometry.frame(in: .global).origin
+                let end = viewport.viewPointToImagePoint(Self.localPoint(value.location, origin: origin))
                 guard let start = dragStart else { resetDrag(); return }
                 commit(start: start, end: end)
                 resetDrag()
             }
+    }
+
+    private static func localPoint(_ point: CGPoint, origin: CGPoint) -> CGPoint {
+        CGPoint(x: point.x - origin.x, y: point.y - origin.y)
+    }
+
+    private func redactionHatchStep(viewport: ImageViewport) -> CGFloat {
+        guard viewport.imageSize.width > 0 else { return 8 }
+        return max(3, 8 * viewport.fittedImageRect.width / viewport.imageSize.width)
     }
 
     private func commit(start: CGPoint, end: CGPoint) {
@@ -322,6 +354,47 @@ struct AnnotationCanvasView: View {
             .onEnded { _ in
                 editingTextDragStartOrigin = nil
             }
+    }
+}
+
+private extension ScreenshotAnnotation {
+    var isRedaction: Bool {
+        if case .blur = kind { return true }
+        return false
+    }
+}
+
+/// Lets the capture overlay move the whole selection when the user drags the canvas in
+/// Select mode. Translations are reported in the canvas's point coordinate space.
+struct SelectionMoveGestureHandler {
+    var onBegin: () -> Void
+    var onChange: (CGSize) -> Void
+    var onEnd: () -> Void
+}
+
+/// Opaque redaction preview that matches the exported image: a solid fill plus a faint
+/// diagonal hatch, so nothing underneath shows through in the editor either.
+struct RedactionMaskView: View {
+    var size: CGSize
+    var hatchStep: CGFloat = 8
+
+    var body: some View {
+        Canvas { context, canvasSize in
+            let rect = CGRect(origin: .zero, size: canvasSize)
+            context.fill(Path(rect), with: .color(Color(nsColor: AnnotationStyle.redactionFillColor.nsColor)))
+            guard rect.width > 0, rect.height > 0 else { return }
+            var hatch = Path()
+            var x = rect.minX
+            let step = max(2, hatchStep)
+            while x < rect.maxX {
+                hatch.move(to: CGPoint(x: x, y: rect.maxY))
+                hatch.addLine(to: CGPoint(x: x + rect.height, y: rect.minY))
+                x += step
+            }
+            context.stroke(hatch, with: .color(.white.opacity(0.16)), lineWidth: 1)
+        }
+        .frame(width: max(size.width, 0), height: max(size.height, 0))
+        .clipped()
     }
 }
 

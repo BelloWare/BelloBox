@@ -112,8 +112,13 @@ save PNG.
 
 **Capture modes:**
 - **Area** — drag a screen region; tiny pointer jitter still behaves like a click.
+  After the capture, drag the corner or edge handles to resize the selection,
+  or drag inside it with the Select tool to move it. The editor re-crops the
+  frozen display instantly, annotations stay on the pixels they were drawn on,
+  and one undo reverts a whole drag.
 - **Window** — hover a window to highlight it, then click to capture it.
-- **Screen** — click blank space to capture the display.
+- **Screen** — click blank space to capture the display; the selection handles
+  work here too.
 - **Scrolling** — capture repeated frames while you scroll, then compact them
   into one long screenshot by removing duplicated overlap and conservative
   sticky headers.

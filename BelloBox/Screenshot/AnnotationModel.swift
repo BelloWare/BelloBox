@@ -111,9 +111,12 @@ struct AnnotationStyle: Equatable {
         fontSize: 18
     )
 
+    /// Solid, fully opaque fill shared by the editor preview and the exported redaction.
+    static let redactionFillColor = CodableColor(red: 0.16, green: 0.16, blue: 0.16, alpha: 1)
+
     static let redaction = AnnotationStyle(
         strokeColor: CodableColor(red: 0.12, green: 0.12, blue: 0.12, alpha: 1),
-        fillColor: CodableColor(red: 0.16, green: 0.16, blue: 0.16, alpha: 1),
+        fillColor: redactionFillColor,
         lineWidth: 0,
         opacity: 1,
         fontSize: 18

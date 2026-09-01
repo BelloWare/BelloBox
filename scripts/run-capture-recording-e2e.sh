@@ -241,6 +241,7 @@ launch_app_for_marker \
   BELLOBOX_E2E_CAPTURE_OVERLAY_OUTPUT="$OVERLAY_SCREENSHOT" \
   BELLOBOX_E2E_CAPTURE_OVERLAY_MARKER="$OVERLAY_SCREENSHOT_MARKER"
 assert_file_min_size "$OVERLAY_SCREENSHOT" 1024 "Capture overlay screenshot E2E"
+assert_marker_value "$OVERLAY_SCREENSHOT_MARKER" "resizeSupported" "true" "Capture overlay screenshot E2E"
 
 launch_app_for_marker \
   "Capture overlay multi-display E2E" \
@@ -254,6 +255,11 @@ assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "selectionDisplayID" "900
 assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "baseImageColorTag" "secondary-left" "Capture overlay multi-display E2E"
 assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "imageWidth" "240" "Capture overlay multi-display E2E"
 assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "imageHeight" "140" "Capture overlay multi-display E2E"
+assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "resizeSupported" "true" "Capture overlay multi-display E2E"
+assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "resizedImageWidth" "220" "Capture overlay multi-display E2E"
+assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "resizedImageHeight" "120" "Capture overlay multi-display E2E"
+assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "undoRestoredWidth" "240" "Capture overlay multi-display E2E"
+assert_marker_value "$MULTI_OVERLAY_SCREENSHOT_MARKER" "undoRestoredHeight" "140" "Capture overlay multi-display E2E"
 
 start_recording_fixture
 launch_app_for_marker \

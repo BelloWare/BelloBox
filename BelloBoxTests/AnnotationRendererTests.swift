@@ -91,6 +91,35 @@ final class AnnotationRendererTests: XCTestCase {
         XCTAssertNotEqual(ScreenshotTestHelpers.pixel(rendered, x: 25, y: 25), ScreenshotTestHelpers.pixel(doc.baseImage, x: 25, y: 25))
     }
 
+    func testRedactionIsFullyOpaqueInExport() throws {
+        let doc = ScreenshotDocument(
+            baseImage: ScreenshotTestHelpers.stripedImage(width: 80, height: 80),
+            scale: 1,
+            source: .importedClipboard,
+            annotations: [
+                ScreenshotAnnotation(
+                    kind: .blur(CGRect(x: 20, y: 20, width: 20, height: 20)),
+                    style: AnnotationStyle(
+                        strokeColor: CodableColor(red: 0, green: 0, blue: 0, alpha: 1),
+                        fillColor: CodableColor(red: 0.16, green: 0.16, blue: 0.16, alpha: 0.4),
+                        lineWidth: 0,
+                        opacity: 0.3,
+                        fontSize: 18
+                    )
+                ),
+            ]
+        )
+        let rendered = try AnnotationRenderer.render(doc)
+        for (x, y) in [(21, 21), (30, 30), (39, 39), (25, 35)] {
+            let pixel = ScreenshotTestHelpers.pixel(rendered, x: x, y: y)
+            XCTAssertEqual(pixel[3], 255, "redaction must be opaque at (\(x), \(y))")
+            XCTAssertEqual(pixel[0], pixel[1], "redaction must be neutral grey at (\(x), \(y))")
+            XCTAssertEqual(pixel[1], pixel[2], "redaction must be neutral grey at (\(x), \(y))")
+            XCTAssertLessThan(pixel[0], 90, "redaction must stay dark at (\(x), \(y))")
+        }
+        XCTAssertEqual(ScreenshotTestHelpers.pixel(rendered, x: 10, y: 10), ScreenshotTestHelpers.pixel(doc.baseImage, x: 10, y: 10))
+    }
+
     func testExternalOCRUploadExcludesDecorativeAnnotations() throws {
         let doc = ScreenshotDocument(
             baseImage: ScreenshotTestHelpers.image(width: 80, height: 80),
