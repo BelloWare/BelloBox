@@ -59,12 +59,16 @@ final class SelectionOverlayController: NSObject {
             self?.triggerRecording()
         }
         screenCaptureService.beforeCapture = { [weak self] in
-            self?.hideToolbar()
+            self?.hideToolbar(animated: false)
+            // Skip the utility-window fade: a panel still fading out would be frozen
+            // into the display snapshot taken a few milliseconds later.
+            self?.popupPanel?.animationBehavior = .none
             self?.popupPanel?.orderOut(nil)
             self?.screenshotOverlayEditorController?.close()
         }
         screenCaptureService.afterCapture = { [weak self] in
             self?.popupPanel?.orderFrontRegardless()
+            self?.popupPanel?.animationBehavior = .utilityWindow
         }
         recordingCoordinator.onStateChange = { [weak self] state in
             self?.handleRecordingState(state)
@@ -323,13 +327,13 @@ final class SelectionOverlayController: NSObject {
 
     private func activateScreenshot() {
         let anchor = pendingSelection?.anchorRect
-        hideToolbar()
+        hideToolbar(animated: false)
         beginUnifiedScreenshotCapture(anchorRect: anchor)
     }
 
     private func activateRecording() {
         let anchor = pendingSelection?.anchorRect
-        hideToolbar()
+        hideToolbar(animated: false)
         beginUnifiedRecordingCapture(anchorRect: anchor)
     }
 
@@ -375,14 +379,24 @@ final class SelectionOverlayController: NSObject {
         tooltip.orderFrontRegardless()
     }
 
-    private func hideToolbar() {
+    /// `animated: false` drops the utility-window fade so a capture that starts right
+    /// after this call never freezes a half-transparent toolbar ghost into the snapshot.
+    private func hideToolbar(animated: Bool = true) {
         if let monitor = toolbarDismissMonitor {
             NSEvent.removeMonitor(monitor)
             toolbarDismissMonitor = nil
         }
+        if !animated {
+            toolbarTooltipPanel?.animationBehavior = .none
+            toolbarPanel?.animationBehavior = .none
+        }
         toolbarTooltipPanel?.orderOut(nil)
         toolbarPanel?.orderOut(nil)
         toolbarPanel = nil
+        if !animated {
+            // The tooltip panel is reused; give it its fade back for normal dismissals.
+            toolbarTooltipPanel?.animationBehavior = .utilityWindow
+        }
     }
 
     private func installToolbarDismissMonitor() {
@@ -590,7 +604,7 @@ final class SelectionOverlayController: NSObject {
         }
 
         recordingCoordinator.showRecordingChooser(anchor: anchorRect)
-        hidePopup()
+        hidePopup(animated: false)
         captureOverlayController?.cancel()
         let controller = CaptureOverlayController(
             screenCaptureService: screenCaptureService,
@@ -731,8 +745,10 @@ final class SelectionOverlayController: NSObject {
 
     func triggerScreenshotCapture() {
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
-        hideToolbar()
-        beginUnifiedScreenshotCapture(anchorRect: nil)
+        hideToolbar(animated: false)
+        // Invoked from the menu bar: give the menu's own dismissal fade time to finish
+        // before the displays are frozen.
+        beginUnifiedScreenshotCapture(anchorRect: nil, snapshotDelay: 0.2)
     }
 
     func triggerScrollingScreenshotCapture() {
@@ -746,7 +762,7 @@ final class SelectionOverlayController: NSObject {
         if writeE2EHotkeyMarkerIfNeeded(kind: "screenshot") { return }
 #endif
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
-        hideToolbar()
+        hideToolbar(animated: false)
         guard ScreenCapturePermission.isTrusted else {
             showScreenshotChooser(anchorRect: nil, initialMode: screenshotCaptureMode(from: settings.screenshotDefaultMode))
             return
@@ -754,14 +770,18 @@ final class SelectionOverlayController: NSObject {
         beginUnifiedScreenshotCapture(anchorRect: nil)
     }
 
-    private func beginUnifiedScreenshotCapture(anchorRect: CGRect?, policy: CaptureSelectionPolicy = .any) {
+    private func beginUnifiedScreenshotCapture(
+        anchorRect: CGRect?,
+        policy: CaptureSelectionPolicy = .any,
+        snapshotDelay: TimeInterval = CaptureOverlayController.defaultSnapshotDelay
+    ) {
 #if DEBUG
         if let area = e2eRegionArea() {
             Task { await self.captureArea(area, anchorRect: anchorRect) }
             return
         }
 #endif
-        hidePopup()
+        hidePopup(animated: false)
         captureOverlayController?.cancel()
         let controller = CaptureOverlayController(
             screenCaptureService: screenCaptureService,
@@ -771,6 +791,7 @@ final class SelectionOverlayController: NSObject {
         captureOverlayController = controller
         controller.beginScreenshot(
             policy: policy,
+            snapshotDelay: snapshotDelay,
             onError: { [weak self] message in
                 self?.captureOverlayController = nil
                 self?.showScreenshotError(message, anchorRect: anchorRect)
@@ -1286,6 +1307,10 @@ final class SelectionOverlayController: NSObject {
 
     private func runScreenshotE2EHooksIfNeeded() {
         let env = ProcessInfo.processInfo.environment
+        if let path = env["BELLOBOX_E2E_FROZEN_OVERLAY_MARKER"], !path.isEmpty {
+            openE2EFrozenScreenOverlay(markerPath: path)
+            return
+        }
         if env["BELLOBOX_E2E_CAPTURE_OVERLAY_SIMULATED_DISPLAYS"] == "1" {
             openE2ESimulatedMultiDisplayCaptureOverlay()
             return
@@ -1334,6 +1359,158 @@ final class SelectionOverlayController: NSObject {
             onDismiss: { viewModel.close() }
         )
         if runOCR { viewModel.runMacOCR() }
+    }
+
+    /// Drives the real snapshot-first screenshot overlay: a solid-color window per display
+    /// must end up inside the frozen snapshot, and no overlay window may exist before the
+    /// snapshots are taken (that ordering is what preserves hover states).
+    private func openE2EFrozenScreenOverlay(markerPath: String) {
+        Task { @MainActor in
+            var markerLines: [String] = ["kind=frozen-overlay"]
+            var pulseWindows: [NSWindow] = []
+            do {
+                guard ScreenCapturePermission.isTrusted else {
+                    throw ScreenCaptureService.CaptureError.permissionDenied
+                }
+                let screens = NSScreen.screens
+                guard !screens.isEmpty else {
+                    throw ScreenCaptureService.CaptureError.noDisplayFound
+                }
+
+                var expectations: [(screen: NSScreen, displayID: CGDirectDisplayID, rect: CGRect, color: NSColor)] = []
+                for (index, screen) in screens.enumerated() {
+                    guard let displayID = ScreenCoordinateSpace.displayID(for: screen),
+                          let rect = e2eCaptureRect(on: screen, defaultSize: CGSize(width: 320, height: 200))
+                    else {
+                        throw ScreenCaptureService.CaptureError.noDisplayFound
+                    }
+                    let color = Self.e2eScreenshotColor(for: index)
+                    pulseWindows.append(Self.makeE2EPulseWindow(in: rect, color: color))
+                    expectations.append((screen, displayID, rect, color))
+                }
+                try await Task.sleep(nanoseconds: 200_000_000)
+
+                hidePopup()
+                captureOverlayController?.cancel()
+                let controller = CaptureOverlayController(
+                    screenCaptureService: screenCaptureService,
+                    settings: settings,
+                    macOCRService: macOCRService
+                )
+                captureOverlayController = controller
+                let overlayError = E2EErrorBox()
+                let phaseBox = E2ESnapshotPhaseBox()
+                controller.debugSnapshotPhaseObserver = { windowCount, snapshotCount in
+                    phaseBox.windowCountWhenSnapshotsCompleted = windowCount
+                    phaseBox.snapshotCountWhenCompleted = snapshotCount
+                }
+                let startedAt = Date()
+                controller.beginScreenshot(
+                    policy: .areaOnly,
+                    onError: { overlayError.message = $0 },
+                    onCancel: {}
+                )
+                let windowCountBeforeSnapshots = controller.debugOverlayWindowCount
+
+                let deadline = Date().addingTimeInterval(15)
+                while controller.debugOverlayWindowCount == 0, overlayError.message == nil, Date() < deadline {
+                    try await Task.sleep(nanoseconds: 50_000_000)
+                }
+                if let message = overlayError.message {
+                    throw ScreenCaptureService.CaptureError.captureFailed(message)
+                }
+                guard controller.debugOverlayWindowCount > 0 else {
+                    throw ScreenCaptureService.CaptureError.captureFailed("The frozen-screen overlay never appeared.")
+                }
+                let readyAfterMs = Int(Date().timeIntervalSince(startedAt) * 1000)
+                let snapshots = controller.debugSnapshots
+
+                markerLines += [
+                    "status=success",
+                    "displayCount=\(screens.count)",
+                    "windowCountBeforeSnapshots=\(windowCountBeforeSnapshots)",
+                    "windowCountWhenSnapshotsCompleted=\(phaseBox.windowCountWhenSnapshotsCompleted.map(String.init) ?? "unobserved")",
+                    "snapshotCountWhenCompleted=\(phaseBox.snapshotCountWhenCompleted.map(String.init) ?? "unobserved")",
+                    "windowCount=\(controller.debugOverlayWindowCount)",
+                    "snapshotCount=\(snapshots.count)",
+                    "overlayViewsWithSnapshot=\(controller.debugOverlayViewsWithSnapshotCount)",
+                    "readyAfterMs=\(readyAfterMs)",
+                ]
+
+                for (index, expectation) in expectations.enumerated() {
+                    guard let snapshot = snapshots.first(where: { $0.displayID == expectation.displayID }) else {
+                        markerLines += [
+                            "snapshot[\(index)].status=missing",
+                            "snapshot[\(index)].displayID=\(expectation.displayID)",
+                        ]
+                        continue
+                    }
+                    let document = try screenCaptureService.displayDocument(
+                        fromSnapshot: snapshot,
+                        selectionCocoaRect: expectation.rect,
+                        source: .area(rect: expectation.rect, displayID: expectation.displayID)
+                    )
+                    let rendered = try AnnotationRenderer.render(document)
+                    let expected = Self.e2eExpectedImageRect(for: expectation.rect, on: expectation.screen, displayID: expectation.displayID)
+                    let dimensionMatches = rendered.width == Int(expected.width) && rendered.height == Int(expected.height)
+                    let expectedSample = RGBColorSample(expectation.color)
+                    let averageSample = ImageColorAnalyzer.averageColor(rendered)
+                    let colorDistance = averageSample?.distance(to: expectedSample) ?? .infinity
+                    let contentMatches = colorDistance <= 0.25
+                    markerLines += [
+                        "snapshot[\(index)].status=success",
+                        "snapshot[\(index)].displayID=\(expectation.displayID)",
+                        "snapshot[\(index)].imageWidth=\(snapshot.image.width)",
+                        "snapshot[\(index)].imageHeight=\(snapshot.image.height)",
+                        "snapshot[\(index)].scale=\(snapshot.scale)",
+                        "snapshot[\(index)].cropWidth=\(rendered.width)",
+                        "snapshot[\(index)].cropHeight=\(rendered.height)",
+                        "snapshot[\(index)].expectedWidth=\(Int(expected.width))",
+                        "snapshot[\(index)].expectedHeight=\(Int(expected.height))",
+                        "snapshot[\(index)].dimensionMatches=\(dimensionMatches)",
+                        "snapshot[\(index)].expectedColor=\(expectedSample.diagnosticString)",
+                        "snapshot[\(index)].averageColor=\(averageSample?.diagnosticString ?? "nil")",
+                        "snapshot[\(index)].colorDistance=\(Self.serialize(colorDistance))",
+                        "snapshot[\(index)].contentMatches=\(contentMatches)",
+                    ]
+                }
+                controller.cancel()
+                captureOverlayController = nil
+            } catch {
+                captureOverlayController?.cancel()
+                captureOverlayController = nil
+                let linesWithoutStatus = markerLines.filter { !$0.hasPrefix("status=") }
+                markerLines = linesWithoutStatus + [
+                    "status=failure",
+                    "error=\(error.localizedDescription)",
+                ]
+            }
+            for window in pulseWindows {
+                window.orderOut(nil)
+            }
+            Self.writeE2EMarker(markerPath, lines: markerLines)
+            e2eQuitIfRequested()
+        }
+    }
+
+    private static func makeE2EPulseWindow(in rect: CGRect, color: NSColor) -> NSWindow {
+        let window = NSWindow(
+            contentRect: rect,
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
+        window.level = .screenSaver
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        window.ignoresMouseEvents = true
+        window.isOpaque = true
+        window.backgroundColor = color
+        window.hasShadow = false
+        window.isReleasedWhenClosed = false
+        window.contentView = E2ESolidColorView(color: color, frame: CGRect(origin: .zero, size: rect.size))
+        window.orderFrontRegardless()
+        window.displayIfNeeded()
+        return window
     }
 
     private func openE2ECaptureOverlay(path: String) {
@@ -1640,9 +1817,13 @@ final class SelectionOverlayController: NSObject {
         return CGSize(width: width, height: 66)
     }
 
-    private func hidePopup(runDismissAction: Bool = true) {
+    private func hidePopup(runDismissAction: Bool = true, animated: Bool = true) {
         let onDismiss = runDismissAction ? popupOnDismiss : nil
         popupOnDismiss = nil
+        if !animated {
+            // Vanish immediately so a capture started right after cannot see the fade.
+            popupPanel?.animationBehavior = .none
+        }
         popupPanel?.orderOut(nil)
         popupPanel = nil
         hideScreenshotOverlayEditor()
@@ -1661,6 +1842,15 @@ final class SelectionOverlayController: NSObject {
 }
 
 #if DEBUG
+private final class E2EErrorBox {
+    var message: String?
+}
+
+private final class E2ESnapshotPhaseBox {
+    var windowCountWhenSnapshotsCompleted: Int?
+    var snapshotCountWhenCompleted: Int?
+}
+
 private final class E2ESolidColorView: NSView {
     private let color: NSColor
 

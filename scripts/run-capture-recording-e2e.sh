@@ -232,6 +232,27 @@ launch_app_for_marker \
 assert_file_min_size "$REAL_SCREENSHOT" 1024 "Real screenshot E2E"
 assert_real_screenshot_marker "$REAL_SCREENSHOT_MARKER" "Real screenshot E2E"
 
+FROZEN_OVERLAY_MARKER="$RUN_ROOT/frozen-overlay.marker"
+launch_app_for_marker \
+  "Frozen-screen overlay E2E" \
+  "$FROZEN_OVERLAY_MARKER" \
+  30 \
+  BELLOBOX_E2E_FROZEN_OVERLAY_MARKER="$FROZEN_OVERLAY_MARKER"
+assert_marker_value "$FROZEN_OVERLAY_MARKER" "windowCountBeforeSnapshots" "0" "Frozen-screen overlay E2E"
+assert_marker_value "$FROZEN_OVERLAY_MARKER" "windowCountWhenSnapshotsCompleted" "0" "Frozen-screen overlay E2E"
+FROZEN_DISPLAY_COUNT="$(marker_value "$FROZEN_OVERLAY_MARKER" "displayCount")"
+if [[ ! "$FROZEN_DISPLAY_COUNT" =~ ^[0-9]+$ ]] || (( FROZEN_DISPLAY_COUNT < 1 )); then
+  echo "Frozen-screen overlay E2E failed: marker did not include a valid displayCount." >&2
+  exit 1
+fi
+assert_marker_value "$FROZEN_OVERLAY_MARKER" "snapshotCount" "$FROZEN_DISPLAY_COUNT" "Frozen-screen overlay E2E"
+assert_marker_value "$FROZEN_OVERLAY_MARKER" "windowCount" "$FROZEN_DISPLAY_COUNT" "Frozen-screen overlay E2E"
+assert_marker_value "$FROZEN_OVERLAY_MARKER" "overlayViewsWithSnapshot" "$FROZEN_DISPLAY_COUNT" "Frozen-screen overlay E2E"
+for ((i = 0; i < FROZEN_DISPLAY_COUNT; i++)); do
+  assert_marker_value "$FROZEN_OVERLAY_MARKER" "snapshot[$i].contentMatches" "true" "Frozen-screen overlay E2E"
+  assert_marker_value "$FROZEN_OVERLAY_MARKER" "snapshot[$i].dimensionMatches" "true" "Frozen-screen overlay E2E"
+done
+
 launch_app_for_marker \
   "Capture overlay screenshot E2E" \
   "$OVERLAY_SCREENSHOT_MARKER" \

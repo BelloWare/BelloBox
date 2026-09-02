@@ -41,6 +41,55 @@ enum CaptureWindowCatalog {
         }
     }
 
+    /// Whether any on-screen window sits above `windowID` and overlaps `frame` (Cocoa
+    /// coordinates). Bello Box's own capture overlay (screen-saver level) never counts,
+    /// but its regular windows (World Clock, Settings, ...) do, because they were
+    /// painted into the frozen snapshot like any other app's window.
+    static func isOccluded(windowID: UInt32, frame: CGRect) -> Bool {
+        guard let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else {
+            return false
+        }
+        return isOccluded(
+            windowID: windowID,
+            frame: frame,
+            entries: info,
+            ownPID: ProcessInfo.processInfo.processIdentifier,
+            screenFrames: NSScreen.screens.map(\.frame)
+        )
+    }
+
+    /// `entries` must be in front-to-back order, as CGWindowListCopyWindowInfo returns it.
+    static func isOccluded(
+        windowID: UInt32,
+        frame: CGRect,
+        entries: [[String: Any]],
+        ownPID: pid_t,
+        screenFrames: [CGRect]
+    ) -> Bool {
+        let target = frame.standardized
+        guard target.width > 0, target.height > 0 else { return false }
+        for entry in entries {
+            guard let windowNumber = entry[kCGWindowNumber as String] as? NSNumber else { continue }
+            if windowNumber.uint32Value == windowID { return false }
+            guard let ownerPID = entry[kCGWindowOwnerPID as String] as? NSNumber,
+                  let layer = entry[kCGWindowLayer as String] as? NSNumber,
+                  !(ownerPID.int32Value == ownPID && layer.intValue >= Int(CGWindowLevelForKey(.screenSaverWindow))),
+                  isSelectableLayer(layer.intValue),
+                  let alpha = entry[kCGWindowAlpha as String] as? NSNumber,
+                  alpha.doubleValue > 0.01,
+                  let boundsDictionary = entry[kCGWindowBounds as String] as? [String: Any],
+                  let bounds = CGRect(dictionaryRepresentation: boundsDictionary as CFDictionary),
+                  isSelectableBounds(bounds)
+            else { continue }
+            let cocoaFrame = ScreenCoordinateSpace.cgWindowBoundsToCocoaRect(bounds, screenFrames: screenFrames)
+            let overlap = cocoaFrame.intersection(target)
+            if !overlap.isNull, overlap.width >= 2, overlap.height >= 2 {
+                return true
+            }
+        }
+        return false
+    }
+
     private static func isSelectableLayer(_ layer: Int) -> Bool {
         if layer == CGWindowLevelForKey(.normalWindow) { return true }
         return layer == CGWindowLevelForKey(.floatingWindow)

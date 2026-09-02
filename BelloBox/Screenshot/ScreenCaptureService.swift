@@ -118,6 +118,56 @@ final class ScreenCaptureService {
         )
     }
 
+    /// Captures every display as it is right now. The overlay shows these frozen images
+    /// instead of the live screen, so transient UI (hover states, menus, tooltips) that
+    /// was visible when the shortcut fired survives, and no second capture is needed
+    /// after the selection. Displays that fail are skipped; the call only throws when no
+    /// display could be captured.
+    func captureDisplaySnapshots(options: CaptureOptions = .default) async throws -> [DisplaySnapshot] {
+        guard ScreenCapturePermission.isTrusted else { throw CaptureError.permissionDenied }
+        if options.hideBelloBoxWindows {
+            beforeCapture?()
+        }
+        defer {
+            if options.hideBelloBoxWindows {
+                afterCapture?()
+            }
+        }
+        if options.delayAfterHidingOverlays > 0 {
+            try await Task.sleep(nanoseconds: UInt64(options.delayAfterHidingOverlays * 1_000_000_000))
+        }
+
+        var snapshots: [DisplaySnapshot] = []
+        var firstCaptureError: Error?
+        for screen in NSScreen.screens {
+            guard let displayID = ScreenCoordinateSpace.displayID(for: screen) else { continue }
+            try Task.checkCancellation()
+            do {
+                let image = try await captureDisplay(displayID, includeCursor: options.includeCursor)
+                try validate(image)
+                snapshots.append(DisplaySnapshot(
+                    displayID: displayID,
+                    screenFrame: screen.frame,
+                    scale: ScreenCoordinateSpace.imageScale(pixelWidth: image.width, screenFrame: screen.frame),
+                    image: image
+                ))
+            } catch {
+                if error is CancellationError { throw error }
+                logDisplayCapture(
+                    "displaySnapshot.error",
+                    ["displayID=\(displayID)", "error=\(error.localizedDescription)"]
+                )
+                if firstCaptureError == nil {
+                    firstCaptureError = error
+                }
+            }
+        }
+        if snapshots.isEmpty {
+            throw firstCaptureError ?? CaptureError.noDisplayFound
+        }
+        return snapshots
+    }
+
     /// Builds a document that keeps the entire display image and expresses the selection
     /// as the crop rect, so the editor can grow or move the selection afterwards without
     /// capturing again. A selection covering the whole display leaves the crop unset.

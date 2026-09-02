@@ -110,6 +110,12 @@ opens the image in an annotation editor with pen, arrows, rectangles,
 highlights, text labels, crop, blur/redaction, undo/redo, OCR, copy image, and
 save PNG.
 
+For area, window, and screen captures the displays are frozen the moment you
+trigger the capture, before the dim overlay appears, so hover-only UI such as
+menus, tooltips, and hovered links stays visible in the overlay and in the
+result. A window that another window was covering is re-captured live so the
+covered part is filled in. Scrolling captures work on the live screen.
+
 **Capture modes:**
 - **Area** — drag a screen region; tiny pointer jitter still behaves like a click.
   After the capture, drag the corner or edge handles to resize the selection,

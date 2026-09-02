@@ -34,6 +34,11 @@ final class CaptureOverlayController {
     private var onCancel: (() -> Void)?
     private var resignActiveObserver: NSObjectProtocol?
     private var overlayTiming: CaptureTiming?
+    private var snapshotDelay: TimeInterval = CaptureOverlayController.defaultSnapshotDelay
+
+    /// Time between hiding Bello Box's own panels and freezing the displays. Panels are
+    /// hidden without animation, so this only needs to cover one window-server update.
+    static let defaultSnapshotDelay: TimeInterval = 0.06
 
     init(
         screenCaptureService: ScreenCaptureService,
@@ -53,6 +58,11 @@ final class CaptureOverlayController {
     /// The visible selection cut-out per overlay view, in flipped local coordinates.
     var debugSelectionFrames: [CGRect?] { overlayViews.map(\.visibleSelectionFrame) }
     var debugActiveScreenshotViewModel: ScreenshotPopupViewModel? { activeScreenshotViewModel }
+    var debugOverlayViewsWithSnapshotCount: Int { overlayViews.filter { $0.snapshot != nil }.count }
+    var debugSnapshots: [DisplaySnapshot] { snapshots }
+    /// Called with (overlay window count, snapshot count) the moment the snapshots are
+    /// complete and before any overlay window is created.
+    var debugSnapshotPhaseObserver: ((Int, Int) -> Void)?
 #endif
 
     deinit {
@@ -66,9 +76,11 @@ final class CaptureOverlayController {
 
     func beginScreenshot(
         policy: CaptureSelectionPolicy = .any,
+        snapshotDelay: TimeInterval = CaptureOverlayController.defaultSnapshotDelay,
         onError: @escaping (String) -> Void,
         onCancel: @escaping () -> Void = {}
     ) {
+        self.snapshotDelay = max(0, snapshotDelay)
         begin(
             purpose: .screenshot(policy),
             onError: onError,
@@ -167,7 +179,50 @@ final class CaptureOverlayController {
         captureToken += 1
         overlayTiming = CaptureTiming("overlay.ready")
         snapshots = []
-        showOverlayWindows(snapshots: [])
+
+        guard case .screenshot = purpose else {
+            // Recording needs the live screen behind the overlay.
+            showOverlayWindows(snapshots: [])
+            return
+        }
+
+        // Freeze every display before any overlay window exists: a window under the
+        // pointer ends hover states in the app below, and capturing after the selection
+        // would need the overlay hidden again (the grey flash). The frozen images are
+        // what the overlay shows and what the selection is cut from.
+        let token = captureToken
+        let snapshotTiming = CaptureTiming("overlay.snapshots")
+        captureTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            var captured: [DisplaySnapshot] = []
+            do {
+                captured = try await self.screenCaptureService.captureDisplaySnapshots(
+                    options: CaptureOptions(
+                        includeCursor: self.settings.screenshotIncludeCursor,
+                        hideBelloBoxWindows: true,
+                        delayAfterHidingOverlays: self.snapshotDelay
+                    )
+                )
+            } catch {
+                guard !Task.isCancelled, self.captureToken == token else { return }
+                // Fall back to the live overlay; the selection is captured afterwards.
+                self.logDiagnostics("overlay.snapshots.error", ["error=\(error.localizedDescription)"])
+            }
+            guard !Task.isCancelled, self.captureToken == token else { return }
+            self.captureTask = nil
+#if DEBUG
+            self.debugSnapshotPhaseObserver?(self.windows.count, captured.count)
+#endif
+            snapshotTiming.finish(
+                [
+                    "count=\(captured.count)",
+                    "snapshots=\(Self.snapshotSummary(captured))",
+                ],
+                enabled: self.settings.captureDiagnosticsEnabled
+            )
+            self.snapshots = captured
+            self.showOverlayWindows(snapshots: captured)
+        }
     }
 
     private func showOverlayWindows(snapshots: [DisplaySnapshot]) {
@@ -390,7 +445,7 @@ final class CaptureOverlayController {
                 )
             }
             let viewModel = installScreenshotEditor(document: document, selection: selection, in: selectedView)
-            refreshWindowScreenshotIfNeeded(selection: selection, viewModel: viewModel)
+            refreshWindowScreenshotIfNeeded(selection: selection, viewModel: viewModel, cutFromFrozenSnapshot: true)
         } catch {
             let message = error.localizedDescription
             let reportError = onError
@@ -481,8 +536,26 @@ final class CaptureOverlayController {
         return viewModel
     }
 
-    private func refreshWindowScreenshotIfNeeded(selection: CaptureSelection, viewModel: ScreenshotPopupViewModel) {
+    private func refreshWindowScreenshotIfNeeded(
+        selection: CaptureSelection,
+        viewModel: ScreenshotPopupViewModel,
+        cutFromFrozenSnapshot: Bool
+    ) {
         guard case let .window(window) = selection else { return }
+        // Visible-frame surfaces (menu bar, desktop) are cropped from the display and
+        // would include this overlay; the frozen snapshot crop is already correct.
+        guard window.captureMode == .independentWindow else { return }
+        // A crop from the frozen snapshot is exactly what the user saw, hover state
+        // included. The live window image replaces it only when another window was
+        // covering part of this one; otherwise it just lends its shape (rounded corners,
+        // transparent regions) to the frozen pixels.
+        let occluded = cutFromFrozenSnapshot
+            ? window.frame.map { CaptureWindowCatalog.isOccluded(windowID: window.windowID, frame: $0) } ?? true
+            : true
+        logDiagnostics(
+            "window.refresh.begin",
+            ["windowID=\(window.windowID)", "mode=\(cutFromFrozenSnapshot ? (occluded ? "replaceOccluded" : "maskShape") : "replaceLive")"]
+        )
         let originalID = viewModel.document.id
         refreshTask?.cancel()
         refreshTask = Task { @MainActor [weak self, weak viewModel] in
@@ -497,7 +570,26 @@ final class CaptureOverlayController {
                     )
                 )
                 guard !Task.isCancelled else { return }
-                viewModel.refreshBaseCapture(from: refreshed, expectedDocumentID: originalID)
+                let replacement: ScreenshotDocument
+                if occluded {
+                    replacement = refreshed
+                } else {
+                    guard let masked = ImageAlphaMask.apply(shapeOf: refreshed.baseImage, to: viewModel.document.baseImage) else {
+                        logDiagnostics("window.refresh.maskSkipped", ["windowID=\(window.windowID)"])
+                        return
+                    }
+                    replacement = ScreenshotDocument(
+                        baseImage: masked,
+                        scale: viewModel.document.scale,
+                        source: viewModel.document.source
+                    )
+                }
+                if viewModel.refreshBaseCapture(from: replacement, expectedDocumentID: originalID),
+                   settings.screenshotAutoCopy {
+                    // Auto-copy already ran with the frozen crop; keep the clipboard in
+                    // step with what the editor now shows.
+                    viewModel.copyRenderedImage()
+                }
             } catch {
                 guard !Task.isCancelled else { return }
                 // The frozen crop is already usable; a failed fidelity refresh
@@ -517,8 +609,15 @@ final class CaptureOverlayController {
         case let .display(display):
             return snapshots.first(where: { $0.displayID == display.displayID })
         case let .window(window):
-            guard let frame = window.frame else { return nil }
-            return snapshot(containing: frame)
+            // Require the snapshot of the display that hosts the window, and only if it
+            // holds the whole window; otherwise the live window capture takes over.
+            guard let frame = window.frame,
+                  let screen = ScreenCoordinateSpace.strictDisplayForCocoaRect(frame),
+                  let displayID = ScreenCoordinateSpace.displayID(for: screen),
+                  let snapshot = snapshots.first(where: { $0.displayID == displayID }),
+                  snapshot.screenFrame.contains(frame.insetBy(dx: 0.5, dy: 0.5))
+            else { return nil }
+            return snapshot
         }
     }
 
