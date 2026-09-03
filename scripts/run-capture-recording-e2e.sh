@@ -253,6 +253,16 @@ for ((i = 0; i < FROZEN_DISPLAY_COUNT; i++)); do
   assert_marker_value "$FROZEN_OVERLAY_MARKER" "snapshot[$i].dimensionMatches" "true" "Frozen-screen overlay E2E"
 done
 
+SCROLL_CAPTURE_MARKER="$RUN_ROOT/scroll-capture.marker"
+launch_app_for_marker \
+  "Scroll-to-capture E2E" \
+  "$SCROLL_CAPTURE_MARKER" \
+  240 \
+  BELLOBOX_E2E_SCROLL_CAPTURE_MARKER="$SCROLL_CAPTURE_MARKER"
+for key in manual.heightMatches manual.bandsInOrder auto.reachedEnd auto.heightMatches auto.bandsInOrder overlay.hudVisible overlay.windowsIgnoreMouse overlay.liveContentSampled overlay.heightMatches overlay.bandsInOrder; do
+  assert_marker_value "$SCROLL_CAPTURE_MARKER" "$key" "true" "Scroll-to-capture E2E"
+done
+
 launch_app_for_marker \
   "Capture overlay screenshot E2E" \
   "$OVERLAY_SCREENSHOT_MARKER" \

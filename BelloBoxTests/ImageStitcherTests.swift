@@ -60,7 +60,7 @@ final class ImageStitcherTests: XCTestCase {
             warnings: ["Frame 2 appears nearly unchanged from the previous frame."]
         )
 
-        let document = ScrollCaptureCoordinator.makeDocument(
+        let document = ScrollCaptureEngine.makeDocument(
             from: result,
             target: ScrollCaptureTargetSummary(title: "Page", ownerName: "Browser", frame: nil),
             frameCount: 2,
@@ -92,6 +92,27 @@ final class ImageStitcherTests: XCTestCase {
         let second = ScreenshotTestHelpers.stripedImage(width: 90, height: 180)
         let result = try ImageStitcher.stitch([first, second])
         XCTAssertEqual(result.image.width, 120)
+    }
+
+    func testBlankSeamPrefersTheLargerOverlap() throws {
+        // Content: 200 textured rows, 100 blank rows, 200 textured rows. Frame A shows rows
+        // 0..300 (bottom third blank); frame B shows rows 200..500 (top third blank). Every
+        // overlap up to 100 rows ties at zero; the true overlap is the largest, 100.
+        let content = ScreenshotTestHelpers.image(width: 120, height: 500) { context in
+            context.setFillColor(NSColor.white.cgColor)
+            context.fill(CGRect(x: 0, y: 0, width: 120, height: 500))
+            for y in 0..<500 where y < 200 || y >= 300 {
+                let value = CGFloat((y * 53) % 97) / 97
+                context.setFillColor(NSColor(calibratedRed: value, green: 0.2, blue: 1 - value, alpha: 1).cgColor)
+                context.fill(CGRect(x: 0, y: 500 - 1 - y, width: 120, height: 1))
+            }
+        }
+        let a = try XCTUnwrap(content.cropping(to: CGRect(x: 0, y: 0, width: 120, height: 300)))
+        let b = try XCTUnwrap(content.cropping(to: CGRect(x: 0, y: 200, width: 120, height: 300)))
+
+        let match = try XCTUnwrap(ImageStitcher.bestOverlap(previous: a, current: b, config: .default))
+        XCTAssertEqual(match.overlap, 100)
+        XCTAssertEqual(try ImageStitcher.stitch([a, b]).image.height, 500)
     }
 
     func testStitchRespectsCancellationBeforeWork() async {

@@ -4,6 +4,8 @@ struct AnnotationToolbarView: View {
     @ObservedObject var viewModel: ScreenshotPopupViewModel
     var showExportActions = false
     var onClose: (() -> Void)?
+    /// Shown only in the capture overlay for area and window captures.
+    var onScrollCapture: (() -> Void)?
 
     var body: some View {
         HStack(spacing: 6) {
@@ -55,6 +57,12 @@ struct AnnotationToolbarView: View {
                 .disabled(!viewModel.canRedo)
                 .keyboardShortcut("Z", modifiers: [.command, .shift])
                 .help("Redo")
+
+            if let onScrollCapture {
+                Button(action: onScrollCapture) { Image(systemName: "arrow.down.doc") }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .help("Scroll to capture more")
+            }
 
             if showExportActions {
                 Button { viewModel.copyRenderedImage() } label: { Image(systemName: "doc.on.doc") }

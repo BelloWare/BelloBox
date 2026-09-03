@@ -58,16 +58,6 @@ final class CaptureOverlayAccessoryLayoutTests: XCTestCase {
         assertSystemOverlayPresentation(controller.debugOverlayWindows)
     }
 
-    func testScrollingRegionCaptureUsesSystemOverlayPresentationOnEveryDisplay() {
-        let controller = RegionCaptureOverlayController()
-        defer { controller.cancel() }
-
-        controller.begin { _ in }
-
-        XCTAssertEqual(controller.debugOverlayWindows.count, NSScreen.screens.count)
-        assertSystemOverlayPresentation(controller.debugOverlayWindows)
-    }
-
     func testCaptureOverlayKeepsInlineEditorWhenAppResignsActiveAfterSelection() throws {
         let controller = makeController()
         defer { controller.cancel() }
@@ -118,6 +108,35 @@ final class CaptureOverlayAccessoryLayoutTests: XCTestCase {
 
         wait(for: [cancelled], timeout: 1)
         XCTAssertTrue(controller.debugOverlayWindows.isEmpty)
+    }
+
+    func testScrollHUDStaysOutsideTheSampledSelection() {
+        let bounds = CGRect(x: 0, y: 0, width: 1000, height: 800)
+        let size = CGSize(width: 510, height: 100) // 470 x 60 card plus a 20 pt transparent margin
+        let padding: CGFloat = 20
+        func visible(_ frame: CGRect) -> CGRect { frame.insetBy(dx: padding, dy: padding) }
+
+        let selection = CGRect(x: 100, y: 100, width: 400, height: 300)
+        let below = ScrollCaptureHUDLayout.frame(selection: selection, bounds: bounds, size: size, padding: padding)
+        XCTAssertGreaterThanOrEqual(visible(below).minY, selection.maxY)
+        XCTAssertFalse(visible(below).intersects(selection))
+
+        let tall = CGRect(x: 100, y: 20, width: 400, height: 740) // no room above or below
+        let side = ScrollCaptureHUDLayout.frame(selection: tall, bounds: bounds, size: size, padding: padding)
+        XCTAssertFalse(visible(side).intersects(tall))
+        XCTAssertGreaterThanOrEqual(visible(side).minX, tall.maxX)
+
+        let wide = CGRect(x: 20, y: 20, width: 960, height: 740) // no room anywhere
+        let inside = ScrollCaptureHUDLayout.frame(selection: wide, bounds: bounds, size: size, padding: padding)
+        XCTAssertTrue(bounds.contains(visible(inside)))
+        XCTAssertGreaterThan(visible(inside).minY, wide.midY)
+
+        // The sampled region is then trimmed to stop above the card.
+        let trimmed = ScrollCaptureHUDLayout.selectionAvoiding(hud: visible(inside), selection: wide, gap: 12, minimumHeight: 8)
+        XCTAssertEqual(trimmed?.maxY, visible(inside).minY - 12)
+        XCTAssertEqual(trimmed?.minY, wide.minY)
+        XCTAssertFalse(trimmed!.intersects(visible(inside)))
+        XCTAssertEqual(ScrollCaptureHUDLayout.selectionAvoiding(hud: visible(below), selection: selection, gap: 12, minimumHeight: 8), selection)
     }
 
     private func makeController() -> CaptureOverlayController {

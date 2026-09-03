@@ -19,6 +19,7 @@ final class CaptureDimmingView: NSView {
     }
 
     private let snapshotLayer = CALayer()
+    private let snapshotMask = CAShapeLayer()
     private let dimLayers: [CALayer] = (0..<4).map { _ in CALayer() }
     private let borderLayer = CAShapeLayer()
     private let labelContainer = CALayer()
@@ -31,10 +32,15 @@ final class CaptureDimmingView: NSView {
     private(set) var selectionFrame: CGRect?
     private var borderWidth: CGFloat = 2
     private var labelText: String?
+    /// When set, the frozen snapshot is cut away inside the selection so the live
+    /// content underneath shows through, and the border is drawn outside the selection
+    /// so it never ends up in a captured frame.
+    private(set) var showsLiveContentInSelection = false
 
 #if DEBUG
     /// The four dim band layers, for tests that assert the dim is really attached.
     var debugDimLayers: [CALayer] { dimLayers }
+    var debugSnapshotIsMasked: Bool { snapshotLayer.mask != nil }
 #endif
 
     var snapshotImage: CGImage? {
@@ -60,6 +66,8 @@ final class CaptureDimmingView: NSView {
         snapshotLayer.contentsScale = self.contentsScale
         snapshotLayer.minificationFilter = .trilinear
         snapshotLayer.isHidden = true
+        snapshotMask.fillRule = .evenOdd
+        snapshotMask.contentsScale = self.contentsScale
         root.addSublayer(snapshotLayer)
 
         for dimLayer in dimLayers {
@@ -108,7 +116,7 @@ final class CaptureDimmingView: NSView {
     }
 
     /// `selection` is expressed in this view's own (bottom-left origin) coordinates.
-    func update(selection: CGRect?, borderWidth: CGFloat = 2, label: String? = nil) {
+    func update(selection: CGRect?, borderWidth: CGFloat = 2, label: String? = nil, showsLiveContentInSelection: Bool = false) {
         var clipped = selection?.standardized.intersection(bounds)
         if let candidate = clipped, candidate.isNull || candidate.isEmpty {
             clipped = nil
@@ -116,6 +124,7 @@ final class CaptureDimmingView: NSView {
         selectionFrame = clipped
         self.borderWidth = borderWidth
         labelText = label
+        self.showsLiveContentInSelection = showsLiveContentInSelection && clipped != nil
         applyGeometry()
     }
 
@@ -130,14 +139,28 @@ final class CaptureDimmingView: NSView {
             }
 
             guard let selection = selectionFrame else {
+                snapshotLayer.mask = nil
                 borderLayer.isHidden = true
                 labelContainer.isHidden = true
                 return
             }
+            if showsLiveContentInSelection {
+                let path = CGMutablePath()
+                path.addRect(bounds)
+                path.addRect(selection)
+                snapshotMask.frame = bounds
+                snapshotMask.path = path
+                snapshotLayer.mask = snapshotMask
+            } else {
+                snapshotLayer.mask = nil
+            }
             borderLayer.isHidden = false
             borderLayer.frame = bounds
             borderLayer.lineWidth = borderWidth
-            borderLayer.path = CGPath(rect: selection, transform: nil)
+            let borderRect = showsLiveContentInSelection
+                ? selection.insetBy(dx: -borderWidth / 2, dy: -borderWidth / 2)
+                : selection
+            borderLayer.path = CGPath(rect: borderRect, transform: nil)
             layoutLabel(around: selection)
         }
     }

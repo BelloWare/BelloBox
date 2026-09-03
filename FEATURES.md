@@ -114,7 +114,7 @@ For area, window, and screen captures the displays are frozen the moment you
 trigger the capture, before the dim overlay appears, so hover-only UI such as
 menus, tooltips, and hovered links stays visible in the overlay and in the
 result. A window that another window was covering is re-captured live so the
-covered part is filled in. Scrolling captures work on the live screen.
+covered part is filled in. Scroll-to-capture samples the live content.
 
 **Capture modes:**
 - **Area** — drag a screen region; tiny pointer jitter still behaves like a click.
@@ -125,9 +125,12 @@ covered part is filled in. Scrolling captures work on the live screen.
 - **Window** — hover a window to highlight it, then click to capture it.
 - **Screen** — click blank space to capture the display; the selection handles
   work here too.
-- **Scrolling** — capture repeated frames while you scroll, then compact them
-  into one long screenshot by removing duplicated overlap and conservative
-  sticky headers.
+- **Scroll to capture more** — after an area or window capture, press the
+  scroll button in the editor toolbar (or start from Screenshot → Scrolling).
+  The selection turns live: scroll the content yourself or press Auto-scroll,
+  and Bello Box captures a frame each time the content settles, then stitches
+  the frames into one long screenshot when you press Done, removing duplicated
+  overlap and conservative sticky headers. Cancel returns to the editor.
 
 **OCR:**
 - **Mac OCR** uses Apple Vision locally and works offline.

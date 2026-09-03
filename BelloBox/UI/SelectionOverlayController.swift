@@ -30,8 +30,6 @@ final class SelectionOverlayController: NSObject {
     private var pendingSelection: TextSelection?
     private var trustWatcher: Timer?
     private var lastTrusted = false
-    private var regionCaptureController: RegionCaptureOverlayController?
-    private var scrollingCaptureCoordinator: ScrollCaptureCoordinator?
 #if DEBUG
     private var e2eScreenshotPulseWindow: NSWindow?
     private var e2eRecordingPulseWindow: NSWindow?
@@ -251,9 +249,7 @@ final class SelectionOverlayController: NSObject {
 
     private var isCaptureSurfaceActive: Bool {
         captureOverlayController != nil
-            || regionCaptureController != nil
             || screenshotOverlayEditorController != nil
-            || scrollingCaptureCoordinator != nil
     }
 
     // MARK: - Floating toolbar
@@ -773,7 +769,8 @@ final class SelectionOverlayController: NSObject {
     private func beginUnifiedScreenshotCapture(
         anchorRect: CGRect?,
         policy: CaptureSelectionPolicy = .any,
-        snapshotDelay: TimeInterval = CaptureOverlayController.defaultSnapshotDelay
+        snapshotDelay: TimeInterval = CaptureOverlayController.defaultSnapshotDelay,
+        scrollCaptureOnSelection: Bool = false
     ) {
 #if DEBUG
         if let area = e2eRegionArea() {
@@ -789,9 +786,14 @@ final class SelectionOverlayController: NSObject {
             macOCRService: macOCRService
         )
         captureOverlayController = controller
+        controller.onScrollCaptureFinished = { [weak self] document in
+            self?.captureOverlayController = nil
+            self?.showScreenshotEditor(document: document, anchorRect: anchorRect)
+        }
         controller.beginScreenshot(
             policy: policy,
             snapshotDelay: snapshotDelay,
+            scrollCaptureOnSelection: scrollCaptureOnSelection,
             onError: { [weak self] message in
                 self?.captureOverlayController = nil
                 self?.showScreenshotError(message, anchorRect: anchorRect)
@@ -841,33 +843,7 @@ final class SelectionOverlayController: NSObject {
     }
 
     private func beginScrollingAreaCapture(anchorRect: CGRect?) {
-#if DEBUG
-        if let area = e2eRegionArea() {
-            Task { await self.startScrollingCapture(target: .area(area), anchorRect: anchorRect) }
-            return
-        }
-#endif
-        hidePopup()
-        regionCaptureController?.cancel()
-        let controller = RegionCaptureOverlayController()
-        regionCaptureController = controller
-        controller.begin { [weak self] result in
-            guard let self else { return }
-            self.regionCaptureController = nil
-            switch result {
-            case let .success(capture):
-                switch capture {
-                case let .area(area):
-                    Task { await self.startScrollingCapture(target: .area(area), anchorRect: anchorRect) }
-                case let .window(window):
-                    Task { await self.startScrollingCapture(target: .window(window), anchorRect: anchorRect) }
-                }
-            case .failure(.userCancelled):
-                break
-            case let .failure(error):
-                self.showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
-            }
-        }
+        beginUnifiedScreenshotCapture(anchorRect: anchorRect, policy: .areaOrWindow, scrollCaptureOnSelection: true)
     }
 
     private func captureArea(_ area: CaptureArea, anchorRect: CGRect?) async {
@@ -914,38 +890,6 @@ final class SelectionOverlayController: NSObject {
         } catch {
             showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
         }
-    }
-
-    private func startScrollingCapture(target: ScrollCaptureTarget, anchorRect: CGRect?) async {
-        let coordinator = ScrollCaptureCoordinator(target: target, service: screenCaptureService, settings: settings)
-        scrollingCaptureCoordinator = coordinator
-        do {
-            try await coordinator.captureInitialFrame()
-        } catch {
-            if scrollingCaptureCoordinator === coordinator {
-                scrollingCaptureCoordinator = nil
-            }
-            showScreenshotError(error.localizedDescription, anchorRect: anchorRect)
-            return
-        }
-        let viewModel = ScrollingCaptureHUDViewModel(coordinator: coordinator)
-        viewModel.onCancel = { [weak self] in
-            self?.scrollingCaptureCoordinator = nil
-            self?.hidePopup()
-        }
-        viewModel.onFinished = { [weak self] document in
-            self?.scrollingCaptureCoordinator = nil
-            self?.showScreenshotEditor(document: document, anchorRect: anchorRect)
-        }
-        let view = ScrollingCaptureHUDView(viewModel: viewModel)
-        present(
-            view,
-            size: ScrollingCaptureHUDView.preferredSize,
-            anchorRect: anchorRect,
-            minimizedIcon: "arrow.down.doc",
-            minimizedTitle: "Scrolling Capture",
-            onDismiss: { viewModel.cancel() }
-        )
     }
 
     private func showScreenshotOverlayEditor(document: ScreenshotDocument, frame: CGRect) {
@@ -1311,6 +1255,10 @@ final class SelectionOverlayController: NSObject {
             openE2EFrozenScreenOverlay(markerPath: path)
             return
         }
+        if let path = env["BELLOBOX_E2E_SCROLL_CAPTURE_MARKER"], !path.isEmpty {
+            openE2EScrollCapture(markerPath: path)
+            return
+        }
         if env["BELLOBOX_E2E_CAPTURE_OVERLAY_SIMULATED_DISPLAYS"] == "1" {
             openE2ESimulatedMultiDisplayCaptureOverlay()
             return
@@ -1493,6 +1441,202 @@ final class SelectionOverlayController: NSObject {
         }
     }
 
+    /// Drives scroll-to-capture three ways against a tall, uniquely textured document in
+    /// Bello Box's own scroll view: programmatic scrolling through the engine, the engine's
+    /// auto-scroll (synthetic wheel events), and the full overlay path (frozen snapshot →
+    /// editor → scroll mode). Each result must match the scrolled range and keep the
+    /// coloured bands in order.
+    private func openE2EScrollCapture(markerPath: String) {
+        Task { @MainActor in
+            var markerLines: [String] = ["kind=scroll-capture"]
+            var fixture: E2EScrollFixtureWindow?
+            do {
+                guard ScreenCapturePermission.isTrusted else {
+                    throw ScreenCaptureService.CaptureError.permissionDenied
+                }
+                guard let screen = NSScreen.main,
+                      let displayID = ScreenCoordinateSpace.displayID(for: screen)
+                else {
+                    throw ScreenCaptureService.CaptureError.noDisplayFound
+                }
+                let bandHeight: CGFloat = 100
+                let documentHeight: CGFloat = 1500
+                let viewport = CGSize(width: 360, height: 300)
+                let rect = CGRect(
+                    x: (screen.frame.minX + 160).rounded(),
+                    y: (screen.frame.minY + 160).rounded(),
+                    width: viewport.width,
+                    height: viewport.height
+                )
+                let window = E2EScrollFixtureWindow(frame: rect, documentHeight: documentHeight, bandHeight: bandHeight)
+                fixture = window
+                try await Task.sleep(nanoseconds: 400_000_000)
+
+                let scale = ScreenCoordinateSpace.backingScale(for: screen)
+                let pixelSize = CGSize(width: (rect.width * scale).rounded(), height: (rect.height * scale).rounded())
+                let area = CaptureArea(cocoaRect: rect, displayID: displayID)
+                let summary = ScrollCaptureTargetSummary(title: "E2E", ownerName: nil, frame: CGRectCodable(rect))
+                let bandPixels = bandHeight * scale
+                hidePopup()
+
+                // 1. Programmatic scrolling, as if the user scrolled in four steps.
+                let manualInitial = try await screenCaptureService.captureRegionImage(area, pixelSize: pixelSize)
+                let manual = ScrollCaptureEngine(
+                    area: area, summary: summary, initialFrame: manualInitial, pixelSize: pixelSize,
+                    service: screenCaptureService, settings: settings
+                )
+                manual.start()
+                for step in 1...4 {
+                    window.scroll(toTopOffset: CGFloat(step) * 200)
+                    await Self.e2eWaitForFrames(manual, count: step + 1)
+                }
+                let manualDocument = try await manual.finish()
+                let manualExpected = Int(((viewport.height + 800) * scale).rounded())
+                markerLines += Self.e2eScrollResultLines(
+                    prefix: "manual", document: manualDocument, frames: manual.frames.count,
+                    expectedHeight: manualExpected, bandPixels: bandPixels, bandColors: window.bandColors
+                )
+
+                // 2. Auto-scroll from the top until the end of the document.
+                window.scroll(toTopOffset: 0)
+                try await Task.sleep(nanoseconds: 500_000_000)
+                let autoInitial = try await screenCaptureService.captureRegionImage(area, pixelSize: pixelSize)
+                let auto = ScrollCaptureEngine(
+                    area: area, summary: summary, initialFrame: autoInitial, pixelSize: pixelSize,
+                    service: screenCaptureService, settings: settings
+                )
+                auto.start()
+                auto.toggleAutoScroll()
+                let autoStarted = Date()
+                let autoDeadline = autoStarted.addingTimeInterval(90)
+                while auto.isAutoScrolling, Date() < autoDeadline {
+                    try await Task.sleep(nanoseconds: 100_000_000)
+                }
+                markerLines.append("auto.durationMs=\(Int(Date().timeIntervalSince(autoStarted) * 1000))")
+                let autoDocument = try await auto.finish()
+                markerLines += Self.e2eScrollResultLines(
+                    prefix: "auto", document: autoDocument, frames: auto.frames.count,
+                    expectedHeight: Int((documentHeight * scale).rounded()), bandPixels: bandPixels, bandColors: window.bandColors
+                )
+                markerLines.append("auto.reachedEnd=\(auto.reachedEnd)")
+                markerLines.append("auto.finalOffset=\(Int(window.topOffset))")
+                markerLines.append("auto.events=\(auto.debugEvents.joined(separator: "|"))")
+
+                // 3. The real overlay: frozen snapshot → editor → scroll mode → programmatic scroll → Done.
+                window.scroll(toTopOffset: 0)
+                try await Task.sleep(nanoseconds: 500_000_000)
+                let snapshots = try await screenCaptureService.captureDisplaySnapshots(
+                    options: CaptureOptions(includeCursor: false, hideBelloBoxWindows: false, delayAfterHidingOverlays: 0)
+                )
+                let controller = CaptureOverlayController(
+                    screenCaptureService: screenCaptureService, settings: settings, macOCRService: macOCRService
+                )
+                captureOverlayController?.cancel()
+                captureOverlayController = controller
+                let finishedBox = E2EScrollFinishedBox()
+                controller.onScrollCaptureFinished = { document in finishedBox.document = document }
+                controller.beginScreenshotForTesting(
+                    snapshots: snapshots,
+                    initialSelection: .area(area),
+                    policy: .areaOnly,
+                    scrollCaptureOnSelection: true,
+                    onError: { finishedBox.error = $0 }
+                )
+                guard let overlayEngine = controller.debugScrollCaptureEngine else {
+                    throw ScreenCaptureService.CaptureError.captureFailed("The overlay did not enter scroll-to-capture mode.")
+                }
+                markerLines.append("overlay.hudVisible=\(controller.debugScrollCaptureHUDVisible)")
+                markerLines.append("overlay.windowsIgnoreMouse=\(controller.debugOverlayWindows.allSatisfy(\.ignoresMouseEvents))")
+                for step in 1...3 {
+                    window.scroll(toTopOffset: CGFloat(step) * 200)
+                    await Self.e2eWaitForFrames(overlayEngine, count: step + 1)
+                }
+                markerLines.append("overlay.liveContentSampled=\(overlayEngine.frames.count > 1)")
+                controller.finishScrollCapture()
+                let overlayDeadline = Date().addingTimeInterval(20)
+                while finishedBox.document == nil, finishedBox.error == nil, Date() < overlayDeadline {
+                    try await Task.sleep(nanoseconds: 100_000_000)
+                }
+                if let error = finishedBox.error {
+                    throw ScreenCaptureService.CaptureError.captureFailed(error)
+                }
+                guard let overlayDocument = finishedBox.document else {
+                    throw ScreenCaptureService.CaptureError.captureFailed("The overlay scroll capture never finished.")
+                }
+                hidePopup()
+                captureOverlayController = nil
+                markerLines += Self.e2eScrollResultLines(
+                    prefix: "overlay", document: overlayDocument, frames: overlayDocument.source.scrollingFrameCount,
+                    expectedHeight: Int(((viewport.height + 600) * scale).rounded()), bandPixels: bandPixels, bandColors: window.bandColors
+                )
+                markerLines.append("status=success")
+            } catch {
+                captureOverlayController?.cancel()
+                captureOverlayController = nil
+                markerLines += ["status=failure", "error=\(error.localizedDescription)"]
+            }
+            fixture?.orderOut(nil)
+            Self.writeE2EMarker(markerPath, lines: markerLines)
+            e2eQuitIfRequested()
+        }
+    }
+
+    /// Waits until the engine has appended `count` frames (or gives up after a while).
+    private static func e2eWaitForFrames(_ engine: ScrollCaptureEngine, count: Int, timeout: TimeInterval = 12) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while engine.frames.count < count, Date() < deadline {
+            try? await Task.sleep(nanoseconds: 100_000_000)
+        }
+    }
+
+    private static func e2eScrollResultLines(
+        prefix: String,
+        document: ScreenshotDocument,
+        frames: Int,
+        expectedHeight: Int,
+        bandPixels: CGFloat,
+        bandColors: [NSColor]
+    ) -> [String] {
+        let image = document.baseImage
+        let heightMatches = abs(image.height - expectedHeight) <= max(8, Int(Double(expectedHeight) * 0.06))
+        let bandsInOrder = e2eBandsInOrder(image, bandPixels: bandPixels, colors: bandColors)
+        return [
+            "\(prefix).frames=\(frames)",
+            "\(prefix).width=\(image.width)",
+            "\(prefix).height=\(image.height)",
+            "\(prefix).expectedHeight=\(expectedHeight)",
+            "\(prefix).heightMatches=\(heightMatches)",
+            "\(prefix).bandsInOrder=\(bandsInOrder)",
+        ]
+    }
+
+    /// Every band centre inside the stitched image must show that band's colour.
+    private static func e2eBandsInOrder(_ image: CGImage, bandPixels: CGFloat, colors: [NSColor]) -> Bool {
+        guard bandPixels > 0, image.height > 0 else { return false }
+        let bandCount = Int((CGFloat(image.height) / bandPixels).rounded(.down))
+        guard bandCount >= 2 else { return false }
+        let x = max(1, image.width / 5)
+        for band in 0..<min(bandCount, colors.count) {
+            let y = Int(CGFloat(band) * bandPixels + bandPixels / 2)
+            guard y < image.height else { break }
+            let sample = e2ePixel(image, x: x, y: y)
+            let expected = RGBColorSample(colors[band])
+            if sample.distance(to: expected) > 0.25 { return false }
+        }
+        return true
+    }
+
+    private static func e2ePixel(_ image: CGImage, x: Int, y: Int) -> RGBColorSample {
+        var data = [UInt8](repeating: 0, count: 4)
+        guard let context = CGContext(
+            data: &data, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+            space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return RGBColorSample(red: 0, green: 0, blue: 0) }
+        context.translateBy(x: CGFloat(-x), y: CGFloat(y - image.height + 1))
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        return RGBColorSample(red: Double(data[0]) / 255, green: Double(data[1]) / 255, blue: Double(data[2]) / 255)
+    }
+
     private static func makeE2EPulseWindow(in rect: CGRect, color: NSColor) -> NSWindow {
         let window = NSWindow(
             contentRect: rect,
@@ -1635,7 +1779,7 @@ final class SelectionOverlayController: NSObject {
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
             .compactMap { Self.cgImage(at: $0.path) }
         guard !images.isEmpty, let result = try? ImageStitcher.stitch(images) else { return }
-        let document = ScrollCaptureCoordinator.makeDocument(
+        let document = ScrollCaptureEngine.makeDocument(
             from: result,
             target: ScrollCaptureTargetSummary(title: "E2E", ownerName: nil, frame: nil),
             frameCount: images.count
@@ -1827,9 +1971,6 @@ final class SelectionOverlayController: NSObject {
         popupPanel?.orderOut(nil)
         popupPanel = nil
         hideScreenshotOverlayEditor()
-        // Scrolling capture owns scrollingCaptureCoordinator through its HUD
-        // callbacks and initial-frame error path; do not clear it here, because
-        // present() uses hidePopup() before installing the scrolling HUD.
         popupFullContentView = nil
         popupFullSize = .zero
         popupIsMinimized = false
@@ -1844,6 +1985,98 @@ final class SelectionOverlayController: NSObject {
 #if DEBUG
 private final class E2EErrorBox {
     var message: String?
+}
+
+private final class E2EScrollFinishedBox {
+    var document: ScreenshotDocument?
+    var error: String?
+}
+
+/// A borderless window with a scroll view over a tall document made of coloured bands,
+/// each carrying its number and a ruler of ticks whose lengths vary row by row, so the
+/// stitcher can only match frames at their true offset.
+private final class E2EScrollFixtureWindow: NSWindow {
+    let bandColors: [NSColor]
+    private let scrollView = NSScrollView()
+
+    init(frame: CGRect, documentHeight: CGFloat, bandHeight: CGFloat) {
+        let bandCount = Int((documentHeight / bandHeight).rounded(.up))
+        bandColors = (0..<bandCount).map { index in
+            NSColor(calibratedHue: CGFloat((index * 5) % 12) / 12, saturation: 0.75, brightness: 0.85, alpha: 1)
+        }
+        super.init(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
+        level = .floating
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        isOpaque = true
+        backgroundColor = .white
+        hasShadow = false
+        isReleasedWhenClosed = false
+
+        let document = E2EScrollFixtureDocumentView(
+            frame: CGRect(x: 0, y: 0, width: frame.width, height: documentHeight),
+            bandHeight: bandHeight,
+            colors: bandColors
+        )
+        scrollView.frame = CGRect(origin: .zero, size: frame.size)
+        scrollView.documentView = document
+        scrollView.hasVerticalScroller = false
+        scrollView.hasHorizontalScroller = false
+        scrollView.verticalScrollElasticity = .none
+        scrollView.horizontalScrollElasticity = .none
+        scrollView.drawsBackground = true
+        contentView = scrollView
+        scroll(toTopOffset: 0)
+        orderFrontRegardless()
+        displayIfNeeded()
+    }
+
+    func scroll(toTopOffset offset: CGFloat) {
+        scrollView.contentView.scroll(to: NSPoint(x: 0, y: offset))
+        scrollView.reflectScrolledClipView(scrollView.contentView)
+        scrollView.displayIfNeeded()
+        displayIfNeeded()
+    }
+
+    var topOffset: CGFloat { scrollView.contentView.bounds.origin.y }
+}
+
+private final class E2EScrollFixtureDocumentView: NSView {
+    private let bandHeight: CGFloat
+    private let colors: [NSColor]
+
+    init(frame: CGRect, bandHeight: CGFloat, colors: [NSColor]) {
+        self.bandHeight = bandHeight
+        self.colors = colors
+        super.init(frame: frame)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override var isFlipped: Bool { true }
+
+    override func draw(_ dirtyRect: NSRect) {
+        for (index, color) in colors.enumerated() {
+            let band = CGRect(x: 0, y: CGFloat(index) * bandHeight, width: bounds.width, height: bandHeight)
+            color.setFill()
+            band.fill()
+            let label = "\(index + 1)" as NSString
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: NSFont.systemFont(ofSize: 44, weight: .bold),
+                .foregroundColor: NSColor.black.withAlphaComponent(0.55),
+            ]
+            let size = label.size(withAttributes: attributes)
+            label.draw(at: CGPoint(x: band.midX - size.width / 2, y: band.midY - size.height / 2), withAttributes: attributes)
+        }
+        NSColor.black.withAlphaComponent(0.35).setFill()
+        var y: CGFloat = 0
+        var row = 0
+        while y < bounds.height {
+            let width = 14 + CGFloat((row * 7) % 11) * 6
+            CGRect(x: 6, y: y, width: width, height: 1).fill()
+            y += 8
+            row += 1
+        }
+    }
 }
 
 private final class E2ESnapshotPhaseBox {

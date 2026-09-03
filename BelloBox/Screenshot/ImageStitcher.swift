@@ -41,21 +41,23 @@ enum ImageStitcher {
             let previous = normalized[index - 1].image
             let currentEntry = normalized[index]
             let current = currentEntry.image
-            let match = bestOverlap(previous: previous, current: current, config: config)
+            // A sticky header (browser chrome, toolbars) repeats at the top of every frame
+            // and must be skipped both when matching and when placing the frame.
+            let header = config.removeRepeatedHeaderFooter
+                ? (repeatedHeaderHeight(first: normalized[0].image, current: current) ?? 0)
+                : 0
+            let match = bestOverlap(previous: previous, current: current, config: config, skippingTopRows: header)
             let overlap = match?.overlap ?? 0
             let confidence = match.map { 1 - $0.score } ?? 0
             if match == nil {
                 warnings.append("Frame \(currentEntry.frameIndex + 1) did not have a confident overlap; it was appended without compaction.")
             } else if appearsUnchanged(previous: previous, current: current) {
                 warnings.append("Frame \(currentEntry.frameIndex + 1) appears nearly unchanged from the previous frame.")
-            } else if overlap > Int(CGFloat(current.height) * 0.88) {
+            } else if overlap > Int(CGFloat(current.height - header) * 0.88) {
                 warnings.append("Frame \(currentEntry.frameIndex + 1) appears nearly unchanged from the previous frame.")
             }
 
-            var croppedTop = overlap
-            if config.removeRepeatedHeaderFooter, let header = repeatedHeaderHeight(first: normalized[0].image, current: current) {
-                croppedTop = max(croppedTop, header)
-            }
+            let croppedTop = header + overlap
             placements.append(FramePlacement(
                 frameIndex: currentEntry.frameIndex,
                 y: y - croppedTop,
@@ -118,34 +120,95 @@ enum ImageStitcher {
         return previousGray.meanAbsoluteDifference(fullImageOf: currentGray, sideInset: 8) <= threshold
     }
 
-    static func bestOverlap(previous: CGImage, current: CGImage, config: StitchConfig) -> OverlapMatch? {
+    /// Finds how many rows of `current` (below its first `header` rows) repeat the bottom
+    /// of `previous`. The coarse pass scans a downsampled copy in 4 px steps; the best
+    /// candidate is then refined at full resolution before the confidence threshold is
+    /// applied, so detailed content (text) is not rejected for a 1-2 px misalignment.
+    /// Ties prefer the larger overlap, so blank seams never duplicate content.
+    static func bestOverlap(previous: CGImage, current: CGImage, config: StitchConfig, skippingTopRows header: Int = 0) -> OverlapMatch? {
         guard let previousGray = GrayImage(image: previous, targetWidth: config.downsampleWidth),
               let currentGray = GrayImage(image: current, targetWidth: config.downsampleWidth)
         else { return nil }
 
-        let maxOriginalOverlap = Int(CGFloat(min(previous.height, current.height)) * config.maxOverlapFraction)
+        let header = max(0, min(header, current.height - 1))
+        let usableHeight = min(previous.height, current.height - header)
+        let maxOriginalOverlap = Int(CGFloat(usableHeight) * config.maxOverlapFraction)
         guard maxOriginalOverlap >= config.minOverlapPx else { return nil }
         let scale = CGFloat(previousGray.height) / CGFloat(previous.height)
+        let scaledHeader = Int((CGFloat(header) * scale).rounded())
 
         var best: OverlapMatch?
+        var scores: [Double] = []
         for overlap in stride(from: config.minOverlapPx, through: maxOriginalOverlap, by: 4) {
             let scaledOverlap = max(1, Int(CGFloat(overlap) * scale))
-            guard scaledOverlap < previousGray.height, scaledOverlap < currentGray.height else { continue }
+            guard scaledOverlap < previousGray.height, scaledHeader + scaledOverlap <= currentGray.height else { continue }
             let score = previousGray.meanAbsoluteDifference(
                 bottomRows: scaledOverlap,
                 of: currentGray,
-                topRows: scaledOverlap,
+                rowsStartingAt: scaledHeader,
                 sideInset: 8
             )
-            if best.map({ score < $0.score }) ?? true {
+            scores.append(score)
+            let isBetter = best.map { candidate in
+                score < candidate.score - 0.0001 || (abs(score - candidate.score) <= 0.0001 && overlap > candidate.overlap)
+            } ?? true
+            if isBetter {
                 best = OverlapMatch(overlap: overlap, score: score)
             }
         }
-        guard let best, best.score <= config.scoreThreshold else { return nil }
+        guard let best else { return nil }
+        let refined = refineOverlap(previous: previous, current: current, around: best, header: header) ?? best
+        guard refined.score <= config.scoreThreshold else { return nil }
+        // A real overlap stands out from the other candidates; unrelated smooth content
+        // can slip under the absolute threshold but scores like everything around it.
+        if refined.score > 0.01, scores.count >= 5 {
+            let median = scores.sorted()[scores.count / 2]
+            guard refined.score <= median * 0.5 else { return nil }
+        }
+        return refined
+    }
+
+    /// Mean absolute difference (0...1) between two same-size frames, or nil when they
+    /// cannot be compared.
+    static func meanAbsoluteDifference(previous: CGImage, current: CGImage, downsampleWidth: Int = 420) -> Double? {
+        guard previous.width == current.width, previous.height == current.height,
+              let previousGray = GrayImage(image: previous, targetWidth: downsampleWidth),
+              let currentGray = GrayImage(image: current, targetWidth: downsampleWidth)
+        else { return nil }
+        return previousGray.meanAbsoluteDifference(fullImageOf: currentGray, sideInset: 8)
+    }
+
+    /// The coarse search above steps 4 px at a downsampled resolution; this pass compares
+    /// the candidate band at full resolution, one row at a time, so frames are placed at
+    /// their exact offset and stitched output has no duplicated or missing rows. Ties keep
+    /// the coarse candidate.
+    private static func refineOverlap(previous: CGImage, current: CGImage, around coarse: OverlapMatch, header: Int) -> OverlapMatch? {
+        let radius = 4
+        let limit = min(previous.height, current.height - header)
+        let maxOverlap = min(coarse.overlap + radius, limit)
+        let minOverlap = max(1, coarse.overlap - radius)
+        guard maxOverlap >= minOverlap, maxOverlap > 0,
+              let previousBand = previous.cropping(to: CGRect(x: 0, y: previous.height - maxOverlap, width: previous.width, height: maxOverlap)),
+              let currentBand = current.cropping(to: CGRect(x: 0, y: header, width: current.width, height: maxOverlap)),
+              let previousGray = GrayImage(image: previousBand, targetWidth: previous.width),
+              let currentGray = GrayImage(image: currentBand, targetWidth: current.width)
+        else { return nil }
+        func score(_ overlap: Int) -> Double {
+            previousGray.meanAbsoluteDifference(bottomRows: overlap, of: currentGray, topRows: overlap, sideInset: 8)
+        }
+        var best = OverlapMatch(overlap: min(max(coarse.overlap, minOverlap), maxOverlap), score: score(min(max(coarse.overlap, minOverlap), maxOverlap)))
+        for overlap in minOverlap...maxOverlap where overlap != best.overlap {
+            let candidate = score(overlap)
+            if candidate < best.score - 0.0005 {
+                best = OverlapMatch(overlap: overlap, score: candidate)
+            }
+        }
         return best
     }
 
-    private static func repeatedHeaderHeight(first: CGImage, current: CGImage) -> Int? {
+    /// Height of a band at the top of `current` that is identical to the top of `first`
+    /// (a sticky header), or nil when there is none.
+    static func repeatedHeaderHeight(first: CGImage, current: CGImage) -> Int? {
         guard first.width == current.width,
               let a = GrayImage(image: first, targetWidth: min(first.width, 420)),
               let b = GrayImage(image: current, targetWidth: min(current.width, 420))
@@ -226,6 +289,17 @@ private struct GrayImage {
             second: other,
             secondY: 0,
             rows: min(rows, topRows),
+            sideInset: sideInset
+        )
+    }
+
+    /// Compares this image's bottom `rows` with `rows` of `other` starting at `start`.
+    func meanAbsoluteDifference(bottomRows rows: Int, of other: GrayImage, rowsStartingAt start: Int, sideInset: Int) -> Double {
+        meanAbsoluteDifference(
+            firstY: height - rows,
+            second: other,
+            secondY: start,
+            rows: rows,
             sideInset: sideInset
         )
     }

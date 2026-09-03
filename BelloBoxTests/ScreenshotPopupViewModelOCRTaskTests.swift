@@ -10,7 +10,7 @@ final class ScreenshotPopupViewModelOCRTaskTests: XCTestCase {
             placements: [],
             warnings: ["Frame 2 appears nearly unchanged from the previous frame."]
         )
-        let document = ScrollCaptureCoordinator.makeDocument(
+        let document = ScrollCaptureEngine.makeDocument(
             from: stitchResult,
             target: ScrollCaptureTargetSummary(title: "Page", ownerName: nil, frame: nil),
             frameCount: 2,

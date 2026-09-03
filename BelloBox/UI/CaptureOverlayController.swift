@@ -35,6 +35,18 @@ final class CaptureOverlayController {
     private var resignActiveObserver: NSObjectProtocol?
     private var overlayTiming: CaptureTiming?
     private var snapshotDelay: TimeInterval = CaptureOverlayController.defaultSnapshotDelay
+    private var scrollCapture: ScrollCaptureState?
+    private var scrollCaptureOnSelection = false
+    /// Called with the stitched document after a scroll-to-capture session finishes. The
+    /// overlay has already been torn down by then.
+    var onScrollCaptureFinished: ((ScreenshotDocument) -> Void)?
+
+    private struct ScrollCaptureState {
+        let engine: ScrollCaptureEngine
+        let panel: ScrollCaptureHUDPanel
+        let view: CaptureOverlayView
+        var isFinishing = false
+    }
 
     /// Time between hiding Bello Box's own panels and freezing the displays. Panels are
     /// hidden without animation, so this only needs to cover one window-server update.
@@ -60,6 +72,8 @@ final class CaptureOverlayController {
     var debugActiveScreenshotViewModel: ScreenshotPopupViewModel? { activeScreenshotViewModel }
     var debugOverlayViewsWithSnapshotCount: Int { overlayViews.filter { $0.snapshot != nil }.count }
     var debugSnapshots: [DisplaySnapshot] { snapshots }
+    var debugScrollCaptureEngine: ScrollCaptureEngine? { scrollCapture?.engine }
+    var debugScrollCaptureHUDVisible: Bool { scrollCapture?.panel.isVisible == true }
     /// Called with (overlay window count, snapshot count) the moment the snapshots are
     /// complete and before any overlay window is created.
     var debugSnapshotPhaseObserver: ((Int, Int) -> Void)?
@@ -74,9 +88,12 @@ final class CaptureOverlayController {
         }
     }
 
+    /// `scrollCaptureOnSelection` enters scroll-to-capture right after the first area or
+    /// window is selected (the Scrolling capture mode).
     func beginScreenshot(
         policy: CaptureSelectionPolicy = .any,
         snapshotDelay: TimeInterval = CaptureOverlayController.defaultSnapshotDelay,
+        scrollCaptureOnSelection: Bool = false,
         onError: @escaping (String) -> Void,
         onCancel: @escaping () -> Void = {}
     ) {
@@ -86,6 +103,7 @@ final class CaptureOverlayController {
             onError: onError,
             onCancel: onCancel
         )
+        self.scrollCaptureOnSelection = scrollCaptureOnSelection
     }
 
     func beginRecording(
@@ -106,6 +124,7 @@ final class CaptureOverlayController {
         snapshots: [DisplaySnapshot],
         initialSelection: CaptureSelection? = nil,
         policy: CaptureSelectionPolicy = .any,
+        scrollCaptureOnSelection: Bool = false,
         onError: @escaping (String) -> Void,
         onCancel: @escaping () -> Void = {}
     ) {
@@ -114,6 +133,7 @@ final class CaptureOverlayController {
         self.onError = onError
         self.onCancel = onCancel
         self.snapshots = snapshots
+        self.scrollCaptureOnSelection = scrollCaptureOnSelection
         showOverlayWindows(snapshots: snapshots)
         if let initialSelection,
            let selectedView = overlayViews.first(where: { $0.snapshot?.displayID == snapshot(for: initialSelection)?.displayID }) ?? overlayViews.first {
@@ -126,6 +146,12 @@ final class CaptureOverlayController {
         captureToken += 1
         captureTask?.cancel()
         captureTask = nil
+        if let state = scrollCapture {
+            state.engine.stop()
+            state.panel.orderOut(nil)
+            scrollCapture = nil
+        }
+        scrollCaptureOnSelection = false
         refreshTask?.cancel()
         refreshTask = nil
         let closingScreenshotViewModel = activeScreenshotViewModel
@@ -260,7 +286,7 @@ final class CaptureOverlayController {
 
             let window = CaptureOverlayWindow(screen: screen)
             window.setFrame(screen.frame, display: true)
-            window.onEscape = { [weak self] in self?.cancelFromUser() }
+            window.onEscape = { [weak self] in self?.handleEscape() }
             let overlayView = CaptureOverlayView(
                 screen: screen,
                 snapshot: snapshot,
@@ -272,7 +298,7 @@ final class CaptureOverlayController {
                 self?.handle(selection: selection, in: overlayView)
             }
             overlayView.onCancel = { [weak self] in
-                self?.cancelFromUser()
+                self?.handleEscape()
             }
             window.contentView = overlayView
             window.orderFrontRegardless()
@@ -327,8 +353,18 @@ final class CaptureOverlayController {
         }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
             guard event.keyCode == 53 else { return event }
-            Task { @MainActor in self?.cancelFromUser() }
+            Task { @MainActor in self?.handleEscape() }
             return nil
+        }
+    }
+
+    /// Escape leaves scroll-to-capture first (back to the editor) and only then closes
+    /// the overlay.
+    private func handleEscape() {
+        if scrollCapture != nil {
+            cancelScrollCapture()
+        } else {
+            cancelFromUser()
         }
     }
 
@@ -522,10 +558,21 @@ final class CaptureOverlayController {
             }
             self?.cancelFromUser()
         }
-        selectedView.showScreenshotEditor(viewModel: viewModel, selection: selection)
+        let supportsScrollCapture = Self.selectionSupportsScrollCapture(selection)
+        selectedView.showScreenshotEditor(
+            viewModel: viewModel,
+            selection: selection,
+            onScrollCapture: supportsScrollCapture ? { [weak self] in self?.beginScrollCapture() } : nil
+        )
 #if DEBUG
         writeE2EOverlayExportIfNeeded(viewModel: viewModel, selection: selection)
 #endif
+        if scrollCaptureOnSelection {
+            scrollCaptureOnSelection = false
+            if supportsScrollCapture {
+                beginScrollCapture()
+            }
+        }
         logDiagnostics(
             "editor.inline",
             [
@@ -545,6 +592,8 @@ final class CaptureOverlayController {
         // Visible-frame surfaces (menu bar, desktop) are cropped from the display and
         // would include this overlay; the frozen snapshot crop is already correct.
         guard window.captureMode == .independentWindow else { return }
+        // Scroll-to-capture already took its first frame from the current image.
+        guard scrollCapture == nil else { return }
         // A crop from the frozen snapshot is exactly what the user saw, hover state
         // included. The live window image replaces it only when another window was
         // covering part of this one; otherwise it just lends its shape (rounded corners,
@@ -638,6 +687,176 @@ final class CaptureOverlayController {
         case let .window(window):
             return .window(title: window.title, ownerName: window.ownerName, windowID: window.windowID)
         }
+    }
+
+    /// Scroll-to-capture needs a region that is part of a display and small enough to
+    /// leave room for the HUD; whole-display captures are excluded.
+    private static func selectionSupportsScrollCapture(_ selection: CaptureSelection) -> Bool {
+        switch selection {
+        case .area, .window:
+            return true
+        case .display:
+            return false
+        }
+    }
+
+    // MARK: - Scroll to capture more
+
+    /// Turns the locked selection into a live region, shows the HUD, and starts sampling.
+    /// The editor stays alive (hidden) so Cancel returns to it untouched.
+    func beginScrollCapture() {
+        guard scrollCapture == nil,
+              case .screenshot = purpose,
+              let viewModel = activeScreenshotViewModel,
+              let selectedView = overlayViews.first(where: { $0.hasLockedSelection }),
+              let localRect = selectedView.visibleSelectionFrame,
+              localRect.width >= RegionCaptureGeometry.minimumAreaSize,
+              localRect.height >= RegionCaptureGeometry.minimumAreaSize,
+              let displayID = ScreenCoordinateSpace.displayID(for: selectedView.screen)
+        else { return }
+
+        let screenFrame = selectedView.screen.frame
+        let scale = max(viewModel.document.scale, 0.01)
+        let requestedRect: CGRect
+        if viewModel.supportsSelectionAdjustment {
+            // The base image covers the display, so the crop rect maps straight to it.
+            requestedRect = ScreenCoordinateSpace.displayPixelRectToCocoaRect(
+                viewModel.selectionCropRect,
+                screenFrame: screenFrame,
+                scale: scale
+            )
+        } else if case let .window(window)? = selectedView.currentLockedSelection, let frame = window.frame {
+            // Window images map onto the window frame; honour a crop-tool crop.
+            if let crop = viewModel.document.cropRect {
+                requestedRect = CGRect(
+                    x: frame.minX + crop.minX / scale,
+                    y: frame.maxY - crop.maxY / scale,
+                    width: crop.width / scale,
+                    height: crop.height / scale
+                )
+            } else {
+                requestedRect = frame
+            }
+        } else {
+            requestedRect = RegionCaptureGeometry.localFlippedRectToGlobalCocoa(localRect, screenFrame: screenFrame)
+        }
+        var cocoaRect = requestedRect.intersection(screenFrame).standardized
+        guard cocoaRect.width >= RegionCaptureGeometry.minimumAreaSize,
+              cocoaRect.height >= RegionCaptureGeometry.minimumAreaSize
+        else { return }
+
+        // Place the HUD first: it must never be inside the sampled region. When the
+        // selection fills the display and leaves no room, the region is trimmed above it.
+        let panel = ScrollCaptureHUDPanel()
+        let hudSize = ScrollCaptureHUDView.preferredSize.applying(padding: ScrollCaptureHUDView.outerPadding)
+        var localSelection = RegionCaptureGeometry.globalCocoaRectToLocalFlipped(cocoaRect, screenFrame: screenFrame)
+        let localHUD = ScrollCaptureHUDLayout.frame(
+            selection: localSelection,
+            bounds: selectedView.bounds,
+            size: hudSize,
+            padding: ScrollCaptureHUDView.outerPadding,
+            gap: 12 // keeps the card's shadow out of the sampled region
+        )
+        if let trimmed = ScrollCaptureHUDLayout.selectionAvoiding(
+            hud: localHUD.insetBy(dx: ScrollCaptureHUDView.outerPadding, dy: ScrollCaptureHUDView.outerPadding),
+            selection: localSelection,
+            gap: 12,
+            minimumHeight: RegionCaptureGeometry.minimumAreaSize
+        ), trimmed != localSelection {
+            localSelection = trimmed
+            cocoaRect = RegionCaptureGeometry.localFlippedRectToGlobalCocoa(trimmed, screenFrame: screenFrame)
+        }
+        // The frozen crop can only seed the sequence when it covers exactly the region
+        // that will be sampled; a trimmed or clamped region starts from a live frame.
+        let fullyVisible = abs(cocoaRect.width - requestedRect.width) < 0.5 && abs(cocoaRect.height - requestedRect.height) < 0.5
+        let initialFrame: CGImage? = fullyVisible ? viewModel.basePreviewImage() : nil
+        let pixelSize = initialFrame.map { CGSize(width: $0.width, height: $0.height) }
+            ?? CGSize(width: (cocoaRect.width * scale).rounded(), height: (cocoaRect.height * scale).rounded())
+        let area = CaptureArea(cocoaRect: cocoaRect, displayID: displayID)
+        let engine = ScrollCaptureEngine(
+            area: area,
+            summary: ScrollCaptureTargetSummary(title: "Area", ownerName: nil, frame: CGRectCodable(cocoaRect)),
+            initialFrame: initialFrame,
+            pixelSize: pixelSize,
+            service: screenCaptureService,
+            settings: settings
+        )
+
+        // A pending live window refresh must not swap the base image mid-session.
+        refreshTask?.cancel()
+        refreshTask = nil
+
+        selectedView.enterScrollCaptureMode(localRect: localSelection)
+        for window in windows {
+            window.ignoresMouseEvents = true
+        }
+
+        let hosting = NSHostingView(
+            rootView: ScrollCaptureHUDView(
+                engine: engine,
+                onDone: { [weak self] in self?.finishScrollCapture() },
+                onCancel: { [weak self] in self?.cancelScrollCapture() }
+            )
+        )
+        panel.contentView = hosting
+        panel.onEscape = { [weak self] in self?.cancelScrollCapture() }
+        panel.setFrame(RegionCaptureGeometry.localFlippedRectToGlobalCocoa(localHUD, screenFrame: screenFrame), display: true)
+        panel.orderFrontRegardless()
+        panel.makeKey()
+
+        scrollCapture = ScrollCaptureState(engine: engine, panel: panel, view: selectedView)
+        engine.start()
+        NSCursor.arrow.set()
+        logDiagnostics(
+            "scrollCapture.begin",
+            [
+                "area=\(Self.serialize(cocoaRect))",
+                "pixels=\(Int(pixelSize.width))x\(Int(pixelSize.height))",
+                "seededFromFrozenCrop=\(initialFrame != nil)",
+            ]
+        )
+    }
+
+    /// Stitches the frames, tears the overlay down and hands the document to the owner.
+    func finishScrollCapture() {
+        guard let state = scrollCapture, !state.isFinishing, state.engine.canFinish else { return }
+        scrollCapture?.isFinishing = true
+        let engine = state.engine
+        let finished = onScrollCaptureFinished
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let document = try await engine.finish()
+                guard self.scrollCapture?.engine === engine else { return }
+                self.logDiagnostics(
+                    "scrollCapture.finished",
+                    ["frames=\(engine.frames.count)", "image=\(document.baseImage.width)x\(document.baseImage.height)"]
+                )
+                self.cancel()
+                finished?(document)
+            } catch {
+                guard self.scrollCapture?.engine === engine else { return }
+                self.logDiagnostics("scrollCapture.error", ["error=\(error.localizedDescription)"])
+                self.scrollCapture?.isFinishing = false
+                engine.resumeWatching()
+            }
+        }
+    }
+
+    /// Leaves scroll-to-capture and returns to the editor with the original capture.
+    /// Ignored while the frames are being stitched, so a stray Escape cannot discard
+    /// the result.
+    func cancelScrollCapture() {
+        guard let state = scrollCapture, !state.isFinishing else { return }
+        state.engine.stop()
+        state.panel.orderOut(nil)
+        scrollCapture = nil
+        for window in windows {
+            window.ignoresMouseEvents = false
+        }
+        state.view.exitScrollCaptureMode()
+        state.view.window?.makeKeyAndOrderFront(nil)
+        logDiagnostics("scrollCapture.cancelled", ["frames=\(state.engine.frames.count)"])
     }
 
     /// Area and screen captures keep the entire display image, so their selection can be
@@ -964,9 +1183,12 @@ private final class CaptureOverlayView: NSView {
     /// Once any display locks a selection, every overlay stops accepting new drags so a
     /// second editor can never be opened from another screen.
     private var interactionLocked = false
+    /// Scroll-to-capture: the selection shows the live content instead of the snapshot.
+    private var isLiveSelection = false
     private var accessoryView: NSView?
     private var trackingArea: NSTrackingArea?
     fileprivate var hasLockedSelection: Bool { lockedSelection != nil }
+    fileprivate var currentLockedSelection: CaptureSelection? { lockedSelection }
     fileprivate var dimBandFrames: [CGRect] { dimmingView.dimBandFrames }
     fileprivate var visibleSelectionFrame: CGRect? {
         dimmingView.selectionFrame.map { CaptureDimmingView.flip($0, height: bounds.height) }
@@ -1032,7 +1254,11 @@ private final class CaptureOverlayView: NSView {
         refreshChrome()
     }
 
-    func showScreenshotEditor(viewModel: ScreenshotPopupViewModel, selection: CaptureSelection) {
+    func showScreenshotEditor(
+        viewModel: ScreenshotPopupViewModel,
+        selection: CaptureSelection,
+        onScrollCapture: (() -> Void)? = nil
+    ) {
         installHostingView(
             CaptureScreenshotOverlaySurface(
                 viewModel: viewModel,
@@ -1041,10 +1267,29 @@ private final class CaptureOverlayView: NSView {
                 onSelectionFrameChanged: { [weak self] localRect in
                     self?.updateLockedSelection(localRect: localRect)
                 },
+                onScrollCapture: onScrollCapture,
                 onCancel: viewModel.close
             )
         )
     }
+
+    /// Hides the editor and cuts the frozen snapshot away inside `localRect` so the live
+    /// content shows through; the border moves outside the region so captured frames
+    /// never contain it.
+    func enterScrollCaptureMode(localRect: CGRect) {
+        lockedLocalRect = localRect.intersection(bounds).standardized
+        isLiveSelection = true
+        accessoryView?.isHidden = true
+        refreshChrome()
+    }
+
+    func exitScrollCaptureMode() {
+        isLiveSelection = false
+        accessoryView?.isHidden = false
+        refreshChrome()
+    }
+
+    fileprivate var showsLiveSelection: Bool { isLiveSelection }
 
     func showRecordingOptions(
         settings: AppSettings,
@@ -1178,7 +1423,8 @@ private final class CaptureOverlayView: NSView {
         dimmingView.update(
             selection: selection.map { CaptureDimmingView.flip($0, height: bounds.height) },
             borderWidth: interactionLocked ? 2.5 : 2,
-            label: label
+            label: isLiveSelection ? nil : label,
+            showsLiveContentInSelection: isLiveSelection
         )
     }
 
@@ -1245,6 +1491,56 @@ private final class CaptureOverlayView: NSView {
     }
 }
 
+/// Places the scroll-to-capture HUD next to the live selection. The selection is sampled
+/// continuously, so the HUD must stay outside it whenever there is any room: below,
+/// above, right, then left; only a selection that fills the display gets the HUD inside
+/// (along its bottom edge).
+struct ScrollCaptureHUDLayout {
+    /// `size` is the panel's full size; `padding` is its transparent margin, which may
+    /// overlap the selection. The returned frame is the full panel frame.
+    static func frame(selection: CGRect, bounds: CGRect, size: CGSize, padding: CGFloat = 0, gap: CGFloat = 4, inset: CGFloat = 4) -> CGRect {
+        let visible = CGSize(width: max(1, size.width - padding * 2), height: max(1, size.height - padding * 2))
+        return visibleFrame(selection: selection, bounds: bounds, size: visible, gap: gap, inset: inset)
+            .insetBy(dx: -padding, dy: -padding)
+    }
+
+    /// When the visible HUD card had to be placed inside the selection, returns the part of
+    /// the selection above the card (so sampled frames never contain the HUD); nil when
+    /// too little would remain. Returns the selection unchanged when they do not overlap.
+    static func selectionAvoiding(hud: CGRect, selection: CGRect, gap: CGFloat, minimumHeight: CGFloat) -> CGRect? {
+        guard hud.intersects(selection) else { return selection }
+        let height = hud.minY - gap - selection.minY
+        guard height >= minimumHeight else { return nil }
+        return CGRect(x: selection.minX, y: selection.minY, width: selection.width, height: height)
+    }
+
+    private static func visibleFrame(selection: CGRect, bounds: CGRect, size: CGSize, gap: CGFloat, inset: CGFloat) -> CGRect {
+        let width = min(size.width, max(1, bounds.width - inset * 2))
+        let height = min(size.height, max(1, bounds.height - inset * 2))
+        let clampedX = min(max(selection.minX, bounds.minX + inset), bounds.maxX - width - inset)
+        let clampedY = min(max(selection.midY - height / 2, bounds.minY + inset), bounds.maxY - height - inset)
+
+        let below = selection.maxY + gap
+        if below + height <= bounds.maxY - inset {
+            return CGRect(x: clampedX, y: below, width: width, height: height)
+        }
+        let above = selection.minY - gap - height
+        if above >= bounds.minY + inset {
+            return CGRect(x: clampedX, y: above, width: width, height: height)
+        }
+        let right = selection.maxX + gap
+        if right + width <= bounds.maxX - inset {
+            return CGRect(x: right, y: clampedY, width: width, height: height)
+        }
+        let left = selection.minX - gap - width
+        if left >= bounds.minX + inset {
+            return CGRect(x: left, y: clampedY, width: width, height: height)
+        }
+        let insideY = min(max(selection.maxY - height - inset, bounds.minY + inset), bounds.maxY - height - inset)
+        return CGRect(x: clampedX, y: insideY, width: width, height: height)
+    }
+}
+
 struct CaptureOverlayAccessoryLayout {
     static func frame(
         selection: CGRect,
@@ -1278,6 +1574,7 @@ private struct CaptureScreenshotOverlaySurface: View {
     /// Reports the selection frame (flipped local points) whenever it changes, so the
     /// dim cut-out behind the editor follows resizes, moves, crops and undo.
     var onSelectionFrameChanged: (CGRect) -> Void
+    var onScrollCapture: (() -> Void)?
     var onCancel: () -> Void
     @State private var adjustment: SelectionAdjustmentState?
 
@@ -1300,7 +1597,7 @@ private struct CaptureScreenshotOverlaySurface: View {
                     .overlay(Rectangle().strokeBorder(BoxTheme.accent, lineWidth: 2))
                     .position(x: selected.midX, y: selected.midY)
 
-                AnnotationToolbarView(viewModel: viewModel, showExportActions: true, onClose: onCancel)
+                AnnotationToolbarView(viewModel: viewModel, showExportActions: true, onClose: onCancel, onScrollCapture: onScrollCapture)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
                     .frame(width: toolbar.width, height: toolbar.height)

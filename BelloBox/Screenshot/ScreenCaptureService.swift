@@ -168,6 +168,89 @@ final class ScreenCaptureService {
         return snapshots
     }
 
+    /// Captures just `area`, resampled to exactly `pixelSize`, for cheap repeated sampling
+    /// (scroll-to-capture). Uses whichever engine earlier full captures established as
+    /// trustworthy for the display; the legacy engine is the fallback when
+    /// ScreenCaptureKit cannot serve the region.
+    func captureRegionImage(_ area: CaptureArea, pixelSize: CGSize) async throws -> CGImage {
+        guard ScreenCapturePermission.isTrusted else { throw CaptureError.permissionDenied }
+        let (screen, displayID) = try resolveDisplay(for: area)
+        let boundedRect = area.cocoaRect.intersection(screen.frame).standardized
+        guard boundedRect.width >= 1, boundedRect.height >= 1 else {
+            throw CaptureError.captureFailed("The selected area was outside the display bounds.")
+        }
+        let width = max(1, Int(pixelSize.width.rounded()))
+        let height = max(1, Int(pixelSize.height.rounded()))
+        // Both engines take the region in display points with a top-left origin.
+        let displayRect = CGRect(
+            x: boundedRect.minX - screen.frame.minX,
+            y: screen.frame.maxY - boundedRect.maxY,
+            width: boundedRect.width,
+            height: boundedRect.height
+        )
+        let topology = DisplayCaptureTopology.current()
+        let decision = DisplayCaptureEnginePolicy.decision(
+            setting: captureEngineProvider(),
+            cachedVerdict: DisplayCaptureTrustCache.shared.cachedVerdict(displayID: displayID, topology: topology),
+            legacyAvailable: true
+        )
+        if decision.engine == .legacy,
+           let image = Self.legacyRegionImage(displayID: displayID, displayRect: displayRect, width: width, height: height) {
+            return image
+        }
+        do {
+            // Region sampling runs several times per second; enumerating shareable
+            // content each time costs more than the capture itself, and the display
+            // list does not change mid-session (a failure falls back to legacy below).
+            let content = try await shareableContent(maxAge: 10)
+            guard let display = content.displays.first(where: { $0.displayID == displayID }) else {
+                throw CaptureError.noDisplayFound
+            }
+            let filter = SCContentFilter(display: display, excludingApplications: [], exceptingWindows: [])
+            let configuration = SCStreamConfiguration()
+            configuration.sourceRect = displayRect
+            configuration.width = width
+            configuration.height = height
+            configuration.showsCursor = false
+            configuration.capturesAudio = false
+            let image = try await capture(filter: filter, configuration: configuration)
+            try validate(image)
+            return try Self.resampled(image, width: width, height: height)
+        } catch {
+            if error is CancellationError { throw error }
+            if let image = Self.legacyRegionImage(displayID: displayID, displayRect: displayRect, width: width, height: height) {
+                return image
+            }
+            throw error
+        }
+    }
+
+    private static func legacyRegionImage(displayID: CGDirectDisplayID, displayRect: CGRect, width: Int, height: Int) -> CGImage? {
+        guard let image = CGDisplayCreateImage(displayID, rect: displayRect) else { return nil }
+        return try? resampled(image, width: width, height: height)
+    }
+
+    private static func resampled(_ image: CGImage, width: Int, height: Int) throws -> CGImage {
+        guard image.width != width || image.height != height else { return image }
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            throw CaptureError.captureFailed("Could not resample the captured region.")
+        }
+        context.interpolationQuality = .high
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        guard let output = context.makeImage() else {
+            throw CaptureError.captureFailed("Could not resample the captured region.")
+        }
+        return output
+    }
+
     /// Builds a document that keeps the entire display image and expresses the selection
     /// as the crop rect, so the editor can grow or move the selection afterwards without
     /// capturing again. A selection covering the whole display leaves the crop unset.

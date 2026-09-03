@@ -134,7 +134,7 @@ struct ScreenshotCaptureChooserView: View {
         case .area: return "Drag a region to capture."
         case .window: return "Choose a window to capture."
         case .screen: return "Capture the display under the pointer."
-        case .scrolling: return "Capture multiple scrolled frames and stitch them."
+        case .scrolling: return "Select an area, then scroll or auto-scroll to capture more and stitch it."
         }
     }
 

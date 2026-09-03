@@ -67,33 +67,19 @@ final class CaptureDimmingViewTests: XCTestCase {
         }
     }
 
-    func testScrollingRegionOverlayDimsEveryDisplayBeforeSelection() {
-        let controller = RegionCaptureOverlayController()
-        defer { controller.cancel() }
+    func testLiveSelectionCutsSnapshotAwayAndKeepsBorderOutside() {
+        let view = CaptureDimmingView(frame: CGRect(x: 0, y: 0, width: 800, height: 500), contentsScale: 2)
+        view.snapshotImage = ScreenshotTestHelpers.image(width: 80, height: 50)
+        let selection = CGRect(x: 100, y: 100, width: 200, height: 100)
 
-        controller.begin { _ in }
+        view.update(selection: selection, borderWidth: 2, label: "x", showsLiveContentInSelection: true)
+        XCTAssertTrue(view.debugSnapshotIsMasked)
+        XCTAssertTrue(view.showsLiveContentInSelection)
+        XCTAssertEqual(view.selectionFrame, selection)
 
-        // The scrolling overlay always highlights the window under the mouse, so the
-        // dim may already have one cut-out; every display must still be tiled by four
-        // bands that cover everything outside that single hole.
-        XCTAssertEqual(controller.debugDimBandFrames.count, NSScreen.screens.count)
-        for (bands, window) in zip(controller.debugDimBandFrames, controller.debugOverlayWindows) {
-            let bounds = CGRect(origin: .zero, size: window.frame.size)
-            XCTAssertEqual(bands.count, 4)
-            XCTAssertEqual(bands[0].width, bounds.width)
-            XCTAssertEqual(bands[0].minY, bounds.minY)
-            for band in bands where !band.isEmpty {
-                XCTAssertTrue(bounds.contains(band))
-            }
-            let covered = bands.reduce(CGFloat(0)) { $0 + $1.width * $1.height }
-            let hole = CGRect(
-                x: bands[2].isEmpty ? bounds.minX : bands[2].maxX,
-                y: bands[0].maxY,
-                width: (bands[3].isEmpty ? bounds.maxX : bands[3].minX) - (bands[2].isEmpty ? bounds.minX : bands[2].maxX),
-                height: (bands[1].isEmpty ? bounds.maxY : bands[1].minY) - bands[0].maxY
-            )
-            XCTAssertEqual(covered + max(0, hole.width) * max(0, hole.height), bounds.width * bounds.height, accuracy: 0.001)
-        }
+        view.update(selection: selection, borderWidth: 2, label: nil, showsLiveContentInSelection: false)
+        XCTAssertFalse(view.debugSnapshotIsMasked)
+        XCTAssertFalse(view.showsLiveContentInSelection)
     }
 
     func testRedactionPreviewIsFullyOpaque() throws {

@@ -115,6 +115,11 @@ enum ScreenshotSource: Equatable {
     case display(displayID: CGDirectDisplayID?)
     case scrolling(target: ScrollCaptureTargetSummary, frameCount: Int)
     case importedClipboard
+
+    var scrollingFrameCount: Int {
+        if case let .scrolling(_, frameCount) = self { return frameCount }
+        return 0
+    }
 }
 
 enum CaptureTarget: Equatable {
