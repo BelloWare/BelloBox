@@ -95,6 +95,20 @@ final class ScrollCaptureEngineTests: XCTestCase {
         XCTAssertEqual(document.baseImage.height, viewport + 100)
     }
 
+    func testStickyFooterDoesNotPreventMatching() async throws {
+        let content = makeContent(height: 1200)
+        let engine = makeEngine(initialFrame: withFooter(window(content, offset: 0)))
+        engine.start()
+
+        engine.processSample(withFooter(window(content, offset: 100)))
+        engine.processSample(withFooter(window(content, offset: 100)))
+
+        XCTAssertEqual(engine.frames.count, 2)
+        XCTAssertTrue(engine.debugEvents.contains { $0.hasPrefix("moved") }, "the footer must be skipped so the scroll is matched: \(engine.debugEvents)")
+        let document = try await engine.finish()
+        XCTAssertEqual(document.baseImage.height, viewport + 100)
+    }
+
     func testInPlaceChangeIsIgnoredButAFullPageJumpIsKept() {
         let content = makeContent(height: 1200)
         let engine = makeEngine(initialFrame: window(content, offset: 0))
@@ -184,7 +198,7 @@ final class ScrollCaptureEngineTests: XCTestCase {
         engine.start()
         engine.toggleAutoScroll()
 
-        let deadline = Date().addingTimeInterval(8)
+        let deadline = Date().addingTimeInterval(20)
         while engine.isAutoScrolling, Date() < deadline {
             try? await Task.sleep(nanoseconds: 20_000_000)
         }
@@ -192,8 +206,8 @@ final class ScrollCaptureEngineTests: XCTestCase {
         XCTAssertFalse(engine.isAutoScrolling)
         XCTAssertTrue(engine.reachedEnd)
         XCTAssertEqual(page.offset, 1200 - viewport)
-        // 900 px of travel in 180 px steps plus the first frame.
-        XCTAssertEqual(engine.frames.count, 6)
+        // 900 px of travel in 165 px steps (55% of 300) plus the first frame.
+        XCTAssertEqual(engine.frames.count, 7)
         engine.stop()
     }
 
@@ -215,13 +229,13 @@ final class ScrollCaptureEngineTests: XCTestCase {
         engine.start()
         engine.toggleAutoScroll()
 
-        let deadline = Date().addingTimeInterval(8)
+        let deadline = Date().addingTimeInterval(20)
         while engine.isAutoScrolling, Date() < deadline {
             try? await Task.sleep(nanoseconds: 20_000_000)
         }
 
         XCTAssertTrue(engine.reachedEnd)
-        XCTAssertEqual(engine.frames.count, 6)
+        XCTAssertEqual(engine.frames.count, 7)
         // The probe in the other direction scrolled up once; the undo must bring the page
         // back to the bottom, not push it further up.
         XCTAssertEqual(page.offset, 1200 - viewport, "events: \(engine.debugEvents)")
@@ -286,6 +300,19 @@ final class ScrollCaptureEngineTests: XCTestCase {
             context.fill(CGRect(x: 0, y: viewport - 40, width: width, height: 40))
             context.setFillColor(CGColor(red: 0.9, green: 0.4, blue: 0.1, alpha: 1))
             context.fill(CGRect(x: 12, y: viewport - 28, width: 60, height: 14))
+        }
+    }
+
+    /// Paints a fixed 40-row bar over the bottom of a frame, like a status or input bar.
+    private func withFooter(_ frame: CGImage) -> CGImage {
+        let width = self.width
+        let viewport = self.viewport
+        return ScreenshotTestHelpers.image(width: width, height: viewport) { context in
+            context.draw(frame, in: CGRect(x: 0, y: 0, width: width, height: viewport))
+            context.setFillColor(CGColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1))
+            context.fill(CGRect(x: 0, y: 0, width: width, height: 40))
+            context.setFillColor(CGColor(red: 0.2, green: 0.7, blue: 0.9, alpha: 1))
+            context.fill(CGRect(x: 12, y: 12, width: 60, height: 14))
         }
     }
 

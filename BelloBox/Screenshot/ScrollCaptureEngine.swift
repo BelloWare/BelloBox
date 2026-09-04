@@ -34,8 +34,9 @@ final class ScrollCaptureEngine: ObservableObject {
         /// A matched sample must add at least this many new rows below the last frame;
         /// smaller shifts (or an in-place change that aligns at zero shift) are ignored.
         var minimumNewRows: Int = 8
-        /// Fraction of the area height scrolled per auto-scroll step.
-        var autoScrollFraction: CGFloat = 0.6
+        /// Fraction of the area height scrolled per auto-scroll step; leaves a generous
+        /// overlap even after a fixed header or footer is excluded from matching.
+        var autoScrollFraction: CGFloat = 0.55
         /// Minimum seconds to wait for a new frame after an auto-scroll step before
         /// concluding that nothing moved. The wait also requires a few processed samples
         /// with nothing pending, and never exceeds four times this value.
@@ -75,12 +76,17 @@ final class ScrollCaptureEngine: ObservableObject {
     private var scrollDirectionSign: CGFloat = 1
     private var sawReverseScroll = false
     private var samplesSincePost = 0
+    /// Header + footer rows measured on the last sample, so auto-scroll steps keep enough
+    /// matchable overlap when bars are excluded.
+    private var lastBarsPixels = 0
     /// A sample after the last auto-scroll step showed new content that is still
     /// waiting to settle, so the step must not be judged yet.
     private var pendingMoveSincePost = false
 #if DEBUG
     /// Chronological trace of decisions, for e2e markers and debugging.
     private(set) var debugEvents: [String] = []
+    /// Placements of the last successful stitch, for e2e markers.
+    private(set) var debugLastPlacements: [FramePlacement] = []
 #endif
 
     private func trace(_ event: @autoclosure () -> String) {
@@ -195,6 +201,9 @@ final class ScrollCaptureEngine: ObservableObject {
                     if droppedFrames > 0 {
                         result.warnings.append("The last \(droppedFrames) frame\(droppedFrames == 1 ? " was" : "s were") left out to keep the screenshot within the maximum height.")
                     }
+#if DEBUG
+                    debugLastPlacements = result.placements
+#endif
                     phase = .finished
                     return Self.makeDocument(from: result, target: summary, frameCount: attempt.count)
                 } catch StitchError.outputTooTall where frames.count > 1 {
@@ -235,14 +244,26 @@ final class ScrollCaptureEngine: ObservableObject {
         let settled = lastSample.map {
             ImageStitcher.appearsUnchanged(previous: $0, current: sample, threshold: configuration.settleThreshold)
         } ?? false
-        // A sticky header repeats at the top of every frame; skip it when matching.
+        // Sticky bars repeat on every frame; skip them when matching, as the stitcher does.
+        let first = frames[0]
         let header = configuration.stitch.removeRepeatedHeaderFooter
-            ? (frames.first.flatMap { ImageStitcher.repeatedHeaderHeight(first: $0, current: sample) } ?? 0)
+            ? ImageStitcher.stickyBandHeight(first: first, previous: last, current: sample, detect: ImageStitcher.repeatedHeaderHeight)
             : 0
-        let match = ImageStitcher.bestOverlap(previous: last, current: sample, config: configuration.stitch, skippingTopRows: header)
+        let footer = configuration.stitch.removeRepeatedHeaderFooter
+            ? ImageStitcher.stickyBandHeight(first: first, previous: last, current: sample, detect: ImageStitcher.repeatedFooterHeight)
+            : 0
+        lastBarsPixels = header + footer
+        let match = ImageStitcher.bestOverlap(
+            previous: last,
+            current: sample,
+            config: configuration.stitch,
+            skippingTopRows: header,
+            skippingBottomRows: footer
+        )
         let shouldAppend: Bool
         if let match {
-            let newRows = sample.height - header - match.overlap
+            // Rows the sample adds below the matched overlap and above any fixed footer.
+            let newRows = sample.height - header - footer - match.overlap
             guard newRows >= configuration.minimumNewRows else {
                 // Aligned at (almost) zero shift: an in-place change or a negligible
                 // scroll. Not worth a frame; keep comparing against the last frame.
@@ -256,7 +277,9 @@ final class ScrollCaptureEngine: ObservableObject {
             shouldAppend = settled || overlapFraction < configuration.eagerOverlapFraction
             pendingMoveSincePost = !shouldAppend
             trace("moved overlap=\(match.overlap) settled=\(settled) append=\(shouldAppend)")
-        } else if ImageStitcher.bestOverlap(previous: sample, current: last, config: configuration.stitch, skippingTopRows: header) != nil {
+        } else if ImageStitcher.bestOverlap(
+            previous: sample, current: last, config: configuration.stitch, skippingTopRows: header, skippingBottomRows: footer
+        ) != nil {
             // The content moved the other way. Frames must progress downward, so ignore
             // it; auto-scroll uses this to flip its direction.
             trace("reverse")
@@ -320,9 +343,9 @@ final class ScrollCaptureEngine: ObservableObject {
         message = nil
         autoScrollTask = Task { [weak self] in
             guard let self else { return }
-            let step = self.area.cocoaRect.height * self.configuration.autoScrollFraction
             var flippedDirection = false
             while !Task.isCancelled, self.isAutoScrolling, self.phase == .watching, self.frames.count < self.configuration.maxFrames {
+                let step = self.autoScrollStep()
                 let before = self.frames.count
                 let postedSign = self.scrollDirectionSign
                 self.sawReverseScroll = false
@@ -358,6 +381,20 @@ final class ScrollCaptureEngine: ObservableObject {
             self.isAutoScrolling = false
             self.autoScrollTask = nil
         }
+    }
+
+    /// The distance of one auto-scroll step in points: normally a fraction of the area,
+    /// reduced when fixed bars (and the seam slack) eat into the matchable overlap so the
+    /// next frame can still be placed with confidence.
+    private func autoScrollStep() -> CGFloat {
+        let height = area.cocoaRect.height
+        let pixelHeight = CGFloat(frames.first?.height ?? 0)
+        guard pixelHeight > 0 else { return height * configuration.autoScrollFraction }
+        let pointsPerPixel = height / pixelHeight
+        let bars = CGFloat(lastBarsPixels) * pointsPerPixel
+        let requiredOverlap = CGFloat(configuration.stitch.minOverlapPx + 40) * pointsPerPixel
+        let nominal = height * configuration.autoScrollFraction
+        return max(height * 0.2, min(nominal, height - bars - requiredOverlap))
     }
 
     /// Returns once the step produced a frame, moved the content backwards, or clearly
@@ -408,6 +445,9 @@ final class ScrollCaptureEngine: ObservableObject {
             wheel2: 0,
             wheel3: 0
         ) else { return }
+        // A continuous (trackpad-style) delta is applied exactly; a legacy wheel click
+        // would be accelerated by AppKit and travel an unpredictable distance.
+        event.setIntegerValueField(.scrollWheelEventIsContinuous, value: 1)
         event.location = ScreenCoordinateSpace.cocoaPointToTopLeftPoint(cocoaPoint)
         event.post(tap: .cghidEventTap)
     }

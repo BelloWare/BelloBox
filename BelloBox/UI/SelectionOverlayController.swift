@@ -1486,12 +1486,14 @@ final class SelectionOverlayController: NSObject {
                     service: screenCaptureService, settings: settings
                 )
                 manual.start()
+                // 150 pt steps keep the visible content overlap above the stitcher's
+                // minimum even on a 1x display with the footer bar excluded.
                 for step in 1...4 {
-                    window.scroll(toTopOffset: CGFloat(step) * 200)
+                    window.scroll(toTopOffset: CGFloat(step) * 150)
                     await Self.e2eWaitForFrames(manual, count: step + 1)
                 }
                 let manualDocument = try await manual.finish()
-                let manualExpected = Int(((viewport.height + 800) * scale).rounded())
+                let manualExpected = Int(((viewport.height + 600) * scale).rounded())
                 markerLines += Self.e2eScrollResultLines(
                     prefix: "manual", document: manualDocument, frames: manual.frames.count,
                     expectedHeight: manualExpected, bandPixels: bandPixels, bandColors: window.bandColors
@@ -1521,6 +1523,8 @@ final class SelectionOverlayController: NSObject {
                 markerLines.append("auto.reachedEnd=\(auto.reachedEnd)")
                 markerLines.append("auto.finalOffset=\(Int(window.topOffset))")
                 markerLines.append("auto.events=\(auto.debugEvents.joined(separator: "|"))")
+                markerLines.append("auto.placements=\(auto.debugLastPlacements.map { "y\($0.y)/o\($0.overlapWithPrevious)/t\($0.croppedTop)/b\($0.croppedBottom)" }.joined(separator: "|"))")
+                markerLines.append("manual.placements=\(manual.debugLastPlacements.map { "y\($0.y)/o\($0.overlapWithPrevious)/t\($0.croppedTop)/b\($0.croppedBottom)" }.joined(separator: "|"))")
 
                 // 3. The real overlay: frozen snapshot → editor → scroll mode → programmatic scroll → Done.
                 window.scroll(toTopOffset: 0)
@@ -1548,7 +1552,7 @@ final class SelectionOverlayController: NSObject {
                 markerLines.append("overlay.hudVisible=\(controller.debugScrollCaptureHUDVisible)")
                 markerLines.append("overlay.windowsIgnoreMouse=\(controller.debugOverlayWindows.allSatisfy(\.ignoresMouseEvents))")
                 for step in 1...3 {
-                    window.scroll(toTopOffset: CGFloat(step) * 200)
+                    window.scroll(toTopOffset: CGFloat(step) * 150)
                     await Self.e2eWaitForFrames(overlayEngine, count: step + 1)
                 }
                 markerLines.append("overlay.liveContentSampled=\(overlayEngine.frames.count > 1)")
@@ -1567,7 +1571,7 @@ final class SelectionOverlayController: NSObject {
                 captureOverlayController = nil
                 markerLines += Self.e2eScrollResultLines(
                     prefix: "overlay", document: overlayDocument, frames: overlayDocument.source.scrollingFrameCount,
-                    expectedHeight: Int(((viewport.height + 600) * scale).rounded()), bandPixels: bandPixels, bandColors: window.bandColors
+                    expectedHeight: Int(((viewport.height + 450) * scale).rounded()), bandPixels: bandPixels, bandColors: window.bandColors
                 )
                 markerLines.append("status=success")
             } catch {
@@ -2024,11 +2028,22 @@ private final class E2EScrollFixtureWindow: NSWindow {
         scrollView.verticalScrollElasticity = .none
         scrollView.horizontalScrollElasticity = .none
         scrollView.drawsBackground = true
-        contentView = scrollView
+        let container = NSView(frame: CGRect(origin: .zero, size: frame.size))
+        container.addSubview(scrollView)
+        // A fixed bar over the bottom, like a status or input bar, which the stitcher
+        // must keep only once at the end and see through for the content under it.
+        let footer = E2ESolidColorView(
+            color: NSColor(calibratedRed: 0.10, green: 0.10, blue: 0.12, alpha: 1),
+            frame: CGRect(x: 0, y: 0, width: frame.width, height: Self.footerHeight)
+        )
+        container.addSubview(footer)
+        contentView = container
         scroll(toTopOffset: 0)
         orderFrontRegardless()
         displayIfNeeded()
     }
+
+    static let footerHeight: CGFloat = 36
 
     func scroll(toTopOffset offset: CGFloat) {
         scrollView.contentView.scroll(to: NSPoint(x: 0, y: offset))

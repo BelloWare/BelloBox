@@ -130,7 +130,10 @@ covered part is filled in. Scroll-to-capture samples the live content.
   The selection turns live: scroll the content yourself or press Auto-scroll,
   and Bello Box captures a frame each time the content settles, then stitches
   the frames into one long screenshot when you press Done, removing duplicated
-  overlap and conservative sticky headers. Cancel returns to the editor.
+  overlap. Bars that stay fixed at the top or bottom of the area (browser
+  chrome, status or input bars) are recognised and kept once, and the content
+  hidden under a bottom bar is filled in from the next frame. Cancel returns
+  to the editor.
 
 **OCR:**
 - **Mac OCR** uses Apple Vision locally and works offline.
