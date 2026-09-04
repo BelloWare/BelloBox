@@ -55,8 +55,27 @@ final class ScrollCaptureEngine: ObservableObject {
         }()
     }
 
+    /// One entry per captured frame: the rows it adds to the document, downscaled for
+    /// the live preview. The engine keeps the strip roughly in step with what the
+    /// stitcher will produce (bars trimmed, overlap removed) without stitching.
+    struct PreviewPiece: Identifiable, Equatable {
+        let id: Int
+        var fromRow: Int
+        var toRow: Int
+        var image: CGImage
+
+        var rowCount: Int { max(0, toRow - fromRow) }
+
+        static func == (lhs: PreviewPiece, rhs: PreviewPiece) -> Bool {
+            lhs.id == rhs.id && lhs.fromRow == rhs.fromRow && lhs.toRow == rhs.toRow
+        }
+    }
+
+    static let previewWidth = 120
+
     @Published private(set) var frames: [CGImage]
     @Published private(set) var phase: Phase = .idle
+    @Published private(set) var previewPieces: [PreviewPiece] = []
     @Published private(set) var isAutoScrolling = false
     @Published private(set) var reachedEnd = false
     @Published private(set) var message: String?
@@ -79,6 +98,9 @@ final class ScrollCaptureEngine: ObservableObject {
     /// Header + footer rows measured on the last sample, so auto-scroll steps keep enough
     /// matchable overlap when bars are excluded.
     private var lastBarsPixels = 0
+    /// Footer rows measured on the last appended frame; the stitcher crops them (plus
+    /// the seam slack) from that frame once the next one is placed below it.
+    private var lastAppendedFooter = 0
     /// A sample after the last auto-scroll step showed new content that is still
     /// waiting to settle, so the step must not be judged yet.
     private var pendingMoveSincePost = false
@@ -114,7 +136,13 @@ final class ScrollCaptureEngine: ObservableObject {
         self.captureSample = captureSample
         self.postScroll = postScroll
         self.isAccessibilityTrusted = isAccessibilityTrusted
+        if let initialFrame, let piece = Self.previewPiece(id: 0, frame: initialFrame, fromRow: 0, toRow: initialFrame.height) {
+            previewPieces = [piece]
+        }
     }
+
+    /// Full-resolution rows the preview currently represents.
+    var previewRowCount: Int { previewPieces.reduce(0) { $0 + $1.rowCount } }
 
     /// Production wiring: samples only the selected region and scrolls with synthetic
     /// wheel events posted at the centre of the area.
@@ -162,9 +190,10 @@ final class ScrollCaptureEngine: ObservableObject {
 
     /// Resumes watching after a failed stitch so the user can try again or cancel.
     func resumeWatching() {
-        guard case .failed = phase else { return }
+        guard case let .failed(description) = phase else { return }
         phase = .idle
         start()
+        message = "Stitching failed: \(description)"
     }
 
     func toggleAutoScroll() {
@@ -225,7 +254,7 @@ final class ScrollCaptureEngine: ObservableObject {
         guard let last = frames.last else {
             // No frozen crop to start from: the first live sample opens the sequence.
             lastSample = sample
-            append(sample)
+            append(sample, croppedTop: 0, trimmingPreviousBottom: 0)
             return
         }
         guard sample.width == last.width, sample.height == last.height else {
@@ -253,12 +282,16 @@ final class ScrollCaptureEngine: ObservableObject {
             ? ImageStitcher.stickyBandHeight(first: first, previous: last, current: sample, detect: ImageStitcher.repeatedFooterHeight)
             : 0
         lastBarsPixels = header + footer
+        // The stitcher matches each frame against the previous one with THAT frame's
+        // footer skipped (the first frame borrows the second's measurement); doing the
+        // same keeps the decisions and the preview identical to the final stitch.
+        let previousFooter = frames.count == 1 ? footer : lastAppendedFooter
         let match = ImageStitcher.bestOverlap(
             previous: last,
             current: sample,
             config: configuration.stitch,
             skippingTopRows: header,
-            skippingBottomRows: footer
+            skippingBottomRows: previousFooter
         )
         let shouldAppend: Bool
         if let match {
@@ -297,11 +330,17 @@ final class ScrollCaptureEngine: ObservableObject {
             trace("noOverlap settled=\(settled) diff=\(String(format: "%.3f", difference)) append=\(shouldAppend)")
         }
         guard shouldAppend else { return }
-        append(sample)
+        // Mirror the stitcher: below a match, the previous frame loses its bar and the
+        // seam rows (this frame draws them instead); an unmatched frame simply stacks.
+        let overlap = match?.overlap ?? 0
+        let slack = match == nil ? 0 : min(ImageStitcher.seamSlackRows, overlap)
+        append(sample, croppedTop: header + overlap - slack, trimmingPreviousBottom: match == nil ? 0 : previousFooter + slack)
+        lastAppendedFooter = footer
     }
 
-    private func append(_ frame: CGImage) {
+    private func append(_ frame: CGImage, croppedTop: Int, trimmingPreviousBottom: Int) {
         frames.append(frame)
+        updatePreview(appending: frame, croppedTop: croppedTop, trimmingPreviousBottom: trimmingPreviousBottom)
         pendingMoveSincePost = false
         trace("append#\(frames.count)")
         message = nil
@@ -311,6 +350,45 @@ final class ScrollCaptureEngine: ObservableObject {
             samplingTask?.cancel()
             samplingTask = nil
         }
+    }
+
+    private func updatePreview(appending frame: CGImage, croppedTop: Int, trimmingPreviousBottom: Int) {
+        if trimmingPreviousBottom > 0, let last = previewPieces.last, last.id < frames.count - 1 {
+            // The bar and seam rows at the bottom of the previous frame are dropped; this
+            // frame shows the rows underneath them.
+            let previousFrame = frames[last.id]
+            let toRow = max(last.fromRow, previousFrame.height - trimmingPreviousBottom)
+            if let trimmed = Self.previewPiece(id: last.id, frame: previousFrame, fromRow: last.fromRow, toRow: toRow) {
+                previewPieces[previewPieces.count - 1] = trimmed
+            }
+        }
+        let index = frames.count - 1
+        if let piece = Self.previewPiece(id: index, frame: frame, fromRow: min(croppedTop, frame.height), toRow: frame.height) {
+            previewPieces.append(piece)
+        }
+    }
+
+    /// Rows [fromRow, toRow) of `frame`, downscaled to `previewWidth`.
+    static func previewPiece(id: Int, frame: CGImage, fromRow: Int, toRow: Int) -> PreviewPiece? {
+        let rows = toRow - fromRow
+        guard rows > 0, frame.width > 0,
+              let cropped = frame.cropping(to: CGRect(x: 0, y: fromRow, width: frame.width, height: rows))
+        else { return nil }
+        let scale = CGFloat(previewWidth) / CGFloat(frame.width)
+        let height = max(1, Int((CGFloat(rows) * scale).rounded()))
+        guard let context = CGContext(
+            data: nil,
+            width: previewWidth,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+        context.interpolationQuality = .medium
+        context.draw(cropped, in: CGRect(x: 0, y: 0, width: previewWidth, height: height))
+        guard let image = context.makeImage() else { return nil }
+        return PreviewPiece(id: id, fromRow: fromRow, toRow: toRow, image: image)
     }
 
     private func sampleLoop() async {

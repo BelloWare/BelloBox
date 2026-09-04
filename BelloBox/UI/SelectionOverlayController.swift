@@ -1543,9 +1543,22 @@ final class SelectionOverlayController: NSObject {
                     snapshots: snapshots,
                     initialSelection: .area(area),
                     policy: .areaOnly,
-                    scrollCaptureOnSelection: true,
+                    scrollCaptureOnSelection: false,
                     onError: { finishedBox.error = $0 }
                 )
+                let previewDirectory = ProcessInfo.processInfo.environment["BELLOBOX_E2E_UI_PREVIEW_DIR"]
+                if let previewDirectory, !previewDirectory.isEmpty {
+                    try await Task.sleep(nanoseconds: 800_000_000)
+                    OverlayTooltipPresenter.shared.showImmediately(
+                        "Scroll to capture more: keep scrolling (or auto-scroll) and stitch the frames into one tall screenshot",
+                        at: CGPoint(x: rect.midX + 120, y: rect.maxY + 40)
+                    )
+                    try await Task.sleep(nanoseconds: 200_000_000)
+                    try await writeE2EUIPreview(named: "editor-toolbar", around: rect, screen: screen, directory: previewDirectory)
+                    OverlayTooltipPresenter.shared.hide()
+                    markerLines.append("ui.editorToolbarPreview=\(previewDirectory)/editor-toolbar.png")
+                }
+                controller.beginScrollCapture()
                 guard let overlayEngine = controller.debugScrollCaptureEngine else {
                     throw ScreenCaptureService.CaptureError.captureFailed("The overlay did not enter scroll-to-capture mode.")
                 }
@@ -1554,6 +1567,21 @@ final class SelectionOverlayController: NSObject {
                 for step in 1...3 {
                     window.scroll(toTopOffset: CGFloat(step) * 150)
                     await Self.e2eWaitForFrames(overlayEngine, count: step + 1)
+                    if step == 2, let previewDirectory, !previewDirectory.isEmpty {
+                        try await Task.sleep(nanoseconds: 300_000_000)
+                        // The compact card is shown above the selection (where the hidden
+                        // toolbar was) so one screenshot shows both HUD layouts.
+                        let compactDemo = Self.e2eCompactHUDDemoPanel(engine: overlayEngine, above: rect)
+                        OverlayTooltipPresenter.shared.showImmediately(
+                            "Scroll the content automatically until it ends, capturing as it goes",
+                            at: CGPoint(x: rect.maxX + 330, y: rect.minY - 120)
+                        )
+                        try await Task.sleep(nanoseconds: 300_000_000)
+                        try await writeE2EUIPreview(named: "scroll-hud", around: rect, screen: screen, directory: previewDirectory)
+                        OverlayTooltipPresenter.shared.hide()
+                        compactDemo.orderOut(nil)
+                        markerLines.append("ui.scrollHUDPreview=\(previewDirectory)/scroll-hud.png")
+                    }
                 }
                 markerLines.append("overlay.liveContentSampled=\(overlayEngine.frames.count > 1)")
                 controller.finishScrollCapture()
@@ -1583,6 +1611,33 @@ final class SelectionOverlayController: NSObject {
             Self.writeE2EMarker(markerPath, lines: markerLines)
             e2eQuitIfRequested()
         }
+    }
+
+    /// Captures the display around `rect` (selection plus toolbar/HUD space) and writes it
+    /// as a PNG so the overlay UI can be inspected.
+    /// Shows the compact HUD card (as used when the full card has no room) above `rect`,
+    /// bound to the live engine, for the UI preview screenshot.
+    private static func e2eCompactHUDDemoPanel(engine: ScrollCaptureEngine, above rect: CGRect) -> NSPanel {
+        let panel = ScrollCaptureHUDPanel()
+        let padding = ScrollCaptureHUDView.outerPadding
+        let size = ScrollCaptureHUDView.compactSize.applying(padding: padding)
+        panel.contentView = NSHostingView(
+            rootView: ScrollCaptureHUDView(engine: engine, layout: .compact, onDone: {}, onCancel: {})
+        )
+        panel.setFrame(CGRect(x: rect.minX - padding, y: rect.maxY + 16 - padding, width: size.width, height: size.height), display: true)
+        panel.orderFrontRegardless()
+        return panel
+    }
+
+    private func writeE2EUIPreview(named name: String, around rect: CGRect, screen: NSScreen, directory: String) async throws {
+        let region = rect.insetBy(dx: -700, dy: -220).intersection(screen.frame)
+        guard let displayID = ScreenCoordinateSpace.displayID(for: screen) else { return }
+        let scale = ScreenCoordinateSpace.backingScale(for: screen)
+        let image = try await screenCaptureService.captureRegionImage(
+            CaptureArea(cocoaRect: region, displayID: displayID),
+            pixelSize: CGSize(width: (region.width * scale).rounded(), height: (region.height * scale).rounded())
+        )
+        try Self.writePNG(image, to: "\(directory)/\(name).png")
     }
 
     /// Waits until the engine has appended `count` frames (or gives up after a while).
@@ -1921,6 +1976,7 @@ final class SelectionOverlayController: NSObject {
 
     private func minimizePopup() {
         guard let panel = popupPanel, !popupIsMinimized else { return }
+        OverlayTooltipPresenter.shared.hide()
         popupFullContentView = panel.contentView
         popupIsMinimized = true
 
@@ -1968,6 +2024,7 @@ final class SelectionOverlayController: NSObject {
     private func hidePopup(runDismissAction: Bool = true, animated: Bool = true) {
         let onDismiss = runDismissAction ? popupOnDismiss : nil
         popupOnDismiss = nil
+        OverlayTooltipPresenter.shared.hide()
         if !animated {
             // Vanish immediately so a capture started right after cannot see the fade.
             popupPanel?.animationBehavior = .none

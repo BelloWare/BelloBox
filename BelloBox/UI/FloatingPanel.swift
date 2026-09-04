@@ -52,7 +52,8 @@ final class FloatingTooltipPanel: NSPanel {
         container.layer?.cornerRadius = 6
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .white
-        label.maximumNumberOfLines = 2
+        label.maximumNumberOfLines = 3
+        label.cell?.truncatesLastVisibleLine = true
         label.preferredMaxLayoutWidth = 320
         label.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(label)

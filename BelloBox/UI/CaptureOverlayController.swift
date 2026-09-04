@@ -152,6 +152,8 @@ final class CaptureOverlayController {
             scrollCapture = nil
         }
         scrollCaptureOnSelection = false
+        OverlayTooltipPresenter.shared.hide()
+        OverlayTooltipPresenter.shared.exclusionRect = nil
         refreshTask?.cancel()
         refreshTask = nil
         let closingScreenshotViewModel = activeScreenshotViewModel
@@ -714,6 +716,8 @@ final class CaptureOverlayController {
               localRect.height >= RegionCaptureGeometry.minimumAreaSize,
               let displayID = ScreenCoordinateSpace.displayID(for: selectedView.screen)
         else { return }
+        // The toolbar is about to be hidden; its tooltip must not outlive it.
+        OverlayTooltipPresenter.shared.hide()
 
         let screenFrame = selectedView.screen.frame
         let scale = max(viewModel.document.scale, 0.01)
@@ -745,18 +749,22 @@ final class CaptureOverlayController {
               cocoaRect.height >= RegionCaptureGeometry.minimumAreaSize
         else { return }
 
-        // Place the HUD first: it must never be inside the sampled region. When the
-        // selection fills the display and leaves no room, the region is trimmed above it.
+        // Place the HUD first: it must never be inside the sampled region. The full card
+        // is preferred; when it cannot sit outside the selection the compact card is
+        // tried, and only when that fails too is the region trimmed above the card.
         let panel = ScrollCaptureHUDPanel()
-        let hudSize = ScrollCaptureHUDView.preferredSize.applying(padding: ScrollCaptureHUDView.outerPadding)
+        let hudPadding = ScrollCaptureHUDView.outerPadding
+        let hudLayouts = ScrollCaptureHUDView.Layout.allCases
         var localSelection = RegionCaptureGeometry.globalCocoaRectToLocalFlipped(cocoaRect, screenFrame: screenFrame)
-        let localHUD = ScrollCaptureHUDLayout.frame(
+        let placement = ScrollCaptureHUDLayout.placement(
             selection: localSelection,
             bounds: selectedView.bounds,
-            size: hudSize,
-            padding: ScrollCaptureHUDView.outerPadding,
+            sizes: hudLayouts.map { ScrollCaptureHUDView.preferredSize(for: $0).applying(padding: hudPadding) },
+            padding: hudPadding,
             gap: 12 // keeps the card's shadow out of the sampled region
         )
+        let hudLayout = hudLayouts[placement.sizeIndex]
+        let localHUD = placement.frame
         if let trimmed = ScrollCaptureHUDLayout.selectionAvoiding(
             hud: localHUD.insetBy(dx: ScrollCaptureHUDView.outerPadding, dy: ScrollCaptureHUDView.outerPadding),
             selection: localSelection,
@@ -790,10 +798,13 @@ final class CaptureOverlayController {
         for window in windows {
             window.ignoresMouseEvents = true
         }
+        // HUD tooltips must keep clear of the sampled region, or they end up in frames.
+        OverlayTooltipPresenter.shared.exclusionRect = cocoaRect
 
         let hosting = NSHostingView(
             rootView: ScrollCaptureHUDView(
                 engine: engine,
+                layout: hudLayout,
                 onDone: { [weak self] in self?.finishScrollCapture() },
                 onCancel: { [weak self] in self?.cancelScrollCapture() }
             )
@@ -813,6 +824,7 @@ final class CaptureOverlayController {
                 "area=\(Self.serialize(cocoaRect))",
                 "pixels=\(Int(pixelSize.width))x\(Int(pixelSize.height))",
                 "seededFromFrozenCrop=\(initialFrame != nil)",
+                "hud=\(hudLayout.rawValue)",
             ]
         )
     }
@@ -821,6 +833,7 @@ final class CaptureOverlayController {
     func finishScrollCapture() {
         guard let state = scrollCapture, !state.isFinishing, state.engine.canFinish else { return }
         scrollCapture?.isFinishing = true
+        OverlayTooltipPresenter.shared.hide()
         let engine = state.engine
         let finished = onScrollCaptureFinished
         Task { @MainActor [weak self] in
@@ -848,6 +861,8 @@ final class CaptureOverlayController {
     /// the result.
     func cancelScrollCapture() {
         guard let state = scrollCapture, !state.isFinishing else { return }
+        OverlayTooltipPresenter.shared.hide()
+        OverlayTooltipPresenter.shared.exclusionRect = nil
         state.engine.stop()
         state.panel.orderOut(nil)
         scrollCapture = nil
@@ -1504,6 +1519,28 @@ struct ScrollCaptureHUDLayout {
             .insetBy(dx: -padding, dy: -padding)
     }
 
+    /// Tries each candidate panel size in order and returns the first whose visible card
+    /// stays outside the selection, or the last candidate (placed inside) when none does.
+    static func placement(
+        selection: CGRect,
+        bounds: CGRect,
+        sizes: [CGSize],
+        padding: CGFloat = 0,
+        gap: CGFloat = 4,
+        inset: CGFloat = 4
+    ) -> (sizeIndex: Int, frame: CGRect) {
+        precondition(!sizes.isEmpty, "at least one HUD size is required")
+        var result = (sizeIndex: 0, frame: CGRect.zero)
+        for (index, size) in sizes.enumerated() {
+            let frame = frame(selection: selection, bounds: bounds, size: size, padding: padding, gap: gap, inset: inset)
+            result = (index, frame)
+            if !frame.insetBy(dx: padding, dy: padding).intersects(selection) {
+                break
+            }
+        }
+        return result
+    }
+
     /// When the visible HUD card had to be placed inside the selection, returns the part of
     /// the selection above the card (so sampled frames never contain the HUD); nil when
     /// too little would remain. Returns the selection unchanged when they do not overlap.
@@ -1585,7 +1622,7 @@ private struct CaptureScreenshotOverlaySurface: View {
             let toolbar = CaptureOverlayAccessoryLayout.frame(
                 selection: selected,
                 bounds: bounds,
-                preferredSize: CGSize(width: 900, height: 54)
+                preferredSize: CGSize(width: 920, height: 54)
             )
 
             ZStack(alignment: .topLeading) {

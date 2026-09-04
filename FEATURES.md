@@ -128,9 +128,11 @@ covered part is filled in. Scroll-to-capture samples the live content.
 - **Scroll to capture more** — after an area or window capture, press the
   scroll button in the editor toolbar (or start from Screenshot → Scrolling).
   The selection turns live: scroll the content yourself or press Auto-scroll,
-  and Bello Box captures a frame each time the content settles, then stitches
-  the frames into one long screenshot when you press Done, removing duplicated
-  overlap. Bars that stay fixed at the top or bottom of the area (browser
+  and Bello Box captures a frame each time the content settles while a small
+  preview beside the frame shows the screenshot growing; pressing Done
+  stitches the frames into one long screenshot, removing duplicated overlap.
+  Every control in the capture overlay explains itself with a tooltip on
+  hover. Bars that stay fixed at the top or bottom of the area (browser
   chrome, status or input bars) are recognised and kept once, and the content
   hidden under a bottom bar is filled in from the next frame. Cancel returns
   to the editor.

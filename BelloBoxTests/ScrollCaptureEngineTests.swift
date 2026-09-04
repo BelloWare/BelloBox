@@ -146,6 +146,48 @@ final class ScrollCaptureEngineTests: XCTestCase {
         XCTAssertTrue(document.activeOCRResult?.warnings.contains { $0.contains("left out") } == true)
     }
 
+    func testPreviewMatchesTheStitcherWhenTheMeasuredFooterChanges() async throws {
+        // Blank padding right above the bar in the first two frames makes their footer
+        // measure taller (100 rows) than the third frame's (40). The engine must match
+        // each frame against the previous frame's footer, as the stitcher does, or the
+        // preview seam lands 60 rows off.
+        let content = blanking(makeContent(height: 1400), rows: [200..<260, 300..<360])
+        let engine = makeEngine(initialFrame: withFooter(window(content, offset: 0)))
+        engine.start()
+        for offset in [100, 200] {
+            engine.processSample(withFooter(window(content, offset: offset)))
+            engine.processSample(withFooter(window(content, offset: offset)))
+        }
+        XCTAssertEqual(engine.frames.count, 3)
+
+        let document = try await engine.finish()
+        XCTAssertEqual(document.baseImage.height, viewport + 200)
+        XCTAssertEqual(engine.previewRowCount, document.baseImage.height)
+    }
+
+    func testStitchFailureIsReportedWhenWatchingResumes() async throws {
+        let content = makeContent(height: 1200)
+        var configuration = ScrollCaptureEngine.Configuration()
+        configuration.stitch.maxOutputHeightPx = 100 // even a single frame is too tall
+        let engine = makeEngine(initialFrame: window(content, offset: 0), configuration: configuration)
+        engine.start()
+        engine.processSample(window(content, offset: 90))
+        engine.processSample(window(content, offset: 90))
+        XCTAssertEqual(engine.frames.count, 2)
+
+        do {
+            _ = try await engine.finish()
+            XCTFail("stitching should fail when a single frame exceeds the height limit")
+        } catch {
+            guard case .failed = engine.phase else { return XCTFail("phase should be failed, was \(engine.phase)") }
+        }
+
+        engine.resumeWatching()
+        XCTAssertEqual(engine.phase, .watching)
+        XCTAssertTrue(engine.message?.hasPrefix("Stitching failed") == true, "message: \(engine.message ?? "nil")")
+        XCTAssertTrue(engine.canFinish)
+    }
+
     func testStopsAtMaximumFrameCount() {
         let content = makeContent(height: 1200)
         var configuration = ScrollCaptureEngine.Configuration()
@@ -242,6 +284,46 @@ final class ScrollCaptureEngineTests: XCTestCase {
         engine.stop()
     }
 
+    func testPreviewStripFollowsAppendedFrames() {
+        let content = makeContent(height: 1200)
+        let engine = makeEngine(initialFrame: withFooter(window(content, offset: 0)))
+        engine.start()
+        XCTAssertEqual(engine.previewPieces.count, 1)
+        XCTAssertEqual(engine.previewRowCount, viewport)
+        XCTAssertEqual(engine.previewPieces.first?.image.width, ScrollCaptureEngine.previewWidth)
+
+        engine.processSample(withFooter(window(content, offset: 100)))
+        engine.processSample(withFooter(window(content, offset: 100)))
+
+        XCTAssertEqual(engine.frames.count, 2)
+        XCTAssertEqual(engine.previewPieces.count, 2)
+        // The first piece lost its bar (measured within a few rows) and the seam slack
+        // rows, which the second frame draws instead, exactly as the stitcher does; the
+        // second adds the new rows plus the bar it now shows.
+        let firstPieceEnd = engine.previewPieces[0].toRow
+        XCTAssertGreaterThanOrEqual(firstPieceEnd, viewport - 48 - ImageStitcher.seamSlackRows)
+        XCTAssertLessThanOrEqual(firstPieceEnd, viewport - 40 - ImageStitcher.seamSlackRows)
+        XCTAssertEqual(engine.previewPieces[1].rowCount, viewport + 100 - firstPieceEnd)
+        XCTAssertEqual(engine.previewRowCount, viewport + 100)
+    }
+
+    func testPreviewHeightMatchesTheStitchedScreenshot() async throws {
+        let content = makeContent(height: 1400)
+        let engine = makeEngine(initialFrame: withFooter(window(content, offset: 0)))
+        engine.start()
+        // Two overlapping scrolls, then a jump of more than a page (no overlap: the frame
+        // is appended without compaction, bar and all).
+        for offset in [120, 260, 700] {
+            engine.processSample(withFooter(window(content, offset: offset)))
+            engine.processSample(withFooter(window(content, offset: offset)))
+        }
+        XCTAssertEqual(engine.frames.count, 4)
+        XCTAssertEqual(engine.previewPieces.count, 4)
+
+        let document = try await engine.finish()
+        XCTAssertEqual(document.baseImage.height, engine.previewRowCount)
+    }
+
     // MARK: - Helpers
 
     private func makeEngine(
@@ -313,6 +395,19 @@ final class ScrollCaptureEngineTests: XCTestCase {
             context.fill(CGRect(x: 0, y: 0, width: width, height: 40))
             context.setFillColor(CGColor(red: 0.2, green: 0.7, blue: 0.9, alpha: 1))
             context.fill(CGRect(x: 12, y: 12, width: 60, height: 14))
+        }
+    }
+
+    /// `content` with the given rows (from the top) painted white, like blank padding.
+    private func blanking(_ content: CGImage, rows ranges: [Range<Int>]) -> CGImage {
+        let width = self.width
+        let height = content.height
+        return ScreenshotTestHelpers.image(width: width, height: height) { context in
+            context.draw(content, in: CGRect(x: 0, y: 0, width: width, height: height))
+            context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
+            for range in ranges {
+                context.fill(CGRect(x: 0, y: height - range.upperBound, width: width, height: range.count))
+            }
         }
     }
 

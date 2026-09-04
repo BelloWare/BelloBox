@@ -18,7 +18,7 @@ struct AnnotationToolbarView: View {
                 }
                 .buttonStyle(.plain)
                 .background(RoundedRectangle(cornerRadius: 7).fill(viewModel.activeTool == tool ? BoxTheme.accentSoft : .clear))
-                .help(tool.label)
+                .overlayTooltip(Self.tooltip(for: tool))
             }
 
             Divider().frame(height: 24)
@@ -37,12 +37,14 @@ struct AnnotationToolbarView: View {
             ), supportsOpacity: false)
             .labelsHidden()
             .frame(width: 34)
+            .overlayTooltip("Stroke and text color")
 
             Slider(value: Binding(
                 get: { Double(viewModel.style.lineWidth) },
                 set: { viewModel.style.lineWidth = CGFloat($0) }
             ), in: 1...12, step: 1)
             .frame(width: 90)
+            .overlayTooltip("Line width: \(Int(viewModel.style.lineWidth)) px")
 
             Spacer(minLength: 8)
 
@@ -50,40 +52,61 @@ struct AnnotationToolbarView: View {
                 .buttonStyle(SecondaryButtonStyle())
                 .disabled(!viewModel.canUndo)
                 .keyboardShortcut("z", modifiers: .command)
-                .help("Undo")
+                .overlayTooltip("Undo (⌘Z)")
 
             Button { viewModel.redo() } label: { Image(systemName: "arrow.uturn.forward") }
                 .buttonStyle(SecondaryButtonStyle())
                 .disabled(!viewModel.canRedo)
                 .keyboardShortcut("Z", modifiers: [.command, .shift])
-                .help("Redo")
+                .overlayTooltip("Redo (⇧⌘Z)")
 
             if let onScrollCapture {
-                Button(action: onScrollCapture) { Image(systemName: "arrow.down.doc") }
-                    .buttonStyle(SecondaryButtonStyle())
-                    .help("Scroll to capture more")
+                Divider().frame(height: 24)
+
+                Button(action: onScrollCapture) {
+                    Label("Scroll", systemImage: "arrow.down.doc")
+                        .foregroundStyle(BoxTheme.accent)
+                }
+                .buttonStyle(SecondaryButtonStyle())
+                .overlayTooltip("Scroll to capture more: keep scrolling (or auto-scroll) and stitch the frames into one tall screenshot")
             }
 
             if showExportActions {
+                Divider().frame(height: 24)
+
                 Button { viewModel.copyRenderedImage() } label: { Image(systemName: "doc.on.doc") }
                     .buttonStyle(SecondaryButtonStyle())
-                    .help("Copy image")
+                    .overlayTooltip("Copy image to the clipboard")
                 Button { viewModel.saveRenderedImage() } label: { Image(systemName: "square.and.arrow.down") }
                     .buttonStyle(SecondaryButtonStyle())
-                    .help("Save PNG")
+                    .overlayTooltip("Save as PNG…")
                 if let onClose {
                     Button(action: onClose) {
                         Image(systemName: "xmark")
                     }
                     .buttonStyle(SecondaryButtonStyle())
-                    .help("Cancel")
+                    .overlayTooltip("Cancel (esc)")
                 }
             }
 
             Button { viewModel.finish() } label: { Image(systemName: "checkmark") }
                 .buttonStyle(PrimaryButtonStyle())
                 .keyboardShortcut(.defaultAction)
-                .help("Copy image and finish")
+                .overlayTooltip("Copy the image and finish (return)")
+        }
+    }
+
+    static func tooltip(for tool: AnnotationTool) -> String {
+        switch tool {
+        case .select: return "Select: move the selection, drag text labels"
+        case .pen: return "Pen: draw freehand"
+        case .arrow: return "Arrow"
+        case .rectangle: return "Rectangle outline"
+        case .highlight: return "Highlighter"
+        case .text: return "Text label"
+        case .crop: return "Crop the screenshot"
+        case .blur: return "Mask: hide sensitive content"
+        case .eraser: return "Eraser: remove an annotation"
         }
     }
 }

@@ -54,6 +54,7 @@ final class ScreenshotOverlayEditorController {
     private func close(notifyViewModel: Bool) {
         guard !isClosing else { return }
         isClosing = true
+        OverlayTooltipPresenter.shared.hide()
         let closingViewModel = viewModel
         viewModel = nil
         if let keyMonitor {
