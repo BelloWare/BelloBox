@@ -3,6 +3,26 @@ import XCTest
 
 final class AnnotationRendererTests: XCTestCase {
     @MainActor
+    func testRedactionCoversTextAndShapesRegardlessOfAnnotationOrder() throws {
+        let base = ScreenshotTestHelpers.image(width: 200, height: 100)
+        let redaction = ScreenshotAnnotation(kind: .blur(CGRect(x: 0, y: 0, width: 200, height: 100)), style: .redaction)
+        let marks: [ScreenshotAnnotation] = [
+            .init(kind: .text("Private annotation", origin: CGPoint(x: 10, y: 10), maxWidth: 180)),
+            .init(kind: .rectangle(CGRect(x: 10, y: 50, width: 100, height: 30))),
+            .init(kind: .freehand(points: [CGPoint(x: 10, y: 70), CGPoint(x: 190, y: 70)])),
+            .init(kind: .highlight(CGRect(x: 0, y: 0, width: 200, height: 100)), style: .highlight)
+        ]
+        let expected = try AnnotationRenderer.render(ScreenshotDocument(baseImage: base, scale: 1,
+            source: .importedClipboard, annotations: [redaction]))
+        for annotations in [marks + [redaction], [redaction] + marks] {
+            let actual = try AnnotationRenderer.render(ScreenshotDocument(baseImage: base, scale: 1,
+                source: .importedClipboard, annotations: annotations))
+            XCTAssertEqual(ScreenshotTestHelpers.rgbaPixels(actual), ScreenshotTestHelpers.rgbaPixels(expected),
+                "Redacted content must not expose annotation text, lines or shapes")
+        }
+    }
+
+    @MainActor
     func testCanvasMatchesExportAtNativeAndReducedScales() throws {
         let annotations: [ScreenshotAnnotation] = [
             .init(kind: .freehand(points: [CGPoint(x: 10, y: 12), CGPoint(x: 60, y: 32), CGPoint(x: 100, y: 15)])),

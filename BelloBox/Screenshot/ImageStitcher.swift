@@ -3,6 +3,7 @@ import CoreGraphics
 
 enum StitchError: LocalizedError, Equatable {
     case noFrames
+    case captureAreaChanged
     case cannotRender
     case outputTooTall(Int)
 
@@ -10,6 +11,8 @@ enum StitchError: LocalizedError, Equatable {
         switch self {
         case .noFrames:
             return "No frames were captured for scrolling screenshot."
+        case .captureAreaChanged:
+            return "The capture area changed size."
         case .cannotRender:
             return "Could not stitch the captured frames."
         case let .outputTooTall(height):
@@ -180,6 +183,7 @@ enum ImageStitcher {
         var best: OverlapMatch?
         var scores: [Double] = []
         for overlap in stride(from: config.minOverlapPx, through: maxOriginalOverlap, by: 4) {
+            if Task.isCancelled { return nil }
             let scaledOverlap = max(1, Int(CGFloat(overlap) * scale))
             guard scaledOverlap < previousEnd, scaledHeader + scaledOverlap <= currentGray.height else { continue }
             let score = previousGray.meanAbsoluteDifference(
@@ -239,6 +243,7 @@ enum ImageStitcher {
         }
         var best = OverlapMatch(overlap: min(max(coarse.overlap, minOverlap), maxOverlap), score: score(min(max(coarse.overlap, minOverlap), maxOverlap)))
         for overlap in minOverlap...maxOverlap where overlap != best.overlap {
+            if Task.isCancelled { return nil }
             let candidate = score(overlap)
             if candidate < best.score - 0.0005 {
                 best = OverlapMatch(overlap: overlap, score: candidate)

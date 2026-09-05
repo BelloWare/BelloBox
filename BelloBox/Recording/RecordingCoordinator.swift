@@ -189,6 +189,11 @@ final class RecordingCoordinator: ObservableObject {
                 }
                 finishTask = nil
                 setState(.reviewing(url))
+            } catch let RecordingEngineError.recoverableExportFailure(url, message) {
+                guard startToken == token else { return }
+                self.activeEngine = nil
+                finishTask = nil
+                setState(.reviewing(url, warning: "The original recording was preserved because final export failed. \(message) Use Save As to keep a copy; audio may remain on separate tracks."))
             } catch {
                 guard startToken == token else { return }
                 engine.cancel()

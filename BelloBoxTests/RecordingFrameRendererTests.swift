@@ -38,6 +38,28 @@ final class RecordingFrameRendererTests: XCTestCase {
             expiresAt: CMTime(seconds: 1, preferredTimescale: 600))
     }
 
+    func testSensitiveFieldPixelsAreFullyErasedInsteadOfDarkened() {
+        let context = RecordingFrameRenderContext(sourceScreenRect: CGRect(x: 0, y: 0, width: 100, height: 100),
+            outputSize: CGSize(width: 100, height: 100), clickOverlayMode: .off, keystrokeMode: .off,
+            secureFieldRedactionMode: .strict)
+        let sensitive = SensitiveInputState.sensitiveKnownFrame(SensitiveFieldInfo(reason: .secureTextField,
+            frameInScreenPoints: CGRect(x: 35, y: 35, width: 30, height: 30), owningAppBundleID: nil, confidence: 1))
+        for background: UInt8 in [0, 80, 160, 255] {
+            let source = makePixelBuffer(width: 100, height: 100, red: background, green: 255, blue: 255 - background)
+            let output = makePixelBuffer(width: 100, height: 100, red: 0, green: 0, blue: 0)
+            RecordingFrameRenderer().render(sourcePixelBuffer: source, into: output, context: context,
+                overlayEvents: [], sensitiveState: sensitive)
+            for y in 35..<65 {
+                for x in 35..<65 {
+                    let covered = pixel(at: CGPoint(x: x, y: y), in: output)
+                    XCTAssertEqual(covered.red, 0)
+                    XCTAssertEqual(covered.green, 0)
+                    XCTAssertEqual(covered.blue, 0)
+                }
+            }
+        }
+    }
+
     func testKnownSensitiveFrameIsRedactedBeforeOutput() {
         let output = render(
             sensitiveState: .sensitiveKnownFrame(

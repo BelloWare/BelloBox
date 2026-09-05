@@ -13,6 +13,7 @@ enum RecordingEngineError: LocalizedError, Equatable {
     case writerFailed(String)
     case streamFailed(String)
     case noFramesWritten
+    case recoverableExportFailure(URL, String)
 
     var errorDescription: String? {
         switch self {
@@ -30,6 +31,8 @@ enum RecordingEngineError: LocalizedError, Equatable {
             return "Screen recording failed. \(message)"
         case .noFramesWritten:
             return "The recording did not receive any video frames."
+        case let .recoverableExportFailure(_, message):
+            return "The recording was preserved, but final export failed. \(message)"
         }
     }
 }
@@ -45,8 +48,9 @@ struct RecordingTargetDescriptor {
 final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private let target: RecordingTarget
     private let options: RecordingOptions
-    private let outputURL: URL
-    private let captureURL: URL
+    private let output: RecordingOutputTransaction
+    private var captureURL: URL { output.captureURL }
+    private let mixAudio: (URL, URL) async throws -> URL
     private let sessionID = RecordingSessionID()
     private let writerQueue = DispatchQueue(label: "BelloBox.Recording.Writer")
     private let renderer = RecordingFrameRenderer()
@@ -90,19 +94,20 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     var onFailure: ((Error) -> Void)?
     var onSecureFieldHiddenChange: ((Bool) -> Void)?
 
-    init(target: RecordingTarget, options: RecordingOptions, outputURL: URL = RecordingEngine.defaultOutputURL()) {
+    init(target: RecordingTarget, options: RecordingOptions, outputURL: URL = RecordingEngine.defaultOutputURL(),
+         mixAudio: @escaping (URL, URL) async throws -> URL = RecordingAudioMixer.mixIfNeeded) {
         self.target = target
         self.options = options
-        self.outputURL = outputURL
-        self.captureURL = options.audioSource == .microphoneAndSystemAudio
-            ? RecordingEngine.intermediateOutputURL(for: outputURL)
-            : outputURL
+        self.output = RecordingOutputTransaction(destinationURL: outputURL)
+        self.mixAudio = mixAudio
         super.init()
     }
 
     func start() async throws -> RecordingRuntimeState {
         guard ScreenCapturePermission.isTrusted else { throw RecordingEngineError.permissionDenied }
+        try output.checkActive()
         let descriptor = try await Self.resolve(target: target, options: options)
+        try output.checkActive()
         try prepareWriter(output: descriptor.outputSettings)
 
         var createdStream: SCStream?
@@ -137,6 +142,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
             }
             self.stream = stream
             try await stream.startCapture()
+            try output.checkActive()
         } catch {
             if let createdStream {
                 try? await createdStream.stopCapture()
@@ -216,6 +222,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 
     func cancel() {
+        output.cancelPublication()
         markFinishing()
         inputMonitor?.stop()
         microphoneCapture?.stop()
@@ -289,8 +296,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
 #endif
 
     private func prepareWriter(output: RecordingOutputSettings) throws {
-        try? FileManager.default.removeItem(at: captureURL)
-        try? FileManager.default.removeItem(at: outputURL)
+        try self.output.checkActive()
         try FileManager.default.createDirectory(at: captureURL.deletingLastPathComponent(), withIntermediateDirectories: true)
 
         let writer = try AVAssetWriter(outputURL: captureURL, fileType: .mov)
@@ -553,14 +559,23 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
 
     private func finishWriting() async throws -> URL {
         let capturedURL = try await finishWriter()
-        guard options.audioSource == .microphoneAndSystemAudio else { return capturedURL }
+        var completedURL = capturedURL
         do {
-            return try await RecordingAudioMixer.mixIfNeeded(sourceURL: capturedURL, destinationURL: outputURL)
-        } catch {
-            if capturedURL != outputURL {
-                try? FileManager.default.removeItem(at: capturedURL)
+            try output.checkActive()
+            if options.audioSource == .microphoneAndSystemAudio {
+                completedURL = try await mixAudio(capturedURL, output.mixedURL)
             }
-            throw error
+            return try output.publish(completedURL)
+        } catch {
+            if error is CancellationError || Task.isCancelled || output.isCancelled {
+                // A mixer can finish after cancel() already removed its intermediate
+                // files. Clean up again after it has returned, before leaving this task.
+                output.discard()
+                throw CancellationError()
+            }
+            // The writer completed successfully. Keep that usable movie when mixing,
+            // copying or the final rename fails, and offer it in the review window.
+            throw RecordingEngineError.recoverableExportFailure(completedURL, error.localizedDescription)
         }
     }
 
@@ -817,23 +832,14 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private static func defaultOutputURL() -> URL {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH.mm.ss"
-        let name = "Bello Box Recording \(formatter.string(from: Date())).mov"
+        let name = "Bello Box Recording \(formatter.string(from: Date()))-\(UUID().uuidString.prefix(8)).mov"
         return FileManager.default.temporaryDirectory
             .appendingPathComponent("BelloBoxRecordings", isDirectory: true)
             .appendingPathComponent(name)
     }
 
-    private static func intermediateOutputURL(for outputURL: URL) -> URL {
-        let baseName = outputURL.deletingPathExtension().lastPathComponent
-        return outputURL.deletingLastPathComponent()
-            .appendingPathComponent("\(baseName)-tracks-\(UUID().uuidString).mov")
-    }
-
     private func removeOutputFiles() {
-        if captureURL != outputURL {
-            try? FileManager.default.removeItem(at: captureURL)
-        }
-        try? FileManager.default.removeItem(at: outputURL)
+        output.discard()
     }
 
     private func markFinishCompleted() -> Bool {

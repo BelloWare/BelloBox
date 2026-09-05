@@ -84,7 +84,7 @@ final class RecordingFrameRenderer {
         }
 
         for rect in layout.rects {
-            cgContext.setFillColor(NSColor.black.withAlphaComponent(0.94).cgColor)
+            cgContext.setFillColor(NSColor.black.cgColor)
             cgContext.fill(rect)
         }
     }

@@ -183,6 +183,26 @@ final class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.state, .idle)
     }
 
+    func testRecoverableExportFailureOpensReviewWithoutDiscardingMovie() async {
+        let engine = MockRecordingEngine(label: "Recoverable recording")
+        let coordinator = RecordingCoordinator(settings: AppSettings(defaults: temporaryDefaults()),
+            makeEngine: { _, _ in engine }, permissionProvider: { _ in .grantedForTests })
+        let reviewed = expectation(description: "Recovery review opened")
+        coordinator.onStateChange = { if case .reviewing = $0 { reviewed.fulfill() } }
+        var options = RecordingOptions.default
+        options.countdownSeconds = 0
+        await coordinator.start(target: .display(displayID: 1), options: options)
+        coordinator.stop()
+        await fulfillment(of: [engine.stopStarted], timeout: 1)
+        let recovered = temporaryRecordingURL()
+        engine.failStop(with: RecordingEngineError.recoverableExportFailure(recovered, "Audio mix failed"))
+        await fulfillment(of: [reviewed], timeout: 1)
+        guard case let .reviewing(url, warning) = coordinator.state else { return XCTFail("Expected recovery review") }
+        XCTAssertEqual(url, recovered)
+        XCTAssertTrue(warning?.contains("Audio mix failed") == true)
+        XCTAssertFalse(engine.didCancel, "Recovery must not discard the playable original")
+    }
+
     private func temporaryDefaults() -> UserDefaults {
         let suiteName = "BelloBoxTests.RecordingCoordinator.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -256,6 +276,11 @@ private final class MockRecordingEngine: RecordingEngineControlling {
     func completeStart() {
         startContinuation?.resume()
         startContinuation = nil
+    }
+
+    func failStop(with error: Error) {
+        stopContinuation?.resume(throwing: error)
+        stopContinuation = nil
     }
 
     func completeStop(with url: URL) {

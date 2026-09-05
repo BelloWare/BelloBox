@@ -42,6 +42,82 @@ final class ScrollCaptureEngineTests: XCTestCase {
         XCTAssertTrue(document.activeOCRResult?.warnings.contains { $0.contains("last scroll") } == true)
     }
 
+    func testCancelledFinishRestoresIdleAndCanRestart() async throws {
+        let frame = window(makeContent(height: 1200), offset: 0)
+        let captureStarted = expectation(description: "Final capture started")
+        var continuation: CheckedContinuation<CGImage, Never>?
+        let engine = ScrollCaptureEngine(
+            area: CaptureArea(cocoaRect: CGRect(x: 0, y: 0, width: width, height: viewport), displayID: 1),
+            summary: ScrollCaptureTargetSummary(title: "Test", ownerName: nil, frame: nil), initialFrame: frame,
+            captureSample: {
+                await withCheckedContinuation { pending in
+                    continuation = pending
+                    captureStarted.fulfill()
+                }
+            }, postScroll: { _ in })
+        engine.start()
+        let task = Task { try await engine.finish() }
+        await fulfillment(of: [captureStarted], timeout: 1)
+        task.cancel()
+        continuation?.resume(returning: frame)
+        do {
+            _ = try await task.value
+            XCTFail("Cancelled finishing must not produce a document")
+        } catch is CancellationError {}
+        XCTAssertEqual(engine.phase, .idle)
+        engine.start()
+        XCTAssertEqual(engine.phase, .watching)
+        engine.stop()
+    }
+
+    func testStoppedFinishCannotPublishIntoRestartedSession() async throws {
+        let content = makeContent(height: 1200)
+        let frame = window(content, offset: 0)
+        let moved = window(content, offset: 180)
+        let captureStarted = expectation(description: "Final capture started")
+        var continuation: CheckedContinuation<CGImage, Never>?
+        var captures = 0
+        let engine = ScrollCaptureEngine(
+            area: CaptureArea(cocoaRect: CGRect(x: 0, y: 0, width: width, height: viewport), displayID: 1),
+            summary: ScrollCaptureTargetSummary(title: "Test", ownerName: nil, frame: nil), initialFrame: frame,
+            captureSample: {
+                captures += 1
+                guard captures == 1 else { throw CancellationError() }
+                return await withCheckedContinuation { pending in
+                    continuation = pending
+                    captureStarted.fulfill()
+                }
+            }, postScroll: { _ in })
+        engine.start()
+        let task = Task { try await engine.finish() }
+        await fulfillment(of: [captureStarted], timeout: 1)
+        // stop() must invalidate finishing even when its caller does not cancel the task.
+        engine.stop()
+        engine.start()
+        continuation?.resume(returning: moved)
+        do {
+            _ = try await task.value
+            XCTFail("The previous session must not produce a document")
+        } catch is CancellationError {}
+        XCTAssertEqual(engine.phase, .watching)
+        XCTAssertEqual(engine.frames.count, 1)
+        engine.stop()
+    }
+
+    func testSizeChangeDuringFinalCapturePreservesCollectedFrames() async throws {
+        let frame = window(makeContent(height: 1200), offset: 0)
+        let engine = ScrollCaptureEngine(
+            area: CaptureArea(cocoaRect: CGRect(x: 0, y: 0, width: width, height: viewport), displayID: 1),
+            summary: ScrollCaptureTargetSummary(title: "Test", ownerName: nil, frame: nil), initialFrame: frame,
+            captureSample: { ScreenshotTestHelpers.image(width: 80, height: 80) }, postScroll: { _ in })
+        engine.start()
+        let document = try await engine.finish()
+        XCTAssertEqual(document.baseImage.width, width)
+        XCTAssertEqual(document.baseImage.height, viewport)
+        XCTAssertTrue(document.activeOCRResult?.warnings.contains { $0.contains("last scroll") } == true)
+        XCTAssertEqual(engine.phase, .finished)
+    }
+
     func testStaticContentNeverAppendsAFrame() {
         let content = makeContent(height: 1200)
         let engine = makeEngine(initialFrame: window(content, offset: 0))

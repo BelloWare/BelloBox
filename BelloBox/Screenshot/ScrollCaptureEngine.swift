@@ -39,7 +39,8 @@ final class ScrollCaptureEngine: ObservableObject {
         var autoScrollFraction: CGFloat = 0.55
         /// Minimum seconds to wait for a new frame after an auto-scroll step before
         /// concluding that nothing moved. The wait also requires a few processed samples
-        /// with nothing pending, and never exceeds four times this value.
+        /// with nothing pending. Slow pixel analysis is allowed to finish before a
+        /// lack of movement is inferred.
         var autoScrollTimeout: TimeInterval = 1.4
         /// Samples that must be processed after a step before it counts as "no progress".
         var autoScrollMinimumSamples: Int = 3
@@ -88,6 +89,8 @@ final class ScrollCaptureEngine: ObservableObject {
     private let postScroll: (CGFloat) -> Void
     private let isAccessibilityTrusted: () -> Bool
     private var samplingTask: Task<Void, Never>?
+    private var finishToken: UUID?
+    private var sessionToken = UUID()
     private var autoScrollTask: Task<Void, Never>?
     private var autoScrollToken = UUID()
     private var lastSample: CGImage?
@@ -96,6 +99,7 @@ final class ScrollCaptureEngine: ObservableObject {
     private var scrollDirectionSign: CGFloat = 1
     private var sawReverseScroll = false
     private var samplesSincePost = 0
+    private var scrollSampleToken = UUID()
     /// Header + footer rows measured on the last sample, so auto-scroll steps keep enough
     /// matchable overlap when bars are excluded.
     private var lastBarsPixels = 0
@@ -173,6 +177,7 @@ final class ScrollCaptureEngine: ObservableObject {
 
     func start() {
         guard phase == .idle || phase == .watching else { return }
+        if phase == .idle { sessionToken = UUID() }
         phase = .watching
         guard samplingTask == nil else { return }
         samplingTask = Task { [weak self] in
@@ -181,10 +186,12 @@ final class ScrollCaptureEngine: ObservableObject {
     }
 
     func stop() {
+        sessionToken = UUID()
         stopAutoScroll()
         samplingTask?.cancel()
         samplingTask = nil
-        if phase == .watching {
+        finishToken = nil
+        if phase == .watching || phase == .stitching {
             phase = .idle
         }
     }
@@ -208,29 +215,36 @@ final class ScrollCaptureEngine: ObservableObject {
     /// Stops sampling and stitches every frame captured so far. If the result would be
     /// taller than the stitcher allows, trailing frames are dropped until it fits.
     func finish() async throws -> ScreenshotDocument {
+        guard canFinish else { throw StitchError.noFrames }
+        try Task.checkCancellation()
         stopAutoScroll()
         samplingTask?.cancel()
         samplingTask = nil
+        let token = UUID()
+        sessionToken = UUID()
+        finishToken = token
         phase = .stitching
-        // Done can arrive between timer samples or before the last scroll settles.
-        // Sample twice before stitching so that final movement is not silently lost.
-        var finalSampleWarning: String?
-        if frames.count < configuration.maxFrames {
-            do {
-                processSample(try await captureSample(), whileFinishing: true)
-                try await Task.sleep(nanoseconds: UInt64(max(0.05, configuration.sampleInterval) * 1_000_000_000))
-                processSample(try await captureSample(), whileFinishing: true)
-            } catch {
-                if Task.isCancelled { throw CancellationError() }
-                if !(error is CancellationError) {
-                    finalSampleWarning = "The last scroll could not be sampled. The screenshot includes the frames already captured."
+        do {
+            var finalSampleWarning: String?
+            if frames.count < configuration.maxFrames {
+                do {
+                    let firstSample = try await captureSample()
+                    try checkFinishing(token)
+                    try await processSampleOffMain(firstSample, whileFinishing: true)
+                    try await Task.sleep(nanoseconds: UInt64(max(0.05, configuration.sampleInterval) * 1_000_000_000))
+                    let secondSample = try await captureSample()
+                    try checkFinishing(token)
+                    try await processSampleOffMain(secondSample, whileFinishing: true)
+                } catch {
+                    try checkFinishing(token)
+                    if !(error is CancellationError) {
+                        finalSampleWarning = "The last scroll could not be sampled. The screenshot includes the frames already captured."
+                    }
                 }
             }
-        }
-        try Task.checkCancellation()
-        var frames = self.frames
-        let config = configuration.stitch
-        do {
+            try checkFinishing(token)
+            var frames = self.frames
+            let config = configuration.stitch
             var droppedFrames = 0
             while true {
                 let attempt = frames
@@ -243,7 +257,7 @@ final class ScrollCaptureEngine: ObservableObject {
                     } onCancel: {
                         stitchTask.cancel()
                     }
-                    try Task.checkCancellation()
+                    try checkFinishing(token)
                     if let finalSampleWarning { result.warnings.append(finalSampleWarning) }
                     if droppedFrames > 0 {
                         result.warnings.append("The last \(droppedFrames) frame\(droppedFrames == 1 ? " was" : "s were") left out to keep the screenshot within the maximum height.")
@@ -251,71 +265,97 @@ final class ScrollCaptureEngine: ObservableObject {
 #if DEBUG
                     debugLastPlacements = result.placements
 #endif
+                    finishToken = nil
                     phase = .finished
                     return Self.makeDocument(from: result, target: summary, frameCount: attempt.count)
                 } catch StitchError.outputTooTall where frames.count > 1 {
+                    try checkFinishing(token)
                     frames.removeLast()
                     droppedFrames += 1
                 }
             }
         } catch {
-            phase = .failed(error.localizedDescription)
+            if finishToken == token {
+                finishToken = nil
+                phase = (Task.isCancelled || error is CancellationError) ? .idle : .failed(error.localizedDescription)
+            }
             throw error
         }
+    }
+
+    private func checkFinishing(_ token: UUID) throws {
+        try Task.checkCancellation()
+        guard finishToken == token, phase == .stitching else { throw CancellationError() }
     }
 
     /// Feeds one sample of the target area. Exposed so tests can drive the engine
     /// without a timer.
     func processSample(_ sample: CGImage) {
-        processSample(sample, whileFinishing: false)
+        guard let analysis = try? analyze(sample) else { return }
+        applySample(sample, analysis: analysis, whileFinishing: false)
     }
 
-    private func processSample(_ sample: CGImage, whileFinishing: Bool) {
+    private func analyze(_ sample: CGImage) throws -> ScrollSampleAnalyzer.Result {
+        try ScrollSampleAnalyzer.analyze(sample, first: frames.first, previous: frames.last,
+            lastSample: lastSample, frameCount: frames.count, lastAppendedFooter: lastAppendedFooter,
+            configuration: configuration)
+    }
+
+    private func processSampleOffMain(_ sample: CGImage, whileFinishing: Bool = false,
+                                      sampledScrollToken: UUID? = nil) async throws {
+        let token = sessionToken
+        let first = frames.first
+        let previous = frames.last
+        let previousSample = lastSample
+        let frameCount = frames.count
+        let footer = lastAppendedFooter
+        let configuration = configuration
+        let operation = Task.detached(priority: .userInitiated) {
+            try ScrollSampleAnalyzer.analyze(sample, first: first, previous: previous,
+                lastSample: previousSample, frameCount: frameCount, lastAppendedFooter: footer,
+                configuration: configuration)
+        }
+        let analysis = try await withTaskCancellationHandler {
+            try await operation.value
+        } onCancel: {
+            operation.cancel()
+        }
+        try Task.checkCancellation()
+        guard sessionToken == token else { throw CancellationError() }
+        guard frames.count == frameCount else { return }
+        if let sampledScrollToken, sampledScrollToken != scrollSampleToken { return }
+        if whileFinishing, case .sizeChanged = analysis { throw StitchError.captureAreaChanged }
+        applySample(sample, analysis: analysis, whileFinishing: whileFinishing)
+    }
+
+    private func applySample(_ sample: CGImage, analysis: ScrollSampleAnalyzer.Result, whileFinishing: Bool) {
         guard phase == .watching || (whileFinishing && phase == .stitching),
               frames.count < configuration.maxFrames else { return }
         samplesSincePost += 1
-        guard let last = frames.last else {
-            // No frozen crop to start from: the first live sample opens the sequence.
+        let comparison: ScrollSampleAnalyzer.Comparison
+        switch analysis {
+        case .firstFrame:
             lastSample = sample
             append(sample, croppedTop: 0, trimmingPreviousBottom: 0)
             return
-        }
-        guard sample.width == last.width, sample.height == last.height else {
+        case .sizeChanged:
             message = "The capture area changed size; scrolling capture stopped."
             stop()
             return
-        }
-        defer { lastSample = sample }
-
-        // Still showing the last appended frame: nothing to do.
-        if ImageStitcher.appearsUnchanged(previous: last, current: sample, threshold: configuration.changeThreshold) {
+        case .unchanged:
+            lastSample = sample
             trace("unchanged")
             return
+        case let .content(value):
+            comparison = value
         }
-
-        let settled = lastSample.map {
-            ImageStitcher.appearsUnchanged(previous: $0, current: sample, threshold: configuration.settleThreshold)
-        } ?? false
-        // Sticky bars repeat on every frame; skip them when matching, as the stitcher does.
-        let first = frames[0]
-        let header = configuration.stitch.removeRepeatedHeaderFooter
-            ? ImageStitcher.stickyBandHeight(first: first, previous: last, current: sample, detect: ImageStitcher.repeatedHeaderHeight)
-            : 0
-        let footer = configuration.stitch.removeRepeatedHeaderFooter
-            ? ImageStitcher.stickyBandHeight(first: first, previous: last, current: sample, detect: ImageStitcher.repeatedFooterHeight)
-            : 0
+        defer { lastSample = sample }
+        let header = comparison.header
+        let footer = comparison.footer
+        let previousFooter = comparison.previousFooter
+        let match = comparison.match
+        let settled = comparison.settled
         lastBarsPixels = header + footer
-        // The stitcher matches each frame against the previous one with THAT frame's
-        // footer skipped (the first frame borrows the second's measurement); doing the
-        // same keeps the decisions and the preview identical to the final stitch.
-        let previousFooter = frames.count == 1 ? footer : lastAppendedFooter
-        let match = ImageStitcher.bestOverlap(
-            previous: last,
-            current: sample,
-            config: configuration.stitch,
-            skippingTopRows: header,
-            skippingBottomRows: previousFooter
-        )
         let shouldAppend: Bool
         if let match {
             // Rows the sample adds below the matched overlap and above any fixed footer.
@@ -333,9 +373,7 @@ final class ScrollCaptureEngine: ObservableObject {
             shouldAppend = settled || overlapFraction < configuration.eagerOverlapFraction
             pendingMoveSincePost = !shouldAppend
             trace("moved overlap=\(match.overlap) settled=\(settled) append=\(shouldAppend)")
-        } else if ImageStitcher.bestOverlap(
-            previous: sample, current: last, config: configuration.stitch, skippingTopRows: header, skippingBottomRows: footer
-        ) != nil {
+        } else if comparison.reversed {
             // The content moved the other way. Frames must progress downward, so ignore
             // it; auto-scroll uses this to flip its direction.
             trace("reverse")
@@ -347,7 +385,7 @@ final class ScrollCaptureEngine: ObservableObject {
         } else {
             // No confident overlap (scrolled more than a page, or the content changed in
             // place): only accept it once it stops changing and differs substantially.
-            let difference = ImageStitcher.meanAbsoluteDifference(previous: last, current: sample) ?? 0
+            let difference = comparison.difference
             shouldAppend = settled && difference >= configuration.unmatchedChangeThreshold
             pendingMoveSincePost = !settled
             trace("noOverlap settled=\(settled) diff=\(String(format: "%.3f", difference)) append=\(shouldAppend)")
@@ -419,6 +457,7 @@ final class ScrollCaptureEngine: ObservableObject {
             try? await Task.sleep(nanoseconds: UInt64(configuration.sampleInterval * 1_000_000_000))
             guard !Task.isCancelled, phase == .watching else { return }
             let sample: CGImage
+            let sampledScrollToken = scrollSampleToken
             do {
                 sample = try await captureSample()
             } catch is CancellationError {
@@ -429,7 +468,9 @@ final class ScrollCaptureEngine: ObservableObject {
                 continue
             }
             guard !Task.isCancelled, phase == .watching else { return }
-            processSample(sample)
+            do {
+                try await processSampleOffMain(sample, sampledScrollToken: sampledScrollToken)
+            } catch { return }
         }
     }
 
@@ -455,6 +496,7 @@ final class ScrollCaptureEngine: ObservableObject {
                 self.samplesSincePost = 0
                 self.pendingMoveSincePost = false
                 self.trace("autoScroll step=\(Int(step)) sign=\(Int(postedSign))")
+                self.scrollSampleToken = UUID()
                 self.postScroll(step * postedSign)
                 await self.waitForStepOutcome(framesBefore: before)
                 if Task.isCancelled || self.phase != .watching { break }
@@ -509,9 +551,15 @@ final class ScrollCaptureEngine: ObservableObject {
         let start = Date()
         let soft = start.addingTimeInterval(configuration.autoScrollTimeout)
         let hard = start.addingTimeInterval(configuration.autoScrollTimeout * 4)
+        let stalled = start.addingTimeInterval(max(10, configuration.autoScrollTimeout * 8))
         while !Task.isCancelled, frames.count == framesBefore, !sawReverseScroll, phase == .watching {
             let now = Date()
-            if now >= hard { break }
+            if now >= stalled, samplesSincePost < configuration.autoScrollMinimumSamples {
+                stopAutoScroll()
+                message = "Capture is taking too long to respond. You can stop or scroll manually."
+                return
+            }
+            if now >= hard, samplesSincePost >= configuration.autoScrollMinimumSamples { break }
             if now >= soft, samplesSincePost >= configuration.autoScrollMinimumSamples, !pendingMoveSincePost { break }
             try? await Task.sleep(nanoseconds: 60_000_000)
         }
@@ -524,8 +572,9 @@ final class ScrollCaptureEngine: ObservableObject {
         samplesSincePost = 0
         pendingMoveSincePost = false
         sawReverseScroll = false
+        scrollSampleToken = UUID()
         postScroll(step * -postedSign)
-        let hard = Date().addingTimeInterval(configuration.autoScrollTimeout * 2)
+        let hard = Date().addingTimeInterval(max(10, configuration.autoScrollTimeout * 2))
         while !Task.isCancelled, phase == .watching, Date() < hard {
             if samplesSincePost >= 2, !pendingMoveSincePost { break }
             try? await Task.sleep(nanoseconds: 60_000_000)

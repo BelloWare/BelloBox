@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 @MainActor
 final class RecordingReviewViewModel: ObservableObject {
     let fileURL: URL
+    let recoveryWarning: String?
     let player: AVPlayer
     private let removeRecording: (URL) throws -> Void
     @Published var statusMessage: String?
@@ -14,8 +15,9 @@ final class RecordingReviewViewModel: ObservableObject {
     private var discardRequested = false
     var onClose: () -> Void = {}
 
-    init(fileURL: URL, removeRecording: @escaping (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) }) {
+    init(fileURL: URL, recoveryWarning: String? = nil, removeRecording: @escaping (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) }) {
         self.fileURL = fileURL
+        self.recoveryWarning = recoveryWarning
         self.player = AVPlayer(url: fileURL)
         self.removeRecording = removeRecording
     }
@@ -120,8 +122,16 @@ struct RecordingReviewView: View {
                 onClose: viewModel.onClose
             )
 
+            if let warning = viewModel.recoveryWarning {
+                Label(warning, systemImage: "exclamationmark.triangle.fill")
+                    .font(.callout)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+            }
+
             RecordingPlayerView(player: viewModel.player)
-                .frame(height: 300)
+                .frame(height: viewModel.recoveryWarning == nil ? 300 : 220)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.primary.opacity(0.08), lineWidth: 1))
 

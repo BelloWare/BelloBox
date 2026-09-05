@@ -165,7 +165,6 @@ struct ScrollCaptureHUDView: View {
         Button("Cancel") { onCancel() }
             .buttonStyle(SecondaryButtonStyle())
             .keyboardShortcut(.cancelAction)
-            .disabled(engine.phase == .stitching)
             .overlayTooltip("Back to the editor with the original capture (esc)")
     }
 

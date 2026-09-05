@@ -684,8 +684,8 @@ final class SelectionOverlayController: NSObject {
                 minimizedTitle: "Recording",
                 runExistingDismissAction: false
             )
-        case let .reviewing(url):
-            let viewModel = RecordingReviewViewModel(fileURL: url)
+        case let .reviewing(url, warning):
+            let viewModel = RecordingReviewViewModel(fileURL: url, recoveryWarning: warning)
             viewModel.onClose = { [weak self] in self?.hidePopup() }
             let view = RecordingReviewView(viewModel: viewModel)
             present(
@@ -962,7 +962,7 @@ final class SelectionOverlayController: NSObject {
     private func runE2EHooksIfNeeded() {
         let env = ProcessInfo.processInfo.environment
         if let path = env["BELLOBOX_E2E_RECORDING_REVIEW_FILE"] {
-            handleRecordingState(.reviewing(URL(fileURLWithPath: path)))
+            handleRecordingState(.reviewing(URL(fileURLWithPath: path), warning: env["BELLOBOX_E2E_RECORDING_REVIEW_WARNING"]))
             return
         }
         if let text = env["BELLOBOX_E2E_QR_TEXT"] {

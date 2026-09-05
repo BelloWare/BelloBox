@@ -36,6 +36,7 @@ final class CaptureOverlayController {
     private var overlayTiming: CaptureTiming?
     private var snapshotDelay: TimeInterval = CaptureOverlayController.defaultSnapshotDelay
     private var scrollCapture: ScrollCaptureState?
+    private var scrollFinishTask: Task<Void, Never>?
     private var scrollCaptureOnSelection = false
     /// Called with the stitched document after a scroll-to-capture session finishes. The
     /// overlay has already been torn down by then.
@@ -147,6 +148,8 @@ final class CaptureOverlayController {
         captureToken += 1
         captureTask?.cancel()
         captureTask = nil
+        scrollFinishTask?.cancel()
+        scrollFinishTask = nil
         if let state = scrollCapture {
             state.engine.stop()
             state.panel.orderOut(nil)
@@ -792,7 +795,7 @@ final class CaptureOverlayController {
         OverlayTooltipPresenter.shared.hide()
         let engine = state.engine
         let finished = onScrollCaptureFinished
-        Task { @MainActor [weak self] in
+        scrollFinishTask = Task { @MainActor [weak self] in
             guard let self else { return }
             do {
                 let document = try await engine.finish()
@@ -801,10 +804,12 @@ final class CaptureOverlayController {
                     "scrollCapture.finished",
                     ["frames=\(engine.frames.count)", "image=\(document.baseImage.width)x\(document.baseImage.height)"]
                 )
+                self.scrollFinishTask = nil
                 self.cancel()
                 finished?(document)
             } catch {
                 guard self.scrollCapture?.engine === engine else { return }
+                self.scrollFinishTask = nil
                 self.logDiagnostics("scrollCapture.error", ["error=\(error.localizedDescription)"])
                 self.scrollCapture?.isFinishing = false
                 engine.resumeWatching()
@@ -813,10 +818,10 @@ final class CaptureOverlayController {
     }
 
     /// Leaves scroll-to-capture and returns to the editor with the original capture.
-    /// Ignored while the frames are being stitched, so a stray Escape cannot discard
-    /// the result.
     func cancelScrollCapture() {
-        guard let state = scrollCapture, !state.isFinishing else { return }
+        guard let state = scrollCapture else { return }
+        scrollFinishTask?.cancel()
+        scrollFinishTask = nil
         OverlayTooltipPresenter.shared.hide()
         OverlayTooltipPresenter.shared.exclusionRect = nil
         state.engine.stop()

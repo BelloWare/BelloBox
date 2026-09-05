@@ -206,7 +206,7 @@ enum RecordingState: Equatable {
     case recording(RecordingRuntimeState)
     case paused(RecordingRuntimeState)
     case finishing
-    case reviewing(URL)
+    case reviewing(URL, warning: String? = nil)
     case failed(String)
 }
 

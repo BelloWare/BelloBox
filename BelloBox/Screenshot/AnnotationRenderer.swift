@@ -78,12 +78,13 @@ enum AnnotationRenderer {
         imageHeight: CGFloat,
         includeDecorativeAnnotations: Bool = true
     ) {
-        applyRedactions(annotations, in: context, imageHeight: imageHeight)
         if includeDecorativeAnnotations {
             drawHighlights(annotations, in: context, imageHeight: imageHeight)
             drawVectorAnnotations(annotations, in: context, imageHeight: imageHeight)
             drawTextAnnotations(annotations, in: context, imageHeight: imageHeight)
         }
+        // A redaction must cover both the captured pixels and any annotations.
+        applyRedactions(annotations, in: context, imageHeight: imageHeight)
     }
 
     private static func effectiveCropRect(document: ScreenshotDocument, target: OCRTarget) -> CGRect {
