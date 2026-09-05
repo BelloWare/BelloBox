@@ -59,6 +59,7 @@ final class RecordingCoordinator: ObservableObject {
     }
 
     func start(target: RecordingTarget, options: RecordingOptions) async {
+        guard !Task.isCancelled else { return }
         let token = UUID()
         startToken = token
         latestSecureFieldHidden = false
@@ -93,6 +94,7 @@ final class RecordingCoordinator: ObservableObject {
         engine.onFailure = { [weak self] error in
             Task { @MainActor in
                 guard let self, self.startToken == token else { return }
+                self.startToken = UUID()
                 self.activeEngine?.cancel()
                 self.activeEngine = nil
                 self.setState(.failed(error.localizedDescription))
@@ -107,9 +109,20 @@ final class RecordingCoordinator: ObservableObject {
         activeEngine = engine
 
         do {
-            var runtime = try await engine.start()
+            var runtime = try await withTaskCancellationHandler {
+                try await engine.start()
+            } onCancel: {
+                Task { @MainActor [weak self] in
+                    guard let self, self.startToken == token else { return }
+                    self.cancel()
+                }
+            }
             guard startToken == token else {
                 engine.cancel()
+                return
+            }
+            guard !Task.isCancelled else {
+                cancel()
                 return
             }
             runtime.isSecureFieldHidden = latestSecureFieldHidden
@@ -118,7 +131,12 @@ final class RecordingCoordinator: ObservableObject {
             guard startToken == token else { return }
             engine.cancel()
             activeEngine = nil
-            setState(.failed(error.localizedDescription))
+            startToken = UUID()
+            if error is CancellationError || Task.isCancelled {
+                setState(.idle)
+            } else {
+                setState(.failed(error.localizedDescription))
+            }
         }
     }
 

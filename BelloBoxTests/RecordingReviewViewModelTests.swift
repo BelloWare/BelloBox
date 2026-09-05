@@ -7,7 +7,7 @@ final class RecordingReviewViewModelTests: XCTestCase {
     func testRecordingReviewCanLoadItsNativePlayerControls() {
         let viewModel = RecordingReviewViewModel(fileURL: URL(fileURLWithPath: "/unused-recording.mov"))
         let view = NSHostingView(rootView: RecordingReviewView(viewModel: viewModel))
-        view.frame = CGRect(x: 0, y: 0, width: 760, height: 430)
+        view.frame = CGRect(origin: .zero, size: RecordingReviewView.preferredSize)
         view.layoutSubtreeIfNeeded()
         XCTAssertGreaterThan(view.fittingSize.width, 0)
     }
@@ -44,6 +44,40 @@ final class RecordingReviewViewModelTests: XCTestCase {
 
         let existing = try String(contentsOf: source, encoding: .utf8)
         XCTAssertEqual(existing, "keep me")
+    }
+
+    func testAsyncSaveReportsSuccessAndKeepsOriginalRecording() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appendingPathComponent("source.mov")
+        let destination = directory.appendingPathComponent("saved.mov")
+        try Data("recording".utf8).write(to: source)
+        let viewModel = RecordingReviewViewModel(fileURL: source)
+        await viewModel.saveRecording(to: destination)
+        XCTAssertFalse(viewModel.isSaving)
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertEqual(viewModel.statusMessage, "Saved to saved.mov.")
+        XCTAssertEqual(try Data(contentsOf: source), try Data(contentsOf: destination))
+    }
+
+    func testAsyncSaveFailureRetainsPreviousFileAndAllowsRetry() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appendingPathComponent("missing.mov")
+        let destination = directory.appendingPathComponent("saved.mov")
+        try Data("previous".utf8).write(to: destination)
+        let viewModel = RecordingReviewViewModel(fileURL: source)
+        await viewModel.saveRecording(to: destination)
+        XCTAssertFalse(viewModel.isSaving)
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.statusMessage)
+        XCTAssertEqual(try String(contentsOf: destination, encoding: .utf8), "previous")
+        try Data("retry".utf8).write(to: source)
+        await viewModel.saveRecording(to: destination)
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertEqual(try String(contentsOf: destination, encoding: .utf8), "retry")
     }
 
     func testDiscardFailureKeepsReviewOpenAndShowsError() throws {

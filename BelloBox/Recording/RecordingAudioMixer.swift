@@ -20,13 +20,15 @@ enum RecordingAudioMixerError: LocalizedError, Equatable {
 
 enum RecordingAudioMixer {
     static func mixIfNeeded(sourceURL: URL, destinationURL: URL) async throws -> URL {
+        try Task.checkCancellation()
+        let sourceURL = RecordingFileStore.resolved(sourceURL)
+        let destinationURL = RecordingFileStore.resolved(destinationURL)
         let asset = AVURLAsset(url: sourceURL)
         let audioTracks = try await asset.loadTracks(withMediaType: .audio)
         guard audioTracks.count > 1 || sourceURL != destinationURL else { return sourceURL }
 
         if audioTracks.count <= 1 {
-            try? FileManager.default.removeItem(at: destinationURL)
-            try FileManager.default.copyItem(at: sourceURL, to: destinationURL)
+            try RecordingFileStore.copy(from: sourceURL, to: destinationURL)
             if sourceURL != destinationURL {
                 try? FileManager.default.removeItem(at: sourceURL)
             }
@@ -61,8 +63,8 @@ enum RecordingAudioMixer {
         let audioMix = AVMutableAudioMix()
         audioMix.inputParameters = audioMixParameters
 
-        let exportURL = stagedExportURL(sourceURL: sourceURL, destinationURL: destinationURL)
-        try? FileManager.default.removeItem(at: exportURL)
+        let exportURL = RecordingFileStore.stagedURL(for: destinationURL)
+        defer { try? FileManager.default.removeItem(at: exportURL) }
         guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else {
             throw RecordingAudioMixerError.noExportSession
         }
@@ -76,38 +78,22 @@ enum RecordingAudioMixer {
         exportSession.shouldOptimizeForNetworkUse = true
 
         let exportBox = ExportSessionBox(exportSession)
+        try Task.checkCancellation()
         try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
                 exportBox.session.exportAsynchronously {
                     switch exportBox.session.status {
                     case .completed:
-                        do {
-                            if exportURL != destinationURL {
-                                try? FileManager.default.removeItem(at: destinationURL)
-                                try FileManager.default.moveItem(at: exportURL, to: destinationURL)
-                            }
-                            if sourceURL != destinationURL {
-                                try? FileManager.default.removeItem(at: sourceURL)
-                            }
-                            continuation.resume()
-                        } catch {
-                            try? FileManager.default.removeItem(at: exportURL)
-                            continuation.resume(
-                                throwing: RecordingAudioMixerError.exportFailed(error.localizedDescription)
-                            )
-                        }
+                        continuation.resume()
                     case .cancelled:
-                        try? FileManager.default.removeItem(at: exportURL)
                         continuation.resume(throwing: CancellationError())
                     case .failed:
-                        try? FileManager.default.removeItem(at: exportURL)
                         continuation.resume(
                             throwing: RecordingAudioMixerError.exportFailed(
                                 exportBox.session.error?.localizedDescription ?? "Unknown export error."
                             )
                         )
                     default:
-                        try? FileManager.default.removeItem(at: exportURL)
                         continuation.resume(
                             throwing: RecordingAudioMixerError.exportFailed("Export ended with status \(exportBox.session.status.rawValue).")
                         )
@@ -118,14 +104,13 @@ enum RecordingAudioMixer {
             exportBox.cancel()
         }
 
+        // Commit in the caller's task so cancellation is observed even if the
+        // exporter reports completion just as the recording is cancelled.
+        try RecordingFileStore.publish(exportURL, to: destinationURL)
+        if sourceURL != destinationURL {
+            try? FileManager.default.removeItem(at: sourceURL)
+        }
         return destinationURL
-    }
-
-    static func stagedExportURL(sourceURL: URL, destinationURL: URL) -> URL {
-        guard sourceURL == destinationURL else { return destinationURL }
-        let baseName = destinationURL.deletingPathExtension().lastPathComponent
-        return destinationURL.deletingLastPathComponent()
-            .appendingPathComponent("\(baseName)-mixed-\(UUID().uuidString).mov")
     }
 }
 

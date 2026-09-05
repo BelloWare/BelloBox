@@ -44,10 +44,14 @@ final class ActionPopupViewModel: ObservableObject {
         let config = settings.currentConfig
         return "\(settings.providerKind.displayName) · \(config.model)"
     }
-    var canReplace: Bool { lastActionReplaces && !resultText.isEmpty && !isStreaming }
+    var canReplace: Bool {
+        lastActionReplaces && errorMessage == nil && !isStreaming
+            && !resultText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
     var copyableText: String {
+        if let errorMessage { return errorMessage }
         if !resultText.isEmpty { return resultText }
-        return errorMessage ?? ""
+        return ""
     }
     var canCopy: Bool { !copyableText.isEmpty && !isStreaming }
     var canRetry: Bool { lastInstruction != nil && !isStreaming && isConfigured }
@@ -62,6 +66,7 @@ final class ActionPopupViewModel: ObservableObject {
     }
 
     func runCustom() {
+        guard !isStreaming else { return }
         let trimmed = instruction.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         runInstruction(trimmed, replaces: true)
@@ -133,6 +138,7 @@ final class ActionPopupViewModel: ObservableObject {
     }
 
     func copyResult() {
+        guard canCopy else { return }
         let text = copyableText
         guard !text.isEmpty else { return }
         let pasteboard = NSPasteboard.general
@@ -141,7 +147,7 @@ final class ActionPopupViewModel: ObservableObject {
     }
 
     func replaceSelection() {
-        guard !resultText.isEmpty else { return }
+        guard canReplace else { return }
         let pid = selection.pid
         let text = resultText
         onClose()

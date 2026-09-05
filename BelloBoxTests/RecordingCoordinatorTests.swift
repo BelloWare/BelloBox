@@ -145,6 +145,44 @@ final class RecordingCoordinatorTests: XCTestCase {
         }
     }
 
+    func testFailureDuringStartupCannotReturnToRecording() async {
+        let engine = MockRecordingEngine(label: "Failed startup")
+        engine.suspendStart = true
+        let coordinator = RecordingCoordinator(settings: AppSettings(defaults: temporaryDefaults()),
+            makeEngine: { _, _ in engine }, permissionProvider: { _ in .grantedForTests })
+        let failed = expectation(description: "Failure reported")
+        coordinator.onStateChange = { if case .failed = $0 { failed.fulfill() } }
+        var options = RecordingOptions.default
+        options.countdownSeconds = 0
+        let task = Task { await coordinator.start(target: .display(displayID: 1), options: options) }
+        await fulfillment(of: [engine.startStarted], timeout: 1)
+        engine.onFailure?(RecordingEngineError.streamFailed("Interrupted"))
+        await fulfillment(of: [failed], timeout: 1)
+        engine.completeStart()
+        await task.value
+        guard case .failed = coordinator.state else { return XCTFail("Late startup must not revive a failed recording") }
+        XCTAssertTrue(engine.didCancel)
+    }
+
+    func testCancellingSuspendedStartupCancelsEngineAndIgnoresLateSuccess() async {
+        let engine = MockRecordingEngine(label: "Cancelled startup")
+        engine.suspendStart = true
+        let coordinator = RecordingCoordinator(settings: AppSettings(defaults: temporaryDefaults()),
+            makeEngine: { _, _ in engine }, permissionProvider: { _ in .grantedForTests })
+        let idle = expectation(description: "Cancelled startup returned to idle")
+        coordinator.onStateChange = { if case .idle = $0 { idle.fulfill() } }
+        var options = RecordingOptions.default
+        options.countdownSeconds = 0
+        let task = Task { await coordinator.start(target: .display(displayID: 1), options: options) }
+        await fulfillment(of: [engine.startStarted], timeout: 1)
+        task.cancel()
+        await fulfillment(of: [idle], timeout: 1)
+        XCTAssertTrue(engine.didCancel)
+        engine.completeStart()
+        await task.value
+        XCTAssertEqual(coordinator.state, .idle)
+    }
+
     private func temporaryDefaults() -> UserDefaults {
         let suiteName = "BelloBoxTests.RecordingCoordinator.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -163,6 +201,9 @@ private final class MockRecordingEngine: RecordingEngineControlling {
     var onSecureFieldHiddenChange: ((Bool) -> Void)?
 
     private let targetDescription: String
+    var suspendStart = false
+    let startStarted = XCTestExpectation(description: "start suspended")
+    private var startContinuation: CheckedContinuation<Void, Never>?
     let stopStarted = XCTestExpectation(description: "stop started")
     private var stopContinuation: CheckedContinuation<URL, Error>?
     private(set) var didCancel = false
@@ -176,6 +217,12 @@ private final class MockRecordingEngine: RecordingEngineControlling {
 
     func start() async throws -> RecordingRuntimeState {
         startCallCount += 1
+        if suspendStart {
+            await withCheckedContinuation { continuation in
+                startContinuation = continuation
+                startStarted.fulfill()
+            }
+        }
         return RecordingRuntimeState(
             sessionID: RecordingSessionID(),
             startedAt: Date(),
@@ -204,6 +251,11 @@ private final class MockRecordingEngine: RecordingEngineControlling {
 
     func cancel() {
         didCancel = true
+    }
+
+    func completeStart() {
+        startContinuation?.resume()
+        startContinuation = nil
     }
 
     func completeStop(with url: URL) {

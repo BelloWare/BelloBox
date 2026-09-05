@@ -10,6 +10,7 @@ final class RecordingReviewViewModel: ObservableObject {
     @Published var statusMessage: String?
     @Published var errorMessage: String?
     @Published var showDiscardConfirmation = false
+    @Published private(set) var isSaving = false
     private var discardRequested = false
     var onClose: () -> Void = {}
 
@@ -27,14 +28,32 @@ final class RecordingReviewViewModel: ObservableObject {
     }
 
     func saveAs() {
+        guard !isSaving else { return }
         statusMessage = nil
         errorMessage = nil
         let panel = NSSavePanel()
         panel.nameFieldStringValue = fileURL.lastPathComponent
         panel.allowedContentTypes = [.quickTimeMovie]
         guard panel.runModal() == .OK, let destination = panel.url else { return }
+        Task { await saveRecording(to: destination) }
+    }
+
+    func saveRecording(to destination: URL) async {
+        guard !isSaving, !Task.isCancelled else { return }
+        isSaving = true
+        statusMessage = nil
+        errorMessage = nil
+        defer { isSaving = false }
+        let source = fileURL
         do {
-            try copyRecording(to: destination)
+            let copyTask = Task.detached(priority: .userInitiated) {
+                try RecordingFileStore.copy(from: source, to: destination)
+            }
+            try await withTaskCancellationHandler {
+                try await copyTask.value
+            } onCancel: {
+                copyTask.cancel()
+            }
             statusMessage = "Saved to \(destination.lastPathComponent)."
         } catch {
             errorMessage = "Could not save recording: \(error.localizedDescription)"
@@ -42,13 +61,7 @@ final class RecordingReviewViewModel: ObservableObject {
     }
 
     func copyRecording(to destination: URL) throws {
-        let source = fileURL.standardizedFileURL
-        let target = destination.standardizedFileURL
-        guard source.path != target.path else { return }
-        if FileManager.default.fileExists(atPath: destination.path) {
-            try FileManager.default.removeItem(at: destination)
-        }
-        try FileManager.default.copyItem(at: fileURL, to: destination)
+        try RecordingFileStore.copy(from: fileURL, to: destination)
     }
 
     func copyFile() {
@@ -67,7 +80,7 @@ final class RecordingReviewViewModel: ObservableObject {
     }
 
     func discard() {
-        guard discardRequested else { return }
+        guard discardRequested, !isSaving else { return }
         discardRequested = false
         showDiscardConfirmation = false
         statusMessage = nil
@@ -82,6 +95,7 @@ final class RecordingReviewViewModel: ObservableObject {
     }
 
     func requestDiscard() {
+        guard !isSaving else { return }
         player.pause()
         discardRequested = true
         showDiscardConfirmation = true
@@ -94,6 +108,7 @@ final class RecordingReviewViewModel: ObservableObject {
 }
 
 struct RecordingReviewView: View {
+    static let preferredSize = CGSize(width: 760, height: 490)
     @ObservedObject var viewModel: RecordingReviewViewModel
 
     var body: some View {
@@ -110,17 +125,28 @@ struct RecordingReviewView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.primary.opacity(0.08), lineWidth: 1))
 
-            if let message = viewModel.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle.fill")
-                    .font(.callout)
-                    .foregroundStyle(.red)
-                    .textSelection(.enabled)
-            } else if let message = viewModel.statusMessage {
-                Label(message, systemImage: "checkmark.circle.fill")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .textSelection(.enabled)
+            ZStack(alignment: .leading) {
+                if viewModel.isSaving {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small)
+                        Text("Saving recording…").font(.callout)
+                    }
+                } else if let message = viewModel.errorMessage {
+                    Label(message, systemImage: "exclamationmark.triangle.fill")
+                        .font(.callout)
+                        .foregroundStyle(.red)
+                        .textSelection(.enabled)
+                } else if let message = viewModel.statusMessage {
+                    Label(message, systemImage: "checkmark.circle.fill")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                }
             }
+            .lineLimit(1)
+            .help(viewModel.errorMessage ?? viewModel.statusMessage ?? "")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 22)
 
             HStack {
                 Label(viewModel.fileSizeText, systemImage: "doc")
@@ -129,16 +155,18 @@ struct RecordingReviewView: View {
                 Button("Save As…") { viewModel.saveAs() }
                     .buttonStyle(SecondaryButtonStyle())
                     .keyboardShortcut("s", modifiers: [.command, .shift])
+                    .disabled(viewModel.isSaving)
                 Button("Copy File") { viewModel.copyFile() }
                     .buttonStyle(SecondaryButtonStyle())
                 Button("Show in Finder") { viewModel.revealInFinder() }
                     .buttonStyle(SecondaryButtonStyle())
                 Button("Move to Trash…", role: .destructive) { viewModel.requestDiscard() }
                     .buttonStyle(SecondaryButtonStyle())
+                    .disabled(viewModel.isSaving)
             }
         }
         .padding(18)
-        .frame(width: 760, height: 430)
+        .frame(width: Self.preferredSize.width, height: Self.preferredSize.height)
         .popupCard()
         .onDisappear { viewModel.player.pause() }
         .alert("Move this recording to Trash?", isPresented: $viewModel.showDiscardConfirmation) {

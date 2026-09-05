@@ -690,7 +690,7 @@ final class SelectionOverlayController: NSObject {
             let view = RecordingReviewView(viewModel: viewModel)
             present(
                 view,
-                size: CGSize(width: 760, height: 430),
+                size: RecordingReviewView.preferredSize,
                 anchorRect: nil,
                 minimizedIcon: "play.rectangle",
                 minimizedTitle: "Recording",

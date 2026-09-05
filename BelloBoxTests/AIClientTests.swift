@@ -257,6 +257,25 @@ final class AIClientTests: XCTestCase {
 
     // MARK: - Error extraction
 
+    func testLargeSingleLineHTTPErrorIsBounded() async throws {
+        MockURLProtocol.handler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 502,
+                httpVersion: "HTTP/1.1", headerFields: ["Content-Type": "application/json"])!
+            let body = try JSONSerialization.data(withJSONObject: ["error": ["message": String(repeating: "x", count: 100_000)]])
+            return (response, body)
+        }
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockURLProtocol.self]
+        let client = AIClient(session: URLSession(configuration: configuration))
+        do {
+            _ = try await client.complete(config: config(.openAI, base: "https://api.example.com/v1"), userText: "hello")
+            XCTFail("Expected an HTTP error")
+        } catch let AIError.http(status, message) {
+            XCTAssertEqual(status, 502)
+            XCTAssertLessThanOrEqual(message.count, 400)
+        }
+    }
+
     func testErrorMessageExtraction() {
         XCTAssertEqual(AIClient.extractErrorMessage(#"{"error":{"message":"bad key"}}"#), "bad key")
         XCTAssertEqual(AIClient.extractErrorMessage(#"{"message":"nope"}"#), "nope")

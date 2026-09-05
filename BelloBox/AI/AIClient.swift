@@ -59,13 +59,20 @@ final class AIClient: @unchecked Sendable {
             throw AIError.transport("The response was not an HTTP response.")
         }
         guard (200..<300).contains(http.statusCode) else {
-            let body = try await Self.drain(bytes)
+            let body: String
+            do {
+                body = try await Self.drain(bytes)
+            } catch {
+                if Self.isCancellation(error) { throw CancellationError() }
+                throw AIError.transport(error.localizedDescription)
+            }
             throw AIError.http(status: http.statusCode, message: Self.extractErrorMessage(body))
         }
 
         var sawAny = false
         do {
             for try await line in bytes.lines {
+                try Task.checkCancellation()
                 guard let payload = Self.ssePayload(line) else { continue }
                 switch config.kind {
                 case .openAI:
@@ -411,12 +418,13 @@ final class AIClient: @unchecked Sendable {
     // MARK: - Helpers
 
     private static func drain(_ bytes: URLSession.AsyncBytes) async throws -> String {
-        var collected = ""
-        for try await line in bytes.lines {
-            collected += line + "\n"
-            if collected.count > 8000 { break }
+        var collected = Data()
+        for try await byte in bytes {
+            try Task.checkCancellation()
+            collected.append(byte)
+            if collected.count >= 8192 { break }
         }
-        return collected
+        return String(decoding: collected, as: UTF8.self)
     }
 
     /// Best-effort extraction of a human message from a JSON error body.

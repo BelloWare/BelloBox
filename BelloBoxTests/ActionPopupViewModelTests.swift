@@ -95,6 +95,49 @@ final class ActionPopupViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.canReplace)
     }
 
+    func testFailedStreamCannotReplaceSelectionWithHiddenPartialText() async {
+        let settings = AppSettings(defaults: temporaryDefaults())
+        settings.openAIBaseURL = "https://api.example.com/v1"
+        settings.openAIModel = "m-1"
+        settings.apiKey = "sk-test"
+        let body = #"data: {"choices":[{"delta":{"content":"partial output"}}]}"# + "\n\n"
+            + #"data: {"error":{"message":"stream failed"}}"# + "\n\n"
+        let viewModel = ActionPopupViewModel(
+            selection: TextSelection(text: "original", anchorRect: nil, appName: nil, bundleID: nil, pid: nil),
+            settings: settings, client: clientReturning(status: 200, body: body), accessibility: AccessibilityService())
+        var closeCount = 0
+        viewModel.onClose = { closeCount += 1 }
+        viewModel.run(QuickAction.library[0])
+        await waitUntilFinished(viewModel)
+        XCTAssertEqual(viewModel.resultText, "partial output")
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertEqual(viewModel.copyableText, viewModel.errorMessage)
+        XCTAssertFalse(viewModel.canReplace)
+        viewModel.replaceSelection()
+        XCTAssertEqual(closeCount, 0)
+    }
+
+    func testBlankOrStreamingResponseCannotReplaceSelection() {
+        let viewModel = ActionPopupViewModel(
+            selection: TextSelection(text: "original", anchorRect: nil, appName: nil, bundleID: nil, pid: nil),
+            settings: AppSettings(defaults: temporaryDefaults()), client: AIClient(), accessibility: AccessibilityService())
+        var closeCount = 0
+        viewModel.onClose = { closeCount += 1 }
+        viewModel.resultText = " \n\t"
+        XCTAssertFalse(viewModel.canReplace)
+        viewModel.replaceSelection()
+        viewModel.resultText = "still streaming"
+        viewModel.isStreaming = true
+        XCTAssertFalse(viewModel.canCopy)
+        XCTAssertFalse(viewModel.canReplace)
+        viewModel.replaceSelection()
+        viewModel.instruction = "new instruction"
+        viewModel.runCustom()
+        XCTAssertEqual(viewModel.resultText, "still streaming")
+        XCTAssertTrue(viewModel.isStreaming)
+        XCTAssertEqual(closeCount, 0)
+    }
+
     private func temporaryDefaults(_ name: String = UUID().uuidString) -> UserDefaults {
         let suiteName = "BelloBoxTests.ActionPopupViewModel.\(name)"
         let defaults = UserDefaults(suiteName: suiteName)!
