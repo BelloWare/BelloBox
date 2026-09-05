@@ -8,7 +8,11 @@ struct MainView: View {
     var canCheckForUpdates: Bool
     var onOpenSettings: () -> Void
     var onOpenGuide: () -> Void
-    var onOpenTokenUsage: () -> Void
+    var onCapture: () -> Void
+    var onScrollCapture: () -> Void
+    var onRecord: () -> Void
+    var onOpenQR: () -> Void
+    var onOpenTextTools: () -> Void
     var onOpenWorldClock: () -> Void
     var onCheckForUpdates: () -> Void
 
@@ -36,17 +40,21 @@ struct MainView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            header
-            statusCard
-            utilitiesRow
-            howToCard
-            shortcutsCard
-            Spacer(minLength: 0)
-            actions
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    header
+                    statusCard
+                    utilitiesRow
+                    howToCard
+                    shortcutsCard
+                }
+                .padding(24)
+            }
+            Divider()
+            actions.padding(20)
         }
-        .padding(24)
-        .frame(width: 660, height: 780)
+        .frame(minWidth: 660, minHeight: 600)
         .onReceive(timer) { _ in trusted = AccessibilityService.isTrusted }
     }
 
@@ -56,7 +64,7 @@ struct MainView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Bello Box").font(.system(size: 30, weight: .bold))
                 Text(versionText).font(.caption).foregroundStyle(.secondary)
-                Text("A toolbox for the text you've selected.")
+                Text("Capture, create, and work across time zones.")
                     .font(.subheadline).foregroundStyle(.secondary)
             }
             Spacer()
@@ -81,7 +89,7 @@ struct MainView: View {
             statusRow(
                 ok: settings.isConfigured,
                 title: "AI provider",
-                okText: "Connected · \(settings.providerKind.shortName)",
+                okText: "Configured · \(settings.providerKind.shortName)",
                 badText: "Not configured",
                 action: settings.isConfigured ? nil : ("Set up", onOpenSettings)
             )
@@ -130,7 +138,7 @@ struct MainView: View {
                 .frame(width: 30, height: 30)
                 .background(Circle().fill(BoxTheme.accentSoft))
             VStack(alignment: .leading, spacing: 3) {
-                Text("How to use it").font(.callout.weight(.semibold))
+                Text("AI and selection tools").font(.callout.weight(.semibold))
                 Text(howToText)
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -141,21 +149,13 @@ struct MainView: View {
     }
 
     private var utilitiesRow: some View {
-        HStack(spacing: 10) {
-            utilityButton(
-                title: "Codex Token Usage",
-                subtitle: "Local usage history",
-                symbol: "chart.xyaxis.line",
-                accessibilityID: "mainTokenUsageButton",
-                action: onOpenTokenUsage
-            )
-            utilityButton(
-                title: "World Clock",
-                subtitle: "Find meeting times",
-                symbol: "globe.americas.fill",
-                accessibilityID: "mainWorldClockButton",
-                action: onOpenWorldClock
-            )
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+            utilityButton(title: "Screenshot", subtitle: "Capture and annotate", symbol: "camera.viewfinder", accessibilityID: "mainScreenshotButton", action: onCapture)
+            utilityButton(title: "Scrolling Capture", subtitle: "Capture a longer page", symbol: "arrow.down.doc", accessibilityID: "mainScrollButton", action: onScrollCapture)
+            utilityButton(title: "Recording", subtitle: "Record your screen", symbol: "record.circle", accessibilityID: "mainRecordingButton", action: onRecord)
+            utilityButton(title: "World Clock", subtitle: "Compare meeting times", symbol: "globe.americas.fill", accessibilityID: "mainWorldClockButton", action: onOpenWorldClock)
+            utilityButton(title: "QR Code", subtitle: "Enter a link or text", symbol: "qrcode", accessibilityID: "mainQRButton", action: onOpenQR)
+            utilityButton(title: "Text Tools", subtitle: "Convert, format, and count", symbol: "wrench.and.screwdriver", accessibilityID: "mainTextToolsButton", action: onOpenTextTools)
         }
     }
 
@@ -277,7 +277,7 @@ struct MainView: View {
         let report = DebugInfoCollector.report(settings: settings)
         NSPasteboard.general.clearContents()
         if NSPasteboard.general.setString(report, forType: .string) {
-            debugCopyMessage = "Debug info copied. Send it after reproducing the multi-monitor issue."
+            debugCopyMessage = "Debug info copied. You can include it when reporting an issue."
         } else {
             debugCopyMessage = "Could not copy debug info."
         }

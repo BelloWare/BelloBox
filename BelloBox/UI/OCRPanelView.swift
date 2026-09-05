@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 @MainActor
 final class OCRPanelViewModel: ObservableObject {
@@ -21,6 +22,28 @@ final class OCRPanelViewModel: ObservableObject {
     var markdown: String { result.map(OCRResultFormatter.markdown) ?? "" }
     var canCopyText: Bool { !plainText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     var canCopyMarkdown: Bool { !markdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    func saveText() {
+        let isMarkdown = activeDisplayMode == .markdown
+        let text = isMarkdown ? markdown : plainText
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = isMarkdown ? [UTType(filenameExtension: "md") ?? .plainText] : [.plainText]
+        panel.nameFieldStringValue = isMarkdown ? "screenshot-text.md" : "screenshot-text.txt"
+        panel.canCreateDirectories = true
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            Task { @MainActor in
+                do {
+                    try text.write(to: url, atomically: true, encoding: .utf8)
+                    self.errorMessage = nil
+                    self.statusMessage = "Saved to \(url.lastPathComponent)."
+                } catch {
+                    self.errorMessage = "Could not save text: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
 }
 
 struct OCRPanelView: View {
@@ -104,6 +127,13 @@ struct OCRPanelView: View {
                 Button("Copy Markdown") { viewModel.onCopyMarkdown() }
                     .buttonStyle(SecondaryButtonStyle())
                     .disabled(!viewModel.canCopyMarkdown)
+                Button(action: viewModel.saveText) {
+                    Image(systemName: "square.and.arrow.down")
+                }
+                .buttonStyle(SecondaryButtonStyle())
+                .disabled(!(viewModel.activeDisplayMode == .markdown ? viewModel.canCopyMarkdown : viewModel.canCopyText))
+                .accessibilityLabel("Save recognized text")
+                .help("Save the displayed text or Markdown to a file")
             }
 
             if let warnings = viewModel.result?.warnings, !warnings.isEmpty {

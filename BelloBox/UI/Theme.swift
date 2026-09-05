@@ -9,6 +9,7 @@ extension BoxTheme {
 
 /// A filled, gradient primary action button.
 struct PrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.callout.weight(.semibold))
@@ -16,7 +17,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, 7)
             .padding(.horizontal, 14)
             .background(Capsule().fill(BoxTheme.accentGradient))
-            .opacity(configuration.isPressed ? 0.85 : 1)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.85 : 1) : 0.4)
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
             .contentShape(Capsule())
@@ -25,6 +26,7 @@ struct PrimaryButtonStyle: ButtonStyle {
 
 /// A soft, bordered secondary action button.
 struct SecondaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.callout.weight(.medium))
@@ -33,6 +35,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .padding(.horizontal, 14)
             .background(Capsule().fill(.primary.opacity(configuration.isPressed ? 0.12 : 0.07)))
             .overlay(Capsule().strokeBorder(.primary.opacity(0.08), lineWidth: 1))
+            .opacity(isEnabled ? 1 : 0.4)
             .contentShape(Capsule())
     }
 }
@@ -62,7 +65,7 @@ struct PopupHeader: View {
             }
             Spacer(minLength: 8)
             if let onMinimize {
-                chromeButton(systemName: "minus", help: "Minify", action: onMinimize)
+                chromeButton(systemName: "minus", help: "Minimize popup", action: onMinimize)
             }
             chromeButton(systemName: "xmark", help: "Close", action: onClose)
         }
@@ -78,6 +81,7 @@ struct PopupHeader: View {
         }
         .buttonStyle(.plain)
         .help(help)
+        .accessibilityLabel(help)
     }
 }
 

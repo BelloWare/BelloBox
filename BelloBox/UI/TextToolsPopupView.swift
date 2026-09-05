@@ -26,12 +26,13 @@ final class TextToolsPopupViewModel: ObservableObject {
         }
     }
 
-    @Published var input: String
-    @Published var category: Category = .caseConvert
-    @Published var caseStyle: CaseConverter.Style = .upper
-    @Published var encodeMethod: TextEncoder.Method = .base64
-    @Published var decodeFormat: TextDecoder.Format = .auto
-    @Published var lineOp: LineTool.Operation = .sortAscending
+    @Published var input: String { didSet { statusMessage = nil } }
+    @Published private(set) var statusMessage: String?
+    @Published var category: Category = .caseConvert { didSet { statusMessage = nil } }
+    @Published var caseStyle: CaseConverter.Style = .upper { didSet { statusMessage = nil } }
+    @Published var encodeMethod: TextEncoder.Method = .base64 { didSet { statusMessage = nil } }
+    @Published var decodeFormat: TextDecoder.Format = .auto { didSet { statusMessage = nil } }
+    @Published var lineOp: LineTool.Operation = .sortAscending { didSet { statusMessage = nil } }
     @Published var tokenProvider: ProviderKind {
         didSet {
             guard tokenProvider != oldValue else { return }
@@ -90,13 +91,26 @@ final class TextToolsPopupViewModel: ObservableObject {
         }
     }
 
-    func copy(_ text: String) {
+    var canReplaceSelection: Bool { selection.pid != nil }
+    var canResetInput: Bool { input != selection.text }
+    func resetInput() { input = selection.text }
+    var copyableOutput: String {
+        if let primaryOutput { return primaryOutput }
+        switch category {
+        case .hash: return hashes.map { "\($0.0.rawValue): \($0.1)" }.joined(separator: "\n")
+        case .count: return (stats.map { "\($0.0): \($0.1)" } + ["Estimated tokens: \(tokenEstimate) (\(modelLabel))"]).joined(separator: "\n")
+        default: return ""
+        }
+    }
+
+    func copy(_ text: String, label: String = "Result") {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
+        statusMessage = pasteboard.setString(text, forType: .string) ? "\(label) copied." : "Could not copy."
     }
 
     func replace(_ text: String) {
+        guard canReplaceSelection, !text.isEmpty else { return }
         let pid = selection.pid
         onClose()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [accessibility] in
@@ -130,8 +144,8 @@ struct TextToolsPopupView: View {
             categoryBar
             inputField
             Divider()
-            content
-            Spacer(minLength: 0)
+            ScrollView { content.frame(maxWidth: .infinity, alignment: .leading) }
+            footer
         }
         .padding(16)
         .frame(width: Self.preferredSize.width, height: Self.preferredSize.height, alignment: .topLeading)
@@ -145,8 +159,8 @@ struct TextToolsPopupView: View {
     }
 
     private var categoryBar: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 8)], alignment: .leading, spacing: 8) {
-            ForEach(TextToolsPopupViewModel.Category.allCases) { category in
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)], alignment: .leading, spacing: 8) {
+            ForEach(Array(TextToolsPopupViewModel.Category.allCases.enumerated()), id: \.element.id) { index, category in
                 let selected = viewModel.category == category
                 Button {
                     viewModel.category = category
@@ -164,15 +178,26 @@ struct TextToolsPopupView: View {
                         .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
+                .accessibilityValue(selected ? "Selected" : "Not selected")
+                .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
+                .help("\(category.rawValue) (⌘\(index + 1))")
             }
         }
     }
 
     private var inputField: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text("Input").font(.caption2.bold()).foregroundStyle(.secondary)
+            HStack {
+                Text("Input · \(viewModel.input.count.formatted()) characters").font(.caption2.bold()).foregroundStyle(.secondary)
+                Spacer()
+                Button("Reset", action: viewModel.resetInput)
+                    .buttonStyle(.link).font(.caption)
+                    .disabled(!viewModel.canResetInput)
+                    .help("Restore the text this tool opened with")
+            }
             TextEditor(text: $viewModel.input)
                 .font(.callout)
+                .accessibilityLabel("Text Tools input")
                 .scrollContentBackground(.hidden)
                 .frame(height: 120)
                 .padding(6)
@@ -229,7 +254,7 @@ struct TextToolsPopupView: View {
                 Text("Detected: \(result.format)").font(.caption).foregroundStyle(BoxTheme.accent)
                 outputBlock(result.output)
             } else {
-                notice("Couldn't decode this text. Try choosing a format above.")
+                notice(viewModel.input.isEmpty ? "Paste or type encoded text above to get started." : "Couldn't decode this text. Try choosing a format above.")
             }
         }
     }
@@ -240,7 +265,7 @@ struct TextToolsPopupView: View {
                 Text("Detected: \(result.language)").font(.caption).foregroundStyle(BoxTheme.accent)
                 outputBlock(result.output)
             } else {
-                notice("Couldn't detect a formattable language (try JSON, XML/HTML, or CSS).")
+                notice(viewModel.input.isEmpty ? "Paste JSON, XML, HTML, or CSS above to format it." : "Couldn't detect a formattable language (try JSON, XML/HTML, or CSS).")
             }
         }
     }
@@ -256,9 +281,11 @@ struct TextToolsPopupView: View {
                         .truncationMode(.middle)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Button { viewModel.copy(value) } label: { Image(systemName: "doc.on.doc") }
+                    Button { viewModel.copy(value, label: algorithm.rawValue) } label: { Image(systemName: "doc.on.doc") }
                         .buttonStyle(.plain)
                         .foregroundStyle(.secondary)
+                        .help("Copy \(algorithm.rawValue)")
+                        .accessibilityLabel("Copy \(algorithm.rawValue)")
                 }
                 .padding(.vertical, 5)
                 .padding(.horizontal, 8)
@@ -367,18 +394,34 @@ struct TextToolsPopupView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
-            .frame(height: 300)
+            .frame(minHeight: 200)
             .padding(8)
             .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
+        }
+    }
 
-            HStack {
-                Spacer()
-                Button { viewModel.copy(text) } label: { Label("Copy", systemImage: "doc.on.doc") }
+    private var footer: some View {
+        HStack(spacing: 8) {
+            if let message = viewModel.statusMessage {
+                Text(message).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            if let output = viewModel.primaryOutput {
+                Button("Use as Input") { viewModel.input = output }
                     .buttonStyle(SecondaryButtonStyle())
-                    .disabled(text.isEmpty)
-                Button { viewModel.replace(text) } label: { Label("Replace", systemImage: "arrow.left.arrow.right") }
+                    .disabled(output.isEmpty || output == viewModel.input)
+                    .help("Apply another transformation to this result")
+            }
+            Button { viewModel.copy(viewModel.copyableOutput) } label: { Label("Copy", systemImage: "doc.on.doc") }
+                .buttonStyle(SecondaryButtonStyle())
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .disabled(viewModel.copyableOutput.isEmpty)
+                .help("Copy result (⇧⌘C)")
+            if viewModel.canReplaceSelection, let output = viewModel.primaryOutput {
+                Button { viewModel.replace(output) } label: { Label("Replace", systemImage: "arrow.left.arrow.right") }
                     .buttonStyle(PrimaryButtonStyle())
-                    .disabled(text.isEmpty)
+                    .disabled(output.isEmpty)
+                    .help("Replace the original selection")
             }
         }
     }

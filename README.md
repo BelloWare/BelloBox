@@ -17,6 +17,20 @@ small Bello Box toolbar appears next to your selection. Click it (or press
 - Watch the answer stream in, then **Copy** it or **Replace** the original
   selection in place.
 
+Open **Bello Box** from the menu bar for direct access to screenshots, scrolling
+capture, recording, World Clock, QR codes, and Text Tools. QR and Text Tools also
+work with text you type or paste, without selecting text in another app.
+
+**World Clock** follows the current time until you choose a planning time. Enter
+an exact time, compare date changes across locations, then use **Copy Times** to
+share the comparison. **Now** returns to the live clock.
+
+In the screenshot editor, **⌥⌘1–9** selects annotation tools, **⇧⌘C** copies the
+image, and **⌘S** saves it. The image-options menu shows pixel dimensions and an
+undoable **Reset Crop** action. The Text Reader can save recognized text or
+Markdown to a file. Text Tools offers **Use as Input** for chaining transforms,
+and **Reset** restores the original input.
+
 ## Bring your own AI
 
 Bello Box does not ship a model or an API key. In **Settings** you choose:

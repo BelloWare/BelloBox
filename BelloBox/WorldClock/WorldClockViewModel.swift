@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 struct WorldClockZonePresentation: Identifiable, Equatable {
@@ -8,6 +9,7 @@ struct WorldClockZonePresentation: Identifiable, Equatable {
     let zoneText: String
     let quality: MeetingTimeQuality
     let isAnchor: Bool
+    let dayDifference: Int
 }
 
 @MainActor
@@ -16,7 +18,9 @@ final class WorldClockViewModel: ObservableObject {
     @Published private(set) var anchorZoneID: String
     @Published private(set) var timeline: WorldClockTimeline
     @Published private(set) var timelineQualities: [MeetingTimeQuality]
-    @Published var selectedInstant: Date
+    @Published var selectedInstant: Date { didSet { copyMessage = nil } }
+    @Published private(set) var isFollowingNow: Bool
+    @Published private(set) var copyMessage: String?
     @Published var searchQuery = ""
     @Published var aiRequest = ""
     @Published private(set) var isResolvingAI = false
@@ -25,19 +29,23 @@ final class WorldClockViewModel: ObservableObject {
 
     private let settings: AppSettings
     private let preferences: WorldClockPreferencesStore
-    private let aiResolver: WorldClockAIResolver
+    private let resolveRequest: (String, AIConfig) async throws -> WorldClockAIResult
     private var aiTask: Task<Void, Never>?
+    private var aiRunID: UUID?
     private var formatterCache: [String: ZoneFormatters] = [:]
 
     init(
         settings: AppSettings,
         seedDate: Date? = nil,
         preferences: WorldClockPreferencesStore = WorldClockPreferencesStore(),
-        aiResolver: WorldClockAIResolver = WorldClockAIResolver()
+        aiResolver: WorldClockAIResolver = WorldClockAIResolver(),
+        resolveRequest: ((String, AIConfig) async throws -> WorldClockAIResult)? = nil
     ) {
         self.settings = settings
         self.preferences = preferences
-        self.aiResolver = aiResolver
+        self.resolveRequest = resolveRequest ?? { request, config in
+            try await aiResolver.resolve(request: request, config: config)
+        }
 
         let zoneIDs = preferences.loadZoneIDs()
         let anchorZoneID = preferences.loadAnchorZoneID(validZoneIDs: zoneIDs)
@@ -46,6 +54,7 @@ final class WorldClockViewModel: ObservableObject {
         self.zoneIDs = zoneIDs
         self.anchorZoneID = anchorZoneID
         self.selectedInstant = selectedInstant
+        self.isFollowingNow = seedDate == nil
         let timeline = WorldClockTimeline(containing: selectedInstant, anchorTimeZone: anchorTimeZone)
         self.timeline = timeline
         self.timelineQualities = Self.makeTimelineQualities(timeline: timeline, zoneIDs: zoneIDs)
@@ -58,7 +67,7 @@ final class WorldClockViewModel: ObservableObject {
     var anchorTimeZone: TimeZone { Self.validTimeZone(anchorZoneID) }
     var selectedOffset: TimeInterval {
         get { timeline.offset(for: selectedInstant) }
-        set { selectedInstant = timeline.date(at: newValue) }
+        set { isFollowingNow = false; selectedInstant = timeline.date(at: newValue) }
     }
 
     var timelineStep: TimeInterval { 15 * 60 }
@@ -81,7 +90,8 @@ final class WorldClockViewModel: ObservableObject {
                 timeText: formatters.time.string(from: selectedInstant),
                 zoneText: Self.zoneDescription(zone, at: selectedInstant),
                 quality: MeetingTimeQuality.at(selectedInstant, in: zone),
-                isAnchor: identifier == anchorZoneID
+                isAnchor: identifier == anchorZoneID,
+                dayDifference: Self.dayDifference(at: selectedInstant, zone: zone, reference: anchorTimeZone)
             )
         }
     }
@@ -111,12 +121,14 @@ final class WorldClockViewModel: ObservableObject {
     }
 
     func focus(on date: Date) {
+        isFollowingNow = false
         selectedInstant = date
         timeline = WorldClockTimeline(containing: date, anchorTimeZone: anchorTimeZone)
         refreshTimelineQualities()
     }
 
     func selectDay(containing date: Date) {
+        isFollowingNow = false
         let newTimeline = WorldClockTimeline(containing: date, anchorTimeZone: anchorTimeZone)
         selectedInstant = Self.date(
             on: newTimeline,
@@ -127,6 +139,7 @@ final class WorldClockViewModel: ObservableObject {
     }
 
     func moveDay(by dayDelta: Int) {
+        isFollowingNow = false
         let moved = timeline.moving(byDays: dayDelta, preservingLocalTimeOf: selectedInstant)
         timeline = moved.timeline
         selectedInstant = moved.date
@@ -135,6 +148,41 @@ final class WorldClockViewModel: ObservableObject {
 
     func goToNow() {
         focus(on: Date())
+        isFollowingNow = true
+    }
+
+    func refreshCurrentTime(_ now: Date) {
+        guard isFollowingNow else { return }
+        if now < timeline.start || now >= timeline.end {
+            timeline = WorldClockTimeline(containing: now, anchorTimeZone: anchorTimeZone)
+            refreshTimelineQualities()
+        }
+        if Int(now.timeIntervalSince1970 / 60) != Int(selectedInstant.timeIntervalSince1970 / 60) {
+            selectedInstant = now
+        }
+    }
+
+    var meetingSummary: String {
+        (["Meeting time — \(selectedTimeTitle) (\(anchorName))"] + zonePresentations.map {
+            "\($0.name): \($0.dateText), \($0.timeText) (\($0.zoneText))"
+        }).joined(separator: "\n")
+    }
+
+    func copyMeeting() {
+        NSPasteboard.general.clearContents()
+        copyMessage = NSPasteboard.general.setString(meetingSummary, forType: .string)
+            ? "Meeting times copied." : "Could not copy meeting times."
+    }
+
+    private static func dayDifference(at date: Date, zone: TimeZone, reference: TimeZone) -> Int {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = reference
+        let referenceDay = calendar.dateComponents([.year, .month, .day], from: date)
+        calendar.timeZone = zone
+        let localDay = calendar.dateComponents([.year, .month, .day], from: date)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        guard let from = calendar.date(from: referenceDay), let to = calendar.date(from: localDay) else { return 0 }
+        return calendar.dateComponents([.day], from: from, to: to).day ?? 0
     }
 
     func addZone(_ identifier: String) {
@@ -176,32 +224,41 @@ final class WorldClockViewModel: ObservableObject {
         }
 
         aiTask?.cancel()
+        let runID = UUID()
+        aiRunID = runID
         isResolvingAI = true
         aiMessage = nil
         let config = settings.currentConfig
-        let resolver = aiResolver
+        let resolve = resolveRequest
         aiTask = Task { [weak self] in
             do {
-                let result = try await resolver.resolve(request: request, config: config)
+                let result = try await resolve(request, config)
                 try Task.checkCancellation()
+                guard self?.aiRunID == runID else { return }
                 self?.applyAIResult(result)
             } catch is CancellationError {
                 // A newer request or window close superseded this result.
             } catch {
+                guard self?.aiRunID == runID else { return }
                 self?.showAIMessage(error.localizedDescription, isError: true)
             }
+            guard self?.aiRunID == runID else { return }
+            self?.aiRunID = nil
             self?.isResolvingAI = false
             self?.aiTask = nil
         }
     }
 
     func cancelAI() {
+        aiRunID = nil
+        if isResolvingAI { showAIMessage("Cancelled. Your locations and time were kept.", isError: false) }
         aiTask?.cancel()
         aiTask = nil
         isResolvingAI = false
     }
 
     private func applyAIResult(_ result: WorldClockAIResult) {
+        isFollowingNow = false
         zoneIDs = result.timeZoneIDs
         anchorZoneID = result.anchorTimeZoneID
         if let date = result.referenceDate {
@@ -220,6 +277,7 @@ final class WorldClockViewModel: ObservableObject {
     }
 
     private func savePreferences() {
+        copyMessage = nil
         preferences.save(zoneIDs: zoneIDs, anchorZoneID: anchorZoneID)
     }
 

@@ -53,7 +53,6 @@ struct BelloBoxApp: App {
         Divider()
 
         Button("World Clock…") { appDelegate.showWorldClock() }
-        Button("Codex Token Usage…") { appDelegate.showCodexTokenUsage() }
 
         Button("Set Up Bello Box…") { appDelegate.showOnboarding() }
 
@@ -80,7 +79,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let onboarding = OnboardingWindowController()
     private let mainWindow = MainWindowController()
     private let settingsWindow = SettingsWindowController()
-    private let codexTokenUsageWindow = CodexTokenUsageWindowController()
     private let worldClockWindow = WorldClockWindowController()
     private var updaterController: SPUStandardUpdaterController?
     private var cancellables = Set<AnyCancellable>()
@@ -203,7 +201,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             canCheckForUpdates: updaterConfigured,
             onOpenSettings: { [weak self] in self?.showSettings() },
             onOpenGuide: { [weak self] in self?.showOnboarding() },
-            onOpenTokenUsage: { [weak self] in self?.showCodexTokenUsage() },
+            onCapture: { [weak self] in self?.mainWindow.hide(); self?.overlay?.triggerScreenshotCapture() },
+            onScrollCapture: { [weak self] in self?.mainWindow.hide(); self?.overlay?.triggerScrollingScreenshotCapture() },
+            onRecord: { [weak self] in self?.mainWindow.hide(); self?.overlay?.triggerRecording() },
+            onOpenQR: { [weak self] in self?.overlay?.openBlankQR() },
+            onOpenTextTools: { [weak self] in self?.overlay?.openBlankTextTools() },
             onOpenWorldClock: { [weak self] in self?.showWorldClock() },
             onCheckForUpdates: { [weak self] in self?.checkForUpdates() }
         )
@@ -219,10 +221,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showSettings() {
         settingsWindow.show(settings: settings)
-    }
-
-    func showCodexTokenUsage() {
-        codexTokenUsageWindow.show()
     }
 
     func showWorldClock(seedDate: Date? = nil) {

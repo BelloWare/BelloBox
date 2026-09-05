@@ -9,6 +9,8 @@ struct ActionPopupView: View {
     @ObservedObject var settings: AppSettings
     var onMinimize: () -> Void = {}
 
+    @State private var showsSelection = true
+
     private let columns = [GridItem(.adaptive(minimum: 210), spacing: 10)]
 
     var body: some View {
@@ -35,6 +37,7 @@ struct ActionPopupView: View {
         .popupCard()
         .appearPop()
         .onExitCommand { viewModel.close() }
+        .onChange(of: viewModel.didRun) { if $0 { showsSelection = false } }
     }
 
     // MARK: - Sections
@@ -46,19 +49,20 @@ struct ActionPopupView: View {
     }
 
     private var selectionPreview: some View {
-        ScrollView {
-            Text(viewModel.selection.text)
-                .font(.callout)
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .textSelection(.enabled)
+        DisclosureGroup(isExpanded: $showsSelection) {
+            ScrollView {
+                Text(viewModel.selection.text)
+                    .font(.callout)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
+            }
+            .frame(height: 120)
+        } label: {
+            Text("Selected text · \(viewModel.selection.text.count.formatted()) characters")
+                .font(.caption.weight(.semibold))
         }
-        .frame(height: 148)
         .padding(8)
-        .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(BoxTheme.accentSoft)
-        )
+        .background(RoundedRectangle(cornerRadius: 9).fill(BoxTheme.accentSoft))
     }
 
     private var setupBanner: some View {
@@ -91,7 +95,7 @@ struct ActionPopupView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .disabled(viewModel.isStreaming)
+                .disabled(viewModel.isStreaming || !viewModel.isConfigured)
             }
         }
     }
@@ -105,12 +109,10 @@ struct ActionPopupView: View {
             Button {
                 viewModel.runCustom()
             } label: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(BoxTheme.accent)
+                Label("Run", systemImage: "arrow.up")
             }
-            .buttonStyle(.plain)
-            .disabled(viewModel.isStreaming || viewModel.instruction.trimmingCharacters(in: .whitespaces).isEmpty)
+            .buttonStyle(PrimaryButtonStyle())
+            .disabled(viewModel.isStreaming || !viewModel.isConfigured || viewModel.instruction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .help("Run custom instruction")
         }
     }
@@ -156,14 +158,19 @@ struct ActionPopupView: View {
             .background(RoundedRectangle(cornerRadius: 9).fill(.primary.opacity(0.05)))
 
             HStack(spacing: 8) {
+                if let message = viewModel.copyMessage {
+                    Text(message).font(.caption).foregroundStyle(.secondary)
+                }
                 Spacer()
                 Button {
                     viewModel.copyResult()
                 } label: {
-                    Label("Copy", systemImage: "doc.on.doc")
+                    Label(viewModel.errorMessage == nil ? "Copy" : "Copy Error", systemImage: "doc.on.doc")
                 }
                 .buttonStyle(SecondaryButtonStyle())
                 .disabled(!viewModel.canCopy)
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .help("Copy result or error details (⇧⌘C)")
 
                 Button {
                     viewModel.replaceSelection()

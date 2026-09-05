@@ -9,6 +9,7 @@ final class ActionPopupViewModel: ObservableObject {
     @Published var resultText: String = ""
     @Published var isStreaming: Bool = false
     @Published var errorMessage: String?
+    @Published private(set) var copyMessage: String?
     @Published private(set) var lastActionReplaces: Bool = true
     @Published private(set) var didRun: Bool = false
 
@@ -73,6 +74,7 @@ final class ActionPopupViewModel: ObservableObject {
     }
 
     private func runInstruction(_ instruction: String, replaces: Bool) {
+        copyMessage = nil
         lastInstruction = (instruction, replaces)
         task?.cancel()
         guard settings.isConfigured else {
@@ -143,7 +145,7 @@ final class ActionPopupViewModel: ObservableObject {
         guard !text.isEmpty else { return }
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
+        copyMessage = pasteboard.setString(text, forType: .string) ? (errorMessage == nil ? "Result copied." : "Error details copied.") : "Could not copy."
     }
 
     func replaceSelection() {

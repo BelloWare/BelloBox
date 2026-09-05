@@ -26,6 +26,7 @@ struct SettingsView: View {
                 .padding(24)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
             }
+            .id(selectedCategory)
         }
         .frame(width: 900, height: 720)
         .onReceive(permissionTimer) { _ in
@@ -89,6 +90,7 @@ struct SettingsView: View {
             .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityValue(selectedCategory == category ? "Selected" : "Not selected")
         .padding(.horizontal, 10)
     }
 

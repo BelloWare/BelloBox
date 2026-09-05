@@ -231,6 +231,19 @@ final class SelectionOverlayController: NSObject {
         )
     }
 
+    /// Open editable tools from the home window without reading another app.
+    func openBlankQR() {
+        guard !isCaptureSurfaceActive else { return }
+        hideToolbar()
+        showQRPopup(for: TextSelection(text: "", anchorRect: nil, appName: nil, bundleID: nil, pid: nil))
+    }
+
+    func openBlankTextTools() {
+        guard !isCaptureSurfaceActive else { return }
+        hideToolbar()
+        showTextToolsPopup(for: TextSelection(text: "", anchorRect: nil, appName: nil, bundleID: nil, pid: nil))
+    }
+
     /// Used by the menu: read the selection now and open the QR popup.
     func triggerQROnCurrentSelection() {
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
@@ -967,6 +980,10 @@ final class SelectionOverlayController: NSObject {
         }
         if let text = env["BELLOBOX_E2E_QR_TEXT"] {
             showQRPopup(for: TextSelection(text: text, anchorRect: nil, appName: nil, bundleID: nil, pid: nil))
+            return
+        }
+        if let text = env["BELLOBOX_E2E_AI_PREVIEW_TEXT"] {
+            showAIPopup(for: TextSelection(text: text, anchorRect: nil, appName: nil, bundleID: nil, pid: nil))
             return
         }
         if runRealScreenshotE2EHookIfNeeded() { return }

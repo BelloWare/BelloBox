@@ -84,6 +84,14 @@ final class QRCodePopupViewModel: ObservableObject {
         }
     }
 
+    func pasteText() {
+        guard let value = NSPasteboard.general.string(forType: .string), !value.isEmpty else {
+            errorMessage = "The clipboard does not contain text."
+            return
+        }
+        text = value
+    }
+
     func close() { onClose() }
 }
 
@@ -145,7 +153,13 @@ struct QRCodePopupView: View {
 
     private var editor: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Encoded text").font(.caption.bold()).foregroundStyle(.secondary)
+            HStack {
+                Text("Encoded text").font(.caption.bold()).foregroundStyle(.secondary)
+                Spacer()
+                Button("Paste Text", action: viewModel.pasteText)
+                    .buttonStyle(.link).font(.caption)
+                    .help("Use text from your clipboard")
+            }
             TextEditor(text: $viewModel.text)
                 .font(.callout)
                 .frame(height: 100)
@@ -180,7 +194,7 @@ struct QRCodePopupView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: 20, alignment: .leading)
+        .frame(minHeight: 20, maxHeight: 40, alignment: .leading)
     }
 
     private var footer: some View {
@@ -188,9 +202,13 @@ struct QRCodePopupView: View {
             Spacer()
             Button { viewModel.save() } label: { Label("Save…", systemImage: "square.and.arrow.down") }
                 .buttonStyle(SecondaryButtonStyle())
+                .keyboardShortcut("s", modifiers: .command)
+                .help("Save QR image as PNG (⌘S)")
                 .disabled(viewModel.image == nil)
-            Button { viewModel.copyImage() } label: { Label("Copy", systemImage: "doc.on.doc") }
+            Button { viewModel.copyImage() } label: { Label("Copy Image", systemImage: "doc.on.doc") }
                 .buttonStyle(PrimaryButtonStyle())
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .help("Copy QR image (⇧⌘C)")
                 .disabled(viewModel.image == nil)
         }
     }

@@ -23,6 +23,7 @@ struct OnboardingView: View {
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .padding(34)
             }
+            .id(step)
 
             Divider()
             footer
@@ -322,12 +323,17 @@ struct OnboardingView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            HStack(spacing: 6) {
+            VStack(spacing: 5) {
+              Text("Step \(step + 1) of \(stepCount) · \(["Welcome", "Permissions", "Behavior", "Capture", "AI Provider", "Ready"][step])")
+                .font(.caption2).foregroundStyle(.secondary)
+              HStack(spacing: 6) {
                 ForEach(0..<stepCount, id: \.self) { index in
                     Circle()
                         .fill(index == step ? BoxTheme.accent : Color.primary.opacity(0.18))
                         .frame(width: 7, height: 7)
                 }
+              }
+              .accessibilityHidden(true)
             }
             Spacer()
             if step < stepCount - 1 {

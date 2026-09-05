@@ -13,6 +13,7 @@ final class ScreenshotCaptureChooserViewModel: ObservableObject {
 
     func refreshPermission() {
         hasScreenRecordingPermission = ScreenCapturePermission.isTrusted
+        if hasScreenRecordingPermission { errorMessage = nil }
     }
 
     func requestPermission() {
@@ -91,6 +92,9 @@ struct ScreenshotCaptureChooserView: View {
         .onDisappear {
             pendingInitialModeTask?.cancel()
             pendingInitialModeTask = nil
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            viewModel.refreshPermission()
         }
     }
 

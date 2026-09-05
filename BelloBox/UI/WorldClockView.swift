@@ -6,6 +6,7 @@ struct WorldClockView: View {
 
     @State private var showingZonePicker = false
     @State private var showingAI = false
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,6 +22,7 @@ struct WorldClockView: View {
         }
         .frame(minWidth: 760, minHeight: 590)
         .background(Color(nsColor: .windowBackgroundColor))
+        .onReceive(timer) { viewModel.refreshCurrentTime($0) }
     }
 
     private var header: some View {
@@ -70,28 +72,30 @@ struct WorldClockView: View {
             }
             .buttonStyle(.borderless)
             .help("Previous day")
+            .accessibilityLabel("Previous day")
 
-            DatePicker(
-                "Date",
-                selection: Binding(
-                    get: { viewModel.timeline.start },
-                    set: { viewModel.selectDay(containing: $0) }
-                ),
-                displayedComponents: .date
-            )
+            DatePicker("Date", selection: Binding(
+                get: { viewModel.timeline.start },
+                set: { viewModel.selectDay(containing: $0) }
+            ), displayedComponents: .date)
             .labelsHidden()
             .environment(\.timeZone, viewModel.anchorTimeZone)
             .accessibilityIdentifier("worldClockDatePicker")
 
             Button("Now") { viewModel.goToNow() }
                 .controlSize(.small)
-                .help("Return to the current date and time")
+                .help("Follow the current date and time")
+                .keyboardShortcut("n", modifiers: .command)
+            Label(viewModel.isFollowingNow ? "Live" : "Planning", systemImage: viewModel.isFollowingNow ? "clock.fill" : "calendar")
+                .font(.caption)
+                .foregroundStyle(viewModel.isFollowingNow ? Color.green : Color.secondary)
 
             Button { viewModel.moveDay(by: 1) } label: {
                 Image(systemName: "chevron.right")
             }
             .buttonStyle(.borderless)
             .help("Next day")
+            .accessibilityLabel("Next day")
 
             Spacer()
 
@@ -130,6 +134,13 @@ struct WorldClockView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
+                DatePicker("Time", selection: Binding(
+                    get: { viewModel.selectedInstant },
+                    set: { viewModel.focus(on: $0) }
+                ), displayedComponents: .hourAndMinute)
+                .environment(\.timeZone, viewModel.anchorTimeZone)
+                .fixedSize()
+                .accessibilityIdentifier("worldClockExactTime")
                 QualityBadge(quality: viewModel.selectedMeetingQuality)
             }
 
@@ -201,9 +212,15 @@ struct WorldClockView: View {
                 .buttonStyle(SecondaryButtonStyle())
                 .accessibilityLabel("Add Location")
                 .accessibilityIdentifier("worldClockAddLocationButton")
-                .popover(isPresented: $showingZonePicker, arrowEdge: .bottom) {
-                    WorldClockZonePicker(viewModel: viewModel) {
-                        showingZonePicker = false
+                .sheet(isPresented: $showingZonePicker) {
+                    VStack(alignment: .trailing, spacing: 0) {
+                        Button("Done") { showingZonePicker = false }
+                            .keyboardShortcut(.cancelAction)
+                            .padding(.horizontal, 14)
+                            .padding(.top, 12)
+                        WorldClockZonePicker(viewModel: viewModel) {
+                            showingZonePicker = false
+                        }
                     }
                 }
 
@@ -218,6 +235,15 @@ struct WorldClockView: View {
                 .help("Turn a description such as 'Singapore, London, and San Francisco next Tuesday' into locations and a time")
 
                 Spacer()
+                if let message = viewModel.copyMessage {
+                    Text(message).font(.caption).foregroundStyle(.secondary)
+                }
+                Button(action: viewModel.copyMeeting) {
+                    Label("Copy Times", systemImage: "doc.on.doc")
+                }
+                .buttonStyle(SecondaryButtonStyle())
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .help("Copy the selected date and time for every location (⇧⌘C)")
             }
 
             if showingAI {
@@ -233,11 +259,13 @@ struct WorldClockView: View {
 
                         if viewModel.isResolvingAI {
                             ProgressView().controlSize(.small)
+                            Button("Cancel", action: viewModel.cancelAI)
+                                .buttonStyle(SecondaryButtonStyle())
                         }
 
                         Button("Fill") { viewModel.fillWithAI() }
                             .buttonStyle(PrimaryButtonStyle())
-                            .disabled(viewModel.isResolvingAI)
+                            .disabled(viewModel.isResolvingAI || !viewModel.canUseAI || viewModel.aiRequest.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
 
                     if !viewModel.canUseAI {
@@ -330,6 +358,12 @@ private struct WorldClockZoneRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(zone.name).font(.callout.weight(.semibold))
+                    if zone.dayDifference != 0 {
+                        Text(zone.dayDifference > 0 ? "+\(zone.dayDifference) day" : "\(zone.dayDifference) day")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(BoxTheme.accent)
+                            .help("Calendar day compared with the reference location")
+                    }
                     if zone.isAnchor {
                         Text("REFERENCE")
                             .font(.system(size: 9, weight: .bold))
@@ -354,6 +388,7 @@ private struct WorldClockZoneRow: View {
             .buttonStyle(.borderless)
             .disabled(zone.isAnchor)
             .help(zone.isAnchor ? "Reference location" : "Use this location for the date and timeline")
+            .accessibilityLabel("Use \(zone.name) as reference")
 
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle")
@@ -361,6 +396,7 @@ private struct WorldClockZoneRow: View {
             .buttonStyle(.borderless)
             .disabled(!canRemove)
             .help(canRemove ? "Remove \(zone.name)" : "Keep at least one location")
+            .accessibilityLabel("Remove \(zone.name)")
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
@@ -389,6 +425,7 @@ private struct QualityBadge: View {
 private struct WorldClockZonePicker: View {
     @ObservedObject var viewModel: WorldClockViewModel
     var onAdded: () -> Void
+    @FocusState private var searchFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -397,9 +434,26 @@ private struct WorldClockZonePicker: View {
             TextField("City or IANA time zone", text: $viewModel.searchQuery)
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("worldClockZoneSearch")
+                .focused($searchFocused)
+                .onSubmit {
+                    if let first = viewModel.searchResults.first {
+                        viewModel.addZone(first.id)
+                        onAdded()
+                    }
+                }
 
             ScrollView {
                 LazyVStack(spacing: 2) {
+                    if viewModel.searchResults.isEmpty {
+                        VStack(spacing: 8) {
+                            Image(systemName: "magnifyingglass").font(.title2)
+                            Text("No matching locations").font(.headline)
+                            Text("Try a nearby city or a time zone such as Asia/Tokyo. Locations already added are hidden.")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        .multilineTextAlignment(.center)
+                        .padding(20)
+                    }
                     ForEach(viewModel.searchResults) { option in
                         Button {
                             viewModel.addZone(option.id)
@@ -429,6 +483,7 @@ private struct WorldClockZonePicker: View {
         }
         .padding(14)
         .frame(width: 360)
+        .onAppear { viewModel.searchQuery = ""; searchFocused = true }
     }
 }
 

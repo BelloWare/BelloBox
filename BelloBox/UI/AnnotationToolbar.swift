@@ -9,7 +9,7 @@ struct AnnotationToolbarView: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            ForEach(AnnotationTool.allCases) { tool in
+            ForEach(Array(AnnotationTool.allCases.enumerated()), id: \.element.id) { index, tool in
                 Button {
                     viewModel.activeTool = tool
                 } label: {
@@ -21,13 +21,26 @@ struct AnnotationToolbarView: View {
                 .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(viewModel.activeTool == tool ? BoxTheme.accent : .clear, lineWidth: 1.5))
                 .accessibilityLabel(tool.label)
                 .accessibilityValue(viewModel.activeTool == tool ? "Selected" : "Not selected")
-                .overlayTooltip(Self.tooltip(for: tool))
+                .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: [.command, .option])
+                .overlayTooltip("\(Self.tooltip(for: tool)) (⌥⌘\(index + 1))")
             }
 
             Divider().frame(height: 24)
 
             styleControls
                 .frame(width: 150, alignment: .leading)
+
+            Menu {
+                Text("\(Int(viewModel.visibleImageSize.width)) × \(Int(viewModel.visibleImageSize.height)) pixels")
+                Button("Reset Crop", action: viewModel.resetCrop)
+                    .disabled(!viewModel.canResetCrop)
+                Divider()
+                Text("Choose tools with ⌥⌘1 through ⌥⌘9")
+            } label: { Image(systemName: "ellipsis.circle") }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .accessibilityLabel("Image options")
+            .overlayTooltip("Image size and reset crop")
 
             Spacer(minLength: 8)
 

@@ -153,7 +153,7 @@ struct ScrollCaptureHUDView: View {
         Button {
             engine.toggleAutoScroll()
         } label: {
-            Label(engine.isAutoScrolling ? "Stop" : "Auto-scroll", systemImage: engine.isAutoScrolling ? "stop.circle.fill" : "play.circle.fill")
+            Label(engine.isAutoScrolling ? "Pause Auto" : "Auto-scroll", systemImage: engine.isAutoScrolling ? "stop.circle.fill" : "play.circle.fill")
                 .symbolRenderingMode(.hierarchical)
         }
         .buttonStyle(SecondaryButtonStyle())
@@ -175,7 +175,7 @@ struct ScrollCaptureHUDView: View {
             if engine.phase == .stitching {
                 ProgressView().controlSize(.small).frame(width: 40)
             } else {
-                Text("Done")
+                Text("Finish")
             }
         }
         .buttonStyle(PrimaryButtonStyle())

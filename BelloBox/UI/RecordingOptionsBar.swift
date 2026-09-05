@@ -35,56 +35,64 @@ struct RecordingOptionsBar: View {
                 }
                 .buttonStyle(SecondaryButtonStyle())
                 .help("Cancel")
+                .accessibilityLabel("Cancel recording setup")
             }
 
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 12) {
-                    audioColumn.frame(width: 220, alignment: .leading)
-                    inputColumn.frame(width: 190, alignment: .leading)
-                    qualityColumn.frame(width: 220, alignment: .leading)
-                }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .top, spacing: 12) {
+                            audioColumn.frame(width: 220, alignment: .leading)
+                            inputColumn.frame(width: 190, alignment: .leading)
+                            qualityColumn.frame(width: 220, alignment: .leading)
+                        }
 
-                VStack(alignment: .leading, spacing: 12) {
-                    audioColumn
-                    Divider()
-                    inputColumn
-                    Divider()
-                    qualityColumn
-                }
-            }
-
-            DisclosureGroup(privacyDisclosureTitle, isExpanded: $showAdvanced) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Picker("Redaction", selection: $options.secureFieldRedactionMode) {
-                        ForEach(SecureFieldRedactionMode.allCases) { mode in
-                            Text(mode.label).tag(mode)
+                        VStack(alignment: .leading, spacing: 12) {
+                            audioColumn
+                            Divider()
+                            inputColumn
+                            Divider()
+                            qualityColumn
                         }
                     }
-                    .frame(width: 260)
 
-                    if let warning = secureFieldRedactionWarning {
-                        HStack(alignment: .top, spacing: 8) {
-                            Image(systemName: "lock.slash")
-                                .foregroundStyle(.orange)
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(warning)
-                                    .foregroundStyle(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                Button("Open Accessibility Settings") {
-                                    AccessibilityService.openAccessibilitySettings()
+                    DisclosureGroup(privacyDisclosureTitle, isExpanded: $showAdvanced) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Picker("Redaction", selection: $options.secureFieldRedactionMode) {
+                                ForEach(SecureFieldRedactionMode.allCases) { mode in
+                                    Text(mode.label).tag(mode)
                                 }
-                                .buttonStyle(.link)
+                            }
+                            .frame(width: 260)
+
+                            if let warning = secureFieldRedactionWarning {
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: "lock.slash")
+                                        .foregroundStyle(.orange)
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text(warning)
+                                            .foregroundStyle(.secondary)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                        Button("Open Accessibility Settings") {
+                                            AccessibilityService.openAccessibilitySettings()
+                                        }
+                                        .buttonStyle(.link)
+                                    }
+                                }
+                                .padding(8)
+                                .frame(maxWidth: 360, alignment: .leading)
+                                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.orange.opacity(0.10)))
                             }
                         }
-                        .padding(8)
-                        .frame(maxWidth: 360, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.orange.opacity(0.10)))
                     }
+                    .font(.caption)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .font(.caption)
 
             HStack {
+                Text(options.countdownSeconds == 0 ? "Starts immediately" : "Starts after a \(options.countdownSeconds)-second countdown")
+                    .font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Button("Start Recording") {
                     persistDefaults()
@@ -103,36 +111,42 @@ struct RecordingOptionsBar: View {
 
     private var audioColumn: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Text("Audio and cursor").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             AudioSourcePickerView(
                 audioSource: $options.audioSource,
-                microphoneDeviceID: $options.microphoneDeviceID
+                microphoneDeviceID: $options.microphoneDeviceID,
+                compact: true
             )
-            Toggle("Cursor", isOn: $options.includeCursor)
+            Toggle("Show cursor", isOn: $options.includeCursor)
         }
     }
 
     private var inputColumn: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Toggle("Clicks", isOn: Binding(
+            Text("Clicks and keys").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Toggle("Show clicks", isOn: Binding(
                 get: { options.clickOverlayMode != .off },
                 set: { options.clickOverlayMode = $0 ? .ringsAndLabels : .off }
             ))
-            Picker("Keys", selection: $options.keystrokeMode) {
+            Picker("Show keys", selection: $options.keystrokeMode) {
                 ForEach(KeystrokeCaptureMode.allCases) { mode in
                     Text(mode.label).tag(mode)
                 }
             }
+            .labelsHidden()
         }
     }
 
     private var qualityColumn: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Text("Recording quality").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             Picker("Quality", selection: $options.quality) {
                 ForEach(RecordingQualityPreset.allCases) { preset in
                     Text(preset.label).tag(preset)
                 }
             }
             .pickerStyle(.segmented)
+            .labelsHidden()
             Stepper(value: $options.countdownSeconds, in: 0...10) {
                 Text("Countdown \(options.countdownSeconds)s")
             }

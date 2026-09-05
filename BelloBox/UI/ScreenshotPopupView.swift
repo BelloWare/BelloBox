@@ -133,6 +133,16 @@ final class ScreenshotPopupViewModel: ObservableObject {
         return document.imageSize
     }
 
+    var canResetCrop: Bool { document.cropRect != originalCropRect }
+
+    func resetCrop() {
+        guard canResetCrop else { return }
+        endTextEditing()
+        pushUndo()
+        replaceCropRect(with: originalCropRect)
+        markOCRStale()
+    }
+
     var canUndo: Bool { !undoStack.isEmpty }
     var canRedo: Bool { !redoStack.isEmpty }
     var hasImageEdits: Bool {
@@ -813,7 +823,7 @@ struct ScreenshotPopupView: View {
                 PopupHeader(
                     icon: "camera.viewfinder",
                     title: "Screenshot",
-                    subtitle: sourceSummary,
+                    subtitle: "\(sourceSummary) · \(Int(viewModel.visibleImageSize.width)) × \(Int(viewModel.visibleImageSize.height)) px",
                     onMinimize: onMinimize,
                     onClose: viewModel.requestClose
                 )
