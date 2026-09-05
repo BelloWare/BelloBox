@@ -18,33 +18,16 @@ struct AnnotationToolbarView: View {
                 }
                 .buttonStyle(.plain)
                 .background(RoundedRectangle(cornerRadius: 7).fill(viewModel.activeTool == tool ? BoxTheme.accentSoft : .clear))
+                .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(viewModel.activeTool == tool ? BoxTheme.accent : .clear, lineWidth: 1.5))
+                .accessibilityLabel(tool.label)
+                .accessibilityValue(viewModel.activeTool == tool ? "Selected" : "Not selected")
                 .overlayTooltip(Self.tooltip(for: tool))
             }
 
             Divider().frame(height: 24)
 
-            ColorPicker("Color", selection: Binding(
-                get: { Color(nsColor: viewModel.style.strokeColor.nsColor) },
-                set: { color in
-                    if let cgColor = color.cgColor, let nsColor = NSColor(cgColor: cgColor) {
-                        // Strokes are always fully opaque; the picker's opacity slider is
-                        // disabled so lines and masks never see through.
-                        var stroke = CodableColor(nsColor)
-                        stroke.alpha = 1
-                        viewModel.style.strokeColor = stroke
-                    }
-                }
-            ), supportsOpacity: false)
-            .labelsHidden()
-            .frame(width: 34)
-            .overlayTooltip("Stroke and text color")
-
-            Slider(value: Binding(
-                get: { Double(viewModel.style.lineWidth) },
-                set: { viewModel.style.lineWidth = CGFloat($0) }
-            ), in: 1...12, step: 1)
-            .frame(width: 90)
-            .overlayTooltip("Line width: \(Int(viewModel.style.lineWidth)) px")
+            styleControls
+                .frame(width: 150, alignment: .leading)
 
             Spacer(minLength: 8)
 
@@ -52,12 +35,14 @@ struct AnnotationToolbarView: View {
                 .buttonStyle(SecondaryButtonStyle())
                 .disabled(!viewModel.canUndo)
                 .keyboardShortcut("z", modifiers: .command)
+                .accessibilityLabel("Undo")
                 .overlayTooltip("Undo (⌘Z)")
 
             Button { viewModel.redo() } label: { Image(systemName: "arrow.uturn.forward") }
                 .buttonStyle(SecondaryButtonStyle())
                 .disabled(!viewModel.canRedo)
-                .keyboardShortcut("Z", modifiers: [.command, .shift])
+                .keyboardShortcut("z", modifiers: [.command, .shift])
+                .accessibilityLabel("Redo")
                 .overlayTooltip("Redo (⇧⌘Z)")
 
             if let onScrollCapture {
@@ -76,15 +61,20 @@ struct AnnotationToolbarView: View {
 
                 Button { viewModel.copyRenderedImage() } label: { Image(systemName: "doc.on.doc") }
                     .buttonStyle(SecondaryButtonStyle())
-                    .overlayTooltip("Copy image to the clipboard")
+                    .keyboardShortcut("c", modifiers: [.command, .shift])
+                    .accessibilityLabel("Copy Image")
+                    .overlayTooltip("Copy image to the clipboard (⇧⌘C)")
                 Button { viewModel.saveRenderedImage() } label: { Image(systemName: "square.and.arrow.down") }
                     .buttonStyle(SecondaryButtonStyle())
-                    .overlayTooltip("Save as PNG…")
+                    .keyboardShortcut("s", modifiers: .command)
+                    .accessibilityLabel("Save PNG")
+                    .overlayTooltip("Save as PNG… (⌘S)")
                 if let onClose {
                     Button(action: onClose) {
                         Image(systemName: "xmark")
                     }
                     .buttonStyle(SecondaryButtonStyle())
+                    .accessibilityLabel("Cancel Screenshot")
                     .overlayTooltip("Cancel (esc)")
                 }
             }
@@ -92,8 +82,60 @@ struct AnnotationToolbarView: View {
             Button { viewModel.finish() } label: { Image(systemName: "checkmark") }
                 .buttonStyle(PrimaryButtonStyle())
                 .keyboardShortcut(.defaultAction)
+                .accessibilityLabel("Copy and Finish")
                 .overlayTooltip("Copy the image and finish (return)")
         }
+    }
+
+    @ViewBuilder
+    private var styleControls: some View {
+        switch viewModel.activeTool {
+        case .pen, .arrow, .rectangle:
+            HStack(spacing: 5) {
+                colorPicker
+                Slider(value: $viewModel.style.lineWidth, in: 1...12, step: 1)
+                    .accessibilityLabel("Line width")
+                    .accessibilityValue("\(Int(viewModel.style.lineWidth)) pixels")
+                    .overlayTooltip("Line width")
+                Text("\(Int(viewModel.style.lineWidth)) px")
+                    .font(.caption2.monospacedDigit())
+                    .fixedSize()
+            }
+        case .text:
+            HStack(spacing: 5) {
+                colorPicker
+                Stepper(value: $viewModel.style.fontSize, in: 10...72, step: 2) {
+                    Text("\(Int(viewModel.style.fontSize)) px")
+                        .font(.caption.monospacedDigit())
+                }
+                .accessibilityLabel("Text size")
+                .accessibilityValue("\(Int(viewModel.style.fontSize)) pixels")
+                .overlayTooltip("Text size in the exported image")
+            }
+        case .select, .crop, .eraser, .highlight, .blur:
+            Text(Self.tooltip(for: viewModel.activeTool))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+        }
+    }
+
+    private var colorPicker: some View {
+        ColorPicker("Color", selection: Binding(
+                get: { Color(nsColor: viewModel.style.strokeColor.nsColor) },
+                set: { color in
+                    if let cgColor = color.cgColor, let nsColor = NSColor(cgColor: cgColor) {
+                        // Strokes are always fully opaque; the picker's opacity slider is
+                        // disabled so lines and masks never see through.
+                        var stroke = CodableColor(nsColor)
+                        stroke.alpha = 1
+                        viewModel.style.strokeColor = stroke
+                    }
+                }
+            ), supportsOpacity: false)
+            .labelsHidden()
+            .frame(width: 34)
+            .overlayTooltip("Stroke and text color")
     }
 
     static func tooltip(for tool: AnnotationTool) -> String {

@@ -1599,7 +1599,7 @@ private struct CaptureScreenshotOverlaySurface: View {
                     .shadow(color: .black.opacity(0.28), radius: 16, y: 8)
                     .position(x: toolbar.midX, y: toolbar.midY)
 
-                if let message = viewModel.errorMessage {
+                if let message = viewModel.errorMessage ?? viewModel.statusMessage {
                     errorLabel(message)
                         .frame(width: min(toolbar.width, bounds.width - 24), alignment: .leading)
                         .position(x: toolbar.midX, y: min(toolbar.maxY + 28, bounds.maxY - 28))
@@ -1719,9 +1719,9 @@ private struct CaptureScreenshotOverlaySurface: View {
     }
 
     private func errorLabel(_ message: String) -> some View {
-        Label(message, systemImage: "exclamationmark.triangle.fill")
+        Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
             .font(.caption)
-            .foregroundStyle(.orange)
+            .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : Color.orange)
             .lineLimit(2)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)

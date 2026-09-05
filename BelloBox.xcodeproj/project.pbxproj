@@ -54,6 +54,7 @@
 		3EE95ACBFADA1B6E5BF6DAE1 /* ScreenCoordinateSpaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05EE5C31B1E8F42734B13290 /* ScreenCoordinateSpaceTests.swift */; };
 		420BB4D2F7A9D3868A3A73A7 /* OverlayTooltipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28ECD1F19012FF02482D47B /* OverlayTooltipTests.swift */; };
 		445EF62ECF567C318F3AC18A /* RegionCaptureGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F44785CF2FFD965FB585C82F /* RegionCaptureGeometryTests.swift */; };
+		48FB6F3BACE8891F6FF7EE33 /* UIUXBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3065E35A1F46F5F92925D2DB /* UIUXBehaviorTests.swift */; };
 		49096E6ECF88088E10A8C03E /* RecordingOptionsBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B138A1EEA822E792E8A987 /* RecordingOptionsBar.swift */; };
 		4A1C6EED4A05BC13D35DF5EF /* CaptureDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F19F7D308C1D43482CF001 /* CaptureDiagnostics.swift */; };
 		4CD21CD523F082696F720893 /* CodexCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35473BCCCB42BD6B76AF1F82 /* CodexCLI.swift */; };
@@ -206,6 +207,7 @@
 		2DF7E45348E3013AD507E2F5 /* LLMOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMOCRService.swift; sourceTree = "<group>"; };
 		2E1DF5FC45C218199A054C0A /* PrivacyGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyGuard.swift; sourceTree = "<group>"; };
 		2EB451CD3FA28EDD750EA21C /* OCRBoundingBoxConversionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRBoundingBoxConversionTests.swift; sourceTree = "<group>"; };
+		3065E35A1F46F5F92925D2DB /* UIUXBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIUXBehaviorTests.swift; sourceTree = "<group>"; };
 		31D451D118605E72B2E84CC6 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		321590EAFCE1C644BE43B962 /* ScrollCaptureEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollCaptureEngine.swift; sourceTree = "<group>"; };
 		324699B28FE869CBDD32B8CE /* BelloBoxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BelloBoxApp.swift; sourceTree = "<group>"; };
@@ -544,6 +546,7 @@
 				05590BA92817412B2FFDF870 /* SnapshotDocumentTests.swift */,
 				F41464E634659AD5A3498BFD /* TextTransformsTests.swift */,
 				070D5F61C4AA6D81748DE98E /* TimestampSummaryTests.swift */,
+				3065E35A1F46F5F92925D2DB /* UIUXBehaviorTests.swift */,
 				E69BBCC1085F9D0DA8C5B3AE /* WindowCapturePickerViewModelTests.swift */,
 				CDF60D273C5788D7C5ECD873 /* WorldClockTests.swift */,
 			);
@@ -704,7 +707,6 @@
 				};
 			};
 			buildConfigurationList = 431CF8842FD8E51677DF7C3B /* Build configuration list for PBXProject "BelloBox" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -717,6 +719,7 @@
 				A44DFF6A9273EE3829DA5940 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
+			productRefGroup = E1803B065C599C229DCDFA54 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -813,6 +816,7 @@
 				891045F169274EAC000B64DE /* SnapshotDocumentTests.swift in Sources */,
 				0B8C2FF396C390C38BDE5545 /* TextTransformsTests.swift in Sources */,
 				1D51253EC79DE514579E872D /* TimestampSummaryTests.swift in Sources */,
+				48FB6F3BACE8891F6FF7EE33 /* UIUXBehaviorTests.swift in Sources */,
 				85566EACF6FBA22BAED7307B /* WindowCapturePickerViewModelTests.swift in Sources */,
 				D7912311BA017CE241C50405 /* WorldClockTests.swift in Sources */,
 			);
@@ -1044,7 +1048,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 54;
+				CURRENT_PROJECT_VERSION = 55;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1064,7 +1068,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.54;
+				MARKETING_VERSION = 0.0.55;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1110,7 +1114,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 54;
+				CURRENT_PROJECT_VERSION = 55;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1124,7 +1128,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.54;
+				MARKETING_VERSION = 0.0.55;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

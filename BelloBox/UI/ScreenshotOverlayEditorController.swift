@@ -154,10 +154,10 @@ private struct ScreenshotOverlayEditorView: View {
                     .position(x: toolbar.midX, y: toolbar.midY)
                     .gesture(toolbarDragGesture(current: toolbar, bounds: bounds))
 
-                if let message = viewModel.errorMessage {
-                    Label(message, systemImage: "exclamationmark.triangle.fill")
+                if let message = viewModel.errorMessage ?? viewModel.statusMessage {
+                    Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                         .font(.caption)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : Color.orange)
                         .lineLimit(2)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)

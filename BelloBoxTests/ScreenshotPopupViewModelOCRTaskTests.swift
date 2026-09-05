@@ -4,6 +4,24 @@ import XCTest
 
 @MainActor
 final class ScreenshotPopupViewModelOCRTaskTests: XCTestCase {
+    func testUserCanCancelOCRAndLateResultsAreIgnored() async {
+        let service = ControllableOCRService()
+        let viewModel = ScreenshotPopupViewModel(
+            document: ScreenshotDocument(baseImage: ScreenshotTestHelpers.image(width: 80, height: 60), scale: 1, source: .importedClipboard),
+            settings: AppSettings(defaults: temporaryDefaults()),
+            macOCRService: service
+        )
+        viewModel.runMacOCR()
+        await service.waitUntilStarted()
+        viewModel.ocrPanel.onCancel()
+        XCTAssertFalse(viewModel.ocrPanel.isRunning)
+        XCTAssertEqual(viewModel.ocrPanel.statusMessage, "Reading cancelled.")
+        service.succeed()
+        try? await Task.sleep(nanoseconds: 40_000_000)
+        XCTAssertTrue(viewModel.document.ocrResults.isEmpty)
+        XCTAssertEqual(viewModel.ocrPanel.statusMessage, "Reading cancelled.")
+    }
+
     func testInitialActiveOCRResultIsShownInPanel() {
         let stitchResult = StitchResult(
             image: ScreenshotTestHelpers.image(width: 80, height: 60),

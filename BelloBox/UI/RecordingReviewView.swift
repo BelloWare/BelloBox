@@ -9,9 +9,11 @@ final class RecordingReviewViewModel: ObservableObject {
     private let removeRecording: (URL) throws -> Void
     @Published var statusMessage: String?
     @Published var errorMessage: String?
+    @Published var showDiscardConfirmation = false
+    private var discardRequested = false
     var onClose: () -> Void = {}
 
-    init(fileURL: URL, removeRecording: @escaping (URL) throws -> Void = { try FileManager.default.removeItem(at: $0) }) {
+    init(fileURL: URL, removeRecording: @escaping (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) }) {
         self.fileURL = fileURL
         self.player = AVPlayer(url: fileURL)
         self.removeRecording = removeRecording
@@ -65,6 +67,9 @@ final class RecordingReviewViewModel: ObservableObject {
     }
 
     func discard() {
+        guard discardRequested else { return }
+        discardRequested = false
+        showDiscardConfirmation = false
         statusMessage = nil
         errorMessage = nil
         player.pause()
@@ -72,8 +77,19 @@ final class RecordingReviewViewModel: ObservableObject {
             try removeRecording(fileURL)
             onClose()
         } catch {
-            errorMessage = "Could not discard recording: \(error.localizedDescription)"
+            errorMessage = "Could not move recording to Trash: \(error.localizedDescription)"
         }
+    }
+
+    func requestDiscard() {
+        player.pause()
+        discardRequested = true
+        showDiscardConfirmation = true
+    }
+
+    func cancelDiscard() {
+        discardRequested = false
+        showDiscardConfirmation = false
     }
 }
 
@@ -89,7 +105,7 @@ struct RecordingReviewView: View {
                 onClose: viewModel.onClose
             )
 
-            VideoPlayer(player: viewModel.player)
+            RecordingPlayerView(player: viewModel.player)
                 .frame(height: 300)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.primary.opacity(0.08), lineWidth: 1))
@@ -112,11 +128,12 @@ struct RecordingReviewView: View {
                 Spacer()
                 Button("Save As…") { viewModel.saveAs() }
                     .buttonStyle(SecondaryButtonStyle())
+                    .keyboardShortcut("s", modifiers: [.command, .shift])
                 Button("Copy File") { viewModel.copyFile() }
                     .buttonStyle(SecondaryButtonStyle())
-                Button("Reveal") { viewModel.revealInFinder() }
+                Button("Show in Finder") { viewModel.revealInFinder() }
                     .buttonStyle(SecondaryButtonStyle())
-                Button("Discard") { viewModel.discard() }
+                Button("Move to Trash…", role: .destructive) { viewModel.requestDiscard() }
                     .buttonStyle(SecondaryButtonStyle())
             }
         }
@@ -124,5 +141,32 @@ struct RecordingReviewView: View {
         .frame(width: 760, height: 430)
         .popupCard()
         .onDisappear { viewModel.player.pause() }
+        .alert("Move this recording to Trash?", isPresented: $viewModel.showDiscardConfirmation) {
+            Button("Keep Recording", role: .cancel) { viewModel.cancelDiscard() }
+            Button("Move to Trash", role: .destructive) { viewModel.discard() }
+        } message: {
+            Text("\(viewModel.fileName) will be moved to Trash. You can restore it from Finder.")
+        }
+    }
+}
+
+/// Refer to AVPlayerView directly so AVKit is linked and loaded before its player
+/// controls are created, including when review is the first window opened.
+struct RecordingPlayerView: NSViewRepresentable {
+    let player: AVPlayer
+
+    func makeNSView(context: Context) -> AVPlayerView {
+        let view = AVPlayerView()
+        view.controlsStyle = .inline
+        view.player = player
+        return view
+    }
+
+    func updateNSView(_ nsView: AVPlayerView, context: Context) {
+        if nsView.player !== player { nsView.player = player }
+    }
+
+    static func dismantleNSView(_ nsView: AVPlayerView, coordinator: ()) {
+        nsView.player = nil
     }
 }

@@ -1,8 +1,17 @@
 import XCTest
+import SwiftUI
 @testable import BelloBox
 
 @MainActor
 final class RecordingReviewViewModelTests: XCTestCase {
+    func testRecordingReviewCanLoadItsNativePlayerControls() {
+        let viewModel = RecordingReviewViewModel(fileURL: URL(fileURLWithPath: "/unused-recording.mov"))
+        let view = NSHostingView(rootView: RecordingReviewView(viewModel: viewModel))
+        view.frame = CGRect(x: 0, y: 0, width: 760, height: 430)
+        view.layoutSubtreeIfNeeded()
+        XCTAssertGreaterThan(view.fittingSize.width, 0)
+    }
+
     func testCopyRecordingReplacesExistingDestination() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("BelloBoxTests.\(UUID().uuidString)", isDirectory: true)
@@ -52,11 +61,12 @@ final class RecordingReviewViewModelTests: XCTestCase {
         var closeCount = 0
         viewModel.onClose = { closeCount += 1 }
 
+        viewModel.requestDiscard()
         viewModel.discard()
 
         XCTAssertEqual(closeCount, 0)
         XCTAssertTrue(FileManager.default.fileExists(atPath: source.path))
-        XCTAssertTrue(viewModel.errorMessage?.hasPrefix("Could not discard recording:") == true)
+        XCTAssertTrue(viewModel.errorMessage?.hasPrefix("Could not move recording to Trash:") == true)
     }
 
     func testDiscardSuccessClosesReview() throws {
@@ -66,9 +76,29 @@ final class RecordingReviewViewModelTests: XCTestCase {
         var closeCount = 0
         viewModel.onClose = { closeCount += 1 }
 
+        viewModel.requestDiscard()
+        // SwiftUI may dismiss the alert binding before invoking its action.
+        viewModel.showDiscardConfirmation = false
         viewModel.discard()
 
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertEqual(closeCount, 1)
+    }
+
+    func testDiscardRequiresConfirmationAndCancelKeepsTheFile() {
+        var removalCount = 0
+        let viewModel = RecordingReviewViewModel(
+            fileURL: URL(fileURLWithPath: "/unused-recording.mov"),
+            removeRecording: { _ in removalCount += 1 }
+        )
+        viewModel.discard()
+        XCTAssertEqual(removalCount, 0)
+        viewModel.requestDiscard()
+        XCTAssertTrue(viewModel.showDiscardConfirmation)
+        XCTAssertEqual(removalCount, 0)
+        viewModel.cancelDiscard()
+        viewModel.discard()
+        XCTAssertFalse(viewModel.showDiscardConfirmation)
+        XCTAssertEqual(removalCount, 0)
     }
 }

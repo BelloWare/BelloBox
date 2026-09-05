@@ -2,16 +2,25 @@ import SwiftUI
 
 @MainActor
 final class OCRPanelViewModel: ObservableObject {
-    @Published var result: OCRResult?
+    @Published var result: OCRResult? {
+        didSet { statusMessage = nil }
+    }
     @Published var isRunning = false
     @Published var showTextRegions = false
     @Published var errorMessage: String?
+    @Published var statusMessage: String?
     @Published var activeDisplayMode: OCRDisplayMode = .text
 
     var onRunMacOCR: () -> Void = {}
     var onRunLLMOCR: () -> Void = {}
     var onCopyPlainText: () -> Void = {}
     var onCopyMarkdown: () -> Void = {}
+    var onCancel: () -> Void = {}
+
+    var plainText: String { result.map(OCRResultFormatter.plainText) ?? "" }
+    var markdown: String { result.map(OCRResultFormatter.markdown) ?? "" }
+    var canCopyText: Bool { !plainText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    var canCopyMarkdown: Bool { !markdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 }
 
 struct OCRPanelView: View {
@@ -20,34 +29,36 @@ struct OCRPanelView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("OCR")
+                Text("Text Reader")
                     .font(.headline)
                 Spacer()
                 Toggle("Boxes", isOn: $viewModel.showTextRegions)
                     .toggleStyle(.checkbox)
                     .disabled(viewModel.result?.regions.isEmpty ?? true)
+                    .help("Show the locations of recognized text on the screenshot")
             }
 
             HStack(spacing: 8) {
-                Button {
-                    viewModel.onRunMacOCR()
-                } label: {
-                    if viewModel.isRunning {
-                        HStack(spacing: 5) { ProgressView().controlSize(.small); Text("Reading…") }
-                    } else {
-                        Label("Mac OCR", systemImage: "text.viewfinder")
+                if viewModel.isRunning {
+                    ProgressView().controlSize(.small)
+                    Text("Reading…").font(.caption)
+                    Spacer()
+                    Button("Cancel", action: viewModel.onCancel)
+                        .buttonStyle(SecondaryButtonStyle())
+                        .help("Stop reading and keep the previous result")
+                } else {
+                    Button(action: viewModel.onRunMacOCR) {
+                        Label("Read on Mac", systemImage: "text.viewfinder")
                     }
-                }
-                .buttonStyle(SecondaryButtonStyle())
-                .disabled(viewModel.isRunning)
+                    .buttonStyle(SecondaryButtonStyle())
+                    .help("Recognize text locally on your Mac")
 
-                Button {
-                    viewModel.onRunLLMOCR()
-                } label: {
-                    Label("Improve with LLM…", systemImage: "sparkles")
+                    Button(action: viewModel.onRunLLMOCR) {
+                        Label("AI OCR…", systemImage: "sparkles")
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .help("Review and approve an image upload to your AI provider")
                 }
-                .buttonStyle(SecondaryButtonStyle())
-                .disabled(viewModel.isRunning)
             }
 
             if viewModel.result?.markdownText != nil {
@@ -60,19 +71,39 @@ struct OCRPanelView: View {
                 .labelsHidden()
             }
 
-            TextEditor(text: .constant(displayText))
-                .font(.system(.caption, design: .monospaced))
-                .scrollContentBackground(.hidden)
-                .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
-                .frame(minHeight: 130)
+            ScrollView {
+                if displayText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label(viewModel.result == nil ? "Read text from this image" : "No text found", systemImage: "text.viewfinder")
+                            .font(.caption.weight(.semibold))
+                        Text(viewModel.result == nil
+                             ? "Choose Read on Mac to extract text without uploading the image."
+                             : "Try a closer crop or use AI OCR for difficult text.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                } else {
+                    Text(displayText)
+                        .font(.system(.caption, design: .monospaced))
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(10)
+                        .accessibilityLabel("Recognized text")
+                        .accessibilityValue(displayText)
+                }
+            }
+            .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
+            .frame(minHeight: 130, maxHeight: .infinity)
 
             HStack {
                 Button("Copy Text") { viewModel.onCopyPlainText() }
                     .buttonStyle(SecondaryButtonStyle())
-                    .disabled(viewModel.result == nil)
+                    .disabled(!viewModel.canCopyText)
                 Button("Copy Markdown") { viewModel.onCopyMarkdown() }
                     .buttonStyle(SecondaryButtonStyle())
-                    .disabled(viewModel.result == nil)
+                    .disabled(!viewModel.canCopyMarkdown)
             }
 
             if let warnings = viewModel.result?.warnings, !warnings.isEmpty {
@@ -88,17 +119,20 @@ struct OCRPanelView: View {
                     .font(.caption)
                     .foregroundStyle(.red)
                     .lineLimit(3)
+            } else if let status = viewModel.statusMessage {
+                Label(status, systemImage: "checkmark.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
     }
 
     private var displayText: String {
-        guard let result = viewModel.result else { return "No OCR text yet." }
         switch viewModel.activeDisplayMode {
         case .text:
-            return OCRResultFormatter.plainText(from: result)
+            return viewModel.plainText
         case .markdown:
-            return OCRResultFormatter.markdown(from: result)
+            return viewModel.markdown
         }
     }
 }

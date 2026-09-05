@@ -20,11 +20,11 @@ enum AnnotationTool: String, CaseIterable, Identifiable {
         case .select: return "Select"
         case .pen: return "Pen"
         case .arrow: return "Arrow"
-        case .rectangle: return "Rect"
+        case .rectangle: return "Rectangle"
         case .highlight: return "Highlight"
         case .text: return "Text"
         case .crop: return "Crop"
-        case .blur: return "Blur"
+        case .blur: return "Mask"
         case .eraser: return "Eraser"
         }
     }

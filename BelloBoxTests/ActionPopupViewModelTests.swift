@@ -3,6 +3,52 @@ import XCTest
 
 @MainActor
 final class ActionPopupViewModelTests: XCTestCase {
+    func testRetryRepeatsOriginalInstructionAfterPromptIsEdited() async {
+        let settings = AppSettings(defaults: temporaryDefaults())
+        settings.openAIBaseURL = "https://api.example.com/v1"
+        settings.openAIModel = "m-1"
+        settings.apiKey = "sk-test"
+        let client = clientReturning(status: 500, body: "Temporary error")
+        let originalHandler = ActionPopupMockURLProtocol.handler!
+        var requests: [Data] = []
+        ActionPopupMockURLProtocol.handler = { request in
+            if let body = request.httpBody {
+                requests.append(body)
+            } else if let stream = request.httpBodyStream {
+                stream.open()
+                defer { stream.close() }
+                var data = Data()
+                var buffer = [UInt8](repeating: 0, count: 4096)
+                while stream.hasBytesAvailable {
+                    let count = stream.read(&buffer, maxLength: buffer.count)
+                    if count <= 0 { break }
+                    data.append(contentsOf: buffer.prefix(count))
+                }
+                requests.append(data)
+            }
+            return try originalHandler(request)
+        }
+        let viewModel = ActionPopupViewModel(
+            selection: TextSelection(text: "Test selection", anchorRect: nil, appName: nil, bundleID: nil, pid: nil),
+            settings: settings, client: client, accessibility: AccessibilityService()
+        )
+        XCTAssertFalse(viewModel.canRetry)
+        viewModel.instruction = "Summarize in two words"
+        viewModel.runCustom()
+        XCTAssertFalse(viewModel.canRetry)
+        await waitUntilFinished(viewModel)
+        XCTAssertTrue(viewModel.canRetry)
+        viewModel.instruction = "A different instruction"
+        viewModel.retry()
+        await waitUntilFinished(viewModel)
+        XCTAssertEqual(requests.count, 2)
+        let first = try? JSONSerialization.jsonObject(with: requests.first ?? Data()) as? NSDictionary
+        let second = try? JSONSerialization.jsonObject(with: requests.last ?? Data()) as? NSDictionary
+        XCTAssertNotNil(first)
+        XCTAssertEqual(first, second)
+        XCTAssertTrue(viewModel.canRetry)
+    }
+
     func testRunWithMissingConfigurationClearsStaleStateAndShowsCopyableError() {
         let settings = AppSettings(defaults: temporaryDefaults())
         settings.openAIModel = ""

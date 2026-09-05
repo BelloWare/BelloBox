@@ -10,60 +10,71 @@ struct RecordingHUDView: View {
     @State private var now = Date()
 
     var body: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(isPaused ? .orange : .red)
-                .frame(width: 10, height: 10)
-            Text(elapsedText)
-                .font(.system(.body, design: .monospaced).weight(.semibold))
-            statusIcon(enabled: runtime.isMicEnabled, symbol: "mic.fill", help: "Microphone")
-            statusIcon(enabled: runtime.isSystemAudioEnabled, symbol: "speaker.wave.2.fill", help: "Mac Audio")
-            Menu {
-                Toggle("Show Clicks", isOn: Binding(
-                    get: { runtime.clickOverlayMode.isEnabled },
-                    set: { onInputOverlaysChange($0 ? .ringsAndLabels : .off, runtime.keystrokeMode) }
-                ))
-                Picker("Show Keys", selection: Binding(
-                    get: { runtime.keystrokeMode },
-                    set: { onInputOverlaysChange(runtime.clickOverlayMode, $0) }
-                )) {
-                    ForEach(KeystrokeCaptureMode.allCases) { mode in
-                        Text(mode.label).tag(mode)
-                    }
-                }
-                if let warning = runtime.inputOverlayWarning {
-                    Divider()
-                    Text(warning)
-                }
-            } label: {
-                Image(systemName: runtime.inputOverlayWarning == nil ? "keyboard" : "exclamationmark.triangle")
-                    .foregroundStyle(runtime.isInputOverlayEnabled ? Color.primary : Color.secondary)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Label(isPaused ? "Paused" : "Recording", systemImage: isPaused ? "pause.circle.fill" : "record.circle.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(isPaused ? .orange : .red)
+                Text(elapsedText)
+                    .font(.system(.body, design: .monospaced).weight(.semibold))
+                    .accessibilityLabel("Recording duration")
+                    .accessibilityValue(elapsedText)
+                Spacer()
+                Button(isPaused ? "Resume" : "Pause", action: onPauseResume)
+                    .buttonStyle(SecondaryButtonStyle())
+                    .controlSize(.small)
+                    .help(isPaused ? "Continue this recording" : "Pause without ending the recording")
+                Button("Stop & Review", action: onStop)
+                    .buttonStyle(PrimaryButtonStyle())
+                    .controlSize(.small)
+                    .help("Finish saving the recording and open its preview")
             }
-            .fixedSize()
-            .help(runtime.inputOverlayWarning ?? "Change click and keyboard tracking while recording")
-            .accessibilityLabel("Input Tracking")
+
+            HStack(spacing: 14) {
+                audioStatus(enabled: runtime.isMicEnabled, label: "Mic", onSymbol: "mic.fill", offSymbol: "mic.slash", help: "Microphone")
+                audioStatus(enabled: runtime.isSystemAudioEnabled, label: "Mac audio", onSymbol: "speaker.wave.2.fill", offSymbol: "speaker.slash", help: "Mac audio")
+                Spacer(minLength: 0)
+                Menu {
+                    Toggle("Show Clicks", isOn: Binding(
+                        get: { runtime.clickOverlayMode.isEnabled },
+                        set: { onInputOverlaysChange($0 ? .ringsAndLabels : .off, runtime.keystrokeMode) }
+                    ))
+                    Picker("Show Keys", selection: Binding(
+                        get: { runtime.keystrokeMode },
+                        set: { onInputOverlaysChange(runtime.clickOverlayMode, $0) }
+                    )) {
+                        ForEach(KeystrokeCaptureMode.allCases) { mode in
+                            Text(mode.label).tag(mode)
+                        }
+                    }
+                    if let warning = runtime.inputOverlayWarning {
+                        Divider()
+                        Text(warning)
+                    }
+                } label: {
+                    Label(runtime.isInputOverlayEnabled ? "Input On" : "Input Off", systemImage: runtime.inputOverlayWarning == nil ? "keyboard" : "exclamationmark.triangle")
+                }
+                .fixedSize()
+                .help(runtime.inputOverlayWarning ?? "Keys: \(runtime.keystrokeMode.label). Clicks: \(runtime.clickOverlayMode.label). Change tracking while recording or paused.")
+                .accessibilityLabel("Input Tracking")
+                .accessibilityValue("Keys: \(runtime.keystrokeMode.label). Clicks: \(runtime.clickOverlayMode.label)")
+            }
+
             if runtime.isSecureFieldHidden {
                 Label("Secure field hidden", systemImage: "lock.shield")
-                    .font(.caption.weight(.semibold))
+                    .font(.caption)
                     .foregroundStyle(.orange)
-            }
-            if let warning = secureFieldRedactionWarning {
+            } else if let warning = secureFieldRedactionWarning {
                 Label("Secure-field hiding off", systemImage: "lock.slash")
-                    .font(.caption.weight(.semibold))
+                    .font(.caption)
                     .foregroundStyle(.orange)
                     .help(warning)
             }
-            Button(isPaused ? "Resume" : "Pause", action: onPauseResume)
-                .buttonStyle(SecondaryButtonStyle())
-                .controlSize(.small)
-            Button("Stop", action: onStop)
-                .buttonStyle(PrimaryButtonStyle())
-                .controlSize(.small)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(Capsule().fill(.ultraThinMaterial))
-        .overlay(Capsule().strokeBorder(Color.primary.opacity(0.10), lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: 18).fill(.ultraThinMaterial))
+        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Color.primary.opacity(0.10), lineWidth: 1))
         .shadow(color: .black.opacity(0.18), radius: 10, y: 4)
         .onReceive(Self.timer) { value in
             guard !isPaused else { return }
@@ -83,11 +94,12 @@ struct RecordingHUDView: View {
         RecordingPrivacyNotice.secureFieldRedactionWarning(accessibilityTrusted: AccessibilityService.isTrusted)
     }
 
-    private func statusIcon(enabled: Bool, symbol: String, help: String) -> some View {
-        Image(systemName: symbol)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(enabled ? Color.primary : Color.secondary.opacity(0.45))
-            .help(help)
+    private func audioStatus(enabled: Bool, label: String, onSymbol: String, offSymbol: String, help: String) -> some View {
+        Label("\(label) \(enabled ? "On" : "Off")", systemImage: enabled ? onSymbol : offSymbol)
+            .font(.caption)
+            .foregroundStyle(enabled ? Color.primary : Color.secondary)
+            .help("\(help): \(enabled ? "On" : "Off")")
+            .accessibilityLabel("\(help): \(enabled ? "On" : "Off")")
     }
 }
 

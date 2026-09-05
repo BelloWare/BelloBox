@@ -20,6 +20,7 @@ final class ActionPopupViewModel: ObservableObject {
     private let accessibility: AccessibilityService
     private var task: Task<Void, Never>?
     private var runToken: UUID?
+    private var lastInstruction: (text: String, replaces: Bool)?
 
     /// Invoked when the popup wants to dismiss itself.
     var onClose: () -> Void = {}
@@ -49,6 +50,12 @@ final class ActionPopupViewModel: ObservableObject {
         return errorMessage ?? ""
     }
     var canCopy: Bool { !copyableText.isEmpty && !isStreaming }
+    var canRetry: Bool { lastInstruction != nil && !isStreaming && isConfigured }
+
+    func retry() {
+        guard canRetry, let lastInstruction else { return }
+        runInstruction(lastInstruction.text, replaces: lastInstruction.replaces)
+    }
 
     func run(_ action: QuickAction) {
         runInstruction(action.instruction, replaces: action.replacesSelection)
@@ -61,6 +68,7 @@ final class ActionPopupViewModel: ObservableObject {
     }
 
     private func runInstruction(_ instruction: String, replaces: Bool) {
+        lastInstruction = (instruction, replaces)
         task?.cancel()
         guard settings.isConfigured else {
             runToken = nil

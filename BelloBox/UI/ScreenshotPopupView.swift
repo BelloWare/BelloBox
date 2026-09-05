@@ -33,11 +33,16 @@ private struct BasePreviewKey: Equatable {
 
 @MainActor
 final class ScreenshotPopupViewModel: ObservableObject {
-    @Published var document: ScreenshotDocument
+    @Published var document: ScreenshotDocument {
+        didSet { statusMessage = nil }
+    }
     @Published var activeTool: AnnotationTool = .select
-    @Published var style: AnnotationStyle = .default
+    @Published var style: AnnotationStyle = .default {
+        didSet { updateEditingTextStyle() }
+    }
     @Published var ocrPanel = OCRPanelViewModel()
     @Published var errorMessage: String?
+    @Published private(set) var statusMessage: String?
     @Published var llmConfirmation: LLMOCRConfirmation?
     @Published var editingTextAnnotationID: UUID?
     @Published var showDiscardCloseConfirmation = false
@@ -313,6 +318,15 @@ final class ScreenshotPopupViewModel: ObservableObject {
         markOCRStale()
     }
 
+    private func updateEditingTextStyle() {
+        guard let id = editingTextAnnotationID,
+              let index = document.annotations.firstIndex(where: { $0.id == id }),
+              document.annotations[index].style != style else { return }
+        document.annotations[index].style = style
+        documentRevision += 1
+        markOCRStale()
+    }
+
     func moveEditingText(toVisibleOrigin origin: CGPoint) {
         guard let id = editingTextAnnotationID else { return }
         moveTextAnnotation(id: id, toVisibleOrigin: origin, recordUndoIfNeeded: false)
@@ -387,20 +401,24 @@ final class ScreenshotPopupViewModel: ObservableObject {
     }
 
     func copyRenderedImage() {
+        statusMessage = nil
         do {
             let image = try AnnotationRenderer.render(document)
             try ImageExportService.copyToPasteboard(image)
             errorMessage = nil
+            statusMessage = "Copied image."
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
     func saveRenderedImage() {
+        statusMessage = nil
         do {
             let image = try AnnotationRenderer.render(document)
             try ImageExportService.savePNG(image, suggestedName: "BelloBox-Screenshot-\(Int(Date().timeIntervalSince1970))")
             errorMessage = nil
+            statusMessage = "Saved PNG."
         } catch ImageExportError.saveCancelled {
             errorMessage = nil
         } catch {
@@ -468,13 +486,23 @@ final class ScreenshotPopupViewModel: ObservableObject {
 
     func copyOCRText() {
         guard let result = document.activeOCRResult else { return }
-        do { try OCRResultFormatter.copyPlainText(result); ocrPanel.errorMessage = nil }
+        ocrPanel.statusMessage = nil
+        do {
+            try OCRResultFormatter.copyPlainText(result)
+            ocrPanel.errorMessage = nil
+            ocrPanel.statusMessage = "Copied text."
+        }
         catch { ocrPanel.errorMessage = error.localizedDescription }
     }
 
     func copyOCRMarkdown() {
         guard let result = document.activeOCRResult else { return }
-        do { try OCRResultFormatter.copyMarkdown(result); ocrPanel.errorMessage = nil }
+        ocrPanel.statusMessage = nil
+        do {
+            try OCRResultFormatter.copyMarkdown(result)
+            ocrPanel.errorMessage = nil
+            ocrPanel.statusMessage = "Copied Markdown."
+        }
         catch { ocrPanel.errorMessage = error.localizedDescription }
     }
 
@@ -526,6 +554,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         ocrPanel.onRunLLMOCR = { [weak self] in self?.requestLLMOCR() }
         ocrPanel.onCopyPlainText = { [weak self] in self?.copyOCRText() }
         ocrPanel.onCopyMarkdown = { [weak self] in self?.copyOCRMarkdown() }
+        ocrPanel.onCancel = { [weak self] in self?.cancelOCR() }
     }
 
     private func startOCRTask(
@@ -540,6 +569,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         ocrRunID = runID
         ocrPanel.isRunning = true
         ocrPanel.errorMessage = nil
+        ocrPanel.statusMessage = nil
         ocrTask?.cancel()
         ocrTask = Task { [weak self, service, snapshot, options, runID, expectedRevision] in
             do {
@@ -591,6 +621,13 @@ final class ScreenshotPopupViewModel: ObservableObject {
         ocrTask?.cancel()
         ocrTask = nil
         ocrPanel.isRunning = false
+    }
+
+    func cancelOCR() {
+        guard ocrPanel.isRunning else { return }
+        cancelOCRTask()
+        ocrPanel.errorMessage = nil
+        ocrPanel.statusMessage = "Reading cancelled."
     }
 
     private func makeOCROptions(engine: OCRRequestedEngine) -> OCROptions {
@@ -768,6 +805,7 @@ struct ScreenshotPopupView: View {
 
     @ObservedObject var viewModel: ScreenshotPopupViewModel
     var onMinimize: () -> Void
+    @State private var showsOCR = true
 
     var body: some View {
         ZStack {
@@ -788,9 +826,11 @@ struct ScreenshotPopupView: View {
                         .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.primary.opacity(0.08), lineWidth: 1))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                    OCRPanelView(viewModel: viewModel.ocrPanel)
-                        .frame(width: 285)
-                        .toolPanel()
+                    if showsOCR {
+                        OCRPanelView(viewModel: viewModel.ocrPanel)
+                            .frame(width: 285)
+                            .toolPanel()
+                    }
                 }
 
                 footer
@@ -819,18 +859,29 @@ struct ScreenshotPopupView: View {
 
     private var footer: some View {
         HStack(spacing: 10) {
-            if let error = viewModel.errorMessage {
-                Label(error, systemImage: "exclamationmark.triangle.fill")
+            Button {
+                showsOCR.toggle()
+            } label: {
+                Label(showsOCR ? "Hide Text Reader" : "Show Text Reader", systemImage: "sidebar.right")
+            }
+            .buttonStyle(SecondaryButtonStyle())
+            .keyboardShortcut("o", modifiers: [.command, .option])
+            .help("Show or hide the text reader (⌥⌘O)")
+            if let message = viewModel.errorMessage ?? viewModel.statusMessage {
+                Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : Color.orange)
                     .lineLimit(2)
             }
             Spacer()
             Button("Copy Image") { viewModel.copyRenderedImage() }
                 .buttonStyle(PrimaryButtonStyle())
-            Button("Save PNG") { viewModel.saveRenderedImage() }
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .help("Copy image (⇧⌘C)")
+            Button("Save PNG…") { viewModel.saveRenderedImage() }
                 .buttonStyle(SecondaryButtonStyle())
-            Button("Done") { viewModel.finish() }
+                .keyboardShortcut("s", modifiers: .command)
+            Button("Copy & Finish") { viewModel.finish() }
                 .buttonStyle(SecondaryButtonStyle())
         }
     }

@@ -120,13 +120,20 @@ struct ActionPopupView: View {
             HStack(spacing: 6) {
                 if viewModel.isStreaming {
                     ProgressView().controlSize(.small)
-                    Text("Thinking…").font(.caption).foregroundStyle(.secondary)
+                    Text(viewModel.resultText.isEmpty ? "Thinking…" : "Writing…")
+                        .font(.caption).foregroundStyle(.secondary)
                 } else {
                     Text("Result").font(.caption.bold()).foregroundStyle(.secondary)
                 }
                 Spacer()
                 if viewModel.isStreaming {
                     Button("Stop") { viewModel.cancel() }.font(.caption)
+                } else if viewModel.canRetry {
+                    Button(action: viewModel.retry) {
+                        Label(viewModel.errorMessage == nil ? "Run Again" : "Retry", systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .help("Repeat the last instruction using the original selected text")
                 }
             }
 

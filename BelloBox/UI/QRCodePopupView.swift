@@ -10,6 +10,8 @@ final class QRCodePopupViewModel: ObservableObject {
             guard text != oldValue else { return }
             cachedImageText = nil
             cachedImage = nil
+            statusMessage = nil
+            errorMessage = nil
         }
     }
     @Published var statusMessage: String?
@@ -36,6 +38,13 @@ final class QRCodePopupViewModel: ObservableObject {
     var byteCount: Int { text.utf8.count }
     var isEmpty: Bool { text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     var isTooLong: Bool { byteCount > QRCodeGenerator.maxByteCount }
+    var capacityMessage: String {
+        let remaining = QRCodeGenerator.maxByteCount - byteCount
+        let unit = abs(remaining) == 1 ? "byte" : "bytes"
+        return remaining >= 0
+            ? "\(remaining.formatted()) \(unit) available"
+            : "Remove at least \((-remaining).formatted()) \(unit) to create a QR code."
+    }
 
     func copyImage() {
         statusMessage = nil
@@ -81,7 +90,7 @@ final class QRCodePopupViewModel: ObservableObject {
 /// The QR popup: a live QR for the selection, an editable text field that
 /// regenerates it, and copy/save actions.
 struct QRCodePopupView: View {
-    static let preferredSize = CGSize(width: 520, height: 660)
+    static let preferredSize = CGSize(width: 520, height: 620)
 
     @ObservedObject var viewModel: QRCodePopupViewModel
     var onMinimize: () -> Void = {}
@@ -119,18 +128,18 @@ struct QRCodePopupView: View {
                 VStack(spacing: 6) {
                     Image(systemName: viewModel.isEmpty ? "qrcode" : "exclamationmark.triangle")
                         .font(.system(size: 26))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.black.opacity(0.6))
                     Text(viewModel.isEmpty
                         ? "Enter text to encode"
-                        : "Text is too long for a QR code")
+                        : (viewModel.isTooLong ? viewModel.capacityMessage : "Could not generate a QR code"))
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.black.opacity(0.6))
                         .multilineTextAlignment(.center)
                 }
                 .padding()
             }
         }
-        .frame(height: 340)
+        .frame(height: 300)
         .shadow(color: .black.opacity(0.08), radius: 4, y: 1)
     }
 
@@ -139,33 +148,43 @@ struct QRCodePopupView: View {
             Text("Encoded text").font(.caption.bold()).foregroundStyle(.secondary)
             TextEditor(text: $viewModel.text)
                 .font(.callout)
-                .frame(height: 120)
+                .frame(height: 100)
                 .scrollContentBackground(.hidden)
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 9).fill(.primary.opacity(0.05)))
+                .accessibilityLabel("Encoded text")
+            HStack {
+                Text("\(viewModel.byteCount.formatted()) / \(QRCodeGenerator.maxByteCount.formatted()) bytes")
+                Spacer()
+                Text(viewModel.capacityMessage)
+            }
+            .font(.caption2)
+            .foregroundStyle(viewModel.isTooLong ? .red : .secondary)
+            .help("QR capacity is measured in UTF-8 bytes. Emoji and some characters use more than one byte.")
         }
     }
 
     @ViewBuilder
     private var messageArea: some View {
-        if let error = viewModel.errorMessage {
-            Label(error, systemImage: "exclamationmark.triangle.fill")
-                .font(.caption)
-                .foregroundStyle(.orange)
-                .textSelection(.enabled)
-        } else if let status = viewModel.statusMessage {
-            Label(status, systemImage: "checkmark.circle.fill")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .textSelection(.enabled)
+        ZStack(alignment: .leading) {
+            if let error = viewModel.errorMessage {
+                Label(error, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .textSelection(.enabled)
+            } else if let status = viewModel.statusMessage {
+                Label(status, systemImage: "checkmark.circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 20, alignment: .leading)
     }
 
     private var footer: some View {
         HStack(spacing: 8) {
-            Text("\(viewModel.byteCount) bytes")
-                .font(.caption2)
-                .foregroundStyle(viewModel.isTooLong ? .red : .secondary)
             Spacer()
             Button { viewModel.save() } label: { Label("Save…", systemImage: "square.and.arrow.down") }
                 .buttonStyle(SecondaryButtonStyle())

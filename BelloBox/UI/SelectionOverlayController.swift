@@ -719,9 +719,7 @@ final class SelectionOverlayController: NSObject {
     }
 
     private func recordingHUDSize() -> CGSize {
-        RecordingPrivacyNotice.secureFieldRedactionWarning(accessibilityTrusted: AccessibilityService.isTrusted) == nil
-            ? CGSize(width: 520, height: 80)
-            : CGSize(width: 680, height: 80)
+        CGSize(width: 520, height: 128)
     }
 
     private func showRecordingError(_ message: String, anchorRect: CGRect?) {
@@ -962,6 +960,15 @@ final class SelectionOverlayController: NSObject {
 
 #if DEBUG
     private func runE2EHooksIfNeeded() {
+        let env = ProcessInfo.processInfo.environment
+        if let path = env["BELLOBOX_E2E_RECORDING_REVIEW_FILE"] {
+            handleRecordingState(.reviewing(URL(fileURLWithPath: path)))
+            return
+        }
+        if let text = env["BELLOBOX_E2E_QR_TEXT"] {
+            showQRPopup(for: TextSelection(text: text, anchorRect: nil, appName: nil, bundleID: nil, pid: nil))
+            return
+        }
         if runRealScreenshotE2EHookIfNeeded() { return }
         if runRealRecordingE2EHookIfNeeded() { return }
         runScreenshotE2EHooksIfNeeded()
