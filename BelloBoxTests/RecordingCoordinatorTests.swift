@@ -4,6 +4,45 @@ import XCTest
 
 @MainActor
 final class RecordingCoordinatorTests: XCTestCase {
+    func testInputTrackingCanChangeDuringRecordingAndPause() async {
+        let engine = MockRecordingEngine(label: "Input test")
+        let coordinator = RecordingCoordinator(settings: AppSettings(defaults: temporaryDefaults()),
+            makeEngine: { _, _ in engine }, permissionProvider: { _ in .grantedForTests })
+        var options = RecordingOptions.default
+        options.countdownSeconds = 0
+        await coordinator.start(target: .display(displayID: 1), options: options)
+        coordinator.updateInputOverlays(clicks: .ringsAndLabels, keys: .allKeys)
+        guard case let .recording(enabled) = coordinator.state else { return XCTFail("Expected recording") }
+        XCTAssertTrue(enabled.isInputOverlayEnabled)
+        XCTAssertEqual(enabled.keystrokeMode, .allKeys)
+        coordinator.pause()
+        coordinator.updateInputOverlays(clicks: .off, keys: .off)
+        guard case let .paused(disabled) = coordinator.state else { return XCTFail("Expected paused recording") }
+        XCTAssertFalse(disabled.isInputOverlayEnabled)
+        XCTAssertEqual(disabled.keystrokeMode, .off)
+        coordinator.resume()
+        guard case let .recording(resumed) = coordinator.state else { return XCTFail("Expected resumed recording") }
+        XCTAssertFalse(resumed.isInputOverlayEnabled)
+        XCTAssertEqual(engine.inputUpdates.count, 2)
+        coordinator.cancel()
+    }
+
+    func testUnavailableInputMonitorDoesNotClaimTrackingIsEnabled() async {
+        let engine = MockRecordingEngine(label: "Input test")
+        engine.inputTrackingAvailable = false
+        let coordinator = RecordingCoordinator(settings: AppSettings(defaults: temporaryDefaults()),
+            makeEngine: { _, _ in engine }, permissionProvider: { _ in .grantedForTests })
+        var options = RecordingOptions.default
+        options.countdownSeconds = 0
+        await coordinator.start(target: .display(displayID: 1), options: options)
+        coordinator.updateInputOverlays(clicks: .off, keys: .allKeys)
+        guard case let .recording(runtime) = coordinator.state else { return XCTFail("Expected recording") }
+        XCTAssertFalse(runtime.isInputOverlayEnabled)
+        XCTAssertEqual(runtime.keystrokeMode, .off)
+        XCTAssertNotNil(runtime.inputOverlayWarning)
+        coordinator.cancel()
+    }
+
     func testCancelDuringFinishingCancelsInFlightEngine() async {
         let settings = AppSettings(defaults: temporaryDefaults())
         let engine = MockRecordingEngine(label: "Mock")
@@ -128,6 +167,8 @@ private final class MockRecordingEngine: RecordingEngineControlling {
     private var stopContinuation: CheckedContinuation<URL, Error>?
     private(set) var didCancel = false
     private(set) var startCallCount = 0
+    var inputTrackingAvailable = true
+    private(set) var inputUpdates: [(ClickOverlayMode, KeystrokeCaptureMode)] = []
 
     init(label: String) {
         targetDescription = label
@@ -148,6 +189,11 @@ private final class MockRecordingEngine: RecordingEngineControlling {
     }
 
     func setPaused(_ paused: Bool) {}
+
+    func updateInputOverlays(clicks: ClickOverlayMode, keys: KeystrokeCaptureMode) -> Bool {
+        inputUpdates.append((clicks, keys))
+        return inputTrackingAvailable
+    }
 
     func stop() async throws -> URL {
         return try await withCheckedThrowingContinuation { continuation in

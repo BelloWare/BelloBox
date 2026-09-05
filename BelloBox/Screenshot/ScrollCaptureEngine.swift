@@ -89,6 +89,7 @@ final class ScrollCaptureEngine: ObservableObject {
     private let isAccessibilityTrusted: () -> Bool
     private var samplingTask: Task<Void, Never>?
     private var autoScrollTask: Task<Void, Never>?
+    private var autoScrollToken = UUID()
     private var lastSample: CGImage?
     /// +1 scrolls "down" with a negative wheel delta; flipped once if that moves the
     /// content the wrong way (natural scrolling) or nothing happens.
@@ -211,6 +212,22 @@ final class ScrollCaptureEngine: ObservableObject {
         samplingTask?.cancel()
         samplingTask = nil
         phase = .stitching
+        // Done can arrive between timer samples or before the last scroll settles.
+        // Sample twice before stitching so that final movement is not silently lost.
+        var finalSampleWarning: String?
+        if frames.count < configuration.maxFrames {
+            do {
+                processSample(try await captureSample(), whileFinishing: true)
+                try await Task.sleep(nanoseconds: UInt64(max(0.05, configuration.sampleInterval) * 1_000_000_000))
+                processSample(try await captureSample(), whileFinishing: true)
+            } catch {
+                if Task.isCancelled { throw CancellationError() }
+                if !(error is CancellationError) {
+                    finalSampleWarning = "The last scroll could not be sampled. The screenshot includes the frames already captured."
+                }
+            }
+        }
+        try Task.checkCancellation()
         var frames = self.frames
         let config = configuration.stitch
         do {
@@ -227,6 +244,7 @@ final class ScrollCaptureEngine: ObservableObject {
                         stitchTask.cancel()
                     }
                     try Task.checkCancellation()
+                    if let finalSampleWarning { result.warnings.append(finalSampleWarning) }
                     if droppedFrames > 0 {
                         result.warnings.append("The last \(droppedFrames) frame\(droppedFrames == 1 ? " was" : "s were") left out to keep the screenshot within the maximum height.")
                     }
@@ -249,7 +267,12 @@ final class ScrollCaptureEngine: ObservableObject {
     /// Feeds one sample of the target area. Exposed so tests can drive the engine
     /// without a timer.
     func processSample(_ sample: CGImage) {
-        guard phase == .watching, frames.count < configuration.maxFrames else { return }
+        processSample(sample, whileFinishing: false)
+    }
+
+    private func processSample(_ sample: CGImage, whileFinishing: Bool) {
+        guard phase == .watching || (whileFinishing && phase == .stitching),
+              frames.count < configuration.maxFrames else { return }
         samplesSincePost += 1
         guard let last = frames.last else {
             // No frozen crop to start from: the first live sample opens the sequence.
@@ -419,6 +442,8 @@ final class ScrollCaptureEngine: ObservableObject {
         isAutoScrolling = true
         reachedEnd = false
         message = nil
+        let token = UUID()
+        autoScrollToken = token
         autoScrollTask = Task { [weak self] in
             guard let self else { return }
             var flippedDirection = false
@@ -451,11 +476,13 @@ final class ScrollCaptureEngine: ObservableObject {
                     // where the user left it before reporting the end.
                     await self.undoStep(step, postedSign: postedSign)
                 }
+                guard !Task.isCancelled, self.autoScrollToken == token else { return }
                 self.trace("end")
                 self.reachedEnd = true
                 self.message = "Reached the end of the content. Press Done to stitch."
                 break
             }
+            guard self.autoScrollToken == token else { return }
             self.isAutoScrolling = false
             self.autoScrollTask = nil
         }
@@ -507,6 +534,7 @@ final class ScrollCaptureEngine: ObservableObject {
     }
 
     private func stopAutoScroll() {
+        autoScrollToken = UUID()
         autoScrollTask?.cancel()
         autoScrollTask = nil
         isAutoScrolling = false

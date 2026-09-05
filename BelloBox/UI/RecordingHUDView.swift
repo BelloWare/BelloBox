@@ -5,6 +5,7 @@ struct RecordingHUDView: View {
     var isPaused: Bool
     var onPauseResume: () -> Void
     var onStop: () -> Void
+    var onInputOverlaysChange: (ClickOverlayMode, KeystrokeCaptureMode) -> Void
 
     @State private var now = Date()
 
@@ -17,7 +18,30 @@ struct RecordingHUDView: View {
                 .font(.system(.body, design: .monospaced).weight(.semibold))
             statusIcon(enabled: runtime.isMicEnabled, symbol: "mic.fill", help: "Microphone")
             statusIcon(enabled: runtime.isSystemAudioEnabled, symbol: "speaker.wave.2.fill", help: "Mac Audio")
-            statusIcon(enabled: runtime.isInputOverlayEnabled, symbol: "keyboard", help: "Input overlays")
+            Menu {
+                Toggle("Show Clicks", isOn: Binding(
+                    get: { runtime.clickOverlayMode.isEnabled },
+                    set: { onInputOverlaysChange($0 ? .ringsAndLabels : .off, runtime.keystrokeMode) }
+                ))
+                Picker("Show Keys", selection: Binding(
+                    get: { runtime.keystrokeMode },
+                    set: { onInputOverlaysChange(runtime.clickOverlayMode, $0) }
+                )) {
+                    ForEach(KeystrokeCaptureMode.allCases) { mode in
+                        Text(mode.label).tag(mode)
+                    }
+                }
+                if let warning = runtime.inputOverlayWarning {
+                    Divider()
+                    Text(warning)
+                }
+            } label: {
+                Image(systemName: runtime.inputOverlayWarning == nil ? "keyboard" : "exclamationmark.triangle")
+                    .foregroundStyle(runtime.isInputOverlayEnabled ? Color.primary : Color.secondary)
+            }
+            .fixedSize()
+            .help(runtime.inputOverlayWarning ?? "Change click and keyboard tracking while recording")
+            .accessibilityLabel("Input Tracking")
             if runtime.isSecureFieldHidden {
                 Label("Secure field hidden", systemImage: "lock.shield")
                     .font(.caption.weight(.semibold))

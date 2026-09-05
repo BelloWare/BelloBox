@@ -4,6 +4,56 @@ import XCTest
 
 @MainActor
 final class CaptureOverlayFrozenScreenTests: XCTestCase {
+    func testSelectionAndEditorKeepTheSameDimLayersVisible() throws {
+        let controller = makeController()
+        defer { controller.cancel() }
+        let screen = try XCTUnwrap(NSScreen.main)
+        let id = try XCTUnwrap(ScreenCoordinateSpace.displayID(for: screen))
+        let snapshot = DisplaySnapshot(displayID: id, screenFrame: screen.frame, scale: 1,
+            image: ScreenshotTestHelpers.image(width: Int(screen.frame.width), height: Int(screen.frame.height)))
+        controller.beginScreenshotForTesting(snapshots: [snapshot], policy: .areaOnly, onError: { XCTFail($0) })
+        let window = try XCTUnwrap(controller.debugOverlayWindows.first { $0.frame == screen.frame })
+        let view = try XCTUnwrap(window.contentView)
+        let dimming = try XCTUnwrap(view.subviews.first as? CaptureDimmingView)
+        let start = CGPoint(x: 100, y: 100)
+        let end = CGPoint(x: 350, y: 280)
+        for (type, point) in [(NSEvent.EventType.leftMouseDown, start), (.leftMouseDragged, end), (.leftMouseUp, end)] {
+            let event = try XCTUnwrap(NSEvent.mouseEvent(with: type,
+                location: view.convert(point, to: nil), modifierFlags: [], timestamp: 0,
+                windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1))
+            switch type {
+            case .leftMouseDown: view.mouseDown(with: event)
+            case .leftMouseDragged: view.mouseDragged(with: event)
+            default: view.mouseUp(with: event)
+            }
+        }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        XCTAssertEqual(controller.debugOverlayOrderOutCount, 0)
+        XCTAssertTrue(window.isVisible)
+        XCTAssertTrue(view.subviews.first === dimming)
+        XCTAssertTrue(dimming.debugDimLayers.contains { !$0.isHidden && !$0.frame.isEmpty })
+        XCTAssertNotNil(controller.debugActiveScreenshotViewModel)
+    }
+
+    func testFrozenSnapshotsCombineWindowAcrossMixedScaleDisplays() throws {
+        let red = ScreenshotTestHelpers.image(width: 100, height: 100) { context in
+            context.setFillColor(NSColor.red.cgColor); context.fill(CGRect(x: 0, y: 0, width: 100, height: 100))
+        }
+        let blue = ScreenshotTestHelpers.image(width: 200, height: 200) { context in
+            context.setFillColor(NSColor.blue.cgColor); context.fill(CGRect(x: 0, y: 0, width: 200, height: 200))
+        }
+        let snapshots = [
+            DisplaySnapshot(displayID: 1, screenFrame: CGRect(x: -100, y: 0, width: 100, height: 100), scale: 1, image: red),
+            DisplaySnapshot(displayID: 2, screenFrame: CGRect(x: 0, y: 0, width: 100, height: 100), scale: 2, image: blue)
+        ]
+        let document = try ScreenCaptureService().document(fromSnapshots: snapshots,
+            cocoaRect: CGRect(x: -40, y: 20, width: 80, height: 50), source: .importedClipboard)
+        XCTAssertEqual(document.imageSize, CGSize(width: 160, height: 100))
+        XCTAssertEqual(document.scale, 2)
+        XCTAssertEqual(ScreenshotTestHelpers.pixel(document.baseImage, x: 20, y: 30), [255, 0, 0, 255])
+        XCTAssertEqual(ScreenshotTestHelpers.pixel(document.baseImage, x: 120, y: 30), [0, 0, 255, 255])
+    }
+
     func testScreenshotOverlayFreezesEveryDisplayBeforeShowingWindows() throws {
         try XCTSkipUnless(ScreenCapturePermission.isTrusted, "Screen Recording permission is required to freeze displays.")
         let controller = makeController()

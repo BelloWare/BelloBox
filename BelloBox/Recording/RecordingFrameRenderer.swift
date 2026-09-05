@@ -97,16 +97,26 @@ final class RecordingFrameRenderer {
         outputSize: CGSize,
         redactionLayout layout: RedactionLayout
     ) {
+        // Key bubbles occupy one location. Drawing every recent key there stacks their
+        // glyphs into unreadable text during normal typing; show the newest key only.
+        let latestKeyEvent = events.last { event in
+            switch event.kind {
+            case .keystroke, .secureTypingHidden: return true
+            case .click: return false
+            }
+        }
         for event in events {
             switch event.kind {
             case let .click(click):
                 guard !layout.fullFrame else { continue }
                 drawClick(click, in: cgContext, context: context, outputSize: outputSize, redactedRects: layout.rects)
             case let .keystroke(key):
+                guard event.id == latestKeyEvent?.id else { continue }
                 guard !layout.fullFrame else { continue }
                 guard shouldDraw(key: key, sensitiveState: sensitiveState, mode: context.keystrokeMode) else { continue }
                 drawKeystroke(key.displayLabel, in: cgContext, outputSize: outputSize)
             case .secureTypingHidden:
+                guard context.keystrokeMode != .off, event.id == latestKeyEvent?.id else { continue }
                 drawKeystroke("Secure typing hidden", in: cgContext, outputSize: outputSize)
             }
         }

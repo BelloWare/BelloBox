@@ -61,19 +61,29 @@ enum AnnotationRenderer {
         context.draw(croppedBase, in: CGRect(x: 0, y: 0, width: width, height: height))
 
         let annotations = shiftedAnnotations(document.annotations, cropRect: cropRect)
-        applyRedactions(annotations, in: context, imageHeight: CGFloat(height))
-
-        if includeDecorativeAnnotations {
-            drawHighlights(annotations, in: context, imageHeight: CGFloat(height))
-            drawVectorAnnotations(annotations, in: context, imageHeight: CGFloat(height))
-            drawTextAnnotations(annotations, in: context, imageHeight: CGFloat(height))
-        }
+        drawAnnotations(annotations, in: context, imageHeight: CGFloat(height), includeDecorativeAnnotations: includeDecorativeAnnotations)
 
         guard let image = context.makeImage() else { throw AnnotationRenderError.cannotCreateImage }
         if let outputScale, outputScale > 0, outputScale != 1 {
             return try scale(image, by: outputScale)
         }
         return image
+    }
+
+    /// Shared by the live canvas and export. Geometry and style are in image pixels;
+    /// the canvas scales the context, so text, strokes and arrowheads scale together.
+    static func drawAnnotations(
+        _ annotations: [ScreenshotAnnotation],
+        in context: CGContext,
+        imageHeight: CGFloat,
+        includeDecorativeAnnotations: Bool = true
+    ) {
+        applyRedactions(annotations, in: context, imageHeight: imageHeight)
+        if includeDecorativeAnnotations {
+            drawHighlights(annotations, in: context, imageHeight: imageHeight)
+            drawVectorAnnotations(annotations, in: context, imageHeight: imageHeight)
+            drawTextAnnotations(annotations, in: context, imageHeight: imageHeight)
+        }
     }
 
     private static func effectiveCropRect(document: ScreenshotDocument, target: OCRTarget) -> CGRect {
@@ -125,6 +135,7 @@ enum AnnotationRenderer {
             guard case let .blur(rect) = annotation.kind else { continue }
             let cgRect = coreGraphicsRect(rect, imageHeight: imageHeight)
             context.saveGState()
+            context.clip(to: cgRect)
             context.setFillColor(redactionFillColor(for: annotation.style).cgColor)
             context.fill(cgRect)
             context.setStrokeColor(NSColor.white.withAlphaComponent(0.16).cgColor)
@@ -171,14 +182,25 @@ enum AnnotationRenderer {
             switch annotation.kind {
             case let .freehand(points):
                 guard let first = points.first else { break }
+                if points.count == 1 {
+                    let point = flip(first, imageHeight: imageHeight)
+                    let diameter = max(annotation.style.lineWidth, 1)
+                    context.setFillColor(annotation.style.strokeColor.cgColor)
+                    context.fillEllipse(in: CGRect(x: point.x - diameter / 2, y: point.y - diameter / 2, width: diameter, height: diameter))
+                    break
+                }
                 context.move(to: flip(first, imageHeight: imageHeight))
                 for point in points.dropFirst() {
                     context.addLine(to: flip(point, imageHeight: imageHeight))
                 }
                 context.strokePath()
             case let .arrow(start, end):
-                drawArrow(from: flip(start, imageHeight: imageHeight), to: flip(end, imageHeight: imageHeight), in: context)
+                drawArrow(from: flip(start, imageHeight: imageHeight), to: flip(end, imageHeight: imageHeight), lineWidth: annotation.style.lineWidth, in: context)
             case let .rectangle(rect):
+                if let fill = annotation.style.fillColor {
+                    context.setFillColor(fill.cgColor)
+                    context.fill(coreGraphicsRect(rect, imageHeight: imageHeight))
+                }
                 context.stroke(coreGraphicsRect(rect, imageHeight: imageHeight))
             default:
                 break
@@ -221,13 +243,13 @@ enum AnnotationRenderer {
         return max(ceil(measured.height) + 4, ceil(minimumHeight))
     }
 
-    private static func drawArrow(from start: CGPoint, to end: CGPoint, in context: CGContext) {
+    private static func drawArrow(from start: CGPoint, to end: CGPoint, lineWidth: CGFloat, in context: CGContext) {
         context.move(to: start)
         context.addLine(to: end)
         context.strokePath()
 
         let angle = atan2(end.y - start.y, end.x - start.x)
-        let length: CGFloat = 14
+        let length = max(10, max(lineWidth, 1) * 3)
         let spread: CGFloat = .pi / 7
         let p1 = CGPoint(x: end.x - length * cos(angle - spread), y: end.y - length * sin(angle - spread))
         let p2 = CGPoint(x: end.x - length * cos(angle + spread), y: end.y - length * sin(angle + spread))

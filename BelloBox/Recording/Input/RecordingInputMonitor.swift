@@ -5,10 +5,27 @@ import Foundation
 final class RecordingOverlayEventStore {
     private let lock = NSLock()
     private var events: [TimedOverlayEvent] = []
+#if DEBUG
+    private var keyEventCount = 0
+    private var clickEventCount = 0
+    var diagnosticsSummary: String {
+        lock.lock()
+        defer { lock.unlock() }
+        return "keys=\(keyEventCount),clicks=\(clickEventCount)"
+    }
+#endif
 
     func add(_ event: TimedOverlayEvent) {
         lock.lock()
+        // Also bound bursts while the encoder is paused or back-pressured.
+        if events.count >= 128 { events.removeFirst(events.count - 127) }
         events.append(event)
+#if DEBUG
+        switch event.kind {
+        case .keystroke, .secureTypingHidden: keyEventCount += 1
+        case .click: clickEventCount += 1
+        }
+#endif
         lock.unlock()
     }
 
@@ -31,7 +48,9 @@ final class RecordingOverlayEventStore {
 final class RecordingInputMonitor {
     let eventStore = RecordingOverlayEventStore()
 
-    private let options: RecordingOptions
+    private var options: RecordingOptions
+    private let stateLock = NSRecursiveLock()
+    private var isPaused = false
     private let privacyGuard: PrivacyGuard?
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -45,10 +64,19 @@ final class RecordingInputMonitor {
         stop()
     }
 
-    func start() {
-        guard eventTap == nil else { return }
-        guard options.clickOverlayMode.isEnabled || options.keystrokeMode != .off else { return }
-        guard InputMonitoringPermission.status() == .granted else { return }
+    var isRunning: Bool {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return eventTap != nil
+    }
+
+    @discardableResult
+    func start() -> Bool {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        guard eventTap == nil else { return true }
+        guard options.clickOverlayMode.isEnabled || options.keystrokeMode != .off else { return true }
+        guard InputMonitoringPermission.status() == .granted else { return false }
 
         let mask =
             (1 << CGEventType.leftMouseDown.rawValue) |
@@ -70,16 +98,35 @@ final class RecordingInputMonitor {
                 return Unmanaged.passUnretained(event)
             },
             userInfo: refcon
-        ) else { return }
+        ) else { return false }
 
         let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
         eventTap = tap
         runLoopSource = source
+        return true
+    }
+
+    func updateOverlays(clicks: ClickOverlayMode, keys: KeystrokeCaptureMode) -> Bool {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        stop()
+        options.clickOverlayMode = clicks
+        options.keystrokeMode = keys
+        return start()
+    }
+
+    func setPaused(_ paused: Bool) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        isPaused = paused
+        eventStore.clear()
     }
 
     func stop() {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
             CFMachPortInvalidate(tap)
@@ -92,7 +139,14 @@ final class RecordingInputMonitor {
         eventStore.clear()
     }
 
-    private func handle(type: CGEventType, event: CGEvent) {
+    func handle(type: CGEventType, event: CGEvent) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            if let eventTap { CGEvent.tapEnable(tap: eventTap, enable: true) }
+            return
+        }
+        guard !isPaused else { return }
         switch type {
         case .leftMouseDown, .rightMouseDown, .otherMouseDown:
             addClick(type: type, event: event)
@@ -230,12 +284,18 @@ final class RecordingInputMonitor {
     }
 
     private func shortcutLabel(modifiers: NSEvent.ModifierFlags, event: CGEvent, printable: String?) -> String {
+        let isShortcut = !modifiers.intersection([.command, .control, .option]).isEmpty
+        // Control characters (⌃C) and Option's composed symbols are not useful key
+        // labels. Translate the key using the current keyboard layout without them.
+        let key = isShortcut
+            ? NSEvent(cgEvent: event)?.characters(byApplyingModifiers: []).flatMap(Self.printableLabel) ?? printable
+            : printable
         let parts = [
             modifiers.contains(.control) ? "⌃" : nil,
             modifiers.contains(.option) ? "⌥" : nil,
             modifiers.contains(.shift) ? "⇧" : nil,
             modifiers.contains(.command) ? "⌘" : nil,
-            printable?.uppercased() ?? specialKeyLabel(for: event)
+            key?.uppercased() ?? specialKeyLabel(for: event)
         ].compactMap { $0 }
         return parts.joined()
     }
@@ -249,8 +309,12 @@ final class RecordingInputMonitor {
             unicodeString: &chars
         )
         guard length > 0 else { return nil }
-        let string = String(utf16CodeUnits: chars, count: length)
-        guard string.rangeOfCharacter(from: .newlines) == nil,
+        return Self.printableLabel(String(utf16CodeUnits: chars, count: min(length, chars.count)))
+    }
+
+    private static func printableLabel(_ string: String) -> String? {
+        guard !string.unicodeScalars.contains(where: { (0xF700...0xF8FF).contains($0.value) }),
+              string.rangeOfCharacter(from: .newlines) == nil,
               string.rangeOfCharacter(from: .controlCharacters) == nil,
               !string.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         else { return nil }

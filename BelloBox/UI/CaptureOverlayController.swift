@@ -50,7 +50,7 @@ final class CaptureOverlayController {
 
     /// Time between hiding Bello Box's own panels and freezing the displays. Panels are
     /// hidden without animation, so this only needs to cover one window-server update.
-    static let defaultSnapshotDelay: TimeInterval = 0.06
+    nonisolated static let defaultSnapshotDelay: TimeInterval = 0.06
 
     init(
         screenCaptureService: ScreenCaptureService,
@@ -64,6 +64,7 @@ final class CaptureOverlayController {
 
 #if DEBUG
     var debugOverlayWindowCount: Int { windows.count }
+    var debugOverlayOrderOutCount: Int { windows.reduce(0) { $0 + $1.debugOrderOutCount } }
     var debugOverlayWindows: [NSWindow] { windows.map { $0 as NSWindow } }
     /// Dim band frames per overlay view, in each view's unflipped coordinates.
     var debugDimBandFrames: [[CGRect]] { overlayViews.map(\.dimBandFrames) }
@@ -233,8 +234,11 @@ final class CaptureOverlayController {
                 )
             } catch {
                 guard !Task.isCancelled, self.captureToken == token else { return }
-                // Fall back to the live overlay; the selection is captured afterwards.
                 self.logDiagnostics("overlay.snapshots.error", ["error=\(error.localizedDescription)"])
+                let reportError = self.onError
+                self.cancel()
+                reportError?(error.localizedDescription)
+                return
             }
             guard !Task.isCancelled, self.captureToken == token else { return }
             self.captureTask = nil
@@ -462,13 +466,12 @@ final class CaptureOverlayController {
 
     private func showScreenshotEditor(for selection: CaptureSelection, in selectedView: CaptureOverlayView) {
         do {
-            guard let snapshot = snapshot(for: selection) else {
-                captureSelectedScreenshot(selection: selection, in: selectedView)
-                return
-            }
             let document: ScreenshotDocument
             switch selection {
             case .area, .display:
+                guard let snapshot = snapshot(for: selection) else {
+                    throw ScreenCaptureService.CaptureError.captureFailed("This display could not be frozen. Please start a new capture.")
+                }
                 // Keep the whole display so the selection can be resized in the editor.
                 document = try screenCaptureService.displayDocument(
                     fromSnapshot: snapshot,
@@ -476,8 +479,10 @@ final class CaptureOverlayController {
                     source: screenshotSource(for: selection)
                 )
             case .window:
+                // Composite the frozen displays for windows spanning more than one
+                // screen. Never hide the dimming overlay to recapture after mouse-up.
                 document = try screenCaptureService.document(
-                    fromSnapshot: snapshot,
+                    fromSnapshots: snapshots,
                     cocoaRect: selection.cocoaRect,
                     source: screenshotSource(for: selection)
                 )
@@ -489,55 +494,6 @@ final class CaptureOverlayController {
             let reportError = onError
             cancel()
             reportError?(message)
-        }
-    }
-
-    private func captureSelectedScreenshot(selection: CaptureSelection, in selectedView: CaptureOverlayView) {
-        let selectedWindow = selectedView.window
-        logDiagnostics("capture.selected.begin", ["selection=\(Self.describe(selection))"])
-        let timing = CaptureTiming("capture.selected.done")
-        captureTask?.cancel()
-        captureTask = Task { @MainActor [weak self, weak selectedView, weak selectedWindow] in
-            guard let self, let selectedView else { return }
-            do {
-                // Only the display being captured needs its overlay hidden. The other
-                // displays stay dimmed, so the overlay never flashes screen-wide.
-                self.orderOverlayWindowsOut(intersecting: selection.cocoaRect)
-                let options = CaptureOptions(
-                    includeCursor: self.settings.screenshotIncludeCursor,
-                    hideBelloBoxWindows: false,
-                    delayAfterHidingOverlays: 0.05
-                )
-                let document: ScreenshotDocument
-                switch selection {
-                case let .area(area):
-                    // Capture the whole display and keep the selection as the crop, so the
-                    // editor can grow or move it without capturing again.
-                    document = try await self.screenCaptureService.captureAreaWithinDisplay(area, options: options)
-                case let .display(display):
-                    document = try await self.screenCaptureService.capture(.display(display), options: options)
-                case let .window(window):
-                    document = try await self.screenCaptureService.capture(.window(window), options: options)
-                }
-                guard !Task.isCancelled else { return }
-                self.orderOverlayWindowsFront(keyWindow: selectedWindow)
-                _ = self.installScreenshotEditor(document: document, selection: selection, in: selectedView)
-                timing.finish(
-                    [
-                        "selection=\(Self.describe(selection))",
-                        "image=\(document.baseImage.width)x\(document.baseImage.height)",
-                        "crop=\(document.cropRect.map { Self.serialize($0) } ?? "none")",
-                    ],
-                    enabled: self.settings.captureDiagnosticsEnabled
-                )
-                self.captureTask = nil
-            } catch {
-                guard !Task.isCancelled else { return }
-                self.logDiagnostics("capture.selected.error", ["error=\(error.localizedDescription)"])
-                let reportError = self.onError
-                self.cancel()
-                reportError?(error.localizedDescription)
-            }
         }
     }
 
@@ -888,13 +844,6 @@ final class CaptureOverlayController {
 
     /// Hides overlay windows. With `rect`, only windows whose display intersects the
     /// selection are hidden; the remaining displays keep their dim.
-    private func orderOverlayWindowsOut(intersecting rect: CGRect? = nil) {
-        for window in windows {
-            if let rect, !rect.isEmpty, !window.frame.intersects(rect) { continue }
-            window.orderOut(nil)
-        }
-    }
-
     private func orderOverlayWindowsFront(keyWindow: NSWindow?) {
         for window in windows {
             window.orderFrontRegardless()
@@ -1152,6 +1101,13 @@ final class CaptureOverlayController {
 }
 
 private final class CaptureOverlayWindow: NSPanel {
+#if DEBUG
+    private(set) var debugOrderOutCount = 0
+    override func orderOut(_ sender: Any?) {
+        debugOrderOutCount += 1
+        super.orderOut(sender)
+    }
+#endif
     var onEscape: (() -> Void)?
 
     init(screen: NSScreen) {

@@ -83,9 +83,10 @@ final class CaptureDimmingViewTests: XCTestCase {
     }
 
     func testRedactionPreviewIsFullyOpaque() throws {
-        let renderer = ImageRenderer(content: RedactionMaskView(size: CGSize(width: 40, height: 40), hatchStep: 8))
-        renderer.scale = 1
-        let image = try XCTUnwrap(renderer.cgImage)
+        let image = try ScreenshotTestHelpers.annotationPreview(
+            annotations: [ScreenshotAnnotation(kind: .blur(CGRect(x: 0, y: 0, width: 40, height: 40)), style: .redaction)],
+            imageSize: CGSize(width: 40, height: 40), viewSize: CGSize(width: 40, height: 40)
+        )
         XCTAssertEqual(image.width, 40)
         XCTAssertEqual(image.height, 40)
         let expected = UInt8((AnnotationStyle.redactionFillColor.red * 255).rounded())

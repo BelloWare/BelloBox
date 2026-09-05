@@ -31,8 +31,14 @@ struct AnnotationCanvasView: View {
                     OCRTextRegionsOverlayView(regions: result.regions, viewport: viewport)
                 }
 
-                committedAnnotationLayer(viewport: viewport)
-                previewLayer(viewport: viewport)
+                AnnotationDrawingView(
+                    annotations: viewModel.visibleAnnotations + draftAnnotations,
+                    imageSize: imageSize
+                )
+                .frame(width: viewport.fittedImageRect.width, height: viewport.fittedImageRect.height)
+                .position(x: viewport.fittedImageRect.midX, y: viewport.fittedImageRect.midY)
+                .allowsHitTesting(false)
+                cropPreview(viewport: viewport)
                 draggableTextAnnotationLayer(viewport: viewport)
                 inlineTextEditor(viewport: viewport)
             }
@@ -41,77 +47,32 @@ struct AnnotationCanvasView: View {
         }
     }
 
-    /// Mirrors AnnotationRenderer's pass order: redactions are painted first and every
-    /// decorative annotation on top, so the preview matches the exported image.
-    @ViewBuilder
-    private func committedAnnotationLayer(viewport: ImageViewport) -> some View {
-        let annotations = viewModel.visibleAnnotations
-        ForEach(annotations.filter(\.isRedaction)) { annotation in
-            committedAnnotationView(annotation, viewport: viewport)
+    /// The in-progress shape uses the same style and renderer as its committed form.
+    private var draftAnnotations: [ScreenshotAnnotation] {
+        guard let start = dragStart, let end = dragCurrent else { return [] }
+        let rect = CGRect(x: min(start.x, end.x), y: min(start.y, end.y), width: abs(end.x - start.x), height: abs(end.y - start.y))
+        let kind: AnnotationKind
+        let style: AnnotationStyle
+        switch viewModel.activeTool {
+        case .pen:
+            kind = .freehand(points: freehandPoints)
+            style = viewModel.style
+        case .arrow:
+            kind = .arrow(start: start, end: end)
+            style = viewModel.style
+        case .rectangle:
+            kind = .rectangle(rect)
+            style = viewModel.style
+        case .highlight:
+            kind = .highlight(rect)
+            style = .highlight
+        case .blur:
+            kind = .blur(rect)
+            style = .redaction
+        default:
+            return []
         }
-        ForEach(annotations.filter { !$0.isRedaction }) { annotation in
-            committedAnnotationView(annotation, viewport: viewport)
-        }
-    }
-
-    @ViewBuilder
-    private func committedAnnotationView(_ annotation: ScreenshotAnnotation, viewport: ImageViewport) -> some View {
-        let stroke = Color(nsColor: annotation.style.strokeColor.nsColor)
-        let fill = annotation.style.fillColor.map { Color(nsColor: $0.nsColor) }
-        let lineWidth = max(annotation.style.lineWidth, 1)
-        switch annotation.kind {
-        case let .freehand(points):
-            if points.count > 1 {
-                Path { path in
-                    path.move(to: viewport.imagePointToViewPoint(points[0]))
-                    for point in points.dropFirst() {
-                        path.addLine(to: viewport.imagePointToViewPoint(point))
-                    }
-                }
-                .stroke(stroke.opacity(annotation.style.opacity), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
-            }
-        case let .arrow(start, end):
-            Path { path in
-                let from = viewport.imagePointToViewPoint(start)
-                let to = viewport.imagePointToViewPoint(end)
-                path.move(to: from)
-                path.addLine(to: to)
-                let angle = atan2(to.y - from.y, to.x - from.x)
-                let headLength = max(10, lineWidth * 3)
-                let spread = CGFloat.pi / 7
-                path.move(to: to)
-                path.addLine(to: CGPoint(x: to.x - cos(angle - spread) * headLength, y: to.y - sin(angle - spread) * headLength))
-                path.move(to: to)
-                path.addLine(to: CGPoint(x: to.x - cos(angle + spread) * headLength, y: to.y - sin(angle + spread) * headLength))
-            }
-            .stroke(stroke.opacity(annotation.style.opacity), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
-        case let .rectangle(rect):
-            let viewRect = viewport.imageRectToViewRect(rect)
-            Rectangle()
-                .fill((fill ?? Color.clear).opacity(annotation.style.opacity))
-                .overlay(Rectangle().stroke(stroke.opacity(annotation.style.opacity), lineWidth: lineWidth))
-                .frame(width: viewRect.width, height: viewRect.height)
-                .position(x: viewRect.midX, y: viewRect.midY)
-        case let .highlight(rect):
-            let viewRect = viewport.imageRectToViewRect(rect)
-            Rectangle()
-                .fill((fill ?? Color.yellow).opacity(annotation.style.opacity))
-                .frame(width: viewRect.width, height: viewRect.height)
-                .position(x: viewRect.midX, y: viewRect.midY)
-        case let .text(text, origin, maxWidth):
-            let point = viewport.imagePointToViewPoint(origin)
-            let width = viewport.imageRectToViewRect(CGRect(x: origin.x, y: origin.y, width: maxWidth, height: 1)).width
-            Text(text)
-                .font(.system(size: annotation.style.fontSize, weight: .semibold))
-                .foregroundStyle(stroke.opacity(annotation.style.opacity))
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(width: max(width, 44), alignment: .topLeading)
-                .position(x: point.x + max(width, 44) / 2, y: point.y + max(34, annotation.style.fontSize + 16) / 2)
-        case let .blur(rect):
-            let viewRect = viewport.imageRectToViewRect(rect)
-            RedactionMaskView(size: viewRect.size, hatchStep: redactionHatchStep(viewport: viewport))
-                .position(x: viewRect.midX, y: viewRect.midY)
-        }
+        return [ScreenshotAnnotation(kind: kind, style: style)]
     }
 
     @ViewBuilder
@@ -156,41 +117,13 @@ struct AnnotationCanvasView: View {
     }
 
     @ViewBuilder
-    private func previewLayer(viewport: ImageViewport) -> some View {
-        if viewModel.activeTool == .pen, freehandPoints.count > 1 {
-            Path { path in
-                let first = viewport.imagePointToViewPoint(freehandPoints[0])
-                path.move(to: first)
-                for point in freehandPoints.dropFirst() {
-                    path.addLine(to: viewport.imagePointToViewPoint(point))
-                }
-            }
-            .stroke(Color(nsColor: viewModel.style.strokeColor.nsColor), style: StrokeStyle(lineWidth: viewModel.style.lineWidth, lineCap: .round, lineJoin: .round))
-        } else if let rect = previewRect(viewport: viewport) {
-            switch viewModel.activeTool {
-            case .arrow:
-                Path { path in
-                    guard let dragStart, let dragCurrent else { return }
-                    path.move(to: viewport.imagePointToViewPoint(dragStart))
-                    path.addLine(to: viewport.imagePointToViewPoint(dragCurrent))
-                }
-                    .stroke(Color(nsColor: viewModel.style.strokeColor.nsColor), lineWidth: viewModel.style.lineWidth)
-            case .rectangle, .crop:
-                Rectangle()
-                    .stroke(Color(nsColor: viewModel.style.strokeColor.nsColor), lineWidth: max(viewModel.style.lineWidth, 2))
-                    .frame(width: rect.width, height: rect.height)
-                    .position(x: rect.midX, y: rect.midY)
-            case .highlight:
-                Rectangle()
-                    .fill(Color.yellow.opacity(0.32))
-                    .frame(width: rect.width, height: rect.height)
-                    .position(x: rect.midX, y: rect.midY)
-            case .blur:
-                RedactionMaskView(size: rect.size, hatchStep: redactionHatchStep(viewport: viewport))
-                    .position(x: rect.midX, y: rect.midY)
-            default:
-                EmptyView()
-            }
+    private func cropPreview(viewport: ImageViewport) -> some View {
+        if viewModel.activeTool == .crop, let rect = previewRect(viewport: viewport) {
+            Rectangle()
+                .stroke(BoxTheme.accent, style: StrokeStyle(lineWidth: 2, dash: [5, 3]))
+                .frame(width: rect.width, height: rect.height)
+                .position(x: rect.midX, y: rect.midY)
+                .allowsHitTesting(false)
         }
     }
 
@@ -212,11 +145,11 @@ struct AnnotationCanvasView: View {
                 let point = viewport.viewPointToImagePoint(Self.localPoint(value.location, origin: origin))
                 if dragStart == nil {
                     dragStart = viewport.viewPointToImagePoint(Self.localPoint(value.startLocation, origin: origin))
-                    freehandPoints = []
+                    freehandPoints = [dragStart ?? point]
                 }
                 dragCurrent = point
                 if viewModel.activeTool == .pen {
-                    freehandPoints.append(point)
+                    if freehandPoints.last != point { freehandPoints.append(point) }
                 }
             }
             .onEnded { value in
@@ -230,6 +163,7 @@ struct AnnotationCanvasView: View {
                 let origin = geometry.frame(in: .global).origin
                 let end = viewport.viewPointToImagePoint(Self.localPoint(value.location, origin: origin))
                 guard let start = dragStart else { resetDrag(); return }
+                if viewModel.activeTool == .pen, freehandPoints.last != end { freehandPoints.append(end) }
                 commit(start: start, end: end)
                 resetDrag()
             }
@@ -237,11 +171,6 @@ struct AnnotationCanvasView: View {
 
     private static func localPoint(_ point: CGPoint, origin: CGPoint) -> CGPoint {
         CGPoint(x: point.x - origin.x, y: point.y - origin.y)
-    }
-
-    private func redactionHatchStep(viewport: ImageViewport) -> CGFloat {
-        guard viewport.imageSize.width > 0 else { return 8 }
-        return max(3, 8 * viewport.fittedImageRect.width / viewport.imageSize.width)
     }
 
     private func commit(start: CGPoint, end: CGPoint) {
@@ -263,9 +192,8 @@ struct AnnotationCanvasView: View {
 
         switch viewModel.activeTool {
         case .pen:
-            let points = simplify(freehandPoints)
-            guard points.count > 1 else { return }
-            viewModel.addVisibleAnnotation(.freehand(points: points))
+            guard !freehandPoints.isEmpty else { return }
+            viewModel.addVisibleAnnotation(.freehand(points: freehandPoints))
         case .arrow:
             viewModel.addVisibleAnnotation(.arrow(start: start, end: end))
         case .rectangle:
@@ -294,18 +222,6 @@ struct AnnotationCanvasView: View {
         freehandPoints = []
     }
 
-    private func simplify(_ points: [CGPoint]) -> [CGPoint] {
-        guard points.count > 2 else { return points }
-        var result: [CGPoint] = []
-        var last: CGPoint?
-        for point in points {
-            if let previous = last, hypot(point.x - previous.x, point.y - previous.y) < 2 { continue }
-            result.append(point)
-            last = point
-        }
-        return result
-    }
-
     @ViewBuilder
     private func inlineTextEditor(viewport: ImageViewport) -> some View {
         if let frame = viewModel.visibleTextFrameForEditingAnnotation() {
@@ -318,6 +234,7 @@ struct AnnotationCanvasView: View {
                         get: { viewModel.textForEditingAnnotation() },
                         set: { viewModel.updateEditingText($0) }
                     ),
+                    fontSize: viewModel.style.fontSize * viewport.fittedImageRect.width / max(viewport.imageSize.width, 1),
                     onCommit: { viewModel.endTextEditing() },
                     onCancel: { viewModel.cancelTextEditing() }
                 )
@@ -335,7 +252,7 @@ struct AnnotationCanvasView: View {
                     .gesture(editingTextDragGesture(frame: frame, viewport: viewport))
             }
             .frame(width: fieldWidth, height: fieldHeight)
-            .position(x: viewFrame.midX, y: viewFrame.midY)
+            .position(x: viewFrame.minX + fieldWidth / 2, y: viewFrame.minY + fieldHeight / 2)
         }
     }
 
@@ -357,10 +274,41 @@ struct AnnotationCanvasView: View {
     }
 }
 
-private extension ScreenshotAnnotation {
-    var isRedaction: Bool {
-        if case .blur = kind { return true }
-        return false
+/// A transparent AppKit drawing surface shares Core Graphics rendering with PNG export.
+/// Only the annotation layer is redrawn during a gesture, even for a tall scroll capture.
+struct AnnotationDrawingView: NSViewRepresentable {
+    var annotations: [ScreenshotAnnotation]
+    var imageSize: CGSize
+
+    func makeNSView(context: Context) -> AnnotationDrawingNSView {
+        let view = AnnotationDrawingNSView()
+        view.wantsLayer = true
+        return view
+    }
+
+    func updateNSView(_ view: AnnotationDrawingNSView, context: Context) {
+        view.annotations = annotations
+        view.imageSize = imageSize
+        view.needsDisplay = true
+    }
+}
+
+final class AnnotationDrawingNSView: NSView {
+    var annotations: [ScreenshotAnnotation] = []
+    var imageSize: CGSize = .zero
+
+    override var isOpaque: Bool { false }
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard imageSize.width > 0, imageSize.height > 0,
+              let context = NSGraphicsContext.current?.cgContext else { return }
+        context.saveGState()
+        defer { context.restoreGState() }
+        context.clear(bounds)
+        context.clip(to: bounds)
+        context.scaleBy(x: bounds.width / imageSize.width, y: bounds.height / imageSize.height)
+        AnnotationRenderer.drawAnnotations(annotations, in: context, imageHeight: imageSize.height)
     }
 }
 
@@ -372,34 +320,9 @@ struct SelectionMoveGestureHandler {
     var onEnd: () -> Void
 }
 
-/// Opaque redaction preview that matches the exported image: a solid fill plus a faint
-/// diagonal hatch, so nothing underneath shows through in the editor either.
-struct RedactionMaskView: View {
-    var size: CGSize
-    var hatchStep: CGFloat = 8
-
-    var body: some View {
-        Canvas { context, canvasSize in
-            let rect = CGRect(origin: .zero, size: canvasSize)
-            context.fill(Path(rect), with: .color(Color(nsColor: AnnotationStyle.redactionFillColor.nsColor)))
-            guard rect.width > 0, rect.height > 0 else { return }
-            var hatch = Path()
-            var x = rect.minX
-            let step = max(2, hatchStep)
-            while x < rect.maxX {
-                hatch.move(to: CGPoint(x: x, y: rect.maxY))
-                hatch.addLine(to: CGPoint(x: x + rect.height, y: rect.minY))
-                x += step
-            }
-            context.stroke(hatch, with: .color(.white.opacity(0.16)), lineWidth: 1)
-        }
-        .frame(width: max(size.width, 0), height: max(size.height, 0))
-        .clipped()
-    }
-}
-
 private struct InlineAnnotationTextField: NSViewRepresentable {
     @Binding var text: String
+    var fontSize: CGFloat
     var onCommit: () -> Void
     var onCancel: () -> Void
 
@@ -410,7 +333,7 @@ private struct InlineAnnotationTextField: NSViewRepresentable {
         field.isBezeled = true
         field.drawsBackground = true
         field.backgroundColor = NSColor.textBackgroundColor.withAlphaComponent(0.92)
-        field.font = .systemFont(ofSize: 18, weight: .semibold)
+        field.font = .systemFont(ofSize: max(1, fontSize), weight: .semibold)
         field.focusRingType = .exterior
         DispatchQueue.main.async {
             field.window?.makeFirstResponder(field)
@@ -420,6 +343,7 @@ private struct InlineAnnotationTextField: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: NSTextField, context: Context) {
+        nsView.font = .systemFont(ofSize: max(1, fontSize), weight: .semibold)
         if nsView.stringValue != text {
             nsView.stringValue = text
         }

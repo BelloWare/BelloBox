@@ -3,6 +3,21 @@ import XCTest
 @testable import BelloBox
 
 enum ScreenshotTestHelpers {
+    @MainActor
+    static func annotationPreview(annotations: [ScreenshotAnnotation], imageSize: CGSize, viewSize: CGSize) throws -> CGImage {
+        let view = AnnotationDrawingNSView(frame: CGRect(origin: .zero, size: viewSize))
+        view.imageSize = imageSize
+        view.annotations = annotations
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: Int(viewSize.width), pixelsHigh: Int(viewSize.height),
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 32
+        ))
+        bitmap.size = viewSize
+        view.cacheDisplay(in: view.bounds, to: bitmap)
+        return try XCTUnwrap(bitmap.cgImage)
+    }
+
     static func image(width: Int, height: Int, draw: ((CGContext) -> Void)? = nil) -> CGImage {
         let context = CGContext(
             data: nil,
@@ -30,6 +45,17 @@ enum ScreenshotTestHelpers {
                 context.fill(CGRect(x: 0, y: y, width: width, height: 1))
             }
         }
+    }
+
+    static func rgbaPixels(_ image: CGImage) -> [UInt8] {
+        var bytes = [UInt8](repeating: 0, count: image.width * image.height * 4)
+        bytes.withUnsafeMutableBytes { buffer in
+            let context = CGContext(data: buffer.baseAddress, width: image.width, height: image.height,
+                bitsPerComponent: 8, bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+            context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        }
+        return bytes
     }
 
     static func pixel(_ image: CGImage, x: Int, y: Int) -> [UInt8] {

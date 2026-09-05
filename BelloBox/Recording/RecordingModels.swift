@@ -219,4 +219,7 @@ struct RecordingRuntimeState: Equatable {
     var isSystemAudioEnabled: Bool
     var isInputOverlayEnabled: Bool
     var isSecureFieldHidden: Bool
+    var clickOverlayMode: ClickOverlayMode = .off
+    var keystrokeMode: KeystrokeCaptureMode = .off
+    var inputOverlayWarning: String?
 }

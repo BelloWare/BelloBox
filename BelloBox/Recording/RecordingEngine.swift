@@ -72,6 +72,11 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private var finishing = false
     private var pauseTimeline = RecordingPauseTimeline()
     private var lastSecureFieldHidden = false
+    // ScreenCaptureKit can stop supplying image buffers while a screen is static.
+    // Keep one source frame so input overlays and the movie timeline still advance.
+    private var latestSourcePixelBuffer: CVPixelBuffer?
+    private var lastVideoSourceTime: CMTime?
+    private var frameRefreshTimer: DispatchSourceTimer?
 #if DEBUG
     private var debugScreenSampleCount = 0
     private var debugImageBufferFrameCount = 0
@@ -98,7 +103,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     func start() async throws -> RecordingRuntimeState {
         guard ScreenCapturePermission.isTrusted else { throw RecordingEngineError.permissionDenied }
         let descriptor = try await Self.resolve(target: target, options: options)
-        try prepareWriter(descriptor: descriptor)
+        try prepareWriter(output: descriptor.outputSettings)
 
         var createdStream: SCStream?
         do {
@@ -147,19 +152,42 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
             elapsed: 0,
             isMicEnabled: options.audioSource.includesMicrophone,
             isSystemAudioEnabled: options.audioSource.includesSystemAudio,
-            isInputOverlayEnabled: options.clickOverlayMode.isEnabled || options.keystrokeMode != .off,
-            isSecureFieldHidden: false
+            isInputOverlayEnabled: inputMonitor?.isRunning == true,
+            isSecureFieldHidden: false,
+            clickOverlayMode: inputMonitor?.isRunning == true ? options.clickOverlayMode : .off,
+            keystrokeMode: inputMonitor?.isRunning == true ? options.keystrokeMode : .off,
+            inputOverlayWarning: (options.clickOverlayMode.isEnabled || options.keystrokeMode != .off) && inputMonitor?.isRunning != true
+                ? "Input tracking could not start. Check Input Monitoring permission in System Settings." : nil
         )
         return runtime
     }
 
     func setPaused(_ paused: Bool) {
+        inputMonitor?.setPaused(paused)
         writerQueue.async { [weak self] in
             self?.pauseTimeline.setPaused(paused, at: CMClockGetTime(CMClockGetHostTimeClock()))
         }
     }
 
+    @discardableResult
+    func updateInputOverlays(clicks: ClickOverlayMode, keys: KeystrokeCaptureMode) -> Bool {
+        guard let inputMonitor else { return false }
+        let available = inputMonitor.updateOverlays(clicks: clicks, keys: keys)
+        writerQueue.async { [weak self] in
+            guard let self, let context = self.renderContext else { return }
+            self.renderContext = RecordingFrameRenderContext(
+                sourceScreenRect: context.sourceScreenRect,
+                outputSize: context.outputSize,
+                clickOverlayMode: available ? clicks : .off,
+                keystrokeMode: available ? keys : .off,
+                secureFieldRedactionMode: context.secureFieldRedactionMode
+            )
+        }
+        return available
+    }
+
     private func cleanupAfterFailedStart() {
+        markFinishing()
         inputMonitor?.stop()
         inputMonitor = nil
         microphoneCapture?.stop()
@@ -217,6 +245,27 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 
 #if DEBUG
+    /// Exercises the real renderer, refresh timer and movie writer using a synthetic
+    /// source frame, without requiring Screen Recording permission in the test runner.
+    func debugStartWithFrame(_ buffer: CVPixelBuffer, output: RecordingOutputSettings) throws {
+        try writerQueue.sync {
+            try prepareWriter(output: output)
+            inputMonitor = RecordingInputMonitor(options: options)
+            renderContext = RecordingFrameRenderContext(
+                sourceScreenRect: CGRect(x: 0, y: 0, width: output.width, height: output.height),
+                outputSize: CGSize(width: output.width, height: output.height),
+                clickOverlayMode: options.clickOverlayMode, keystrokeMode: options.keystrokeMode,
+                secureFieldRedactionMode: options.secureFieldRedactionMode
+            )
+            latestSourcePixelBuffer = buffer
+            writeVideoFrame(buffer, at: CMClockGetTime(CMClockGetHostTimeClock()))
+        }
+    }
+
+    func debugAddOverlayEvent(_ event: TimedOverlayEvent) {
+        inputMonitor?.eventStore.add(event)
+    }
+
     var diagnosticsSummary: String {
         writerQueue.sync {
             let statuses = debugScreenStatusCounts
@@ -224,6 +273,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
                 .map { "\($0.key):\($0.value)" }
                 .joined(separator: "|")
             return [
+                "inputEvents=\(inputMonitor?.eventStore.diagnosticsSummary ?? "none")",
                 "screenSamples=\(debugScreenSampleCount)",
                 "imageBufferFrames=\(debugImageBufferFrameCount)",
                 "writerReadyFrames=\(debugWriterReadyFrameCount)",
@@ -238,13 +288,12 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 #endif
 
-    private func prepareWriter(descriptor: RecordingTargetDescriptor) throws {
+    private func prepareWriter(output: RecordingOutputSettings) throws {
         try? FileManager.default.removeItem(at: captureURL)
         try? FileManager.default.removeItem(at: outputURL)
         try FileManager.default.createDirectory(at: captureURL.deletingLastPathComponent(), withIntermediateDirectories: true)
 
         let writer = try AVAssetWriter(outputURL: captureURL, fileType: .mov)
-        let output = descriptor.outputSettings
         let videoSettings: [String: Any] = [
             AVVideoCodecKey: AVVideoCodecType.h264,
             AVVideoWidthKey: output.width,
@@ -280,6 +329,18 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         self.videoInput = videoInput
         self.pixelBufferAdaptor = adaptor
         self.pauseTimeline = RecordingPauseTimeline()
+        self.latestSourcePixelBuffer = nil
+        self.lastVideoSourceTime = nil
+        let timer = DispatchSource.makeTimerSource(queue: writerQueue)
+        timer.schedule(deadline: .now() + 0.1, repeating: 0.1, leeway: .milliseconds(10))
+        timer.setEventHandler { [weak self] in
+            guard let self, !self.isFinishing, let buffer = self.latestSourcePixelBuffer else { return }
+            let now = CMClockGetTime(CMClockGetHostTimeClock())
+            if let last = self.lastVideoSourceTime, CMTimeGetSeconds(CMTimeSubtract(now, last)) < 0.08 { return }
+            self.writeVideoFrame(buffer, at: now)
+        }
+        self.frameRefreshTimer = timer
+        timer.resume()
         self.finishInitiated = false
         lifecycleLock.lock()
         self.discardOutputWhenFinished = false
@@ -291,6 +352,11 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         lifecycleLock.lock()
         finishing = true
         lifecycleLock.unlock()
+        writerQueue.async { [weak self] in
+            self?.frameRefreshTimer?.cancel()
+            self?.frameRefreshTimer = nil
+            self?.latestSourcePixelBuffer = nil
+        }
     }
 
     private var isFinishing: Bool {
@@ -327,26 +393,25 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         }
 #endif
         guard Self.isRenderableFrame(status: status, hasImageBuffer: sourcePixelBuffer != nil) else {
+            if status != .idle { latestSourcePixelBuffer = nil }
 #if DEBUG
             debugLastVideoDropReason = "non-renderable status \(statusDescription)"
 #endif
             return
         }
-        guard
-              let videoInput,
-              let adaptor = pixelBufferAdaptor,
-              let sourcePixelBuffer
-        else {
-#if DEBUG
-            debugLastVideoDropReason = "missing writer resources or image buffer"
-#endif
-            return
-        }
+        // Do not reuse stale content after the stream reports blank/suspended/stopped.
+        guard let sourcePixelBuffer else { return }
+        latestSourcePixelBuffer = sourcePixelBuffer
+        writeVideoFrame(sourcePixelBuffer, at: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
+    }
+
+    private func writeVideoFrame(_ sourcePixelBuffer: CVPixelBuffer, at pts: CMTime) {
+        guard !isFinishing, pts.isValid,
+              lastVideoSourceTime.map({ CMTimeCompare(pts, $0) > 0 }) ?? true,
+              let videoInput, let adaptor = pixelBufferAdaptor else { return }
 #if DEBUG
         debugWriterReadyFrameCount += 1
 #endif
-
-        let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         guard !pauseTimeline.isPaused else {
 #if DEBUG
             debugLastVideoDropReason = "recording paused"
@@ -397,6 +462,7 @@ final class RecordingEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         )
 
         if adaptor.append(renderedPixelBuffer, withPresentationTime: writePTS) {
+            lastVideoSourceTime = pts
             wroteVideoFrame = true
 #if DEBUG
             debugAppendedFrameCount += 1

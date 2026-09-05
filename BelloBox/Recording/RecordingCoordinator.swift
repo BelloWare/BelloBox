@@ -8,6 +8,7 @@ protocol RecordingEngineControlling: AnyObject {
 
     func start() async throws -> RecordingRuntimeState
     func setPaused(_ paused: Bool)
+    func updateInputOverlays(clicks: ClickOverlayMode, keys: KeystrokeCaptureMode) -> Bool
     func stop() async throws -> URL
     func cancel()
 }
@@ -133,6 +134,22 @@ final class RecordingCoordinator: ObservableObject {
         runtime.startedAt = Date().addingTimeInterval(-runtime.elapsed)
         activeEngine?.setPaused(false)
         setState(.recording(runtime))
+    }
+
+    func updateInputOverlays(clicks: ClickOverlayMode, keys: KeystrokeCaptureMode) {
+        var runtime: RecordingRuntimeState
+        let paused: Bool
+        switch state {
+        case let .recording(value): (runtime, paused) = (value, false)
+        case let .paused(value): (runtime, paused) = (value, true)
+        default: return
+        }
+        let available = activeEngine?.updateInputOverlays(clicks: clicks, keys: keys) == true
+        runtime.clickOverlayMode = available ? clicks : .off
+        runtime.keystrokeMode = available ? keys : .off
+        runtime.isInputOverlayEnabled = available && (clicks.isEnabled || keys != .off)
+        runtime.inputOverlayWarning = available ? nil : "Input tracking could not start. Check Input Monitoring permission in System Settings."
+        setState(paused ? .paused(runtime) : .recording(runtime))
     }
 
     func stop() {

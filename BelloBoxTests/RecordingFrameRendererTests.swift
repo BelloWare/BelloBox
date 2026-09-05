@@ -5,6 +5,39 @@ import CoreVideo
 import XCTest
 
 final class RecordingFrameRendererTests: XCTestCase {
+    func testRapidTypingShowsOnlyTheLatestKeyBubble() {
+        let first = keyEvent("WWWW")
+        let last = keyEvent("i")
+        let stacked = render(sensitiveState: .notSensitive, overlayEvents: [first, last])
+        let latestOnly = render(sensitiveState: .notSensitive, overlayEvents: [last])
+        for y in 0..<100 {
+            for x in 0..<100 {
+                let a = pixel(at: CGPoint(x: x, y: y), in: stacked)
+                let b = pixel(at: CGPoint(x: x, y: y), in: latestOnly)
+                XCTAssertEqual(a.red, b.red)
+                XCTAssertEqual(a.green, b.green)
+                XCTAssertEqual(a.blue, b.blue)
+            }
+        }
+    }
+
+    func testDisabledKeysSuppressesBothKeyAndSecureTypingBubbles() {
+        let hidden = TimedOverlayEvent(id: UUID(), time: .zero, kind: .secureTypingHidden,
+            expiresAt: CMTime(seconds: 1, preferredTimescale: 600))
+        let output = render(sensitiveState: .notSensitive, overlayEvents: [keyEvent("A"), hidden], keys: .off)
+        for y in 20..<80 {
+            for x in 10..<90 {
+                XCTAssertGreaterThan(pixel(at: CGPoint(x: x, y: y), in: output).red, 250)
+            }
+        }
+    }
+
+    private func keyEvent(_ label: String) -> TimedOverlayEvent {
+        TimedOverlayEvent(id: UUID(), time: .zero,
+            kind: .keystroke(KeystrokeOverlayEvent(displayLabel: label, isShortcut: false, isPrintable: true, modifiers: [])),
+            expiresAt: CMTime(seconds: 1, preferredTimescale: 600))
+    }
+
     func testKnownSensitiveFrameIsRedactedBeforeOutput() {
         let output = render(
             sensitiveState: .sensitiveKnownFrame(
@@ -105,7 +138,8 @@ final class RecordingFrameRendererTests: XCTestCase {
 
     private func render(
         sensitiveState: SensitiveInputState,
-        overlayEvents: [TimedOverlayEvent]
+        overlayEvents: [TimedOverlayEvent],
+        keys: KeystrokeCaptureMode = .allKeys
     ) -> CVPixelBuffer {
         let source = makePixelBuffer(width: 100, height: 100, red: 255, green: 255, blue: 255)
         let output = makePixelBuffer(width: 100, height: 100, red: 0, green: 0, blue: 0)
@@ -113,7 +147,7 @@ final class RecordingFrameRendererTests: XCTestCase {
             sourceScreenRect: CGRect(x: 0, y: 0, width: 100, height: 100),
             outputSize: CGSize(width: 100, height: 100),
             clickOverlayMode: .ringsAndLabels,
-            keystrokeMode: .allKeys,
+            keystrokeMode: keys,
             secureFieldRedactionMode: .strict
         )
 

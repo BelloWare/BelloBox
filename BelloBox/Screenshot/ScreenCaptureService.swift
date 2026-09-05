@@ -118,6 +118,37 @@ final class ScreenCaptureService {
         )
     }
 
+    /// Builds a selection from the exact pixels shown by the overlay, including windows
+    /// spanning displays with different backing scales. No window visibility changes.
+    func document(fromSnapshots snapshots: [DisplaySnapshot], cocoaRect: CGRect, source: ScreenshotSource) throws -> ScreenshotDocument {
+        let intersecting = snapshots.filter { $0.screenFrame.intersects(cocoaRect) }
+        guard let first = intersecting.first else {
+            throw CaptureError.captureFailed("This display could not be frozen. Please start a new capture.")
+        }
+        if intersecting.count == 1 {
+            return try document(fromSnapshot: first, cocoaRect: cocoaRect, source: source)
+        }
+        let scale = intersecting.map { CGFloat($0.image.width) / $0.screenFrame.width }.max() ?? 1
+        let width = max(1, Int((cocoaRect.width * scale).rounded()))
+        let height = max(1, Int((cocoaRect.height * scale).rounded()))
+        guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8,
+                                      bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            throw CaptureError.captureFailed("Could not combine the display snapshots.")
+        }
+        context.interpolationQuality = .high
+        for snapshot in intersecting {
+            context.draw(snapshot.image, in: CGRect(
+                x: (snapshot.screenFrame.minX - cocoaRect.minX) * scale,
+                y: (snapshot.screenFrame.minY - cocoaRect.minY) * scale,
+                width: snapshot.screenFrame.width * scale,
+                height: snapshot.screenFrame.height * scale
+            ))
+        }
+        guard let image = context.makeImage() else { throw CaptureError.protectedContent }
+        return ScreenshotDocument(baseImage: image, scale: scale, source: source)
+    }
+
     /// Captures every display as it is right now. The overlay shows these frozen images
     /// instead of the live screen, so transient UI (hover states, menus, tooltips) that
     /// was visible when the shortcut fired survives, and no second capture is needed

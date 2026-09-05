@@ -7,6 +7,41 @@ final class ScrollCaptureEngineTests: XCTestCase {
     private let width = 160
     private let viewport = 300
 
+    func testDoneCapturesFinalScrollBeforeTheNextTimerSample() async throws {
+        let content = makeContent(height: 1200)
+        let first = window(content, offset: 0)
+        let last = window(content, offset: 90)
+        var samples = 0
+        var config = ScrollCaptureEngine.Configuration()
+        config.sampleInterval = 0.05
+        let engine = ScrollCaptureEngine(
+            area: CaptureArea(cocoaRect: CGRect(x: 0, y: 0, width: width, height: viewport), displayID: 1),
+            summary: ScrollCaptureTargetSummary(title: "Test", ownerName: nil, frame: nil),
+            initialFrame: first, configuration: config,
+            captureSample: { samples += 1; return last }, postScroll: { _ in }
+        )
+        engine.start()
+        let document = try await engine.finish()
+        XCTAssertEqual(samples, 2)
+        XCTAssertEqual(engine.frames.count, 2)
+        XCTAssertEqual(document.baseImage.height, viewport + 90)
+        XCTAssertEqual(engine.previewRowCount, document.baseImage.height)
+        XCTAssertEqual(engine.phase, .finished)
+    }
+
+    func testFailedFinalSamplePreservesCapturedFramesAndReportsWarning() async throws {
+        let engine = ScrollCaptureEngine(
+            area: CaptureArea(cocoaRect: CGRect(x: 0, y: 0, width: width, height: viewport), displayID: 1),
+            summary: ScrollCaptureTargetSummary(title: "Test", ownerName: nil, frame: nil),
+            initialFrame: window(makeContent(height: 1200), offset: 0),
+            captureSample: { throw ScreenCaptureService.CaptureError.protectedContent }, postScroll: { _ in }
+        )
+        engine.start()
+        let document = try await engine.finish()
+        XCTAssertEqual(document.baseImage.height, viewport)
+        XCTAssertTrue(document.activeOCRResult?.warnings.contains { $0.contains("last scroll") } == true)
+    }
+
     func testStaticContentNeverAppendsAFrame() {
         let content = makeContent(height: 1200)
         let engine = makeEngine(initialFrame: window(content, offset: 0))

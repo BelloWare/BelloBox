@@ -653,7 +653,10 @@ final class SelectionOverlayController: NSObject {
                 runtime: runtime,
                 isPaused: false,
                 onPauseResume: { [weak self] in self?.recordingCoordinator.pause() },
-                onStop: { [weak self] in self?.recordingCoordinator.stop() }
+                onStop: { [weak self] in self?.recordingCoordinator.stop() },
+                onInputOverlaysChange: { [weak self] clicks, keys in
+                    self?.recordingCoordinator.updateInputOverlays(clicks: clicks, keys: keys)
+                }
             )
             present(
                 view,
@@ -668,7 +671,10 @@ final class SelectionOverlayController: NSObject {
                 runtime: runtime,
                 isPaused: true,
                 onPauseResume: { [weak self] in self?.recordingCoordinator.resume() },
-                onStop: { [weak self] in self?.recordingCoordinator.stop() }
+                onStop: { [weak self] in self?.recordingCoordinator.stop() },
+                onInputOverlaysChange: { [weak self] clicks, keys in
+                    self?.recordingCoordinator.updateInputOverlays(clicks: clicks, keys: keys)
+                }
             )
             present(
                 view,
@@ -1091,7 +1097,7 @@ final class SelectionOverlayController: NSObject {
         let env = ProcessInfo.processInfo.environment
         guard let outputPath = env["BELLOBOX_E2E_REAL_RECORDING_OUTPUT"], !outputPath.isEmpty else { return false }
         let markerPath = env["BELLOBOX_E2E_REAL_RECORDING_MARKER"]
-        let duration = max(0.6, min(5, Double(env["BELLOBOX_E2E_RECORDING_DURATION"] ?? "") ?? 1.2))
+        let duration = max(0.6, min(20, Double(env["BELLOBOX_E2E_RECORDING_DURATION"] ?? "") ?? 1.2))
         let showOwnPulse = env["BELLOBOX_E2E_RECORDING_OWN_PULSE"] == "1"
 
         Task { @MainActor in
@@ -1111,8 +1117,8 @@ final class SelectionOverlayController: NSObject {
                     audioSource: .none,
                     microphoneDeviceID: nil,
                     includeCursor: false,
-                    clickOverlayMode: .off,
-                    keystrokeMode: .off,
+                    clickOverlayMode: env["BELLOBOX_E2E_RECORDING_CLICKS"].flatMap(ClickOverlayMode.init(rawValue:)) ?? .off,
+                    keystrokeMode: env["BELLOBOX_E2E_RECORDING_KEYS"].flatMap(KeystrokeCaptureMode.init(rawValue:)) ?? .off,
                     secureFieldRedactionMode: .strict,
                     quality: .compact,
                     countdownSeconds: 0,
@@ -1130,7 +1136,13 @@ final class SelectionOverlayController: NSObject {
                     showE2ERecordingPulseWindow(in: rect)
                 }
                 let runtime = try await engine.start()
-                try await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+                if env["BELLOBOX_E2E_RECORDING_DISABLE_INPUT_HALFWAY"] == "1" {
+                    try await Task.sleep(nanoseconds: UInt64(duration * 500_000_000))
+                    _ = engine.updateInputOverlays(clicks: .off, keys: .off)
+                    try await Task.sleep(nanoseconds: UInt64(duration * 500_000_000))
+                } else {
+                    try await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+                }
                 let movieURL = try await engine.stop()
                 if showOwnPulse {
                     hideE2ERecordingPulseWindow()
@@ -1144,6 +1156,8 @@ final class SelectionOverlayController: NSObject {
                         "rect=\(Self.serialize(rect))",
                         "duration=\(duration)",
                         "target=\(runtime.targetDescription)",
+                        "inputOverlaysStarted=\(runtime.isInputOverlayEnabled)",
+                        "diagnostics=\(engine.diagnosticsSummary)",
                         "fileSize=\(Self.fileSize(at: movieURL.path))",
                     ]
                 )
