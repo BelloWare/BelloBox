@@ -105,7 +105,7 @@ struct MainView: View {
             Spacer(minLength: 20)
             VStack(alignment: .leading, spacing: 12) {
                 Label(trusted ? "Selection tools ready" : "Selection access needed", systemImage: trusted ? "checkmark.shield" : "lock")
-                    .foregroundStyle(trusted ? Color.teal : .secondary)
+                    .foregroundStyle(trusted ? BoxTheme.teal : .secondary)
                 Label(settings.isConfigured ? "AI connected" : "AI is optional", systemImage: "sparkles").foregroundStyle(.secondary)
             }.font(.system(size: 10)).padding(18)
             Divider().padding(.horizontal, 16)

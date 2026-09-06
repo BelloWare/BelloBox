@@ -3,15 +3,25 @@ import SwiftUI
 
 /// Shared color, surface, and control tokens for every Bello Box window.
 enum BoxTheme {
-    static let accent = Color(red: 0.38, green: 0.43, blue: 0.96)
-    static let accentDeep = Color(red: 0.26, green: 0.32, blue: 0.82)
+    // Ink adapts to its surface. Filled controls keep a darker brand color so
+    // their white labels remain readable in either appearance.
+    static let accent = adaptive(light: (0.29, 0.32, 0.77), dark: (0.64, 0.68, 1))
+    static let accentFill = Color(red: 0.32, green: 0.36, blue: 0.84)
+    static let accentDeep = Color(red: 0.25, green: 0.29, blue: 0.72)
     static let accentSoft = accent.opacity(0.12)
     static let background = adaptive(light: (0.96, 0.97, 0.99), dark: (0.065, 0.075, 0.105))
     static let surface = adaptive(light: (1, 1, 1), dark: (0.105, 0.12, 0.16))
     static let well = adaptive(light: (0.94, 0.95, 0.975), dark: (0.075, 0.085, 0.12))
-    static let border = Color.primary.opacity(0.085)
+    static let border = adaptive(light: (0.82, 0.84, 0.89), dark: (0.23, 0.26, 0.33))
+    static let success = adaptive(light: (0.08, 0.42, 0.27), dark: (0.40, 0.83, 0.63))
+    static let warning = adaptive(light: (0.55, 0.31, 0.025), dark: (1, 0.73, 0.35))
+    static let danger = adaptive(light: (0.68, 0.17, 0.23), dark: (1, 0.53, 0.59))
+    static let teal = adaptive(light: (0.06, 0.40, 0.43), dark: (0.38, 0.81, 0.81))
+    static let cyan = adaptive(light: (0.04, 0.39, 0.54), dark: (0.40, 0.79, 0.96))
+    static let purple = adaptive(light: (0.46, 0.26, 0.70), dark: (0.77, 0.63, 1))
+    static let pink = adaptive(light: (0.65, 0.20, 0.43), dark: (1, 0.57, 0.75))
     static var accentGradient: LinearGradient {
-        LinearGradient(colors: [accent, accentDeep], startPoint: .topLeading, endPoint: .bottomTrailing)
+        LinearGradient(colors: [accentFill, accentDeep], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
     private static func adaptive(light: (Double, Double, Double), dark: (Double, Double, Double)) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
@@ -20,10 +30,10 @@ enum BoxTheme {
         })
     }
     static func tint(for symbol: String) -> Color {
-        if ["record.circle", "record.circle.fill", "video"].contains(symbol) { return .pink }
-        if symbol.contains("clock") || symbol.contains("globe") || symbol.contains("calendar") { return .teal }
-        if symbol.contains("camera") || symbol == "arrow.down.doc" || symbol == "qrcode" { return .cyan }
-        if symbol.contains("wand") || symbol.contains("sparkle") || symbol == "key.horizontal" { return .purple }
+        if ["record.circle", "record.circle.fill", "video"].contains(symbol) { return pink }
+        if symbol.contains("clock") || symbol.contains("globe") || symbol.contains("calendar") { return teal }
+        if symbol.contains("camera") || symbol == "arrow.down.doc" || symbol == "qrcode" { return cyan }
+        if symbol.contains("wand") || symbol.contains("sparkle") || symbol == "key.horizontal" { return purple }
         return accent
     }
 }
@@ -77,7 +87,7 @@ struct SecondaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(size: 12, weight: .medium))
-            .foregroundStyle(.primary).padding(.vertical, 8).padding(.horizontal, 12)
+            .foregroundStyle(configuration.role == .destructive ? BoxTheme.danger : .primary).padding(.vertical, 8).padding(.horizontal, 12)
             .background(configuration.isPressed ? BoxTheme.well : BoxTheme.surface, in: RoundedRectangle(cornerRadius: 8))
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.border))
             .opacity(isEnabled ? 1 : 0.4)
@@ -172,5 +182,53 @@ struct AppearAnimation: ViewModifier {
             .onAppear {
                 withAnimation(reduceMotion ? nil : .easeOut(duration: 0.14)) { shown = true }
             }
+    }
+}
+
+/// Small, literal swatches make the appearance choice visible before applying it.
+struct AppearanceChoice: View {
+    let preference: AppearancePreference
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 0) {
+                    if preference != .dark { preview(dark: false) }
+                    if preference != .light { preview(dark: true) }
+                }
+                .frame(height: 62).clipShape(RoundedRectangle(cornerRadius: 6))
+                .accessibilityHidden(true)
+                HStack {
+                    Label(preference.label, systemImage: preference.symbol)
+                        .font(.system(size: 12, weight: .semibold))
+                    Spacer(minLength: 2)
+                    if isSelected { Image(systemName: "checkmark.circle.fill").foregroundStyle(BoxTheme.accent) }
+                }
+                Text(preference == .system ? "Follow macOS" : "Always \(preference.label.lowercased())")
+                    .font(.system(size: 10)).foregroundStyle(.secondary)
+            }
+            .padding(10).frame(maxWidth: .infinity)
+            .background(isSelected ? BoxTheme.accentSoft : BoxTheme.well, in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(isSelected ? BoxTheme.accent : BoxTheme.border))
+            .contentShape(RoundedRectangle(cornerRadius: 10))
+        }.buttonStyle(.plain)
+            .accessibilityLabel("\(preference.label) theme")
+            .accessibilityValue(isSelected ? "Selected" : "Not selected")
+            .accessibilityIdentifier("appearance_\(preference.rawValue)")
+    }
+
+    private func preview(dark: Bool) -> some View {
+        HStack(spacing: 5) {
+            RoundedRectangle(cornerRadius: 3).fill(BoxTheme.accentFill.opacity(dark ? 0.6 : 0.22)).frame(width: 14)
+            VStack(alignment: .leading, spacing: 5) {
+                Capsule().fill(dark ? Color.white.opacity(0.65) : Color.black.opacity(0.45)).frame(width: 25, height: 3)
+                RoundedRectangle(cornerRadius: 3).fill(dark ? Color.white.opacity(0.10) : Color.white)
+                RoundedRectangle(cornerRadius: 3).fill(dark ? Color.white.opacity(0.10) : Color.white)
+            }
+        }
+        .padding(8).frame(maxWidth: .infinity)
+        .background(dark ? Color(red: 0.065, green: 0.075, blue: 0.105) : Color(red: 0.94, green: 0.95, blue: 0.975))
     }
 }

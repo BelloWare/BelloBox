@@ -21,6 +21,10 @@ struct LauncherSearchField: NSViewRepresentable {
     var onSubmit: () -> Void
     var onEscape: () -> Void
     var onReady: (LauncherSearchTextField) -> Void
+    var placeholder = "Search tools and commands…"
+    var accessibilityID = "launcherSearch"
+    var accessibilityLabel = "Search tools and commands"
+    var fontSize: CGFloat = 19
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
     func makeNSView(context: Context) -> LauncherSearchTextField {
@@ -28,14 +32,14 @@ struct LauncherSearchField: NSViewRepresentable {
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
-        field.font = .systemFont(ofSize: 19, weight: .regular)
+        field.font = .systemFont(ofSize: fontSize, weight: .regular)
         field.textColor = .labelColor
-        field.placeholderString = "Search tools and commands…"
+        field.placeholderString = placeholder
         field.maximumNumberOfLines = 1
         field.cell?.isScrollable = true
-        field.identifier = NSUserInterfaceItemIdentifier("launcherSearch")
-        field.setAccessibilityIdentifier("launcherSearch")
-        field.setAccessibilityLabel("Search tools and commands")
+        field.identifier = NSUserInterfaceItemIdentifier(accessibilityID)
+        field.setAccessibilityIdentifier(accessibilityID)
+        field.setAccessibilityLabel(accessibilityLabel)
         field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         field.delegate = context.coordinator
         onReady(field)

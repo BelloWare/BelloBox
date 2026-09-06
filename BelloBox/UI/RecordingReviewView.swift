@@ -125,7 +125,7 @@ struct RecordingReviewView: View {
             if let warning = viewModel.recoveryWarning {
                 Label(warning, systemImage: "exclamationmark.triangle.fill")
                     .font(.callout)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(BoxTheme.warning)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
             }
@@ -144,7 +144,7 @@ struct RecordingReviewView: View {
                 } else if let message = viewModel.errorMessage {
                     Label(message, systemImage: "exclamationmark.triangle.fill")
                         .font(.callout)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(BoxTheme.danger)
                         .textSelection(.enabled)
                 } else if let message = viewModel.statusMessage {
                     Label(message, systemImage: "checkmark.circle.fill")

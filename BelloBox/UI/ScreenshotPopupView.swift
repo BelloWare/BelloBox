@@ -880,7 +880,7 @@ struct ScreenshotPopupView: View {
             if let message = viewModel.errorMessage ?? viewModel.statusMessage {
                 Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                     .font(.caption)
-                    .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : Color.orange)
+                    .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : BoxTheme.warning)
                     .lineLimit(2)
             }
             Spacer()

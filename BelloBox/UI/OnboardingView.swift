@@ -387,7 +387,7 @@ struct OnboardingView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 26))
-                .foregroundStyle(granted ? .green : .orange)
+                .foregroundStyle(granted ? BoxTheme.success : BoxTheme.warning)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.headline)
@@ -427,7 +427,7 @@ struct OnboardingView: View {
         ForEach(settings.hotkeyConflictMessages, id: \.self) { message in
             Label(message, systemImage: "exclamationmark.triangle.fill")
                 .font(.caption2)
-                .foregroundStyle(.orange)
+                .foregroundStyle(BoxTheme.warning)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }

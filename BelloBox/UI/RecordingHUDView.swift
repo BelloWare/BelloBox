@@ -14,7 +14,7 @@ struct RecordingHUDView: View {
             HStack(spacing: 10) {
                 Label(isPaused ? "Paused" : "Recording", systemImage: isPaused ? "pause.circle.fill" : "record.circle.fill")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(isPaused ? .orange : .red)
+                    .foregroundStyle(isPaused ? BoxTheme.warning : BoxTheme.danger)
                 Text(elapsedText)
                     .font(.system(.body, design: .monospaced).weight(.semibold))
                     .accessibilityLabel("Recording duration")
@@ -63,11 +63,11 @@ struct RecordingHUDView: View {
             if runtime.isSecureFieldHidden {
                 Label("Secure field hidden", systemImage: "lock.shield")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(BoxTheme.warning)
             } else if let warning = secureFieldRedactionWarning {
                 Label("Secure-field hiding off", systemImage: "lock.slash")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(BoxTheme.warning)
                     .help(warning)
             }
         }
@@ -120,7 +120,7 @@ struct RecordingCountdownView: View {
             if let warning = secureFieldRedactionWarning {
                 Label(warning, systemImage: "lock.slash")
                     .font(.caption2)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(BoxTheme.warning)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             } else {

@@ -58,7 +58,7 @@ struct RecordingOptionsBar: View {
                             if let warning = secureFieldRedactionWarning {
                                 HStack(alignment: .top, spacing: 8) {
                                     Image(systemName: "lock.slash")
-                                        .foregroundStyle(.orange)
+                                        .foregroundStyle(BoxTheme.warning)
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text(warning)
                                             .foregroundStyle(.secondary)
@@ -71,7 +71,7 @@ struct RecordingOptionsBar: View {
                                 }
                                 .padding(8)
                                 .frame(maxWidth: 360, alignment: .leading)
-                                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.orange.opacity(0.10)))
+                                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(BoxTheme.warning.opacity(0.10)))
                             }
                         }
                     }

@@ -4,292 +4,213 @@ struct WorldClockView: View {
     @ObservedObject var viewModel: WorldClockViewModel
     var onOpenSettings: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showingZonePicker = false
     @State private var showingAI = false
+    @FocusState private var aiFocused: Bool
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 0) {
             header
             Divider()
-            navigation
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    timelineSection
+                    locationsSection
+                }
+                .padding(20)
+            }
+            .accessibilityIdentifier("worldClockLocationList")
             Divider()
-            timelineSection
-            Divider()
-            locationsSection
-            Divider()
-            addAndAISection
+            footer
         }
-        .frame(minWidth: 760, minHeight: 590)
+        .frame(minWidth: 780, minHeight: 640)
         .background(WorkspaceBackground()).tint(BoxTheme.accent)
         .onReceive(timer) { viewModel.refreshCurrentTime($0) }
+        .sheet(isPresented: $showingZonePicker) {
+            WorldClockZonePicker(viewModel: viewModel) { showingZonePicker = false }
+        }
+        .onChange(of: showingAI) { visible in
+            if !visible { aiFocused = false; viewModel.cancelAI() }
+        }
     }
 
     private var header: some View {
-        HStack(spacing: 13) {
-            ToolBadge(symbol: "globe.americas.fill", size: 40)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("World Clock")
-                    .font(.system(size: 22, weight: .semibold))
-                Text("Compare a single moment across your locations.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-            meetingLegend
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 15)
-    }
-
-    private var meetingLegend: some View {
         HStack(spacing: 12) {
-            legendItem("Working", quality: .working)
-            legendItem("Fringe", quality: .extended)
-            legendItem("Night", quality: .poor)
-        }
-        .font(.caption2)
-        .foregroundStyle(.secondary)
-    }
-
-    private func legendItem(_ text: String, quality: MeetingTimeQuality) -> some View {
-        HStack(spacing: 4) {
-            Circle().fill(quality.color).frame(width: 8, height: 8)
-            Text(text)
-        }
-    }
-
-    private var navigation: some View {
-        HStack(spacing: 8) {
-            Button { viewModel.moveDay(by: -1) } label: {
-                Image(systemName: "chevron.left")
+            ToolBadge(symbol: "globe.americas.fill", size: 40)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("World Clock").font(.system(size: 22, weight: .semibold))
+                Text("One moment. Every time zone.").font(.caption).foregroundStyle(.secondary)
             }
-            .buttonStyle(.borderless)
-            .help("Previous day")
-            .accessibilityLabel("Previous day")
-
-            DatePicker("Date", selection: Binding(
-                get: { viewModel.timeline.start },
-                set: { viewModel.selectDay(containing: $0) }
-            ), displayedComponents: .date)
-            .labelsHidden()
-            .environment(\.timeZone, viewModel.anchorTimeZone)
-            .accessibilityIdentifier("worldClockDatePicker")
-
-            Button("Now") { viewModel.goToNow() }
-                .controlSize(.small)
-                .help("Follow the current date and time")
-                .keyboardShortcut("n", modifiers: .command)
-            Label(viewModel.isFollowingNow ? "Live" : "Planning", systemImage: viewModel.isFollowingNow ? "clock.fill" : "calendar")
-                .font(.caption)
-                .foregroundStyle(viewModel.isFollowingNow ? Color.green : Color.secondary)
-
-            Button { viewModel.moveDay(by: 1) } label: {
-                Image(systemName: "chevron.right")
-            }
-            .buttonStyle(.borderless)
-            .help("Next day")
-            .accessibilityLabel("Next day")
-
             Spacer()
-
-            Menu {
-                ForEach(viewModel.zonePresentations) { zone in
-                    Button {
-                        viewModel.setAnchorZone(zone.id)
-                    } label: {
-                        if zone.isAnchor {
-                            Label(zone.name, systemImage: "checkmark")
-                        } else {
-                            Text(zone.name)
-                        }
-                    }
-                }
-            } label: {
-                Label("Reference: \(viewModel.anchorName)", systemImage: "mappin.and.ellipse")
-            }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
-            .help("The date and timeline use this location")
+            Label(viewModel.isFollowingNow ? "Live time" : "Planning", systemImage: viewModel.isFollowingNow ? "dot.radiowaves.left.and.right" : "calendar")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(viewModel.isFollowingNow ? BoxTheme.success : BoxTheme.accent)
+                .padding(.horizontal, 10).padding(.vertical, 6)
+                .background(BoxTheme.well, in: Capsule())
+                .accessibilityIdentifier("worldClockTimeMode")
+            Button("Now", action: viewModel.goToNow)
+                .buttonStyle(SecondaryButtonStyle())
+                .keyboardShortcut("n", modifiers: .command)
+                .help("Return to live time (⌘N)")
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 10)
-        .background(BoxTheme.surface.opacity(0.55))
+        .padding(20)
     }
 
     private var timelineSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(viewModel.selectedTimeTitle)
-                        .font(.headline)
-                    Text("Reference time in \(viewModel.anchorName)")
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                Label("MEETING PLANNER", systemImage: "calendar.badge.clock")
+                    .font(.system(size: 10, weight: .semibold)).tracking(1).foregroundStyle(.secondary)
+                Spacer()
+                Menu {
+                    ForEach(viewModel.zonePresentations) { zone in
+                        Button { viewModel.setAnchorZone(zone.id) } label: {
+                            if zone.isAnchor { Label(zone.name, systemImage: "checkmark") }
+                            else { Text(zone.name) }
+                        }
+                    }
+                } label: {
+                    Label("Reference: \(viewModel.anchorName)", systemImage: "mappin.and.ellipse")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
-                Spacer()
+                .menuStyle(.borderlessButton).fixedSize()
+                .help("The date and timeline use this location")
+            }
+
+            HStack(spacing: 10) {
+                clockIconButton("chevron.left", label: "Previous day") { viewModel.moveDay(by: -1) }
+                DatePicker("Date", selection: Binding(
+                    get: { viewModel.timeline.start }, set: { viewModel.selectDay(containing: $0) }
+                ), displayedComponents: .date)
+                .labelsHidden().environment(\.timeZone, viewModel.anchorTimeZone)
+                .accessibilityIdentifier("worldClockDatePicker")
+                clockIconButton("chevron.right", label: "Next day") { viewModel.moveDay(by: 1) }
+                Divider().frame(height: 22).padding(.horizontal, 3)
                 DatePicker("Time", selection: Binding(
-                    get: { viewModel.selectedInstant },
-                    set: { viewModel.focus(on: $0) }
+                    get: { viewModel.selectedInstant }, set: { viewModel.focus(on: $0) }
                 ), displayedComponents: .hourAndMinute)
-                .environment(\.timeZone, viewModel.anchorTimeZone)
-                .fixedSize()
+                .environment(\.timeZone, viewModel.anchorTimeZone).fixedSize()
                 .accessibilityIdentifier("worldClockExactTime")
+                Spacer(minLength: 8)
                 QualityBadge(quality: viewModel.selectedMeetingQuality)
+                    .help("Combined availability across all locations; based on local hours")
             }
 
-            MeetingTimelineView(
-                qualities: viewModel.timelineQualities,
-                offset: Binding(
-                    get: { viewModel.selectedOffset },
-                    set: { viewModel.selectedOffset = $0 }
-                ),
-                duration: viewModel.timeline.duration
-            )
-            .frame(height: 22)
-
-            Slider(
-                value: Binding(
-                    get: { viewModel.selectedOffset },
-                    set: { viewModel.selectedOffset = $0 }
-                ),
-                in: 0...viewModel.timeline.duration,
-                step: viewModel.timelineStep
-            )
-            .accessibilityLabel("Meeting time")
-            .accessibilityValue(viewModel.selectedTimeTitle)
-            .accessibilityIdentifier("worldClockTimeSlider")
-
-            HStack {
-                Text(viewModel.dayStartLabel)
-                Spacer()
-                Text("Drag the colored range or slider")
-                Spacer()
-                Text(viewModel.dayEndLabel)
+            VStack(spacing: 8) {
+                MeetingTimelineView(qualities: viewModel.timelineQualities, offset: Binding(
+                    get: { viewModel.selectedOffset }, set: { viewModel.selectedOffset = $0 }
+                ), duration: viewModel.timeline.duration)
+                .frame(height: 20)
+                // The native slider below exposes the same value with keyboard support.
+                .accessibilityHidden(true)
+                Slider(value: Binding(
+                    get: { viewModel.selectedOffset }, set: { viewModel.selectedOffset = $0 }
+                ), in: 0...viewModel.timeline.duration, step: viewModel.timelineStep)
+                .accessibilityLabel("Meeting time")
+                .accessibilityValue(viewModel.selectedTimeTitle)
+                .accessibilityIdentifier("worldClockTimeSlider")
+                HStack {
+                    Text(viewModel.dayStartLabel)
+                    Spacer()
+                    ForEach([MeetingTimeQuality.working, .extended, .poor], id: \.self) { quality in
+                        Label(quality.shortLabel, systemImage: quality.symbol)
+                            .foregroundStyle(quality.color)
+                    }
+                    Spacer()
+                    Text(viewModel.dayEndLabel)
+                }
+                .font(.system(size: 10)).foregroundStyle(.secondary)
             }
-            .font(.caption2)
-            .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(16).surfaceCard()
     }
 
     private var locationsSection: some View {
-        let zones = viewModel.zonePresentations
-        return ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(Array(zones.enumerated()), id: \.element.id) { index, zone in
-                    WorldClockZoneRow(
-                        zone: zone,
-                        canRemove: viewModel.canRemoveZone,
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("YOUR LOCATIONS").font(.system(size: 10, weight: .semibold)).tracking(1)
+                Text("\(viewModel.zoneIDs.count)").font(.caption).monospacedDigit()
+                Spacer()
+                Text("All times stay in sync").font(.caption)
+            }.foregroundStyle(.secondary)
+            LazyVStack(spacing: 8) {
+                ForEach(viewModel.zonePresentations) { zone in
+                    WorldClockZoneRow(zone: zone, canRemove: viewModel.canRemoveZone,
                         onMakeAnchor: { viewModel.setAnchorZone(zone.id) },
-                        onRemove: { viewModel.removeZone(zone.id) }
-                    )
-                    if index < zones.count - 1 {
-                        Divider().padding(.leading, 50)
-                    }
+                        onRemove: { viewModel.removeZone(zone.id) })
                 }
             }
         }
-        .frame(minHeight: 170)
-        .accessibilityIdentifier("worldClockLocationList")
     }
 
-    private var addAndAISection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Button { showingZonePicker = true } label: { Label("Add Location", systemImage: "plus") }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .keyboardShortcut("l", modifiers: .command)
+                    .help("Add a location (⌘L)")
+                    .accessibilityIdentifier("worldClockAddLocationButton")
                 Button {
-                    showingZonePicker.toggle()
-                } label: {
-                    Label("Add Location", systemImage: "plus")
-                }
-                .buttonStyle(SecondaryButtonStyle())
-                .accessibilityLabel("Add Location")
-                .accessibilityIdentifier("worldClockAddLocationButton")
-                .sheet(isPresented: $showingZonePicker) {
-                    VStack(alignment: .trailing, spacing: 0) {
-                        Button("Done") { showingZonePicker = false }
-                            .keyboardShortcut(.cancelAction)
-                            .padding(.horizontal, 14)
-                            .padding(.top, 12)
-                        WorldClockZonePicker(viewModel: viewModel) {
-                            showingZonePicker = false
-                        }
-                    }
-                }
-
-                Button {
-                    withAnimation(.easeInOut(duration: 0.16)) { showingAI.toggle() }
-                } label: {
-                    Label("Fill with AI", systemImage: "sparkles")
-                }
-                .buttonStyle(SecondaryButtonStyle())
-                .accessibilityLabel("Fill with AI")
-                .accessibilityIdentifier("worldClockFillWithAIButton")
-                .help("Turn a description such as 'Singapore, London, and San Francisco next Tuesday' into locations and a time")
-
+                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { showingAI.toggle() }
+                } label: { Label(showingAI ? "Close AI" : "Fill with AI", systemImage: "sparkles") }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .accessibilityIdentifier("worldClockFillWithAIButton")
+                    .help("Describe locations and a time to your configured AI provider")
                 Spacer()
                 if let message = viewModel.copyMessage {
                     Text(message).font(.caption).foregroundStyle(.secondary)
                 }
-                Button(action: viewModel.copyMeeting) {
-                    Label("Copy Times", systemImage: "doc.on.doc")
-                }
-                .buttonStyle(SecondaryButtonStyle())
-                .keyboardShortcut("c", modifiers: [.command, .shift])
-                .help("Copy the selected date and time for every location (⇧⌘C)")
+                Button(action: viewModel.copyMeeting) { Label("Copy Times", systemImage: "doc.on.doc") }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .keyboardShortcut("c", modifiers: [.command, .shift])
+                    .help("Copy the selected date and time for every location (⇧⌘C)")
             }
-
-            if showingAI {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        TextField(
-                            "Singapore, London, and San Francisco next Tuesday afternoon",
-                            text: $viewModel.aiRequest
-                        )
-                        .textFieldStyle(.roundedBorder)
-                        .onSubmit { viewModel.fillWithAI() }
-                        .accessibilityIdentifier("worldClockAIRequest")
-
-                        if viewModel.isResolvingAI {
-                            ProgressView().controlSize(.small)
-                            Button("Cancel", action: viewModel.cancelAI)
-                                .buttonStyle(SecondaryButtonStyle())
-                        }
-
-                        Button("Fill") { viewModel.fillWithAI() }
-                            .buttonStyle(PrimaryButtonStyle())
-                            .disabled(viewModel.isResolvingAI || !viewModel.canUseAI || viewModel.aiRequest.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
-
-                    if !viewModel.canUseAI {
-                        HStack(spacing: 5) {
-                            Text("An AI provider is not configured.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Button("Open Settings") { onOpenSettings() }
-                                .buttonStyle(.link)
-                                .font(.caption)
-                        }
-                    }
-
-                    if let message = viewModel.aiMessage {
-                        Text(message)
-                            .font(.caption)
-                            .foregroundStyle(viewModel.aiMessageIsError ? Color.red : Color.secondary)
-                            .textSelection(.enabled)
-                    }
-                }
-                .padding(10)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.035)))
-            }
+            if showingAI { aiSection }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-        .background(BoxTheme.surface.opacity(0.55))
+        .padding(16).background(BoxTheme.surface)
     }
+
+    private var aiSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Describe your locations and meeting time").font(.caption.weight(.semibold))
+            HStack(spacing: 8) {
+                TextField("Singapore, London, and San Francisco next Tuesday afternoon", text: $viewModel.aiRequest)
+                    .textFieldStyle(.roundedBorder).focused($aiFocused)
+                    .task { aiFocused = true }
+                    .onSubmit { viewModel.fillWithAI() }
+                    .accessibilityIdentifier("worldClockAIRequest")
+                if viewModel.isResolvingAI {
+                    ProgressView().controlSize(.small)
+                    Button("Cancel", action: viewModel.cancelAI).buttonStyle(SecondaryButtonStyle())
+                }
+                Button("Fill", action: viewModel.fillWithAI).buttonStyle(PrimaryButtonStyle())
+                    .disabled(viewModel.isResolvingAI || !viewModel.canUseAI || viewModel.aiRequest.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+            if !viewModel.canUseAI {
+                HStack(spacing: 5) {
+                    Text("Connect an AI provider to use this option.").foregroundStyle(.secondary)
+                    Button("Open Settings", action: onOpenSettings).buttonStyle(.link)
+                }.font(.caption)
+            }
+            if let message = viewModel.aiMessage {
+                Text(message).font(.caption)
+                    .foregroundStyle(viewModel.aiMessageIsError ? BoxTheme.danger : Color.secondary)
+                    .textSelection(.enabled)
+            }
+        }.padding(12).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private func clockIconButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
+    Button(action: action) {
+        Image(systemName: symbol).font(.system(size: 12, weight: .medium))
+            .frame(width: 28, height: 28)
+            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
+            .contentShape(RoundedRectangle(cornerRadius: 7))
+    }.buttonStyle(.plain).help(label).accessibilityLabel(label)
 }
 
 private struct MeetingTimelineView: View {
@@ -300,41 +221,23 @@ private struct MeetingTimelineView: View {
     var body: some View {
         GeometryReader { proxy in
             let width = max(proxy.size.width, 1)
+            let marker = min(max(duration > 0 ? offset / duration : 0, 0), 1) * (width - 10) + 5
             ZStack(alignment: .leading) {
-                HStack(spacing: 0) {
+                HStack(spacing: 1) {
                     ForEach(Array(qualities.enumerated()), id: \.offset) { _, quality in
-                        Rectangle().fill(quality.color)
+                        Rectangle().fill(quality.color.opacity(0.65))
                     }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 5))
-
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: 2, height: proxy.size.height + 4)
-                    .shadow(color: .black.opacity(0.5), radius: 1)
-                    .offset(x: markerX(width: width) - 1)
-
-                Circle()
-                    .fill(.white)
-                    .overlay(Circle().stroke(Color.black.opacity(0.28), lineWidth: 1))
-                    .frame(width: 10, height: 10)
-                    .offset(x: markerX(width: width) - 5)
+                }.clipShape(RoundedRectangle(cornerRadius: 5))
+                Capsule().fill(BoxTheme.surface)
+                    .frame(width: 10, height: proxy.size.height + 6)
+                    .overlay(Capsule().strokeBorder(BoxTheme.accent, lineWidth: 2))
+                    .offset(x: marker - 5)
             }
             .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        offset = min(max(value.location.x / width, 0), 1) * duration
-                    }
-            )
+            .gesture(DragGesture(minimumDistance: 0).onChanged { value in
+                offset = min(max((value.location.x - 5) / max(width - 10, 1), 0), 1) * duration
+            })
         }
-        .accessibilityElement()
-        .accessibilityLabel("Meeting quality across the day")
-    }
-
-    private func markerX(width: CGFloat) -> CGFloat {
-        guard duration > 0 else { return 0 }
-        return min(max(offset / duration, 0), 1) * width
     }
 }
 
@@ -346,152 +249,156 @@ private struct WorldClockZoneRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Circle()
-                .fill(zone.quality.color)
-                .frame(width: 9, height: 9)
+            Image(systemName: zone.quality.symbol).font(.system(size: 17))
+                .foregroundStyle(zone.quality.color).frame(width: 38, height: 38)
+                .background(zone.quality.color.opacity(0.09), in: RoundedRectangle(cornerRadius: 11))
                 .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(zone.name).font(.callout.weight(.semibold))
-                    if zone.dayDifference != 0 {
-                        Text(zone.dayDifference > 0 ? "+\(zone.dayDifference) day" : "\(zone.dayDifference) day")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(BoxTheme.accent)
-                            .help("Calendar day compared with the reference location")
-                    }
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 8) {
+                    Text(zone.name).font(.system(size: 14, weight: .semibold)).lineLimit(1)
                     if zone.isAnchor {
-                        Text("REFERENCE")
-                            .font(.system(size: 9, weight: .bold))
+                        Text("REFERENCE").font(.system(size: 8, weight: .bold)).tracking(0.5)
                             .foregroundStyle(BoxTheme.accent)
+                            .padding(.horizontal, 6).padding(.vertical, 3)
+                            .background(BoxTheme.accentSoft, in: RoundedRectangle(cornerRadius: 4))
                     }
                 }
-                Text("\(zone.dateText) - \(zone.zoneText)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Text(zone.zoneText).font(.system(size: 11)).foregroundStyle(.secondary)
             }
-
-            Spacer()
-            QualityBadge(quality: zone.quality)
-            Text(zone.timeText)
-                .font(.system(size: 24, weight: .medium, design: .rounded))
-                .monospacedDigit()
-                .frame(minWidth: 112, alignment: .trailing)
-
-            Button(action: onMakeAnchor) {
-                Image(systemName: zone.isAnchor ? "mappin.circle.fill" : "mappin.circle")
-            }
-            .buttonStyle(.borderless)
-            .disabled(zone.isAnchor)
-            .help(zone.isAnchor ? "Reference location" : "Use this location for the date and timeline")
-            .accessibilityLabel("Use \(zone.name) as reference")
-
-            Button(action: onRemove) {
-                Image(systemName: "xmark.circle")
-            }
-            .buttonStyle(.borderless)
-            .disabled(!canRemove)
-            .help(canRemove ? "Remove \(zone.name)" : "Keep at least one location")
-            .accessibilityLabel("Remove \(zone.name)")
+            Spacer(minLength: 6)
+            QualityBadge(quality: zone.quality).frame(width: 86)
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(zone.timeText).font(.system(size: 26, weight: .medium, design: .rounded)).monospacedDigit()
+                HStack(spacing: 5) {
+                    Text(zone.dateText)
+                    if zone.dayDifference != 0 {
+                        Text(zone.dayDifference > 0 ? "+\(zone.dayDifference)d" : "\(zone.dayDifference)d")
+                            .foregroundStyle(BoxTheme.accent).fontWeight(.semibold)
+                            .help("\(zone.dayDifference) calendar days from the reference location")
+                    }
+                }.font(.system(size: 10)).foregroundStyle(.secondary)
+            }.frame(minWidth: 145, alignment: .trailing)
+            clockIconButton(zone.isAnchor ? "mappin.circle.fill" : "mappin", label: "Use \(zone.name) as reference", action: onMakeAnchor)
+                .foregroundStyle(zone.isAnchor ? BoxTheme.accent : .secondary).disabled(zone.isAnchor)
+            clockIconButton("xmark", label: canRemove ? "Remove \(zone.name)" : "Keep at least one location", action: onRemove)
+                .foregroundStyle(.secondary).disabled(!canRemove)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 10)
-        .background(zone.quality.color.opacity(0.035))
+        .padding(14).surfaceCard()
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(zone.isAnchor ? BoxTheme.accent.opacity(0.4) : .clear))
         .accessibilityElement(children: .contain)
     }
 }
 
 private struct QualityBadge: View {
     let quality: MeetingTimeQuality
-
     var body: some View {
-        HStack(spacing: 5) {
-            Circle().fill(quality.color).frame(width: 7, height: 7)
-            Text(quality.shortLabel)
-        }
-        .font(.caption2.weight(.semibold))
-        .foregroundStyle(quality.color)
-        .padding(.horizontal, 7)
-        .padding(.vertical, 4)
-        .background(Capsule().fill(quality.color.opacity(0.11)))
-        .accessibilityLabel(quality.label)
+        Label(quality.shortLabel, systemImage: quality.symbol)
+            .font(.system(size: 10, weight: .semibold)).foregroundStyle(quality.color)
+            .padding(.horizontal, 8).padding(.vertical, 5)
+            .background(quality.color.opacity(0.09), in: RoundedRectangle(cornerRadius: 6))
+            .accessibilityLabel(quality.label)
     }
 }
 
 private struct WorldClockZonePicker: View {
     @ObservedObject var viewModel: WorldClockViewModel
-    var onAdded: () -> Void
-    @FocusState private var searchFocused: Bool
+    var onClose: () -> Void
+    @State private var selectedID: String?
+
+    private var results: [WorldClockZoneOption] { viewModel.searchResults }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Add a location")
-                .font(.headline)
-            TextField("City or IANA time zone", text: $viewModel.searchQuery)
-                .textFieldStyle(.roundedBorder)
-                .accessibilityIdentifier("worldClockZoneSearch")
-                .focused($searchFocused)
-                .onSubmit {
-                    if let first = viewModel.searchResults.first {
-                        viewModel.addZone(first.id)
-                        onAdded()
-                    }
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                ToolBadge(symbol: "globe", size: 32)
+                Text("Add a location").font(.system(size: 16, weight: .semibold))
+                Spacer()
+                clockIconButton("xmark", label: "Cancel (Esc)", action: onClose)
+            }.padding(16)
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                LauncherSearchField(text: $viewModel.searchQuery, onMove: move, onSubmit: addSelected,
+                    onEscape: onClose, onReady: { _ in }, placeholder: "Search city or time zone…",
+                    accessibilityID: "worldClockZoneSearch", accessibilityLabel: "Search locations", fontSize: 16)
+                    .frame(height: 26)
+                if !viewModel.searchQuery.isEmpty {
+                    Button { viewModel.searchQuery = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary) }
+                        .buttonStyle(.plain).help("Clear search").accessibilityLabel("Clear search")
                 }
-
-            ScrollView {
-                LazyVStack(spacing: 2) {
-                    if viewModel.searchResults.isEmpty {
-                        VStack(spacing: 8) {
-                            Image(systemName: "magnifyingglass").font(.title2)
-                            Text("No matching locations").font(.headline)
-                            Text("Try a nearby city or a time zone such as Asia/Tokyo. Locations already added are hidden.")
-                                .font(.caption).foregroundStyle(.secondary)
+            }.padding(12).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 10)).padding(.horizontal, 16)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(spacing: 4) {
+                        if results.isEmpty {
+                            VStack(spacing: 8) {
+                                Image(systemName: "globe").font(.title2).foregroundStyle(BoxTheme.teal)
+                                Text("No matching locations").font(.headline)
+                                Text("Try a nearby city or Asia/Tokyo. Locations already added are hidden.")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }.multilineTextAlignment(.center).padding(24)
                         }
-                        .multilineTextAlignment(.center)
-                        .padding(20)
-                    }
-                    ForEach(viewModel.searchResults) { option in
-                        Button {
-                            viewModel.addZone(option.id)
-                            onAdded()
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(option.name).font(.callout.weight(.medium))
-                                    Text(option.subtitle)
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
+                        ForEach(results) { option in
+                            Button { selectedID = option.id; addSelected() } label: {
+                                HStack(spacing: 10) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(option.name).font(.system(size: 13, weight: .medium))
+                                        Text(option.subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                                    }
+                                    Spacer()
+                                    Image(systemName: selectedID == option.id ? "return" : "plus").foregroundStyle(BoxTheme.accent)
                                 }
-                                Spacer()
-                                Image(systemName: "plus.circle")
-                                    .foregroundStyle(BoxTheme.accent)
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .contentShape(Rectangle())
+                                .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                                .background(selectedID == option.id ? BoxTheme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 8))
+                                .contentShape(Rectangle())
+                            }.buttonStyle(.plain).id(option.id)
+                                .accessibilityValue(selectedID == option.id ? "Selected" : "Not selected")
                         }
-                        .buttonStyle(.plain)
-                    }
-                }
+                    }.padding(10)
+                }.frame(height: 280)
+                    .onChange(of: selectedID) { id in if let id { proxy.scrollTo(id, anchor: .center) } }
             }
-            .frame(height: 240)
+            Divider()
+            HStack(spacing: 8) {
+                ShortcutBadge(text: "↑↓")
+                Text("Navigate").font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                Button("Cancel", action: onClose).buttonStyle(SecondaryButtonStyle())
+                Button("Add Location", action: addSelected).buttonStyle(PrimaryButtonStyle()).disabled(selectedID == nil)
+            }.padding(12).background(BoxTheme.surface)
         }
-        .padding(14)
-        .frame(width: 360)
-        .onAppear { viewModel.searchQuery = ""; searchFocused = true }
+        .frame(width: 440).background(WorkspaceBackground()).tint(BoxTheme.accent)
+        .onAppear { viewModel.searchQuery = ""; selectedID = results.first?.id }
+        .onChange(of: viewModel.searchQuery) { _ in selectedID = results.first?.id }
+        .onExitCommand(perform: onClose)
+    }
+
+    private func move(_ direction: Int) {
+        guard !results.isEmpty else { selectedID = nil; return }
+        let current = results.firstIndex { $0.id == selectedID } ?? 0
+        selectedID = results[(current + direction % results.count + results.count) % results.count].id
+    }
+    private func addSelected() {
+        guard let selectedID, results.contains(where: { $0.id == selectedID }) else { return }
+        viewModel.addZone(selectedID)
+        onClose()
     }
 }
 
-private extension MeetingTimeQuality {
+extension MeetingTimeQuality {
     var color: Color {
         switch self {
-        case .working: return Color(red: 0.12, green: 0.62, blue: 0.31)
-        case .extended: return Color(red: 0.92, green: 0.52, blue: 0.08)
-        case .poor: return Color(red: 0.82, green: 0.20, blue: 0.19)
+        case .working: return BoxTheme.success
+        case .extended: return BoxTheme.warning
+        case .poor: return BoxTheme.purple
         }
     }
-
+    var symbol: String {
+        switch self {
+        case .working: return "sun.max"
+        case .extended: return "sun.horizon"
+        case .poor: return "moon.stars"
+        }
+    }
     var shortLabel: String {
         switch self {
         case .working: return "Working"

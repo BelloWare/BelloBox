@@ -70,7 +70,7 @@ struct ActionPopupView: View {
     private var setupBanner: some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
+                .foregroundStyle(BoxTheme.warning)
             Text("No AI provider configured.")
                 .font(.caption)
             Spacer()
@@ -78,7 +78,7 @@ struct ActionPopupView: View {
                 .font(.caption)
         }
         .padding(8)
-        .background(RoundedRectangle(cornerRadius: 8).fill(.orange.opacity(0.12)))
+        .background(RoundedRectangle(cornerRadius: 8).fill(BoxTheme.warning.opacity(0.12)))
     }
 
     private var actionsGrid: some View {
@@ -144,7 +144,7 @@ struct ActionPopupView: View {
                 if let error = viewModel.errorMessage {
                     Text(error)
                         .font(.callout)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(BoxTheme.danger)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .textSelection(.enabled)
                 } else {

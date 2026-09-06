@@ -17,6 +17,9 @@ Overview, Developer, Capture, and Text & AI categories. Use **⌘1–⌘4** to s
 categories and **⌘K** to search all tools. The global shortcut opens the compact
 palette from other apps. Home and the tools share adaptive graphite/indigo
 surfaces, consistent controls, and color-coded icons in light and dark themes.
+Choose **System**, **Light**, or **Dark** in Settings → General. Theme previews
+show each option, and changes apply to windows that are already open. Shared
+accent and status text colors are checked for contrast on both themes.
 
 Long selections show a short preview and a character count while keeping the
 complete input, up to 500 KB. Larger selections show a clear size notice and
@@ -43,6 +46,10 @@ work with text you type or paste, without selecting text in another app.
 **World Clock** follows the current time until you choose a planning time. Enter
 an exact time, compare date changes across locations, then use **Copy Times** to
 share the comparison. **Now** returns to the live clock.
+The meeting planner and location cards use text and symbols as well as color
+to distinguish working hours, fringe hours, and night. Press **⌘L** to add a
+location, then type, use **↑/↓**, and press **Return**; **Esc** cancels. **⌘N**
+returns to live time and **⇧⌘C** copies the comparison.
 
 In the screenshot editor, **⌥⌘1–9** selects annotation tools, **⇧⌘C** copies the
 image, and **⌘S** saves it. The image-options menu shows pixel dimensions and an

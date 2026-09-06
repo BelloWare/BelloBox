@@ -20,7 +20,7 @@ struct AnnotationCanvasView: View {
             let viewport = ImageViewport(imageSize: imageSize, viewSize: geometry.size)
 
             ZStack(alignment: .topLeading) {
-                Color.black.opacity(0.06)
+                BoxTheme.well
                 Image(nsImage: NSImage(cgImage: image, size: imageSize))
                     .resizable()
                     .interpolation(.high)

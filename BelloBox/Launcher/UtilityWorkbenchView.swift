@@ -185,7 +185,7 @@ struct UtilityWorkbenchView: View {
     }
     @ViewBuilder private var resultArea: some View {
         if let error = model.error {
-            Label(error, systemImage: "exclamationmark.circle").font(.callout).foregroundStyle(.red).textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
+            Label(error, systemImage: "exclamationmark.circle").font(.callout).foregroundStyle(BoxTheme.danger).textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
                 .padding(12).frame(maxWidth: .infinity, alignment: .leading).background(RoundedRectangle(cornerRadius: 10).fill(.red.opacity(0.07)))
         }
         if let result = model.result {

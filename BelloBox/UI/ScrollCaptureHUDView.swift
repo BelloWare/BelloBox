@@ -92,7 +92,7 @@ struct ScrollCaptureHUDView: View {
 
                 Label(engine.message ?? " ", systemImage: engine.message == nil ? "circle" : "info.circle")
                     .font(.caption2)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(BoxTheme.warning)
                     .lineLimit(1)
                     .opacity(engine.message == nil ? 0 : 1)
             }
@@ -106,7 +106,7 @@ struct ScrollCaptureHUDView: View {
             if let message = engine.message {
                 Label(message, systemImage: "info.circle")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(BoxTheme.warning)
                     .lineLimit(1)
                     .overlayTooltip(message)
             } else if engine.isAutoScrolling {

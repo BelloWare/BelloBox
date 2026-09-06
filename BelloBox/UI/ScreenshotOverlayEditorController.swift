@@ -157,7 +157,7 @@ private struct ScreenshotOverlayEditorView: View {
                 if let message = viewModel.errorMessage ?? viewModel.statusMessage {
                     Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                         .font(.caption)
-                        .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : Color.orange)
+                        .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : BoxTheme.warning)
                         .lineLimit(2)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)
@@ -189,8 +189,8 @@ private struct ScreenshotOverlayEditorView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.regularMaterial))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.white.opacity(0.14), lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BoxTheme.surface))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(BoxTheme.border, lineWidth: 1))
         .shadow(color: .black.opacity(0.28), radius: 16, y: 8)
     }
 

@@ -175,7 +175,7 @@ struct QRCodePopupView: View {
                 Text(viewModel.capacityMessage)
             }
             .font(.caption2)
-            .foregroundStyle(viewModel.isTooLong ? .red : .secondary)
+            .foregroundStyle(viewModel.isTooLong ? BoxTheme.danger : .secondary)
             .help("QR capacity is measured in UTF-8 bytes. Emoji and some characters use more than one byte.")
         }
     }
@@ -186,7 +186,7 @@ struct QRCodePopupView: View {
             if let error = viewModel.errorMessage {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(BoxTheme.warning)
                     .textSelection(.enabled)
             } else if let status = viewModel.statusMessage {
                 Label(status, systemImage: "checkmark.circle.fill")

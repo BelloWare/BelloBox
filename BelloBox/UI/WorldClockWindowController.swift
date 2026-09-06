@@ -18,15 +18,26 @@ final class WorldClockWindowController: NSObject, NSWindowDelegate {
             return
         }
 
-        let viewModel = WorldClockViewModel(settings: settings, seedDate: seedDate)
+        var preferences = WorldClockPreferencesStore()
+#if DEBUG
+        if let raw = ProcessInfo.processInfo.environment["BELLOBOX_E2E_WORLD_CLOCK_ZONES"] {
+            let ids = WorldClockZoneCatalog.validIdentifiers(raw.components(separatedBy: ","))
+            if let first = ids.first, let defaults = UserDefaults(suiteName: "BelloBox.WorldClockPreview") {
+                defaults.removePersistentDomain(forName: "BelloBox.WorldClockPreview")
+                preferences = WorldClockPreferencesStore(defaults: defaults)
+                preferences.save(zoneIDs: ids, anchorZoneID: first)
+            }
+        }
+#endif
+        let viewModel = WorldClockViewModel(settings: settings, seedDate: seedDate, preferences: preferences)
         let rootView = WorldClockView(viewModel: viewModel, onOpenSettings: onOpenSettings)
         let hosting = NSHostingController(rootView: rootView)
         let panel = WorldClockPanel(contentViewController: hosting)
         panel.delegate = self
         panel.titlebarAppearsTransparent = true
         panel.backgroundColor = NSColor(BoxTheme.background)
-        panel.setContentSize(NSSize(width: 860, height: 650))
-        panel.minSize = NSSize(width: 760, height: 590)
+        panel.setContentSize(NSSize(width: 920, height: 740))
+        panel.contentMinSize = NSSize(width: 780, height: 640)
         panel.setFrameAutosaveName("BelloBoxWorldClockWindow")
         if !Self.hasSavedFrame {
             panel.center()

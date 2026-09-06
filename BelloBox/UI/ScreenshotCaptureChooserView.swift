@@ -61,7 +61,7 @@ struct ScreenshotCaptureChooserView: View {
             if let error = viewModel.errorMessage {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(BoxTheme.warning)
                     .lineLimit(2)
             }
 

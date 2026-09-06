@@ -43,6 +43,11 @@ explicit Search actions open the palette. `HomeCategory` organizes the tool
 catalog and Home has ⌘1–⌘4 category shortcuts plus ⌘K search. Shared colors,
 `ToolBadge`, `ShortcutBadge`, surfaces, and button styles live in `UI/Theme.swift`.
 Use these tokens when adding or updating tools; honor Reduce Motion.
+`BoxTheme.accent` is adaptive text/icon ink; use `accentFill`/`accentGradient`
+behind white labels. Use the semantic success/warning/danger colors for status
+text. `ThemeContrastTests` verifies small-text contrast in both appearances.
+World Clock uses the native search field for focused, keyboard-navigable location
+search (⌘L); its preview fixture keeps sample locations in isolated defaults.
 
 It follows the same packaging conventions as the sibling Bello macOS apps
 (BelloGesture, BelloWall, BelloTracker): xcodegen project, Developer-ID signed

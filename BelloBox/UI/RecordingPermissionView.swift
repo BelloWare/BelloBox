@@ -70,7 +70,7 @@ struct RecordingPermissionView: View {
             if let warning = secureFieldRedactionWarning {
                 Label(warning, systemImage: "lock.slash")
                     .font(.caption2)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(BoxTheme.warning)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 Text("Bello Box hides detected secure fields and suppresses key overlays while typing into them. Microphone audio may still include anything spoken aloud.")
@@ -104,7 +104,7 @@ struct RecordingPermissionView: View {
     private func permissionRow(title: String, detail: String, status: PermissionStatus, action: @escaping () -> Void) -> some View {
         HStack(spacing: 12) {
             Image(systemName: status == .granted ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
-                .foregroundStyle(status == .granted ? .green : .orange)
+                .foregroundStyle(status == .granted ? BoxTheme.success : BoxTheme.warning)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.callout.weight(.semibold))
                 Text(detail).font(.caption2).foregroundStyle(.secondary)

@@ -140,14 +140,14 @@ struct OCRPanelView: View {
                 ForEach(warnings, id: \.self) { warning in
                     Label(warning, systemImage: "exclamationmark.triangle")
                         .font(.caption2)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(BoxTheme.warning)
                 }
             }
 
             if let error = viewModel.errorMessage {
                 Label(error, systemImage: "xmark.octagon.fill")
                     .font(.caption)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(BoxTheme.danger)
                     .lineLimit(3)
             } else if let status = viewModel.statusMessage {
                 Label(status, systemImage: "checkmark.circle")

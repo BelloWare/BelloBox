@@ -144,7 +144,7 @@ struct ProviderConfigView: View {
         }
         .overlay(alignment: .bottomLeading) {
             if let loadError {
-                Text(loadError).font(.caption2).foregroundStyle(.red).lineLimit(1).offset(y: 16)
+                Text(loadError).font(.caption2).foregroundStyle(BoxTheme.danger).lineLimit(1).offset(y: 16)
             }
         }
     }
@@ -240,10 +240,10 @@ struct ProviderConfigView: View {
                 EmptyView()
             case let .success(message):
                 Label(message, systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(.green).font(.caption).lineLimit(2)
+                    .foregroundStyle(BoxTheme.success).font(.caption).lineLimit(2)
             case let .failure(message):
                 Label(message, systemImage: "xmark.octagon.fill")
-                    .foregroundStyle(.red).font(.caption).lineLimit(2)
+                    .foregroundStyle(BoxTheme.danger).font(.caption).lineLimit(2)
             }
             Spacer()
         }

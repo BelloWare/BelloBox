@@ -125,12 +125,14 @@ struct SettingsView: View {
             }
 
             settingsSection("Appearance", subtitle: "Match the system or keep Bello Box fixed in one theme.", systemImage: "circle.lefthalf.filled") {
-                Picker("Theme", selection: $settings.appearance) {
+                HStack(spacing: 10) {
                     ForEach(AppearancePreference.allCases) { preference in
-                        Label(preference.label, systemImage: preference.symbol).tag(preference)
+                        AppearanceChoice(preference: preference, isSelected: settings.appearance == preference) {
+                            settings.appearance = preference
+                        }
                     }
                 }
-                .pickerStyle(.segmented)
+                helpText("Applies immediately to every Bello Box window, including tools already open.")
             }
         }
     }
@@ -387,7 +389,7 @@ struct SettingsView: View {
     private func permissionWarning(_ message: String, action: @escaping () -> Void) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: "lock.slash")
-                .foregroundStyle(.orange)
+                .foregroundStyle(BoxTheme.warning)
             VStack(alignment: .leading, spacing: 5) {
                 Text(message)
                     .font(.caption2)
@@ -398,7 +400,7 @@ struct SettingsView: View {
             }
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.orange.opacity(0.10)))
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(BoxTheme.warning.opacity(0.10)))
     }
 
     @ViewBuilder
@@ -406,7 +408,7 @@ struct SettingsView: View {
         ForEach(settings.hotkeyConflictMessages, id: \.self) { message in
             Label(message, systemImage: "exclamationmark.triangle.fill")
                 .font(.caption2)
-                .foregroundStyle(.orange)
+                .foregroundStyle(BoxTheme.warning)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -415,7 +417,7 @@ struct SettingsView: View {
         HStack(alignment: .center, spacing: 12) {
             Image(systemName: trusted ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(trusted ? .green : .orange)
+                .foregroundStyle(trusted ? BoxTheme.success : BoxTheme.warning)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

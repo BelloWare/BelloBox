@@ -137,6 +137,7 @@ struct TextToolsPopupView: View {
 
     @ObservedObject var viewModel: TextToolsPopupViewModel
     var onMinimize: () -> Void = {}
+    @FocusState private var inputFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -172,7 +173,7 @@ struct TextToolsPopupView: View {
                         .padding(.vertical, 8)
                         .padding(.horizontal, 8)
                         .background(
-                            RoundedRectangle(cornerRadius: 8).fill(selected ? BoxTheme.accent : BoxTheme.surface)
+                            RoundedRectangle(cornerRadius: 8).fill(selected ? BoxTheme.accentFill : BoxTheme.surface)
                         )
                         .foregroundStyle(selected ? .white : .primary)
                         .contentShape(RoundedRectangle(cornerRadius: 8))
@@ -201,11 +202,20 @@ struct TextToolsPopupView: View {
             }
             TextEditor(text: $viewModel.input)
                 .font(.callout)
+                .focused($inputFocused)
+                .task { inputFocused = true }
                 .accessibilityLabel("Text Tools input")
                 .scrollContentBackground(.hidden)
                 .frame(height: 120)
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
+                .overlay(alignment: .topLeading) {
+                    if viewModel.input.isEmpty {
+                        Text("Type or paste text to begin…").font(.callout).foregroundStyle(.secondary)
+                            .padding(.horizontal, 11).padding(.vertical, 12)
+                            .allowsHitTesting(false).accessibilityHidden(true)
+                    }
+                }
         }
     }
 
@@ -393,8 +403,9 @@ struct TextToolsPopupView: View {
     private func outputBlock(_ text: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             ScrollView {
-                Text(text.isEmpty ? " " : text)
+                Text(text.isEmpty ? "Your result appears here." : text)
                     .font(.system(.callout, design: .monospaced))
+                    .foregroundStyle(text.isEmpty ? .secondary : .primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
