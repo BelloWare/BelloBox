@@ -30,8 +30,9 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     private var localClickMonitor: Any?
     private var menuObservers: [NSObjectProtocol] = []
     private var trackingMenu = false
-    private var model: LauncherModel?
+    private(set) var model: LauncherModel?
     private weak var searchField: LauncherSearchTextField?
+    private weak var copilotField: LauncherSearchTextField?
     private var presentationID = UUID()
 #if DEBUG
     private let snippets = SnippetStore(url: ProcessInfo.processInfo.environment["BELLOBOX_E2E_SNIPPETS_PATH"].map { URL(fileURLWithPath: $0) })
@@ -39,29 +40,40 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     private let snippets = SnippetStore()
 #endif
     private var pinned: String?
+    var settings: AppSettings = .shared
     var isVisible: Bool { panel?.isVisible == true }
-    var onCommand: (LauncherCommand, TextSelection) -> Void = { _, _ in }
+    var onCommand: (LauncherCommand, TextSelection, LauncherCommandContext) -> Void = { _, _, _ in }
 
     func show(selection: TextSelection, initialCommand: LauncherCommand? = nil) {
         close()
-        let model = LauncherModel(selection: selection, snippets: snippets)
+        var worldClockPreferences: WorldClockPreferencesStore?
+#if DEBUG
+        worldClockPreferences = WorldClockPreferencesStore.e2eFixture()
+#endif
+        let model = LauncherModel(selection: selection, snippets: snippets, settings: settings,
+                                  worldClockPreferences: worldClockPreferences)
         model.onClose = { [weak self] in self?.close() }
-        model.onCommand = { [weak self] command, selection in
-            self?.close(); self?.onCommand(command, selection)
+        model.onCommand = { [weak self] command, selection, context in
+            self?.close(); self?.onCommand(command, selection, context)
         }
         model.pinnedText = { [weak self] in self?.pinned }
         model.pinText = { [weak self] in self?.pinned = $0 }
         model.onPresentationChange = { [weak self] in self?.updatePresentation() }
+        model.onPreviewResize = { [weak self] in self?.updatePresentation(refocusSearch: false) }
+        model.onFocusSearch = { [weak self] in self?.focusSearch(force: true) }
         let panel = LauncherPanel()
         self.panel = panel; self.model = model
         panel.delegate = self
         panel.contentViewController = NSHostingController(rootView: LauncherView(model: model, onSearchReady: { [weak self] field in
             self?.searchField = field
+        }, onCopilotFieldReady: { [weak self] field in
+            self?.copilotField = field
         }))
-        panel.setContentSize(model.paletteSize)
-        panel.contentMinSize = model.paletteSize
-        panel.contentMaxSize = model.paletteSize
         let screen = ScreenPlacement.screen(containing: NSEvent.mouseLocation)
+        let contentSize = Self.fittedSize(model.paletteSize, visibleFrame: screen.visibleFrame)
+        panel.setContentSize(contentSize)
+        panel.contentMinSize = contentSize
+        panel.contentMaxSize = contentSize
         let size = panel.frame.size
         panel.setFrameOrigin(ScreenPlacement.clamp(origin: CGPoint(x: screen.visibleFrame.midX - size.width / 2,
             y: screen.visibleFrame.midY - size.height / 2 + 70), size: size, into: screen))
@@ -102,6 +114,20 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         if let initialCommand { model.open(initialCommand) }
     }
 
+    /// Whether keyboard input currently belongs to a text field other than the
+    /// palette's search field, such as the copilot question.
+    func isSecondaryTextInputFocused(in panel: NSWindow) -> Bool {
+        guard let editor = panel.firstResponder as? NSTextView else { return false }
+        guard let searchField else { return true }
+        return editor.delegate !== searchField
+    }
+
+    /// Whether the search field is actively editing.
+    var isSearchFieldFocused: Bool {
+        guard let panel, let searchField, let editor = panel.firstResponder as? NSTextView else { return false }
+        return editor.delegate === searchField
+    }
+
     @discardableResult
     func handleKeyEvent(_ event: NSEvent) -> Bool {
         guard let panel, let model, panel.isVisible,
@@ -110,7 +136,19 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         if let editor = panel.firstResponder as? NSTextView, editor.hasMarkedText() { return false }
         let modifiers = event.modifierFlags.intersection([.command, .control, .option, .shift])
         if modifiers == .command && event.charactersIgnoringModifiers?.lowercased() == "k" {
-            model.back(); model.query = ""; focusSearch(); return true
+            model.back(); model.query = ""; focusSearch(force: true); return true
+        }
+        if model.workbench == nil, isSecondaryTextInputFocused(in: panel) {
+            // The copilot field owns Enter and the arrows; Escape hands focus back.
+            if modifiers.isEmpty, event.keyCode == 53 { focusSearch(force: true); return true }
+            return false
+        }
+        if model.workbench == nil, model.featuresClock, model.query.isEmpty, [123, 124].contains(event.keyCode),
+           modifiers.isSubset(of: [.option, .shift]) {
+            let direction = event.keyCode == 124 ? 1 : -1
+            let step: TimeInterval = modifiers.contains(.shift) ? 24 * 3_600 : modifiers.contains(.option) ? 3_600 : 15 * 60
+            if modifiers.contains(.shift) { model.clockPreview?.moveDay(by: direction) } else { model.nudgeClock(by: direction, step: step) }
+            return true
         }
         guard modifiers.isEmpty else { return false }
         if event.keyCode == 53 {
@@ -129,14 +167,22 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         return true
     }
 
-    private func updatePresentation() {
+    /// Keeps the palette inside the screen it is on. Small displays get a
+    /// shorter panel whose command list scrolls; the footer stays reachable.
+    static let screenMargin: CGFloat = 12
+    static func fittedSize(_ size: NSSize, visibleFrame: NSRect) -> NSSize {
+        let maxHeight = max(320, visibleFrame.height - screenMargin * 2)
+        return NSSize(width: size.width, height: min(size.height, maxHeight))
+    }
+
+    private func updatePresentation(refocusSearch: Bool = true) {
         guard let panel, let model else { return }
         let isWorkbench = model.workbench != nil
-        let size = isWorkbench ? NSSize(width: 820, height: 660) : model.paletteSize
-        panel.contentMinSize = NSSize(width: 1, height: 1)
-        panel.contentMaxSize = NSSize(width: 10_000, height: 10_000)
         let oldFrame = panel.frame
         let screen = panel.screen ?? ScreenPlacement.screen(containing: oldFrame.origin)
+        let size = Self.fittedSize(isWorkbench ? NSSize(width: 820, height: 660) : model.paletteSize, visibleFrame: screen.visibleFrame)
+        panel.contentMinSize = NSSize(width: 1, height: 1)
+        panel.contentMaxSize = NSSize(width: 10_000, height: 10_000)
         let origin = ScreenPlacement.clamp(origin: CGPoint(x: oldFrame.midX - size.width / 2,
             y: oldFrame.maxY - size.height), size: size, into: screen)
         let frame = NSRect(origin: origin, size: size)
@@ -156,13 +202,16 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
                 panel.animator().setFrame(frame, display: true)
             }, completionHandler: finish)
         }
-        if !isWorkbench { focusSearch() }
+        if !isWorkbench, refocusSearch { focusSearch() }
     }
 
-    private func focusSearch() {
+    /// Returns focus to the search field. Unless forced, it leaves another
+    /// text input (the copilot question) alone so typing is never interrupted.
+    private func focusSearch(force: Bool = false) {
         DispatchQueue.main.async { [weak self] in
             guard let self, self.model?.workbench == nil, let panel = self.panel, panel.isVisible,
                   let field = self.searchField, field.window === panel else { return }
+            if !force, self.isSecondaryTextInputFocused(in: panel) { return }
             if panel.firstResponder !== field.currentEditor() { panel.makeFirstResponder(field) }
         }
     }
@@ -191,7 +240,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         menuObservers = []; trackingMenu = false
         panel?.delegate = nil
         panel?.close()
-        searchField = nil; panel = nil; model = nil
+        searchField = nil; copilotField = nil; panel = nil; model = nil
     }
     func windowWillClose(_ notification: Notification) { close() }
 #if DEBUG

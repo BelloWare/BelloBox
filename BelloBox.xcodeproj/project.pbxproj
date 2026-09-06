@@ -29,6 +29,7 @@
 		1FDD84C0CE5EC1AEFCBA373D /* RecordingReviewViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A597535F5698096310AF4D1 /* RecordingReviewViewModelTests.swift */; };
 		20144BCB0268DCE192EB42CF /* ScrollSampleAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B996A5F7EDE7773BE3A7DF22 /* ScrollSampleAnalyzer.swift */; };
 		2220E988504534CE208C515F /* ScreenCaptureServiceDiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0862AEE116AAEC4EE50AEF08 /* ScreenCaptureServiceDiagnosticsTests.swift */; };
+		22416906B2380E4F64D55C8E /* WorldClockCopilotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC0C96EF717F8964CB69D0E /* WorldClockCopilotView.swift */; };
 		243C4CB8378EE7D046BEE36F /* WorldClockModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18D1BE91ED7F357B5576A63B /* WorldClockModels.swift */; };
 		2443B0926179C89BD3A20DBC /* BelloBoxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 324699B28FE869CBDD32B8CE /* BelloBoxApp.swift */; };
 		26E2562B17B03DB5FA4A7F1E /* ImageAlphaMask.swift in Sources */ = {isa = PBXBuildFile; fileRef = C395868441BE07091DEA8FF7 /* ImageAlphaMask.swift */; };
@@ -155,7 +156,9 @@
 		D93FAC85138695EF088AAC6F /* LLMOCRResponseParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F644D5CDDEC738B44A1694F /* LLMOCRResponseParserTests.swift */; };
 		DC103FAAF581A1C86F5C4FC4 /* RecordingFileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3571BA3877C285743C49BB8D /* RecordingFileStoreTests.swift */; };
 		DD3BCDB796853525E001772F /* RecordingInputMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A35F36F50D47226405B1A3 /* RecordingInputMonitor.swift */; };
+		DD869F615B5104766EE7D1E3 /* WorldClockCopilot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27A64C2575C07ACECF84829B /* WorldClockCopilot.swift */; };
 		DF215D5B42CBFC5366CCCA4E /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8937A9C45A6753018FD65683 /* KeychainStore.swift */; };
+		E2AF422116DBD41167003EF2 /* WorldClockComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B98E57C3E6E5FE805E22A9AA /* WorldClockComponents.swift */; };
 		E36975C67FFF65F463D13F57 /* AppActivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C533015D8A378E8201BE18FE /* AppActivation.swift */; };
 		E383F4CBB9F4D1BA9CBC50D7 /* GlobalHotkeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7444E37F5DF2A31A4A93146A /* GlobalHotkeyTests.swift */; };
 		E3DA7BB43CD956C4A24BC02C /* InlineTextEditingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D76A4B960216A1AC89FD807 /* InlineTextEditingTests.swift */; };
@@ -229,6 +232,7 @@
 		23F446A401490B92A21507F2 /* InputOverlayModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputOverlayModels.swift; sourceTree = "<group>"; };
 		2483D8F50FC0E1B8B18D994B /* LauncherModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherModel.swift; sourceTree = "<group>"; };
 		25CB46337F94CDD703493871 /* ScreenshotOverlayEditorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotOverlayEditorController.swift; sourceTree = "<group>"; };
+		27A64C2575C07ACECF84829B /* WorldClockCopilot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldClockCopilot.swift; sourceTree = "<group>"; };
 		28F494598CECD25732411B22 /* RecordingReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingReviewView.swift; sourceTree = "<group>"; };
 		2DCE54CCBFE676BC1C9C5CC1 /* MultiDisplayCapturePipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiDisplayCapturePipelineTests.swift; sourceTree = "<group>"; };
 		2DF7E45348E3013AD507E2F5 /* LLMOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMOCRService.swift; sourceTree = "<group>"; };
@@ -246,6 +250,7 @@
 		38975F8934D714D59E6D39A5 /* OverlayTooltip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayTooltip.swift; sourceTree = "<group>"; };
 		3B1A10CB63062174A85E171A /* AnnotationRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationRendererTests.swift; sourceTree = "<group>"; };
 		3B61D32C1D91604D2511A1FA /* ScreenshotCaptureChooserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotCaptureChooserView.swift; sourceTree = "<group>"; };
+		3BC0C96EF717F8964CB69D0E /* WorldClockCopilotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldClockCopilotView.swift; sourceTree = "<group>"; };
 		3CA6AA1145263DFB4A33083D /* QRCodePopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodePopupView.swift; sourceTree = "<group>"; };
 		3E881CABB60647E97DA55233 /* WindowCapturePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowCapturePicker.swift; sourceTree = "<group>"; };
 		415C8271C74675B6CC66CEF6 /* AIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIConfig.swift; sourceTree = "<group>"; };
@@ -334,6 +339,7 @@
 		B545AAC87C9AC92FE4BA4738 /* OCRModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRModels.swift; sourceTree = "<group>"; };
 		B5BEF7D94F2FF64C8BE1ACDF /* RecordingFrameRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFrameRenderer.swift; sourceTree = "<group>"; };
 		B7A64C64C5BBBE170D579562 /* CaptureDiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDiagnosticsTests.swift; sourceTree = "<group>"; };
+		B98E57C3E6E5FE805E22A9AA /* WorldClockComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldClockComponents.swift; sourceTree = "<group>"; };
 		B996A5F7EDE7773BE3A7DF22 /* ScrollSampleAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollSampleAnalyzer.swift; sourceTree = "<group>"; };
 		BA0E2A8AD8C9D6E0F5454A8D /* AccessibilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityService.swift; sourceTree = "<group>"; };
 		BAC7888CC7676FC7B96E8C88 /* ScreenshotPopupViewModelOCRTaskTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotPopupViewModelOCRTaskTests.swift; sourceTree = "<group>"; };
@@ -492,6 +498,8 @@
 				31D451D118605E72B2E84CC6 /* SettingsWindowController.swift */,
 				98DC0948C3E1FBC14B77BFA5 /* TextToolsPopupView.swift */,
 				4C1DF2470EFA12544D457904 /* Theme.swift */,
+				B98E57C3E6E5FE805E22A9AA /* WorldClockComponents.swift */,
+				3BC0C96EF717F8964CB69D0E /* WorldClockCopilotView.swift */,
 				210539A51AB31BAEF0D25611 /* WorldClockView.swift */,
 				E211E05AA0F196019F2E8264 /* WorldClockWindowController.swift */,
 			);
@@ -672,6 +680,7 @@
 			isa = PBXGroup;
 			children = (
 				550CBF78ABB9491B93513F87 /* WorldClockAIResolver.swift */,
+				27A64C2575C07ACECF84829B /* WorldClockCopilot.swift */,
 				18D1BE91ED7F357B5576A63B /* WorldClockModels.swift */,
 				B2A62F528014E0C3DA67F459 /* WorldClockViewModel.swift */,
 			);
@@ -1028,6 +1037,9 @@
 				C4665D9947EC9E8165A2AF9A /* UtilityWorkbenchView.swift in Sources */,
 				2DF3C41E77F2E00F24094C28 /* WindowCapturePicker.swift in Sources */,
 				FE9E83C2C5E7D4AF8AA9341D /* WorldClockAIResolver.swift in Sources */,
+				E2AF422116DBD41167003EF2 /* WorldClockComponents.swift in Sources */,
+				DD869F615B5104766EE7D1E3 /* WorldClockCopilot.swift in Sources */,
+				22416906B2380E4F64D55C8E /* WorldClockCopilotView.swift in Sources */,
 				243C4CB8378EE7D046BEE36F /* WorldClockModels.swift in Sources */,
 				F220B892C577D752A47DB7DC /* WorldClockView.swift in Sources */,
 				D385C3FC2C75D7CB23E19748 /* WorldClockViewModel.swift in Sources */,
@@ -1152,7 +1164,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 63;
+				CURRENT_PROJECT_VERSION = 64;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1172,7 +1184,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.63;
+				MARKETING_VERSION = 0.0.64;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1218,7 +1230,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 63;
+				CURRENT_PROJECT_VERSION = 64;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1232,7 +1244,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.63;
+				MARKETING_VERSION = 0.0.64;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

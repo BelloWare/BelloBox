@@ -240,3 +240,20 @@ struct WorldClockPreferencesStore {
         defaults.set(anchorZoneID, forKey: Keys.anchorZoneID)
     }
 }
+
+#if DEBUG
+extension WorldClockPreferencesStore {
+    /// Isolated sample locations for reviews, from
+    /// BELLOBOX_E2E_WORLD_CLOCK_ZONES="Asia/Singapore,Europe/London". The
+    /// suite is reset on every launch so it never leaks into real defaults.
+    static func e2eFixture(environment: [String: String] = ProcessInfo.processInfo.environment) -> WorldClockPreferencesStore? {
+        guard let raw = environment["BELLOBOX_E2E_WORLD_CLOCK_ZONES"] else { return nil }
+        let ids = WorldClockZoneCatalog.validIdentifiers(raw.components(separatedBy: ","))
+        guard let first = ids.first, let defaults = UserDefaults(suiteName: "BelloBox.WorldClockPreview") else { return nil }
+        defaults.removePersistentDomain(forName: "BelloBox.WorldClockPreview")
+        let store = WorldClockPreferencesStore(defaults: defaults)
+        store.save(zoneIDs: ids, anchorZoneID: first)
+        return store
+    }
+}
+#endif

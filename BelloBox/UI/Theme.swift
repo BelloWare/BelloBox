@@ -2,20 +2,28 @@ import AppKit
 import SwiftUI
 
 /// Shared color, surface, and control tokens for every Bello Box window.
+///
+/// The palette follows the app icon: a warm orange toolbox on cream. `brand` is
+/// the icon's own orange and is decorative only (washes, badges, marker
+/// fills). `accent` is the readable ink version of that orange, darkened in
+/// light mode and lifted to peach in dark mode so small text still clears
+/// 4.5:1 on every surface. `accentFill`/`accentDeep` sit behind white labels.
 enum BoxTheme {
-    // Ink adapts to its surface. Filled controls keep a darker brand color so
-    // their white labels remain readable in either appearance.
-    static let accent = adaptive(light: (0.29, 0.32, 0.77), dark: (0.64, 0.68, 1))
-    static let accentFill = Color(red: 0.32, green: 0.36, blue: 0.84)
-    static let accentDeep = Color(red: 0.25, green: 0.29, blue: 0.72)
+    static let accent = adaptive(light: (0.64, 0.27, 0.04), dark: (1, 0.64, 0.40))
+    static let accentFill = Color(red: 0.74, green: 0.34, blue: 0.05)
+    static let accentDeep = Color(red: 0.64, green: 0.28, blue: 0.05)
     static let accentSoft = accent.opacity(0.12)
-    static let background = adaptive(light: (0.96, 0.97, 0.99), dark: (0.065, 0.075, 0.105))
-    static let surface = adaptive(light: (1, 1, 1), dark: (0.105, 0.12, 0.16))
-    static let well = adaptive(light: (0.94, 0.95, 0.975), dark: (0.075, 0.085, 0.12))
-    static let border = adaptive(light: (0.82, 0.84, 0.89), dark: (0.23, 0.26, 0.33))
+    /// The icon's orange. Never use it for text; it fails small-text contrast.
+    static let brand = adaptive(light: (0.89, 0.46, 0.15), dark: (0.95, 0.53, 0.22))
+    static let brandSoft = brand.opacity(0.14)
+    static let background = adaptive(light: (0.985, 0.972, 0.955), dark: (0.082, 0.074, 0.068))
+    static let surface = adaptive(light: (1, 1, 1), dark: (0.13, 0.12, 0.11))
+    static let well = adaptive(light: (0.965, 0.948, 0.925), dark: (0.095, 0.086, 0.078))
+    static let border = adaptive(light: (0.87, 0.83, 0.78), dark: (0.29, 0.26, 0.23))
     static let success = adaptive(light: (0.08, 0.42, 0.27), dark: (0.40, 0.83, 0.63))
-    static let warning = adaptive(light: (0.55, 0.31, 0.025), dark: (1, 0.73, 0.35))
-    static let danger = adaptive(light: (0.68, 0.17, 0.23), dark: (1, 0.53, 0.59))
+    // Warning stays golden so it never reads as the orange accent.
+    static let warning = adaptive(light: (0.50, 0.36, 0), dark: (1, 0.80, 0.42))
+    static let danger = adaptive(light: (0.70, 0.14, 0.26), dark: (1, 0.53, 0.59))
     static let teal = adaptive(light: (0.06, 0.40, 0.43), dark: (0.38, 0.81, 0.81))
     static let cyan = adaptive(light: (0.04, 0.39, 0.54), dark: (0.40, 0.79, 0.96))
     static let purple = adaptive(light: (0.46, 0.26, 0.70), dark: (0.77, 0.63, 1))
@@ -41,7 +49,7 @@ enum BoxTheme {
 struct WorkspaceBackground: View {
     var body: some View {
         BoxTheme.background.overlay(alignment: .topLeading) {
-            LinearGradient(colors: [BoxTheme.accent.opacity(0.065), .clear], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [BoxTheme.brand.opacity(0.09), .clear], startPoint: .top, endPoint: .bottom)
                 .frame(height: 240).allowsHitTesting(false)
         }
     }
@@ -221,7 +229,7 @@ struct AppearanceChoice: View {
 
     private func preview(dark: Bool) -> some View {
         HStack(spacing: 5) {
-            RoundedRectangle(cornerRadius: 3).fill(BoxTheme.accentFill.opacity(dark ? 0.6 : 0.22)).frame(width: 14)
+            RoundedRectangle(cornerRadius: 3).fill(BoxTheme.brand.opacity(dark ? 0.7 : 0.35)).frame(width: 14)
             VStack(alignment: .leading, spacing: 5) {
                 Capsule().fill(dark ? Color.white.opacity(0.65) : Color.black.opacity(0.45)).frame(width: 25, height: 3)
                 RoundedRectangle(cornerRadius: 3).fill(dark ? Color.white.opacity(0.10) : Color.white)
@@ -229,6 +237,6 @@ struct AppearanceChoice: View {
             }
         }
         .padding(8).frame(maxWidth: .infinity)
-        .background(dark ? Color(red: 0.065, green: 0.075, blue: 0.105) : Color(red: 0.94, green: 0.95, blue: 0.975))
+        .background(dark ? Color(red: 0.082, green: 0.074, blue: 0.068) : Color(red: 0.965, green: 0.948, blue: 0.925))
     }
 }

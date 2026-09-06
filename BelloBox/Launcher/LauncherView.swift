@@ -3,6 +3,7 @@ import SwiftUI
 struct LauncherView: View {
     @ObservedObject var model: LauncherModel
     var onSearchReady: (LauncherSearchTextField) -> Void
+    var onCopilotFieldReady: (LauncherSearchTextField) -> Void = { _ in }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -85,8 +86,13 @@ struct LauncherView: View {
                     ForEach(model.commands) { command in
                         LauncherCommandRow(command: command, selected: model.selectedID == command.id,
                             favorite: model.favorites.contains(command.id), featured: model.featuredCommand == command,
-                            preview: model.preview, onOpen: { model.open(command) },
-                            onFavorite: { model.toggleFavorite(command) })
+                            preview: model.preview, clock: model.featuredCommand == command ? model.clockPreview : nil,
+                            previewHeight: model.featuredPreviewHeight,
+                            onOpen: { model.open(command) },
+                            onFavorite: { model.toggleFavorite(command) },
+                            onOpenSettings: { model.open(.settings) },
+                            onFocusSearch: model.onFocusSearch,
+                            onCopilotFieldReady: onCopilotFieldReady)
                             .id(command.id)
                     }
                 }.padding(.horizontal, 8).padding(.vertical, 6)
@@ -106,6 +112,12 @@ struct LauncherView: View {
                 Label("Use Clipboard", systemImage: "doc.on.clipboard").font(.system(size: 10))
             }.buttonStyle(.plain).foregroundStyle(.secondary).help("Use clipboard text as input")
             Spacer()
+            if model.featuresClock {
+                keycap("←"); keycap("→")
+                Text("Time").font(.system(size: 10)).foregroundStyle(.secondary)
+                    .help("← → move 15 minutes, ⌥ moves an hour, ⇧ moves a day")
+                Divider().frame(height: 12).padding(.horizontal, 3)
+            }
             keycap("↑"); keycap("↓")
             Text("Navigate").font(.system(size: 10)).foregroundStyle(.secondary)
             Divider().frame(height: 12).padding(.horizontal, 3)
@@ -129,8 +141,13 @@ private struct LauncherCommandRow: View {
     let favorite: Bool
     let featured: Bool
     let preview: LauncherPreview?
+    let clock: WorldClockViewModel?
+    let previewHeight: CGFloat
     let onOpen: () -> Void
     let onFavorite: () -> Void
+    let onOpenSettings: () -> Void
+    let onFocusSearch: () -> Void
+    let onCopilotFieldReady: (LauncherSearchTextField) -> Void
     @State private var hovered = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -147,7 +164,7 @@ private struct LauncherCommandRow: View {
                 }.contentShape(Rectangle())
             }.buttonStyle(.plain).help(command.subtitle).accessibilityIdentifier("command_\(command.id)")
                 .accessibilityLabel(command.title).accessibilityHint(command.subtitle)
-                .accessibilityValue((selected ? "Selected" : "Not selected") + (featured ? ". " + (preview?.accessibilitySummary ?? "Preparing preview") : ""))
+                .accessibilityValue((selected ? "Selected" : "Not selected") + (featured ? ". " + accessibilityPreview : ""))
             Button(action: onFavorite) {
                 Image(systemName: favorite ? "star.fill" : "star").font(.system(size: 10))
                     .foregroundStyle(favorite ? Color.secondary : Color.secondary.opacity(0.6))
@@ -157,8 +174,15 @@ private struct LauncherCommandRow: View {
                 .accessibilityLabel("\(favorite ? "Unfavorite" : "Favorite") \(command.title)")
           }.padding(.horizontal, 10).frame(height: 42)
           if featured {
-              Button(action: onOpen) { LauncherInlinePreview(preview: preview).contentShape(Rectangle()) }
-                  .buttonStyle(.plain).accessibilityHidden(true)
+              if let clock {
+                  // Interactive: the planner owns its input. Enter still opens.
+                  LauncherClockPreviewView(clock: clock, preview: preview, height: previewHeight,
+                      onOpenSettings: onOpenSettings, onEscapeCopilot: onFocusSearch,
+                      onCopilotFieldReady: onCopilotFieldReady)
+              } else {
+                  Button(action: onOpen) { LauncherInlinePreview(preview: preview, height: previewHeight).contentShape(Rectangle()) }
+                      .buttonStyle(.plain).accessibilityHidden(true)
+              }
           }
         }
         .background((selected ? BoxTheme.accentSoft : hovered ? Color.primary.opacity(0.035) : .clear),
@@ -167,6 +191,10 @@ private struct LauncherCommandRow: View {
         .onHover { hovered = $0 }
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: selected)
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)
+    }
+    private var accessibilityPreview: String {
+        if let clock { return clock.accessibilitySummary }
+        return preview?.accessibilitySummary ?? "Preparing preview"
     }
     private var category: String {
         if command.isDeveloperTool { return "Developer" }

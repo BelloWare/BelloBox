@@ -42,20 +42,59 @@ for the highest-ranked suggestion; `LauncherModel` caches it for the selection
 and cancels/discards stale work on replacement or dismissal. Above 64 KB it
 shows a compact notice rather than parsing. Previews never create workbenches,
 send requests, copy text, or persist input. Timestamp selections rank World
-Clock first and preview the selected instant in up to three locations. Searching
-collapses the featured row; clearing search restores it. Keep explicit query
-matches above suggestions and suggestions above favorite/recent bonuses.
+Clock first; `LauncherModel` then installs a `WorldClockViewModel` in
+`.preview` mode (no preference writes, up to four zones: saved order, then
+local and UTC) rendered by `LauncherClockPreviewView`. That row is not a
+button: the shared `MeetingTimelineView` scrubber (AppKit drag + horizontal
+scroll wheel; vertical scrolls pass through), day arrows, reference menu, and
+copilot own their input, while Enter opens World Clock with a
+`WorldClockHandoff` (previewed instant, chosen reference, and an in-memory
+copilot snapshot) via `LauncherCommandContext`; `WorldClockViewModel.adopt`
+applies it without saving preferences and drops any earlier conversation in
+the window. The palette resizes for the copilot transcript through
+`onPreviewResize`, which the session fires after its state settled and which
+never refocuses search; panel heights are clamped to the screen's visible
+frame. SwiftUI's `ScrollView` is an `NSScrollView` that takes wheel events
+before the hit-tested subview, so `TimelineScrubberView` claims horizontal
+wheel events through a local monitor that exists only while it is in a
+window and only for points inside its unclipped bounds (vertical and
+outside events pass through; `BELLOBOX_E2E_WHEEL_DIAGNOSTICS=/path` logs
+routing in DEBUG). `LauncherWindowController` leaves Enter/arrows to the
+copilot field when it is first responder (`Esc` returns to search) and
+`focusSearch` never steals focus from another text input. `←/→` (⌥ hour, ⇧ day) nudge the preview
+only while the query is empty. Searching collapses the featured row; clearing
+search restores it. Keep explicit query matches above suggestions and
+suggestions above favorite/recent bonuses.
 
 Normal launches and Dock/Finder reopens show `MainView`; only the shortcut and
 explicit Search actions open the palette. `HomeCategory` organizes the tool
 catalog and Home has ⌘1–⌘4 category shortcuts plus ⌘K search. Shared colors,
 `ToolBadge`, `ShortcutBadge`, surfaces, and button styles live in `UI/Theme.swift`.
 Use these tokens when adding or updating tools; honor Reduce Motion.
-`BoxTheme.accent` is adaptive text/icon ink; use `accentFill`/`accentGradient`
-behind white labels. Use the semantic success/warning/danger colors for status
-text. `ThemeContrastTests` verifies small-text contrast in both appearances.
+The palette follows the orange toolbox icon: `BoxTheme.accent` is adaptive
+text/icon ink (burnt orange in light, peach in dark); use
+`accentFill`/`accentGradient` behind white labels; `BoxTheme.brand` is the
+icon's own orange for decorative washes and badges only, never text. Use the
+semantic success/warning/danger colors for status text (warning stays golden so
+it is never mistaken for the accent). `ThemeContrastTests` verifies small-text
+contrast and the warm hues in both appearances.
 World Clock uses the native search field for focused, keyboard-navigable location
-search (⌘L); its preview fixture keeps sample locations in isolated defaults.
+search (⌘L). `WorldClockCopilotSession` (in `WorldClock/WorldClockCopilot.swift`)
+is the ephemeral copilot shared by the window (⌘J) and the palette preview:
+explicit Send only, run-ID guard against stale replies, cancel/retry, and a
+missing-provider state. `WorldClockAIResolver` builds the planner-context prompt
+and parses the JSON envelope; suggestions become a `WorldClockCopilotPlan` that
+is validated against the current planner and applied only on the user's Apply
+(the preview applies time only and shows location parts as "press Enter to
+apply"; the window may add/replace locations and saves). Completion is tracked
+per part (`WorldClockCopilotPlan.Parts`), so a mixed suggestion whose time was
+applied in the palette still offers its locations in the window. Questions are bounded
+by characters and UTF-8 bytes; a rejected question keeps the draft and clears
+retry intent. Suggested instants must fall within Gregorian years 1–9999.
+Never log prompts or replies. Review fixtures (DEBUG only): `BELLOBOX_E2E_WORLD_CLOCK_ZONES`
+seeds isolated locations for both the window and the palette, and
+`BELLOBOX_E2E_WORLD_CLOCK_COPILOT=scripted|error|slow` swaps in an offline
+responder; neither enables a real provider.
 
 It follows the same packaging conventions as the sibling Bello macOS apps
 (BelloGesture, BelloWall, BelloTracker): xcodegen project, Developer-ID signed
@@ -78,7 +117,8 @@ BelloBox/
 │   │   ├── CodexAppServerClient.swift # local Codex app-server transport
 │   │   └── QuickAction.swift       # one-click transformations + prompt builder
 │   ├── Recording/                  # Screen recording, audio, overlays, privacy
-│   ├── Launcher/                   # Search palette, command catalog, shared workbench
+│   ├── WorldClock/                 # Timeline/zone models, planner view model, copilot session + resolver
+│   ├── Launcher/                   # Search palette, command catalog, shared workbench, clock preview
 │   ├── DeveloperTools/             # Offline engines, snippet store, explicit HTTP client
 │   ├── ThirdPartyNotices.txt       # Yams and LibYAML licenses (bundled resource)
 │   ├── Screenshot/                 # Screenshot domain; keep separate from TextSelection
@@ -120,7 +160,10 @@ BelloBox/
 │       ├── OCRPanelView.swift
 │       ├── OCRTextRegionsOverlayView.swift
 │       ├── ScrollingCaptureHUDView.swift
-│       ├── Theme.swift                       # design system: gradient, PopupHeader, popupCard, button styles, appear animation
+│       ├── Theme.swift                       # design system: orange brand tokens, PopupHeader, popupCard, button styles, appear animation
+│       ├── WorldClockView.swift              # dedicated World Clock window (planner, locations, copilot)
+│       ├── WorldClockComponents.swift        # shared timeline scrubber, quality badge, icon buttons
+│       ├── WorldClockCopilotView.swift       # copilot transcript/input, planner + compact styles
 │       ├── MainView.swift                    # the home window (status, how-to, Settings / Updates)
 │       ├── MainWindowController.swift         # hosts the home window (centered)
 │       ├── ProviderConfigView.swift          # shared provider setup (3 providers, model load, say-hi test)

@@ -48,31 +48,51 @@ final class FeatureWorkflowTests: XCTestCase {
         XCTAssertEqual(model.zonePresentations.map(\.dayDifference), [1, 0])
     }
 
-    func testLateCancelledAIRequestCannotClearNewWorldClockRequest() async throws {
+    func testLateCancelledCopilotRequestCannotAnswerOrFailANewerQuestion() async throws {
+        let preferences = WorldClockPreferencesStore(defaults: defaults)
+        preferences.save(zoneIDs: ["UTC"], anchorZoneID: "UTC")
         let settings = AppSettings(defaults: defaults)
         settings.openAIModel = "test-model"
         settings.apiKey = "test-only-key"
         let requests = SuspendedClockRequests()
-        let model = WorldClockViewModel(settings: settings, resolveRequest: { request, _ in
-            try await requests.resolve(request)
+        let model = WorldClockViewModel(settings: settings, preferences: preferences, askCopilot: { request, _ in
+            try await requests.resolve(request.question)
         })
-        model.aiRequest = "first"
-        model.fillWithAI()
+        let copilot = model.copilot
+        copilot.draft = "first"
+        copilot.send()
         await fulfillment(of: [requests.firstStarted], timeout: 2)
+        XCTAssertTrue(copilot.isBusy)
         model.cancelAI()
+        XCTAssertFalse(copilot.isBusy)
+        XCTAssertEqual(copilot.outcome, .cancelled)
+        XCTAssertTrue(copilot.canRetry, "A cancelled question can be asked again")
         let originalZones = model.zoneIDs
-        model.aiRequest = "second"
-        model.fillWithAI()
+        copilot.draft = "second"
+        copilot.send()
         await fulfillment(of: [requests.secondStarted], timeout: 2)
-        requests.finish("first", result: .failure(WorldClockAIError.malformedResponse))
+        requests.finish("first", result: .failure(AIError.emptyResponse))
         for _ in 0..<20 { await Task.yield() }
-        XCTAssertTrue(model.isResolvingAI)
+        XCTAssertTrue(copilot.isBusy, "A stale failure must not end the newer question")
+        XCTAssertNil(copilot.errorMessage)
         XCTAssertEqual(model.zoneIDs, originalZones)
-        XCTAssertNil(model.aiMessage)
-        requests.finish("second", result: .success(WorldClockAIResult(timeZoneIDs: ["UTC"], referenceDate: nil, anchorTimeZoneID: "UTC")))
-        for _ in 0..<100 where model.isResolvingAI { await Task.yield() }
-        XCTAssertFalse(model.isResolvingAI)
-        XCTAssertEqual(model.zoneIDs, ["UTC"])
+        requests.finish("second", result: .success(WorldClockCopilotReply(
+            answer: "Tokyo would be 9 PM.",
+            suggestion: WorldClockCopilotSuggestion(instant: nil, zoneIDs: ["Asia/Tokyo"], replacesLocations: false, anchorZoneID: nil),
+            suggestionIssue: nil)))
+        for _ in 0..<100 where copilot.isBusy { await Task.yield() }
+        XCTAssertFalse(copilot.isBusy)
+        XCTAssertEqual(copilot.outcome, .answered)
+        XCTAssertEqual(copilot.messages.map(\.role), [.user, .user, .assistant])
+        XCTAssertEqual(model.zoneIDs, originalZones, "Suggestions are never applied automatically")
+        let reply = try XCTUnwrap(copilot.messages.last)
+        let plan = try XCTUnwrap(model.copilotPlan(for: reply))
+        XCTAssertEqual(plan.zoneIDs, ["UTC", "Asia/Tokyo"])
+        model.applyCopilotPlan(plan, from: reply)
+        XCTAssertEqual(model.zoneIDs, ["UTC", "Asia/Tokyo"])
+        XCTAssertEqual(preferences.loadZoneIDs(), ["UTC", "Asia/Tokyo"], "The dedicated window saves applied locations")
+        XCTAssertTrue(copilot.isApplied(reply))
+        XCTAssertNil(model.copilotPlan(for: reply), "An applied suggestion offers nothing further")
     }
 
     func testResetCropPreservesAnnotationsAndCanBeUndone() {
@@ -116,16 +136,16 @@ final class FeatureWorkflowTests: XCTestCase {
 private final class SuspendedClockRequests {
     let firstStarted = XCTestExpectation(description: "First clock request")
     let secondStarted = XCTestExpectation(description: "Second clock request")
-    private var continuations: [String: CheckedContinuation<WorldClockAIResult, Error>] = [:]
+    private var continuations: [String: CheckedContinuation<WorldClockCopilotReply, Error>] = [:]
 
-    func resolve(_ request: String) async throws -> WorldClockAIResult {
+    func resolve(_ request: String) async throws -> WorldClockCopilotReply {
         try await withCheckedThrowingContinuation { continuation in
             continuations[request] = continuation
             (request == "first" ? firstStarted : secondStarted).fulfill()
         }
     }
 
-    func finish(_ request: String, result: Result<WorldClockAIResult, Error>) {
+    func finish(_ request: String, result: Result<WorldClockCopilotReply, Error>) {
         continuations.removeValue(forKey: request)?.resume(with: result)
     }
 }

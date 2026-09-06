@@ -49,6 +49,44 @@ final class ThemeContrastTests: XCTestCase {
         XCTAssertGreaterThan(luminance(try resolved(BoxTheme.accent, dark)), luminance(try resolved(BoxTheme.accent, light)))
     }
 
+    /// The design system follows the orange toolbox icon: the accent, brand,
+    /// and fills are warm oranges (red over green over blue) in both themes,
+    /// surfaces lean cream rather than blue, and warning stays golden so it
+    /// cannot be mistaken for the accent.
+    func testBrandColorsFollowTheOrangeIconInBothThemes() throws {
+        for mode in [NSAppearance.Name.aqua, .darkAqua] {
+            let appearance = try XCTUnwrap(NSAppearance(named: mode))
+            for (name, color) in [("accent", BoxTheme.accent), ("brand", BoxTheme.brand),
+                                  ("accentFill", BoxTheme.accentFill), ("accentDeep", BoxTheme.accentDeep)] {
+                let c = try resolved(color, appearance)
+                XCTAssertGreaterThan(c[0], c[1] + 0.2, "\(name) in \(mode) should be orange, not neutral")
+                XCTAssertGreaterThan(c[1], c[2], "\(name) in \(mode) should be orange rather than red or pink")
+                XCTAssertGreaterThan(hue(c), 12, "\(name) in \(mode) is too red")
+                XCTAssertLessThan(hue(c), 36, "\(name) in \(mode) is too yellow")
+            }
+            let warning = try resolved(BoxTheme.warning, appearance)
+            let accent = try resolved(BoxTheme.accent, appearance)
+            XCTAssertGreaterThan(hue(warning) - hue(accent), 12, "warning must stay distinct from the accent in \(mode)")
+            for (name, surface) in [("background", BoxTheme.background), ("well", BoxTheme.well), ("border", BoxTheme.border)] {
+                let c = try resolved(surface, appearance)
+                XCTAssertGreaterThanOrEqual(c[0], c[1], "\(name) in \(mode) should be warm")
+                XCTAssertGreaterThanOrEqual(c[1], c[2], "\(name) in \(mode) should be warm")
+            }
+        }
+    }
+
+    private func hue(_ c: [Double]) -> Double {
+        let maxC = c.max()!, minC = c.min()!
+        guard maxC > minC else { return 0 }
+        let delta = maxC - minC
+        var h: Double
+        if maxC == c[0] { h = (c[1] - c[2]) / delta }
+        else if maxC == c[1] { h = 2 + (c[2] - c[0]) / delta }
+        else { h = 4 + (c[0] - c[1]) / delta }
+        h *= 60
+        return h < 0 ? h + 360 : h
+    }
+
     private func resolved(_ color: Color, _ appearance: NSAppearance) throws -> [Double] {
         var result: NSColor?
         appearance.performAsCurrentDrawingAppearance { result = NSColor(color).usingColorSpace(.sRGB) }

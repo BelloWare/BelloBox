@@ -8,8 +8,8 @@ configs:
   Release: release
 settings:
   base:
-    CURRENT_PROJECT_VERSION: 63
-    MARKETING_VERSION: 0.0.63
+    CURRENT_PROJECT_VERSION: 64
+    MARKETING_VERSION: 0.0.64
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: 43TXHV3TM3
   configs:

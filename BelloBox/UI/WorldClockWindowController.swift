@@ -8,11 +8,11 @@ final class WorldClockWindowController: NSObject, NSWindowDelegate {
 
     func show(
         settings: AppSettings,
-        seedDate: Date? = nil,
+        handoff: WorldClockHandoff? = nil,
         onOpenSettings: @escaping () -> Void
     ) {
         if let panel, let viewModel {
-            if let seedDate { viewModel.focus(on: seedDate) }
+            if let handoff { viewModel.adopt(handoff) }
             AppActivation.bringAppForward()
             panel.makeKeyAndOrderFront(nil)
             return
@@ -20,16 +20,10 @@ final class WorldClockWindowController: NSObject, NSWindowDelegate {
 
         var preferences = WorldClockPreferencesStore()
 #if DEBUG
-        if let raw = ProcessInfo.processInfo.environment["BELLOBOX_E2E_WORLD_CLOCK_ZONES"] {
-            let ids = WorldClockZoneCatalog.validIdentifiers(raw.components(separatedBy: ","))
-            if let first = ids.first, let defaults = UserDefaults(suiteName: "BelloBox.WorldClockPreview") {
-                defaults.removePersistentDomain(forName: "BelloBox.WorldClockPreview")
-                preferences = WorldClockPreferencesStore(defaults: defaults)
-                preferences.save(zoneIDs: ids, anchorZoneID: first)
-            }
-        }
+        if let fixture = WorldClockPreferencesStore.e2eFixture() { preferences = fixture }
 #endif
-        let viewModel = WorldClockViewModel(settings: settings, seedDate: seedDate, preferences: preferences)
+        let viewModel = WorldClockViewModel(settings: settings, seedDate: handoff?.instant, preferences: preferences)
+        if let handoff { viewModel.adopt(handoff) }
         let rootView = WorldClockView(viewModel: viewModel, onOpenSettings: onOpenSettings)
         let hosting = NSHostingController(rootView: rootView)
         let panel = WorldClockPanel(contentViewController: hosting)

@@ -15,7 +15,10 @@ final class SelectionOverlayController: NSObject {
 
     private lazy var launcher: LauncherWindowController = {
         let controller = LauncherWindowController()
-        controller.onCommand = { [weak self] command, selection in self?.runLauncherCommand(command, selection: selection) }
+        controller.settings = settings
+        controller.onCommand = { [weak self] command, selection, context in
+            self?.runLauncherCommand(command, selection: selection, context: context)
+        }
         return controller
     }()
 
@@ -44,8 +47,9 @@ final class SelectionOverlayController: NSObject {
     /// Set by the app to open the Settings window.
     var openSettings: () -> Void = {}
     var openHome: () -> Void = {}
-    /// Set by the app to open the persistent world clock at a selected instant.
-    var openWorldClock: (Date?) -> Void = { _ in }
+    /// Set by the app to open the persistent world clock with a selection's
+    /// instant, and from the palette also the previewed reference and copilot.
+    var openWorldClock: (WorldClockHandoff?) -> Void = { _ in }
 
     init(settings: AppSettings) {
         self.settings = settings
@@ -246,7 +250,7 @@ final class SelectionOverlayController: NSObject {
         launcher.show(selection: selection ?? TextSelection(text: "", anchorRect: nil, appName: nil, bundleID: nil, pid: nil), initialCommand: command)
     }
 
-    private func runLauncherCommand(_ command: LauncherCommand, selection: TextSelection) {
+    private func runLauncherCommand(_ command: LauncherCommand, selection: TextSelection, context: LauncherCommandContext = LauncherCommandContext()) {
         switch command {
         case .ai: showAIPopup(for: selection)
         case .qr: showQRPopup(for: selection)
@@ -254,7 +258,10 @@ final class SelectionOverlayController: NSObject {
         case .screenshot: triggerScreenshotCapture()
         case .scrollCapture: triggerScrollingScreenshotCapture()
         case .recording: triggerRecording()
-        case .worldClock: openWorldClock(TimestampSummary.make(from: selection.text)?.date)
+        // Open with what the palette was previewing (instant, reference, and
+        // copilot conversation), which may differ from the selected text.
+        case .worldClock:
+            openWorldClock(context.worldClock ?? TimestampSummary.make(from: selection.text).map { WorldClockHandoff(instant: $0.date) })
         case .settings: openSettings()
         case .home: openHome()
         default: break
@@ -391,7 +398,7 @@ final class SelectionOverlayController: NSObject {
 
     private func activateWorldClock(at date: Date) {
         hideToolbar()
-        openWorldClock(date)
+        openWorldClock(WorldClockHandoff(instant: date))
     }
 
     private func updateToolbarTooltip(_ text: String?) {

@@ -110,7 +110,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let overlay = SelectionOverlayController(settings: settings)
         overlay.openSettings = { [weak self] in self?.showSettings() }
         overlay.openHome = { [weak self] in self?.showMainWindow() }
-        overlay.openWorldClock = { [weak self] date in self?.showWorldClock(seedDate: date) }
+        overlay.openWorldClock = { [weak self] handoff in self?.showWorldClock(handoff) }
         overlay.start()
         self.overlay = overlay
 
@@ -187,7 +187,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 let seed = ProcessInfo.processInfo.environment["BELLOBOX_E2E_WORLD_CLOCK_SEED"]
                     .flatMap(Double.init)
                     .map { Date(timeIntervalSince1970: $0) }
-                self.showWorldClock(seedDate: seed)
+                self.showWorldClock(seed.map { WorldClockHandoff(instant: $0) })
                 return
             }
 #endif
@@ -241,10 +241,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsWindow.show(settings: settings)
     }
 
-    func showWorldClock(seedDate: Date? = nil) {
+    func showWorldClock(_ handoff: WorldClockHandoff? = nil) {
         worldClockWindow.show(
             settings: settings,
-            seedDate: seedDate,
+            handoff: handoff,
             onOpenSettings: { [weak self] in self?.showSettings() }
         )
     }

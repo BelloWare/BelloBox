@@ -15,7 +15,9 @@ struct LauncherPreview: Equatable {
         let quality: MeetingTimeQuality
     }
     enum Content: Equatable {
-        case clocks([Clock])
+        /// Static clocks plus the parsed instant; the palette upgrades this to
+        /// an interactive World Clock planner seeded at that instant.
+        case clocks([Clock], instant: Date)
         case code(String)
         case fields([Field])
         case statistics([Field])
@@ -42,12 +44,8 @@ struct LauncherPreview: Equatable {
             }
             // Keep the saved order; show local time and UTC as useful fallbacks
             // without changing the user's World Clock locations.
-            var ids: [String] = []
-            for identifier in WorldClockZoneCatalog.validIdentifiers(zoneIDs) + [localZone.identifier, "UTC"] {
-                let id = ["GMT", "Etc/GMT", "Etc/UTC", "UTC"].contains(identifier) ? "UTC" : identifier
-                if !ids.contains(id) { ids.append(id) }
-            }
-            let clocks = ids.prefix(3).compactMap { id -> Clock? in
+            let ids = WorldClockViewModel.previewZoneIDs(saved: zoneIDs, localZone: localZone)
+            let clocks = ids.compactMap { id -> Clock? in
                 guard let zone = TimeZone(identifier: id) else { return nil }
                 let time = DateFormatter(); time.locale = locale; time.timeZone = zone
                 time.setLocalizedDateFormatFromTemplate("jmmss")
@@ -59,7 +57,7 @@ struct LauncherPreview: Equatable {
                              date: day.string(from: summary.date), zone: offsetText,
                              quality: MeetingTimeQuality.at(summary.date, in: zone))
             }
-            return Self(title: "Timestamp recognized", subtitle: summary.relativeTime, content: .clocks(clocks))
+            return Self(title: "Timestamp recognized", subtitle: summary.relativeTime, content: .clocks(clocks, instant: summary.date))
         case .json:
             let json = try DeveloperJSON.parse(input)
             let description: String

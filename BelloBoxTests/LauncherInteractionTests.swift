@@ -110,6 +110,105 @@ final class LauncherInteractionTests: XCTestCase {
         panel.removeChildWindow(child)
         child.close()
     }
+    /// The test host is the real app, which opens Home or onboarding about
+    /// 0.3 s after launch and takes key focus. Palettes opened before that
+    /// would be dismissed as "focus lost" mid-test, and a palette that never
+    /// became key cannot exercise first-responder handling at all.
+    private func settleHostStartup() async throws {
+        let deadline = Date().addingTimeInterval(2)
+        while Date() < deadline, !NSApp.windows.contains(where: { $0.isVisible && !($0 is LauncherPanel) }) {
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        // Activation lands asynchronously and hands key focus to the Home
+        // window; a palette shown before that settles would be dismissed.
+        NSApp.activate(ignoringOtherApps: true)
+        let activation = Date().addingTimeInterval(2)
+        while Date() < activation, !(NSApp.isActive && NSApp.keyWindow != nil) {
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        try await Task.sleep(nanoseconds: 100_000_000)
+    }
+
+    private func showKeyPalette(_ controller: LauncherWindowController, text: String) async throws -> LauncherPanel {
+        controller.show(selection: TextSelection(text: text, anchorRect: nil, appName: text.isEmpty ? nil : "Editor", bundleID: nil, pid: nil))
+        let panel = try XCTUnwrap(controller.panel)
+        for _ in 0..<100 where !panel.isKeyWindow { try await Task.sleep(nanoseconds: 20_000_000) }
+        if !panel.isKeyWindow { throw XCTSkip("The test host could not take key focus; first-responder behavior cannot be verified here") }
+        return panel
+    }
+
+    private func keyEvent(_ keyCode: UInt16, _ characters: String, modifiers: NSEvent.ModifierFlags = [], in window: NSWindow) throws -> NSEvent {
+        try XCTUnwrap(NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: modifiers, timestamp: 0,
+            windowNumber: window.windowNumber, context: nil, characters: characters, charactersIgnoringModifiers: characters,
+            isARepeat: false, keyCode: keyCode))
+    }
+
+    func testCopilotFieldKeepsEnterAndArrowsWhileEscapeReturnsToSearch() async throws {
+        try await settleHostStartup()
+        let controller = LauncherWindowController()
+        defer { controller.close() }
+        let panel = try await showKeyPalette(controller, text: "")
+        for _ in 0..<100 where !controller.isSearchFieldFocused { try await Task.sleep(nanoseconds: 10_000_000) }
+        XCTAssertTrue(controller.isSearchFieldFocused, "The palette focuses search when it opens")
+        XCTAssertFalse(controller.isSecondaryTextInputFocused(in: panel))
+        XCTAssertTrue(controller.handleKeyEvent(try keyEvent(125, "", in: panel)), "Arrows navigate while search is focused")
+
+        let question = NSTextField(frame: NSRect(x: 10, y: 10, width: 200, height: 22))
+        panel.contentView?.addSubview(question)
+        XCTAssertTrue(panel.makeFirstResponder(question))
+        try await Task.sleep(nanoseconds: 50_000_000)
+        XCTAssertTrue(controller.isSecondaryTextInputFocused(in: panel), "Nothing steals focus from a field the user is typing in")
+        controller.model?.onPreviewResize()
+        controller.model?.onPresentationChange()
+        try await Task.sleep(nanoseconds: 60_000_000)
+        XCTAssertTrue(controller.isSecondaryTextInputFocused(in: panel), "Resizing for the transcript must not refocus search")
+        XCTAssertTrue(controller.isVisible)
+        XCTAssertFalse(controller.handleKeyEvent(try keyEvent(36, "\r", in: panel)), "Enter sends the question instead of opening a tool")
+        XCTAssertFalse(controller.handleKeyEvent(try keyEvent(125, "", in: panel)))
+        XCTAssertFalse(controller.handleKeyEvent(try keyEvent(124, "", in: panel)))
+        XCTAssertTrue(controller.isVisible)
+        XCTAssertTrue(controller.handleKeyEvent(try keyEvent(53, "\u{1B}", in: panel)), "Escape leaves the copilot field")
+        for _ in 0..<100 where !controller.isSearchFieldFocused { try await Task.sleep(nanoseconds: 10_000_000) }
+        XCTAssertTrue(controller.isVisible, "The first Escape only returns to search")
+        XCTAssertTrue(controller.isSearchFieldFocused)
+        XCTAssertTrue(controller.handleKeyEvent(try keyEvent(53, "\u{1B}", in: panel)))
+        XCTAssertFalse(controller.isVisible, "The second Escape closes the palette")
+    }
+
+    func testArrowKeysNudgeTheClockPreviewOnlyWhileSearchIsEmpty() async throws {
+        try await settleHostStartup()
+        let controller = LauncherWindowController()
+        defer { controller.close() }
+        let panel = try await showKeyPalette(controller, text: "2026-09-07T12:00:00Z")
+        let model = try XCTUnwrap(controller.model)
+        for _ in 0..<200 where model.clockPreview == nil { try await Task.sleep(nanoseconds: 10_000_000) }
+        let clock = try XCTUnwrap(model.clockPreview)
+        let start = clock.selectedInstant
+        let height = panel.frame.height
+        XCTAssertTrue(controller.handleKeyEvent(try keyEvent(124, "", in: panel)))
+        XCTAssertEqual(clock.selectedInstant, start.addingTimeInterval(15 * 60))
+        XCTAssertTrue(controller.handleKeyEvent(try keyEvent(123, "", modifiers: .option, in: panel)))
+        XCTAssertEqual(clock.selectedInstant, start.addingTimeInterval(-45 * 60))
+        XCTAssertTrue(controller.handleKeyEvent(try keyEvent(124, "", modifiers: .shift, in: panel)))
+        XCTAssertEqual(clock.selectedInstant, start.addingTimeInterval(24 * 3_600 - 45 * 60), "Shift moves a whole day")
+        XCTAssertEqual(model.selectedCommand, .worldClock, "Time keys never move the command selection")
+        XCTAssertEqual(panel.frame.height, height, "Scrubbing never resizes the palette")
+        model.query = "j"
+        XCTAssertFalse(controller.handleKeyEvent(try keyEvent(124, "", in: panel)), "With a query the arrows edit the search text")
+    }
+
+    func testPaletteHeightIsClampedToTheVisibleScreen() {
+        let tall = NSRect(x: 0, y: 0, width: 1_920, height: 1_055)
+        XCTAssertEqual(LauncherWindowController.fittedSize(NSSize(width: 680, height: 754), visibleFrame: tall),
+                       NSSize(width: 680, height: 754))
+        let small = NSRect(x: 0, y: 0, width: 1_280, height: 700)
+        let fitted = LauncherWindowController.fittedSize(NSSize(width: 680, height: 754), visibleFrame: small)
+        XCTAssertEqual(fitted.width, 680)
+        XCTAssertEqual(fitted.height, 700 - LauncherWindowController.screenMargin * 2, "A 720/768-row display keeps the footer on screen")
+        XCTAssertEqual(LauncherWindowController.fittedSize(NSSize(width: 680, height: 754), visibleFrame: NSRect(x: 0, y: 0, width: 800, height: 200)).height, 320,
+                       "A tiny frame still leaves a usable palette")
+    }
+
     func testDismissalTearsDownPanelAndCanReopen() async throws {
         let controller = LauncherWindowController()
         let selection = TextSelection(text: "", anchorRect: nil, appName: nil, bundleID: nil, pid: nil)

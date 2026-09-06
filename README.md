@@ -13,23 +13,34 @@ and dismisses when you click elsewhere. Drafts survive tool switching until the
 palette is closed; recent commands remember tool names only.
 
 With selected text, the best match is selected automatically and expands into
-a read-only preview: timestamps show up to three World Clock locations, JSON
-and tabular data show a formatted excerpt, URLs and cURL show their structure,
-JWTs show decoded content with an unverified-signature warning, cron shows
-upcoming runs, and plain text shows counts. Press **Return** to open the full
-tool. Searching returns to the compact list; clearing search restores the
-cached preview. Preview generation runs locally in the background and never
-sends requests or changes the selected text. Window and selection transitions
-honor macOS **Reduce Motion**.
+a preview: JSON and tabular data show a formatted excerpt, URLs and cURL show
+their structure, JWTs show decoded content with an unverified-signature
+warning, cron shows upcoming runs, and plain text shows counts. Press
+**Return** to open the full tool. Searching returns to the compact list;
+clearing search restores the cached preview. Preview generation runs locally
+in the background and never sends requests or changes the selected text.
+Window and selection transitions honor macOS **Reduce Motion**.
+
+A selected timestamp expands into a working World Clock planner: drag the
+timeline, scroll sideways over it for 15-minute steps, use **←/→** while the
+search field is empty (**⌥** for an hour, **⇧** for a day), or step days with
+the arrows, and up to four locations update together with day-change badges.
+**Selected time** returns to the timestamp you selected, and **Return** opens
+the full World Clock at the time and reference you are previewing, carrying
+the copilot conversation along in memory. The preview never changes your saved
+locations; a suggested location shows "press Return to apply" and becomes
+applicable in the full window. Its copilot field asks your configured AI
+provider about the previewed time only when you press **Send**.
 
 Opening Bello Box from the Dock or Finder brings up **Home**, a workspace with
 Overview, Developer, Capture, and Text & AI categories. Use **⌘1–⌘4** to switch
 categories and **⌘K** to search all tools. The global shortcut opens the compact
-palette from other apps. Home and the tools share adaptive graphite/indigo
-surfaces, consistent controls, and color-coded icons in light and dark themes.
-Choose **System**, **Light**, or **Dark** in Settings → General. Theme previews
-show each option, and changes apply to windows that are already open. Shared
-accent and status text colors are checked for contrast on both themes.
+palette from other apps. Home and the tools share the warm orange accent of the
+app icon on cream (light) and charcoal (dark) surfaces, with consistent
+controls and color-coded icons in both themes. Choose **System**, **Light**, or
+**Dark** in Settings → General. Theme previews show each option, and changes
+apply to windows that are already open. Shared accent and status text colors
+are checked for contrast on both themes.
 
 Long selections show a short preview and a character count while keeping the
 complete input, up to 500 KB. Above 64 KB, rich parsing is deferred until the
@@ -55,12 +66,24 @@ capture, recording, World Clock, QR codes, and Text Tools. QR and Text Tools als
 work with text you type or paste, without selecting text in another app.
 
 **World Clock** follows the current time until you choose a planning time. Enter
-an exact time, compare date changes across locations, then use **Copy Times** to
-share the comparison. **Now** returns to the live clock.
-The meeting planner and location cards use text and symbols as well as color
-to distinguish working hours, fringe hours, and night. Press **⌘L** to add a
-location, then type, use **↑/↓**, and press **Return**; **Esc** cancels. **⌘N**
-returns to live time and **⇧⌘C** copies the comparison.
+an exact time, drag or scroll the timeline, compare date changes across
+locations, then use **Copy Times** to share the comparison. **Now** returns to
+the live clock. The meeting planner and location cards use text and symbols as
+well as color to distinguish working hours, fringe hours, and night. Press
+**⌘L** to add a location, then type, use **↑/↓**, and press **Return**; **Esc**
+cancels. **⌘N** returns to live time and **⇧⌘C** copies the comparison.
+
+**⌘J** opens the World Clock **Copilot**. Ask about the selected time and your
+locations ("Is 9 AM Berlin too early for Sydney?", "Find a slot today that works
+for everyone", "Add Tokyo and make it the reference"). Each question is sent to
+your configured provider (OpenAI-compatible, Anthropic-compatible, or the local
+Codex app-server) together with the selected instant and every location's
+local time, only when you press **Send**. You can cancel a pending question and
+retry after an error. When the answer proposes a time, locations, or a
+reference, an **Apply** button shows exactly what would change; nothing is
+applied until you choose it, and unknown time zones or implausible dates are
+dropped before they can be applied. The conversation lives in memory for the
+window and is discarded when it closes.
 
 In the screenshot editor, **⌥⌘1–9** selects annotation tools, **⇧⌘C** copies the
 image, and **⌘S** saves it. The image-options menu shows pixel dimensions and an

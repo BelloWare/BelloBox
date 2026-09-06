@@ -2,13 +2,19 @@ import AppKit
 import SwiftUI
 
 final class LauncherSearchTextField: NSTextField {
+    /// The palette's search field claims focus as soon as it is attached.
+    /// Secondary fields (the copilot question) wait for a click instead.
+    var focusesWhenAttached = true
+
     override var needsPanelToBecomeKey: Bool { true }
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        guard window != nil else { return }
+        guard window != nil, focusesWhenAttached else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self, let window = self.window, window.isVisible else { return }
+            // Never interrupt typing that already started in another field.
+            if let editor = window.firstResponder as? NSTextView, editor.delegate !== self { return }
             if window.firstResponder !== self.currentEditor() { window.makeFirstResponder(self) }
         }
     }
@@ -25,10 +31,12 @@ struct LauncherSearchField: NSViewRepresentable {
     var accessibilityID = "launcherSearch"
     var accessibilityLabel = "Search tools and commands"
     var fontSize: CGFloat = 19
+    var focusesWhenAttached = true
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
     func makeNSView(context: Context) -> LauncherSearchTextField {
         let field = LauncherSearchTextField()
+        field.focusesWhenAttached = focusesWhenAttached
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
@@ -48,6 +56,8 @@ struct LauncherSearchField: NSViewRepresentable {
     func updateNSView(_ field: LauncherSearchTextField, context: Context) {
         context.coordinator.parent = self
         if field.stringValue != text { field.stringValue = text }
+        if field.placeholderString != placeholder { field.placeholderString = placeholder }
+        field.isEnabled = context.environment.isEnabled
         onReady(field)
     }
     final class Coordinator: NSObject, NSTextFieldDelegate {

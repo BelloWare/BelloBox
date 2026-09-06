@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import Foundation
 
 struct WorldClockZonePresentation: Identifiable, Equatable {
@@ -7,6 +8,8 @@ struct WorldClockZonePresentation: Identifiable, Equatable {
     let dateText: String
     let timeText: String
     let zoneText: String
+    /// Short zone text for narrow cards, e.g. "EDT · UTC−4" or "UTC+5:30".
+    let compactZoneText: String
     let quality: MeetingTimeQuality
     let isAnchor: Bool
     let dayDifference: Int
@@ -14,6 +17,13 @@ struct WorldClockZonePresentation: Identifiable, Equatable {
 
 @MainActor
 final class WorldClockViewModel: ObservableObject {
+    /// The dedicated window persists locations; the palette preview keeps
+    /// everything in memory and never edits saved locations.
+    enum Mode: Equatable {
+        case planner
+        case preview
+    }
+
     @Published private(set) var zoneIDs: [String]
     @Published private(set) var anchorZoneID: String
     @Published private(set) var timeline: WorldClockTimeline
@@ -22,46 +32,74 @@ final class WorldClockViewModel: ObservableObject {
     @Published private(set) var isFollowingNow: Bool
     @Published private(set) var copyMessage: String?
     @Published var searchQuery = ""
-    @Published var aiRequest = ""
-    @Published private(set) var isResolvingAI = false
-    @Published private(set) var aiMessage: String?
-    @Published private(set) var aiMessageIsError = false
+    /// Incremented when a handoff brings a conversation that the window should
+    /// reveal; the view observes it to open the copilot panel.
+    @Published private(set) var copilotRevealRequest = 0
+
+    let mode: Mode
+    let copilot: WorldClockCopilotSession
+    /// The instant the planner opened with, when it was seeded from a selection.
+    private(set) var seedInstant: Date?
 
     private let settings: AppSettings
     private let preferences: WorldClockPreferencesStore
-    private let resolveRequest: (String, AIConfig) async throws -> WorldClockAIResult
-    private var aiTask: Task<Void, Never>?
-    private var aiRunID: UUID?
+    private let localTimeZone: TimeZone
     private var formatterCache: [String: ZoneFormatters] = [:]
+    private var settingsObserver: AnyCancellable?
 
     init(
         settings: AppSettings,
         seedDate: Date? = nil,
         preferences: WorldClockPreferencesStore = WorldClockPreferencesStore(),
+        mode: Mode = .planner,
+        zoneIDs: [String]? = nil,
+        anchorZoneID: String? = nil,
+        localTimeZone: TimeZone = .current,
         aiResolver: WorldClockAIResolver = WorldClockAIResolver(),
-        resolveRequest: ((String, AIConfig) async throws -> WorldClockAIResult)? = nil
+        askCopilot: WorldClockCopilotSession.Responder? = nil
     ) {
         self.settings = settings
         self.preferences = preferences
-        self.resolveRequest = resolveRequest ?? { request, config in
-            try await aiResolver.resolve(request: request, config: config)
-        }
+        self.mode = mode
+        self.localTimeZone = localTimeZone
+        self.seedInstant = seedDate
 
-        let zoneIDs = preferences.loadZoneIDs()
-        let anchorZoneID = preferences.loadAnchorZoneID(validZoneIDs: zoneIDs)
-        let anchorTimeZone = Self.validTimeZone(anchorZoneID)
+        let storedZones = preferences.loadZoneIDs(current: localTimeZone)
+        let validOverride = zoneIDs.map(WorldClockZoneCatalog.validIdentifiers)
+        let resolvedZones = (validOverride?.isEmpty == false) ? validOverride! : storedZones
+        let storedAnchor = preferences.loadAnchorZoneID(validZoneIDs: resolvedZones)
+        let resolvedAnchor = anchorZoneID.flatMap { resolvedZones.contains($0) ? $0 : nil } ?? storedAnchor
+        let anchorTimeZone = Self.validTimeZone(resolvedAnchor)
         let selectedInstant = seedDate ?? Date()
-        self.zoneIDs = zoneIDs
-        self.anchorZoneID = anchorZoneID
+        self.zoneIDs = resolvedZones
+        self.anchorZoneID = resolvedAnchor
         self.selectedInstant = selectedInstant
         self.isFollowingNow = seedDate == nil
         let timeline = WorldClockTimeline(containing: selectedInstant, anchorTimeZone: anchorTimeZone)
         self.timeline = timeline
-        self.timelineQualities = Self.makeTimelineQualities(timeline: timeline, zoneIDs: zoneIDs)
-    }
+        self.timelineQualities = Self.makeTimelineQualities(timeline: timeline, zoneIDs: resolvedZones)
 
-    deinit {
-        aiTask?.cancel()
+        var responder = askCopilot ?? { request, config in try await aiResolver.ask(request, config: config) }
+        var usesOfflineResponder = false
+#if DEBUG
+        if askCopilot == nil, let fixture = WorldClockCopilotFixture.responder() {
+            responder = fixture
+            usesOfflineResponder = true
+        }
+#endif
+        copilot = WorldClockCopilotSession(responder: responder)
+        copilot.contextProvider = { [weak self] in self?.copilotContext }
+        copilot.configProvider = { [weak self] in self?.settings.currentConfig }
+        copilot.isProviderConfigured = { [weak self] in
+            guard let self else { return false }
+            return usesOfflineResponder || self.settings.isConfigured
+        }
+        // Provider changes made in Settings must reach an open copilot at once.
+        settingsObserver = settings.objectWillChange.sink { [weak self] _ in
+            guard let self else { return }
+            self.copilot.objectWillChange.send()
+            self.objectWillChange.send()
+        }
     }
 
     var anchorTimeZone: TimeZone { Self.validTimeZone(anchorZoneID) }
@@ -71,8 +109,14 @@ final class WorldClockViewModel: ObservableObject {
     }
 
     var timelineStep: TimeInterval { 15 * 60 }
-    var canUseAI: Bool { settings.isConfigured }
+    var canUseAI: Bool { copilot.canUseAI }
     var canRemoveZone: Bool { zoneIDs.count > 1 }
+    var persistsPreferences: Bool { mode == .planner }
+    /// Whether the previewed instant differs from the seed by a minute or more.
+    var hasMovedFromSeed: Bool {
+        guard let seedInstant else { return false }
+        return abs(selectedInstant.timeIntervalSince(seedInstant)) >= 60
+    }
 
     var searchResults: [WorldClockZoneOption] {
         WorldClockZoneCatalog.search(searchQuery, excluding: Set(zoneIDs))
@@ -89,6 +133,7 @@ final class WorldClockViewModel: ObservableObject {
                 dateText: formatters.date.string(from: selectedInstant),
                 timeText: formatters.time.string(from: selectedInstant),
                 zoneText: Self.zoneDescription(zone, at: selectedInstant),
+                compactZoneText: Self.compactZoneDescription(zone, at: selectedInstant),
                 quality: MeetingTimeQuality.at(selectedInstant, in: zone),
                 isAnchor: identifier == anchorZoneID,
                 dayDifference: Self.dayDifference(at: selectedInstant, zone: zone, reference: anchorTimeZone)
@@ -108,6 +153,17 @@ final class WorldClockViewModel: ObservableObject {
         return "\(formatters.longDate.string(from: selectedInstant)) at \(formatters.time.string(from: selectedInstant))"
     }
 
+    /// Compact "Tue, Sep 8 · 8:00 AM" in the reference zone for tight layouts.
+    var selectedTimeCompactTitle: String {
+        let formatters = formatters(for: anchorTimeZone)
+        return "\(formatters.date.string(from: selectedInstant)) · \(formatters.time.string(from: selectedInstant))"
+    }
+
+    func compactDescription(of instant: Date) -> String {
+        let formatters = formatters(for: anchorTimeZone)
+        return "\(formatters.date.string(from: instant)) \(formatters.time.string(from: instant)) (\(anchorName))"
+    }
+
     var anchorName: String {
         WorldClockZoneCatalog.option(for: anchorZoneID).name
     }
@@ -118,6 +174,13 @@ final class WorldClockViewModel: ObservableObject {
 
     var dayEndLabel: String {
         "Next day"
+    }
+
+    /// Spoken summary of the current comparison for assistive technology.
+    var accessibilitySummary: String {
+        ([selectedTimeTitle + " in \(anchorName)."] + zonePresentations.map {
+            "\($0.name): \($0.timeText), \($0.dateText), \($0.zoneText), \($0.quality.label)"
+        }).joined(separator: " ")
     }
 
     func focus(on date: Date) {
@@ -144,6 +207,25 @@ final class WorldClockViewModel: ObservableObject {
         timeline = moved.timeline
         selectedInstant = moved.date
         refreshTimelineQualities()
+    }
+
+    /// Nudges the instant by whole steps, rolling the day over at the edges of
+    /// the timeline instead of clamping.
+    func nudge(by steps: Int, step: TimeInterval? = nil) {
+        let step = step ?? timelineStep
+        let target = selectedInstant.addingTimeInterval(Double(steps) * step)
+        if target >= timeline.start && target < timeline.end {
+            isFollowingNow = false
+            selectedInstant = target
+        } else {
+            focus(on: target)
+        }
+    }
+
+    /// Returns to the instant the planner opened with.
+    func returnToSeed() {
+        guard let seedInstant else { return }
+        focus(on: seedInstant)
     }
 
     func goToNow() {
@@ -212,72 +294,111 @@ final class WorldClockViewModel: ObservableObject {
         savePreferences()
     }
 
-    func fillWithAI() {
-        let request = aiRequest.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !request.isEmpty else {
-            showAIMessage(WorldClockAIError.emptyRequest.localizedDescription, isError: true)
-            return
-        }
-        guard canUseAI else {
-            showAIMessage("Configure an AI provider in Settings first.", isError: true)
-            return
-        }
+    // MARK: - Copilot
 
-        aiTask?.cancel()
-        let runID = UUID()
-        aiRunID = runID
-        isResolvingAI = true
-        aiMessage = nil
-        let config = settings.currentConfig
-        let resolve = resolveRequest
-        aiTask = Task { [weak self] in
-            do {
-                let result = try await resolve(request, config)
-                try Task.checkCancellation()
-                guard self?.aiRunID == runID else { return }
-                self?.applyAIResult(result)
-            } catch is CancellationError {
-                // A newer request or window close superseded this result.
-            } catch {
-                guard self?.aiRunID == runID else { return }
-                self?.showAIMessage(error.localizedDescription, isError: true)
-            }
-            guard self?.aiRunID == runID else { return }
-            self?.aiRunID = nil
-            self?.isResolvingAI = false
-            self?.aiTask = nil
+    var copilotContext: WorldClockCopilotContext {
+        WorldClockCopilotContext(
+            selectedInstant: selectedInstant,
+            referenceZoneID: anchorZoneID,
+            locations: zonePresentations.map {
+                WorldClockCopilotContext.Location(
+                    zoneID: $0.id, name: $0.name,
+                    localDescription: "\($0.dateText), \($0.timeText) (\($0.zoneText))",
+                    quality: $0.quality, isReference: $0.isAnchor
+                )
+            },
+            now: Date(),
+            localZoneID: localTimeZone.identifier,
+            isFollowingNow: isFollowingNow
+        )
+    }
+
+    /// What applying a message's suggestion would change right now, or nil when
+    /// it is already in effect. The palette preview only ever moves the time.
+    func copilotPlan(for message: WorldClockCopilotSession.Message) -> WorldClockCopilotPlan? {
+        guard let suggestion = message.suggestion else { return nil }
+        return suggestion.plan(
+            currentZoneIDs: zoneIDs,
+            currentAnchorZoneID: anchorZoneID,
+            currentInstant: selectedInstant,
+            allowsLocationChanges: mode == .planner,
+            describeInstant: compactDescription(of:)
+        )
+    }
+
+    /// The location and reference parts of a suggestion that the palette
+    /// preview cannot apply itself; the dedicated window applies them after
+    /// Enter. Always nil in the window.
+    func deferredCopilotPlan(for message: WorldClockCopilotSession.Message) -> WorldClockCopilotPlan? {
+        guard mode == .preview, let suggestion = message.suggestion else { return nil }
+        return suggestion.plan(
+            currentZoneIDs: zoneIDs,
+            currentAnchorZoneID: anchorZoneID,
+            currentInstant: selectedInstant,
+            allowsTimeChanges: false,
+            allowsLocationChanges: true,
+            describeInstant: compactDescription(of:)
+        )
+    }
+
+    /// Adopts what the palette or a selection handed over: the previewed
+    /// instant, the chosen reference, and the copilot conversation. Nothing is
+    /// saved; a reference outside the saved list joins the planner in memory
+    /// only. A handoff with an instant is a new context, so any earlier
+    /// conversation in this window is dropped before the snapshot is restored.
+    func adopt(_ handoff: WorldClockHandoff) {
+        if let instant = handoff.instant {
+            seedInstant = instant
+            focus(on: instant)
         }
+        if let anchor = handoff.anchorZoneID, TimeZone(identifier: anchor) != nil, anchor != anchorZoneID {
+            if !zoneIDs.contains(anchor) { zoneIDs.append(anchor) }
+            anchorZoneID = anchor
+            timeline = WorldClockTimeline(containing: selectedInstant, anchorTimeZone: anchorTimeZone)
+            refreshTimelineQualities()
+        }
+        if handoff.instant != nil || handoff.copilot != nil {
+            copilot.reset()
+        }
+        if let snapshot = handoff.copilot, !snapshot.isEmpty {
+            copilot.restore(snapshot)
+            copilotRevealRequest += 1
+        }
+    }
+
+    /// Applies a plan after the user chose to. Locations are validated again
+    /// here, so a stale plan can never introduce an unknown zone.
+    func applyCopilotPlan(_ plan: WorldClockCopilotPlan, from message: WorldClockCopilotSession.Message) {
+        var changed = false
+        if mode == .planner, let zoneIDs = plan.zoneIDs {
+            let valid = WorldClockZoneCatalog.validIdentifiers(zoneIDs)
+            if !valid.isEmpty, valid != self.zoneIDs {
+                self.zoneIDs = valid
+                changed = true
+            }
+            if !self.zoneIDs.contains(anchorZoneID) { anchorZoneID = self.zoneIDs[0]; changed = true }
+        }
+        if mode == .planner, let anchor = plan.anchorZoneID, zoneIDs.contains(anchor), anchor != anchorZoneID {
+            anchorZoneID = anchor
+            changed = true
+        }
+        if let instant = plan.instant {
+            focus(on: instant)
+        } else {
+            timeline = WorldClockTimeline(containing: selectedInstant, anchorTimeZone: anchorTimeZone)
+            refreshTimelineQualities()
+        }
+        if changed { savePreferences() }
+        copilot.markApplied(message.id, parts: plan.parts, summary: plan.summary)
     }
 
     func cancelAI() {
-        aiRunID = nil
-        if isResolvingAI { showAIMessage("Cancelled. Your locations and time were kept.", isError: false) }
-        aiTask?.cancel()
-        aiTask = nil
-        isResolvingAI = false
-    }
-
-    private func applyAIResult(_ result: WorldClockAIResult) {
-        isFollowingNow = false
-        zoneIDs = result.timeZoneIDs
-        anchorZoneID = result.anchorTimeZoneID
-        if let date = result.referenceDate {
-            selectedInstant = date
-        }
-        timeline = WorldClockTimeline(containing: selectedInstant, anchorTimeZone: anchorTimeZone)
-        formatterCache.removeAll(keepingCapacity: true)
-        refreshTimelineQualities()
-        savePreferences()
-        showAIMessage("Updated \(zoneIDs.count) locations.", isError: false)
-    }
-
-    private func showAIMessage(_ message: String, isError: Bool) {
-        aiMessage = message
-        aiMessageIsError = isError
+        copilot.cancel()
     }
 
     private func savePreferences() {
         copyMessage = nil
+        guard persistsPreferences else { return }
         preferences.save(zoneIDs: zoneIDs, anchorZoneID: anchorZoneID)
     }
 
@@ -331,6 +452,20 @@ final class WorldClockViewModel: ObservableObject {
         return offset
     }
 
+    /// "EDT · UTC−4", "UTC+5:30", "UTC+0": short enough for a narrow card.
+    nonisolated static func compactZoneDescription(_ timeZone: TimeZone, at date: Date) -> String {
+        let seconds = timeZone.secondsFromGMT(for: date)
+        let sign = seconds < 0 ? "−" : "+"
+        let magnitude = abs(seconds)
+        let hours = magnitude / 3_600
+        let minutes = (magnitude % 3_600) / 60
+        let offset = minutes == 0 ? "UTC\(sign)\(hours)" : String(format: "UTC%@%d:%02d", sign, hours, minutes)
+        if let abbreviation = timeZone.abbreviation(for: date), !abbreviation.hasPrefix("GMT"), abbreviation != "UTC" {
+            return "\(abbreviation) · \(offset)"
+        }
+        return offset
+    }
+
     private static func makeTimelineQualities(
         timeline: WorldClockTimeline,
         zoneIDs: [String]
@@ -345,6 +480,19 @@ final class WorldClockViewModel: ObservableObject {
             )
             return MeetingTimeQuality.combined(at: timeline.date(at: midpoint), timeZones: zones)
         }
+    }
+}
+
+extension WorldClockViewModel {
+    /// The zone list the palette shows for a timestamp: the saved locations in
+    /// order, then the local zone and UTC as fallbacks, deduplicated and capped.
+    nonisolated static func previewZoneIDs(saved: [String], localZone: TimeZone, limit: Int = 4) -> [String] {
+        var ids: [String] = []
+        for identifier in WorldClockZoneCatalog.validIdentifiers(saved) + [localZone.identifier, "UTC"] {
+            let id = ["GMT", "Etc/GMT", "Etc/UTC", "UTC"].contains(identifier) ? "UTC" : identifier
+            if TimeZone(identifier: id) != nil, !ids.contains(id) { ids.append(id) }
+        }
+        return Array(ids.prefix(max(1, limit)))
     }
 }
 

@@ -6,8 +6,7 @@ struct WorldClockView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showingZonePicker = false
-    @State private var showingAI = false
-    @FocusState private var aiFocused: Bool
+    @State private var showingCopilot = false
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -31,9 +30,15 @@ struct WorldClockView: View {
         .sheet(isPresented: $showingZonePicker) {
             WorldClockZonePicker(viewModel: viewModel) { showingZonePicker = false }
         }
-        .onChange(of: showingAI) { visible in
-            if !visible { aiFocused = false; viewModel.cancelAI() }
+        .onChange(of: showingCopilot) { visible in
+            // Hiding the panel stops an in-flight request; the transcript stays
+            // for this window session and is dropped when the window closes.
+            if !visible { viewModel.cancelAI() }
         }
+        .onAppear {
+            if viewModel.copilot.hasTranscript || !viewModel.copilot.trimmedDraft.isEmpty { showingCopilot = true }
+        }
+        .onChange(of: viewModel.copilotRevealRequest) { _ in showingCopilot = true }
     }
 
     private var header: some View {
@@ -101,8 +106,10 @@ struct WorldClockView: View {
             VStack(spacing: 8) {
                 MeetingTimelineView(qualities: viewModel.timelineQualities, offset: Binding(
                     get: { viewModel.selectedOffset }, set: { viewModel.selectedOffset = $0 }
-                ), duration: viewModel.timeline.duration)
+                ), duration: viewModel.timeline.duration, step: viewModel.timelineStep,
+                    onOverflow: { steps in viewModel.nudge(by: steps) })
                 .frame(height: 20)
+                .help("Drag to pick a time, or scroll sideways to move in 15-minute steps")
                 // The native slider below exposes the same value with keyboard support.
                 .accessibilityHidden(true)
                 Slider(value: Binding(
@@ -154,11 +161,12 @@ struct WorldClockView: View {
                     .help("Add a location (⌘L)")
                     .accessibilityIdentifier("worldClockAddLocationButton")
                 Button {
-                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { showingAI.toggle() }
-                } label: { Label(showingAI ? "Close AI" : "Fill with AI", systemImage: "sparkles") }
+                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { showingCopilot.toggle() }
+                } label: { Label(showingCopilot ? "Hide Copilot" : "Copilot", systemImage: "sparkles") }
                     .buttonStyle(SecondaryButtonStyle())
-                    .accessibilityIdentifier("worldClockFillWithAIButton")
-                    .help("Describe locations and a time to your configured AI provider")
+                    .keyboardShortcut("j", modifiers: .command)
+                    .accessibilityIdentifier("worldClockCopilotButton")
+                    .help("Ask your configured AI provider about the selected time and locations (⌘J)")
                 Spacer()
                 if let message = viewModel.copyMessage {
                     Text(message).font(.caption).foregroundStyle(.secondary)
@@ -168,76 +176,30 @@ struct WorldClockView: View {
                     .keyboardShortcut("c", modifiers: [.command, .shift])
                     .help("Copy the selected date and time for every location (⇧⌘C)")
             }
-            if showingAI { aiSection }
+            if showingCopilot { copilotSection }
         }
         .padding(16).background(BoxTheme.surface)
     }
 
-    private var aiSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Describe your locations and meeting time").font(.caption.weight(.semibold))
-            HStack(spacing: 8) {
-                TextField("Singapore, London, and San Francisco next Tuesday afternoon", text: $viewModel.aiRequest)
-                    .textFieldStyle(.roundedBorder).focused($aiFocused)
-                    .task { aiFocused = true }
-                    .onSubmit { viewModel.fillWithAI() }
-                    .accessibilityIdentifier("worldClockAIRequest")
-                if viewModel.isResolvingAI {
-                    ProgressView().controlSize(.small)
-                    Button("Cancel", action: viewModel.cancelAI).buttonStyle(SecondaryButtonStyle())
-                }
-                Button("Fill", action: viewModel.fillWithAI).buttonStyle(PrimaryButtonStyle())
-                    .disabled(viewModel.isResolvingAI || !viewModel.canUseAI || viewModel.aiRequest.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }
-            if !viewModel.canUseAI {
-                HStack(spacing: 5) {
-                    Text("Connect an AI provider to use this option.").foregroundStyle(.secondary)
-                    Button("Open Settings", action: onOpenSettings).buttonStyle(.link)
-                }.font(.caption)
-            }
-            if let message = viewModel.aiMessage {
-                Text(message).font(.caption)
-                    .foregroundStyle(viewModel.aiMessageIsError ? BoxTheme.danger : Color.secondary)
-                    .textSelection(.enabled)
-            }
-        }.padding(12).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 10))
+    private var copilotSection: some View {
+        WorldClockCopilotView(
+            session: viewModel.copilot,
+            style: .planner,
+            plan: viewModel.copilotPlan(for:),
+            onApply: viewModel.applyCopilotPlan(_:from:),
+            onOpenSettings: onOpenSettings,
+            onEscape: { withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { showingCopilot = false } },
+            quickPrompts: Self.quickPrompts(for: viewModel)
+        )
+        .padding(12).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 10))
     }
-}
 
-private func clockIconButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
-    Button(action: action) {
-        Image(systemName: symbol).font(.system(size: 12, weight: .medium))
-            .frame(width: 28, height: 28)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
-            .contentShape(RoundedRectangle(cornerRadius: 7))
-    }.buttonStyle(.plain).help(label).accessibilityLabel(label)
-}
-
-private struct MeetingTimelineView: View {
-    let qualities: [MeetingTimeQuality]
-    @Binding var offset: TimeInterval
-    let duration: TimeInterval
-
-    var body: some View {
-        GeometryReader { proxy in
-            let width = max(proxy.size.width, 1)
-            let marker = min(max(duration > 0 ? offset / duration : 0, 0), 1) * (width - 10) + 5
-            ZStack(alignment: .leading) {
-                HStack(spacing: 1) {
-                    ForEach(Array(qualities.enumerated()), id: \.offset) { _, quality in
-                        Rectangle().fill(quality.color.opacity(0.65))
-                    }
-                }.clipShape(RoundedRectangle(cornerRadius: 5))
-                Capsule().fill(BoxTheme.surface)
-                    .frame(width: 10, height: proxy.size.height + 6)
-                    .overlay(Capsule().strokeBorder(BoxTheme.accent, lineWidth: 2))
-                    .offset(x: marker - 5)
-            }
-            .contentShape(Rectangle())
-            .gesture(DragGesture(minimumDistance: 0).onChanged { value in
-                offset = min(max((value.location.x - 5) / max(width - 10, 1), 0), 1) * duration
-            })
+    static func quickPrompts(for viewModel: WorldClockViewModel) -> [String] {
+        var prompts = ["Find a slot today that works for everyone", "Summarize this time for each location"]
+        if let other = viewModel.zonePresentations.first(where: { !$0.isAnchor }) {
+            prompts.append("Is this a good time in \(other.name)?")
         }
+        return prompts
     }
 }
 
@@ -286,17 +248,6 @@ private struct WorldClockZoneRow: View {
         .padding(14).surfaceCard()
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(zone.isAnchor ? BoxTheme.accent.opacity(0.4) : .clear))
         .accessibilityElement(children: .contain)
-    }
-}
-
-private struct QualityBadge: View {
-    let quality: MeetingTimeQuality
-    var body: some View {
-        Label(quality.shortLabel, systemImage: quality.symbol)
-            .font(.system(size: 10, weight: .semibold)).foregroundStyle(quality.color)
-            .padding(.horizontal, 8).padding(.vertical, 5)
-            .background(quality.color.opacity(0.09), in: RoundedRectangle(cornerRadius: 6))
-            .accessibilityLabel(quality.label)
     }
 }
 
@@ -381,29 +332,5 @@ private struct WorldClockZonePicker: View {
         guard let selectedID, results.contains(where: { $0.id == selectedID }) else { return }
         viewModel.addZone(selectedID)
         onClose()
-    }
-}
-
-extension MeetingTimeQuality {
-    var color: Color {
-        switch self {
-        case .working: return BoxTheme.success
-        case .extended: return BoxTheme.warning
-        case .poor: return BoxTheme.purple
-        }
-    }
-    var symbol: String {
-        switch self {
-        case .working: return "sun.max"
-        case .extended: return "sun.horizon"
-        case .poor: return "moon.stars"
-        }
-    }
-    var shortLabel: String {
-        switch self {
-        case .working: return "Working"
-        case .extended: return "Fringe"
-        case .poor: return "Night"
-        }
     }
 }
