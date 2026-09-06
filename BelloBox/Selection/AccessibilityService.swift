@@ -40,7 +40,7 @@ final class AccessibilityService {
         var textRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(element, kAXSelectedTextAttribute as CFString, &textRef) == .success,
               let text = textRef as? String,
-              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+              text.unicodeScalars.contains(where: { !CharacterSet.whitespacesAndNewlines.contains($0) })
         else { return nil }
 
         let front = NSWorkspace.shared.frontmostApplication

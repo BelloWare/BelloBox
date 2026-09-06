@@ -215,7 +215,7 @@ final class SelectionOverlayController: NSObject {
 #endif
 
     private func nonEmpty(_ selection: TextSelection?) -> TextSelection? {
-        guard let selection, !selection.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        guard let selection, selection.text.unicodeScalars.contains(where: { !CharacterSet.whitespacesAndNewlines.contains($0) }) else { return nil }
         return selection
     }
 

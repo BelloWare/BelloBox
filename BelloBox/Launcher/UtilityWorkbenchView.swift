@@ -107,6 +107,10 @@ struct UtilityWorkbenchView: View {
     }
     @ViewBuilder private var inputArea: some View {
         if model.command != .generate {
+            if let notice = model.inputNotice, model.input.isEmpty {
+                Label(notice, systemImage: "text.badge.minus").font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if model.command == .compare {
                 HStack(alignment: .top, spacing: 14) {
                     VStack(alignment: .leading, spacing: 8) {

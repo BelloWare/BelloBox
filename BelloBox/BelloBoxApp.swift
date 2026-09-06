@@ -168,7 +168,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
 #if DEBUG
-            if let text = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT"] {
+            let launcherFixture = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT_FILE"]
+                .flatMap { try? String(contentsOfFile: $0, encoding: .utf8) }
+                ?? ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT"]
+            if let text = launcherFixture {
                 let command = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_COMMAND"].flatMap(LauncherCommand.init(rawValue:))
                 self.overlay?.openLauncher(selection: TextSelection(text: text, anchorRect: nil, appName: "Example", bundleID: nil, pid: nil), command: command)
                 return

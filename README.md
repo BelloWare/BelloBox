@@ -8,8 +8,14 @@ the searchable command palette, with or without a selection. Relevant tools are
 suggested from the selected text; use **Use Clipboard** to bring in clipboard
 text explicitly. Search by name or keyword, navigate with **↑/↓**, and press
 **Return** to open a tool. Star favorites, use **⌘K** to return to all commands,
-or **Esc** to go back and close. Drafts survive tool switching until the palette
-is closed; recent commands remember tool names only.
+or **Esc** to go back and close. The compact palette focuses search immediately
+and dismisses when you click elsewhere. Drafts survive tool switching until the
+palette is closed; recent commands remember tool names only.
+
+Long selections show a short preview and a character count while keeping the
+complete input, up to 500 KB. Larger selections show a clear size notice and
+open tools with empty input; they are never silently truncated. Clear the
+selection or use clipboard text directly from the palette.
 
 The floating toolbar and palette also provide:
 

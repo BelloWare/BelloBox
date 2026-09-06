@@ -32,6 +32,11 @@ Existing popup routes remain in `SelectionOverlayController.swift`. The global
 shortcut reads AX selection without synthesizing copy; clipboard import is an
 explicit palette action. Only tool IDs are stored in recents/favorites. Drafts
 live for the palette session and pinned comparison text lives until quit.
+The compact launcher uses a key-capable non-activating `LauncherPanel` and a
+native `LauncherSearchField` with explicit first-responder focus. It dismisses
+on outside clicks or loss of key focus, except for its own menus/sheets/children.
+`LauncherSelectionContext` caches bounded preview and suggestion metadata once;
+inputs over 500 KB are rejected before creating editors and never truncated.
 
 It follows the same packaging conventions as the sibling Bello macOS apps
 (BelloGesture, BelloWall, BelloTracker): xcodegen project, Developer-ID signed

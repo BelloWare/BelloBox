@@ -15,6 +15,7 @@ struct WorkbenchResult {
 final class UtilityWorkbenchModel: ObservableObject {
     let command: LauncherCommand
     let selection: TextSelection
+    let inputNotice: String?
     let snippets: SnippetStore
     @Published var input: String { didSet { schedule() } }
     @Published var secondInput = "" { didSet { schedule() } }
@@ -57,11 +58,12 @@ final class UtilityWorkbenchModel: ObservableObject {
     var pinnedText: () -> String? = { nil }
     var pinText: (String) -> Void = { _ in }
 
-    init(command: LauncherCommand, selection: TextSelection, snippets: SnippetStore) {
+    init(command: LauncherCommand, selection: TextSelection, snippets: SnippetStore, inputNotice: String? = nil) {
         self.command = command; self.selection = selection; self.snippets = snippets
+        self.inputNotice = inputNotice
         input = selection.text
         if command == .snippets && input.isEmpty { input = "Hello {{name}},\n\n{{selection}}" }
-        if command == .convert && !input.hasPrefix("{") && !input.hasPrefix("[") {
+        if command == .convert && !input.isEmpty && !input.hasPrefix("{") && !input.hasPrefix("[") {
             fromFormat = input.contains(":") ? .yaml : .csv
             toFormat = .json
         }

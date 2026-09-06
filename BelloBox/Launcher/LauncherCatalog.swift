@@ -94,21 +94,25 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         }
     }
     static func suggestions(for text: String) -> [LauncherCommand] {
-        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, text.utf8.count <= UtilityLimits.inputBytes else { return [] }
+        guard !text.isEmpty, text.utf8.prefix(UtilityLimits.inputBytes + 1).count <= UtilityLimits.inputBytes else { return [] }
+        let sample = String(String.UnicodeScalarView(text.unicodeScalars.prefix(2_048)))
+        let text = sample.trimmingCharacters(in: .whitespacesAndNewlines)
         if text.hasPrefix("{") || text.hasPrefix("[") { return [.json, .compare, .convert] }
         if text.hasPrefix("curl ") || text.hasPrefix("curl\n") { return [.http] }
         if text.split(separator: ".", omittingEmptySubsequences: false).count == 3 && !text.contains(where: \.isWhitespace), text.hasPrefix("eyJ") { return [.jwt] }
         if text.lowercased().hasPrefix("bearer eyj") { return [.jwt] }
         if text.hasPrefix("https://") || text.hasPrefix("http://") { return [.url, .qr, .http] }
-        if TimestampSummary.make(from: text) != nil { return [.time, .worldClock] }
-        if (try? CronSchedule(text)) != nil { return [.cron] }
+        if text.utf8.count <= 256 {
+            if TimestampSummary.make(from: text) != nil { return [.time, .worldClock] }
+            if (try? CronSchedule(text)) != nil { return [.cron] }
+        }
         if text.contains("\n") && (text.contains(":") || text.contains(",")) { return [.convert, .compare] }
         return [.textTools, .compare, .snippets]
     }
-    static func search(_ query: String, input: String, favorites: Set<String>, recents: [String]) -> [LauncherCommand] {
+    static func search(_ query: String, input: String, favorites: Set<String>, recents: [String], suggested: [LauncherCommand]? = nil) -> [LauncherCommand] {
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let terms = query.lowercased().split(whereSeparator: \.isWhitespace)
-        let suggested = suggestions(for: input)
+        let suggested = suggested ?? suggestions(for: input)
         return allCases.filter { command in
             let haystack = (command.title + " " + command.keywords).lowercased()
             return terms.allSatisfy { haystack.contains($0) }
