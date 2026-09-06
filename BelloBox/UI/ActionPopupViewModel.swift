@@ -46,7 +46,7 @@ final class ActionPopupViewModel: ObservableObject {
         return "\(settings.providerKind.displayName) · \(config.model)"
     }
     var canReplace: Bool {
-        lastActionReplaces && errorMessage == nil && !isStreaming
+        selection.pid != nil && lastActionReplaces && errorMessage == nil && !isStreaming
             && !resultText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     var copyableText: String {

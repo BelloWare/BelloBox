@@ -138,7 +138,7 @@ struct SettingsView: View {
                         .disabled(!settings.globalHotkeyEnabled)
                 }
                 hotkeyConflictWarnings()
-                helpText("Auto hint appears after mouse selections. The shortcut summons the same board for the current selection.")
+                helpText("Auto hint appears after mouse selections. The shortcut opens searchable tools, with suggestions for your selection. It also works without a selection.")
             }
 
             settingsSection("Appearance", subtitle: "Match the system or keep Bello Box fixed in one theme.", systemImage: "circle.lefthalf.filled") {

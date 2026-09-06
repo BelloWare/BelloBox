@@ -1,10 +1,10 @@
 # BelloBox Agent Guide
 
-BelloBox is a macOS menu-bar utility — a small "toolbox" for the current text
-selection. When you select text in any app, a floating toolbar appears with one
-tool per button:
+BelloBox is a macOS utility with a searchable command palette (⌃⌥⌘B), selection
+suggestions, favorites, and recent commands. It opens with or without selected
+text. A floating toolbar still appears when selecting text in another app:
 
-- **AI** (⌃⌥⌘B): a popup where a configurable AI rewrites, fixes, summarizes,
+- **AI**: a popup where a configurable AI rewrites, fixes, summarizes,
   translates, or answers about the text — then copy or replace in place. The AI
   backend is user-supplied: an OpenAI-compatible or Anthropic-compatible endpoint
   (with model listing from `/models`), or the local **Codex app-server**
@@ -21,8 +21,17 @@ tool per button:
 - **Recording**: record an area, window, or screen with configurable audio,
   cursor, click, keystroke, privacy, countdown, and quality defaults.
 
-New tools are added by extending the toolbar in `FloatingButtonView.swift` and
-routing them in `SelectionOverlayController.swift`.
+- **All tools**: opens the palette with the captured selection. Developer tools
+  include lossless JSON formatting, comparison, JWT inspection, regex, URL/query
+  editing, timestamps, cron, JSON/YAML/CSV conversion, snippets, HTTP/cURL, and
+  generators. World Clock remains available from the palette and menu.
+
+Add commands in `Launcher/LauncherCatalog.swift`; developer tools share
+`UtilityWorkbenchModel`/`UtilityWorkbenchView`, with engines in `DeveloperTools`.
+Existing popup routes remain in `SelectionOverlayController.swift`. The global
+shortcut reads AX selection without synthesizing copy; clipboard import is an
+explicit palette action. Only tool IDs are stored in recents/favorites. Drafts
+live for the palette session and pinned comparison text lives until quit.
 
 It follows the same packaging conventions as the sibling Bello macOS apps
 (BelloGesture, BelloWall, BelloTracker): xcodegen project, Developer-ID signed
@@ -45,6 +54,9 @@ BelloBox/
 │   │   ├── CodexAppServerClient.swift # local Codex app-server transport
 │   │   └── QuickAction.swift       # one-click transformations + prompt builder
 │   ├── Recording/                  # Screen recording, audio, overlays, privacy
+│   ├── Launcher/                   # Search palette, command catalog, shared workbench
+│   ├── DeveloperTools/             # Offline engines, snippet store, explicit HTTP client
+│   ├── ThirdPartyNotices.txt       # Yams and LibYAML licenses (bundled resource)
 │   ├── Screenshot/                 # Screenshot domain; keep separate from TextSelection
 │   │   ├── ScreenshotModels.swift  # capture/document/scrolling models
 │   │   ├── AnnotationModel.swift   # annotation value models
@@ -106,6 +118,10 @@ BelloBox/
 - Regular app with a menu-bar extra and Dock presence for app windows. Not
   sandboxed — it reads the selection from other apps over the Accessibility API
   and pastes replacements.
+- Keep developer utilities local, except explicit HTTP Send. cURL import never
+  executes a shell or reads referenced files. Do not persist HTTP/JWT input or
+  response history. HTTP redirects remain visible rather than auto-followed.
+  YAML uses pinned Yams; retain third-party notices when updating it.
 - Screenshot capture requires Screen Recording permission and uses
   ScreenCaptureKit as the primary path. Local annotation, stitching, and Mac OCR
   stay on-device.

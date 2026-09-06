@@ -10,7 +10,7 @@ enum BoxTheme {
 /// The floating toolbar that appears next to a fresh text selection. It offers
 /// the available tools (AI actions and QR code) without stealing focus.
 struct FloatingToolbarView: View {
-    static let preferredSize = CGSize(width: 248, height: 52)
+    static let preferredSize = CGSize(width: 300, height: 52)
     static let timestampPreferredSize = CGSize(width: 330, height: 104)
 
     var onAI: () -> Void
@@ -18,6 +18,7 @@ struct FloatingToolbarView: View {
     var onRecord: () -> Void
     var onQR: () -> Void
     var onTools: () -> Void
+    var onAllTools: () -> Void = {}
     var onOpenWorldClock: (Date) -> Void = { _ in }
     var onHoverHelp: (String?) -> Void = { _ in }
     var timestampSummary: TimestampSummary? = nil
@@ -123,6 +124,8 @@ struct FloatingToolbarView: View {
             ToolIcon(symbol: "qrcode", help: "Generate a QR code from the selection", onHoverHelp: onHoverHelp, action: onQR)
             divider
             ToolIcon(symbol: "wrench.and.screwdriver", help: "Text tools (case, encode, hash, count…)", onHoverHelp: onHoverHelp, action: onTools)
+            divider
+            ToolIcon(symbol: "magnifyingglass", help: "Search all tools and suggested actions", onHoverHelp: onHoverHelp, action: onAllTools)
         }
     }
 

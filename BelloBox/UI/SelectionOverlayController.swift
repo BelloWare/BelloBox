@@ -13,6 +13,12 @@ final class SelectionOverlayController: NSObject {
     private let macOCRService = MacVisionOCRService()
     private lazy var recordingCoordinator = RecordingCoordinator(settings: settings)
 
+    private lazy var launcher: LauncherWindowController = {
+        let controller = LauncherWindowController()
+        controller.onCommand = { [weak self] command, selection in self?.runLauncherCommand(command, selection: selection) }
+        return controller
+    }()
+
     private var toolbarPanel: FloatingButtonPanel?
     private var toolbarTooltipPanel: FloatingTooltipPanel?
     private var popupPanel: PopupPanel?
@@ -37,8 +43,9 @@ final class SelectionOverlayController: NSObject {
 
     /// Set by the app to open the Settings window.
     var openSettings: () -> Void = {}
+    var openHome: () -> Void = {}
     /// Set by the app to open the persistent world clock at a selected instant.
-    var openWorldClock: (Date) -> Void = { _ in }
+    var openWorldClock: (Date?) -> Void = { _ in }
 
     init(settings: AppSettings) {
         self.settings = settings
@@ -58,6 +65,7 @@ final class SelectionOverlayController: NSObject {
         }
         screenCaptureService.beforeCapture = { [weak self] in
             self?.hideToolbar(animated: false)
+            self?.launcher.close()
             // Skip the utility-window fade: a panel still fading out would be frozen
             // into the display snapshot taken a few milliseconds later.
             self?.popupPanel?.animationBehavior = .none
@@ -164,19 +172,19 @@ final class SelectionOverlayController: NSObject {
 
     private func handleSelection(_ selection: TextSelection) {
         guard settings.floatingButtonEnabled else { return }
-        guard popupPanel == nil else { return } // don't interrupt an open popup
+        guard popupPanel == nil, !launcher.isVisible else { return } // do not interrupt an open tool
         guard !isCaptureSurfaceActive else { return }
         pendingSelection = selection
         showToolbar(for: selection)
     }
 
     /// Reads the current selection (AX first, synthesized copy as a fallback).
-    private func currentSelection() -> TextSelection? {
+    private func currentSelection(allowCopyFallback: Bool = true) -> TextSelection? {
 #if DEBUG
         if let injected = e2eInjectedSelection() { return injected }
 #endif
         if let selection = accessibility.readSelection() { return selection }
-        if let copied = accessibility.copySelectionViaPasteboard() {
+        if allowCopyFallback, let copied = accessibility.copySelectionViaPasteboard() {
             let front = NSWorkspace.shared.frontmostApplication
             return TextSelection(
                 text: copied,
@@ -219,16 +227,38 @@ final class SelectionOverlayController: NSObject {
         showAIPopup(for: selection)
     }
 
-    /// Used by the global hotkey: read the selection now and show the tool board.
+    /// The global shortcut opens a searchable launcher even when no text is selected.
     func triggerBoardOnCurrentSelection() {
+#if DEBUG
+        if writeE2EHotkeyMarkerIfNeeded(kind: "board") { return }
+#endif
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
-        guard popupPanel == nil else { return }
-        guard let selection = nonEmpty(currentSelection()) else { NSSound.beep(); return }
-        pendingSelection = selection
-        showToolbar(
-            for: selection,
-            timestampSummary: TimestampSummary.make(from: selection.text)
-        )
+        if launcher.isVisible { launcher.close(); return }
+        let isOwnApp = NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Bundle.main.bundleIdentifier
+        let selection = isOwnApp ? nil : nonEmpty(currentSelection(allowCopyFallback: false))
+        openLauncher(selection: selection)
+    }
+
+    func openLauncher(selection: TextSelection? = nil, command: LauncherCommand? = nil) {
+        guard !isCaptureSurfaceActive else { NSSound.beep(); return }
+        hideToolbar(animated: false)
+        hidePopup()
+        launcher.show(selection: selection ?? TextSelection(text: "", anchorRect: nil, appName: nil, bundleID: nil, pid: nil), initialCommand: command)
+    }
+
+    private func runLauncherCommand(_ command: LauncherCommand, selection: TextSelection) {
+        switch command {
+        case .ai: showAIPopup(for: selection)
+        case .qr: showQRPopup(for: selection)
+        case .textTools: showTextToolsPopup(for: selection)
+        case .screenshot: triggerScreenshotCapture()
+        case .scrollCapture: triggerScrollingScreenshotCapture()
+        case .recording: triggerRecording()
+        case .worldClock: openWorldClock(TimestampSummary.make(from: selection.text)?.date)
+        case .settings: openSettings()
+        case .home: openHome()
+        default: break
+        }
     }
 
     /// Open editable tools from the home window without reading another app.
@@ -276,6 +306,7 @@ final class SelectionOverlayController: NSObject {
             onRecord: { [weak self] in self?.activateRecording() },
             onQR: { [weak self] in self?.activateQR() },
             onTools: { [weak self] in self?.activateTools() },
+            onAllTools: { [weak self] in self?.openLauncher(selection: self?.pendingSelection) },
             onOpenWorldClock: { [weak self] date in self?.activateWorldClock(at: date) },
             onHoverHelp: { [weak self] text in self?.updateToolbarTooltip(text) },
             timestampSummary: timestampSummary
@@ -999,7 +1030,10 @@ final class SelectionOverlayController: NSObject {
         let url = URL(fileURLWithPath: path)
         let payload = [
             "kind=\(kind)",
-            "shownAt=\(Date().timeIntervalSince1970)"
+            "shownAt=\(Date().timeIntervalSince1970)",
+            "frontmostBundle=\(NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "none")",
+            "accessibilityTrusted=\(AccessibilityService.isTrusted)",
+            "selectedCharacterCount=\(accessibility.readSelection()?.text.count ?? 0)"
         ].joined(separator: "\n")
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? payload.write(to: url, atomically: true, encoding: .utf8)

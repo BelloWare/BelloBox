@@ -8,6 +8,7 @@ struct MainView: View {
     var canCheckForUpdates: Bool
     var onOpenSettings: () -> Void
     var onOpenGuide: () -> Void
+    var onOpenLauncher: () -> Void
     var onCapture: () -> Void
     var onScrollCapture: () -> Void
     var onRecord: () -> Void
@@ -29,7 +30,7 @@ struct MainView: View {
     private var howToText: String {
         switch (settings.floatingButtonEnabled, settings.globalHotkeyEnabled) {
         case (true, true):
-            return "Select text in any app — a floating toolbar appears with AI, Screenshot, QR, and Text Tools. Or press \(settings.globalHotkey.displayString) to summon the same board on the current selection."
+            return "Select text in any app — a floating toolbar appears with AI, Screenshot, QR, and Text Tools. Or press \(settings.globalHotkey.displayString) to search all tools with your selection."
         case (true, false):
             return "Select text in any app — a floating toolbar appears with AI, Screenshot, QR, and Text Tools."
         case (false, true):
@@ -44,6 +45,9 @@ struct MainView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
+                    Button(action: onOpenLauncher) {
+                        HStack { Label("Search all tools…", systemImage: "magnifyingglass"); Spacer(); Text(settings.globalHotkeyEnabled ? settings.globalHotkey.displayString : "Open").font(.caption) }
+                    }.buttonStyle(SecondaryButtonStyle())
                     statusCard
                     utilitiesRow
                     howToCard
@@ -211,7 +215,7 @@ struct MainView: View {
             }
 
             shortcutRow(
-                title: "Tool board",
+                title: "Command palette",
                 detail: "Show tools for the current selection",
                 enabled: settings.globalHotkeyEnabled,
                 value: settings.globalHotkey.displayString

@@ -21,7 +21,8 @@ struct BelloBoxApp: App {
 
     @ViewBuilder
     private var menuContent: some View {
-        Button("Open Bello Box") { appDelegate.showMainWindow() }
+        Button("Open Bello Box…") { appDelegate.overlay?.openLauncher() }
+        Button("Home & Status") { appDelegate.showMainWindow() }
 
         Divider()
 
@@ -104,6 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let overlay = SelectionOverlayController(settings: settings)
         overlay.openSettings = { [weak self] in self?.showSettings() }
+        overlay.openHome = { [weak self] in self?.showMainWindow() }
         overlay.openWorldClock = { [weak self] date in self?.showWorldClock(seedDate: date) }
         overlay.start()
         self.overlay = overlay
@@ -166,6 +168,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
 #if DEBUG
+            if let text = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT"] {
+                let command = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_COMMAND"].flatMap(LauncherCommand.init(rawValue:))
+                self.overlay?.openLauncher(selection: TextSelection(text: text, anchorRect: nil, appName: "Example", bundleID: nil, pid: nil), command: command)
+                return
+            }
             if ProcessInfo.processInfo.environment["BELLOBOX_E2E_OPEN_WORLD_CLOCK"] == "1" {
                 let seed = ProcessInfo.processInfo.environment["BELLOBOX_E2E_WORLD_CLOCK_SEED"]
                     .flatMap(Double.init)
@@ -176,7 +183,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 #endif
             if self.settings.hasCompletedSetup {
                 if !AccessibilityService.isTrusted { AccessibilityService.requestPermissionPrompt() }
-                self.showMainWindow()
+                self.overlay?.openLauncher()
             } else {
                 self.showOnboarding()
             }
@@ -186,7 +193,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Re-opening the app (e.g. double-clicking it in Finder) brings a window up.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if settings.hasCompletedSetup {
-            showMainWindow()
+            overlay?.openLauncher()
         } else {
             showOnboarding()
         }
@@ -201,6 +208,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             canCheckForUpdates: updaterConfigured,
             onOpenSettings: { [weak self] in self?.showSettings() },
             onOpenGuide: { [weak self] in self?.showOnboarding() },
+            onOpenLauncher: { [weak self] in self?.mainWindow.hide(); self?.overlay?.openLauncher() },
             onCapture: { [weak self] in self?.mainWindow.hide(); self?.overlay?.triggerScreenshotCapture() },
             onScrollCapture: { [weak self] in self?.mainWindow.hide(); self?.overlay?.triggerScrollingScreenshotCapture() },
             onRecord: { [weak self] in self?.mainWindow.hide(); self?.overlay?.triggerRecording() },

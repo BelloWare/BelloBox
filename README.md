@@ -1,10 +1,17 @@
 # Bello Box
 
-A tiny macOS menu-bar assistant for the text you already have in front of you.
+A macOS command palette for everyday utilities and developer tools.
 
 Select text in **any** app — a note, an email, a code comment, a web form — and a
-small Bello Box toolbar appears next to your selection. Click it (or press
-**⌃⌥⌘B**) and a popup opens where you can:
+small Bello Box toolbar appears next to your selection. Press **⌃⌥⌘B** to open
+the searchable command palette, with or without a selection. Relevant tools are
+suggested from the selected text; use **Use Clipboard** to bring in clipboard
+text explicitly. Search by name or keyword, navigate with **↑/↓**, and press
+**Return** to open a tool. Star favorites, use **⌘K** to return to all commands,
+or **Esc** to go back and close. Drafts survive tool switching until the palette
+is closed; recent commands remember tool names only.
+
+The floating toolbar and palette also provide:
 
 - **Fix Spelling & Grammar**, **Improve Writing**, **Make Shorter**, switch to a
   **Professional** or **Friendly** tone, **Summarize**, **Explain**, or
@@ -17,7 +24,7 @@ small Bello Box toolbar appears next to your selection. Click it (or press
 - Watch the answer stream in, then **Copy** it or **Replace** the original
   selection in place.
 
-Open **Bello Box** from the menu bar for direct access to screenshots, scrolling
+Open **Bello Box** from the menu bar for searchable access to screenshots, scrolling
 capture, recording, World Clock, QR codes, and Text Tools. QR and Text Tools also
 work with text you type or paste, without selecting text in another app.
 
@@ -31,6 +38,40 @@ undoable **Reset Crop** action. The Text Reader can save recognized text or
 Markdown to a file. Text Tools offers **Use as Input** for chaining transforms,
 and **Reset** restores the original input.
 
+## Developer tools
+
+All transformations run locally. Results can be copied, chained with **Use as
+Input** where appropriate, or used to replace a captured selection. Automatic
+selection capture uses Accessibility; apps that do not expose their selection
+can use copy followed by **Use Clipboard**.
+
+| Tool | What it does |
+| --- | --- |
+| JSON Tools | Pretty-print, minify, validate, sort keys, and retain large numbers exactly. |
+| Compare Text & JSON | Line, word, or JSON-field differences; pin text for comparison with a later selection. |
+| Inspect JWT | Decode headers and claims and explain expiry dates. Decoding does **not** verify the signature; encrypted JWE is not supported. |
+| Regex Tester | Live ICU matches, capture groups, highlighting, extraction, and replacement. |
+| URL & Query Editor | Edit scheme, host, port, path, fragment, and repeated query parameters without dropping flag parameters. |
+| Timestamp Converter | Unix seconds/milliseconds, ISO dates, time zones, and differences between two times. |
+| Cron Schedule | Standard five-field cron, names/ranges/steps, and the next five runs in a chosen time zone, including daylight-saving transitions. |
+| Convert JSON, YAML & CSV | Convert structured data, choose a CSV delimiter, and preview rows as a table. |
+| Snippets & Templates | Save local templates and fill custom fields plus `{{selection}}`, `{{date}}`, `{{timestamp}}`, and `{{uuid}}`. |
+| HTTP & cURL | Import a literal cURL command, edit URL/method/headers/body, and explicitly choose **Send**. Inspect responses and redirects; cancel in-flight requests. |
+| Developer Generators | UUIDs, secure random strings, Unix timestamps, and synthetic records in line, JSON, or CSV form. |
+
+CSV requires unique column names in its first row. Values remain strings unless
+type inference is enabled; null/missing cells export as empty and nested values
+as JSON. YAML conversion rejects duplicate/non-string keys, recursive aliases,
+and merge keys instead of silently changing their meaning. JSON/YAML/CSV input
+is bounded to keep the palette responsive.
+
+cURL import supports common request/header/data/JSON/URL/authentication/cookie
+options, including attached values. It never executes a shell and does not read
+files. Unsupported options produce an error. HTTP requests run only on **Send**,
+show redirects without following them, limit the response preview to 2 MB, and
+do not save request or response history. Snippets are saved only when requested
+in `~/Library/Application Support/BelloBox/Snippets.json`.
+
 ## Bring your own AI
 
 Bello Box does not ship a model or an API key. In **Settings** you choose:
@@ -42,8 +83,8 @@ Bello Box does not ship a model or an API key. In **Settings** you choose:
 - **Codex options** — model and reasoning effort through `codex app-server`,
   using your existing Codex login.
 - The **system prompt** that shapes every transformation.
-- Optional **auto hint**, **launch at login**, and global shortcuts for the tool
-  board, screenshots, and recordings.
+- Optional **auto hint**, **launch at login**, and global shortcuts for the command
+  palette, screenshots, and recordings.
 
 A **Test connection** button verifies your configuration. For screenshot OCR,
 Mac OCR runs locally with Apple Vision. LLM OCR is optional and always asks

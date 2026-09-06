@@ -16,7 +16,8 @@ struct ActionPopupView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
-            selectionPreview
+            if !viewModel.selection.text.isEmpty { selectionPreview }
+            else { Text("Ask a question below, or open AI with selected text to use the writing actions.").font(.callout).foregroundStyle(.secondary) }
 
             if !viewModel.isConfigured {
                 setupBanner
@@ -95,7 +96,7 @@ struct ActionPopupView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .disabled(viewModel.isStreaming || !viewModel.isConfigured)
+                .disabled(viewModel.isStreaming || !viewModel.isConfigured || viewModel.selection.text.isEmpty)
             }
         }
     }
