@@ -66,7 +66,7 @@ final class LauncherModel: ObservableObject {
         let commands = commands
         guard !commands.isEmpty else { return }
         let index = commands.firstIndex(where: { $0.id == selectedID }) ?? 0
-        selectedID = commands[(index + direction + commands.count) % commands.count].id
+        selectedID = commands[((index + direction) % commands.count + commands.count) % commands.count].id
     }
     func openSelected() { if let command = selectedCommand ?? commands.first { open(command) } }
     func open(_ command: LauncherCommand) {

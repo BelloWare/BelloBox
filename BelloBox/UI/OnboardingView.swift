@@ -18,6 +18,11 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            HStack(spacing: 5) {
+                ForEach(0..<stepCount, id: \.self) { index in
+                    RoundedRectangle(cornerRadius: 2).fill(index <= step ? BoxTheme.accent : Color.primary.opacity(0.08)).frame(height: 3)
+                }
+            }.padding(.horizontal, 34).padding(.top, 24).accessibilityLabel("Setup step \(step + 1) of \(stepCount)")
             ScrollView {
                 content
                     .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -31,6 +36,7 @@ struct OnboardingView: View {
                 .padding(.vertical, 16)
         }
         .frame(width: 680, height: 720)
+        .background(WorkspaceBackground()).tint(BoxTheme.accent)
         .onReceive(poll) { _ in
             let now = AccessibilityService.isTrusted
             if now != trusted {
@@ -60,7 +66,7 @@ struct OnboardingView: View {
             appBadge
             Text("Welcome to Bello Box")
                 .font(.system(size: 32, weight: .bold))
-            Text("Bello Box is a little toolbox for whatever text you already have in front of you — in any app.")
+            Text("Your workspace for text, developer tools, capture, and time. Open Home to explore, or use the shortcut from any app.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

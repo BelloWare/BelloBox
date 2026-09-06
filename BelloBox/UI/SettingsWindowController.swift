@@ -17,7 +17,10 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         let hosting = NSHostingController(rootView: SettingsView(settings: settings))
         let window = NSWindow(contentViewController: hosting)
         window.title = "Bello Box Settings"
-        window.styleMask = [.titled, .closable]
+        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = NSColor(BoxTheme.background)
+        window.contentMinSize = NSSize(width: 900, height: 680)
         window.isReleasedWhenClosed = false
         window.delegate = self
         window.setContentSize(NSSize(width: 900, height: 720))

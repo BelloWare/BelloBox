@@ -25,26 +25,16 @@ struct RecordingOptionsBar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Label(targetLabel, systemImage: "record.circle")
-                    .font(.headline)
-                    .lineLimit(1)
-                Spacer()
-                Button(action: onCancel) {
-                    Image(systemName: "xmark")
-                }
-                .buttonStyle(SecondaryButtonStyle())
-                .help("Cancel")
-                .accessibilityLabel("Cancel recording setup")
-            }
+            PopupHeader(icon: "record.circle", title: "Screen Recording", subtitle: targetLabel, onClose: onCancel)
+
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     ViewThatFits(in: .horizontal) {
                         HStack(alignment: .top, spacing: 12) {
-                            audioColumn.frame(width: 220, alignment: .leading)
-                            inputColumn.frame(width: 190, alignment: .leading)
-                            qualityColumn.frame(width: 220, alignment: .leading)
+                            audioColumn.frame(width: 210, alignment: .leading)
+                            inputColumn.frame(width: 170, alignment: .leading)
+                            qualityColumn.frame(width: 210, alignment: .leading)
                         }
 
                         VStack(alignment: .leading, spacing: 12) {
@@ -104,9 +94,8 @@ struct RecordingOptionsBar: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.regularMaterial))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.white.opacity(0.14), lineWidth: 1))
-        .shadow(color: .black.opacity(0.28), radius: 16, y: 8)
+        .popupCard()
+        .onExitCommand(perform: onCancel)
     }
 
     private var audioColumn: some View {

@@ -73,9 +73,7 @@ struct RecordingHUDView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.ultraThinMaterial))
-        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Color.primary.opacity(0.10), lineWidth: 1))
-        .shadow(color: .black.opacity(0.18), radius: 10, y: 4)
+        .popupCard()
         .onReceive(Self.timer) { value in
             guard !isPaused else { return }
             now = value

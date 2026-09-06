@@ -23,6 +23,8 @@ final class WorldClockWindowController: NSObject, NSWindowDelegate {
         let hosting = NSHostingController(rootView: rootView)
         let panel = WorldClockPanel(contentViewController: hosting)
         panel.delegate = self
+        panel.titlebarAppearsTransparent = true
+        panel.backgroundColor = NSColor(BoxTheme.background)
         panel.setContentSize(NSSize(width: 860, height: 650))
         panel.minSize = NSSize(width: 760, height: 590)
         panel.setFrameAutosaveName("BelloBoxWorldClockWindow")

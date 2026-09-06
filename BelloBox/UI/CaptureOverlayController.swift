@@ -1599,9 +1599,7 @@ private struct CaptureScreenshotOverlaySurface: View {
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
                     .frame(width: toolbar.width, height: toolbar.height)
-                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.regularMaterial))
-                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.white.opacity(0.14), lineWidth: 1))
-                    .shadow(color: .black.opacity(0.28), radius: 16, y: 8)
+                    .popupCard()
                     .position(x: toolbar.midX, y: toolbar.midY)
 
                 if let message = viewModel.errorMessage ?? viewModel.statusMessage {
@@ -1730,7 +1728,7 @@ private struct CaptureScreenshotOverlaySurface: View {
             .lineLimit(2)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.regularMaterial))
+            .surfaceCard()
     }
 }
 

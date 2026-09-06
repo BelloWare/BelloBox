@@ -169,13 +169,13 @@ struct TextToolsPopupView: View {
                         .font(.caption.weight(.semibold))
                         .lineLimit(1)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 5)
+                        .padding(.vertical, 8)
                         .padding(.horizontal, 8)
                         .background(
-                            Capsule().fill(selected ? BoxTheme.accent : Color.primary.opacity(0.07))
+                            RoundedRectangle(cornerRadius: 8).fill(selected ? BoxTheme.accent : BoxTheme.surface)
                         )
                         .foregroundStyle(selected ? .white : .primary)
-                        .contentShape(Capsule())
+                        .contentShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
                 .accessibilityValue(selected ? "Selected" : "Not selected")
@@ -190,6 +190,10 @@ struct TextToolsPopupView: View {
             HStack {
                 Text("Input · \(viewModel.input.count.formatted()) characters").font(.caption2.bold()).foregroundStyle(.secondary)
                 Spacer()
+                Button("Paste") { if let text = NSPasteboard.general.string(forType: .string) { viewModel.input = text } }
+                    .buttonStyle(.link).font(.caption).help("Paste clipboard text as input")
+                Button("Clear") { viewModel.input = "" }
+                    .buttonStyle(.link).font(.caption).disabled(viewModel.input.isEmpty)
                 Button("Reset", action: viewModel.resetInput)
                     .buttonStyle(.link).font(.caption)
                     .disabled(!viewModel.canResetInput)
@@ -201,7 +205,7 @@ struct TextToolsPopupView: View {
                 .scrollContentBackground(.hidden)
                 .frame(height: 120)
                 .padding(6)
-                .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
+                .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
         }
     }
 
@@ -287,9 +291,9 @@ struct TextToolsPopupView: View {
                         .help("Copy \(algorithm.rawValue)")
                         .accessibilityLabel("Copy \(algorithm.rawValue)")
                 }
-                .padding(.vertical, 5)
+                .padding(.vertical, 8)
                 .padding(.horizontal, 8)
-                .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
+                .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
             }
         }
     }
@@ -373,7 +377,7 @@ struct TextToolsPopupView: View {
                         .font(.caption)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 5)
+                        .padding(.vertical, 8)
                         .padding(.horizontal, 8)
                         .background(RoundedRectangle(cornerRadius: 7).fill(selected ? BoxTheme.accentSoft : Color.primary.opacity(0.05)))
                         .overlay(
@@ -396,7 +400,7 @@ struct TextToolsPopupView: View {
             }
             .frame(minHeight: 200)
             .padding(8)
-            .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
+            .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
         }
     }
 
@@ -436,7 +440,7 @@ struct TextToolsPopupView: View {
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 10)
-        .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.05)))
+        .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
     }
 
     private func notice(_ text: String) -> some View {

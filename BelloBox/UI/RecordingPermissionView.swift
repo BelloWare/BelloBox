@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RecordingPermissionView: View {
+    static let preferredSize = CGSize(width: 520, height: 500)
     let options: RecordingOptions
     var onRequestScreenRecording: () -> Void
     var onRequestMicrophone: () -> Void
@@ -88,8 +89,9 @@ struct RecordingPermissionView: View {
             }
         }
         .padding(18)
-        .frame(width: 520, height: 420)
+        .frame(width: Self.preferredSize.width, height: Self.preferredSize.height)
         .popupCard()
+        .onExitCommand(perform: onCancel)
         .onReceive(permissionTimer) { _ in
             permissions = RecordingPermissionState.current(options: options)
         }
@@ -115,6 +117,6 @@ struct RecordingPermissionView: View {
             }
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.primary.opacity(0.05)))
+        .surfaceCard()
     }
 }

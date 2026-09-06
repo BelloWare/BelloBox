@@ -112,6 +112,8 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         switch event.keyCode {
         case 125: model.move(1)
         case 126: model.move(-1)
+        case 121: model.move(7)
+        case 116: model.move(-7)
         case 36, 76: model.openSelected()
         default: return false
         }

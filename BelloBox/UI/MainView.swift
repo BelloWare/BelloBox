@@ -1,8 +1,30 @@
 import AppKit
 import SwiftUI
 
-/// The app's home window — something visible to open, check status, reach
-/// Settings and the guide, and check for updates.
+enum HomeCategory: String, CaseIterable, Identifiable {
+    case overview = "Overview", developer = "Developer", capture = "Capture", text = "Text & AI"
+    var id: Self { self }
+    var symbol: String {
+        switch self { case .overview: return "square.grid.2x2"; case .developer: return "curlybraces"; case .capture: return "camera.viewfinder"; case .text: return "text.alignleft" }
+    }
+    var commands: [LauncherCommand] {
+        switch self {
+        case .overview: return [.screenshot, .recording, .worldClock, .json, .textTools, .qr, .ai, .snippets, .compare]
+        case .developer: return LauncherCommand.allCases.filter(\.isDeveloperTool)
+        case .capture: return [.screenshot, .scrollCapture, .recording]
+        case .text: return [.ai, .textTools, .qr, .worldClock, .snippets, .compare]
+        }
+    }
+    var subtitle: String {
+        switch self {
+        case .overview: return "A focused space for the things you do every day."
+        case .developer: return "Inspect, transform, and build. Your tools stay close."
+        case .capture: return "Capture a moment, a longer page, or the whole workflow."
+        case .text: return "Give words, ideas, and time a little more structure."
+        }
+    }
+}
+
 struct MainView: View {
     @ObservedObject var settings: AppSettings
     var canCheckForUpdates: Bool
@@ -16,274 +38,171 @@ struct MainView: View {
     var onOpenTextTools: () -> Void
     var onOpenWorldClock: () -> Void
     var onCheckForUpdates: () -> Void
+    var onOpenTool: (LauncherCommand) -> Void = { _ in }
 
+    @State private var category: HomeCategory = .overview
     @State private var trusted = AccessibilityService.isTrusted
-    @State private var debugCopyMessage: String?
     private let timer = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
 
-    private var versionText: String {
-        let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
-        return "Version \(short) (\(build))"
-    }
-
-    private var howToText: String {
-        switch (settings.floatingButtonEnabled, settings.globalHotkeyEnabled) {
-        case (true, true):
-            return "Select text in any app — a floating toolbar appears with AI, Screenshot, QR, and Text Tools. Or press \(settings.globalHotkey.displayString) to search all tools with your selection."
-        case (true, false):
-            return "Select text in any app — a floating toolbar appears with AI, Screenshot, QR, and Text Tools."
-        case (false, true):
-            return "Select text in any app, then press \(settings.globalHotkey.displayString) to summon the Bello Box board with AI, Screenshot, QR, and Text Tools."
-        case (false, false):
-            return "Auto hint and the global shortcut are both off. Open Settings to choose how Bello Box appears."
-        }
-    }
-
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    header
-                    Button(action: onOpenLauncher) {
-                        HStack { Label("Search all tools…", systemImage: "magnifyingglass"); Spacer(); Text(settings.globalHotkeyEnabled ? settings.globalHotkey.displayString : "Open").font(.caption) }
-                    }.buttonStyle(SecondaryButtonStyle())
-                    statusCard
-                    utilitiesRow
-                    howToCard
-                    shortcutsCard
-                }
-                .padding(24)
-            }
+        HStack(spacing: 0) {
+            sidebar
             Divider()
-            actions.padding(20)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    header
+                    searchButton
+                    if !trusted { permissionNotice }
+                    HStack {
+                        Text(category == .overview ? "QUICK ACCESS" : "\(category.rawValue.uppercased()) TOOLS")
+                            .font(.system(size: 10, weight: .semibold)).tracking(1.5).foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(category.commands.count) tools").font(.caption).foregroundStyle(.secondary)
+                    }
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 12)], spacing: 12) {
+                        ForEach(category.commands) { command in homeTool(command) }
+                    }
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "cursorarrow.rays").foregroundStyle(BoxTheme.accent)
+                        Text(settings.globalHotkeyEnabled
+                             ? "Select text in another app, then press \(settings.globalHotkey.displayString) for tools that fit your selection."
+                             : "Enable the command palette shortcut in Settings to open your tools from any app.")
+                            .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    }.frame(maxWidth: .infinity, alignment: .leading).padding(14).surfaceCard()
+                }.padding(28)
+            }.id(category)
         }
-        .frame(minWidth: 660, minHeight: 600)
+        .background(WorkspaceBackground()).tint(BoxTheme.accent)
+        .frame(minWidth: 900, minHeight: 640)
         .onReceive(timer) { _ in trusted = AccessibilityService.isTrusted }
     }
 
-    private var header: some View {
-        HStack(spacing: 14) {
-            appIcon
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Bello Box").font(.system(size: 30, weight: .bold))
-                Text(versionText).font(.caption).foregroundStyle(.secondary)
-                Text("Capture, create, and work across time zones.")
-                    .font(.subheadline).foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-    }
-
-    private var appIcon: some View {
-        Group {
-            if let icon = NSApp.applicationIconImage {
-                Image(nsImage: icon).resizable().frame(width: 80, height: 80)
-            } else {
-                Image(systemName: "wand.and.stars")
-                    .font(.system(size: 34)).foregroundStyle(BoxTheme.accent)
-                    .frame(width: 80, height: 80)
-                    .background(RoundedRectangle(cornerRadius: 14).fill(BoxTheme.accentSoft))
-            }
-        }
-    }
-
-    private var statusCard: some View {
-        VStack(spacing: 0) {
-            statusRow(
-                ok: settings.isConfigured,
-                title: "AI provider",
-                okText: "Configured · \(settings.providerKind.shortName)",
-                badText: "Not configured",
-                action: settings.isConfigured ? nil : ("Set up", onOpenSettings)
-            )
-            Divider().padding(.leading, 44)
-            statusRow(
-                ok: trusted,
-                title: "Accessibility access",
-                okText: "Granted",
-                badText: "Needed to read & replace your selection",
-                action: trusted ? nil : ("Grant…", {
-                    AccessibilityService.requestPermissionPrompt()
-                    AccessibilityService.openAccessibilitySettings()
-                })
-            )
-        }
-        .padding(.vertical, 4)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.primary.opacity(0.05)))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.primary.opacity(0.06), lineWidth: 1))
-    }
-
-    private func statusRow(ok: Bool, title: String, okText: String, badText: String, action: (String, () -> Void)?) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: ok ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                .font(.system(size: 18))
-                .foregroundStyle(ok ? .green : .orange)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.callout.weight(.medium))
-                Text(ok ? okText : badText).font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
-            if let action {
-                Button(action.0) { action.1() }
-                    .buttonStyle(SecondaryButtonStyle())
-                    .controlSize(.small)
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-    }
-
-    private var howToCard: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "cursorarrow.rays")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(BoxTheme.accent)
-                .frame(width: 30, height: 30)
-                .background(Circle().fill(BoxTheme.accentSoft))
-            VStack(alignment: .leading, spacing: 3) {
-                Text("AI and selection tools").font(.callout.weight(.semibold))
-                Text(howToText)
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(14)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BoxTheme.accentSoft.opacity(0.5)))
-    }
-
-    private var utilitiesRow: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-            utilityButton(title: "Screenshot", subtitle: "Capture and annotate", symbol: "camera.viewfinder", accessibilityID: "mainScreenshotButton", action: onCapture)
-            utilityButton(title: "Scrolling Capture", subtitle: "Capture a longer page", symbol: "arrow.down.doc", accessibilityID: "mainScrollButton", action: onScrollCapture)
-            utilityButton(title: "Recording", subtitle: "Record your screen", symbol: "record.circle", accessibilityID: "mainRecordingButton", action: onRecord)
-            utilityButton(title: "World Clock", subtitle: "Compare meeting times", symbol: "globe.americas.fill", accessibilityID: "mainWorldClockButton", action: onOpenWorldClock)
-            utilityButton(title: "QR Code", subtitle: "Enter a link or text", symbol: "qrcode", accessibilityID: "mainQRButton", action: onOpenQR)
-            utilityButton(title: "Text Tools", subtitle: "Convert, format, and count", symbol: "wrench.and.screwdriver", accessibilityID: "mainTextToolsButton", action: onOpenTextTools)
-        }
-    }
-
-    private func utilityButton(
-        title: String,
-        subtitle: String,
-        symbol: String,
-        accessibilityID: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: symbol)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 38, height: 38)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(BoxTheme.accentGradient))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.callout.weight(.semibold))
-                        .lineLimit(1)
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.secondary)
-            }
-            .padding(12)
-            .contentShape(Rectangle())
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.primary.opacity(0.045)))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(.primary.opacity(0.06), lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier(accessibilityID)
-    }
-
-    private var shortcutsCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Image(systemName: "keyboard")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(BoxTheme.accent)
-                    .frame(width: 30, height: 30)
-                    .background(Circle().fill(BoxTheme.accentSoft))
-                Text("Configured shortcuts").font(.callout.weight(.semibold))
-                Spacer()
-            }
-
-            shortcutRow(
-                title: "Command palette",
-                detail: "Show tools for the current selection",
-                enabled: settings.globalHotkeyEnabled,
-                value: settings.globalHotkey.displayString
-            )
-            shortcutRow(
-                title: "Screenshot",
-                detail: "Open the capture overlay",
-                enabled: settings.screenshotHotkeyEnabled,
-                value: settings.screenshotHotkey.displayString
-            )
-            shortcutRow(
-                title: "Recording",
-                detail: "Choose a recording target",
-                enabled: settings.recordingHotkeyEnabled,
-                value: settings.recordingHotkey.displayString
-            )
-        }
-        .padding(14)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.primary.opacity(0.045)))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.primary.opacity(0.06), lineWidth: 1))
-    }
-
-    private func shortcutRow(title: String, detail: String, enabled: Bool, value: String) -> some View {
-        HStack(alignment: .center, spacing: 10) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.caption.weight(.semibold))
-                Text(detail).font(.caption2).foregroundStyle(.secondary)
-            }
-            Spacer()
-            Text(enabled ? value : "Off")
-                .font(.caption.monospaced().weight(.semibold))
-                .foregroundStyle(enabled ? .primary : .secondary)
-                .padding(.horizontal, 9)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(enabled ? BoxTheme.accentSoft : Color.primary.opacity(0.06)))
-        }
-    }
-
-    private var actions: some View {
+    private var sidebar: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
-                Button { onOpenGuide() } label: { Label("Setup Guide", systemImage: "sparkles") }
-                    .buttonStyle(SecondaryButtonStyle())
-                if canCheckForUpdates {
-                    Button { onCheckForUpdates() } label: { Label("Check for Updates", systemImage: "arrow.triangle.2.circlepath") }
-                        .buttonStyle(SecondaryButtonStyle())
+                ToolBadge(symbol: "shippingbox.fill", size: 34)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Bello Box").font(.system(size: 15, weight: .semibold))
+                    Text("YOUR WORKSPACE").font(.system(size: 8, weight: .semibold)).tracking(1.4).foregroundStyle(.secondary)
                 }
-                Button { copyDebugInfo() } label: { Label("Copy Debug Info", systemImage: "doc.on.doc") }
-                    .buttonStyle(SecondaryButtonStyle())
-                Spacer()
-                Button { onOpenSettings() } label: { Label("Settings", systemImage: "gearshape") }
-                    .buttonStyle(PrimaryButtonStyle())
+            }.padding(.vertical, 22).padding(.horizontal, 16)
+            ForEach(Array(HomeCategory.allCases.enumerated()), id: \.element.id) { index, item in
+                Button { category = item } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: item.symbol).frame(width: 20)
+                        Text(item.rawValue).font(.system(size: 12, weight: category == item ? .semibold : .medium))
+                        Spacer()
+                        if category == item { Circle().fill(BoxTheme.accent).frame(width: 4, height: 4) }
+                    }.foregroundStyle(category == item ? BoxTheme.accent : .primary)
+                        .padding(.horizontal, 12).frame(height: 38)
+                        .background(category == item ? BoxTheme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 8))
+                        .contentShape(Rectangle())
+                }.buttonStyle(.plain).padding(.horizontal, 10)
+                    .accessibilityValue(category == item ? "Selected" : "Not selected")
+                    .accessibilityIdentifier("homeCategory_\(item.id)")
+                    .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
             }
-            if let debugCopyMessage {
-                Text(debugCopyMessage)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
+            Spacer(minLength: 20)
+            VStack(alignment: .leading, spacing: 12) {
+                Label(trusted ? "Selection tools ready" : "Selection access needed", systemImage: trusted ? "checkmark.shield" : "lock")
+                    .foregroundStyle(trusted ? Color.teal : .secondary)
+                Label(settings.isConfigured ? "AI connected" : "AI is optional", systemImage: "sparkles").foregroundStyle(.secondary)
+            }.font(.system(size: 10)).padding(18)
+            Divider().padding(.horizontal, 16)
+            sidebarAction("Settings", symbol: "gearshape", action: onOpenSettings)
+            sidebarAction("Setup guide", symbol: "questionmark.circle", action: onOpenGuide)
+            if canCheckForUpdates { sidebarAction("Check for updates", symbol: "arrow.triangle.2.circlepath", action: onCheckForUpdates) }
+            Text("Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")")
+                .font(.system(size: 10)).foregroundStyle(.tertiary).padding(18)
+        }.frame(width: 186).background(BoxTheme.surface.opacity(0.6))
+    }
+    private func sidebarAction(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) { Label(title, systemImage: symbol).font(.system(size: 11)).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 18).padding(.vertical, 7) }
+            .buttonStyle(.plain)
+    }
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(category == .overview ? "Everything within reach." : category.rawValue)
+                .font(.system(size: 28, weight: .semibold)).tracking(-0.6)
+            Text(category.subtitle).font(.system(size: 12)).foregroundStyle(.secondary)
         }
     }
-
-    private func copyDebugInfo() {
-        let report = DebugInfoCollector.report(settings: settings)
-        NSPasteboard.general.clearContents()
-        if NSPasteboard.general.setString(report, forType: .string) {
-            debugCopyMessage = "Debug info copied. You can include it when reporting an issue."
-        } else {
-            debugCopyMessage = "Could not copy debug info."
+    private var searchButton: some View {
+        Button(action: onOpenLauncher) {
+            HStack(spacing: 12) {
+                Image(systemName: "magnifyingglass").font(.system(size: 16)).foregroundStyle(BoxTheme.accent)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Search all tools and commands").font(.system(size: 13, weight: .medium))
+                    Text("20 commands. One place to start.").font(.system(size: 10)).foregroundStyle(.secondary)
+                }
+                Spacer()
+                ShortcutBadge(text: settings.globalHotkeyEnabled ? settings.globalHotkey.displayString : "Open")
+            }.padding(16)
+        }.buttonStyle(ToolCardButtonStyle()).accessibilityIdentifier("mainLauncherButton")
+            .keyboardShortcut("k", modifiers: .command).help("Search all tools (⌘K)")
+    }
+    private var permissionNotice: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock.open").foregroundStyle(BoxTheme.accent)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Connect to your selection").font(.system(size: 12, weight: .semibold))
+                Text("Allow Accessibility to read and replace selected text. You can use the other tools now.")
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button("Allow access") { AccessibilityService.requestPermissionPrompt(); AccessibilityService.openAccessibilitySettings() }
+                .buttonStyle(SecondaryButtonStyle())
+        }.padding(14).surfaceCard()
+    }
+    private func homeTool(_ command: LauncherCommand) -> some View {
+        HomeToolCard(command: command) { open(command) }.accessibilityIdentifier(accessibilityID(command))
+    }
+    private func accessibilityID(_ command: LauncherCommand) -> String {
+        switch command {
+        case .screenshot: return "mainScreenshotButton"
+        case .scrollCapture: return "mainScrollButton"
+        case .recording: return "mainRecordingButton"
+        case .worldClock: return "mainWorldClockButton"
+        case .qr: return "mainQRButton"
+        case .textTools: return "mainTextToolsButton"
+        default: return "homeTool_\(command.id)"
         }
+    }
+    private func open(_ command: LauncherCommand) {
+        switch command {
+        case .screenshot: onCapture()
+        case .scrollCapture: onScrollCapture()
+        case .recording: onRecord()
+        case .worldClock: onOpenWorldClock()
+        case .qr: onOpenQR()
+        case .textTools: onOpenTextTools()
+        default: onOpenTool(command)
+        }
+    }
+}
+
+private struct HomeToolCard: View {
+    let command: LauncherCommand
+    let action: () -> Void
+    @State private var hovered = false
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    ToolBadge(symbol: command.symbol, size: 32)
+                    Spacer()
+                    Image(systemName: "arrow.up.right").font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(hovered ? BoxTheme.accent : Color.secondary.opacity(0.45))
+                }
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(command.title).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                    Text(command.subtitle).font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(2)
+                        .frame(height: 28, alignment: .topLeading)
+                }.frame(maxWidth: .infinity, alignment: .leading)
+            }.padding(15)
+        }.buttonStyle(ToolCardButtonStyle())
+            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(BoxTheme.accent.opacity(hovered ? 0.4 : 0)))
+            .onHover { hovered = $0 }.help(command.subtitle)
+            .accessibilityLabel(command.title).accessibilityHint(command.subtitle)
     }
 }

@@ -30,7 +30,7 @@ final class ScreenshotCaptureChooserViewModel: ObservableObject {
 }
 
 struct ScreenshotCaptureChooserView: View {
-    static let preferredSize = CGSize(width: 420, height: 330)
+    static let preferredSize = CGSize(width: 460, height: 380)
 
     @ObservedObject var viewModel: ScreenshotCaptureChooserViewModel
     var initialMode: ScreenshotCaptureMode?
@@ -49,13 +49,14 @@ struct ScreenshotCaptureChooserView: View {
                 permissionNotice
             }
 
+            if viewModel.hasScreenRecordingPermission {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 modeButton(.area, action: viewModel.onCaptureArea)
                 modeButton(.window, action: viewModel.onCaptureWindow)
                 modeButton(.screen, action: viewModel.onCaptureScreen)
                 modeButton(.scrolling, action: viewModel.onCaptureScrolling)
             }
-            .disabled(!viewModel.hasScreenRecordingPermission)
+            }
 
             if let error = viewModel.errorMessage {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
@@ -74,6 +75,7 @@ struct ScreenshotCaptureChooserView: View {
         .padding(18)
         .frame(width: Self.preferredSize.width, height: Self.preferredSize.height)
         .popupCard()
+        .onExitCommand(perform: viewModel.onClose)
         .onAppear {
             viewModel.refreshPermission()
             if let initialMode, viewModel.hasScreenRecordingPermission {
@@ -116,20 +118,15 @@ struct ScreenshotCaptureChooserView: View {
     private func modeButton(_ mode: ScreenshotCaptureMode, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 10) {
-                Image(systemName: mode.symbol)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 34, height: 34)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(BoxTheme.accentGradient))
+                ToolBadge(symbol: mode.symbol)
                 Text(mode.label)
                     .font(.callout.weight(.semibold))
                 Spacer()
             }
             .padding(10)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.primary.opacity(0.06)))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(.primary.opacity(0.08), lineWidth: 1))
+
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ToolCardButtonStyle())
         .help(help(for: mode))
     }
 

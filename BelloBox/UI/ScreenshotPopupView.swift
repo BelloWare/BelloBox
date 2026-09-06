@@ -815,7 +815,7 @@ struct ScreenshotPopupView: View {
 
     @ObservedObject var viewModel: ScreenshotPopupViewModel
     var onMinimize: () -> Void
-    @State private var showsOCR = true
+    @State private var showsOCR = false
 
     var body: some View {
         ZStack {

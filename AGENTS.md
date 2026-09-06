@@ -38,6 +38,12 @@ on outside clicks or loss of key focus, except for its own menus/sheets/children
 `LauncherSelectionContext` caches bounded preview and suggestion metadata once;
 inputs over 500 KB are rejected before creating editors and never truncated.
 
+Normal launches and Dock/Finder reopens show `MainView`; only the shortcut and
+explicit Search actions open the palette. `HomeCategory` organizes the tool
+catalog and Home has ⌘1–⌘4 category shortcuts plus ⌘K search. Shared colors,
+`ToolBadge`, `ShortcutBadge`, surfaces, and button styles live in `UI/Theme.swift`.
+Use these tokens when adding or updating tools; honor Reduce Motion.
+
 It follows the same packaging conventions as the sibling Bello macOS apps
 (BelloGesture, BelloWall, BelloTracker): xcodegen project, Developer-ID signed
 DMG, Sparkle appcast, published to belloware.com.

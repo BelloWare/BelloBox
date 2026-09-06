@@ -23,10 +23,7 @@ struct LauncherView: View {
                 footer
             }
         }
-        .background {
-            LauncherMaterial()
-                .overlay(Color(nsColor: .windowBackgroundColor).opacity(0.9))
-        }
+        .background(WorkspaceBackground()).tint(BoxTheme.accent)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.primary.opacity(0.12), lineWidth: 1))
     }
@@ -111,7 +108,7 @@ struct LauncherView: View {
             Text("Open").font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
             keycap("↵")
         }.padding(.horizontal, 16).frame(height: 41)
-            .background(.primary.opacity(0.025))
+            .background(BoxTheme.surface.opacity(0.45))
     }
     private func keycap(_ key: String) -> some View {
         Text(key).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
@@ -134,9 +131,7 @@ private struct LauncherCommandRow: View {
         HStack(spacing: 8) {
             Button(action: onOpen) {
                 HStack(spacing: 11) {
-                    Image(systemName: command.symbol).font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(tint).frame(width: 27, height: 27)
-                        .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: 7))
+                    ToolBadge(symbol: command.symbol, size: 27)
                     Text(command.title).font(.system(size: 13, weight: selected ? .semibold : .medium)).lineLimit(1)
                     Spacer(minLength: 12)
                     Text(category).font(.system(size: 10)).foregroundStyle(.tertiary)
@@ -153,7 +148,7 @@ private struct LauncherCommandRow: View {
                 .accessibilityLabel("\(favorite ? "Unfavorite" : "Favorite") \(command.title)")
         }
         .padding(.horizontal, 10).frame(height: 42)
-        .background((selected ? Color.primary.opacity(0.07) : hovered ? Color.primary.opacity(0.035) : .clear),
+        .background((selected ? BoxTheme.accentSoft : hovered ? Color.primary.opacity(0.035) : .clear),
                     in: RoundedRectangle(cornerRadius: 8))
         .onHover { hovered = $0 }
     }
@@ -161,24 +156,4 @@ private struct LauncherCommandRow: View {
         if command.isDeveloperTool { return "Developer" }
         return [.settings, .home].contains(command) ? "Bello Box" : "Utility"
     }
-    private var tint: Color {
-        switch command {
-        case .json, .convert, .compare, .textTools: return .blue
-        case .jwt, .regex, .ai: return .purple
-        case .time, .cron, .worldClock: return .green
-        case .http, .url, .qr: return .teal
-        default: return BoxTheme.accent
-        }
-    }
-}
-
-private struct LauncherMaterial: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = .popover
-        view.blendingMode = .behindWindow
-        view.state = .active
-        return view
-    }
-    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
 }

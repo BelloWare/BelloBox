@@ -28,7 +28,8 @@ struct SettingsView: View {
             }
             .id(selectedCategory)
         }
-        .frame(width: 900, height: 720)
+        .frame(minWidth: 900, minHeight: 680)
+        .background(WorkspaceBackground()).tint(BoxTheme.accent)
         .onReceive(permissionTimer) { _ in
             accessibilityTrusted = AccessibilityService.isTrusted
             screenRecordingTrusted = ScreenCapturePermission.isTrusted
@@ -40,9 +41,7 @@ struct SettingsView: View {
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
-                if let icon = NSApp.applicationIconImage {
-                    Image(nsImage: icon).resizable().frame(width: 34, height: 34)
-                }
+                ToolBadge(symbol: "shippingbox.fill")
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Bello Box").font(.headline)
                     Text("Settings").font(.caption).foregroundStyle(.secondary)
@@ -58,46 +57,30 @@ struct SettingsView: View {
 
             Spacer()
         }
-        .frame(width: 214)
-        .background(Color(nsColor: .windowBackgroundColor).opacity(0.78))
+        .frame(width: 200)
+        .background(BoxTheme.surface.opacity(0.6))
     }
 
     private func sidebarButton(_ category: SettingsCategory) -> some View {
-        Button {
-            selectedCategory = category
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: category.symbol)
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 22)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(category.title)
-                        .font(.callout.weight(.semibold))
-                    Text(category.subtitle)
-                        .font(.caption2)
-                        .foregroundColor(selectedCategory == category ? Color.white.opacity(0.82) : .secondary)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 0)
+        Button { selectedCategory = category } label: {
+            HStack(spacing: 11) {
+                Image(systemName: category.symbol).font(.system(size: 13)).frame(width: 20)
+                Text(category.title).font(.system(size: 12, weight: selectedCategory == category ? .semibold : .medium))
+                Spacer()
             }
-            .foregroundColor(selectedCategory == category ? .white : .primary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
-            .background(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(selectedCategory == category ? BoxTheme.accent : Color.clear)
-            )
-            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .accessibilityValue(selectedCategory == category ? "Selected" : "Not selected")
-        .padding(.horizontal, 10)
+            .foregroundStyle(selectedCategory == category ? BoxTheme.accent : .primary)
+            .padding(.horizontal, 12).frame(height: 40)
+            .background(selectedCategory == category ? BoxTheme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 8))
+            .contentShape(Rectangle())
+        }.buttonStyle(.plain)
+            .accessibilityValue(selectedCategory == category ? "Selected" : "Not selected")
+            .help(category.explanation).padding(.horizontal, 10)
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 5) {
             Label(selectedCategory.title, systemImage: selectedCategory.symbol)
-                .font(.system(size: 25, weight: .bold))
+                .font(.system(size: 26, weight: .semibold))
             Text(selectedCategory.explanation)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -130,7 +113,7 @@ struct SettingsView: View {
                 Toggle("Open Bello Box when I start my Mac", isOn: $settings.launchAtLoginEnabled)
             }
 
-            settingsSection("Tool Board", subtitle: "Control how the small selection toolbar appears.", systemImage: "cursorarrow.rays") {
+            settingsSection("Selection & Shortcuts", subtitle: "Control how the small selection toolbar appears.", systemImage: "cursorarrow.rays") {
                 Toggle("Show auto hint after I select text", isOn: $settings.floatingButtonEnabled)
                 Toggle("Enable global shortcut \(settings.globalHotkey.displayString)", isOn: $settings.globalHotkeyEnabled)
                 LabeledContent("Shortcut") {
@@ -366,11 +349,7 @@ struct SettingsView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 10) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(BoxTheme.accent)
-                    .frame(width: 26, height: 26)
-                    .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(BoxTheme.accentSoft))
+                ToolBadge(symbol: systemImage, size: 32)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title).font(.headline)
                     Text(subtitle).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -383,8 +362,7 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(16)
-        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.primary.opacity(0.045)))
-        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(.primary.opacity(0.07), lineWidth: 1))
+        .surfaceCard()
     }
 
     private func captureHint(_ title: String, _ detail: String) -> some View {

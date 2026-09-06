@@ -49,9 +49,7 @@ struct ScrollCaptureHUDView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .frame(width: size.width, height: size.height, alignment: .topLeading)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.regularMaterial))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.white.opacity(0.14), lineWidth: 1))
-        .shadow(color: .black.opacity(0.28), radius: 16, y: 8)
+        .popupCard()
         .padding(Self.outerPadding)
     }
 

@@ -10,14 +10,14 @@ struct UtilityWorkbenchView: View {
             HStack(spacing: 12) {
                 Button(action: onBack) { Image(systemName: "chevron.left").font(.headline) }
                     .buttonStyle(SecondaryButtonStyle()).help("All tools (⌘K or Esc)").accessibilityLabel("Back to all tools")
-                Image(systemName: model.command.symbol).font(.title3).foregroundStyle(BoxTheme.accent)
+                ToolBadge(symbol: model.command.symbol)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(model.command.title).font(.headline)
                     Text(model.command == .http ? "Requests run when you choose Send" : "Processed on your Mac")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Text("⌘K  All tools").font(.caption).foregroundStyle(.secondary)
+                ShortcutBadge(text: "⌘K")
             }.padding(18)
             Divider()
             ScrollView {
@@ -30,7 +30,8 @@ struct UtilityWorkbenchView: View {
             }
             Divider()
             footer
-        }
+                .background(BoxTheme.surface.opacity(0.6))
+        }.tint(BoxTheme.accent)
     }
 
     @ViewBuilder private var controls: some View {
@@ -156,7 +157,7 @@ struct UtilityWorkbenchView: View {
             .font(.system(size: 12, design: .monospaced))
             .scrollContentBackground(.hidden)
             .padding(9).frame(height: height)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .textBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(.primary.opacity(0.1)))
             .accessibilityLabel(title)
     }
@@ -216,7 +217,7 @@ struct UtilityWorkbenchView: View {
                                 .fixedSize(horizontal: true, vertical: true)
                                 .frame(minWidth: max(0, geometry.size.width - 24), minHeight: max(0, geometry.size.height - 24), alignment: .topLeading).padding(12)
                         }
-                    }.frame(height: 210).background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .textBackgroundColor)))
+                    }.frame(height: 210).background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
                 }
             } else if !result.status.isEmpty {
                 Text(result.status).font(.callout).foregroundStyle(.secondary)

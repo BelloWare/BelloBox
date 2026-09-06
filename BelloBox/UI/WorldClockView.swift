@@ -21,21 +21,17 @@ struct WorldClockView: View {
             addAndAISection
         }
         .frame(minWidth: 760, minHeight: 590)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(WorkspaceBackground()).tint(BoxTheme.accent)
         .onReceive(timer) { viewModel.refreshCurrentTime($0) }
     }
 
     private var header: some View {
         HStack(spacing: 13) {
-            Image(systemName: "globe.americas.fill")
-                .font(.system(size: 23, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(RoundedRectangle(cornerRadius: 8).fill(BoxTheme.accentGradient))
+            ToolBadge(symbol: "globe.americas.fill", size: 40)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("World Clock")
-                    .font(.title2.weight(.semibold))
+                    .font(.system(size: 22, weight: .semibold))
                 Text("Compare a single moment across your locations.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -120,7 +116,7 @@ struct WorldClockView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
-        .background(Color.primary.opacity(0.025))
+        .background(BoxTheme.surface.opacity(0.55))
     }
 
     private var timelineSection: some View {
@@ -292,7 +288,7 @@ struct WorldClockView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(Color.primary.opacity(0.025))
+        .background(BoxTheme.surface.opacity(0.55))
     }
 }
 

@@ -1,12 +1,5 @@
 import SwiftUI
 
-/// Visual palette shared by the overlay surfaces, echoing the Bello Box icon.
-enum BoxTheme {
-    static let accent = Color(red: 0.84, green: 0.46, blue: 0.12)
-    static let accentDeep = Color(red: 0.72, green: 0.36, blue: 0.07)
-    static let accentSoft = Color(red: 0.84, green: 0.46, blue: 0.12).opacity(0.12)
-}
-
 /// The floating toolbar that appears next to a fresh text selection. It offers
 /// the available tools (AI actions and QR code) without stealing focus.
 struct FloatingToolbarView: View {
@@ -39,13 +32,7 @@ struct FloatingToolbarView: View {
         actionButtons
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
-            .background(
-                Capsule().fill(
-                    LinearGradient(colors: [BoxTheme.accent, BoxTheme.accentDeep], startPoint: .top, endPoint: .bottom)
-                )
-            )
-            .overlay(Capsule().strokeBorder(.white.opacity(0.22), lineWidth: 0.5))
-            .shadow(color: .black.opacity(0.22), radius: 5, y: 2)
+            .popupCard()
             .padding(5)
     }
 
@@ -57,29 +44,29 @@ struct FloatingToolbarView: View {
                 HStack(spacing: 9) {
                     Image(systemName: "clock")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                         .frame(width: 28, height: 28)
-                        .background(Circle().fill(.white.opacity(0.14)))
+                        .background(Circle().fill(BoxTheme.accentSoft))
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(summary.relativeTime)
                             .font(.system(size: 13, weight: .semibold))
                         Text(summary.localDateTime)
                             .font(.system(size: 11))
-                            .foregroundStyle(.white.opacity(0.82))
+                            .foregroundStyle(.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     Image(systemName: "globe")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.86))
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 7)
-                .background(.white.opacity(timestampHovering ? 0.10 : 0))
+                .background(BoxTheme.accent.opacity(timestampHovering ? 0.10 : 0))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -92,7 +79,7 @@ struct FloatingToolbarView: View {
             .accessibilityValue("\(summary.relativeTime), \(summary.localDateTime). Open in World Clock.")
 
             Rectangle()
-                .fill(.white.opacity(0.24))
+                .fill(BoxTheme.border)
                 .frame(height: 1)
 
             actionButtons
@@ -100,16 +87,7 @@ struct FloatingToolbarView: View {
                 .padding(.vertical, 5)
         }
         .frame(width: 320)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(
-                LinearGradient(colors: [BoxTheme.accent, BoxTheme.accentDeep], startPoint: .top, endPoint: .bottom)
-            )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .strokeBorder(.white.opacity(0.22), lineWidth: 0.5)
-        )
-        .shadow(color: .black.opacity(0.22), radius: 5, y: 2)
+        .popupCard()
         .padding(5)
     }
 
@@ -130,7 +108,7 @@ struct FloatingToolbarView: View {
     }
 
     private var divider: some View {
-        Rectangle().fill(.white.opacity(0.28)).frame(width: 1, height: 22)
+        Rectangle().fill(BoxTheme.border).frame(width: 1, height: 22)
     }
 }
 
@@ -146,11 +124,11 @@ private struct ToolIcon: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .frame(width: 38, height: 32)
                 .background(
                     RoundedRectangle(cornerRadius: 7, style: .continuous)
-                        .fill(.white.opacity(hovering ? 0.22 : 0))
+                        .fill(BoxTheme.accent.opacity(hovering ? 0.16 : 0))
                 )
                 .contentShape(Rectangle())
         }

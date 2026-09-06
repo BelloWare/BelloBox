@@ -5,7 +5,7 @@ import SwiftUI
 /// the middle of the screen.
 @MainActor
 final class MainWindowController: NSObject, NSWindowDelegate {
-    private var window: NSWindow?
+    private(set) var window: NSWindow?
 
     func show(
         settings: AppSettings,
@@ -19,7 +19,8 @@ final class MainWindowController: NSObject, NSWindowDelegate {
         onOpenQR: @escaping () -> Void,
         onOpenTextTools: @escaping () -> Void,
         onOpenWorldClock: @escaping () -> Void,
-        onCheckForUpdates: @escaping () -> Void
+        onCheckForUpdates: @escaping () -> Void,
+        onOpenTool: @escaping (LauncherCommand) -> Void = { _ in }
     ) {
         if let window {
             AppActivation.bringAppForward()
@@ -39,16 +40,19 @@ final class MainWindowController: NSObject, NSWindowDelegate {
             onOpenQR: onOpenQR,
             onOpenTextTools: onOpenTextTools,
             onOpenWorldClock: onOpenWorldClock,
-            onCheckForUpdates: onCheckForUpdates
+            onCheckForUpdates: onCheckForUpdates,
+            onOpenTool: onOpenTool
         )
         let hosting = NSHostingController(rootView: view)
         let window = NSWindow(contentViewController: hosting)
         window.title = "Bello Box"
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = NSColor(BoxTheme.background)
         window.isReleasedWhenClosed = false
         window.delegate = self
-        window.setContentSize(NSSize(width: 660, height: 780))
-        window.contentMinSize = NSSize(width: 660, height: 600)
+        window.setContentSize(NSSize(width: 1000, height: 760))
+        window.contentMinSize = NSSize(width: 900, height: 640)
         window.center()
         self.window = window
 

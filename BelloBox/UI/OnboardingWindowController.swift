@@ -28,6 +28,8 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let window = NSWindow(contentViewController: hosting)
         window.title = "Welcome to Bello Box"
         window.styleMask = [.titled, .closable]
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = NSColor(BoxTheme.background)
         window.isReleasedWhenClosed = false
         window.delegate = self
         // Size before centering so the window lands in the middle of the screen.

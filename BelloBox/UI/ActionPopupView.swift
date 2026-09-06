@@ -38,13 +38,14 @@ struct ActionPopupView: View {
         .popupCard()
         .appearPop()
         .onExitCommand { viewModel.close() }
+        .onAppear { showsSelection = viewModel.selection.text.count <= 800 }
         .onChange(of: viewModel.didRun) { if $0 { showsSelection = false } }
     }
 
     // MARK: - Sections
 
     private var header: some View {
-        PopupHeader(icon: "wand.and.stars", title: "Bello Box", subtitle: viewModel.providerSummary, onMinimize: onMinimize) {
+        PopupHeader(icon: "wand.and.stars", title: "Ask AI", subtitle: viewModel.providerSummary, onMinimize: onMinimize) {
             viewModel.close()
         }
     }
@@ -90,12 +91,11 @@ struct ActionPopupView: View {
                         .font(.callout)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 8)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.06)))
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 12)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(ToolCardButtonStyle())
                 .disabled(viewModel.isStreaming || !viewModel.isConfigured || viewModel.selection.text.isEmpty)
             }
         }
@@ -156,7 +156,7 @@ struct ActionPopupView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(8)
-            .background(RoundedRectangle(cornerRadius: 9).fill(.primary.opacity(0.05)))
+            .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
 
             HStack(spacing: 8) {
                 if let message = viewModel.copyMessage {

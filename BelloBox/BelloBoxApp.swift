@@ -13,6 +13,10 @@ struct BelloBoxApp: App {
             menuContent
         }
         .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") { appDelegate.showSettings() }
+                    .keyboardShortcut(",", modifiers: .command)
+            }
             CommandGroup(after: .appInfo) {
                 Button("Check for Updates…") { appDelegate.checkForUpdates() }
             }
@@ -21,8 +25,8 @@ struct BelloBoxApp: App {
 
     @ViewBuilder
     private var menuContent: some View {
-        Button("Open Bello Box…") { appDelegate.overlay?.openLauncher() }
-        Button("Home & Status") { appDelegate.showMainWindow() }
+        Button("Open Bello Box…") { appDelegate.showMainWindow() }
+        Button("Search All Tools…") { appDelegate.overlay?.openLauncher() }
 
         Divider()
 
@@ -168,6 +172,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
 #if DEBUG
+            let previewKeys = ["BELLOBOX_E2E_SCREENSHOT_IMAGE", "BELLOBOX_E2E_QR_TEXT", "BELLOBOX_E2E_AI_PREVIEW_TEXT",
+                               "BELLOBOX_E2E_RECORDING_OPTIONS", "BELLOBOX_E2E_RECORDING_REVIEW_FILE"]
+            if previewKeys.contains(where: { ProcessInfo.processInfo.environment[$0] != nil }) { return }
             let launcherFixture = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT_FILE"]
                 .flatMap { try? String(contentsOfFile: $0, encoding: .utf8) }
                 ?? ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT"]
@@ -185,8 +192,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
 #endif
             if self.settings.hasCompletedSetup {
-                if !AccessibilityService.isTrusted { AccessibilityService.requestPermissionPrompt() }
-                self.overlay?.openLauncher()
+                self.showMainWindow()
             } else {
                 self.showOnboarding()
             }
@@ -196,7 +202,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Re-opening the app (e.g. double-clicking it in Finder) brings a window up.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if settings.hasCompletedSetup {
-            overlay?.openLauncher()
+            showMainWindow()
         } else {
             showOnboarding()
         }
@@ -211,14 +217,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             canCheckForUpdates: updaterConfigured,
             onOpenSettings: { [weak self] in self?.showSettings() },
             onOpenGuide: { [weak self] in self?.showOnboarding() },
-            onOpenLauncher: { [weak self] in self?.mainWindow.hide(); self?.overlay?.openLauncher() },
+            onOpenLauncher: { [weak self] in self?.overlay?.openLauncher() },
             onCapture: { [weak self] in self?.mainWindow.hide(); self?.overlay?.triggerScreenshotCapture() },
             onScrollCapture: { [weak self] in self?.mainWindow.hide(); self?.overlay?.triggerScrollingScreenshotCapture() },
             onRecord: { [weak self] in self?.mainWindow.hide(); self?.overlay?.triggerRecording() },
             onOpenQR: { [weak self] in self?.overlay?.openBlankQR() },
             onOpenTextTools: { [weak self] in self?.overlay?.openBlankTextTools() },
             onOpenWorldClock: { [weak self] in self?.showWorldClock() },
-            onCheckForUpdates: { [weak self] in self?.checkForUpdates() }
+            onCheckForUpdates: { [weak self] in self?.checkForUpdates() },
+            onOpenTool: { [weak self] command in self?.overlay?.openLauncher(command: command) }
         )
     }
 

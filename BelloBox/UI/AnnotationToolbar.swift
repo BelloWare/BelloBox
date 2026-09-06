@@ -14,7 +14,8 @@ struct AnnotationToolbarView: View {
                     viewModel.activeTool = tool
                 } label: {
                     Image(systemName: tool.symbol)
-                        .frame(width: 28, height: 26)
+                        .font(.system(size: 13, weight: .medium))
+                        .frame(width: 30, height: 30)
                 }
                 .buttonStyle(.plain)
                 .background(RoundedRectangle(cornerRadius: 7).fill(viewModel.activeTool == tool ? BoxTheme.accentSoft : .clear))
@@ -97,7 +98,7 @@ struct AnnotationToolbarView: View {
                 .keyboardShortcut(.defaultAction)
                 .accessibilityLabel("Copy and Finish")
                 .overlayTooltip("Copy the image and finish (return)")
-        }
+        }.padding(showExportActions ? 0 : 8).surfaceCard().tint(BoxTheme.accent)
     }
 
     @ViewBuilder

@@ -12,6 +12,12 @@ or **Esc** to go back and close. The compact palette focuses search immediately
 and dismisses when you click elsewhere. Drafts survive tool switching until the
 palette is closed; recent commands remember tool names only.
 
+Opening Bello Box from the Dock or Finder brings up **Home**, a workspace with
+Overview, Developer, Capture, and Text & AI categories. Use **⌘1–⌘4** to switch
+categories and **⌘K** to search all tools. The global shortcut opens the compact
+palette from other apps. Home and the tools share adaptive graphite/indigo
+surfaces, consistent controls, and color-coded icons in light and dark themes.
+
 Long selections show a short preview and a character count while keeping the
 complete input, up to 500 KB. Larger selections show a clear size notice and
 open tools with empty input; they are never silently truncated. Clear the

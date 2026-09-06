@@ -575,7 +575,7 @@ final class SelectionOverlayController: NSObject {
         )
         present(
             view,
-            size: CGSize(width: 520, height: 420),
+            size: RecordingPermissionView.preferredSize,
             anchorRect: anchorRect,
             minimizedIcon: "record.circle",
             minimizedTitle: "Recording Permissions"
@@ -1005,6 +1005,17 @@ final class SelectionOverlayController: NSObject {
 #if DEBUG
     private func runE2EHooksIfNeeded() {
         let env = ProcessInfo.processInfo.environment
+        if env["BELLOBOX_E2E_RECORDING_OPTIONS"] == "1" {
+            let defaults = UserDefaults(suiteName: "BelloBox.DesignPreview")!
+            defaults.removePersistentDomain(forName: "BelloBox.DesignPreview")
+            let previewSettings = AppSettings(defaults: defaults)
+            let view = RecordingOptionsBar(settings: previewSettings, targetLabel: "Selected area · 1280 × 720",
+                initialOptions: .default, onStart: { [weak self] _ in self?.hidePopup() },
+                onCancel: { [weak self] in self?.hidePopup() })
+            present(view, size: CGSize(width: 780, height: 330), anchorRect: nil,
+                minimizedIcon: "record.circle", minimizedTitle: "Recording setup")
+            return
+        }
         if let path = env["BELLOBOX_E2E_RECORDING_REVIEW_FILE"] {
             handleRecordingState(.reviewing(URL(fileURLWithPath: path), warning: env["BELLOBOX_E2E_RECORDING_REVIEW_WARNING"]))
             return

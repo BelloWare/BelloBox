@@ -119,7 +119,7 @@ struct QRCodePopupView: View {
     }
 
     private var header: some View {
-        PopupHeader(icon: "qrcode", title: "QR Code", onMinimize: onMinimize) { viewModel.close() }
+        PopupHeader(icon: "qrcode", title: "QR Code", subtitle: "Text to a scannable image, instantly", onMinimize: onMinimize) { viewModel.close() }
     }
 
     @ViewBuilder
@@ -156,6 +156,8 @@ struct QRCodePopupView: View {
             HStack {
                 Text("Encoded text").font(.caption.bold()).foregroundStyle(.secondary)
                 Spacer()
+                Button("Clear") { viewModel.text = "" }
+                    .buttonStyle(.link).font(.caption).disabled(viewModel.text.isEmpty)
                 Button("Paste Text", action: viewModel.pasteText)
                     .buttonStyle(.link).font(.caption)
                     .help("Use text from your clipboard")
@@ -165,7 +167,7 @@ struct QRCodePopupView: View {
                 .frame(height: 100)
                 .scrollContentBackground(.hidden)
                 .padding(6)
-                .background(RoundedRectangle(cornerRadius: 9).fill(.primary.opacity(0.05)))
+                .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
                 .accessibilityLabel("Encoded text")
             HStack {
                 Text("\(viewModel.byteCount.formatted()) / \(QRCodeGenerator.maxByteCount.formatted()) bytes")
