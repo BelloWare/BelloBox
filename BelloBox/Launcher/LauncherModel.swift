@@ -8,6 +8,11 @@ final class LauncherModel: ObservableObject {
     let snippets: SnippetStore
     private let defaults: UserDefaults
     private var workbenches: [LauncherCommand: UtilityWorkbenchModel] = [:]
+    typealias PreviewBuilder = @Sendable (String, LauncherCommand, [String]) throws -> LauncherPreview
+    private let previewBuilder: PreviewBuilder
+    private var previewTask: Task<Void, Never>?
+    private var previewRunID = UUID()
+    @Published private(set) var preview: LauncherPreview?
     @Published var query = "" {
         didSet { selectedID = commands.first?.id; onPresentationChange() }
     }
@@ -22,23 +27,33 @@ final class LauncherModel: ObservableObject {
     var pinnedText: () -> String? = { nil }
     var pinText: (String) -> Void = { _ in }
 
-    init(selection: TextSelection, snippets: SnippetStore, defaults: UserDefaults = .standard) {
+    init(selection: TextSelection, snippets: SnippetStore, defaults: UserDefaults = .standard,
+         previewBuilder: @escaping PreviewBuilder = { try LauncherPreview.make(text: $0, command: $1, zoneIDs: $2) }) {
         let context = LauncherSelectionContext(text: selection.text)
         self.context = context
         self.selection = context.usableSelection(selection)
         self.snippets = snippets; self.defaults = defaults
+        self.previewBuilder = previewBuilder
         favorites = Set(defaults.stringArray(forKey: "launcherFavorites") ?? ["json", "compare", "screenshot", "worldClock"])
         recents = defaults.stringArray(forKey: "launcherRecents") ?? []
         selectedID = commands.first?.id
+        preparePreview()
     }
+    deinit { previewTask?.cancel() }
     var suggestions: [LauncherCommand] { context.suggestions }
     var commands: [LauncherCommand] {
         LauncherCommand.search(query, input: "", favorites: favorites, recents: recents, suggested: suggestions)
     }
     var selectedCommand: LauncherCommand? { commands.first { $0.id == selectedID } }
+    var featuredCommand: LauncherCommand? {
+        guard query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, context.hasText, !context.exceedsLimit else { return nil }
+        return suggestions.first
+    }
+    static let previewHeight: CGFloat = 150
     var paletteSize: NSSize {
         let contextHeight: CGFloat = context.hasText || contextMessage != nil ? 48 : 0
-        let listHeight: CGFloat = commands.isEmpty ? 130 : CGFloat(min(7, commands.count)) * 42 + 12
+        let featured = featuredCommand != nil
+        let listHeight: CGFloat = commands.isEmpty ? 130 : CGFloat(min(featured ? 5 : 7, commands.count)) * 42 + 12 + (featured ? Self.previewHeight : 0)
         return NSSize(width: 680, height: 64 + contextHeight + 26 + listHeight + 42)
     }
     func useClipboard(_ text: String? = NSPasteboard.general.string(forType: .string)) {
@@ -52,11 +67,32 @@ final class LauncherModel: ObservableObject {
     }
     private func replaceContext(_ selection: TextSelection) {
         cancelAll()
+        workbench = nil
         workbenches = [:]
         context = LauncherSelectionContext(text: selection.text)
         self.selection = context.usableSelection(selection)
         contextMessage = nil
         query = ""
+        preparePreview()
+    }
+    private func preparePreview() {
+        previewTask?.cancel()
+        previewRunID = UUID()
+        preview = nil
+        guard context.hasText, !context.exceedsLimit, let command = suggestions.first else { return }
+        let id = previewRunID, text = selection.text, builder = previewBuilder
+        let zones = WorldClockPreferencesStore(defaults: defaults).loadZoneIDs()
+        previewTask = Task { [weak self] in
+            let worker = Task.detached(priority: .userInitiated) { try builder(text, command, zones) }
+            do {
+                let value = try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
+                guard let self, self.previewRunID == id, !Task.isCancelled else { return }
+                self.preview = value
+            } catch {
+                guard let self, self.previewRunID == id, !Task.isCancelled else { return }
+                self.preview = LauncherPreview.failure(error, command: command)
+            }
+        }
     }
     func toggleFavorite(_ command: LauncherCommand) {
         if favorites.contains(command.id) { favorites.remove(command.id) } else { favorites.insert(command.id) }
@@ -70,6 +106,7 @@ final class LauncherModel: ObservableObject {
     }
     func openSelected() { if let command = selectedCommand ?? commands.first { open(command) } }
     func open(_ command: LauncherCommand) {
+        selectedID = command.id
         recents = [command.id] + recents.filter { $0 != command.id }.prefix(7)
         defaults.set(recents, forKey: "launcherRecents")
         if command.isDeveloperTool {
@@ -97,5 +134,8 @@ final class LauncherModel: ObservableObject {
         workbench = nil
         onPresentationChange()
     }
-    func cancelAll() { workbenches.values.forEach { $0.cancel() } }
+    func cancelAll() {
+        previewTask?.cancel(); previewTask = nil; previewRunID = UUID(); preview = nil
+        workbenches.values.forEach { $0.cancel() }
+    }
 }

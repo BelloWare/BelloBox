@@ -95,6 +95,7 @@ struct CronSchedule {
             if fields[3].values.contains(parts.month!) && matchesDay {
                 var candidates = Set<Date>()
                 for hour in fields[1].values.sorted() {
+                    try Task.checkCancellation()
                     for minute in fields[0].values.sorted() {
                         var match = parts
                         match.weekday = nil; match.hour = hour; match.minute = minute; match.second = 0

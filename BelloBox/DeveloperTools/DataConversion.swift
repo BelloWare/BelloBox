@@ -8,6 +8,13 @@ struct DataTable {
     let totalRows: Int
 }
 enum DataConversion {
+    static func detectFormat(_ text: String) -> DataFormat {
+        let input = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if input.hasPrefix("{") || input.hasPrefix("[") { return .json }
+        let firstLine = input.prefix(while: { !$0.isNewline })
+        if firstLine.contains(",") || firstLine.contains("\t") { return .csv }
+        return input.contains(":") ? .yaml : .csv
+    }
     static func convert(_ text: String, from: DataFormat, to: DataFormat, delimiter: Character = ",", inferTypes: Bool = false) throws -> (String, DataTable?) {
         try UtilityLimits.check(text)
         let value: DeveloperJSON

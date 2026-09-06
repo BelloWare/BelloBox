@@ -37,6 +37,14 @@ native `LauncherSearchField` with explicit first-responder focus. It dismisses
 on outside clicks or loss of key focus, except for its own menus/sheets/children.
 `LauncherSelectionContext` caches bounded preview and suggestion metadata once;
 inputs over 500 KB are rejected before creating editors and never truncated.
+`LauncherPreview` computes a bounded, read-only rich preview off the main actor
+for the highest-ranked suggestion; `LauncherModel` caches it for the selection
+and cancels/discards stale work on replacement or dismissal. Above 64 KB it
+shows a compact notice rather than parsing. Previews never create workbenches,
+send requests, copy text, or persist input. Timestamp selections rank World
+Clock first and preview the selected instant in up to three locations. Searching
+collapses the featured row; clearing search restores it. Keep explicit query
+matches above suggestions and suggestions above favorite/recent bonuses.
 
 Normal launches and Dock/Finder reopens show `MainView`; only the shortcut and
 explicit Search actions open the palette. `HomeCategory` organizes the tool

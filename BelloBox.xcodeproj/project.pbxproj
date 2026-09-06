@@ -19,6 +19,7 @@
 		0EE2FDA3D7C15AF542D25FF6 /* CaptureSelectionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433D0D3593C6BD69229898FB /* CaptureSelectionResolver.swift */; };
 		10CFC52E253F333240864913 /* HotkeyRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A64CBB1E527BEE463FDE0 /* HotkeyRecorderView.swift */; };
 		12F7C5AE113BC9290C48D2A3 /* RecordingHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1704C2E525613380884B45DC /* RecordingHUDView.swift */; };
+		13D23D235F983EE93B2801FD /* LauncherPreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05BAC95E8A7DD067A87BAA8 /* LauncherPreviewTests.swift */; };
 		15E11168A78CFF9B2632CE56 /* LauncherModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2483D8F50FC0E1B8B18D994B /* LauncherModel.swift */; };
 		17148A22CBC0660A47359050 /* LLMOCRRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E68A40F9F58088083B393B /* LLMOCRRequestBuilderTests.swift */; };
 		1ACADA2434E9FE29DFEBC958 /* PrivacyGuardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6395ED1A02E6D567941F68 /* PrivacyGuardTests.swift */; };
@@ -46,12 +47,14 @@
 		338B602DCCE19D3AB2F75EE0 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41CBE868D630B1299CC4901 /* AppSettings.swift */; };
 		3489FD327C260048AA9EF200 /* DebugInfoCollectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CF009E56B87169B4330D59 /* DebugInfoCollectorTests.swift */; };
 		36216335143FF6370C62DA11 /* ScreenshotPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1F19FA474E63FAC1BB2574 /* ScreenshotPopupView.swift */; };
+		382E70F116258D553E5E7EAB /* LauncherPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FDCBEA285CC455FB04EC098 /* LauncherPreview.swift */; };
 		38F72A0D7F1D63C2EFEBED6E /* LLMOCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DF7E45348E3013AD507E2F5 /* LLMOCRService.swift */; };
 		3972BF1A2573D55713E1DB0F /* RecordingMicrophoneDevices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0299D3F31944B0C15B38ECAC /* RecordingMicrophoneDevices.swift */; };
 		3B251E1F55B56C5F043C6257 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1FC81A7F76C40AA8B3D8903 /* OnboardingView.swift */; };
 		3B388ADFE561FF800AE991B3 /* OCRPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E11803E3A01D23D921FB933 /* OCRPanelView.swift */; };
 		3BF37ABD7CC285A14884958C /* ScrollCaptureHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6945A1998B09730F8C64B275 /* ScrollCaptureHUDView.swift */; };
 		3CB6C07E2979CD9857E38AB1 /* AnnotationRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 782A3CD02B34861CB6787FE8 /* AnnotationRenderer.swift */; };
+		3D1079A7A7DC7D6349B41FE1 /* LauncherInlinePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C96AE5544BC7A447EF6266A2 /* LauncherInlinePreview.swift */; };
 		3E62D776732995E50A734D6A /* ImageStitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4863A41970D411485F0485 /* ImageStitcher.swift */; };
 		3EE95ACBFADA1B6E5BF6DAE1 /* ScreenCoordinateSpaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05EE5C31B1E8F42734B13290 /* ScreenCoordinateSpaceTests.swift */; };
 		420BB4D2F7A9D3868A3A73A7 /* OverlayTooltipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28ECD1F19012FF02482D47B /* OverlayTooltipTests.swift */; };
@@ -219,6 +222,7 @@
 		1D24648C227942429D5E7B40 /* QRCodeGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeGeneratorTests.swift; sourceTree = "<group>"; };
 		1EA365668403ACA15E62C474 /* AnnotationToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationToolbar.swift; sourceTree = "<group>"; };
 		1F644D5CDDEC738B44A1694F /* LLMOCRResponseParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMOCRResponseParserTests.swift; sourceTree = "<group>"; };
+		1FDCBEA285CC455FB04EC098 /* LauncherPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherPreview.swift; sourceTree = "<group>"; };
 		20CD29E9EDDDB9CF151B68CD /* MacVisionOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVisionOCRService.swift; sourceTree = "<group>"; };
 		210539A51AB31BAEF0D25611 /* WorldClockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldClockView.swift; sourceTree = "<group>"; };
 		21C781B3A36385983843F9C3 /* UtilityWorkbenchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityWorkbenchView.swift; sourceTree = "<group>"; };
@@ -343,9 +347,11 @@
 		C395868441BE07091DEA8FF7 /* ImageAlphaMask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAlphaMask.swift; sourceTree = "<group>"; };
 		C3BA85CB3178120FD6DD4FC0 /* RecordingAudioMixerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingAudioMixerTests.swift; sourceTree = "<group>"; };
 		C533015D8A378E8201BE18FE /* AppActivation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActivation.swift; sourceTree = "<group>"; };
+		C96AE5544BC7A447EF6266A2 /* LauncherInlinePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherInlinePreview.swift; sourceTree = "<group>"; };
 		C9E68A40F9F58088083B393B /* LLMOCRRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMOCRRequestBuilderTests.swift; sourceTree = "<group>"; };
 		CB2F6B9E2B89DE9CC44770BC /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		CDF60D273C5788D7C5ECD873 /* WorldClockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldClockTests.swift; sourceTree = "<group>"; };
+		D05BAC95E8A7DD067A87BAA8 /* LauncherPreviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherPreviewTests.swift; sourceTree = "<group>"; };
 		D2C4A5518E2AD00BEF050895 /* SnippetsAndGenerators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnippetsAndGenerators.swift; sourceTree = "<group>"; };
 		D435BC123B789A7484F28A56 /* CaptureWindowCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureWindowCatalog.swift; sourceTree = "<group>"; };
 		D473E967C1F1CF7127A9CFD5 /* ScreenCoordinateSpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCoordinateSpace.swift; sourceTree = "<group>"; };
@@ -563,6 +569,7 @@
 				464C266C76D1BDC07A36F458 /* ImageStitcherTests.swift */,
 				4D76A4B960216A1AC89FD807 /* InlineTextEditingTests.swift */,
 				A2FC47EE2077C7ED250B7A03 /* LauncherInteractionTests.swift */,
+				D05BAC95E8A7DD067A87BAA8 /* LauncherPreviewTests.swift */,
 				C9E68A40F9F58088083B393B /* LLMOCRRequestBuilderTests.swift */,
 				1F644D5CDDEC738B44A1694F /* LLMOCRResponseParserTests.swift */,
 				2DCE54CCBFE676BC1C9C5CC1 /* MultiDisplayCapturePipelineTests.swift */,
@@ -610,7 +617,9 @@
 			isa = PBXGroup;
 			children = (
 				C080D2027E240847FBB3C957 /* LauncherCatalog.swift */,
+				C96AE5544BC7A447EF6266A2 /* LauncherInlinePreview.swift */,
 				2483D8F50FC0E1B8B18D994B /* LauncherModel.swift */,
+				1FDCBEA285CC455FB04EC098 /* LauncherPreview.swift */,
 				898EEC2C8BAFE8D4480FCF7E /* LauncherSearchField.swift */,
 				98735DED41F0CE8FCE9FC5AB /* LauncherSelectionContext.swift */,
 				2FE7409167E82B2CF5FB4E81 /* LauncherView.swift */,
@@ -862,6 +871,7 @@
 				17148A22CBC0660A47359050 /* LLMOCRRequestBuilderTests.swift in Sources */,
 				D93FAC85138695EF088AAC6F /* LLMOCRResponseParserTests.swift in Sources */,
 				64151A7D15C6D6DA5D414585 /* LauncherInteractionTests.swift in Sources */,
+				13D23D235F983EE93B2801FD /* LauncherPreviewTests.swift in Sources */,
 				0C8A1CC31CE718DD72DA0C65 /* MultiDisplayCapturePipelineTests.swift in Sources */,
 				A758B36CB49912D5130296A3 /* OCRBoundingBoxConversionTests.swift in Sources */,
 				64DCF1F0FAB5A11BED505FF4 /* OCRBoundingBoxConverterTests.swift in Sources */,
@@ -949,7 +959,9 @@
 				38F72A0D7F1D63C2EFEBED6E /* LLMOCRService.swift in Sources */,
 				58CC640C94F07D4FB37EC9B3 /* LaunchAtLoginController.swift in Sources */,
 				9F9F8FBCBE6316A35225C1D8 /* LauncherCatalog.swift in Sources */,
+				3D1079A7A7DC7D6349B41FE1 /* LauncherInlinePreview.swift in Sources */,
 				15E11168A78CFF9B2632CE56 /* LauncherModel.swift in Sources */,
+				382E70F116258D553E5E7EAB /* LauncherPreview.swift in Sources */,
 				85762B8B785D378FBCA1CA6C /* LauncherSearchField.swift in Sources */,
 				E65DF9FE5FBED5B4DF981DF0 /* LauncherSelectionContext.swift in Sources */,
 				6B9F01911919A92A112EAFC9 /* LauncherView.swift in Sources */,
@@ -1140,7 +1152,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 62;
+				CURRENT_PROJECT_VERSION = 63;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1160,7 +1172,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.62;
+				MARKETING_VERSION = 0.0.63;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1206,7 +1218,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 62;
+				CURRENT_PROJECT_VERSION = 63;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1220,7 +1232,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.62;
+				MARKETING_VERSION = 0.0.63;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

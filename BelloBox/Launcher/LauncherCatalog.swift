@@ -101,12 +101,12 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         if text.hasPrefix("curl ") || text.hasPrefix("curl\n") { return [.http] }
         if text.split(separator: ".", omittingEmptySubsequences: false).count == 3 && !text.contains(where: \.isWhitespace), text.hasPrefix("eyJ") { return [.jwt] }
         if text.lowercased().hasPrefix("bearer eyj") { return [.jwt] }
-        if text.hasPrefix("https://") || text.hasPrefix("http://") { return [.url, .qr, .http] }
+        if text.lowercased().hasPrefix("https://") || text.lowercased().hasPrefix("http://") { return [.url, .qr, .http] }
         if text.utf8.count <= 256 {
-            if TimestampSummary.make(from: text) != nil { return [.time, .worldClock] }
+            if TimestampSummary.make(from: text) != nil { return [.worldClock, .time] }
             if (try? CronSchedule(text)) != nil { return [.cron] }
         }
-        if text.contains("\n") && (text.contains(":") || text.contains(",")) { return [.convert, .compare] }
+        if text.contains("\n") && (text.contains(": ") || text.contains(",") || text.contains("\t")) { return [.convert, .compare] }
         return [.textTools, .compare, .snippets]
     }
     static func search(_ query: String, input: String, favorites: Set<String>, recents: [String], suggested: [LauncherCommand]? = nil) -> [LauncherCommand] {
@@ -119,9 +119,11 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         }.sorted { left, right in
             func score(_ command: Self) -> Int {
                 var score = favorites.contains(command.id) ? 100 : 0
-                if let i = suggested.firstIndex(of: command) { score += 300 - i * 20 }
+                // A favorite must not displace the best interpretation of the
+                // selection. Explicit search prefixes still take precedence.
+                if let i = suggested.firstIndex(of: command) { score += 1_000 - i * 200 }
                 if let i = recents.firstIndex(of: command.id) { score += 40 - i }
-                if !query.isEmpty && command.title.lowercased().hasPrefix(query.lowercased()) { score += 500 }
+                if !query.isEmpty && command.title.lowercased().hasPrefix(query.lowercased()) { score += 10_000 }
                 return score
             }
             let a = score(left), b = score(right)

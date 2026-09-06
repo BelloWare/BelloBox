@@ -32,6 +32,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     private var trackingMenu = false
     private var model: LauncherModel?
     private weak var searchField: LauncherSearchTextField?
+    private var presentationID = UUID()
 #if DEBUG
     private let snippets = SnippetStore(url: ProcessInfo.processInfo.environment["BELLOBOX_E2E_SNIPPETS_PATH"].map { URL(fileURLWithPath: $0) })
 #else
@@ -85,7 +86,15 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
                 MainActor.assumeIsolated { self?.trackingMenu = false }
             }
         ]
+        let animate = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        panel.alphaValue = animate ? 0 : 1
         panel.makeKeyAndOrderFront(nil)
+        if animate {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.12
+                panel.animator().alphaValue = 1
+            }
+        }
         focusSearch()
 #if DEBUG
         writeLifecycle("shown")
@@ -130,9 +139,23 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         let screen = panel.screen ?? ScreenPlacement.screen(containing: oldFrame.origin)
         let origin = ScreenPlacement.clamp(origin: CGPoint(x: oldFrame.midX - size.width / 2,
             y: oldFrame.maxY - size.height), size: size, into: screen)
-        panel.setFrame(NSRect(origin: origin, size: size), display: true)
-        panel.contentMinSize = isWorkbench ? NSSize(width: 740, height: 560) : size
-        panel.contentMaxSize = isWorkbench ? NSSize(width: 1_600, height: 1_200) : size
+        let frame = NSRect(origin: origin, size: size)
+        presentationID = UUID()
+        let id = presentationID
+        let finish = { [weak self, weak panel] in
+            guard let self, let panel, self.panel === panel, self.presentationID == id else { return }
+            panel.contentMinSize = isWorkbench ? NSSize(width: 740, height: 560) : size
+            panel.contentMaxSize = isWorkbench ? NSSize(width: 1_600, height: 1_200) : size
+        }
+        if frame == oldFrame || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            panel.setFrame(frame, display: true)
+            finish()
+        } else {
+            NSAnimationContext.runAnimationGroup({ context in
+                context.duration = 0.16
+                panel.animator().setFrame(frame, display: true)
+            }, completionHandler: finish)
+        }
         if !isWorkbench { focusSearch() }
     }
 
@@ -161,6 +184,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         if panel != nil { writeLifecycle(reason) }
 #endif
         model?.cancelAll()
+        presentationID = UUID()
         for monitor in [keyMonitor, outsideMonitor, localClickMonitor].compactMap({ $0 }) { NSEvent.removeMonitor(monitor) }
         keyMonitor = nil; outsideMonitor = nil; localClickMonitor = nil
         menuObservers.forEach { NotificationCenter.default.removeObserver($0) }

@@ -63,9 +63,10 @@ final class UtilityWorkbenchModel: ObservableObject {
         self.inputNotice = inputNotice
         input = selection.text
         if command == .snippets && input.isEmpty { input = "Hello {{name}},\n\n{{selection}}" }
-        if command == .convert && !input.isEmpty && !input.hasPrefix("{") && !input.hasPrefix("[") {
-            fromFormat = input.contains(":") ? .yaml : .csv
-            toFormat = .json
+        if command == .convert && !input.isEmpty {
+            fromFormat = DataConversion.detectFormat(input)
+            if fromFormat != .json { toFormat = .json }
+            if fromFormat == .csv && input.contains("\t") && !input.contains(",") { delimiter = "\t" }
         }
     }
     var canReplace: Bool { selection.pid != nil && !output.isEmpty && !busy && error == nil }

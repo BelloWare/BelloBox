@@ -3,17 +3,19 @@ import SwiftUI
 struct LauncherView: View {
     @ObservedObject var model: LauncherModel
     var onSearchReady: (LauncherSearchTextField) -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(spacing: 0) {
             if let workbench = model.workbench {
                 UtilityWorkbenchView(model: workbench, onBack: model.back)
+                    .transition(.opacity)
             } else {
                 search
                 if model.context.hasText || model.contextMessage != nil { selectionContext }
                 Divider().opacity(0.6)
                 HStack {
-                    Text(model.query.isEmpty ? (model.suggestions.isEmpty ? "Your tools" : "Suggested for your text") : "Results")
+                    Text(model.query.isEmpty ? (model.suggestions.isEmpty ? "Your tools" : "Suggested for your selection") : "Results")
                         .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
                     Spacer()
                     Text("\(model.commands.count)").font(.system(size: 10, design: .monospaced)).foregroundStyle(.tertiary)
@@ -26,6 +28,7 @@ struct LauncherView: View {
         .background(WorkspaceBackground()).tint(BoxTheme.accent)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.primary.opacity(0.12), lineWidth: 1))
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.14), value: model.workbench != nil)
     }
 
     private var search: some View {
@@ -81,14 +84,15 @@ struct LauncherView: View {
                     }
                     ForEach(model.commands) { command in
                         LauncherCommandRow(command: command, selected: model.selectedID == command.id,
-                            favorite: model.favorites.contains(command.id), onOpen: { model.open(command) },
+                            favorite: model.favorites.contains(command.id), featured: model.featuredCommand == command,
+                            preview: model.preview, onOpen: { model.open(command) },
                             onFavorite: { model.toggleFavorite(command) })
                             .id(command.id)
                     }
                 }.padding(.horizontal, 8).padding(.vertical, 6)
             }
             .onChange(of: model.selectedID) { id in
-                if let id { reader.scrollTo(id) }
+                if let id { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.12)) { reader.scrollTo(id) } }
             }
         }
     }
@@ -123,22 +127,27 @@ private struct LauncherCommandRow: View {
     let command: LauncherCommand
     let selected: Bool
     let favorite: Bool
+    let featured: Bool
+    let preview: LauncherPreview?
     let onOpen: () -> Void
     let onFavorite: () -> Void
     @State private var hovered = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack(spacing: 8) {
+        VStack(spacing: 0) {
+          HStack(spacing: 8) {
             Button(action: onOpen) {
                 HStack(spacing: 11) {
                     ToolBadge(symbol: command.symbol, size: 27)
                     Text(command.title).font(.system(size: 13, weight: selected ? .semibold : .medium)).lineLimit(1)
                     Spacer(minLength: 12)
-                    Text(category).font(.system(size: 10)).foregroundStyle(.tertiary)
+                    Text(featured ? "Best match" : category).font(.system(size: 10))
+                        .foregroundStyle(featured ? BoxTheme.accent : .secondary)
                 }.contentShape(Rectangle())
             }.buttonStyle(.plain).help(command.subtitle).accessibilityIdentifier("command_\(command.id)")
                 .accessibilityLabel(command.title).accessibilityHint(command.subtitle)
-                .accessibilityValue(selected ? "Selected" : "Not selected")
+                .accessibilityValue((selected ? "Selected" : "Not selected") + (featured ? ". " + (preview?.accessibilitySummary ?? "Preparing preview") : ""))
             Button(action: onFavorite) {
                 Image(systemName: favorite ? "star.fill" : "star").font(.system(size: 10))
                     .foregroundStyle(favorite ? Color.secondary : Color.secondary.opacity(0.6))
@@ -146,11 +155,18 @@ private struct LauncherCommandRow: View {
                     .frame(width: 24, height: 28).contentShape(Rectangle())
             }.buttonStyle(.plain).help(favorite ? "Remove favorite" : "Add favorite")
                 .accessibilityLabel("\(favorite ? "Unfavorite" : "Favorite") \(command.title)")
+          }.padding(.horizontal, 10).frame(height: 42)
+          if featured {
+              Button(action: onOpen) { LauncherInlinePreview(preview: preview).contentShape(Rectangle()) }
+                  .buttonStyle(.plain).accessibilityHidden(true)
+          }
         }
-        .padding(.horizontal, 10).frame(height: 42)
         .background((selected ? BoxTheme.accentSoft : hovered ? Color.primary.opacity(0.035) : .clear),
-                    in: RoundedRectangle(cornerRadius: 8))
+                    in: RoundedRectangle(cornerRadius: featured ? 12 : 8))
+        .overlay(RoundedRectangle(cornerRadius: featured ? 12 : 8).strokeBorder(featured ? (selected ? BoxTheme.accent.opacity(0.35) : BoxTheme.border) : .clear))
         .onHover { hovered = $0 }
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: selected)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)
     }
     private var category: String {
         if command.isDeveloperTool { return "Developer" }

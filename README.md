@@ -12,6 +12,16 @@ or **Esc** to go back and close. The compact palette focuses search immediately
 and dismisses when you click elsewhere. Drafts survive tool switching until the
 palette is closed; recent commands remember tool names only.
 
+With selected text, the best match is selected automatically and expands into
+a read-only preview: timestamps show up to three World Clock locations, JSON
+and tabular data show a formatted excerpt, URLs and cURL show their structure,
+JWTs show decoded content with an unverified-signature warning, cron shows
+upcoming runs, and plain text shows counts. Press **Return** to open the full
+tool. Searching returns to the compact list; clearing search restores the
+cached preview. Preview generation runs locally in the background and never
+sends requests or changes the selected text. Window and selection transitions
+honor macOS **Reduce Motion**.
+
 Opening Bello Box from the Dock or Finder brings up **Home**, a workspace with
 Overview, Developer, Capture, and Text & AI categories. Use **⌘1–⌘4** to switch
 categories and **⌘K** to search all tools. The global shortcut opens the compact
@@ -22,7 +32,8 @@ show each option, and changes apply to windows that are already open. Shared
 accent and status text colors are checked for contrast on both themes.
 
 Long selections show a short preview and a character count while keeping the
-complete input, up to 500 KB. Larger selections show a clear size notice and
+complete input, up to 500 KB. Above 64 KB, rich parsing is deferred until the
+tool opens so the palette stays responsive. Selections above 500 KB show a clear size notice and
 open tools with empty input; they are never silently truncated. Clear the
 selection or use clipboard text directly from the palette.
 
