@@ -113,6 +113,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let overlay = SelectionOverlayController(settings: settings)
         overlay.openSettings = { [weak self] in self?.showSettings() }
         overlay.openHome = { [weak self] in self?.showMainWindow() }
+        overlay.openSettingsCategory = { [weak self] category in self?.showSettings(category: category) }
+        overlay.openHomeDestination = { [weak self] destination in
+            switch destination {
+            case .category(let category): self?.showMainWindow(category: category)
+            case .setupGuide: self?.showOnboarding()
+            case .checkForUpdates: self?.showMainWindow(); self?.checkForUpdates()
+            }
+        }
         overlay.openWorldClock = { [weak self] handoff in self?.showWorldClock(handoff) }
         overlay.start()
         self.overlay = overlay
@@ -186,7 +194,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 ?? ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT"]
             if let text = launcherFixture {
                 let command = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_COMMAND"].flatMap(LauncherCommand.init(rawValue:))
-                self.overlay?.openLauncher(selection: TextSelection(text: text, anchorRect: nil, appName: "Example", bundleID: nil, pid: nil), command: command)
+                // BELLOBOX_E2E_LAUNCHER_FOCUS=<command id> highlights that row (its
+                // interactive preview) without opening it.
+                let focus = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_FOCUS"].flatMap(LauncherCommand.init(rawValue:))
+                self.overlay?.openLauncher(selection: TextSelection(text: text, anchorRect: nil, appName: "Example", bundleID: nil, pid: nil),
+                                           command: command, focus: focus)
                 return
             }
             if ProcessInfo.processInfo.environment["BELLOBOX_E2E_OPEN_WORLD_CLOCK"] == "1" {
@@ -217,10 +229,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Windows
 
-    func showMainWindow() {
+    func showMainWindow(category: HomeCategory? = nil) {
         mainWindow.show(
             settings: settings,
             canCheckForUpdates: updaterConfigured,
+            category: category,
             onOpenSettings: { [weak self] in self?.showSettings() },
             onOpenGuide: { [weak self] in self?.showOnboarding() },
             onOpenLauncher: { [weak self] in self?.overlay?.openLauncher() },
@@ -243,8 +256,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
-    func showSettings() {
-        settingsWindow.show(settings: settings)
+    func showSettings(category: SettingsCategory? = nil) {
+        settingsWindow.show(settings: settings, category: category)
     }
 
     func showWorldClock(_ handoff: WorldClockHandoff? = nil) {

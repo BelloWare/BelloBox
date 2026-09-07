@@ -49,6 +49,9 @@ final class SelectionOverlayController: NSObject {
     /// Set by the app to open the Settings window.
     var openSettings: () -> Void = {}
     var openHome: () -> Void = {}
+    /// Set by the app: a Settings page or Home destination chosen in the palette.
+    var openSettingsCategory: (SettingsCategory) -> Void = { _ in }
+    var openHomeDestination: (HomeHandoff) -> Void = { _ in }
     /// Set by the app to open the persistent world clock with a selection's
     /// instant, and from the palette also the previewed reference and copilot.
     var openWorldClock: (WorldClockHandoff?) -> Void = { _ in }
@@ -246,28 +249,40 @@ final class SelectionOverlayController: NSObject {
         openLauncher(selection: selection)
     }
 
-    func openLauncher(selection: TextSelection? = nil, command: LauncherCommand? = nil) {
+    func openLauncher(selection: TextSelection? = nil, command: LauncherCommand? = nil, focus: LauncherCommand? = nil) {
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
         hideToolbar(animated: false)
         hidePopup()
-        launcher.show(selection: selection ?? TextSelection(text: "", anchorRect: nil, appName: nil, bundleID: nil, pid: nil), initialCommand: command)
+        launcher.show(selection: selection ?? TextSelection(text: "", anchorRect: nil, appName: nil, bundleID: nil, pid: nil),
+                      initialCommand: command, focus: focus)
     }
 
+    /// Runs a palette command with what its preview was showing: the QR text,
+    /// a Text Tools category, an explicit AI instruction, a capture mode,
+    /// recording or GIF options, or a Settings/Home page.
     private func runLauncherCommand(_ command: LauncherCommand, selection: TextSelection, context: LauncherCommandContext = LauncherCommandContext()) {
         switch command {
-        case .ai: showAIPopup(for: selection)
+        case .ai: showAIPopup(for: selection, handoff: context.ai)
         case .qr: showQRPopup(for: selection)
-        case .textTools: showTextToolsPopup(for: selection)
-        case .screenshot: triggerScreenshotCapture()
-        case .scrollCapture: triggerScrollingScreenshotCapture()
-        case .recording: triggerRecording()
-        case .videoToGIF: openVideoToGIF()
+        case .textTools: showTextToolsPopup(for: selection, handoff: context.textTools)
+        case .screenshot, .scrollCapture:
+            switch context.capture?.mode {
+            case .area?: beginAreaCapture(anchorRect: nil)
+            case .window?: beginWindowCapture(anchorRect: nil)
+            case .screen?: beginScreenCapture(anchorRect: nil)
+            case .scrolling?: beginScrollingAreaCapture(anchorRect: nil)
+            case nil: command == .scrollCapture ? triggerScrollingScreenshotCapture() : triggerScreenshotCapture()
+            }
+        case .recording: triggerRecording(options: context.recording)
+        case .videoToGIF: openVideoToGIF(options: context.videoToGIF?.options, chooseFile: context.videoToGIF?.chooseFile ?? false)
         // Open with what the palette was previewing (instant, reference, and
         // copilot conversation), which may differ from the selected text.
         case .worldClock:
             openWorldClock(context.worldClock ?? TimestampSummary.make(from: selection.text).map { WorldClockHandoff(instant: $0.date) })
-        case .settings: openSettings()
-        case .home: openHome()
+        case .settings:
+            if let category = context.settings { openSettingsCategory(category) } else { openSettings() }
+        case .home:
+            if let destination = context.home { openHomeDestination(destination) } else { openHome() }
         default: break
         }
     }
@@ -468,7 +483,9 @@ final class SelectionOverlayController: NSObject {
 
     // MARK: - Popups
 
-    private func showAIPopup(for selection: TextSelection) {
+    /// `handoff` is an instruction the user explicitly chose in the palette;
+    /// it starts once the popup is on screen.
+    private func showAIPopup(for selection: TextSelection, handoff: AIHandoff? = nil) {
         let viewModel = ActionPopupViewModel(
             selection: selection,
             settings: settings,
@@ -496,6 +513,7 @@ final class SelectionOverlayController: NSObject {
             onDismiss: { viewModel.cancel() },
             minimizedSubtitle: { viewModel.providerSummary }
         )
+        if let handoff { viewModel.apply(handoff) }
     }
 
     private func showQRPopup(for selection: TextSelection) {
@@ -515,8 +533,9 @@ final class SelectionOverlayController: NSObject {
         )
     }
 
-    private func showTextToolsPopup(for selection: TextSelection) {
+    private func showTextToolsPopup(for selection: TextSelection, handoff: TextToolsHandoff? = nil) {
         let viewModel = TextToolsPopupViewModel(selection: selection, settings: settings, accessibility: accessibility)
+        if let handoff { viewModel.apply(handoff) }
         viewModel.onClose = { [weak self] in self?.hidePopup() }
         let view = TextToolsPopupView(
             viewModel: viewModel,
@@ -535,11 +554,12 @@ final class SelectionOverlayController: NSObject {
     // MARK: - Video to GIF
 
     /// The standalone converter. The movie comes only from the file chooser (or a
-    /// review fixture); nothing is executed or uploaded.
-    func openVideoToGIF(preloading url: URL? = nil) {
+    /// review fixture); nothing is executed or uploaded. `options` are the
+    /// palette preview's draft; `chooseFile` opens the chooser at once.
+    func openVideoToGIF(preloading url: URL? = nil, options: GIFExportOptions? = nil, chooseFile: Bool = false) {
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
         hideToolbar()
-        let viewModel = VideoToGIFViewModel(options: settings.gifExportOptions)
+        let viewModel = VideoToGIFViewModel(options: options ?? settings.gifExportOptions)
         viewModel.onClose = { [weak self] in self?.hidePopup() }
         if let url { viewModel.load(url) }
         let view = VideoToGIFView(viewModel: viewModel, onMinimize: { [weak self] in self?.minimizePopup() })
@@ -551,17 +571,26 @@ final class SelectionOverlayController: NSObject {
             minimizedTitle: "Video to GIF",
             onDismiss: { viewModel.close() }
         )
+        if chooseFile, url == nil {
+            // The chooser runs modally; let the popup finish presenting first.
+            DispatchQueue.main.async { [weak self, weak viewModel] in
+                guard let self, let viewModel, self.popupPanel != nil else { return }
+                viewModel.chooseVideo()
+            }
+        }
     }
 
     // MARK: - Recording
 
-    func triggerRecording() {
+    /// `options` come from the palette's recording preview; the capture
+    /// overlay starts from them instead of the saved defaults.
+    func triggerRecording(options: RecordingOptions? = nil) {
 #if DEBUG
         if writeE2EHotkeyMarkerIfNeeded(kind: "recording") { return }
 #endif
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
         hideToolbar()
-        beginUnifiedRecordingCapture(anchorRect: nil)
+        beginUnifiedRecordingCapture(anchorRect: nil, options: options)
     }
 
     func stopRecording() {

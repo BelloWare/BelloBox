@@ -342,12 +342,16 @@ final class WorldClockViewModel: ObservableObject {
     }
 
     /// Adopts what the palette or a selection handed over: the previewed
-    /// instant, the chosen reference, and the copilot conversation. Nothing is
-    /// saved; a reference outside the saved list joins the planner in memory
-    /// only. A handoff with an instant is a new context, so any earlier
-    /// conversation in this window is dropped before the snapshot is restored.
+    /// instant (or live intent), the chosen reference, and the copilot
+    /// conversation. Nothing is saved; a reference outside the saved list
+    /// joins the planner in memory only. A handoff with an instant or live
+    /// intent is a new context, so any earlier conversation in this window is
+    /// dropped before the snapshot is restored.
     func adopt(_ handoff: WorldClockHandoff) {
-        if let instant = handoff.instant {
+        if handoff.followsNow {
+            seedInstant = nil
+            goToNow()
+        } else if let instant = handoff.instant {
             seedInstant = instant
             focus(on: instant)
         }
@@ -357,7 +361,7 @@ final class WorldClockViewModel: ObservableObject {
             timeline = WorldClockTimeline(containing: selectedInstant, anchorTimeZone: anchorTimeZone)
             refreshTimelineQualities()
         }
-        if handoff.instant != nil || handoff.copilot != nil {
+        if handoff.followsNow || handoff.instant != nil || handoff.copilot != nil {
             copilot.reset()
         }
         if let snapshot = handoff.copilot, !snapshot.isEmpty {

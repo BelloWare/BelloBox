@@ -26,11 +26,13 @@ final class QRCodePopupViewModel: ObservableObject {
         self.text = text
     }
 
+    /// The full-size code for display, copying and saving: never fewer than
+    /// four pixels per module, so dense codes stay readable.
     var image: NSImage? {
         if cachedImageText == text {
             return cachedImage
         }
-        let image = QRCodeGenerator.image(for: text)
+        let image = QRCodeGenerator.image(for: text, pixelSize: QRCodeGenerator.exportPixelSize(for: text))
         cachedImageText = text
         cachedImage = image
         return image
@@ -62,10 +64,12 @@ final class QRCodePopupViewModel: ObservableObject {
         }
     }
 
-    func save() {
+    /// Saves as PNG. Inside the palette the panel is attached to that window
+    /// as a sheet, so the palette does not dismiss while it is open.
+    func save(in window: NSWindow? = nil) {
         statusMessage = nil
         errorMessage = nil
-        guard let data = QRCodeGenerator.pngData(for: text) else {
+        guard let data = QRCodeGenerator.pngData(for: text, pixelSize: QRCodeGenerator.exportPixelSize(for: text)) else {
             errorMessage = "There is no QR image to save."
             return
         }
@@ -73,7 +77,7 @@ final class QRCodePopupViewModel: ObservableObject {
         panel.allowedContentTypes = [.png]
         panel.nameFieldStringValue = "qr-code.png"
         panel.canCreateDirectories = true
-        panel.begin { response in
+        let finish: (NSApplication.ModalResponse) -> Void = { response in
             guard response == .OK, let url = panel.url else { return }
             do {
                 try data.write(to: url, options: .atomic)
@@ -81,6 +85,11 @@ final class QRCodePopupViewModel: ObservableObject {
             } catch {
                 Task { @MainActor in self.errorMessage = "Could not save QR image: \(error.localizedDescription)" }
             }
+        }
+        if let window, window.isVisible {
+            panel.beginSheetModal(for: window, completionHandler: finish)
+        } else {
+            panel.begin(completionHandler: finish)
         }
     }
 

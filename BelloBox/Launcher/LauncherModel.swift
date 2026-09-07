@@ -2,18 +2,13 @@ import AppKit
 import Combine
 import SwiftUI
 
-/// Extra state that travels with a command when it leaves the palette.
-struct LauncherCommandContext: Equatable {
-    /// What the World Clock preview was showing when Enter was pressed: the
-    /// instant, the chosen reference, and the ephemeral copilot conversation.
-    var worldClock: WorldClockHandoff?
-}
-
 /// The palette expands exactly one row: the focused command. Moving focus
 /// with the arrows collapses the previous row and shows the new command's
-/// preview, so what is expanded is always what Enter opens. Previews are
-/// bounded, computed off the main actor once per selection and command, and
-/// cached until the selection changes; stale work is discarded.
+/// preview, so what is expanded is always what Enter opens. Each focused row
+/// gets an interactive session (`LauncherInteractivePreview`) that keeps its
+/// draft for the palette session; a static summary (`LauncherPreview`) is
+/// computed off the main actor once per selection and command. Stale work is
+/// discarded, and a new selection drops every session.
 @MainActor
 final class LauncherModel: ObservableObject {
     @Published private(set) var selection: TextSelection
@@ -29,14 +24,13 @@ final class LauncherModel: ObservableObject {
     private var previewTaskCommand: LauncherCommand?
     /// Changes with the selection; results from an earlier generation are dropped.
     private var previewGeneration = UUID()
-    private var clockObservers: [AnyCancellable] = []
+    private var sessionObservers: [LauncherCommand: AnyCancellable] = [:]
     private var lastReportedHeight: CGFloat = 0
     private var isHandlingQueryChange = false
     /// Previews built for the current selection, one per command that was focused.
     @Published private(set) var previews: [LauncherCommand: LauncherPreview] = [:]
-    /// Interactive World Clock planner for a recognized timestamp. It never
-    /// persists locations and is discarded with the selection.
-    @Published private(set) var clockPreview: WorldClockViewModel?
+    /// Interactive sessions for the current selection, one per command that was focused.
+    @Published private(set) var sessions: [LauncherCommand: LauncherInteractivePreview] = [:]
     @Published var query = "" {
         didSet {
             isHandlingQueryChange = true
@@ -64,6 +58,8 @@ final class LauncherModel: ObservableObject {
     var onPreviewResize: () -> Void = {}
     /// Asks the host to return keyboard focus to the search field.
     var onFocusSearch: () -> Void = {}
+    /// The panel hosting the palette, for sheets (Save…) that must stay attached.
+    var hostWindow: () -> NSWindow? = { nil }
     var pinnedText: () -> String? = { nil }
     var pinText: (String) -> Void = { _ in }
 
@@ -86,8 +82,9 @@ final class LauncherModel: ObservableObject {
         recents = defaults.stringArray(forKey: "launcherRecents") ?? []
         learnedScores = LauncherUsageStore(defaults: defaults).scores(for: context.contentKind)
         selectedID = commands.first?.id
-        lastReportedHeight = paletteSize.height
+        // The first row's session exists before the initial height is read.
         ensurePreviewForSelection()
+        lastReportedHeight = paletteSize.height
     }
     deinit { previewTask?.cancel() }
     var suggestions: [LauncherCommand] { context.suggestions }
@@ -104,23 +101,62 @@ final class LauncherModel: ObservableObject {
     /// The row that shows its preview: the focused command.
     var expandedCommand: LauncherCommand? { selectedCommand }
     var expandedPreview: LauncherPreview? { expandedCommand.flatMap { previews[$0] } }
+    /// The focused row's interactive session, once it exists.
+    var expandedSession: LauncherInteractivePreview? { expandedCommand.flatMap { sessions[$0] } }
     func preview(for command: LauncherCommand) -> LauncherPreview? { previews[command] }
-    /// The selection is a timestamp, so World Clock gets the interactive planner
-    /// rather than static clocks. Known synchronously so the height never jumps
-    /// when the planner arrives.
+    func session(for command: LauncherCommand) -> LauncherInteractivePreview? { sessions[command] }
+    /// The World Clock planner, when it has been installed for this selection.
+    var clockPreview: WorldClockViewModel? { sessions[.worldClock]?.clock }
+    /// The selection is a timestamp, so World Clock ranks first and its planner
+    /// opens at that instant instead of following the current time.
     var isTimestampSelection: Bool { context.hasText && !context.exceedsLimit && suggestions.first == .worldClock }
-    var expandsClock: Bool { expandedCommand == .worldClock && isTimestampSelection }
+    /// The World Clock row is focused; its planner height is reserved
+    /// synchronously so the palette never jumps when the planner arrives.
+    var expandsClock: Bool { expandedCommand == .worldClock }
     /// Whether the expanded row is the interactive clock, so arrow keys nudge time.
     var featuresClock: Bool { expandsClock && clockPreview != nil }
+    /// Whether the selection is small enough for a preview to process it. Larger
+    /// selections show a notice and open the complete text in the full tool.
+    var fitsPreviewLimit: Bool { context.fitsPreviewLimit }
+    /// Height of the static (summary-only) preview, used for notices and while a
+    /// session is being prepared.
     static let previewHeight: CGFloat = 150
     /// Measured natural height of `LauncherClockPreviewView` at the palette
     /// width; `testClockPreviewLayoutFitsTheHeightThePaletteReserves` keeps it honest.
     static let clockPreviewHeight: CGFloat = 261
     static let copilotTranscriptHeight: CGFloat = WorldClockCopilotView.compactTranscriptHeight + 6
+    /// The height each interactive preview reserves. Measured by
+    /// `LauncherInteractivePreviewTests.testEveryInteractivePreviewFitsItsReservedHeight`.
+    static func previewHeight(for command: LauncherCommand) -> CGFloat {
+        switch command {
+        case .worldClock: return clockPreviewHeight
+        case .json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .generate: return 224
+        case .qr, .textTools: return 224
+        case .ai: return 152
+        case .recording: return 136
+        case .screenshot, .scrollCapture: return 116
+        case .settings, .home: return 104
+        case .videoToGIF: return 92
+        }
+    }
     var expandedPreviewHeight: CGFloat {
-        guard expandsClock else { return Self.previewHeight }
-        let transcript = clockPreview?.copilot.isTranscriptVisible ?? false
-        return Self.clockPreviewHeight + (transcript ? Self.copilotTranscriptHeight : 0)
+        guard let command = expandedCommand else { return Self.previewHeight }
+        if command == .worldClock {
+            let transcript = clockPreview?.copilot.isTranscriptVisible ?? false
+            return Self.clockPreviewHeight + (transcript ? Self.copilotTranscriptHeight : 0)
+        }
+        // A text tool without a session (rejected or oversized selection) only gets the compact notice.
+        if Self.consumesText(command), sessions[command] == nil { return Self.previewHeight }
+        if command == .qr { return Self.previewHeight(for: command) + (sessions[.qr]?.qr?.extraHeight ?? 0) }
+        return Self.previewHeight(for: command)
+    }
+    /// Commands whose preview works on the selection, so an oversized one is
+    /// shown as a notice instead of being handed to editors and parsers.
+    static func consumesText(_ command: LauncherCommand) -> Bool {
+        switch command {
+        case .json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .qr, .textTools: return true
+        case .generate, .ai, .screenshot, .scrollCapture, .recording, .videoToGIF, .worldClock, .settings, .home: return false
+        }
     }
     var paletteSize: NSSize {
         let contextHeight: CGFloat = context.hasText || contextMessage != nil ? 48 : 0
@@ -163,10 +199,12 @@ final class LauncherModel: ObservableObject {
         lastReportedHeight = height
         onPreviewResize()
     }
-    /// Starts the focused command's preview unless it is cached or already
-    /// running. Work for a command that lost focus is cancelled and discarded.
+    /// Starts the focused command's summary unless it is cached or already
+    /// running, and installs its interactive session. Work for a command that
+    /// lost focus is cancelled and discarded; sessions stay.
     private func ensurePreviewForSelection() {
         guard let command = expandedCommand else { cancelPreviewTask(); return }
+        ensureSession(for: command)
         if previews[command] != nil { cancelPreviewTask(); return }
         if previewTask != nil, previewTaskCommand == command { return }
         cancelPreviewTask()
@@ -196,38 +234,97 @@ final class LauncherModel: ObservableObject {
     private func store(_ value: LauncherPreview, for command: LauncherCommand, savedZones: [String]) {
         previews[command] = value
         if previewTaskCommand == command { previewTask = nil; previewTaskCommand = nil }
-        if command == .worldClock, clockPreview == nil, isTimestampSelection, case let .clocks(_, instant) = value.content {
+        if command == .worldClock, clockPreview == nil, case let .clocks(_, instant) = value.content {
             installClockPreview(at: instant, savedZones: savedZones)
         }
+    }
+
+    // MARK: - Interactive sessions
+
+    /// Creates the focused command's session on first focus. Creating one has
+    /// no side effects beyond a bounded, cancellable preview calculation:
+    /// nothing is recorded as a use, saved, copied, or sent.
+    private func ensureSession(for command: LauncherCommand) {
+        guard sessions[command] == nil else { return }
+        // Rejected and oversized selections only get the compact notice; the
+        // full tool opens with the complete text on Enter, never a truncation.
+        // A tool that was opened already has a draft of its own: its session
+        // follows that draft (a notice while it is large, the preview once it
+        // was edited down), always on the same model instance.
+        if Self.consumesText(command), workbenches[command] == nil, !fitsPreviewLimit { return }
+        let session: LauncherInteractivePreview
+        switch command {
+        case .json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .generate:
+            let tool = workbenchModel(for: command)
+            tool.previewsOnly = true
+            if tool.result == nil, tool.error == nil, !tool.busy { tool.schedule() }
+            session = .workbench(tool)
+        case .worldClock:
+            return // Installed with the parsed instant by `store`.
+        case .qr:
+            let qr = LauncherQRPreview(text: selection.text)
+            // Enlarging the code grows the row; the host resizes once, without refocusing.
+            qr.onStateChange = { [weak self] in self?.reconcilePaletteHeight() }
+            session = .qr(qr)
+        case .textTools:
+            session = .textTools(TextToolsPopupViewModel(selection: selection, settings: settings, accessibility: AccessibilityService()))
+        case .ai:
+            session = .ai(LauncherAIPreview(text: selection.text, settings: settings))
+        case .screenshot, .scrollCapture:
+            session = .capture(LauncherCapturePreview(command: command, settings: settings))
+        case .recording:
+            session = .recording(LauncherRecordingPreview(options: settings.recordingOptions))
+        case .videoToGIF:
+            session = .videoToGIF(LauncherGIFPreview(options: settings.gifExportOptions))
+        case .settings, .home:
+            session = .appStatus(LauncherAppStatusPreview(settings: settings))
+        }
+        install(session, for: command)
+    }
+    private func install(_ session: LauncherInteractivePreview, for command: LauncherCommand) {
+        sessions[command] = session
+        sessionObservers[command] = session.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
+    }
+    /// The developer tool's model for this selection: the preview edits it and
+    /// Enter opens the same instance.
+    private func workbenchModel(for command: LauncherCommand) -> UtilityWorkbenchModel {
+        if let existing = workbenches[command] { return existing }
+        let tool = UtilityWorkbenchModel(command: command, selection: selection, snippets: snippets,
+            inputNotice: context.exceedsLimit ? LauncherSelectionContext.limitNotice : nil)
+        // Forwarded, not copied: the host installs the pin storage after the
+        // first row (which may be Compare) already has its session.
+        tool.pinnedText = { [weak self] in self?.pinnedText() }
+        tool.pinText = { [weak self] in self?.pinText($0) }
+        tool.onReplace = { [weak self] text in
+            guard let self, let pid = self.selection.pid else { return }
+            self.onClose()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { AccessibilityService().replaceSelection(with: text, pid: pid) }
+        }
+        workbenches[command] = tool
+        return tool
     }
     private func installClockPreview(at instant: Date, savedZones: [String]) {
         let zoneIDs = WorldClockViewModel.previewZoneIDs(saved: savedZones, localZone: .current)
         let anchor = worldClockPreferences.loadAnchorZoneID(validZoneIDs: zoneIDs)
-        let clock = WorldClockViewModel(settings: settings, seedDate: instant, preferences: worldClockPreferences,
+        // Without a timestamp the planner follows the current time, like the
+        // dedicated window does when it opens live.
+        let clock = WorldClockViewModel(settings: settings, seedDate: isTimestampSelection ? instant : nil, preferences: worldClockPreferences,
                                         mode: .preview, zoneIDs: zoneIDs, anchorZoneID: anchor, askCopilot: clockResponder)
-        clockPreview = clock
         // The palette grows when the transcript appears and shrinks when it is
         // cleared. The session reports after its state settled, so the size
         // read inside the callback is the new one.
         clock.copilot.onStateChange = { [weak self] in self?.reconcilePaletteHeight() }
-        clockObservers = [
-            clock.objectWillChange.sink { [weak self] in self?.objectWillChange.send() },
-            clock.copilot.objectWillChange.sink { [weak self] in self?.objectWillChange.send() },
-        ]
+        install(.clock(clock), for: .worldClock)
     }
-    private func discardClockPreview() {
-        clockObservers = []
-        clockPreview?.copilot.onStateChange = {}
-        clockPreview?.cancelAI()
-        clockPreview = nil
-    }
-    /// What Enter hands to the dedicated World Clock: the previewed instant
-    /// and reference plus the copilot conversation, all in memory only. A
-    /// selection without a timestamp opens the live clock instead.
+    /// What Enter hands to the dedicated World Clock: exactly what the row
+    /// shows. A planned instant or explicit live intent, the reference, and
+    /// the copilot conversation (empty or not), all in memory only, so an
+    /// already open window adopts the preview instead of keeping an older plan.
     var worldClockHandoff: WorldClockHandoff? {
         if let clockPreview {
-            return WorldClockHandoff(instant: clockPreview.selectedInstant, anchorZoneID: clockPreview.anchorZoneID,
-                                     copilot: clockPreview.copilot.snapshot())
+            return WorldClockHandoff(instant: clockPreview.isFollowingNow ? nil : clockPreview.selectedInstant,
+                                     anchorZoneID: clockPreview.anchorZoneID, copilot: clockPreview.copilot.snapshot(),
+                                     followsNow: clockPreview.isFollowingNow)
         }
         if isTimestampSelection, case let .clocks(_, instant)? = previews[.worldClock]?.content { return WorldClockHandoff(instant: instant) }
         return nil
@@ -248,43 +345,69 @@ final class LauncherModel: ObservableObject {
         selectedID = commands[((index + direction) % commands.count + commands.count) % commands.count].id
     }
     func openSelected() { if let command = selectedCommand ?? commands.first { open(command) } }
-    func open(_ command: LauncherCommand) {
+    /// Opens a command with what its preview was showing. `customize` lets a
+    /// preview button choose a specific action (a capture mode, a quick action).
+    func open(_ command: LauncherCommand, customize: (inout LauncherCommandContext) -> Void = { _ in }) {
         selectedID = command.id
         LauncherUsageStore(defaults: defaults).record(command, kind: context.contentKind)
         recents = [command.id] + recents.filter { $0 != command.id }.prefix(7)
         defaults.set(recents, forKey: "launcherRecents")
         if command.isDeveloperTool {
-            if let existing = workbenches[command] {
-                workbench = existing
-                if existing.result == nil && existing.error == nil && command != .http { existing.schedule() }
-            } else {
-                let tool = UtilityWorkbenchModel(command: command, selection: selection, snippets: snippets,
-                    inputNotice: context.exceedsLimit ? LauncherSelectionContext.limitNotice : nil)
-                tool.pinnedText = pinnedText; tool.pinText = pinText
-                tool.onReplace = { [weak self] text in
-                    guard let self, let pid = self.selection.pid else { return }
-                    self.onClose()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { AccessibilityService().replaceSelection(with: text, pid: pid) }
-                }
-                workbenches[command] = tool
-                workbench = tool
-                tool.schedule()
-            }
+            let tool = workbenchModel(for: command)
+            tool.previewsOnly = false
+            workbench = tool
+            if tool.result == nil && tool.error == nil && !tool.busy && command != .http { tool.schedule() }
             presentationChanged()
         } else {
-            onCommand(command, selection, LauncherCommandContext(worldClock: command == .worldClock ? worldClockHandoff : nil))
+            var handoff = context(for: command)
+            customize(&handoff)
+            onCommand(command, launchSelection(for: command, context: handoff), handoff)
         }
+    }
+    /// The draft the focused preview hands to the full tool.
+    func context(for command: LauncherCommand) -> LauncherCommandContext {
+        var context = LauncherCommandContext()
+        switch command {
+        case .worldClock: context.worldClock = worldClockHandoff
+        case .qr:
+            if let qr = sessions[.qr]?.qr, qr.text != selection.text { context.qrText = qr.text }
+        case .textTools:
+            if let tools = sessions[.textTools]?.textTools {
+                context.textTools = TextToolsHandoff(category: tools.category, caseStyle: tools.caseStyle, encodeMethod: tools.encodeMethod,
+                                                     decodeFormat: tools.decodeFormat, lineOp: tools.lineOp)
+            }
+        // Enter is Open: the prompt travels, nothing is sent.
+        case .ai: context.ai = sessions[.ai]?.ai?.openHandoff
+        case .recording: context.recording = sessions[.recording]?.recording?.options
+        case .videoToGIF:
+            if let gif = sessions[.videoToGIF]?.videoToGIF { context.videoToGIF = VideoToGIFHandoff(options: gif.options, chooseFile: false) }
+        default: break
+        }
+        return context
+    }
+    /// The QR popup opens with the edited text; every other tool gets the selection.
+    private func launchSelection(for command: LauncherCommand, context: LauncherCommandContext) -> TextSelection {
+        guard command == .qr, let text = context.qrText else { return selection }
+        return TextSelection(text: text, anchorRect: selection.anchorRect, appName: selection.appName, bundleID: selection.bundleID, pid: selection.pid)
     }
     /// The instant World Clock should open at: the previewed time if the user
     /// scrubbed it, otherwise the recognized timestamp.
     var previewedInstant: Date? {
-        if let clockPreview { return clockPreview.selectedInstant }
+        if let clockPreview { return isTimestampSelection || !clockPreview.isFollowingNow ? clockPreview.selectedInstant : nil }
         if isTimestampSelection, case let .clocks(_, instant)? = previews[.worldClock]?.content { return instant }
         return nil
     }
     func back() {
-        if workbench?.busy == true { workbench?.cancel() }
+        if let tool = workbench {
+            if tool.busy { tool.cancel() }
+            tool.previewsOnly = true
+            // A calculation interrupted by Back is restarted for the row when
+            // the draft fits it; an oversized draft waits for the next open.
+            if tool.result == nil, tool.error == nil, !tool.draftExceedsPreviewLimit { tool.schedule() }
+        }
         workbench = nil
+        // The tool's draft may now fit the row (or not); the row follows it.
+        ensurePreviewForSelection()
         presentationChanged()
         onFocusSearch()
     }
@@ -292,7 +415,10 @@ final class LauncherModel: ObservableObject {
         cancelPreviewTask()
         previewGeneration = UUID()
         previews = [:]
-        discardClockPreview()
+        for session in sessions.values { session.cancel() }
+        if let clock = clockPreview { clock.copilot.onStateChange = {} }
+        sessionObservers = [:]
+        sessions = [:]
         workbenches.values.forEach { $0.cancel() }
     }
 }

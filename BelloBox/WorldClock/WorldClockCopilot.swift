@@ -59,11 +59,16 @@ struct WorldClockHandoff: Equatable {
     var instant: Date?
     var anchorZoneID: String?
     var copilot: WorldClockCopilotSnapshot?
+    /// Explicit live intent: the palette previewed the current time, so the
+    /// window follows now again even if it was planning another time. An
+    /// ordinary reopen (no handoff) keeps whatever the window showed.
+    var followsNow: Bool
 
-    init(instant: Date? = nil, anchorZoneID: String? = nil, copilot: WorldClockCopilotSnapshot? = nil) {
+    init(instant: Date? = nil, anchorZoneID: String? = nil, copilot: WorldClockCopilotSnapshot? = nil, followsNow: Bool = false) {
         self.instant = instant
         self.anchorZoneID = anchorZoneID
         self.copilot = copilot
+        self.followsNow = followsNow
     }
 }
 

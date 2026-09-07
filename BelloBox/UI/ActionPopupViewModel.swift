@@ -73,6 +73,16 @@ final class ActionPopupViewModel: ObservableObject {
         runInstruction(trimmed, replaces: true)
     }
 
+    /// An instruction the palette's Ask AI preview handed over. The request
+    /// starts only because the user chose an action or Send there.
+    func apply(_ handoff: AIHandoff) {
+        let trimmed = handoff.instruction.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if !handoff.run || !quickActions.contains(where: { $0.instruction == trimmed }) { instruction = trimmed }
+        guard handoff.run else { return }
+        runInstruction(trimmed, replaces: handoff.replacesSelection)
+    }
+
     private func runInstruction(_ instruction: String, replaces: Bool) {
         copyMessage = nil
         lastInstruction = (instruction, replaces)

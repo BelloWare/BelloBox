@@ -248,6 +248,7 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         model.move(1)
         XCTAssertEqual(model.expandedCommand, .compare, "Focus expands the focused row")
         XCTAssertEqual(model.bestMatch, .json, "The best match label stays on the top interpretation")
+        XCTAssertEqual(LauncherModel.previewHeight(for: .json), LauncherModel.previewHeight(for: .compare))
         XCTAssertEqual(model.paletteSize, size, "Rows of the same preview height never jump the palette")
         XCTAssertNil(model.expandedPreview, "The new row's preview is prepared, not faked from the previous one")
         try await waitUntil { model.expandedPreview != nil }
@@ -271,22 +272,40 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         XCTAssertEqual(model.previews.count, 3, "One cached preview per focused command")
     }
 
-    func testFocusingWorldClockWithoutATimestampShowsNowWithoutThePlanner() async throws {
+    func testFocusingWorldClockWithoutATimestampShowsALivePlannerThatOpensLiveUnlessScrubbed() async throws {
         let model = model("Hello there")
         defer { model.cancelAll() }
         var opened: LauncherCommandContext?
         model.onCommand = { _, _, context in opened = context }
         model.query = "world"
         XCTAssertEqual(model.expandedCommand, .worldClock)
-        XCTAssertFalse(model.expandsClock)
-        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight, "Static clocks keep the standard row height")
+        XCTAssertTrue(model.expandsClock, "The planner height is reserved for World Clock even without a timestamp")
+        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.clockPreviewHeight)
         try await waitUntil { model.expandedPreview != nil }
         XCTAssertEqual(model.expandedPreview?.title, "Current time")
-        XCTAssertNil(model.clockPreview, "Only a timestamp selection installs the interactive planner")
-        XCTAssertFalse(model.featuresClock)
-        XCTAssertNil(model.previewedInstant)
+        let clock = try XCTUnwrap(model.clockPreview, "A live planner is installed without a timestamp")
+        XCTAssertTrue(clock.isFollowingNow)
+        XCTAssertNil(clock.seedInstant)
+        XCTAssertTrue(model.featuresClock, "Arrow keys can still scrub the live planner")
+        XCTAssertNil(model.previewedInstant, "Following the current time is not a chosen instant")
+        let live = try XCTUnwrap(model.worldClockHandoff, "A live preview hands over explicit live intent")
+        XCTAssertTrue(live.followsNow)
+        XCTAssertNil(live.instant)
+        XCTAssertEqual(live.anchorZoneID, clock.anchorZoneID, "The shown reference travels")
+        XCTAssertEqual(live.copilot?.isEmpty, true, "An empty transcript still replaces an older one")
         model.openSelected()
-        XCTAssertNil(opened?.worldClock, "Without a timestamp the window opens live")
+        XCTAssertEqual(opened?.worldClock?.followsNow, true, "Without a timestamp or a scrub the window follows now")
+        clock.nudge(by: 2)
+        XCTAssertFalse(clock.isFollowingNow)
+        XCTAssertEqual(model.previewedInstant, clock.selectedInstant)
+        model.openSelected()
+        XCTAssertEqual(opened?.worldClock?.instant, clock.selectedInstant, "A scrubbed live planner opens at the scrubbed time")
+        XCTAssertEqual(opened?.worldClock?.followsNow, false)
+        clock.goToNow()
+        XCTAssertTrue(clock.isFollowingNow)
+        model.openSelected()
+        XCTAssertEqual(opened?.worldClock?.followsNow, true, "Returning to now opens live again")
+        XCTAssertNil(opened?.worldClock?.instant)
     }
 
     func testTimestampSelectionReservesThePlannerHeightBeforeItArrivesAndFocusMovesReportWithoutRefocus() async throws {
@@ -305,7 +324,7 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         model.move(1)
         XCTAssertEqual(model.expandedCommand, .time)
         XCTAssertFalse(model.featuresClock, "Arrow keys edit nothing while the planner is collapsed")
-        XCTAssertEqual(resizes, [tall - LauncherModel.clockPreviewHeight + LauncherModel.previewHeight])
+        XCTAssertEqual(resizes, [tall - LauncherModel.clockPreviewHeight + LauncherModel.previewHeight(for: .time)])
         XCTAssertEqual(presentations, 0, "Focus changes use the no-refocus resize path")
         XCTAssertNotNil(model.clockPreview, "The planner survives while another row is focused")
         try await waitUntil { model.expandedPreview != nil }
@@ -452,7 +471,7 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         XCTAssertEqual(resizeHeights.last, sizeBefore.height, "Clearing shrinks the palette back")
         model.query = "regex"
         XCTAssertFalse(model.featuresClock)
-        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight)
+        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight(for: .regex))
         model.query = ""
         XCTAssertTrue(model.clockPreview === clock, "Searching keeps the planner and its transcript")
         XCTAssertTrue(model.featuresClock)
@@ -512,7 +531,7 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         XCTAssertNil(json.clockPreview)
         XCTAssertNil(json.previewedInstant)
         XCTAssertFalse(json.featuresClock)
-        XCTAssertEqual(json.expandedPreviewHeight, LauncherModel.previewHeight)
+        XCTAssertEqual(json.expandedPreviewHeight, LauncherModel.previewHeight(for: .json))
 
         let started = expectation(description: "Copilot request started")
         let cancelled = expectation(description: "Copilot request cancelled")
@@ -603,6 +622,8 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         defer { model.cancelAll() }
         try await waitUntil { model.expandedPreview != nil }
         XCTAssertEqual(model.expandedPreview?.title, "Full selection ready")
+        XCTAssertNil(model.expandedSession, "A selection over 64 KB is not parsed or edited in the row")
+        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight, "The notice keeps the compact height")
         model.openSelected()
         XCTAssertEqual(model.workbench?.input, text)
         model.useClipboard(String(repeating: "x", count: UtilityLimits.inputBytes + 1))

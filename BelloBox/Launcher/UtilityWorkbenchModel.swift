@@ -2,6 +2,8 @@ import AppKit
 import SwiftUI
 
 struct WorkbenchResult {
+    /// Identifies one calculation, so views can cache what they derive from it.
+    let id = UUID()
     var text: String
     var status: String = "Ready"
     var comparison: ComparisonResult?
@@ -41,7 +43,7 @@ final class UtilityWorkbenchModel: ObservableObject {
     @Published var snippetID: UUID?
     @Published var snippetValues: [String: String] = [:] { didSet { schedule() } }
     @Published var urlDraft: URLInspection? {
-        didSet { if !busy { result = nil; message = "Choose Build URL to preview your edits."; error = nil } }
+        didSet { if !busy { result = nil; message = "URL edited."; error = nil } }
     }
     @Published var request = HTTPRequestDraft() {
         didSet { if !busy { result = nil; message = nil; error = nil } }
@@ -71,6 +73,14 @@ final class UtilityWorkbenchModel: ObservableObject {
     }
     var canReplace: Bool { selection.pid != nil && !output.isEmpty && !busy && error == nil }
     var output: String { result?.text ?? "" }
+    /// Whether the current draft (either text) has grown past what a palette
+    /// row previews (64 KB); the complete draft still belongs to the full tool.
+    var draftExceedsPreviewLimit: Bool {
+        input.utf8.count > LauncherPreview.parsingByteLimit || secondInput.utf8.count > LauncherPreview.parsingByteLimit
+    }
+    /// The model is only a palette row session (not the open tool): a draft
+    /// past the row limit is not calculated until the tool opens.
+    var previewsOnly = false
     var customFields: [String] { SnippetTemplate.placeholders(input).filter { !["selection", "date", "timestamp", "uuid"].contains($0) } }
     var canChain: Bool {
         [.json, .regex, .convert, .url].contains(command) && !output.isEmpty && output != input && !busy && error == nil
@@ -92,6 +102,8 @@ final class UtilityWorkbenchModel: ObservableObject {
         let id = runID
         result = nil; error = nil; message = nil; sending = false
         guard !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || command == .generate || (command == .compare && !secondInput.isEmpty) else { busy = false; return }
+        // A row shows a notice for an oversized draft; the full tool calculates it when opened.
+        if previewsOnly && draftExceedsPreviewLimit { busy = false; return }
         let operation = makeOperation()
         busy = true
         task = Task { [weak self] in

@@ -17,6 +17,29 @@ enum QRCodeGenerator {
         return !isBlank && string.utf8.count <= maxByteCount
     }
 
+    /// Modules per side, including the generator's quiet zone, or nil when the
+    /// string cannot be encoded. Dense codes need more pixels per module.
+    static func moduleCount(for string: String) -> Int? {
+        guard isEncodable(string) else { return nil }
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        filter.correctionLevel = "M"
+        guard let output = filter.outputImage, output.extent.width > 0 else { return nil }
+        return Int(output.extent.width.rounded())
+    }
+
+    /// The smallest side, in points, at which every module still covers two
+    /// pixels on a standard-resolution display; scanners read that reliably.
+    static func readablePointSize(for string: String) -> CGFloat? {
+        moduleCount(for: string).map { CGFloat($0) * 2 }
+    }
+
+    /// Export and clipboard size: at least 512 px and four pixels per module,
+    /// so a dense code stays readable after any scaling.
+    static func exportPixelSize(for string: String) -> CGFloat {
+        max(512, CGFloat((moduleCount(for: string) ?? 0) * 4))
+    }
+
     /// Returns a crisp, square QR image for `string`, or nil when the string is
     /// empty or too long to encode.
     static func image(for string: String, pixelSize: CGFloat = 512) -> NSImage? {

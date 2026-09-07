@@ -9,6 +9,7 @@ struct LiteralTextEditor: NSViewRepresentable {
     var label: String
     var monospaced = false
     var focusesWhenAttached = false
+    var fontSize: CGFloat? = nil
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -23,7 +24,7 @@ struct LiteralTextEditor: NSViewRepresentable {
         editor.allowsUndo = true
         editor.drawsBackground = false
         editor.textColor = .labelColor
-        editor.font = monospaced ? .monospacedSystemFont(ofSize: 12, weight: .regular) : .systemFont(ofSize: 13)
+        editor.font = monospaced ? .monospacedSystemFont(ofSize: fontSize ?? 12, weight: .regular) : .systemFont(ofSize: fontSize ?? 13)
         editor.textContainerInset = NSSize(width: 2, height: 4)
         editor.minSize = .zero
         editor.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)

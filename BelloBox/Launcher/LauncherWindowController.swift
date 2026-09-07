@@ -29,9 +29,14 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     private var outsideMonitor: Any?
     private var localClickMonitor: Any?
     private var menuObservers: [NSObjectProtocol] = []
-    private var trackingMenu = false
+    /// A native menu (a preview's zone or audio picker, the reference menu) is
+    /// open: it owns the keyboard and must not dismiss the palette.
+    private(set) var isTrackingMenu = false
     private(set) var model: LauncherModel?
+    /// The one search field. It stays attached while a tool is open (parked
+    /// by `LauncherView`), so returning to the palette never waits for a mount.
     private weak var searchField: LauncherSearchTextField?
+    /// A focus request made before the field was attached (palette opening).
     private var pendingSearchFocus = false
     private weak var copilotField: LauncherSearchTextField?
     private var presentationID = UUID()
@@ -45,7 +50,9 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     var isVisible: Bool { panel?.isVisible == true }
     var onCommand: (LauncherCommand, TextSelection, LauncherCommandContext) -> Void = { _, _, _ in }
 
-    func show(selection: TextSelection, initialCommand: LauncherCommand? = nil) {
+    /// `focus` highlights a row (and expands its preview) without opening it;
+    /// `initialCommand` opens a tool at once.
+    func show(selection: TextSelection, initialCommand: LauncherCommand? = nil, focus: LauncherCommand? = nil) {
         close()
         var worldClockPreferences: WorldClockPreferencesStore?
 #if DEBUG
@@ -53,6 +60,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
 #endif
         let model = LauncherModel(selection: selection, snippets: snippets, settings: settings,
                                   worldClockPreferences: worldClockPreferences)
+        model.hostWindow = { [weak self] in self?.panel }
         model.onClose = { [weak self] in self?.close() }
         model.onCommand = { [weak self] command, selection, context in
             self?.close(); self?.onCommand(command, selection, context)
@@ -66,8 +74,9 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         self.panel = panel; self.model = model
         panel.delegate = self
         panel.contentViewController = NSHostingController(rootView: LauncherView(model: model, onSearchReady: { [weak self] field in
-            self?.searchField = field
-            if self?.pendingSearchFocus == true { self?.focusSearch(force: true) }
+            guard let self else { return }
+            self.searchField = field
+            if self.pendingSearchFocus { self.focusSearch(force: true) }
         }, onCopilotFieldReady: { [weak self] field in
             self?.copilotField = field
         }))
@@ -88,16 +97,16 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         }
         localClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] event in
             guard let self, let panel = self.panel else { return event }
-            if !self.trackingMenu, !Self.belongsToPanel(event.window, panel: panel), panel.attachedSheet == nil,
+            if !self.isTrackingMenu, !Self.belongsToPanel(event.window, panel: panel), panel.attachedSheet == nil,
                !panel.frame.contains(NSEvent.mouseLocation) { self.close(reason: "outsideClick") }
             return event
         }
         menuObservers = [
             NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.trackingMenu = true }
+                MainActor.assumeIsolated { self?.isTrackingMenu = true }
             },
             NotificationCenter.default.addObserver(forName: NSMenu.didEndTrackingNotification, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.trackingMenu = false }
+                MainActor.assumeIsolated { self?.isTrackingMenu = false }
             }
         ]
         let animate = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
@@ -109,6 +118,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
                 panel.animator().alphaValue = 1
             }
         }
+        if let focus { model.selectedID = focus.id; updatePresentation() }
         focusSearch()
 #if DEBUG
         writeLifecycle("shown")
@@ -116,11 +126,22 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         if let initialCommand { model.open(initialCommand) }
     }
 
-    /// Whether keyboard input currently belongs to a text field other than the
-    /// palette's search field, such as the copilot question.
+    /// Test seam: what the menu tracking notifications set.
+    func setMenuTracking(_ tracking: Bool) { isTrackingMenu = tracking }
+
+    /// Whether keyboard input currently belongs to an editable text field other
+    /// than the palette's search field: the copilot question or a preview's
+    /// own input. A read-only output that was clicked does not count; the
+    /// palette keeps its navigation keys and typing returns to search.
     func isSecondaryTextInputFocused(in panel: NSWindow) -> Bool {
-        guard let editor = panel.firstResponder as? NSTextView else { return false }
+        guard let editor = panel.firstResponder as? NSTextView, editor.isEditable else { return false }
         guard let searchField else { return true }
+        return editor.delegate !== searchField
+    }
+
+    /// Whether a read-only preview output (a result text view) has keyboard focus.
+    func isReadOnlyOutputFocused(in panel: NSWindow) -> Bool {
+        guard let editor = panel.firstResponder as? NSTextView, !editor.isEditable else { return false }
         return editor.delegate !== searchField
     }
 
@@ -134,16 +155,33 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     func handleKeyEvent(_ event: NSEvent) -> Bool {
         guard let panel, let model, panel.isVisible,
               event.window === panel || (event.window == nil && panel.isKeyWindow) else { return false }
-        // Let input methods finish composition and native sheets/menus handle their keys.
+        // Native menus and attached sheets own the keyboard entirely.
+        if isTrackingMenu || panel.attachedSheet != nil { return false }
+        // Let input methods finish composition.
         if let editor = panel.firstResponder as? NSTextView, editor.hasMarkedText() { return false }
         let modifiers = event.modifierFlags.intersection([.command, .control, .option, .shift])
         if modifiers == .command && event.charactersIgnoringModifiers?.lowercased() == "k" {
             model.back(); model.query = ""; focusSearch(force: true); return true
         }
         if model.workbench == nil, isSecondaryTextInputFocused(in: panel) {
-            // The copilot field owns Enter and the arrows; Escape hands focus back.
+            // A preview's input owns Enter and the arrows; Escape hands focus back.
             if modifiers.isEmpty, event.keyCode == 53 { focusSearch(force: true); return true }
             return false
+        }
+        if model.workbench == nil, isReadOnlyOutputFocused(in: panel) {
+            // A clicked result keeps ⌘C and selection; Escape returns to search,
+            // navigation keys still move rows, and typing goes to the search field.
+            if modifiers.isEmpty, event.keyCode == 53 { focusSearch(force: true); return true }
+            if modifiers.isSubset(of: [.shift, .option]), !Self.isNavigationKey(event.keyCode), let field = searchField, field.window === panel,
+               event.characters?.isEmpty == false {
+                if panel.makeFirstResponder(field) {
+                    pendingSearchFocus = false
+                    // Continue the query instead of replacing the selected text.
+                    let length = (field.currentEditor()?.string as NSString?)?.length ?? 0
+                    field.currentEditor()?.selectedRange = NSRange(location: length, length: 0)
+                }
+                return false
+            }
         }
         if model.workbench == nil, model.featuresClock, model.query.isEmpty, [123, 124].contains(event.keyCode),
            modifiers.isSubset(of: [.option, .shift]) {
@@ -154,7 +192,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         }
         guard modifiers.isEmpty else { return false }
         if event.keyCode == 53 {
-            if model.workbench != nil { model.back(); focusSearch() } else { close() }
+            if model.workbench != nil { model.back() } else { close() }
             return true
         }
         guard model.workbench == nil else { return false }
@@ -167,6 +205,11 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         default: return false
         }
         return true
+    }
+
+    /// Arrows, Enter, Escape, Tab, and paging keys: never redirected as typing.
+    static func isNavigationKey(_ keyCode: UInt16) -> Bool {
+        [36, 76, 48, 53, 115, 116, 119, 121, 123, 124, 125, 126].contains(keyCode)
     }
 
     /// Keeps the palette inside the screen it is on. Small displays get a
@@ -217,23 +260,36 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     }
 
     /// Returns focus to the search field. Unless forced, it leaves another
-    /// text input (the copilot question) alone so typing is never interrupted.
+    /// text input (the copilot question, a preview field) alone so typing is
+    /// never interrupted. A forced request (Escape, Back, ⌘K) takes effect
+    /// at once: the field is always attached, so the next key event already
+    /// belongs to it. Before the field is attached (the palette opening) the
+    /// request waits for `onSearchReady`.
     private func focusSearch(force: Bool = false) {
-        if force { pendingSearchFocus = true }
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.model?.workbench == nil, let panel = self.panel, panel.isVisible,
-                  let field = self.searchField, field.window === panel else { return }
-            if !self.pendingSearchFocus, self.isSecondaryTextInputFocused(in: panel) { return }
-            if panel.firstResponder === field.currentEditor() || panel.makeFirstResponder(field) {
-                self.pendingSearchFocus = false
-            }
+        if force {
+            pendingSearchFocus = true
+            if focusSearchNow() { return }
         }
+        DispatchQueue.main.async { [weak self] in self?.focusSearchNow() }
+    }
+
+    /// Makes the search field first responder if it is attached and nothing
+    /// else should keep typing. Returns whether it is editing afterwards.
+    @discardableResult
+    private func focusSearchNow() -> Bool {
+        guard model?.workbench == nil, let panel, panel.isVisible, let field = searchField, field.window === panel else { return false }
+        if !pendingSearchFocus, isSecondaryTextInputFocused(in: panel) { return false }
+        // The parked state may not have been cleared by SwiftUI yet.
+        field.isEnabled = true
+        guard panel.firstResponder === field.currentEditor() || panel.makeFirstResponder(field) else { return false }
+        pendingSearchFocus = false
+        return true
     }
     func windowDidBecomeKey(_ notification: Notification) { focusSearch() }
     func windowDidResignKey(_ notification: Notification) {
         guard let previous = notification.object as? NSWindow, previous === panel else { return }
         DispatchQueue.main.async { [weak self, weak previous] in
-            guard let self, let panel = self.panel, panel === previous, !panel.isKeyWindow, !self.trackingMenu, panel.attachedSheet == nil,
+            guard let self, let panel = self.panel, panel === previous, !panel.isKeyWindow, !self.isTrackingMenu, panel.attachedSheet == nil,
                   !Self.belongsToPanel(NSApp.keyWindow, panel: panel) else { return }
             self.close(reason: "focusLost")
         }
@@ -251,7 +307,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         for monitor in [keyMonitor, outsideMonitor, localClickMonitor].compactMap({ $0 }) { NSEvent.removeMonitor(monitor) }
         keyMonitor = nil; outsideMonitor = nil; localClickMonitor = nil
         menuObservers.forEach { NotificationCenter.default.removeObserver($0) }
-        menuObservers = []; trackingMenu = false
+        menuObservers = []; isTrackingMenu = false
         panel?.delegate = nil
         panel?.close()
         searchField = nil; copilotField = nil; pendingSearchFocus = false; panel = nil; model = nil

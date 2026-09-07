@@ -91,6 +91,15 @@ final class TextToolsPopupViewModel: ObservableObject {
         }
     }
 
+    /// The category and option chosen in the palette preview.
+    func apply(_ handoff: TextToolsHandoff) {
+        caseStyle = handoff.caseStyle
+        encodeMethod = handoff.encodeMethod
+        decodeFormat = handoff.decodeFormat
+        lineOp = handoff.lineOp
+        category = handoff.category
+    }
+
     var canReplaceSelection: Bool { selection.pid != nil }
     var canResetInput: Bool { input != selection.text }
     func resetInput() { input = selection.text }

@@ -6,10 +6,12 @@ import SwiftUI
 @MainActor
 final class MainWindowController: NSObject, NSWindowDelegate {
     private(set) var window: NSWindow?
+    private var navigation: WindowNavigation<HomeCategory>?
 
     func show(
         settings: AppSettings,
         canCheckForUpdates: Bool,
+        category: HomeCategory? = nil,
         onOpenSettings: @escaping () -> Void,
         onOpenGuide: @escaping () -> Void,
         onOpenLauncher: @escaping () -> Void,
@@ -23,12 +25,15 @@ final class MainWindowController: NSObject, NSWindowDelegate {
         onOpenTool: @escaping (LauncherCommand) -> Void = { _ in }
     ) {
         if let window {
+            if let category { navigation?.requested = category }
             AppActivation.bringAppForward()
             AppWindowChrome.place(window, on: window.screen, centered: false)
             window.makeKeyAndOrderFront(nil)
             return
         }
 
+        let navigation = WindowNavigation<HomeCategory>(category)
+        self.navigation = navigation
         let view = MainView(
             settings: settings,
             canCheckForUpdates: canCheckForUpdates,
@@ -42,7 +47,8 @@ final class MainWindowController: NSObject, NSWindowDelegate {
             onOpenTextTools: onOpenTextTools,
             onOpenWorldClock: onOpenWorldClock,
             onCheckForUpdates: onCheckForUpdates,
-            onOpenTool: onOpenTool
+            onOpenTool: onOpenTool,
+            navigation: navigation
         )
         let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 900, height: 640)) { view })
         let window = NSWindow(contentViewController: hosting)
@@ -61,5 +67,6 @@ final class MainWindowController: NSObject, NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         window = nil
+        navigation = nil
     }
 }

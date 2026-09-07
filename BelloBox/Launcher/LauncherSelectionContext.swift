@@ -4,6 +4,9 @@ import Foundation
 struct LauncherSelectionContext {
     let hasText: Bool
     let exceedsLimit: Bool
+    /// Small enough for a row preview to parse or edit it (64 KB). Larger
+    /// selections show a notice and open complete in the full tool.
+    let fitsPreviewLimit: Bool
     let characterCount: Int
     let preview: String
     let suggestions: [LauncherCommand]
@@ -15,6 +18,7 @@ struct LauncherSelectionContext {
     init(text: String) {
         hasText = !text.isEmpty
         exceedsLimit = text.utf8.prefix(UtilityLimits.inputBytes + 1).count > UtilityLimits.inputBytes
+        fitsPreviewLimit = !exceedsLimit && text.utf8.prefix(LauncherPreview.parsingByteLimit + 1).count <= LauncherPreview.parsingByteLimit
         characterCount = exceedsLimit ? 0 : text.count
         let sample = String(String.UnicodeScalarView(text.unicodeScalars.prefix(160)))
         preview = sample.split(whereSeparator: \.isWhitespace).joined(separator: " ")

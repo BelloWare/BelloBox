@@ -275,15 +275,18 @@ struct UtilityWorkbenchView: View {
                     Text("Fragment").font(.caption).foregroundStyle(.secondary).frame(width: 55, alignment: .leading)
                     TextField("Optional", text: Binding(get: { model.urlDraft?.fragment ?? "" }, set: { model.urlDraft?.fragment = $0 })).textFieldStyle(.roundedBorder)
                 }
-                Text("Query parameters").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                ForEach(model.urlDraft?.parameters ?? []) { parameter in
-                    HStack {
-                        TextField("Name", text: parameterBinding(parameter.id, name: true)).textFieldStyle(.roundedBorder)
-                        TextField("Value", text: parameterBinding(parameter.id, name: false)).textFieldStyle(.roundedBorder)
-                        Toggle("=", isOn: Binding(get: { model.urlDraft?.parameters.first(where: { $0.id == parameter.id })?.hasValue ?? true }, set: { value in
-                            if let i = model.urlDraft?.parameters.firstIndex(where: { $0.id == parameter.id }) { model.urlDraft?.parameters[i].hasValue = value }
-                        })).help("Include an equals sign; turn off for a flag parameter")
-                        Button { model.urlDraft?.parameters.removeAll(where: { $0.id == parameter.id }) } label: { Image(systemName: "minus.circle") }.buttonStyle(.plain).accessibilityLabel("Remove parameter")
+                Text("Query parameters · \((model.urlDraft?.parameters.count ?? 0).formatted())").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                // Lazy: a URL may carry thousands of parameters within the input limit.
+                LazyVStack(alignment: .leading, spacing: 10) {
+                    ForEach(model.urlDraft?.parameters ?? []) { parameter in
+                        HStack {
+                            TextField("Name", text: parameterBinding(parameter.id, name: true)).textFieldStyle(.roundedBorder)
+                            TextField("Value", text: parameterBinding(parameter.id, name: false)).textFieldStyle(.roundedBorder)
+                            Toggle("=", isOn: Binding(get: { model.urlDraft?.parameters.first(where: { $0.id == parameter.id })?.hasValue ?? true }, set: { value in
+                                if let i = model.urlDraft?.parameters.firstIndex(where: { $0.id == parameter.id }) { model.urlDraft?.parameters[i].hasValue = value }
+                            })).help("Include an equals sign; turn off for a flag parameter")
+                            Button { model.urlDraft?.parameters.removeAll(where: { $0.id == parameter.id }) } label: { Image(systemName: "minus.circle") }.buttonStyle(.plain).accessibilityLabel("Remove parameter")
+                        }
                     }
                 }
                 HStack {

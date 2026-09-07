@@ -39,6 +39,8 @@ struct MainView: View {
     var onOpenWorldClock: () -> Void
     var onCheckForUpdates: () -> Void
     var onOpenTool: (LauncherCommand) -> Void = { _ in }
+    /// Categories requested from outside (the palette's Home preview).
+    @ObservedObject var navigation: WindowNavigation<HomeCategory> = WindowNavigation()
 
     @State private var category: HomeCategory = .overview
     @State private var trusted = AccessibilityService.isTrusted
@@ -75,6 +77,8 @@ struct MainView: View {
         .background(WorkspaceBackground()).tint(BoxTheme.accent)
         .frame(minWidth: 900, minHeight: 640)
         .onReceive(timer) { _ in trusted = AccessibilityService.isTrusted }
+        .onAppear { if let requested = navigation.requested { category = requested } }
+        .onReceive(navigation.$requested) { requested in if let requested { category = requested } }
     }
 
     private var sidebar: some View {

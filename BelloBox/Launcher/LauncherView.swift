@@ -7,12 +7,22 @@ struct LauncherView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        let inTool = model.workbench != nil
         VStack(spacing: 0) {
+            // The search field stays mounted while a tool is open: parked at
+            // zero height, invisible, disabled and hidden from accessibility.
+            // Escape, Back and ⌘K can then hand it keyboard focus at once, so
+            // typing, paste and input methods continue natively with no gap.
+            search
+                .frame(height: inTool ? 0 : 64)
+                .opacity(inTool ? 0 : 1)
+                .clipped()
+                .allowsHitTesting(!inTool)
+                .accessibilityHidden(inTool)
             if let workbench = model.workbench {
                 UtilityWorkbenchView(model: workbench, onBack: model.back)
                     .transition(.opacity)
             } else {
-                search
                 if model.context.hasText || model.contextMessage != nil { selectionContext }
                 Divider().opacity(0.6)
                 HStack {
@@ -36,7 +46,7 @@ struct LauncherView: View {
         HStack(spacing: 13) {
             Image(systemName: "magnifyingglass").font(.system(size: 18, weight: .medium)).foregroundStyle(.secondary)
             LauncherSearchField(text: $model.query, onMove: model.move, onSubmit: model.openSelected,
-                onEscape: model.onClose, onReady: onSearchReady).frame(height: 26)
+                onEscape: model.onClose, onReady: onSearchReady, parked: model.workbench != nil).frame(height: 26)
             if !model.query.isEmpty {
                 Button { model.query = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.tertiary) }
                     .buttonStyle(.plain).accessibilityLabel("Clear search")
@@ -88,9 +98,11 @@ struct LauncherView: View {
                         LauncherCommandRow(command: command, selected: model.selectedID == command.id,
                             favorite: model.favorites.contains(command.id), bestMatch: model.bestMatch == command,
                             expanded: expanded, preview: expanded ? model.expandedPreview : nil,
-                            clock: expanded && model.featuresClock ? model.clockPreview : nil,
+                            session: expanded ? model.expandedSession : nil,
                             previewHeight: model.expandedPreviewHeight,
+                            hostWindow: model.hostWindow,
                             onOpen: { model.open(command) },
+                            onLaunch: { customize in model.open(command, customize: customize) },
                             onFavorite: { model.toggleFavorite(command) },
                             onOpenSettings: { model.open(.settings) },
                             onFocusSearch: model.onFocusSearch,
@@ -114,7 +126,7 @@ struct LauncherView: View {
                 Label("Use Clipboard", systemImage: "doc.on.clipboard").font(.system(size: 10))
             }.buttonStyle(.plain).foregroundStyle(.secondary).help("Use clipboard text as input")
             Spacer()
-            if model.featuresClock {
+            if model.featuresClock, model.query.isEmpty {
                 keycap("←"); keycap("→")
                 Text("Time").font(.system(size: 10)).foregroundStyle(.secondary)
                     .help("← → move 15 minutes, ⌥ moves an hour, ⇧ moves a day")
@@ -138,8 +150,8 @@ struct LauncherView: View {
 }
 
 /// One command. The focused row is the expanded one: it shows the command's
-/// preview under its title, so arrowing through the list reads each tool's
-/// take on the selection without opening anything.
+/// interactive preview under its title, so arrowing through the list tries
+/// each tool on the selection without opening anything.
 private struct LauncherCommandRow: View {
     let command: LauncherCommand
     let selected: Bool
@@ -148,9 +160,11 @@ private struct LauncherCommandRow: View {
     let bestMatch: Bool
     let expanded: Bool
     let preview: LauncherPreview?
-    let clock: WorldClockViewModel?
+    let session: LauncherInteractivePreview?
     let previewHeight: CGFloat
+    let hostWindow: () -> NSWindow?
     let onOpen: () -> Void
+    let onLaunch: ((inout LauncherCommandContext) -> Void) -> Void
     let onFavorite: () -> Void
     let onOpenSettings: () -> Void
     let onFocusSearch: () -> Void
@@ -181,15 +195,14 @@ private struct LauncherCommandRow: View {
                 .accessibilityLabel("\(favorite ? "Unfavorite" : "Favorite") \(command.title)")
           }.padding(.horizontal, 10).frame(height: 42)
           if expanded {
-              if let clock {
-                  // Interactive: the planner owns its input. Enter still opens.
-                  LauncherClockPreviewView(clock: clock, preview: preview, height: previewHeight,
-                      onOpenSettings: onOpenSettings, onEscapeCopilot: onFocusSearch,
-                      onCopilotFieldReady: onCopilotFieldReady)
-              } else {
-                  Button(action: onOpen) { LauncherInlinePreview(preview: preview, height: previewHeight).contentShape(Rectangle()) }
-                      .buttonStyle(.plain).accessibilityHidden(true)
-              }
+              // Interactive: the preview's controls own their input. Enter still opens.
+              // A group, so the preview's own controls keep their labels and identifiers.
+              LauncherInteractivePreviewView(command: command, session: session, preview: preview, height: previewHeight,
+                  hostWindow: hostWindow, onOpen: onOpen, onLaunch: onLaunch, onOpenSettings: onOpenSettings,
+                  onFocusSearch: onFocusSearch, onCopilotFieldReady: onCopilotFieldReady)
+                  .accessibilityElement(children: .contain)
+                  .accessibilityLabel("\(command.title) preview")
+                  .accessibilityIdentifier("launcherPreview_\(command.id)")
           }
         }
         .background((selected ? BoxTheme.accentSoft : hovered ? Color.primary.opacity(0.035) : .clear),
@@ -199,8 +212,10 @@ private struct LauncherCommandRow: View {
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: selected)
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)
     }
+    /// The session's current state; the original selection's summary only
+    /// stands in while there is no session (an oversized selection's notice).
     private var accessibilityPreview: String {
-        if let clock { return clock.accessibilitySummary }
+        if let session { return session.accessibilitySummary }
         return preview?.accessibilitySummary ?? "Preparing preview"
     }
     private var category: String {

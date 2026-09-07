@@ -1,20 +1,81 @@
 import SwiftUI
 
+/// The expanded area of the focused row. Every command gets an interactive
+/// session (`LauncherInteractivePreview`) whose controls own their own input;
+/// Enter in the search field still opens the full tool with that draft. Until
+/// the session exists, or when the selection is too large to preview, the
+/// static summary (`LauncherInlinePreview`) is shown instead.
+struct LauncherInteractivePreviewView: View {
+    let command: LauncherCommand
+    let session: LauncherInteractivePreview?
+    let preview: LauncherPreview?
+    /// The row height the palette reserved; nil lets the content size itself (tests).
+    let height: CGFloat?
+    var hostWindow: () -> NSWindow?
+    var onOpen: () -> Void
+    var onLaunch: ((inout LauncherCommandContext) -> Void) -> Void
+    var onOpenSettings: () -> Void
+    var onFocusSearch: () -> Void
+    var onCopilotFieldReady: (LauncherSearchTextField) -> Void
+
+    var body: some View {
+        switch session {
+        case .workbench(let model)?:
+            LauncherWorkbenchPreviewView(model: model, preview: preview, height: height, onEscape: onFocusSearch, onOpen: onOpen)
+        case .clock(let clock)?:
+            LauncherClockPreviewView(clock: clock, preview: preview, height: height, onOpenSettings: onOpenSettings,
+                                     onEscapeCopilot: onFocusSearch, onCopilotFieldReady: onCopilotFieldReady)
+        case .qr(let model)?:
+            LauncherQRPreviewView(model: model, height: height, hostWindow: hostWindow, onEscape: onFocusSearch, onOpen: onOpen)
+        case .textTools(let model)?:
+            LauncherTextToolsPreviewView(model: model, height: height)
+        case .ai(let model)?:
+            LauncherAIPreviewView(model: model, height: height, onEscape: onFocusSearch, onOpenSettings: onOpenSettings,
+                                  onRun: { handoff in onLaunch { $0.ai = handoff } })
+        case .capture(let model)?:
+            LauncherCapturePreviewView(command: command, model: model, height: height,
+                                       onCapture: { mode in onLaunch { $0.capture = CaptureHandoff(mode: mode) } })
+        case .recording(let model)?:
+            LauncherRecordingPreviewView(model: model, height: height, onStart: { options in onLaunch { $0.recording = options } })
+        case .videoToGIF(let model)?:
+            LauncherGIFPreviewView(model: model, height: height,
+                                   onChoose: { options in onLaunch { $0.videoToGIF = VideoToGIFHandoff(options: options, chooseFile: true) } })
+        case .appStatus(let model)?:
+            LauncherAppStatusPreviewView(command: command, model: model, height: height,
+                                         onOpenSettings: { category in onLaunch { $0.settings = category } },
+                                         onOpenHome: { destination in onLaunch { $0.home = destination } })
+        case nil:
+            LauncherInlinePreview(preview: preview, height: height ?? LauncherModel.previewHeight,
+                                  openTitle: preview.map { $0.content.isNotice ? "Open \(command.title)" : nil } ?? nil, onOpen: onOpen)
+        }
+    }
+}
+
+private extension LauncherPreview.Content {
+    var isNotice: Bool { if case .notice = self { return true }; return false }
+}
+
+/// The static summary: bounded, read-only display data computed off the
+/// main actor. It stays for oversized selections (with an explicit Open) and
+/// while an interactive session is being prepared.
 struct LauncherInlinePreview: View {
     let preview: LauncherPreview?
     var height: CGFloat = LauncherModel.previewHeight
+    /// An explicit action for notices (the selection is too large to preview).
+    var openTitle: String? = nil
+    var onOpen: () -> Void = {}
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 9) {
             if let preview {
-                HStack(spacing: 6) {
-                    Image(systemName: preview.isWarning ? "exclamationmark.circle" : "bolt.fill")
-                        .foregroundStyle(preview.isWarning ? BoxTheme.warning : BoxTheme.accent)
-                    Text(preview.title).fontWeight(.medium)
-                    Spacer(minLength: 4)
-                    Text(preview.subtitle).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
-                }.font(.system(size: 10)).lineLimit(1)
+                LauncherPreviewHeader(title: preview.title, subtitle: preview.subtitle, warning: preview.isWarning) {
+                    if let openTitle {
+                        Button(openTitle, action: onOpen).buttonStyle(LauncherChipButtonStyle(prominent: true))
+                            .help("Open the full tool with the complete selection")
+                            .accessibilityIdentifier("launcherPreviewOpenFull")
+                    }
+                }
                 content(preview.content)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .transition(.opacity)
@@ -95,7 +156,8 @@ struct LauncherInlinePreview: View {
 
 /// The interactive World Clock planner inside the palette. Nothing here is a
 /// row button: the timeline, cards, menus, and copilot own their own input,
-/// while Enter in the search field still opens the full tool.
+/// while Enter in the search field still opens the full tool. Without a
+/// timestamp it follows the current time until it is scrubbed.
 struct LauncherClockPreviewView: View {
     @ObservedObject var clock: WorldClockViewModel
     let preview: LauncherPreview?
@@ -105,6 +167,7 @@ struct LauncherClockPreviewView: View {
     var onEscapeCopilot: () -> Void
     var onCopilotFieldReady: (LauncherSearchTextField) -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -126,13 +189,22 @@ struct LauncherClockPreviewView: View {
         .frame(height: height, alignment: .top)
         .clipped()
         .animation(reduceMotion ? nil : .easeOut(duration: 0.14), value: clock.copilot.hasTranscript)
+        .onReceive(timer) { now in if clock.isFollowingNow { clock.refreshCurrentTime(now) } }
     }
 
+    private var headerTitle: String {
+        if clock.seedInstant != nil { return preview?.title ?? "Timestamp recognized" }
+        return clock.isFollowingNow ? "Current time" : "Planning"
+    }
+    private var headerSubtitle: String? {
+        if clock.seedInstant != nil { return preview?.subtitle }
+        return clock.isFollowingNow ? "Live · scrub or ask to plan a meeting" : "↵ opens World Clock at this time"
+    }
     private var header: some View {
         HStack(spacing: 6) {
             Image(systemName: "bolt.fill").foregroundStyle(BoxTheme.accent)
-            Text(preview?.title ?? "Timestamp recognized").fontWeight(.medium)
-            if let subtitle = preview?.subtitle {
+            Text(headerTitle).fontWeight(.medium)
+            if let subtitle = headerSubtitle {
                 Text("·").foregroundStyle(.tertiary)
                 Text(subtitle).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
             }
@@ -170,6 +242,15 @@ struct LauncherClockPreviewView: View {
                     .background(BoxTheme.accentSoft, in: Capsule())
                     .help("Return to the timestamp you selected")
                     .accessibilityIdentifier("launcherClockReturnToSeed")
+                } else if clock.seedInstant == nil, !clock.isFollowingNow {
+                    Button(action: clock.goToNow) {
+                        Label("Now", systemImage: "arrow.uturn.backward").font(.system(size: 10, weight: .medium))
+                    }
+                    .buttonStyle(.plain).foregroundStyle(BoxTheme.accent)
+                    .padding(.horizontal, 7).padding(.vertical, 3)
+                    .background(BoxTheme.accentSoft, in: Capsule())
+                    .help("Follow the current time again")
+                    .accessibilityIdentifier("launcherClockNow")
                 }
                 Spacer(minLength: 4)
                 QualityBadge(quality: clock.selectedMeetingQuality)

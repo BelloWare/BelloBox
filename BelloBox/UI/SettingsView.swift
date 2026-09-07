@@ -5,6 +5,14 @@ import SwiftUI
 /// capture tools, and permissions.
 struct SettingsView: View {
     @ObservedObject var settings: AppSettings
+    /// Pages requested from outside (the palette's Settings preview).
+    @ObservedObject var navigation: WindowNavigation<SettingsCategory>
+
+    init(settings: AppSettings, navigation: WindowNavigation<SettingsCategory> = WindowNavigation()) {
+        self.settings = settings
+        self.navigation = navigation
+        _selectedCategory = State(initialValue: navigation.requested ?? .general)
+    }
 
     @State private var selectedCategory: SettingsCategory = .general
     @State private var accessibilityTrusted = AccessibilityService.isTrusted
@@ -31,6 +39,9 @@ struct SettingsView: View {
         }
         .frame(minWidth: 900, minHeight: 680)
         .background(WorkspaceBackground()).tint(BoxTheme.accent)
+        .onReceive(navigation.$requested) { requested in
+            if let requested { selectedCategory = requested }
+        }
         .onReceive(permissionTimer) { _ in
             accessibilityTrusted = AccessibilityService.isTrusted
             screenRecordingTrusted = ScreenCapturePermission.isTrusted
@@ -480,7 +491,7 @@ struct SettingsView: View {
     }
 }
 
-private enum SettingsCategory: String, CaseIterable, Identifiable {
+enum SettingsCategory: String, CaseIterable, Identifiable {
     case general
     case ai
     case capture

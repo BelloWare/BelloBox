@@ -57,41 +57,117 @@ The palette expands exactly one row: the focused command. Down/Up collapse
 the previous row and show the newly focused command's preview, so what is
 expanded is always what Enter opens; the "Best match" label stays on the top
 suggestion whether or not it is focused, and a search focuses (and expands)
-its top result while typing keeps working. `LauncherPreview.make(text:command:
-context:)` computes a bounded, read-only preview off the main actor for any
-command: parsers (JSON, JWT, URL, cURL, cron, data) show their result or a
-"Not recognized" notice, counting tools show statistics, World Clock shows the
-current time when the selection is not a timestamp, and capture, generator,
-AI, snippet and app commands show two or three `.actions` lines (never a
-faked transformation). Empty selections get the same concise actions.
-`LauncherModel.previews` caches one preview per focused command for the
-current selection; work for a row that lost focus is cancelled and discarded,
-and a new selection clears the cache. Above 64 KB parsing tools show a
-compact notice. Previews never create workbenches, send requests, copy text,
-or persist input. Timestamp selections initially rank World Clock first and reserve the
-planner height synchronously (`expandsClock`); `LauncherModel` then installs a
-`WorldClockViewModel` in `.preview` mode (no preference writes, up to four
-zones: saved order, then local and UTC) rendered by `LauncherClockPreviewView`,
-which survives while another row is focused and comes back with its
-transcript. That row is not a button: the shared `MeetingTimelineView`
-scrubber (AppKit drag + horizontal scroll wheel; vertical scrolls pass
-through), day arrows, reference menu, and copilot own their input, while Enter
-opens World Clock with a `WorldClockHandoff` (previewed instant, chosen
-reference, and an in-memory copilot snapshot) via `LauncherCommandContext`;
-`WorldClockViewModel.adopt` applies it without saving preferences and drops
-any earlier conversation in the window. Height changes from focus moves and
-from the copilot transcript go through `onPreviewResize`, which never
-refocuses search and fires once per real change; panel heights are clamped to
-the screen's visible frame. SwiftUI's `ScrollView` is an `NSScrollView` that takes wheel events
-before the hit-tested subview, so `TimelineScrubberView` claims horizontal
-wheel events through a local monitor that exists only while it is in a
-window and only for points inside its unclipped bounds (vertical and
-outside events pass through; `BELLOBOX_E2E_WHEEL_DIAGNOSTICS=/path` logs
-routing in DEBUG). `LauncherWindowController` leaves Enter/arrows to the
-copilot field when it is first responder (`Esc` returns to search) and
-`focusSearch` never steals focus from another text input. `←/→` (⌥ hour, ⇧ day) nudge the preview
-only while the query is empty and the clock row is focused. Keep explicit
-query matches above suggestions and suggestions above favorite/recent bonuses.
+its top result while typing keeps working. Every command's expanded row is
+interactive (`LauncherInteractivePreview` in `Launcher/LauncherPreviewSessions.swift`):
+`LauncherModel.sessions` keeps one session per focused command for the
+palette session (it survives arrowing and searching) and drops them all with
+the selection. Developer tools reuse `UtilityWorkbenchModel` itself as the
+session, so Enter opens the same instance and every option or draft edit
+carries over; QR reuses `QRCodePopupViewModel`, Text Tools reuses
+`TextToolsPopupViewModel`, World Clock the `.preview` planner, and the rest
+have small session classes (AI prompt draft, capture permission/modes, a
+session copy of the recording options, GIF options, app status).
+`LauncherCommandContext` (`Launcher/LauncherHandoff.swift`) carries the draft
+out of the palette: QR text, Text Tools category/option, an explicit
+`AIHandoff`, a capture mode, recording/GIF options, a Settings category, or a
+Home destination; `SelectionOverlayController.runLauncherCommand` routes it.
+Preview buttons call `LauncherModel.open(_:customize:)` for a specific action.
+Creating or focusing a session never records a use, saves preferences,
+touches the clipboard, or sends anything; copy, save, Send (HTTP), an AI
+action or prompt, Start Recording, Choose Movie and the system-permission
+buttons are explicit user actions. Selections over 64 KB
+(`LauncherSelectionContext.fitsPreviewLimit`) get no text session: the row
+shows the compact notice with an explicit Open button, and Enter opens the
+complete text. Views live in `LauncherToolPreviews.swift` (developer tools
+on the workbench model) and `LauncherUtilityPreviews.swift`; shared pieces
+(`LauncherOutputText`, a read-only native NSTextView that holds the complete
+result; `LauncherPreviewField`, a literal single-line native field;
+`LauncherPreviewEditor`; `LauncherChoiceBar`; chip button styles) are in
+`LauncherPreviewComponents.swift`. `LauncherModel.previewHeight(for:)`
+reserves each command's height synchronously (the developer tools, QR and
+Text Tools share one height; measured by
+`LauncherInteractivePreviewTests.testEveryInteractivePreviewFitsItsReservedHeight`).
+`LauncherPreview.make(text:command:context:)` still computes a bounded,
+read-only summary off the main actor (header title/subtitle, notices,
+accessibility for rows without a session); `LauncherModel.previews` caches
+one per focused command, work for a row that lost focus is cancelled and
+discarded, and a new selection clears the cache. Row headers and
+`LauncherInteractivePreview.accessibilitySummary` always describe the live
+session, never the original selection. Drafts that grow past 64 KB inside a
+session (a pasted second text, a loaded snippet, "Use as Input", editing in
+the full tool then Back) show `LauncherDraftLimitNotice` instead of editors
+or a stale result; `UtilityWorkbenchModel.previewsOnly` (true for a row,
+false while the tool is open) makes `schedule()` skip such drafts, so the
+row never parses them and the full tool calculates them on open; Back
+restarts an interrupted calculation when the draft fits. Eligibility follows
+the current draft: a tool that was opened keeps its session (notice or
+preview) on the same model even when the original selection was too large.
+The URL row edits the first 100 parameters (`LauncherURLParameterList.
+compactLimit`, lazy rows, "Open for all" chip) while the model, the rebuilt
+URL and Copy keep every parameter; the full workbench lists parameters in a
+`LazyVStack`. Preview
+inputs never claim focus when they mount (`focusesWhenAttached: false`);
+while one is first responder, `LauncherWindowController` leaves Enter and the
+arrows to it and Escape returns to search. A clicked read-only result is not
+an input: arrows and Enter still navigate and open, Escape returns to search,
+⌘C copies, and typing a character refocuses search before the key is
+delivered. Tracked native menus (`isTrackingMenu`) and attached sheets own
+the keyboard entirely and never dismiss the palette or open a tool. The
+search field is one native field for the whole palette session: while a
+tool is open `LauncherView` parks it (zero height, invisible, disabled so
+Tab skips it, hidden from accessibility) instead of unmounting it, so
+Escape, Back and ⌘K make it first responder synchronously; there is no
+mount gap, no key buffering, and typing, paste, input methods and undo
+continue natively while the tool fades out. Sheets from a preview (QR
+Save…) attach to the palette panel through `model.hostWindow` so it does
+not dismiss. The QR row (`LauncherQRPreview`) shows a real code on a 128 pt
+card rendered at two pixels per point; a code whose modules would get fewer
+than two pixels on a standard display is "dense" and its Enlarge chip grows
+the card (192–384 pt, two pixels per module) and the row through
+`onPreviewResize`, once per real height change, also when the text's
+density changes while enlarged; copies and saves use
+`QRCodeGenerator.exportPixelSize` (≥ 512 px and four pixels per module).
+`LauncherInteractivePreviewTests` decodes the compact card, the enlarged
+card and the export with `CIDetector`. World Clock is interactive for every
+selection: timestamp selections rank it first and seed the planner
+(`expandsClock` reserves the height synchronously); other selections get a
+live planner (`isFollowingNow`, refreshed by the row's timer). Enter always
+hands over what the row shows: `WorldClockHandoff.followsNow` carries live
+intent, so `WorldClockViewModel.adopt` returns an already open window to
+now (dropping its seed and conversation) instead of keeping an older plan,
+while a plain reopen without a handoff keeps whatever the window showed.
+`LauncherModel` installs the `WorldClockViewModel` in `.preview` mode (no
+preference writes, up to four zones: saved order, then local and UTC)
+rendered by `LauncherClockPreviewView`. That row is not a button: the shared
+`MeetingTimelineView` scrubber (AppKit drag + horizontal scroll wheel;
+vertical scrolls pass through), day arrows, reference menu, and copilot own
+their input, while Enter opens World Clock with a `WorldClockHandoff`
+(previewed instant or live intent, chosen reference, and an in-memory
+copilot snapshot) via `LauncherCommandContext`; `adopt` applies it without
+saving preferences. Height changes from focus moves, the copilot transcript
+and the QR card go through `onPreviewResize`, which never refocuses search
+and fires once per real change; panel heights are clamped to the screen's
+visible frame. SwiftUI's `ScrollView` is an `NSScrollView` that takes wheel
+events before the hit-tested subview, so `TimelineScrubberView` claims
+horizontal wheel events through a local monitor that exists only while it
+is in a window and only for points inside its unclipped bounds (vertical
+and outside events pass through; `BELLOBOX_E2E_WHEEL_DIAGNOSTICS=/path` logs
+routing in DEBUG); nested native scroll views (result text, editors)
+receive the wheel normally. `focusSearch` never steals focus from another
+text input. `←/→` (⌥ hour, ⇧ day) nudge the preview only while the query is
+empty and the clock row is focused. Ask AI's row never sends: Enter (Open)
+carries the prompt draft unsent (`AIHandoff.run == false`, kept even without
+a provider or selection); only Send, Return inside the prompt field, or a
+quick action (which needs selected text) hands over `run == true`, and the
+popup starts that one request through `ActionPopupViewModel.apply`. Keep
+explicit query matches above suggestions and suggestions above
+favorite/recent bonuses. Review fixtures (DEBUG):
+`BELLOBOX_E2E_LAUNCHER_TEXT`/`_TEXT_FILE` open the palette with a selection,
+`BELLOBOX_E2E_LAUNCHER_FOCUS=<command id>` highlights that row's interactive
+preview without opening it, and `BELLOBOX_E2E_LAUNCHER_COMMAND` opens a tool.
+`SettingsWindowController.show(settings:category:)` and
+`MainWindowController.show(..., category:)` steer an open window through
+`WindowNavigation`.
 
 Normal launches and Dock/Finder reopens show `MainView`; only the shortcut and
 explicit Search actions open the palette. `HomeCategory` organizes the tool
