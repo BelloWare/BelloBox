@@ -46,6 +46,9 @@ struct BelloBoxApp: App {
             appDelegate.overlay?.stopRecording()
         }
         .disabled(!(appDelegate.overlay?.isRecording ?? false))
+        Button("Convert Video to GIF…") {
+            appDelegate.overlay?.openVideoToGIF()
+        }
         Button("Generate QR Code from Selection") {
             appDelegate.overlay?.triggerQROnCurrentSelection()
         }
@@ -173,7 +176,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let self else { return }
 #if DEBUG
             let previewKeys = ["BELLOBOX_E2E_SCREENSHOT_IMAGE", "BELLOBOX_E2E_QR_TEXT", "BELLOBOX_E2E_AI_PREVIEW_TEXT",
-                               "BELLOBOX_E2E_RECORDING_OPTIONS", "BELLOBOX_E2E_RECORDING_REVIEW_FILE"]
+                               "BELLOBOX_E2E_RECORDING_OPTIONS", "BELLOBOX_E2E_RECORDING_REVIEW_FILE",
+                               "BELLOBOX_E2E_RECORDING_HUD", "BELLOBOX_E2E_CONVERTING_GIF", "BELLOBOX_E2E_VIDEO_TO_GIF",
+                               "BELLOBOX_E2E_WRITE_SYNTHETIC_ASSETS", "BELLOBOX_E2E_SCROLL_HUD_DEMO", "BELLOBOX_E2E_SCROLL_FRAMES_DIR",
+                               "BELLOBOX_E2E_OCR_IMAGE", "BELLOBOX_E2E_CAPTURE_OVERLAY_IMAGE", "BELLOBOX_E2E_CAPTURE_OVERLAY_SIMULATED_DISPLAYS"]
             if previewKeys.contains(where: { ProcessInfo.processInfo.environment[$0] != nil }) { return }
             let launcherFixture = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT_FILE"]
                 .flatMap { try? String(contentsOfFile: $0, encoding: .utf8) }

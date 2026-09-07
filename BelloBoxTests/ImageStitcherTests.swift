@@ -49,7 +49,7 @@ final class ImageStitcherTests: XCTestCase {
         let first = ScreenshotTestHelpers.stripedImage(width: 90, height: 180)
         let result = try ImageStitcher.stitch([first, first])
         XCTAssertTrue(ImageStitcher.appearsUnchanged(previous: first, current: first))
-        XCTAssertTrue(result.warnings.contains { $0.contains("nearly unchanged") })
+        XCTAssertTrue(result.warnings.contains { $0.contains("almost the same") })
     }
 
     func testStitchWarningsAreActiveInScrollingDocument() throws {
@@ -67,8 +67,9 @@ final class ImageStitcherTests: XCTestCase {
             createdAt: Date(timeIntervalSince1970: 12)
         )
 
-        XCTAssertEqual(document.ocrResults.count, 1)
-        XCTAssertEqual(document.activeOCRResult?.warnings, result.warnings)
+        XCTAssertEqual(document.captureNotes, result.warnings)
+        XCTAssertTrue(document.ocrResults.isEmpty, "Stitch notes are not OCR results")
+        XCTAssertEqual(document.source.scrollingFrameCount, 2)
     }
 
     func testStickyHeaderIsRemovedWhenRepeatedConservatively() throws {

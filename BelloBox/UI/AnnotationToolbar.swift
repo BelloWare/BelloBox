@@ -7,6 +7,12 @@ struct AnnotationToolbarView: View {
     /// Shown only in the capture overlay for area and window captures.
     var onScrollCapture: (() -> Void)?
 
+    static let scrollCaptureTitle = "Scrolling Capture"
+    /// Width the capture overlay reserves for the toolbar with every action shown
+    /// (mask controls are the widest style row); `AnnotationToolbarLayoutTests` keeps it honest.
+    static let overlayToolbarWidth: CGFloat = 1_060
+    static let scrollCaptureTooltip = "Capture a scrolling page: the selection goes live, you scroll it (or let Bello Box auto-scroll) and every screen is stitched into one tall screenshot"
+
     var body: some View {
         HStack(spacing: 6) {
             ForEach(Array(AnnotationTool.allCases.enumerated()), id: \.element.id) { index, tool in
@@ -29,7 +35,7 @@ struct AnnotationToolbarView: View {
             Divider().frame(height: 24)
 
             styleControls
-                .frame(width: 150, alignment: .leading)
+                .frame(width: styleControlsWidth, alignment: .leading)
 
             Menu {
                 Text("\(Int(viewModel.visibleImageSize.width)) × \(Int(viewModel.visibleImageSize.height)) pixels")
@@ -63,11 +69,13 @@ struct AnnotationToolbarView: View {
                 Divider().frame(height: 24)
 
                 Button(action: onScrollCapture) {
-                    Label("Scroll", systemImage: "arrow.down.doc")
+                    Label(Self.scrollCaptureTitle, systemImage: "arrow.down.doc")
                         .foregroundStyle(BoxTheme.accent)
                 }
                 .buttonStyle(SecondaryButtonStyle())
-                .overlayTooltip("Scroll to capture more: keep scrolling (or auto-scroll) and stitch the frames into one tall screenshot")
+                .accessibilityLabel(Self.scrollCaptureTitle)
+                .accessibilityHint("Turns the selection live and stitches the screens you scroll through")
+                .overlayTooltip(Self.scrollCaptureTooltip)
             }
 
             if showExportActions {
@@ -101,6 +109,12 @@ struct AnnotationToolbarView: View {
         }.padding(showExportActions ? 0 : 8).surfaceCard().tint(BoxTheme.accent)
     }
 
+    /// The mask row carries swatches, a custom colour and the pattern menu, so it
+    /// gets a little more room than a slider does.
+    private var styleControlsWidth: CGFloat {
+        viewModel.activeTool == .blur ? 214 : 150
+    }
+
     @ViewBuilder
     private var styleControls: some View {
         switch viewModel.activeTool {
@@ -126,11 +140,85 @@ struct AnnotationToolbarView: View {
                 .accessibilityValue("\(Int(viewModel.style.fontSize)) pixels")
                 .overlayTooltip("Text size in the exported image")
             }
-        case .select, .crop, .eraser, .highlight, .blur:
+        case .eraser:
+            HStack(spacing: 5) {
+                Image(systemName: "circle").font(.system(size: 9)).foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+                Slider(value: $viewModel.eraserWidth, in: ScreenshotPopupViewModel.eraserWidthRange, step: 2)
+                    .accessibilityLabel("Eraser size")
+                    .accessibilityValue("\(Int(viewModel.eraserWidth)) pixels")
+                    .overlayTooltip("Eraser size: drag over an arrow, line, shape, label, or mask to remove just that part")
+                Image(systemName: "circle").font(.system(size: 15)).foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+                Text("\(Int(viewModel.eraserWidth)) px")
+                    .font(.caption2.monospacedDigit())
+                    .fixedSize()
+            }
+        case .blur:
+            maskControls
+        case .select, .crop, .highlight:
             Text(Self.tooltip(for: viewModel.activeTool))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
+        }
+    }
+
+    /// Opaque fills only: the swatches and the picker both refuse translucency, and the
+    /// pattern is drawn over the fill, so a mask never lets pixels show through.
+    private var maskControls: some View {
+        HStack(spacing: 6) {
+            ForEach(AnnotationStyle.maskFillPresets, id: \.name) { preset in
+                let selected = viewModel.maskStyle.maskFill == preset.color
+                Button {
+                    viewModel.maskStyle = .mask(fill: preset.color, pattern: viewModel.maskStyle.maskPattern)
+                } label: {
+                    Circle()
+                        .fill(Color(nsColor: preset.color.nsColor))
+                        .frame(width: 16, height: 16)
+                        .overlay(Circle().strokeBorder(BoxTheme.border, lineWidth: 1))
+                        .overlay(Circle().strokeBorder(BoxTheme.accent, lineWidth: selected ? 2 : 0).padding(-2))
+                        .frame(width: 22, height: 22)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(preset.name) mask")
+                .accessibilityValue(selected ? "Selected" : "Not selected")
+                .overlayTooltip("\(preset.name) mask fill")
+            }
+            ColorPicker("Custom mask color", selection: Binding(
+                get: { Color(nsColor: viewModel.maskStyle.maskFill.nsColor) },
+                set: { color in
+                    if let cgColor = color.cgColor, let nsColor = NSColor(cgColor: cgColor) {
+                        viewModel.maskStyle = .mask(fill: CodableColor(nsColor), pattern: viewModel.maskStyle.maskPattern)
+                    }
+                }
+            ), supportsOpacity: false)
+            .labelsHidden()
+            .frame(width: 30)
+            .overlayTooltip("Custom mask fill (always opaque)")
+            Menu {
+                ForEach(MaskPattern.allCases) { pattern in
+                    Button {
+                        viewModel.maskStyle = .mask(fill: viewModel.maskStyle.maskFill, pattern: pattern)
+                    } label: {
+                        if pattern == viewModel.maskStyle.maskPattern {
+                            Label(pattern.label, systemImage: "checkmark")
+                        } else {
+                            Label(pattern.label, systemImage: pattern.symbol)
+                        }
+                    }
+                }
+            } label: {
+                Image(systemName: viewModel.maskStyle.maskPattern.symbol)
+                    .font(.system(size: 12, weight: .medium))
+                    .frame(width: 22, height: 22)
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .accessibilityLabel("Mask pattern")
+            .accessibilityValue(viewModel.maskStyle.maskPattern.label)
+            .overlayTooltip("Mask pattern: \(viewModel.maskStyle.maskPattern.label). Every pattern sits on the solid fill")
         }
     }
 
@@ -161,8 +249,8 @@ struct AnnotationToolbarView: View {
         case .highlight: return "Highlighter"
         case .text: return "Text label"
         case .crop: return "Crop the screenshot"
-        case .blur: return "Mask: hide sensitive content"
-        case .eraser: return "Eraser: remove an annotation"
+        case .blur: return "Mask: hide sensitive content behind an opaque fill"
+        case .eraser: return "Eraser: brush away part of an annotation; the screenshot stays intact"
         }
     }
 }

@@ -84,10 +84,12 @@ struct LauncherView: View {
                         }.frame(maxWidth: .infinity).frame(height: 118)
                     }
                     ForEach(model.commands) { command in
+                        let expanded = model.expandedCommand == command
                         LauncherCommandRow(command: command, selected: model.selectedID == command.id,
-                            favorite: model.favorites.contains(command.id), featured: model.featuredCommand == command,
-                            preview: model.preview, clock: model.featuredCommand == command ? model.clockPreview : nil,
-                            previewHeight: model.featuredPreviewHeight,
+                            favorite: model.favorites.contains(command.id), bestMatch: model.bestMatch == command,
+                            expanded: expanded, preview: expanded ? model.expandedPreview : nil,
+                            clock: expanded && model.featuresClock ? model.clockPreview : nil,
+                            previewHeight: model.expandedPreviewHeight,
                             onOpen: { model.open(command) },
                             onFavorite: { model.toggleFavorite(command) },
                             onOpenSettings: { model.open(.settings) },
@@ -135,11 +137,16 @@ struct LauncherView: View {
     }
 }
 
+/// One command. The focused row is the expanded one: it shows the command's
+/// preview under its title, so arrowing through the list reads each tool's
+/// take on the selection without opening anything.
 private struct LauncherCommandRow: View {
     let command: LauncherCommand
     let selected: Bool
     let favorite: Bool
-    let featured: Bool
+    /// The top interpretation of the selection; labelled, whether or not focused.
+    let bestMatch: Bool
+    let expanded: Bool
     let preview: LauncherPreview?
     let clock: WorldClockViewModel?
     let previewHeight: CGFloat
@@ -159,12 +166,12 @@ private struct LauncherCommandRow: View {
                     ToolBadge(symbol: command.symbol, size: 27)
                     Text(command.title).font(.system(size: 13, weight: selected ? .semibold : .medium)).lineLimit(1)
                     Spacer(minLength: 12)
-                    Text(featured ? "Best match" : category).font(.system(size: 10))
-                        .foregroundStyle(featured ? BoxTheme.accent : .secondary)
+                    Text(bestMatch ? "Best match" : category).font(.system(size: 10))
+                        .foregroundStyle(bestMatch ? BoxTheme.accent : .secondary)
                 }.contentShape(Rectangle())
             }.buttonStyle(.plain).help(command.subtitle).accessibilityIdentifier("command_\(command.id)")
                 .accessibilityLabel(command.title).accessibilityHint(command.subtitle)
-                .accessibilityValue((selected ? "Selected" : "Not selected") + (featured ? ". " + accessibilityPreview : ""))
+                .accessibilityValue((selected ? "Selected" : "Not selected") + (expanded ? ". " + accessibilityPreview : ""))
             Button(action: onFavorite) {
                 Image(systemName: favorite ? "star.fill" : "star").font(.system(size: 10))
                     .foregroundStyle(favorite ? Color.secondary : Color.secondary.opacity(0.6))
@@ -173,7 +180,7 @@ private struct LauncherCommandRow: View {
             }.buttonStyle(.plain).help(favorite ? "Remove favorite" : "Add favorite")
                 .accessibilityLabel("\(favorite ? "Unfavorite" : "Favorite") \(command.title)")
           }.padding(.horizontal, 10).frame(height: 42)
-          if featured {
+          if expanded {
               if let clock {
                   // Interactive: the planner owns its input. Enter still opens.
                   LauncherClockPreviewView(clock: clock, preview: preview, height: previewHeight,
@@ -186,8 +193,8 @@ private struct LauncherCommandRow: View {
           }
         }
         .background((selected ? BoxTheme.accentSoft : hovered ? Color.primary.opacity(0.035) : .clear),
-                    in: RoundedRectangle(cornerRadius: featured ? 12 : 8))
-        .overlay(RoundedRectangle(cornerRadius: featured ? 12 : 8).strokeBorder(featured ? (selected ? BoxTheme.accent.opacity(0.35) : BoxTheme.border) : .clear))
+                    in: RoundedRectangle(cornerRadius: expanded ? 12 : 8))
+        .overlay(RoundedRectangle(cornerRadius: expanded ? 12 : 8).strokeBorder(expanded ? BoxTheme.accent.opacity(0.35) : .clear))
         .onHover { hovered = $0 }
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: selected)
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)

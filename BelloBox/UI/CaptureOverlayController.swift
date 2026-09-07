@@ -1583,7 +1583,7 @@ private struct CaptureScreenshotOverlaySurface: View {
             let toolbar = CaptureOverlayAccessoryLayout.frame(
                 selection: selected,
                 bounds: bounds,
-                preferredSize: CGSize(width: 920, height: 54)
+                preferredSize: CGSize(width: AnnotationToolbarView.overlayToolbarWidth, height: 54)
             )
 
             ZStack(alignment: .topLeading) {
@@ -1766,6 +1766,21 @@ private struct CaptureRecordingOverlaySurface: View {
     var selectionFrame: CGRect
     var onStart: (RecordingOptions) -> Void
     var onCancel: () -> Void
+    /// Follows the picker so the card grows for the GIF row and shrinks back.
+    @State private var outputFormat: RecordingOutputFormat
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    init(settings: AppSettings, initialOptions: RecordingOptions, targetLabel: String, screenFrame: CGRect, selectionFrame: CGRect,
+         onStart: @escaping (RecordingOptions) -> Void, onCancel: @escaping () -> Void) {
+        self.settings = settings
+        self.initialOptions = initialOptions
+        self.targetLabel = targetLabel
+        self.screenFrame = screenFrame
+        self.selectionFrame = selectionFrame
+        self.onStart = onStart
+        self.onCancel = onCancel
+        _outputFormat = State(initialValue: initialOptions.outputFormat)
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -1774,7 +1789,7 @@ private struct CaptureRecordingOverlaySurface: View {
             let bar = CaptureOverlayAccessoryLayout.frame(
                 selection: selected,
                 bounds: bounds,
-                preferredSize: CGSize(width: 780, height: 330)
+                preferredSize: RecordingOptionsBar.preferredSize(for: outputFormat)
             )
 
             ZStack(alignment: .topLeading) {
@@ -1784,11 +1799,14 @@ private struct CaptureRecordingOverlaySurface: View {
                     settings: settings,
                     targetLabel: targetLabel,
                     initialOptions: initialOptions,
+                    compact: RecordingOptionsBar.usesCompactLayout(width: bar.width),
+                    onFormatChange: { outputFormat = $0 },
                     onStart: onStart,
                     onCancel: onCancel
                 )
                 .frame(width: bar.width, height: bar.height, alignment: .topLeading)
                 .position(x: bar.midX, y: bar.midY)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: outputFormat)
             }
             .onExitCommand(perform: onCancel)
         }

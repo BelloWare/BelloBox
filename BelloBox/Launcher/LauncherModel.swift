@@ -9,6 +9,11 @@ struct LauncherCommandContext: Equatable {
     var worldClock: WorldClockHandoff?
 }
 
+/// The palette expands exactly one row: the focused command. Moving focus
+/// with the arrows collapses the previous row and shows the new command's
+/// preview, so what is expanded is always what Enter opens. Previews are
+/// bounded, computed off the main actor once per selection and command, and
+/// cached until the selection changes; stale work is discarded.
 @MainActor
 final class LauncherModel: ObservableObject {
     @Published private(set) var selection: TextSelection
@@ -18,20 +23,31 @@ final class LauncherModel: ObservableObject {
     private let settings: AppSettings
     private let worldClockPreferences: WorldClockPreferencesStore
     private var workbenches: [LauncherCommand: UtilityWorkbenchModel] = [:]
-    typealias PreviewBuilder = @Sendable (String, LauncherCommand, [String]) throws -> LauncherPreview
+    typealias PreviewBuilder = @Sendable (String, LauncherCommand, LauncherPreviewContext) throws -> LauncherPreview
     private let previewBuilder: PreviewBuilder
     private var previewTask: Task<Void, Never>?
-    private var previewRunID = UUID()
+    private var previewTaskCommand: LauncherCommand?
+    /// Changes with the selection; results from an earlier generation are dropped.
+    private var previewGeneration = UUID()
     private var clockObservers: [AnyCancellable] = []
-    private var clockTranscriptVisible = false
-    @Published private(set) var preview: LauncherPreview?
+    private var lastReportedHeight: CGFloat = 0
+    private var isHandlingQueryChange = false
+    /// Previews built for the current selection, one per command that was focused.
+    @Published private(set) var previews: [LauncherCommand: LauncherPreview] = [:]
     /// Interactive World Clock planner for a recognized timestamp. It never
     /// persists locations and is discarded with the selection.
     @Published private(set) var clockPreview: WorldClockViewModel?
     @Published var query = "" {
-        didSet { selectedID = commands.first?.id; onPresentationChange() }
+        didSet {
+            isHandlingQueryChange = true
+            selectedID = commands.first?.id
+            isHandlingQueryChange = false
+            presentationChanged()
+        }
     }
-    @Published var selectedID: String?
+    @Published var selectedID: String? {
+        didSet { if selectedID != oldValue { selectionDidChange() } }
+    }
     @Published var contextMessage: String?
     @Published var workbench: UtilityWorkbenchModel?
     @Published private(set) var favorites: Set<String>
@@ -39,9 +55,9 @@ final class LauncherModel: ObservableObject {
     var onCommand: (LauncherCommand, TextSelection, LauncherCommandContext) -> Void = { _, _, _ in }
     var onClose: () -> Void = {}
     var onPresentationChange: () -> Void = {}
-    /// The featured preview changed height (copilot transcript shown or
-    /// cleared). Hosts resize without touching keyboard focus; `paletteSize`
-    /// already reflects the new height when this fires.
+    /// The expanded row changed height (another command was focused, or the
+    /// copilot transcript was shown or cleared). Hosts resize without touching
+    /// keyboard focus; `paletteSize` already reflects the new height when this fires.
     var onPreviewResize: () -> Void = {}
     /// Asks the host to return keyboard focus to the search field.
     var onFocusSearch: () -> Void = {}
@@ -54,7 +70,7 @@ final class LauncherModel: ObservableObject {
     init(selection: TextSelection, snippets: SnippetStore, defaults: UserDefaults = .standard,
          settings: AppSettings = .shared, worldClockPreferences: WorldClockPreferencesStore? = nil,
          clockResponder: WorldClockCopilotSession.Responder? = nil,
-         previewBuilder: @escaping PreviewBuilder = { try LauncherPreview.make(text: $0, command: $1, zoneIDs: $2) }) {
+         previewBuilder: @escaping PreviewBuilder = { try LauncherPreview.make(text: $0, command: $1, context: $2) }) {
         let context = LauncherSelectionContext(text: selection.text)
         self.context = context
         self.selection = context.usableSelection(selection)
@@ -66,7 +82,8 @@ final class LauncherModel: ObservableObject {
         favorites = Set(defaults.stringArray(forKey: "launcherFavorites") ?? ["json", "compare", "screenshot", "worldClock"])
         recents = defaults.stringArray(forKey: "launcherRecents") ?? []
         selectedID = commands.first?.id
-        preparePreview()
+        lastReportedHeight = paletteSize.height
+        ensurePreviewForSelection()
     }
     deinit { previewTask?.cancel() }
     var suggestions: [LauncherCommand] { context.suggestions }
@@ -74,31 +91,42 @@ final class LauncherModel: ObservableObject {
         LauncherCommand.search(query, input: "", favorites: favorites, recents: recents, suggested: suggestions)
     }
     var selectedCommand: LauncherCommand? { commands.first { $0.id == selectedID } }
-    var featuredCommand: LauncherCommand? {
+    /// The top interpretation of the selection, labelled "Best match" while the
+    /// search is empty. It does not move with the focus.
+    var bestMatch: LauncherCommand? {
         guard query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, context.hasText, !context.exceedsLimit else { return nil }
         return suggestions.first
     }
-    /// Whether the featured row is the interactive clock, so arrow keys nudge time.
-    var featuresClock: Bool { featuredCommand == .worldClock }
+    /// The row that shows its preview: the focused command.
+    var expandedCommand: LauncherCommand? { selectedCommand }
+    var expandedPreview: LauncherPreview? { expandedCommand.flatMap { previews[$0] } }
+    func preview(for command: LauncherCommand) -> LauncherPreview? { previews[command] }
+    /// The selection is a timestamp, so World Clock gets the interactive planner
+    /// rather than static clocks. Known synchronously so the height never jumps
+    /// when the planner arrives.
+    var isTimestampSelection: Bool { context.hasText && !context.exceedsLimit && suggestions.first == .worldClock }
+    var expandsClock: Bool { expandedCommand == .worldClock && isTimestampSelection }
+    /// Whether the expanded row is the interactive clock, so arrow keys nudge time.
+    var featuresClock: Bool { expandsClock && clockPreview != nil }
     static let previewHeight: CGFloat = 150
     /// Measured natural height of `LauncherClockPreviewView` at the palette
     /// width; `testClockPreviewLayoutFitsTheHeightThePaletteReserves` keeps it honest.
     static let clockPreviewHeight: CGFloat = 261
     static let copilotTranscriptHeight: CGFloat = WorldClockCopilotView.compactTranscriptHeight + 6
-    var featuredPreviewHeight: CGFloat {
-        guard featuresClock else { return Self.previewHeight }
+    var expandedPreviewHeight: CGFloat {
+        guard expandsClock else { return Self.previewHeight }
         let transcript = clockPreview?.copilot.isTranscriptVisible ?? false
         return Self.clockPreviewHeight + (transcript ? Self.copilotTranscriptHeight : 0)
     }
     var paletteSize: NSSize {
         let contextHeight: CGFloat = context.hasText || contextMessage != nil ? 48 : 0
-        let featured = featuredCommand != nil
-        let listHeight: CGFloat = commands.isEmpty ? 130 : CGFloat(min(featured ? 5 : 7, commands.count)) * 42 + 12 + (featured ? featuredPreviewHeight : 0)
+        let expanded = expandedCommand != nil
+        let listHeight: CGFloat = commands.isEmpty ? 130 : CGFloat(min(5, commands.count)) * 42 + 12 + (expanded ? expandedPreviewHeight : 0)
         return NSSize(width: 680, height: 64 + contextHeight + 26 + listHeight + 42)
     }
     func useClipboard(_ text: String? = NSPasteboard.general.string(forType: .string)) {
         guard let text, !text.isEmpty else {
-            contextMessage = "The clipboard has no text."; onPresentationChange(); return
+            contextMessage = "The clipboard has no text."; presentationChanged(); return
         }
         replaceContext(TextSelection(text: text, anchorRect: nil, appName: "Clipboard", bundleID: nil, pid: nil))
     }
@@ -113,27 +141,58 @@ final class LauncherModel: ObservableObject {
         self.selection = context.usableSelection(selection)
         contextMessage = nil
         query = ""
-        preparePreview()
+        ensurePreviewForSelection()
     }
-    private func preparePreview() {
-        previewTask?.cancel()
-        previewRunID = UUID()
-        preview = nil
-        discardClockPreview()
-        guard context.hasText, !context.exceedsLimit, let command = suggestions.first else { return }
-        let id = previewRunID, text = selection.text, builder = previewBuilder
-        let zones = worldClockPreferences.loadZoneIDs()
+    private func presentationChanged() {
+        lastReportedHeight = paletteSize.height
+        onPresentationChange()
+    }
+    private func selectionDidChange() {
+        ensurePreviewForSelection()
+        if !isHandlingQueryChange { reconcilePaletteHeight() }
+    }
+    /// Reports a height change through the no-refocus path, once per change.
+    private func reconcilePaletteHeight() {
+        let height = paletteSize.height
+        guard height != lastReportedHeight else { return }
+        lastReportedHeight = height
+        onPreviewResize()
+    }
+    /// Starts the focused command's preview unless it is cached or already
+    /// running. Work for a command that lost focus is cancelled and discarded.
+    private func ensurePreviewForSelection() {
+        guard let command = expandedCommand else { cancelPreviewTask(); return }
+        if previews[command] != nil { cancelPreviewTask(); return }
+        if previewTask != nil, previewTaskCommand == command { return }
+        cancelPreviewTask()
+        let generation = previewGeneration, text = selection.text, builder = previewBuilder
+        let previewContext = LauncherPreviewContext(
+            zoneIDs: worldClockPreferences.loadZoneIDs(),
+            snippetCount: snippets.snippets.count,
+            aiProviderName: settings.isConfigured ? settings.providerKind.displayName : nil)
+        previewTaskCommand = command
         previewTask = Task { [weak self] in
-            let worker = Task.detached(priority: .userInitiated) { try builder(text, command, zones) }
+            let worker = Task.detached(priority: .userInitiated) { try builder(text, command, previewContext) }
             do {
                 let value = try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
-                guard let self, self.previewRunID == id, !Task.isCancelled else { return }
-                self.preview = value
-                if command == .worldClock, case let .clocks(_, instant) = value.content { self.installClockPreview(at: instant, savedZones: zones) }
+                guard let self, self.previewGeneration == generation, !Task.isCancelled else { return }
+                self.store(value, for: command, savedZones: previewContext.zoneIDs)
             } catch {
-                guard let self, self.previewRunID == id, !Task.isCancelled else { return }
-                self.preview = LauncherPreview.failure(error, command: command)
+                guard let self, self.previewGeneration == generation, !Task.isCancelled else { return }
+                self.store(LauncherPreview.failure(error, command: command), for: command, savedZones: previewContext.zoneIDs)
             }
+        }
+    }
+    private func cancelPreviewTask() {
+        previewTask?.cancel()
+        previewTask = nil
+        previewTaskCommand = nil
+    }
+    private func store(_ value: LauncherPreview, for command: LauncherCommand, savedZones: [String]) {
+        previews[command] = value
+        if previewTaskCommand == command { previewTask = nil; previewTaskCommand = nil }
+        if command == .worldClock, clockPreview == nil, isTimestampSelection, case let .clocks(_, instant) = value.content {
+            installClockPreview(at: instant, savedZones: savedZones)
         }
     }
     private func installClockPreview(at instant: Date, savedZones: [String]) {
@@ -142,37 +201,30 @@ final class LauncherModel: ObservableObject {
         let clock = WorldClockViewModel(settings: settings, seedDate: instant, preferences: worldClockPreferences,
                                         mode: .preview, zoneIDs: zoneIDs, anchorZoneID: anchor, askCopilot: clockResponder)
         clockPreview = clock
-        clockTranscriptVisible = clock.copilot.isTranscriptVisible
         // The palette grows when the transcript appears and shrinks when it is
         // cleared. The session reports after its state settled, so the size
         // read inside the callback is the new one.
-        clock.copilot.onStateChange = { [weak self] in self?.reconcileClockPreviewSize() }
+        clock.copilot.onStateChange = { [weak self] in self?.reconcilePaletteHeight() }
         clockObservers = [
             clock.objectWillChange.sink { [weak self] in self?.objectWillChange.send() },
             clock.copilot.objectWillChange.sink { [weak self] in self?.objectWillChange.send() },
         ]
-    }
-    private func reconcileClockPreviewSize() {
-        let visible = clockPreview?.copilot.isTranscriptVisible ?? false
-        guard visible != clockTranscriptVisible else { return }
-        clockTranscriptVisible = visible
-        onPreviewResize()
     }
     private func discardClockPreview() {
         clockObservers = []
         clockPreview?.copilot.onStateChange = {}
         clockPreview?.cancelAI()
         clockPreview = nil
-        clockTranscriptVisible = false
     }
     /// What Enter hands to the dedicated World Clock: the previewed instant
-    /// and reference plus the copilot conversation, all in memory only.
+    /// and reference plus the copilot conversation, all in memory only. A
+    /// selection without a timestamp opens the live clock instead.
     var worldClockHandoff: WorldClockHandoff? {
         if let clockPreview {
             return WorldClockHandoff(instant: clockPreview.selectedInstant, anchorZoneID: clockPreview.anchorZoneID,
                                      copilot: clockPreview.copilot.snapshot())
         }
-        if case let .clocks(_, instant)? = preview?.content { return WorldClockHandoff(instant: instant) }
+        if isTimestampSelection, case let .clocks(_, instant)? = previews[.worldClock]?.content { return WorldClockHandoff(instant: instant) }
         return nil
     }
     /// Arrow keys nudge the previewed time while the search field is empty.
@@ -212,7 +264,7 @@ final class LauncherModel: ObservableObject {
                 workbench = tool
                 tool.schedule()
             }
-            onPresentationChange()
+            presentationChanged()
         } else {
             onCommand(command, selection, LauncherCommandContext(worldClock: command == .worldClock ? worldClockHandoff : nil))
         }
@@ -221,16 +273,18 @@ final class LauncherModel: ObservableObject {
     /// scrubbed it, otherwise the recognized timestamp.
     var previewedInstant: Date? {
         if let clockPreview { return clockPreview.selectedInstant }
-        if case let .clocks(_, instant)? = preview?.content { return instant }
+        if isTimestampSelection, case let .clocks(_, instant)? = previews[.worldClock]?.content { return instant }
         return nil
     }
     func back() {
         if workbench?.busy == true { workbench?.cancel() }
         workbench = nil
-        onPresentationChange()
+        presentationChanged()
     }
     func cancelAll() {
-        previewTask?.cancel(); previewTask = nil; previewRunID = UUID(); preview = nil
+        cancelPreviewTask()
+        previewGeneration = UUID()
+        previews = [:]
         discardClockPreview()
         workbenches.values.forEach { $0.cancel() }
     }

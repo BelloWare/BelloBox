@@ -56,6 +56,9 @@ struct ScreenshotDocument: Identifiable, Equatable {
     var ocrResults: [OCRResult]
     var activeOCRResultID: UUID?
     var createdAt: Date
+    /// What the capture itself wants the user to know (a scrolling frame that had
+    /// no overlap, frames left out for height). Shown in the editor, not in OCR.
+    var captureNotes: [String]
 
     init(
         id: UUID = UUID(),
@@ -66,7 +69,8 @@ struct ScreenshotDocument: Identifiable, Equatable {
         cropRect: CGRect? = nil,
         ocrResults: [OCRResult] = [],
         activeOCRResultID: UUID? = nil,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        captureNotes: [String] = []
     ) {
         self.id = id
         self.baseImage = baseImage
@@ -77,6 +81,7 @@ struct ScreenshotDocument: Identifiable, Equatable {
         self.ocrResults = ocrResults
         self.activeOCRResultID = activeOCRResultID
         self.createdAt = createdAt
+        self.captureNotes = captureNotes
     }
 
     static func == (lhs: ScreenshotDocument, rhs: ScreenshotDocument) -> Bool {
@@ -90,6 +95,7 @@ struct ScreenshotDocument: Identifiable, Equatable {
             && lhs.ocrResults == rhs.ocrResults
             && lhs.activeOCRResultID == rhs.activeOCRResultID
             && lhs.createdAt == rhs.createdAt
+            && lhs.captureNotes == rhs.captureNotes
     }
 
     var activeOCRResult: OCRResult? {
@@ -195,7 +201,7 @@ enum ScreenshotCaptureMode: String, CaseIterable, Identifiable {
         case .area: return "Area"
         case .window: return "Window"
         case .screen: return "Screen"
-        case .scrolling: return "Scrolling"
+        case .scrolling: return "Scrolling Page"
         }
     }
 

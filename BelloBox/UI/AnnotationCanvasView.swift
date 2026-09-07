@@ -4,28 +4,34 @@ struct AnnotationCanvasView: View {
     @ObservedObject var viewModel: ScreenshotPopupViewModel
     /// When set, dragging the canvas in Select mode moves the whole capture selection.
     var selectionMoveHandler: SelectionMoveGestureHandler? = nil
+    /// View points per image pixel when the host decides the magnification (the
+    /// zoomable popup). nil fits the image into the view, as the overlays do.
+    var renderScale: CGFloat? = nil
 
     @State private var isMovingSelection = false
+    @State private var isErasing = false
     @State private var dragStart: CGPoint?
     @State private var dragCurrent: CGPoint?
     @State private var freehandPoints: [CGPoint] = []
     @State private var committedTextDragID: UUID?
     @State private var committedTextDragStartOrigin: CGPoint?
     @State private var editingTextDragStartOrigin: CGPoint?
+    /// Pointer location in view points while it hovers the canvas (eraser footprint).
+    @State private var hoverLocation: CGPoint?
 
     var body: some View {
         GeometryReader { geometry in
             let image = viewModel.basePreviewImage()
             let imageSize = viewModel.visibleImageSize
-            let viewport = ImageViewport(imageSize: imageSize, viewSize: geometry.size)
+            let viewport = renderScale.map { ImageViewport(imageSize: imageSize, viewSize: geometry.size, scale: $0) }
+                ?? ImageViewport(imageSize: imageSize, viewSize: geometry.size)
 
             ZStack(alignment: .topLeading) {
                 BoxTheme.well
-                Image(nsImage: NSImage(cgImage: image, size: imageSize))
-                    .resizable()
-                    .interpolation(.high)
+                ScreenshotBaseImageView(image: image, displayScale: viewport.scale)
                     .frame(width: viewport.fittedImageRect.width, height: viewport.fittedImageRect.height)
                     .position(x: viewport.fittedImageRect.midX, y: viewport.fittedImageRect.midY)
+                    .allowsHitTesting(false)
 
                 if viewModel.ocrPanel.showTextRegions, let result = viewModel.document.activeOCRResult {
                     OCRTextRegionsOverlayView(regions: result.regions, viewport: viewport)
@@ -39,11 +45,18 @@ struct AnnotationCanvasView: View {
                 .position(x: viewport.fittedImageRect.midX, y: viewport.fittedImageRect.midY)
                 .allowsHitTesting(false)
                 cropPreview(viewport: viewport)
+                eraserFootprint(viewport: viewport)
                 draggableTextAnnotationLayer(viewport: viewport)
                 inlineTextEditor(viewport: viewport)
             }
             .contentShape(Rectangle())
             .gesture(dragGesture(viewport: viewport, geometry: geometry))
+            .onContinuousHover { phase in
+                switch phase {
+                case let .active(location): hoverLocation = location
+                case .ended: hoverLocation = nil
+                }
+            }
         }
     }
 
@@ -68,11 +81,30 @@ struct AnnotationCanvasView: View {
             style = .highlight
         case .blur:
             kind = .blur(rect)
-            style = .redaction
+            style = viewModel.maskStyle
         default:
             return []
         }
         return [ScreenshotAnnotation(kind: kind, style: style)]
+    }
+
+    /// The brush outline follows the pointer while the eraser is active, sized to the
+    /// brush in image pixels at the current zoom, so the user sees exactly what a pass
+    /// will remove.
+    @ViewBuilder
+    private func eraserFootprint(viewport: ImageViewport) -> some View {
+        if viewModel.activeTool == .eraser, viewModel.editingTextAnnotationID == nil,
+           let center = dragCurrent.map(viewport.imagePointToViewPoint) ?? hoverLocation {
+            let diameter = max(4, viewModel.eraserWidth * viewport.scale)
+            Circle()
+                .strokeBorder(Color.white.opacity(0.9), lineWidth: 1.5)
+                .background(Circle().strokeBorder(BoxTheme.accent, lineWidth: 3).opacity(0.85))
+                .background(Circle().fill(BoxTheme.accent.opacity(isErasing ? 0.22 : 0.10)))
+                .frame(width: diameter, height: diameter)
+                .position(center)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
     }
 
     @ViewBuilder
@@ -90,6 +122,11 @@ struct AnnotationCanvasView: View {
                     .position(x: viewFrame.midX, y: viewFrame.midY)
                     .contentShape(Rectangle())
                     .gesture(committedTextDragGesture(annotation: annotation, viewport: viewport))
+                    .contextMenu {
+                        // Whole-object removal stays available here; the eraser only takes parts.
+                        Button("Delete Label", role: .destructive) { viewModel.removeAnnotation(id: annotation.id) }
+                    }
+                    .help("Drag to move. Right-click to delete the whole label; the eraser removes parts.")
             }
         }
     }
@@ -143,6 +180,18 @@ struct AnnotationCanvasView: View {
                 }
                 let origin = geometry.frame(in: .global).origin
                 let point = viewport.viewPointToImagePoint(Self.localPoint(value.location, origin: origin))
+                if viewModel.activeTool == .eraser {
+                    // Continuous erasing: every pointer move extends the same gesture,
+                    // which records one undo step in total.
+                    if !isErasing {
+                        isErasing = true
+                        viewModel.beginErasing()
+                        viewModel.erase(toVisiblePoint: viewport.viewPointToImagePoint(Self.localPoint(value.startLocation, origin: origin)))
+                    }
+                    dragCurrent = point
+                    viewModel.erase(toVisiblePoint: point)
+                    return
+                }
                 if dragStart == nil {
                     dragStart = viewport.viewPointToImagePoint(Self.localPoint(value.startLocation, origin: origin))
                     freehandPoints = [dragStart ?? point]
@@ -159,9 +208,17 @@ struct AnnotationCanvasView: View {
                     resetDrag()
                     return
                 }
-                if viewModel.editingTextAnnotationID != nil { return }
+                if viewModel.editingTextAnnotationID != nil, !isErasing { return }
                 let origin = geometry.frame(in: .global).origin
                 let end = viewport.viewPointToImagePoint(Self.localPoint(value.location, origin: origin))
+                if isErasing {
+                    // The mouse-up location is the last point of the pass, like the pen's.
+                    isErasing = false
+                    viewModel.erase(toVisiblePoint: end)
+                    viewModel.endErasing()
+                    resetDrag()
+                    return
+                }
                 guard let start = dragStart else { resetDrag(); return }
                 if viewModel.activeTool == .pen, freehandPoints.last != end { freehandPoints.append(end) }
                 commit(start: start, end: end)
@@ -176,10 +233,6 @@ struct AnnotationCanvasView: View {
     private func commit(start: CGPoint, end: CGPoint) {
         if viewModel.activeTool == .text {
             viewModel.handleCanvasTap(visiblePoint: end)
-            return
-        }
-        if viewModel.activeTool == .eraser {
-            viewModel.eraseAnnotation(atVisiblePoint: end)
             return
         }
         let rect = CGRect(
@@ -274,6 +327,92 @@ struct AnnotationCanvasView: View {
     }
 }
 
+/// The captured pixels, drawn on demand instead of handed to a layer as one huge
+/// texture: a tall scrolling capture can exceed what the GPU accepts as a single
+/// image, which would leave the canvas blank. AppKit tiles large layer-backed views
+/// and asks only for the visible rectangles, and heavy downscaling goes through a
+/// cached intermediate so redraws stay cheap.
+struct ScreenshotBaseImageView: NSViewRepresentable {
+    var image: CGImage
+    /// View points per image pixel, so the view can pick a display copy.
+    var displayScale: CGFloat
+
+    func makeNSView(context: Context) -> ScreenshotBaseImageNSView {
+        let view = ScreenshotBaseImageNSView()
+        view.wantsLayer = true
+        view.update(image: image, displayScale: displayScale)
+        return view
+    }
+
+    func updateNSView(_ view: ScreenshotBaseImageNSView, context: Context) {
+        view.update(image: image, displayScale: displayScale)
+    }
+}
+
+final class ScreenshotBaseImageNSView: NSView {
+    private var image: CGImage?
+    private var displayImage: CGImage?
+    private var displayScale: CGFloat = 1
+    /// Downscaled copies live in halving steps; a copy is reused across zoom levels
+    /// down to half its own resolution.
+    private var displayImageStep = 0
+    private var displayImageSource: CGImage?
+
+    override var isOpaque: Bool { false }
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+    func update(image: CGImage, displayScale: CGFloat) {
+        let changed = self.image !== image || Self.step(for: displayScale) != displayImageStep || displayImageSource !== image
+        self.image = image
+        self.displayScale = displayScale
+        guard changed else { return }
+        displayImageStep = Self.step(for: displayScale)
+        displayImageSource = image
+        displayImage = Self.displayCopy(of: image, step: displayImageStep)
+        needsDisplay = true
+    }
+
+    /// 0 draws the original; each step halves the resolution. Only used when the image
+    /// is shown at less than half size, so a magnified image is always the original.
+    static func step(for displayScale: CGFloat) -> Int {
+        guard displayScale > 0, displayScale < 0.5 else { return 0 }
+        var step = 0
+        var scale = displayScale
+        while scale < 0.5, step < 8 {
+            scale *= 2
+            step += 1
+        }
+        return step
+    }
+
+    /// The bitmap for `step`, bounded so it never exceeds the original and is at
+    /// least twice the display size.
+    static func displayCopy(of image: CGImage, step: Int) -> CGImage? {
+        guard step > 0 else { return nil }
+        let factor = CGFloat(1 << step)
+        let width = max(1, Int((CGFloat(image.width) / factor).rounded()))
+        let height = max(1, Int((CGFloat(image.height) / factor).rounded()))
+        guard width < image.width || height < image.height,
+              let context = CGContext(
+                data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
+                space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              )
+        else { return nil }
+        context.interpolationQuality = .medium
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        return context.makeImage()
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard let context = NSGraphicsContext.current?.cgContext, let source = displayImage ?? image else { return }
+        context.saveGState()
+        context.clip(to: dirtyRect)
+        context.interpolationQuality = displayScale >= 1 ? .none : .high
+        context.draw(source, in: bounds)
+        context.restoreGState()
+    }
+}
+
 /// A transparent AppKit drawing surface shares Core Graphics rendering with PNG export.
 /// Only the annotation layer is redrawn during a gesture, even for a tall scroll capture.
 struct AnnotationDrawingView: NSViewRepresentable {
@@ -305,8 +444,8 @@ final class AnnotationDrawingNSView: NSView {
               let context = NSGraphicsContext.current?.cgContext else { return }
         context.saveGState()
         defer { context.restoreGState() }
-        context.clear(bounds)
-        context.clip(to: bounds)
+        context.clear(dirtyRect)
+        context.clip(to: dirtyRect)
         context.scaleBy(x: bounds.width / imageSize.width, y: bounds.height / imageSize.height)
         AnnotationRenderer.drawAnnotations(annotations, in: context, imageHeight: imageSize.height)
     }

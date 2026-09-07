@@ -16,10 +16,15 @@ text. A floating toolbar still appears when selecting text in another app:
   XML / HTML / brace code), hashes (MD5 / SHA-1 / SHA-256 / SHA-512), line ops,
   and a Count tab with a model-aware token estimate.
 - **Screenshot**: capture an area, window, screen, or scrolling page; annotate
-  with pen, arrows, rectangles, highlights, text, crop, and blur/redaction;
-  copy/save PNG; run local Mac OCR or explicit-confirmation LLM OCR.
+  with pen, arrows, rectangles, highlights, text, crop, opaque masks (fill
+  colour + solid/stripes/dots pattern), and a brush eraser that removes only
+  the part of an annotation under it; copy/save PNG; run local Mac OCR or
+  explicit-confirmation LLM OCR. The popup editor zooms (Fit, Fit Width,
+  100%, steps) and scrolls; tall scrolling captures open at Fit Width.
 - **Recording**: record an area, window, or screen with configurable audio,
-  cursor, click, keystroke, privacy, countdown, and quality defaults.
+  cursor, click, keystroke, privacy, countdown, and quality defaults, as a
+  movie or a silent GIF (movie kept). **Video to GIF** converts a chosen movie
+  locally with AVFoundation + ImageIO (`Recording/GIF/GIFTranscoder.swift`).
 
 - **All tools**: opens the palette with the captured selection. Developer tools
   include lossless JSON formatting, comparison, JWT inspection, regex, URL/query
@@ -37,24 +42,36 @@ native `LauncherSearchField` with explicit first-responder focus. It dismisses
 on outside clicks or loss of key focus, except for its own menus/sheets/children.
 `LauncherSelectionContext` caches bounded preview and suggestion metadata once;
 inputs over 500 KB are rejected before creating editors and never truncated.
-`LauncherPreview` computes a bounded, read-only rich preview off the main actor
-for the highest-ranked suggestion; `LauncherModel` caches it for the selection
-and cancels/discards stale work on replacement or dismissal. Above 64 KB it
-shows a compact notice rather than parsing. Previews never create workbenches,
-send requests, copy text, or persist input. Timestamp selections rank World
-Clock first; `LauncherModel` then installs a `WorldClockViewModel` in
-`.preview` mode (no preference writes, up to four zones: saved order, then
-local and UTC) rendered by `LauncherClockPreviewView`. That row is not a
-button: the shared `MeetingTimelineView` scrubber (AppKit drag + horizontal
-scroll wheel; vertical scrolls pass through), day arrows, reference menu, and
-copilot own their input, while Enter opens World Clock with a
-`WorldClockHandoff` (previewed instant, chosen reference, and an in-memory
-copilot snapshot) via `LauncherCommandContext`; `WorldClockViewModel.adopt`
-applies it without saving preferences and drops any earlier conversation in
-the window. The palette resizes for the copilot transcript through
-`onPreviewResize`, which the session fires after its state settled and which
-never refocuses search; panel heights are clamped to the screen's visible
-frame. SwiftUI's `ScrollView` is an `NSScrollView` that takes wheel events
+The palette expands exactly one row: the focused command. Down/Up collapse
+the previous row and show the newly focused command's preview, so what is
+expanded is always what Enter opens; the "Best match" label stays on the top
+suggestion whether or not it is focused, and a search focuses (and expands)
+its top result while typing keeps working. `LauncherPreview.make(text:command:
+context:)` computes a bounded, read-only preview off the main actor for any
+command: parsers (JSON, JWT, URL, cURL, cron, data) show their result or a
+"Not recognized" notice, counting tools show statistics, World Clock shows the
+current time when the selection is not a timestamp, and capture, generator,
+AI, snippet and app commands show two or three `.actions` lines (never a
+faked transformation). Empty selections get the same concise actions.
+`LauncherModel.previews` caches one preview per focused command for the
+current selection; work for a row that lost focus is cancelled and discarded,
+and a new selection clears the cache. Above 64 KB parsing tools show a
+compact notice. Previews never create workbenches, send requests, copy text,
+or persist input. Timestamp selections rank World Clock first and reserve the
+planner height synchronously (`expandsClock`); `LauncherModel` then installs a
+`WorldClockViewModel` in `.preview` mode (no preference writes, up to four
+zones: saved order, then local and UTC) rendered by `LauncherClockPreviewView`,
+which survives while another row is focused and comes back with its
+transcript. That row is not a button: the shared `MeetingTimelineView`
+scrubber (AppKit drag + horizontal scroll wheel; vertical scrolls pass
+through), day arrows, reference menu, and copilot own their input, while Enter
+opens World Clock with a `WorldClockHandoff` (previewed instant, chosen
+reference, and an in-memory copilot snapshot) via `LauncherCommandContext`;
+`WorldClockViewModel.adopt` applies it without saving preferences and drops
+any earlier conversation in the window. Height changes from focus moves and
+from the copilot transcript go through `onPreviewResize`, which never
+refocuses search and fires once per real change; panel heights are clamped to
+the screen's visible frame. SwiftUI's `ScrollView` is an `NSScrollView` that takes wheel events
 before the hit-tested subview, so `TimelineScrubberView` claims horizontal
 wheel events through a local monitor that exists only while it is in a
 window and only for points inside its unclipped bounds (vertical and
@@ -62,9 +79,8 @@ outside events pass through; `BELLOBOX_E2E_WHEEL_DIAGNOSTICS=/path` logs
 routing in DEBUG). `LauncherWindowController` leaves Enter/arrows to the
 copilot field when it is first responder (`Esc` returns to search) and
 `focusSearch` never steals focus from another text input. `←/→` (⌥ hour, ⇧ day) nudge the preview
-only while the query is empty. Searching collapses the featured row; clearing
-search restores it. Keep explicit query matches above suggestions and
-suggestions above favorite/recent bonuses.
+only while the query is empty and the clock row is focused. Keep explicit
+query matches above suggestions and suggestions above favorite/recent bonuses.
 
 Normal launches and Dock/Finder reopens show `MainView`; only the shortcut and
 explicit Search actions open the palette. `HomeCategory` organizes the tool
@@ -116,7 +132,7 @@ BelloBox/
 │   │   ├── AIClient.swift          # request building + SSE streaming (OpenAI + Anthropic)
 │   │   ├── CodexAppServerClient.swift # local Codex app-server transport
 │   │   └── QuickAction.swift       # one-click transformations + prompt builder
-│   ├── Recording/                  # Screen recording, audio, overlays, privacy
+│   ├── Recording/                  # Screen recording, audio, overlays, privacy, GIF/ (transcoder, synthetic fixtures)
 │   ├── WorldClock/                 # Timeline/zone models, planner view model, copilot session + resolver
 │   ├── Launcher/                   # Search palette, command catalog, shared workbench, clock preview
 │   ├── DeveloperTools/             # Offline engines, snippet store, explicit HTTP client
@@ -159,7 +175,9 @@ BelloBox/
 │       ├── AnnotationCanvasView.swift
 │       ├── OCRPanelView.swift
 │       ├── OCRTextRegionsOverlayView.swift
-│       ├── ScrollingCaptureHUDView.swift
+│       ├── ScrollCaptureHUDView.swift
+│       ├── RecordingOptionsBar.swift / RecordingHUDView.swift / RecordingReviewView.swift
+│       ├── GIFExportViews.swift              # GIF export panel, Video to GIF popup, animated GIF preview
 │       ├── Theme.swift                       # design system: orange brand tokens, PopupHeader, popupCard, button styles, appear animation
 │       ├── WorldClockView.swift              # dedicated World Clock window (planner, locations, copilot)
 │       ├── WorldClockComponents.swift        # shared timeline scrubber, quality badge, icon buttons
@@ -192,6 +210,64 @@ BelloBox/
 - Screenshot capture requires Screen Recording permission and uses
   ScreenCaptureKit as the primary path. Local annotation, stitching, and Mac OCR
   stay on-device.
+- Annotations: `ScreenshotAnnotation.erasures` are per-annotation brush strokes
+  in document pixels; `AnnotationRenderer` draws an erased annotation into a
+  transparency layer clipped to `paintedRect(for:)` and punches the strokes out
+  with destination-out, so the screenshot pixels, other annotations and later
+  annotations are never affected. Erasures move with text labels and shift with
+  crops (`ScreenshotAnnotation.offset`). One eraser drag = one undo step
+  (`beginErasing`/`erase(toVisiblePoint:)`/`endErasing`, the mouse-up point
+  included); nothing is ever deleted on the eraser's behalf, so paint outside
+  the brush (thick-stroke edges, arrowheads, unbrushed mask) always survives.
+  Masks (`AnnotationKind.blur`) keep `AnnotationStyle.maskFill` opaque whatever
+  the picker sends; `MaskPattern` ink sits over the fill. Live canvas, export
+  and OCR share `drawAnnotations`. `@Published` observers on the editor view
+  model re-enter on every write: normalize with a guarded write-back, never an
+  unconditional one (that recursion crashed the editor).
+- The popup editor draws the base image through `ScreenshotBaseImageNSView`
+  (`draw(_:)`, downsampled display copies), never as one layer texture: tall
+  scrolling captures exceed GPU texture limits. `ZoomableCanvasScrollView`
+  (an `NSScrollView`) applies `CanvasZoom` literally: Fit/Fit Width use the real
+  clip size with legacy scrollers deducted, magnifications pass an explicit
+  `renderScale` into `AnnotationCanvasView`/`ImageViewport(scale:)`, centring
+  padding never changes magnification, and the laid-out scale is published as
+  `displayedScale`. `ScreenshotDocument.captureNotes` carry stitch warnings
+  into the editor banner (`CaptureNotesBanner`: two inline, "Show all" for the
+  rest; the engine puts incomplete-capture notes first).
+- Scrolling capture: the toolbar action is "Scrolling Capture"; the HUD shows
+  the mode (manual vs auto-scroll), screens/pixels captured, frames against the
+  limit, and messages such as a scroll jump without overlap. Review fixture
+  `BELLOBOX_E2E_SCROLL_HUD_DEMO=full|compact` (DEBUG) samples a real scrollable
+  window by rendering it, so the HUD, auto-scroll, Finish and Cancel work
+  without Screen Recording.
+- Recording GIF mode records the movie first; `RecordingCoordinator` converts
+  it after `stop()` (`.convertingToGIF(progress:)`, cancel keeps the movie and
+  reviews it with a note) and reviews `.reviewing(movie, gif:)`. `GIFTranscoder`
+  decodes with `AVAssetReader`, orients frames with the preferred transform,
+  writes through ImageIO to a staged sibling, validates the file reads back as
+  a GIF with the planned frame count, then renames atomically; cancellation or
+  failure removes the staged file and never touches the source. Options are
+  bounded (`GIFExportOptions`: ≤120 s, ≤3000 frames, ≤1080 px, 5–20 fps). The
+  standalone converter only takes files from the open panel. Timing: frame
+  delays are a centisecond budget of the clip length (7, 6, 7… at 15 fps, the
+  partial last frame included, none below 2 cs), so intended and encoded length
+  differ by at most a centisecond. Repeat semantics follow browsers: a NETSCAPE
+  block with 0 repeats forever, N means N extra plays, none means once. One-shot
+  GIFs omit the loop property; `GIFLoopBlock.strip` can remove an unexpected
+  repeat block structurally, and `validate` checks both modes. `AnimatedGIFNSView`
+  applies the same rule, starts paused under Reduce Motion, and reloads on a
+  `revision` change. The source can never be the destination (`isSameFile`
+  resolves symlinks and file identity). Every job in the review and converter
+  view models is generation-guarded; closing cancels it. DEBUG fixtures:
+  `BELLOBOX_E2E_RECORDING_OPTIONS=1|gif`, `BELLOBOX_E2E_RECORDING_HUD=
+  recording|paused|gif|hidden`, `BELLOBOX_E2E_CONVERTING_GIF=<progress>`,
+  `BELLOBOX_E2E_RECORDING_REVIEW_FILE=<mov>` (+`_GIF`), `BELLOBOX_E2E_VIDEO_TO_
+  GIF=1|<mov>`, and `BELLOBOX_E2E_WRITE_SYNTHETIC_ASSETS=<dir>` writes
+  `tall-page.png`, `screenshot.png`, `sample.mov`, `sample-portrait.mov`
+  (`SyntheticMediaFixture`) for those fixtures and for tests. Launch fixtures
+  with `-hasCompletedSetup YES -floatingButtonEnabled NO -appearance light`
+  process arguments and `BELLOBOX_DISABLE_KEYCHAIN=1`; never override `HOME` or
+  `defaults write` the real bundle.
 - LLM OCR is the only approved screenshot-to-provider path. It must require
   explicit user confirmation and upload the crop/redaction-aware OCR image, not
   the raw screenshot. Do not log screenshots, Base64 image payloads, provider

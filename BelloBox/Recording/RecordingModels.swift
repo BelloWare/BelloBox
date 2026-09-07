@@ -112,6 +112,29 @@ enum RecordingQualityPreset: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+/// What a recording delivers. A GIF is silent: audio is still captured into the
+/// intermediate movie (which is kept), but the GIF itself has no sound track.
+enum RecordingOutputFormat: String, Codable, CaseIterable, Identifiable {
+    case movie
+    case gif
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .movie: return "Movie"
+        case .gif: return "GIF"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .movie: return "QuickTime movie with audio (.mov)"
+        case .gif: return "Silent looping image (.gif); the movie is kept too"
+        }
+    }
+}
+
 struct RecordingOptions: Equatable, Codable {
     var audioSource: RecordingAudioSource
     var microphoneDeviceID: String?
@@ -123,6 +146,47 @@ struct RecordingOptions: Equatable, Codable {
     var countdownSeconds: Int
     var excludeBelloBoxWindows: Bool
     var excludesCurrentProcessAudio: Bool
+    var outputFormat: RecordingOutputFormat = .movie
+    var gif: GIFExportOptions = .default
+
+    init(audioSource: RecordingAudioSource, microphoneDeviceID: String?, includeCursor: Bool, clickOverlayMode: ClickOverlayMode,
+         keystrokeMode: KeystrokeCaptureMode, secureFieldRedactionMode: SecureFieldRedactionMode, quality: RecordingQualityPreset,
+         countdownSeconds: Int, excludeBelloBoxWindows: Bool, excludesCurrentProcessAudio: Bool,
+         outputFormat: RecordingOutputFormat = .movie, gif: GIFExportOptions = .default) {
+        self.audioSource = audioSource
+        self.microphoneDeviceID = microphoneDeviceID
+        self.includeCursor = includeCursor
+        self.clickOverlayMode = clickOverlayMode
+        self.keystrokeMode = keystrokeMode
+        self.secureFieldRedactionMode = secureFieldRedactionMode
+        self.quality = quality
+        self.countdownSeconds = countdownSeconds
+        self.excludeBelloBoxWindows = excludeBelloBoxWindows
+        self.excludesCurrentProcessAudio = excludesCurrentProcessAudio
+        self.outputFormat = outputFormat
+        self.gif = gif
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case audioSource, microphoneDeviceID, includeCursor, clickOverlayMode, keystrokeMode, secureFieldRedactionMode
+        case quality, countdownSeconds, excludeBelloBoxWindows, excludesCurrentProcessAudio, outputFormat, gif
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        audioSource = try container.decode(RecordingAudioSource.self, forKey: .audioSource)
+        microphoneDeviceID = try container.decodeIfPresent(String.self, forKey: .microphoneDeviceID)
+        includeCursor = try container.decode(Bool.self, forKey: .includeCursor)
+        clickOverlayMode = try container.decode(ClickOverlayMode.self, forKey: .clickOverlayMode)
+        keystrokeMode = try container.decode(KeystrokeCaptureMode.self, forKey: .keystrokeMode)
+        secureFieldRedactionMode = try container.decode(SecureFieldRedactionMode.self, forKey: .secureFieldRedactionMode)
+        quality = try container.decode(RecordingQualityPreset.self, forKey: .quality)
+        countdownSeconds = try container.decode(Int.self, forKey: .countdownSeconds)
+        excludeBelloBoxWindows = try container.decode(Bool.self, forKey: .excludeBelloBoxWindows)
+        excludesCurrentProcessAudio = try container.decode(Bool.self, forKey: .excludesCurrentProcessAudio)
+        outputFormat = try container.decodeIfPresent(RecordingOutputFormat.self, forKey: .outputFormat) ?? .movie
+        gif = try container.decodeIfPresent(GIFExportOptions.self, forKey: .gif) ?? .default
+    }
 
     static let `default` = RecordingOptions(
         audioSource: .none,
@@ -206,7 +270,10 @@ enum RecordingState: Equatable {
     case recording(RecordingRuntimeState)
     case paused(RecordingRuntimeState)
     case finishing
-    case reviewing(URL, warning: String? = nil)
+    /// The movie is saved; the GIF is being written from it. Cancelling keeps the movie.
+    case convertingToGIF(progress: Double)
+    /// `gif` is the finished GIF when the recording was made in GIF mode.
+    case reviewing(URL, warning: String? = nil, gif: URL? = nil)
     case failed(String)
 }
 
@@ -222,4 +289,5 @@ struct RecordingRuntimeState: Equatable {
     var clickOverlayMode: ClickOverlayMode = .off
     var keystrokeMode: KeystrokeCaptureMode = .off
     var inputOverlayWarning: String?
+    var outputFormat: RecordingOutputFormat = .movie
 }

@@ -100,6 +100,10 @@ final class AppSettings: ObservableObject {
         static let recordingQualityPreset = "recordingQualityPreset"
         static let recordingCountdownSeconds = "recordingCountdownSeconds"
         static let recordingLastMicrophoneDeviceID = "recordingLastMicrophoneDeviceID"
+        static let recordingOutputFormat = "recordingOutputFormat"
+        static let recordingGIFFrameRate = "recordingGIFFrameRate"
+        static let recordingGIFMaxWidth = "recordingGIFMaxWidth"
+        static let recordingGIFLoops = "recordingGIFLoops"
     }
 
     static let defaultSystemPrompt = """
@@ -193,6 +197,22 @@ final class AppSettings: ObservableObject {
     }
 
     @Published var recordingLastMicrophoneDeviceID: String? { didSet { defaults.set(recordingLastMicrophoneDeviceID, forKey: Keys.recordingLastMicrophoneDeviceID) } }
+    @Published var recordingOutputFormatRawValue: String { didSet { defaults.set(recordingOutputFormatRawValue, forKey: Keys.recordingOutputFormat) } }
+    @Published var recordingGIFFrameRate: Int {
+        didSet {
+            let normalized = Self.normalizedGIFFrameRate(recordingGIFFrameRate)
+            if recordingGIFFrameRate != normalized { recordingGIFFrameRate = normalized }
+            defaults.set(normalized, forKey: Keys.recordingGIFFrameRate)
+        }
+    }
+    @Published var recordingGIFMaxWidth: Int {
+        didSet {
+            let normalized = Self.normalizedGIFMaxWidth(recordingGIFMaxWidth)
+            if recordingGIFMaxWidth != normalized { recordingGIFMaxWidth = normalized }
+            defaults.set(normalized, forKey: Keys.recordingGIFMaxWidth)
+        }
+    }
+    @Published var recordingGIFLoops: Bool { didSet { defaults.set(recordingGIFLoops, forKey: Keys.recordingGIFLoops) } }
     @Published var activeShortcutRecorderID: UUID?
 
     /// API key for the currently-selected provider. Persisted to the Keychain.
@@ -303,6 +323,14 @@ final class AppSettings: ObservableObject {
         let storedCountdown = defaults.object(forKey: Keys.recordingCountdownSeconds) as? Int
         recordingCountdownSeconds = Self.normalizedCountdown(storedCountdown ?? RecordingOptions.default.countdownSeconds)
         recordingLastMicrophoneDeviceID = defaults.string(forKey: Keys.recordingLastMicrophoneDeviceID)
+        recordingOutputFormatRawValue = Self.normalizedRawValue(
+            defaults.string(forKey: Keys.recordingOutputFormat),
+            valid: RecordingOutputFormat.allCases,
+            defaultValue: RecordingOptions.default.outputFormat
+        )
+        recordingGIFFrameRate = Self.normalizedGIFFrameRate(defaults.object(forKey: Keys.recordingGIFFrameRate) as? Int ?? GIFExportOptions.default.framesPerSecond)
+        recordingGIFMaxWidth = Self.normalizedGIFMaxWidth(defaults.object(forKey: Keys.recordingGIFMaxWidth) as? Int ?? GIFExportOptions.default.maxWidth)
+        recordingGIFLoops = (defaults.object(forKey: Keys.recordingGIFLoops) as? Bool) ?? GIFExportOptions.default.loops
         apiKey = KeychainStore.get(account: KeychainStore.account(for: kind)) ?? ""
         persistLoadedValues()
     }
@@ -391,6 +419,21 @@ final class AppSettings: ObservableObject {
         set { recordingQualityPresetRawValue = newValue.rawValue }
     }
 
+    var recordingOutputFormat: RecordingOutputFormat {
+        get { RecordingOutputFormat(rawValue: recordingOutputFormatRawValue) ?? RecordingOptions.default.outputFormat }
+        set { recordingOutputFormatRawValue = newValue.rawValue }
+    }
+
+    /// The GIF settings used for recordings and offered first in the converter.
+    var gifExportOptions: GIFExportOptions {
+        get { GIFExportOptions(framesPerSecond: recordingGIFFrameRate, maxWidth: recordingGIFMaxWidth, loops: recordingGIFLoops) }
+        set {
+            recordingGIFFrameRate = newValue.framesPerSecond
+            recordingGIFMaxWidth = newValue.maxWidth
+            recordingGIFLoops = newValue.loops
+        }
+    }
+
     var recordingOptions: RecordingOptions {
         RecordingOptions(
             audioSource: recordingAudioSource,
@@ -402,7 +445,9 @@ final class AppSettings: ObservableObject {
             quality: recordingQualityPreset,
             countdownSeconds: Self.normalizedCountdown(recordingCountdownSeconds),
             excludeBelloBoxWindows: true,
-            excludesCurrentProcessAudio: true
+            excludesCurrentProcessAudio: true,
+            outputFormat: recordingOutputFormat,
+            gif: gifExportOptions
         )
     }
 
@@ -480,6 +525,8 @@ final class AppSettings: ObservableObject {
         recordingQualityPreset = defaults.quality
         recordingCountdownSeconds = defaults.countdownSeconds
         recordingLastMicrophoneDeviceID = defaults.microphoneDeviceID
+        recordingOutputFormat = defaults.outputFormat
+        gifExportOptions = defaults.gif
     }
 
     func resetSystemPrompt() { systemPrompt = Self.defaultSystemPrompt }
@@ -542,6 +589,14 @@ final class AppSettings: ObservableObject {
         min(max(value, 2), 60)
     }
 
+    private static func normalizedGIFFrameRate(_ value: Int) -> Int {
+        min(max(value, GIFExportOptions.frameRateRange.lowerBound), GIFExportOptions.frameRateRange.upperBound)
+    }
+
+    private static func normalizedGIFMaxWidth(_ value: Int) -> Int {
+        min(max(value, 64), 1_080)
+    }
+
     private static func normalizedLLMOCRMaxUploadLongEdge(_ value: Int) -> Int {
         min(max(value, 800), 5000)
     }
@@ -597,6 +652,9 @@ final class AppSettings: ObservableObject {
         persistLoadedString(recordingSecureFieldRedactionModeRawValue, forKey: Keys.recordingSecureFieldRedactionMode)
         persistLoadedString(recordingQualityPresetRawValue, forKey: Keys.recordingQualityPreset)
         persistLoadedInt(recordingCountdownSeconds, forKey: Keys.recordingCountdownSeconds)
+        persistLoadedString(recordingOutputFormatRawValue, forKey: Keys.recordingOutputFormat)
+        persistLoadedInt(recordingGIFFrameRate, forKey: Keys.recordingGIFFrameRate)
+        persistLoadedInt(recordingGIFMaxWidth, forKey: Keys.recordingGIFMaxWidth)
     }
 
     private func persistLoadedString(_ value: String, forKey key: String) {

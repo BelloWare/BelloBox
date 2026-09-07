@@ -1,23 +1,47 @@
 import SwiftUI
 
+/// The pre-flight card shown beside the chosen recording target. Four short
+/// rows, each with a label on the left: output, audio and cursor, clicks and
+/// keys, privacy. Nothing is hidden behind a disclosure; the GIF row only
+/// appears when GIF is the output, and small screens get a stacked layout.
 struct RecordingOptionsBar: View {
+    /// The card for movie output; GIF output adds one row (`preferredSize(for:)`).
+    static let preferredSize = CGSize(width: 660, height: 392)
+    /// Below this width the sections stack in one column (and scroll).
+    static let minimumWidth: CGFloat = 420
+    static let compactWidthThreshold: CGFloat = 600
+
+    static func usesCompactLayout(width: CGFloat) -> Bool { width < compactWidthThreshold }
+
+    /// Hosts size the card for the chosen output; `onFormatChange` lets them follow the
+    /// picker so neither layout leaves an empty band.
+    static func preferredSize(for format: RecordingOutputFormat) -> CGSize {
+        CGSize(width: preferredSize.width, height: format == .gif ? preferredSize.height + 64 : preferredSize.height)
+    }
+
     @ObservedObject var settings: AppSettings
     var targetLabel: String
+    /// Stack the sections in one column; the host decides from the width it has.
+    var compact = false
+    var onFormatChange: (RecordingOutputFormat) -> Void = { _ in }
     var onStart: (RecordingOptions) -> Void
     var onCancel: () -> Void
 
     @State private var options: RecordingOptions
-    @State private var showAdvanced = false
 
     init(
         settings: AppSettings,
         targetLabel: String,
         initialOptions: RecordingOptions,
+        compact: Bool = false,
+        onFormatChange: @escaping (RecordingOutputFormat) -> Void = { _ in },
         onStart: @escaping (RecordingOptions) -> Void,
         onCancel: @escaping () -> Void
     ) {
         self.settings = settings
         self.targetLabel = targetLabel
+        self.compact = compact
+        self.onFormatChange = onFormatChange
         self.onStart = onStart
         self.onCancel = onCancel
         _options = State(initialValue: initialOptions)
@@ -27,108 +51,92 @@ struct RecordingOptionsBar: View {
         VStack(alignment: .leading, spacing: 10) {
             PopupHeader(icon: "record.circle", title: "Screen Recording", subtitle: targetLabel, onClose: onCancel)
 
-
             ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
-                    ViewThatFits(in: .horizontal) {
-                        HStack(alignment: .top, spacing: 12) {
-                            audioColumn.frame(width: 210, alignment: .leading)
-                            inputColumn.frame(width: 170, alignment: .leading)
-                            qualityColumn.frame(width: 210, alignment: .leading)
-                        }
-
-                        VStack(alignment: .leading, spacing: 12) {
-                            audioColumn
-                            Divider()
-                            inputColumn
-                            Divider()
-                            qualityColumn
-                        }
-                    }
-
-                    DisclosureGroup(privacyDisclosureTitle, isExpanded: $showAdvanced) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Picker("Redaction", selection: $options.secureFieldRedactionMode) {
-                                ForEach(SecureFieldRedactionMode.allCases) { mode in
-                                    Text(mode.label).tag(mode)
-                                }
-                            }
-                            .frame(width: 260)
-
-                            if let warning = secureFieldRedactionWarning {
-                                HStack(alignment: .top, spacing: 8) {
-                                    Image(systemName: "lock.slash")
-                                        .foregroundStyle(BoxTheme.warning)
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        Text(warning)
-                                            .foregroundStyle(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                        Button("Open Accessibility Settings") {
-                                            AccessibilityService.openAccessibilitySettings()
-                                        }
-                                        .buttonStyle(.link)
-                                    }
-                                }
-                                .padding(8)
-                                .frame(maxWidth: 360, alignment: .leading)
-                                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(BoxTheme.warning.opacity(0.10)))
-                            }
-                        }
-                    }
-                    .font(.caption)
+                Group {
+                    if compact { narrowRows } else { wideRows }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            HStack {
-                Text(options.countdownSeconds == 0 ? "Starts immediately" : "Starts after a \(options.countdownSeconds)-second countdown")
-                    .font(.caption).foregroundStyle(.secondary)
-                Spacer()
-                Button("Start Recording") {
-                    persistDefaults()
-                    onStart(options)
-                }
-                .buttonStyle(PrimaryButtonStyle())
-                .keyboardShortcut(.defaultAction)
-            }
+            footer
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .popupCard()
         .onExitCommand(perform: onCancel)
+        .onChange(of: options.outputFormat) { onFormatChange($0) }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Recording options")
     }
 
-    private var audioColumn: some View {
+    // MARK: Layouts
+
+    private var wideRows: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Audio and cursor").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-            AudioSourcePickerView(
-                audioSource: $options.audioSource,
-                microphoneDeviceID: $options.microphoneDeviceID,
-                compact: true
-            )
-            Toggle("Show cursor", isOn: $options.includeCursor)
+            HStack(alignment: .top, spacing: 12) {
+                section("Output", systemImage: "square.and.arrow.down") { outputControls }
+                section("Quality", systemImage: "dial.medium") { qualityControls }
+            }
+            if options.outputFormat == .gif {
+                section("GIF", systemImage: "photo.stack") { gifControls }
+            }
+            HStack(alignment: .top, spacing: 12) {
+                section("Audio & cursor", systemImage: "waveform") { audioControls }
+                section("Clicks & keys", systemImage: "keyboard") { inputControls }
+            }
+            section("Privacy", systemImage: "lock.shield") { privacyControls }
         }
     }
 
-    private var inputColumn: some View {
+    private var narrowRows: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Clicks and keys").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-            Toggle("Show clicks", isOn: Binding(
-                get: { options.clickOverlayMode != .off },
-                set: { options.clickOverlayMode = $0 ? .ringsAndLabels : .off }
-            ))
-            Picker("Show keys", selection: $options.keystrokeMode) {
-                ForEach(KeystrokeCaptureMode.allCases) { mode in
-                    Text(mode.label).tag(mode)
+            section("Output", systemImage: "square.and.arrow.down") { outputControls }
+            section("Quality", systemImage: "dial.medium") { qualityControls }
+            if options.outputFormat == .gif {
+                section("GIF", systemImage: "photo.stack") { gifControls }
+            }
+            section("Audio & cursor", systemImage: "waveform") { audioControls }
+            section("Clicks & keys", systemImage: "keyboard") { inputControls }
+            section("Privacy", systemImage: "lock.shield") { privacyControls }
+        }
+    }
+
+    private func section<Content: View>(_ title: String, systemImage: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label(title, systemImage: systemImage)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .labelStyle(.titleAndIcon)
+            content()
+        }
+        .padding(.horizontal, 10).padding(.vertical, 8)
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+        .surfaceCard()
+    }
+
+    // MARK: Rows
+
+    private var outputControls: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Picker("Output format", selection: $options.outputFormat) {
+                ForEach(RecordingOutputFormat.allCases) { format in
+                    Text(format.label).tag(format)
                 }
             }
+            .pickerStyle(.segmented)
             .labelsHidden()
+            .accessibilityLabel("Output format")
+            .help("Movie keeps audio. GIF is a silent looping image; the movie is kept as well.")
+            Text(options.outputFormat.detail)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    private var qualityColumn: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Recording quality").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+    private var qualityControls: some View {
+        VStack(alignment: .leading, spacing: 5) {
             Picker("Quality", selection: $options.quality) {
                 ForEach(RecordingQualityPreset.allCases) { preset in
                     Text(preset.label).tag(preset)
@@ -136,20 +144,135 @@ struct RecordingOptionsBar: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+            .accessibilityLabel("Recording quality")
             Stepper(value: $options.countdownSeconds, in: 0...10) {
-                Text("Countdown \(options.countdownSeconds)s")
+                Text(options.countdownSeconds == 0 ? "No countdown" : "Countdown \(options.countdownSeconds) s")
+                    .font(.caption)
+            }
+            .accessibilityLabel("Countdown seconds")
+            .accessibilityValue("\(options.countdownSeconds)")
+        }
+    }
+
+    /// The short note beside the GIF controls; wraps to a second line before it
+    /// would ever truncate.
+    static let gifGuidance = "Silent · up to \(Int(GIFExportOptions.maxDuration)) s, trim after recording"
+
+    /// The same frame rate, longest edge and loop controls as the converter and
+    /// the review, so the labels and help read the same everywhere. The controls
+    /// keep their natural width (a squeezed toggle would wrap its label); the
+    /// note takes what is left, or its own line in the stacked layout.
+    @ViewBuilder private var gifControls: some View {
+        let note = Text(Self.gifGuidance)
+            .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
+        if compact {
+            VStack(alignment: .leading, spacing: 5) {
+                GIFFormatControls(options: $options.gif).fixedSize()
+                note
+            }
+        } else {
+            HStack(spacing: 14) {
+                GIFFormatControls(options: $options.gif).fixedSize()
+                Spacer(minLength: 0)
+                note
             }
         }
     }
 
-    private var secureFieldRedactionWarning: String? {
-        RecordingPrivacyNotice.secureFieldRedactionWarning(accessibilityTrusted: AccessibilityService.isTrusted)
+    private var audioControls: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            AudioSourcePickerView(
+                audioSource: $options.audioSource,
+                microphoneDeviceID: $options.microphoneDeviceID,
+                compact: true
+            )
+            .accessibilityLabel("Audio source")
+            if options.outputFormat == .gif {
+                Text(options.audioSource == .none ? "GIFs are silent." : "GIFs are silent; audio stays in the kept movie.")
+                    .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+            }
+            Toggle("Show cursor", isOn: $options.includeCursor)
+                .font(.caption)
+        }
     }
 
-    private var privacyDisclosureTitle: String {
-        secureFieldRedactionWarning == nil
-            ? "Privacy: secure fields are hidden"
-            : "Privacy: secure-field hiding needs Accessibility"
+    private var inputControls: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Toggle("Show click rings", isOn: Binding(
+                get: { options.clickOverlayMode != .off },
+                set: { options.clickOverlayMode = $0 ? .ringsAndLabels : .off }
+            ))
+            .font(.caption)
+            HStack(spacing: 6) {
+                Text("Keys").font(.caption)
+                Picker("Show keys", selection: $options.keystrokeMode) {
+                    ForEach(KeystrokeCaptureMode.allCases) { mode in
+                        Text(mode.label).tag(mode)
+                    }
+                }
+                .labelsHidden()
+                .fixedSize()
+                .accessibilityLabel("Keystroke overlay")
+            }
+        }
+    }
+
+    private var privacyControls: some View {
+        HStack(alignment: .center, spacing: 10) {
+            Image(systemName: secureFieldRedactionWarning == nil ? "lock.shield.fill" : "lock.slash")
+                .foregroundStyle(secureFieldRedactionWarning == nil ? BoxTheme.success : BoxTheme.warning)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(secureFieldRedactionWarning == nil ? "Secure fields are hidden while you type in them" : "Secure-field hiding needs Accessibility")
+                    .font(.caption)
+                if let warning = secureFieldRedactionWarning {
+                    Text(warning).font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 6)
+            if secureFieldRedactionWarning != nil {
+                Button("Open Accessibility Settings") { AccessibilityService.openAccessibilitySettings() }
+                    .buttonStyle(.link).font(.caption)
+            }
+            Picker("Redaction", selection: $options.secureFieldRedactionMode) {
+                ForEach(SecureFieldRedactionMode.allCases) { mode in
+                    Text(mode.label).tag(mode)
+                }
+            }
+            .labelsHidden()
+            .fixedSize()
+            .accessibilityLabel("Secure-field redaction")
+            .help("How aggressively password fields are hidden: Strict hides more, Visual field only hides just the field")
+        }
+    }
+
+    private var footer: some View {
+        HStack(spacing: 10) {
+            Text(startSummary)
+                .font(.caption).foregroundStyle(.secondary).lineLimit(2)
+            Spacer()
+            Button("Cancel", action: onCancel)
+                .buttonStyle(SecondaryButtonStyle())
+                .keyboardShortcut(.cancelAction)
+            Button(options.outputFormat == .gif ? "Record GIF" : "Start Recording") {
+                persistDefaults()
+                onStart(options)
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .keyboardShortcut(.defaultAction)
+        }
+    }
+
+    private var startSummary: String {
+        let timing = options.countdownSeconds == 0 ? "Starts immediately" : "Starts after a \(options.countdownSeconds)-second countdown"
+        let delivery = options.outputFormat == .gif ? "records a movie, then writes the GIF" : "saves a movie you can review"
+        return "\(timing) · \(delivery)."
+    }
+
+    private var secureFieldRedactionWarning: String? {
+        RecordingPrivacyNotice.secureFieldRedactionWarning(accessibilityTrusted: AccessibilityService.isTrusted)
     }
 
     private func persistDefaults() {
@@ -161,5 +284,7 @@ struct RecordingOptionsBar: View {
         settings.recordingQualityPreset = options.quality
         settings.recordingCountdownSeconds = options.countdownSeconds
         settings.recordingLastMicrophoneDeviceID = options.microphoneDeviceID
+        settings.recordingOutputFormat = options.outputFormat
+        settings.gifExportOptions = options.gif
     }
 }

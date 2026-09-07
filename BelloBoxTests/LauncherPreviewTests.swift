@@ -8,8 +8,8 @@ final class LauncherPreviewTests: XCTestCase {
     private let locale = Locale(identifier: "en_US_POSIX")
     private let now = Date(timeIntervalSince1970: 1_788_782_400) // 2026-09-07 12:00 UTC
 
-    private func preview(_ text: String, _ command: LauncherCommand) throws -> LauncherPreview {
-        try LauncherPreview.make(text: text, command: command, zoneIDs: ["UTC"], now: now, localZone: utc, locale: locale)
+    private func preview(_ text: String, _ command: LauncherCommand, context: LauncherPreviewContext = LauncherPreviewContext(zoneIDs: ["UTC"])) throws -> LauncherPreview {
+        try LauncherPreview.make(text: text, command: command, context: context, now: now, localZone: utc, locale: locale)
     }
 
     func testBestInterpretationOutranksFavoriteAndRecentAlternatives() {
@@ -28,9 +28,24 @@ final class LauncherPreviewTests: XCTestCase {
         XCTAssertEqual(LauncherCommand.search("", input: "", favorites: ["regex"], recents: []).first, .regex)
     }
 
+    func testTitleWordsOutrankKeywordMatchesSuggestionsAndFavoritesButNotPrefixes() {
+        let gif = LauncherCommand.search("gif", input: "", favorites: ["recording"], recents: ["recording"])
+        XCTAssertEqual(gif.first, .videoToGIF, "A tool named after the query beats one that only mentions it")
+        XCTAssertTrue(gif.contains(.recording), "The keyword match stays searchable")
+        XCTAssertEqual(LauncherCommand.search("screen", input: "", favorites: [], recents: []).prefix(2).map { $0 }, [.screenshot, .recording],
+                       "Two prefix matches keep the catalog order")
+        XCTAssertEqual(LauncherCommand.search("clock", input: "", favorites: ["time"], recents: []).first, .worldClock)
+        XCTAssertEqual(LauncherCommand.search("convert", input: "2026-09-07T12:00:00Z", favorites: [], recents: []).first, .convert,
+                       "A title prefix beats a title word plus a suggestion bonus")
+        XCTAssertEqual(LauncherCommand.search("time", input: "2026-09-07T12:00:00Z", favorites: [], recents: []).first, .time,
+                       "Timestamp Converter has the prefix; World Clock only has the suggestion")
+        XCTAssertEqual(LauncherCommand.search("", input: "2026-09-07T12:00:00Z", favorites: ["time"], recents: ["time"]).first, .worldClock,
+                       "Without a query the best interpretation still leads")
+    }
+
     func testClockPreviewUsesSelectedMomentAndDSTInEachSavedZone() throws {
         let value = try LauncherPreview.make(text: "2026-07-07T12:00:00Z", command: .worldClock,
-            zoneIDs: ["America/New_York", "Europe/London", "Asia/Singapore", "Asia/Tokyo", "UTC"],
+            context: LauncherPreviewContext(zoneIDs: ["America/New_York", "Europe/London", "Asia/Singapore", "Asia/Tokyo", "UTC"]),
             now: now, localZone: utc, locale: locale)
         guard case .clocks(let clocks, let instant) = value.content else { return XCTFail("Expected clocks") }
         XCTAssertEqual(clocks.count, 4)
@@ -40,7 +55,7 @@ final class LauncherPreviewTests: XCTestCase {
         XCTAssertTrue(clocks[0].date.contains("2026"))
         XCTAssertEqual(clocks[0].quality, .extended)
         let winter = try LauncherPreview.make(text: "2026-01-07T12:00:00Z", command: .worldClock,
-            zoneIDs: ["America/New_York"], now: now, localZone: utc, locale: locale)
+            context: LauncherPreviewContext(zoneIDs: ["America/New_York"]), now: now, localZone: utc, locale: locale)
         guard case .clocks(let winterClocks, _) = winter.content else { return XCTFail("Expected clocks") }
         XCTAssertEqual(winterClocks[0].zone, "UTC−05:00")
         XCTAssertEqual(winterClocks.count, 2, "UTC fallback is deduplicated")
@@ -124,7 +139,62 @@ final class LauncherPreviewTests: XCTestCase {
         guard case .notice(let notice) = value.content else { return XCTFail("Expected large-input notice") }
         XCTAssertFalse(value.isWarning, "Do not parse or misreport a partial document")
         XCTAssertTrue(notice.contains("complete selection"))
+        guard case .statistics = try preview(text, .textTools).content else { return XCTFail("Counting never needs the parse limit") }
         XCTAssertThrowsError(try preview(String(repeating: "x", count: UtilityLimits.inputBytes + 1), .textTools))
+    }
+
+    func testEveryCommandHasAUsefulPreviewWithAndWithoutASelection() throws {
+        for command in LauncherCommand.allCases {
+            let empty = try preview("", command)
+            let text: LauncherPreview
+            do { text = try preview("Just some words", command) } catch { text = LauncherPreview.failure(error, command: command) }
+            for value in [empty, text] {
+                XCTAssertFalse(value.title.isEmpty, "\(command)")
+                if case .actions(let actions) = value.content {
+                    XCTAssertTrue((1...3).contains(actions.count), "\(command) keeps its actions concise")
+                    XCTAssertTrue(actions.allSatisfy { !$0.text.isEmpty && !$0.symbol.isEmpty })
+                }
+            }
+            XCTAssertFalse(empty.isWarning, "No selection is not an error for \(command)")
+        }
+        guard case .actions(let json) = try preview("", .json).content else { return XCTFail("Expected actions") }
+        XCTAssertTrue(json.last?.text.contains("empty input") == true, "Developer tools explain that they open empty")
+        guard case .actions(let screenshot) = try preview("Just some words", .screenshot).content else { return XCTFail("Expected actions") }
+        XCTAssertFalse(screenshot.contains { $0.text.contains("words") }, "Capture tools never pretend to transform the text")
+        XCTAssertEqual(try preview("", .worldClock).title, "Current time")
+        XCTAssertEqual(try preview("Just some words", .worldClock).title, "Current time", "World Clock shows now instead of an error")
+        guard case .clocks(let clocks, _) = try preview("Just some words", .worldClock).content else { return XCTFail("Expected clocks") }
+        XCTAssertFalse(clocks.isEmpty)
+        XCTAssertThrowsError(try preview("Just some words", .time), "The converter needs a timestamp")
+    }
+
+    func testTimestampConverterQRAndRequestPreviewsShowConcreteFacts() throws {
+        let time = try preview("1788782400", .time)
+        guard case .fields(let fields) = time.content else { return XCTFail("Expected fields") }
+        XCTAssertEqual(fields.map(\.label), ["Local", "UTC", "Unix"])
+        XCTAssertEqual(fields[1].value, "2026-09-07T12:00:00Z")
+        XCTAssertTrue(fields[2].value.hasPrefix("1788782400 s"))
+
+        let qr = try preview("https://example.com", .qr)
+        XCTAssertFalse(qr.isWarning)
+        guard case .fields(let qrFields) = qr.content else { return XCTFail("Expected fields") }
+        XCTAssertEqual(qrFields.first?.value, "https://example.com")
+        XCTAssertTrue(qrFields.last?.value.contains("19 bytes") == true)
+        let tooLong = try preview(String(repeating: "a", count: QRCodeGenerator.maxByteCount + 1), .qr)
+        XCTAssertTrue(tooLong.isWarning)
+
+        let request = try preview("https://example.com/api", .http)
+        guard case .fields(let requestFields) = request.content else { return XCTFail("Expected fields") }
+        XCTAssertEqual(requestFields.map(\.value), ["GET", "https://example.com/api", "example.com"])
+        XCTAssertTrue(request.subtitle.contains("Nothing is sent"))
+
+        let snippet = try preview("Dear {{name}}, {{selection}}", .snippets, context: LauncherPreviewContext(snippetCount: 2))
+        guard case .actions(let actions) = snippet.content else { return XCTFail("Expected actions") }
+        XCTAssertTrue(actions[1].text.contains("2 fields"))
+        XCTAssertTrue(actions[2].text.contains("2 snippets"))
+        let ai = try preview("hi", .ai, context: LauncherPreviewContext(aiProviderName: "OpenAI"))
+        XCTAssertEqual(ai.subtitle, "Provider: OpenAI")
+        XCTAssertTrue(try preview("hi", .ai).subtitle.contains("No AI provider"))
     }
 }
 
@@ -168,25 +238,112 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
     func testPreviewIsCachedDuringNavigationAndOnlyEnterOpensTool() async throws {
         let model = model("{\"id\":42}")
         defer { model.cancelAll() }
-        try await waitUntil { model.preview != nil }
-        let preview = model.preview
+        try await waitUntil { model.expandedPreview != nil }
+        let preview = model.expandedPreview
         XCTAssertEqual(model.selectedCommand, .json)
+        XCTAssertEqual(model.bestMatch, .json)
         XCTAssertNil(model.workbench)
         XCTAssertNil(defaults.object(forKey: "launcherRecents"))
         let size = model.paletteSize
         model.move(1)
-        XCTAssertEqual(model.paletteSize, size, "Navigation must not jump the expanded row")
+        XCTAssertEqual(model.expandedCommand, .compare, "Focus expands the focused row")
+        XCTAssertEqual(model.bestMatch, .json, "The best match label stays on the top interpretation")
+        XCTAssertEqual(model.paletteSize, size, "Rows of the same preview height never jump the palette")
+        XCTAssertNil(model.expandedPreview, "The new row's preview is prepared, not faked from the previous one")
+        try await waitUntil { model.expandedPreview != nil }
+        XCTAssertEqual(model.expandedPreview?.title, "Ready to compare")
+        model.move(-1)
+        XCTAssertEqual(model.expandedPreview, preview, "Returning to a row shows its cached preview at once")
         model.query = "regex"
-        XCTAssertNil(model.featuredCommand)
-        XCTAssertEqual(model.preview, preview)
+        XCTAssertNil(model.bestMatch)
+        XCTAssertEqual(model.expandedCommand, .regex, "A search focuses its top result, which expands")
+        XCTAssertEqual(model.preview(for: .json), preview)
+        try await waitUntil { model.expandedPreview != nil }
+        XCTAssertEqual(model.expandedPreview?.title, "Test text ready")
         model.query = ""
-        XCTAssertEqual(model.featuredCommand, .json)
-        XCTAssertEqual(model.preview, preview)
+        XCTAssertEqual(model.bestMatch, .json)
+        XCTAssertEqual(model.expandedPreview, preview)
         model.openSelected()
         XCTAssertEqual(model.workbench?.input, "{\"id\":42}")
         model.back()
-        XCTAssertEqual(model.preview, preview)
-        XCTAssertEqual(defaults.stringArray(forKey: "launcherRecents"), ["json"])
+        XCTAssertEqual(model.expandedPreview, preview)
+        XCTAssertEqual(defaults.stringArray(forKey: "launcherRecents"), ["json"], "Only Enter records a recent")
+        XCTAssertEqual(model.previews.count, 3, "One cached preview per focused command")
+    }
+
+    func testFocusingWorldClockWithoutATimestampShowsNowWithoutThePlanner() async throws {
+        let model = model("Hello there")
+        defer { model.cancelAll() }
+        var opened: LauncherCommandContext?
+        model.onCommand = { _, _, context in opened = context }
+        model.query = "world"
+        XCTAssertEqual(model.expandedCommand, .worldClock)
+        XCTAssertFalse(model.expandsClock)
+        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight, "Static clocks keep the standard row height")
+        try await waitUntil { model.expandedPreview != nil }
+        XCTAssertEqual(model.expandedPreview?.title, "Current time")
+        XCTAssertNil(model.clockPreview, "Only a timestamp selection installs the interactive planner")
+        XCTAssertFalse(model.featuresClock)
+        XCTAssertNil(model.previewedInstant)
+        model.openSelected()
+        XCTAssertNil(opened?.worldClock, "Without a timestamp the window opens live")
+    }
+
+    func testTimestampSelectionReservesThePlannerHeightBeforeItArrivesAndFocusMovesReportWithoutRefocus() async throws {
+        let model = model("2026-09-07T12:00:00Z")
+        defer { model.cancelAll() }
+        XCTAssertTrue(model.expandsClock)
+        XCTAssertNil(model.clockPreview)
+        let tall = model.paletteSize.height
+        XCTAssertEqual(tall, 64 + 48 + 26 + (5 * 42 + 12 + LauncherModel.clockPreviewHeight) + 42, "The clock height is known synchronously")
+        try await waitUntil { model.clockPreview != nil }
+        XCTAssertEqual(model.paletteSize.height, tall, "The planner arriving never resizes")
+        var resizes: [CGFloat] = []
+        var presentations = 0
+        model.onPreviewResize = { resizes.append(model.paletteSize.height) }
+        model.onPresentationChange = { presentations += 1 }
+        model.move(1)
+        XCTAssertEqual(model.expandedCommand, .time)
+        XCTAssertFalse(model.featuresClock, "Arrow keys edit nothing while the planner is collapsed")
+        XCTAssertEqual(resizes, [tall - LauncherModel.clockPreviewHeight + LauncherModel.previewHeight])
+        XCTAssertEqual(presentations, 0, "Focus changes use the no-refocus resize path")
+        XCTAssertNotNil(model.clockPreview, "The planner survives while another row is focused")
+        try await waitUntil { model.expandedPreview != nil }
+        XCTAssertEqual(model.expandedPreview?.title, "Timestamp recognized")
+        model.move(-1)
+        XCTAssertTrue(model.featuresClock)
+        XCTAssertEqual(resizes.last, tall)
+        XCTAssertEqual(resizes.count, 2)
+        model.move(1); model.move(-1)
+        XCTAssertEqual(resizes.count, 4, "Each real height change reports exactly once")
+        XCTAssertEqual(presentations, 0)
+    }
+
+    func testPreviewForARowThatLostFocusIsDiscardedAndRebuiltOnReturn() async throws {
+        let entered = expectation(description: "Compare preview started")
+        entered.assertForOverFulfill = false
+        let gate = DispatchSemaphore(value: 0)
+        let model = model("first") { text, command, _ in
+            if command == .compare {
+                entered.fulfill()
+                _ = gate.wait(timeout: .now() + 3) // ignores cancellation on purpose
+            }
+            return LauncherPreview(title: "\(command.id):\(text)", subtitle: "", content: .notice(text))
+        }
+        defer { gate.signal(); model.cancelAll() }
+        try await waitUntil { model.expandedPreview != nil }
+        model.selectedID = LauncherCommand.compare.id
+        await fulfillment(of: [entered], timeout: 2)
+        model.selectedID = LauncherCommand.snippets.id
+        try await waitUntil { model.expandedPreview != nil }
+        XCTAssertEqual(model.expandedPreview?.title, "snippets:first")
+        gate.signal()
+        for _ in 0..<20 { await Task.yield() }
+        XCTAssertNil(model.preview(for: .compare), "A result for a row that lost focus is dropped")
+        model.selectedID = LauncherCommand.compare.id
+        gate.signal()
+        try await waitUntil { model.preview(for: .compare) != nil }
+        XCTAssertEqual(model.expandedPreview?.title, "compare:first")
     }
 
     func testTimestampEnterPassesSelectionAndPreviewedInstantToDedicatedWindow() async throws {
@@ -229,7 +386,7 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         XCTAssertTrue(clock.zoneIDs.starts(with: ["Asia/Tokyo", "Europe/Berlin"]), "Saved locations come first, in order")
         XCTAssertLessThanOrEqual(clock.zoneIDs.count, 4)
         XCTAssertEqual(clock.anchorZoneID, "Europe/Berlin")
-        XCTAssertEqual(model.featuredPreviewHeight, LauncherModel.clockPreviewHeight)
+        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.clockPreviewHeight)
         XCTAssertTrue(model.featuresClock)
         let sizeBefore = model.paletteSize
         var presentationChanges = 0
@@ -255,7 +412,7 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         XCTAssertEqual(resizeHeights, [sizeBefore.height + LauncherModel.copilotTranscriptHeight],
                        "The palette grows once, and the callback sees the grown height")
         XCTAssertEqual(presentationChanges, 0, "Transcript growth uses the no-refocus resize path")
-        XCTAssertEqual(model.featuredPreviewHeight, LauncherModel.clockPreviewHeight + LauncherModel.copilotTranscriptHeight)
+        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.clockPreviewHeight + LauncherModel.copilotTranscriptHeight)
         try await waitUntil { !clock.copilot.isBusy }
         XCTAssertEqual(sent.all, [clock.selectedInstant], "The question carries the previewed instant")
         XCTAssertEqual(resizeHeights.count, 1, "The answer arriving does not resize again")
@@ -295,9 +452,10 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         XCTAssertEqual(resizeHeights.last, sizeBefore.height, "Clearing shrinks the palette back")
         model.query = "regex"
         XCTAssertFalse(model.featuresClock)
-        XCTAssertEqual(model.featuredPreviewHeight, LauncherModel.previewHeight)
+        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight)
         model.query = ""
         XCTAssertTrue(model.clockPreview === clock, "Searching keeps the planner and its transcript")
+        XCTAssertTrue(model.featuresClock)
         model.cancelAll()
         XCTAssertNil(model.clockPreview)
     }
@@ -350,11 +508,11 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         settings.openAIModel = "test-model"
         let json = model("{\"id\":1}", settings: settings)
         defer { json.cancelAll() }
-        try await waitUntil { json.preview != nil }
+        try await waitUntil { json.expandedPreview != nil }
         XCTAssertNil(json.clockPreview)
         XCTAssertNil(json.previewedInstant)
         XCTAssertFalse(json.featuresClock)
-        XCTAssertEqual(json.featuredPreviewHeight, LauncherModel.previewHeight)
+        XCTAssertEqual(json.expandedPreviewHeight, LauncherModel.previewHeight)
 
         let started = expectation(description: "Copilot request started")
         let cancelled = expectation(description: "Copilot request cancelled")
@@ -395,22 +553,23 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         defer { gate.signal(); model.cancelAll() }
         await fulfillment(of: [entered], timeout: 2)
         model.useClipboard("second")
-        try await waitUntil { model.preview?.title == "second" }
+        try await waitUntil { model.expandedPreview?.title == "second" }
         gate.signal()
         await fulfillment(of: [finished], timeout: 2)
         await Task.yield()
-        XCTAssertEqual(model.preview?.title, "second")
+        XCTAssertEqual(model.expandedPreview?.title, "second")
         model.clearSelection()
-        XCTAssertNil(model.preview)
-        XCTAssertNil(model.featuredCommand)
+        XCTAssertNil(model.expandedPreview)
+        XCTAssertNil(model.bestMatch)
         XCTAssertNil(model.selection.pid)
     }
 
     func testInvalidJSONShowsNoticeButKeepsCompleteEditableInput() async throws {
         let model = model("{invalid}")
         defer { model.cancelAll() }
-        try await waitUntil { model.preview != nil }
-        XCTAssertTrue(model.preview?.isWarning == true)
+        try await waitUntil { model.expandedPreview != nil }
+        XCTAssertTrue(model.expandedPreview?.isWarning == true)
+        XCTAssertEqual(model.expandedPreview?.title, "Not recognized for JSON Tools")
         model.openSelected()
         XCTAssertEqual(model.workbench?.input, "{invalid}")
     }
@@ -442,13 +601,13 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         let text = "{\"body\":\"" + String(repeating: "x", count: 300_000) + "\"}"
         let model = model(text)
         defer { model.cancelAll() }
-        try await waitUntil { model.preview != nil }
-        XCTAssertEqual(model.preview?.title, "Full selection ready")
+        try await waitUntil { model.expandedPreview != nil }
+        XCTAssertEqual(model.expandedPreview?.title, "Full selection ready")
         model.openSelected()
         XCTAssertEqual(model.workbench?.input, text)
         model.useClipboard(String(repeating: "x", count: UtilityLimits.inputBytes + 1))
-        XCTAssertNil(model.preview)
-        XCTAssertNil(model.featuredCommand)
+        XCTAssertNil(model.expandedPreview)
+        XCTAssertNil(model.bestMatch)
         XCTAssertNil(model.workbench)
         XCTAssertTrue(model.selection.text.isEmpty)
     }

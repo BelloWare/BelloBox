@@ -1,12 +1,16 @@
 import AppKit
 import SwiftUI
 
-/// The control card shown next to the live selection while scrolling to capture more.
+/// The control card shown next to the live selection during a scrolling capture.
 /// It lives in its own key-capable panel because the capture overlay passes mouse
 /// events through to the content underneath during this mode.
+///
+/// The card answers three questions at a glance: which mode is active (you scroll,
+/// or Bello Box auto-scrolls), how much has been captured (screens, pixel height,
+/// frames against the limit), and what Finish and Cancel do.
 struct ScrollCaptureHUDView: View {
-    /// The card comes in two sizes: the full card with the preview strip and the hint,
-    /// and a single-row card for selections that leave no room for the full one.
+    /// The card comes in two sizes: the full card with the preview strip, progress
+    /// and hint, and a single-row card for selections that leave no room for it.
     enum Layout: String, CaseIterable {
         case full
         case compact
@@ -14,14 +18,15 @@ struct ScrollCaptureHUDView: View {
 
     /// Fixed card sizes (every row is always reserved) so the hosting panel can be laid
     /// out before the view exists.
-    static let preferredSize = CGSize(width: 540, height: 140)
-    static let compactSize = CGSize(width: 540, height: 56)
+    static let preferredSize = CGSize(width: 560, height: 156)
+    static let compactSize = CGSize(width: 560, height: 56)
     /// Transparent margin around the card (room for its shadow); it may overlap the
     /// sampled selection because it is invisible and lets clicks through.
     static let outerPadding: CGFloat = 20
-    static let previewSize = CGSize(width: 92, height: 100)
+    static let previewSize = CGSize(width: 92, height: 104)
+    static let title = "Scrolling Capture"
     /// Short enough for two tooltip lines, where the compact card shows it.
-    static let hint = "Scroll the content inside the frame yourself, or press Auto-scroll and Bello Box scrolls it for you until it ends."
+    static let hint = "Scroll the page inside the orange frame yourself, or press Auto-scroll and Bello Box scrolls until the content ends. Finish stitches everything captured so far."
 
     static func preferredSize(for layout: Layout) -> CGSize {
         switch layout {
@@ -36,6 +41,7 @@ struct ScrollCaptureHUDView: View {
     var layout: Layout = .full
     var onDone: () -> Void
     var onCancel: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -51,6 +57,9 @@ struct ScrollCaptureHUDView: View {
         .frame(width: size.width, height: size.height, alignment: .topLeading)
         .popupCard()
         .padding(Self.outerPadding)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Self.title)
+        .accessibilityValue(Self.accessibilitySummary(for: engine))
     }
 
     private var size: CGSize { Self.preferredSize(for: layout) }
@@ -60,65 +69,62 @@ struct ScrollCaptureHUDView: View {
             VStack(spacing: 4) {
                 ScrollCapturePreviewStrip(pieces: engine.previewPieces, isLive: engine.isAutoScrolling)
                     .frame(width: Self.previewSize.width, height: Self.previewSize.height)
-                Text(previewCaption)
+                Text("Stitched so far")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            .overlayTooltip("Preview of the stitched screenshot so far")
+            .overlayTooltip("The screenshot as it will be stitched: every frame captured so far, overlap removed")
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
                     badge
-                    title
-                    Spacer(minLength: 0)
-                    Text(statusText(compact: false))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(Self.title)
+                        .font(.system(size: 13, weight: .semibold))
                         .lineLimit(1)
+                    Spacer(minLength: 0)
+                    modeChip
                 }
 
-                Text(Self.hint)
+                progressRow
+
+                Text(engine.message ?? Self.hint)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(engine.message == nil ? Color.secondary : messageColor)
+                    .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, minHeight: 30, alignment: .topLeading)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: engine.message)
 
                 HStack(spacing: 8) {
                     autoScrollButton
                     Spacer(minLength: 0)
                     cancelButton
-                    doneButton
+                    doneButton(compact: false)
                 }
-
-                Label(engine.message ?? " ", systemImage: engine.message == nil ? "circle" : "info.circle")
-                    .font(.caption2)
-                    .foregroundStyle(BoxTheme.warning)
-                    .lineLimit(1)
-                    .opacity(engine.message == nil ? 0 : 1)
             }
         }
     }
 
-    /// One row: the title (or the current message), the frame count and the buttons.
+    /// One row: the title (or the current message), the extent and the buttons.
     /// The hint moves into the title's tooltip.
     private var compactCard: some View {
         HStack(spacing: 8) {
+            badge
             if let message = engine.message {
-                Label(message, systemImage: "info.circle")
+                Text(message)
                     .font(.caption)
-                    .foregroundStyle(BoxTheme.warning)
+                    .foregroundStyle(messageColor)
                     .lineLimit(1)
                     .overlayTooltip(message)
-            } else if engine.isAutoScrolling {
-                Text("Auto-scrolling…")
+            } else {
+                Text(engine.isAutoScrolling ? "Auto-scrolling…" : Self.title)
                     .font(.system(size: 13, weight: .semibold))
                     .lineLimit(1)
                     .overlayTooltip(Self.hint)
-            } else {
-                title.overlayTooltip(Self.hint)
             }
-            Text(statusText(compact: true))
-                .font(.caption)
+            Text(Self.extentText(for: engine, compact: true))
+                .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .layoutPriority(1)
@@ -126,7 +132,7 @@ struct ScrollCaptureHUDView: View {
             HStack(spacing: 8) {
                 autoScrollButton
                 cancelButton
-                doneButton
+                doneButton(compact: true)
             }
             .fixedSize()
         }
@@ -139,71 +145,136 @@ struct ScrollCaptureHUDView: View {
             .foregroundStyle(.white)
             .frame(width: 24, height: 24)
             .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(BoxTheme.accentGradient))
+            .accessibilityHidden(true)
     }
 
-    private var title: some View {
-        Text("Scroll to capture more")
-            .font(.system(size: 13, weight: .semibold))
-            .lineLimit(1)
+    /// Which of the two ways of scrolling is in effect right now.
+    private var modeChip: some View {
+        let auto = engine.isAutoScrolling
+        return HStack(spacing: 5) {
+            Circle().fill(auto ? BoxTheme.success : BoxTheme.accent).frame(width: 6, height: 6)
+                .accessibilityHidden(true)
+            Text(auto ? "Auto-scrolling for you" : "Manual · you scroll the frame")
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 8).padding(.vertical, 3)
+        .background(BoxTheme.well, in: Capsule())
+        .overlay(Capsule().strokeBorder(BoxTheme.border))
+        .overlayTooltip(auto ? "Bello Box is scrolling the content for you until it ends. Pause any time and scroll yourself."
+                             : "Scroll the content inside the orange frame; each new screen is captured once it settles.")
+    }
+
+    /// Captured extent in screens and pixels, plus a bar of frames against the limit.
+    private var progressRow: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Text(Self.extentText(for: engine, compact: false))
+                    .font(.caption.monospacedDigit())
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                Text(Self.frameCountText(for: engine))
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(BoxTheme.well)
+                    Capsule().fill(engine.reachedEnd ? BoxTheme.success : BoxTheme.accent)
+                        .frame(width: max(4, geometry.size.width * Self.frameFraction(for: engine)))
+                        .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: engine.frames.count)
+                }
+            }
+            .frame(height: 4)
+            .accessibilityHidden(true)
+        }
+        .overlayTooltip("How much has been captured: screens of the selection, the stitched height, and frames used of the maximum in Settings")
+    }
+
+    private var messageColor: Color {
+        engine.reachedEnd ? BoxTheme.success : BoxTheme.warning
     }
 
     private var autoScrollButton: some View {
         Button {
             engine.toggleAutoScroll()
         } label: {
-            Label(engine.isAutoScrolling ? "Pause Auto" : "Auto-scroll", systemImage: engine.isAutoScrolling ? "stop.circle.fill" : "play.circle.fill")
+            Label(engine.isAutoScrolling ? "Pause" : "Auto-scroll", systemImage: engine.isAutoScrolling ? "pause.circle.fill" : "play.circle.fill")
                 .symbolRenderingMode(.hierarchical)
         }
         .buttonStyle(SecondaryButtonStyle())
         .disabled(engine.phase != .watching)
-        .overlayTooltip(engine.isAutoScrolling ? "Stop scrolling automatically" : "Scroll the content automatically until it ends, capturing as it goes")
+        .accessibilityLabel(engine.isAutoScrolling ? "Pause auto-scroll" : "Start auto-scroll")
+        .overlayTooltip(engine.isAutoScrolling ? "Stop scrolling automatically; you can keep scrolling yourself"
+                                               : "Let Bello Box scroll the content until it ends, capturing each screen as it goes")
     }
 
     private var cancelButton: some View {
         Button("Cancel") { onCancel() }
             .buttonStyle(SecondaryButtonStyle())
             .keyboardShortcut(.cancelAction)
-            .overlayTooltip("Back to the editor with the original capture (esc)")
+            .accessibilityLabel("Cancel scrolling capture")
+            .overlayTooltip("Discard the captured frames and return to the editor with the original screenshot (esc)")
     }
 
-    private var doneButton: some View {
+    private func doneButton(compact: Bool) -> some View {
         Button {
             onDone()
         } label: {
             if engine.phase == .stitching {
-                ProgressView().controlSize(.small).frame(width: 40)
+                HStack(spacing: 6) {
+                    ProgressView().controlSize(.small)
+                    if !compact { Text("Stitching…") }
+                }.frame(minWidth: 40)
             } else {
-                Text("Finish")
+                Text(compact ? "Finish" : Self.finishTitle(for: engine))
             }
         }
         .buttonStyle(PrimaryButtonStyle())
         .keyboardShortcut(.defaultAction)
         .disabled(!engine.canFinish)
-        .overlayTooltip("Stitch the captured frames into one tall screenshot (return)")
+        .accessibilityLabel("Finish and stitch")
+        .overlayTooltip("Stop capturing and stitch the frames into one tall screenshot, then open it in the editor (return)")
     }
 
-    /// The compact row has no room for the longer forms, which would squeeze the title.
-    private func statusText(compact: Bool) -> String {
+    static func finishTitle(for engine: ScrollCaptureEngine) -> String {
         let count = engine.frames.count
-        let frames = "\(count) frame\(count == 1 ? "" : "s")"
+        return count > 1 ? "Finish · Stitch \(count)" : "Finish"
+    }
+
+    /// "≈ 2.4 screens · 1,880 px tall", or just the pixel height on the compact card.
+    static func extentText(for engine: ScrollCaptureEngine, compact: Bool) -> String {
+        let rows = engine.previewRowCount
+        guard rows > 0 else { return compact ? "Waiting for the first frame" : "Nothing captured yet" }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        let pixels = "\(formatter.string(from: NSNumber(value: rows)) ?? "\(rows)") px tall"
+        if compact { return "\(engine.frames.count) frame\(engine.frames.count == 1 ? "" : "s") · \(pixels)" }
+        let screens = engine.screensCaptured
+        let screenText = screens < 1.05 ? "1 screen" : String(format: "≈ %.1f screens", screens)
+        return "\(screenText) · \(pixels)"
+    }
+
+    static func frameCountText(for engine: ScrollCaptureEngine) -> String {
+        let count = engine.frames.count
         switch engine.phase {
-        case .stitching:
-            return compact ? "Stitching…" : "Stitching \(frames)…"
-        case let .failed(message):
-            return message
-        case .finished:
-            return "Done"
-        case .idle, .watching:
-            return engine.isAutoScrolling && !compact ? "Auto-scrolling · \(frames)" : frames
+        case .stitching: return "Stitching \(count) frame\(count == 1 ? "" : "s")…"
+        case .finished: return "Done"
+        case let .failed(message): return message
+        case .idle, .watching: return "\(count) of \(engine.configuration.maxFrames) frames"
         }
     }
 
-    private var previewCaption: String {
-        let rows = engine.previewRowCount
-        guard rows > 0 else { return "—" }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return "≈ \(formatter.string(from: NSNumber(value: rows)) ?? "\(rows)") px tall"
+    static func frameFraction(for engine: ScrollCaptureEngine) -> CGFloat {
+        let limit = max(1, engine.configuration.maxFrames)
+        return min(1, CGFloat(engine.frames.count) / CGFloat(limit))
+    }
+
+    static func accessibilitySummary(for engine: ScrollCaptureEngine) -> String {
+        let mode = engine.isAutoScrolling ? "Auto-scrolling" : "Manual scrolling"
+        return [mode, extentText(for: engine, compact: false), frameCountText(for: engine), engine.message].compactMap { $0 }.joined(separator: ". ")
     }
 }
 
@@ -239,6 +310,7 @@ struct ScrollCapturePreviewStrip: View {
                 .strokeBorder(isLive ? BoxTheme.accent.opacity(0.7) : Color.primary.opacity(0.12), lineWidth: isLive ? 1.5 : 1)
         )
         .animation(.easeOut(duration: 0.2), value: pieces)
+        .accessibilityHidden(true)
     }
 }
 

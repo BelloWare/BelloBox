@@ -22,25 +22,36 @@ final class ScreenshotPopupViewModelOCRTaskTests: XCTestCase {
         XCTAssertEqual(viewModel.ocrPanel.statusMessage, "Reading cancelled.")
     }
 
-    func testInitialActiveOCRResultIsShownInPanel() {
+    func testInitialActiveOCRResultIsShownInPanelAndStitchNotesStayOutOfIt() {
         let stitchResult = StitchResult(
             image: ScreenshotTestHelpers.image(width: 80, height: 60),
             placements: [],
             warnings: ["Frame 2 appears nearly unchanged from the previous frame."]
         )
-        let document = ScrollCaptureEngine.makeDocument(
+        var document = ScrollCaptureEngine.makeDocument(
             from: stitchResult,
             target: ScrollCaptureTargetSummary(title: "Page", ownerName: nil, frame: nil),
             frameCount: 2,
             createdAt: Date(timeIntervalSince1970: 12)
         )
+        let existing = OCRResult(
+            id: UUID(), engine: .appleVision(revision: 3, recognitionLevel: .accurate), target: .fullImage,
+            plainText: "Earlier text", markdownText: nil, regions: [], languageHints: [], imageDigest: "d",
+            warnings: ["Low confidence"], createdAt: Date(timeIntervalSince1970: 13)
+        )
+        document.ocrResults = [existing]
+        document.activeOCRResultID = existing.id
 
         let viewModel = ScreenshotPopupViewModel(
             document: document,
             settings: AppSettings(defaults: temporaryDefaults("initial-active-ocr"))
         )
 
-        XCTAssertEqual(viewModel.ocrPanel.result?.warnings, stitchResult.warnings)
+        XCTAssertEqual(viewModel.ocrPanel.result?.warnings, ["Low confidence"])
+        XCTAssertEqual(viewModel.document.captureNotes, stitchResult.warnings, "Stitch notes are shown by the editor, not the text reader")
+        XCTAssertTrue(viewModel.showsCaptureNotes)
+        viewModel.dismissCaptureNotes()
+        XCTAssertFalse(viewModel.showsCaptureNotes)
     }
 
     func testRequestLLMOCRWithCodexShowsErrorWithoutConfirmation() {

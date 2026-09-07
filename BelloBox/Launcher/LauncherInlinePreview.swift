@@ -78,6 +78,17 @@ struct LauncherInlinePreview: View {
             Text(text).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(4)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding(12).background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 9))
+        case .actions(let actions):
+            VStack(alignment: .leading, spacing: 7) {
+                ForEach(Array(actions.enumerated()), id: \.offset) { _, action in
+                    HStack(alignment: .firstTextBaseline, spacing: 9) {
+                        Image(systemName: action.symbol).font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(BoxTheme.accent).frame(width: 16)
+                        Text(action.text).font(.system(size: 11)).lineLimit(2)
+                    }
+                }
+            }.padding(11).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 9))
         }
     }
 }
@@ -234,6 +245,7 @@ extension LauncherPreview {
         case .clocks(let clocks, _): detail = clocks.map { "\($0.name): \($0.time), \($0.date), \($0.zone)" }.joined(separator: "; ")
         case .code(let text), .notice(let text): detail = text
         case .fields(let fields), .statistics(let fields): detail = fields.map { "\($0.label): \($0.value)" }.joined(separator: "; ")
+        case .actions(let actions): detail = actions.map(\.text).joined(separator: "; ")
         }
         return "\(title). \(subtitle). \(detail)"
     }

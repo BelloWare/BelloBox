@@ -197,7 +197,8 @@ final class RecordingCoordinatorTests: XCTestCase {
         let recovered = temporaryRecordingURL()
         engine.failStop(with: RecordingEngineError.recoverableExportFailure(recovered, "Audio mix failed"))
         await fulfillment(of: [reviewed], timeout: 1)
-        guard case let .reviewing(url, warning) = coordinator.state else { return XCTFail("Expected recovery review") }
+        guard case let .reviewing(url, warning, gif) = coordinator.state else { return XCTFail("Expected recovery review") }
+        XCTAssertNil(gif)
         XCTAssertEqual(url, recovered)
         XCTAssertTrue(warning?.contains("Audio mix failed") == true)
         XCTAssertFalse(engine.didCancel, "Recovery must not discard the playable original")

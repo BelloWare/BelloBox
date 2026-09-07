@@ -35,6 +35,7 @@ final class SelectionOverlayController: NSObject {
     private var screenshotOverlayEditorController: ScreenshotOverlayEditorController?
     private var captureOverlayController: CaptureOverlayController?
     private var toolbarDismissMonitor: Any?
+    private var conversionProgress: RecordingConversionProgress?
 
     private var pendingSelection: TextSelection?
     private var trustWatcher: Timer?
@@ -258,6 +259,7 @@ final class SelectionOverlayController: NSObject {
         case .screenshot: triggerScreenshotCapture()
         case .scrollCapture: triggerScrollingScreenshotCapture()
         case .recording: triggerRecording()
+        case .videoToGIF: openVideoToGIF()
         // Open with what the palette was previewing (instant, reference, and
         // copilot conversation), which may differ from the selected text.
         case .worldClock:
@@ -514,6 +516,27 @@ final class SelectionOverlayController: NSObject {
         )
     }
 
+    // MARK: - Video to GIF
+
+    /// The standalone converter. The movie comes only from the file chooser (or a
+    /// review fixture); nothing is executed or uploaded.
+    func openVideoToGIF(preloading url: URL? = nil) {
+        guard !isCaptureSurfaceActive else { NSSound.beep(); return }
+        hideToolbar()
+        let viewModel = VideoToGIFViewModel(options: settings.gifExportOptions)
+        viewModel.onClose = { [weak self] in self?.hidePopup() }
+        if let url { viewModel.load(url) }
+        let view = VideoToGIFView(viewModel: viewModel, onMinimize: { [weak self] in self?.minimizePopup() })
+        present(
+            view,
+            size: VideoToGIFView.preferredSize,
+            anchorRect: nil,
+            minimizedIcon: "film.stack",
+            minimizedTitle: "Video to GIF",
+            onDismiss: { viewModel.close() }
+        )
+    }
+
     // MARK: - Recording
 
     func triggerRecording() {
@@ -735,8 +758,25 @@ final class SelectionOverlayController: NSObject {
                 minimizedTitle: "Recording",
                 runExistingDismissAction: false
             )
-        case let .reviewing(url, warning):
-            let viewModel = RecordingReviewViewModel(fileURL: url, recoveryWarning: warning)
+        case let .convertingToGIF(progress):
+            // Progress ticks update the presented card; only the first tick presents it.
+            if let model = conversionProgress, popupPanel != nil {
+                model.progress = progress
+                return
+            }
+            let model = RecordingConversionProgress(progress: progress)
+            present(
+                RecordingConversionView(model: model) { [weak self] in self?.recordingCoordinator.cancelGIFConversion() },
+                size: RecordingConversionView.preferredSize,
+                anchorRect: nil,
+                minimizedIcon: "photo.stack",
+                minimizedTitle: "Writing GIF",
+                onDismiss: { [weak self] in self?.recordingCoordinator.cancelGIFConversion() },
+                runExistingDismissAction: false
+            )
+            conversionProgress = model
+        case let .reviewing(url, warning, gif):
+            let viewModel = RecordingReviewViewModel(fileURL: url, recoveryWarning: warning, gifURL: gif, gifOptions: settings.gifExportOptions)
             viewModel.onClose = { [weak self] in self?.hidePopup() }
             let view = RecordingReviewView(viewModel: viewModel)
             present(
@@ -745,6 +785,7 @@ final class SelectionOverlayController: NSObject {
                 anchorRect: nil,
                 minimizedIcon: "play.rectangle",
                 minimizedTitle: "Recording",
+                onDismiss: { viewModel.cancelGIFExport() },
                 runExistingDismissAction: false
             )
         case .finishing:
@@ -770,7 +811,7 @@ final class SelectionOverlayController: NSObject {
     }
 
     private func recordingHUDSize() -> CGSize {
-        CGSize(width: 520, height: 128)
+        RecordingHUDView.preferredSize
     }
 
     private func showRecordingError(_ message: String, anchorRect: CGRect?) {
@@ -1012,19 +1053,49 @@ final class SelectionOverlayController: NSObject {
 #if DEBUG
     private func runE2EHooksIfNeeded() {
         let env = ProcessInfo.processInfo.environment
-        if env["BELLOBOX_E2E_RECORDING_OPTIONS"] == "1" {
+        if let format = env["BELLOBOX_E2E_RECORDING_OPTIONS"], !format.isEmpty {
             let defaults = UserDefaults(suiteName: "BelloBox.DesignPreview")!
             defaults.removePersistentDomain(forName: "BelloBox.DesignPreview")
             let previewSettings = AppSettings(defaults: defaults)
+            var options = RecordingOptions.default
+            if format.hasPrefix("gif") { options.outputFormat = .gif }
+            let compact = format.hasSuffix("compact")
             let view = RecordingOptionsBar(settings: previewSettings, targetLabel: "Selected area · 1280 × 720",
-                initialOptions: .default, onStart: { [weak self] _ in self?.hidePopup() },
+                initialOptions: options, compact: compact,
+                onFormatChange: { [weak self] format in
+                    // Follow the picker like the capture overlay does, so the card is never left with an empty band.
+                    guard !compact else { return }
+                    self?.resizePopup(to: RecordingOptionsBar.preferredSize(for: format))
+                },
+                onStart: { [weak self] _ in self?.hidePopup() },
                 onCancel: { [weak self] in self?.hidePopup() })
-            present(view, size: CGSize(width: 780, height: 330), anchorRect: nil,
+            let size = compact ? CGSize(width: RecordingOptionsBar.minimumWidth, height: 460) : RecordingOptionsBar.preferredSize(for: options.outputFormat)
+            present(view, size: size, anchorRect: nil,
                 minimizedIcon: "record.circle", minimizedTitle: "Recording setup")
             return
         }
+        if let mode = env["BELLOBOX_E2E_RECORDING_HUD"], !mode.isEmpty {
+            openE2ERecordingHUDDemo(mode: mode)
+            return
+        }
+        if let directory = env["BELLOBOX_E2E_WRITE_SYNTHETIC_ASSETS"], !directory.isEmpty {
+            Task { @MainActor in
+                await Self.writeE2ESyntheticAssets(to: directory)
+                self.e2eQuitIfRequested()
+            }
+            return
+        }
         if let path = env["BELLOBOX_E2E_RECORDING_REVIEW_FILE"] {
-            handleRecordingState(.reviewing(URL(fileURLWithPath: path), warning: env["BELLOBOX_E2E_RECORDING_REVIEW_WARNING"]))
+            let gif = env["BELLOBOX_E2E_RECORDING_REVIEW_GIF"].map { URL(fileURLWithPath: $0) }
+            handleRecordingState(.reviewing(URL(fileURLWithPath: path), warning: env["BELLOBOX_E2E_RECORDING_REVIEW_WARNING"], gif: gif))
+            return
+        }
+        if let value = env["BELLOBOX_E2E_VIDEO_TO_GIF"], !value.isEmpty {
+            openVideoToGIF(preloading: value == "1" ? nil : URL(fileURLWithPath: value))
+            return
+        }
+        if let path = env["BELLOBOX_E2E_CONVERTING_GIF"], !path.isEmpty {
+            handleRecordingState(.convertingToGIF(progress: Double(path) ?? 0.42))
             return
         }
         if let text = env["BELLOBOX_E2E_QR_TEXT"] {
@@ -1038,6 +1109,49 @@ final class SelectionOverlayController: NSObject {
         if runRealScreenshotE2EHookIfNeeded() { return }
         if runRealRecordingE2EHookIfNeeded() { return }
         runScreenshotE2EHooksIfNeeded()
+    }
+
+    /// The recording HUD with a synthetic runtime: `mode` is "recording", "paused",
+    /// "gif" (GIF badge), or "hidden" (secure field currently hidden). Pause and the
+    /// input menu update the local state; Stop just closes.
+    private func openE2ERecordingHUDDemo(mode: String) {
+        var runtime = RecordingRuntimeState(
+            sessionID: RecordingSessionID(), startedAt: Date().addingTimeInterval(-83), targetDescription: "Area", elapsed: 83,
+            isMicEnabled: mode != "gif", isSystemAudioEnabled: false, isInputOverlayEnabled: true, isSecureFieldHidden: mode == "hidden",
+            clickOverlayMode: .ringsAndLabels, keystrokeMode: .shortcutsOnly, inputOverlayWarning: nil,
+            outputFormat: mode == "gif" ? .gif : .movie
+        )
+        var paused = mode == "paused"
+        func show() {
+            let view = RecordingHUDView(
+                runtime: runtime, isPaused: paused,
+                onPauseResume: { paused.toggle(); show() },
+                onStop: { [weak self] in self?.hidePopup() },
+                onInputOverlaysChange: { clicks, keys in
+                    runtime.clickOverlayMode = clicks; runtime.keystrokeMode = keys
+                    runtime.isInputOverlayEnabled = clicks.isEnabled || keys != .off
+                    show()
+                }
+            )
+            present(view, size: RecordingHUDView.preferredSize, anchorRect: nil, minimizedIcon: "record.circle",
+                    minimizedTitle: "Recording", runExistingDismissAction: false)
+        }
+        show()
+    }
+
+    /// Writes deterministic review assets: `tall-page.png` (a stitched-looking page)
+    /// and `sample.mov` (a short synthetic movie), for fixtures that need a file.
+    private static func writeE2ESyntheticAssets(to directory: String) async {
+        let root = URL(fileURLWithPath: directory, isDirectory: true)
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        if let image = SyntheticMediaFixture.tallPage(width: 900, height: 5200) {
+            try? ImageExportService.pngData(from: image).write(to: root.appendingPathComponent("tall-page.png"), options: .atomic)
+        }
+        if let image = SyntheticMediaFixture.tallPage(width: 1200, height: 800) {
+            try? ImageExportService.pngData(from: image).write(to: root.appendingPathComponent("screenshot.png"), options: .atomic)
+        }
+        _ = try? await SyntheticMediaFixture.writeMovie(to: root.appendingPathComponent("sample.mov"), size: CGSize(width: 640, height: 400), duration: 4, framesPerSecond: 20)
+        _ = try? await SyntheticMediaFixture.writeMovie(to: root.appendingPathComponent("sample-portrait.mov"), size: CGSize(width: 360, height: 640), duration: 2, framesPerSecond: 15)
     }
 
     @discardableResult
@@ -1349,6 +1463,10 @@ final class SelectionOverlayController: NSObject {
             openE2EScrollCapture(markerPath: path)
             return
         }
+        if let layout = env["BELLOBOX_E2E_SCROLL_HUD_DEMO"], !layout.isEmpty {
+            openE2EScrollHUDDemo(compact: layout == "compact")
+            return
+        }
         if env["BELLOBOX_E2E_CAPTURE_OVERLAY_SIMULATED_DISPLAYS"] == "1" {
             openE2ESimulatedMultiDisplayCaptureOverlay()
             return
@@ -1640,7 +1758,7 @@ final class SelectionOverlayController: NSObject {
                 if let previewDirectory, !previewDirectory.isEmpty {
                     try await Task.sleep(nanoseconds: 800_000_000)
                     OverlayTooltipPresenter.shared.showImmediately(
-                        "Scroll to capture more: keep scrolling (or auto-scroll) and stitch the frames into one tall screenshot",
+                        AnnotationToolbarView.scrollCaptureTooltip,
                         at: CGPoint(x: rect.midX + 120, y: rect.maxY + 40)
                     )
                     try await Task.sleep(nanoseconds: 200_000_000)
@@ -1701,6 +1819,81 @@ final class SelectionOverlayController: NSObject {
             Self.writeE2EMarker(markerPath, lines: markerLines)
             e2eQuitIfRequested()
         }
+    }
+
+    private var e2eScrollDemo: (fixture: E2EScrollFixtureWindow, panel: ScrollCaptureHUDPanel, engine: ScrollCaptureEngine)?
+
+    /// Review fixture for the scrolling-capture HUD that needs no Screen Recording
+    /// permission: a real scrollable window of coloured bands is sampled by rendering
+    /// its view hierarchy, so manual wheel scrolling, Auto-scroll, Finish (which opens
+    /// the stitched result in the editor at fit-width) and Cancel all behave as live.
+    private func openE2EScrollHUDDemo(compact: Bool) {
+        guard let screen = NSScreen.main else { return }
+        hidePopup()
+        let viewport = CGSize(width: 420, height: 320)
+        let rect = CGRect(x: (screen.visibleFrame.midX - viewport.width / 2).rounded(),
+                          y: (screen.visibleFrame.midY - viewport.height / 2 + 80).rounded(),
+                          width: viewport.width, height: viewport.height)
+        let fixture = E2EScrollFixtureWindow(frame: rect, documentHeight: 2200, bandHeight: 110)
+        let scale = ScreenCoordinateSpace.backingScale(for: screen)
+        let area = CaptureArea(cocoaRect: rect, displayID: ScreenCoordinateSpace.displayID(for: screen))
+        var configuration = ScrollCaptureEngine.Configuration()
+        configuration.maxFrames = max(2, settings.scrollingScreenshotMaxFrames)
+        configuration.stitch.removeRepeatedHeaderFooter = settings.scrollingScreenshotAutoCompact
+        let engine = ScrollCaptureEngine(
+            area: area,
+            summary: ScrollCaptureTargetSummary(title: "Scroll fixture", ownerName: "Bello Box", frame: CGRectCodable(rect)),
+            initialFrame: fixture.snapshotImage(scale: scale),
+            configuration: configuration,
+            captureSample: { [weak fixture] in
+                try await MainActor.run {
+                    guard let fixture, let image = fixture.snapshotImage(scale: scale) else { throw CancellationError() }
+                    return image
+                }
+            },
+            postScroll: { [weak fixture] points in
+                guard let fixture else { return }
+                fixture.scroll(toTopOffset: fixture.topOffset + points)
+            },
+            isAccessibilityTrusted: { true }
+        )
+        let panel = ScrollCaptureHUDPanel()
+        let layout: ScrollCaptureHUDView.Layout = compact ? .compact : .full
+        let padding = ScrollCaptureHUDView.outerPadding
+        let size = ScrollCaptureHUDView.preferredSize(for: layout).applying(padding: padding)
+        panel.contentView = NSHostingView(rootView: ScrollCaptureHUDView(
+            engine: engine, layout: layout,
+            onDone: { [weak self] in self?.finishE2EScrollHUDDemo() },
+            onCancel: { [weak self] in self?.closeE2EScrollHUDDemo() }
+        ))
+        panel.onEscape = { [weak self] in self?.closeE2EScrollHUDDemo() }
+        panel.setFrame(CGRect(x: rect.minX - padding, y: rect.minY - 16 - size.height + padding, width: size.width, height: size.height), display: true)
+        panel.orderFrontRegardless()
+        panel.makeKey()
+        e2eScrollDemo = (fixture, panel, engine)
+        engine.start()
+    }
+
+    private func finishE2EScrollHUDDemo() {
+        guard let demo = e2eScrollDemo, demo.engine.canFinish else { return }
+        Task { @MainActor [weak self] in
+            do {
+                let document = try await demo.engine.finish()
+                guard let self, self.e2eScrollDemo?.engine === demo.engine else { return }
+                self.closeE2EScrollHUDDemo()
+                self.showScreenshotEditor(document: document, anchorRect: nil)
+            } catch {
+                demo.engine.resumeWatching()
+            }
+        }
+    }
+
+    private func closeE2EScrollHUDDemo() {
+        guard let demo = e2eScrollDemo else { return }
+        demo.engine.stop()
+        demo.panel.orderOut(nil)
+        demo.fixture.orderOut(nil)
+        e2eScrollDemo = nil
     }
 
     /// Captures the display around `rect` (selection plus toolbar/HUD space) and writes it
@@ -2064,6 +2257,19 @@ final class SelectionOverlayController: NSObject {
         // the × button or Esc.
     }
 
+    /// Resizes the presented popup in place, keeping its top-left corner on screen.
+    private func resizePopup(to size: CGSize) {
+        guard let panel = popupPanel, !popupIsMinimized, panel.frame.size != size else { return }
+        let old = panel.frame
+        let origin = ScreenPlacement.clamp(
+            origin: CGPoint(x: old.minX, y: old.maxY - size.height),
+            size: size,
+            into: ScreenPlacement.screen(containing: CGPoint(x: old.midX, y: old.midY))
+        )
+        panel.setFrame(NSRect(origin: origin, size: size), display: true, animate: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
+        popupFullSize = size
+    }
+
     private func minimizePopup() {
         guard let panel = popupPanel, !popupIsMinimized else { return }
         OverlayTooltipPresenter.shared.hide()
@@ -2121,6 +2327,7 @@ final class SelectionOverlayController: NSObject {
         }
         popupPanel?.orderOut(nil)
         popupPanel = nil
+        conversionProgress = nil
         hideScreenshotOverlayEditor()
         popupFullContentView = nil
         popupFullSize = .zero
@@ -2193,13 +2400,33 @@ private final class E2EScrollFixtureWindow: NSWindow {
     static let footerHeight: CGFloat = 36
 
     func scroll(toTopOffset offset: CGFloat) {
-        scrollView.contentView.scroll(to: NSPoint(x: 0, y: offset))
+        let maximum = max(0, (scrollView.documentView?.frame.height ?? 0) - scrollView.contentView.bounds.height)
+        scrollView.contentView.scroll(to: NSPoint(x: 0, y: min(max(0, offset), maximum)))
         scrollView.reflectScrolledClipView(scrollView.contentView)
         scrollView.displayIfNeeded()
         displayIfNeeded()
     }
 
     var topOffset: CGFloat { scrollView.contentView.bounds.origin.y }
+
+    /// The window's content rendered to a bitmap at `scale`, the way the display would
+    /// show it, so a capture engine can sample it without Screen Recording permission.
+    func snapshotImage(scale: CGFloat) -> CGImage? {
+        guard let view = contentView else { return nil }
+        let bounds = view.bounds
+        guard let rep = view.bitmapImageRepForCachingDisplay(in: bounds) else { return nil }
+        rep.size = bounds.size
+        view.cacheDisplay(in: bounds, to: rep)
+        guard let image = rep.cgImage else { return nil }
+        let width = Int((bounds.width * scale).rounded()), height = Int((bounds.height * scale).rounded())
+        guard image.width != width || image.height != height,
+              let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
+                                      space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return image }
+        context.interpolationQuality = .high
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        return context.makeImage()
+    }
 }
 
 private final class E2EScrollFixtureDocumentView: NSView {

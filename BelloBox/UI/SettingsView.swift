@@ -247,6 +247,24 @@ struct SettingsView: View {
             Stepper(value: $settings.recordingCountdownSeconds, in: 0...10) {
                 Text("Countdown: \(settings.recordingCountdownSeconds)s")
             }
+            Picker("Output", selection: Binding(
+                get: { settings.recordingOutputFormat },
+                set: { settings.recordingOutputFormat = $0 }
+            )) {
+                ForEach(RecordingOutputFormat.allCases) { format in
+                    Text(format.label).tag(format)
+                }
+            }
+            if settings.recordingOutputFormat == .gif {
+                Picker("GIF frame rate", selection: $settings.recordingGIFFrameRate) {
+                    ForEach(GIFExportOptions.frameRateChoices, id: \.self) { rate in Text("\(rate) fps").tag(rate) }
+                }
+                Picker("GIF longest edge", selection: $settings.recordingGIFMaxWidth) {
+                    ForEach(GIFExportOptions.widthChoices, id: \.self) { width in Text("\(width) px").tag(width) }
+                }
+                Toggle("Loop GIFs", isOn: $settings.recordingGIFLoops)
+                helpText("GIFs are silent. The movie is recorded first and kept; the GIF is written from it when you stop.")
+            }
             Divider()
             Toggle("Enable recording shortcut \(settings.recordingHotkey.displayString)", isOn: $settings.recordingHotkeyEnabled)
             LabeledContent("Shortcut") {

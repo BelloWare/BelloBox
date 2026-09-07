@@ -39,7 +39,7 @@ final class ScrollCaptureEngineTests: XCTestCase {
         engine.start()
         let document = try await engine.finish()
         XCTAssertEqual(document.baseImage.height, viewport)
-        XCTAssertTrue(document.activeOCRResult?.warnings.contains { $0.contains("last scroll") } == true)
+        XCTAssertTrue(document.captureNotes.contains { $0.contains("last scroll") })
     }
 
     func testCancelledFinishRestoresIdleAndCanRestart() async throws {
@@ -114,8 +114,31 @@ final class ScrollCaptureEngineTests: XCTestCase {
         let document = try await engine.finish()
         XCTAssertEqual(document.baseImage.width, width)
         XCTAssertEqual(document.baseImage.height, viewport)
-        XCTAssertTrue(document.activeOCRResult?.warnings.contains { $0.contains("last scroll") } == true)
+        XCTAssertEqual(document.captureNotes.first?.contains("last scroll"), true, "The failed final sample is the first note")
         XCTAssertEqual(engine.phase, .finished)
+    }
+
+    func testIncompleteCaptureNotesComeBeforeSeamNotesEvenWithManySeams() async throws {
+        // Three unmatched jumps produce three seam notes; the failed final sample must still lead.
+        let content = makeContent(height: 2400)
+        var configuration = ScrollCaptureEngine.Configuration()
+        configuration.maxFrames = 10
+        let engine = ScrollCaptureEngine(
+            area: CaptureArea(cocoaRect: CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(viewport)), displayID: 1),
+            summary: ScrollCaptureTargetSummary(title: "Test", ownerName: nil, frame: nil),
+            initialFrame: window(content, offset: 0), configuration: configuration,
+            captureSample: { throw ScreenCaptureService.CaptureError.protectedContent }, postScroll: { _ in })
+        engine.start()
+        for offset in [700, 1400, 2100] {
+            engine.processSample(window(content, offset: offset))
+            engine.processSample(window(content, offset: offset))
+        }
+        XCTAssertEqual(engine.frames.count, 4, "\(engine.debugEvents)")
+        let document = try await engine.finish()
+        XCTAssertGreaterThanOrEqual(document.captureNotes.count, 4, "\(document.captureNotes)")
+        XCTAssertTrue(document.captureNotes[0].contains("last scroll"), "incomplete capture first: \(document.captureNotes)")
+        XCTAssertTrue(document.captureNotes.dropFirst().allSatisfy { $0.contains("could not be matched") })
+        XCTAssertFalse(document.captureNotes.joined().contains("compaction"), "No developer jargon")
     }
 
     func testStaticContentNeverAppendsAFrame() {
@@ -236,6 +259,34 @@ final class ScrollCaptureEngineTests: XCTestCase {
         engine.processSample(far)
         engine.processSample(far)
         XCTAssertEqual(engine.frames.count, 2, "a settled full-page jump must be appended: \(engine.debugEvents)")
+        XCTAssertEqual(engine.message, "Could not match this section to the previous one. Some content may be missing or repeated; try smaller scrolls, and restart if content was skipped.")
+        XCTAssertEqual(engine.screensCaptured, 2, accuracy: 0.01, "Two stacked frames are two screens")
+    }
+
+    func testHUDTextsDescribeModeExtentAndFrameBudget() {
+        let content = makeContent(height: 1200)
+        var configuration = ScrollCaptureEngine.Configuration()
+        configuration.maxFrames = 4
+        let engine = makeEngine(initialFrame: window(content, offset: 0), configuration: configuration)
+        engine.start()
+        XCTAssertEqual(ScrollCaptureHUDView.extentText(for: engine, compact: false), "1 screen · 300 px tall")
+        XCTAssertEqual(ScrollCaptureHUDView.extentText(for: engine, compact: true), "1 frame · 300 px tall")
+        XCTAssertEqual(ScrollCaptureHUDView.frameCountText(for: engine), "1 of 4 frames")
+        XCTAssertEqual(ScrollCaptureHUDView.finishTitle(for: engine), "Finish")
+        XCTAssertEqual(ScrollCaptureHUDView.frameFraction(for: engine), 0.25)
+        for offset in [90, 180] {
+            engine.processSample(window(content, offset: offset))
+            engine.processSample(window(content, offset: offset))
+        }
+        XCTAssertEqual(engine.frames.count, 3)
+        XCTAssertEqual(engine.screensCaptured, 1.6, accuracy: 0.01)
+        XCTAssertEqual(ScrollCaptureHUDView.extentText(for: engine, compact: false), "≈ 1.6 screens · 480 px tall")
+        XCTAssertEqual(ScrollCaptureHUDView.finishTitle(for: engine), "Finish · Stitch 3")
+        XCTAssertEqual(ScrollCaptureHUDView.frameCountText(for: engine), "3 of 4 frames")
+        XCTAssertTrue(ScrollCaptureHUDView.accessibilitySummary(for: engine).hasPrefix("Manual scrolling. ≈ 1.6 screens"))
+        XCTAssertTrue(ScrollCaptureHUDView.hint.contains("Auto-scroll"))
+        XCTAssertTrue(AnnotationToolbarView.scrollCaptureTooltip.contains("stitched"))
+        XCTAssertEqual(AnnotationToolbarView.scrollCaptureTitle, "Scrolling Capture")
     }
 
     func testFinishDropsTrailingFramesWhenTheOutputWouldBeTooTall() async throws {
@@ -254,7 +305,7 @@ final class ScrollCaptureEngineTests: XCTestCase {
 
         XCTAssertEqual(document.baseImage.height, viewport + 90)
         XCTAssertEqual(document.source.scrollingFrameCount, 2)
-        XCTAssertTrue(document.activeOCRResult?.warnings.contains { $0.contains("left out") } == true)
+        XCTAssertTrue(document.captureNotes.first?.contains("left out") == true, "An incomplete capture is the first note: \(document.captureNotes)")
     }
 
     func testPreviewMatchesTheStitcherWhenTheMeasuredFooterChanges() async throws {
@@ -312,7 +363,7 @@ final class ScrollCaptureEngineTests: XCTestCase {
         }
 
         XCTAssertEqual(engine.frames.count, 3)
-        XCTAssertEqual(engine.message, "Maximum of 3 frames reached. Press Done to stitch.")
+        XCTAssertEqual(engine.message, "Maximum of 3 frames reached. Press Finish to stitch.")
     }
 
     func testFinishStitchesFramesIntoATallerImage() async throws {

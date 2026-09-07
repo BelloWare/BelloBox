@@ -75,11 +75,11 @@ enum ImageStitcher {
             let overlap = match?.overlap ?? 0
             let confidence = match.map { 1 - $0.score } ?? 0
             if match == nil {
-                warnings.append("Frame \(currentEntry.frameIndex + 1) did not have a confident overlap; it was appended without compaction.")
+                warnings.append("Frame \(currentEntry.frameIndex + 1) could not be matched to the frame before it, so the picture may be missing or repeating content at that seam.")
             } else if appearsUnchanged(previous: previous, current: current) {
-                warnings.append("Frame \(currentEntry.frameIndex + 1) appears nearly unchanged from the previous frame.")
+                warnings.append("Frame \(currentEntry.frameIndex + 1) looks almost the same as the frame before it, so it adds little or nothing.")
             } else if overlap > Int(CGFloat(current.height - header - footers[index]) * 0.88) {
-                warnings.append("Frame \(currentEntry.frameIndex + 1) appears nearly unchanged from the previous frame.")
+                warnings.append("Frame \(currentEntry.frameIndex + 1) looks almost the same as the frame before it, so it adds little or nothing.")
             }
 
             // The seam rows are drawn from the current frame rather than the previous one:

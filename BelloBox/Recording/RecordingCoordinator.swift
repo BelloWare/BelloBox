@@ -19,11 +19,17 @@ extension RecordingEngine: RecordingEngineControlling {}
 final class RecordingCoordinator: ObservableObject {
     @Published private(set) var state: RecordingState = .idle
 
+    /// Movie → GIF conversion with progress 0…1; injectable for tests.
+    typealias GIFTranscode = (URL, URL, GIFExportOptions, @escaping GIFTranscoder.Progress) async throws -> GIFExportResult
+
     private let settings: AppSettings
     private let makeEngine: (RecordingTarget, RecordingOptions) -> any RecordingEngineControlling
     private let permissionProvider: (RecordingOptions) -> RecordingPermissionState
+    private let transcodeGIF: GIFTranscode
     private var activeEngine: (any RecordingEngineControlling)?
+    private var activeOptions: RecordingOptions?
     private var finishTask: Task<Void, Never>?
+    private var conversionTask: Task<Void, Never>?
     private var startToken = UUID()
     private var latestSecureFieldHidden = false
 
@@ -34,16 +40,18 @@ final class RecordingCoordinator: ObservableObject {
         makeEngine: @escaping (RecordingTarget, RecordingOptions) -> any RecordingEngineControlling = {
             RecordingEngine(target: $0, options: $1)
         },
-        permissionProvider: @escaping (RecordingOptions) -> RecordingPermissionState = RecordingPermissionState.current(options:)
+        permissionProvider: @escaping (RecordingOptions) -> RecordingPermissionState = RecordingPermissionState.current(options:),
+        transcodeGIF: @escaping GIFTranscode = { try await GIFTranscoder.transcode(sourceURL: $0, to: $1, options: $2, progress: $3) }
     ) {
         self.settings = settings
         self.makeEngine = makeEngine
         self.permissionProvider = permissionProvider
+        self.transcodeGIF = transcodeGIF
     }
 
     var isRecording: Bool {
         switch state {
-        case .recording, .paused, .countingDown, .finishing:
+        case .recording, .paused, .countingDown, .finishing, .convertingToGIF:
             return true
         case .idle, .requestingPermissions, .choosingTarget, .reviewing, .failed:
             return false
@@ -65,8 +73,11 @@ final class RecordingCoordinator: ObservableObject {
         latestSecureFieldHidden = false
         finishTask?.cancel()
         finishTask = nil
+        conversionTask?.cancel()
+        conversionTask = nil
         activeEngine?.cancel()
         activeEngine = nil
+        activeOptions = options
         let permissionState = permissionProvider(options)
         guard permissionState.canRecordVideo else {
             setState(.failed("Screen Recording permission is required to record video."))
@@ -126,6 +137,7 @@ final class RecordingCoordinator: ObservableObject {
                 return
             }
             runtime.isSecureFieldHidden = latestSecureFieldHidden
+            runtime.outputFormat = options.outputFormat
             setState(.recording(runtime))
         } catch {
             guard startToken == token else { return }
@@ -172,12 +184,14 @@ final class RecordingCoordinator: ObservableObject {
 
     func stop() {
         if case .finishing = state { return }
+        if case .convertingToGIF = state { return }
         let token = UUID()
         startToken = token
         guard let engine = activeEngine else {
             setState(.idle)
             return
         }
+        let options = activeOptions
         setState(.finishing)
         finishTask?.cancel()
         finishTask = Task {
@@ -188,7 +202,11 @@ final class RecordingCoordinator: ObservableObject {
                     self.activeEngine = nil
                 }
                 finishTask = nil
-                setState(.reviewing(url))
+                if let options, options.outputFormat == .gif {
+                    convertToGIF(movie: url, options: options.gif, token: token)
+                } else {
+                    setState(.reviewing(url))
+                }
             } catch let RecordingEngineError.recoverableExportFailure(url, message) {
                 guard startToken == token else { return }
                 self.activeEngine = nil
@@ -211,9 +229,50 @@ final class RecordingCoordinator: ObservableObject {
         latestSecureFieldHidden = false
         finishTask?.cancel()
         finishTask = nil
+        conversionTask?.cancel()
+        conversionTask = nil
         activeEngine?.cancel()
         activeEngine = nil
+        activeOptions = nil
         setState(.idle)
+    }
+
+    /// The movie is complete on disk before conversion starts, so this only ever
+    /// decides what the review shows: the GIF, or the movie with a note.
+    private func convertToGIF(movie: URL, options: GIFExportOptions, token: UUID) {
+        setState(.convertingToGIF(progress: 0))
+        let destination = movie.deletingPathExtension().appendingPathExtension("gif")
+        conversionTask?.cancel()
+        conversionTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let reporter = ProgressThrottle()
+                let result = try await self.transcodeGIF(movie, destination, options) { progress in
+                    guard reporter.shouldReport(progress) else { return }
+                    Task { @MainActor [weak self] in
+                        guard let self, self.startToken == token, case .convertingToGIF = self.state else { return }
+                        self.setState(.convertingToGIF(progress: min(max(progress, 0), 1)))
+                    }
+                }
+                guard self.startToken == token else { return }
+                self.conversionTask = nil
+                self.setState(.reviewing(movie, gif: result.url))
+            } catch is CancellationError {
+                guard self.startToken == token else { return }
+                self.conversionTask = nil
+                self.setState(.reviewing(movie, warning: "GIF conversion was cancelled. The movie recording is kept; you can make a GIF from it here."))
+            } catch {
+                guard self.startToken == token else { return }
+                self.conversionTask = nil
+                self.setState(.reviewing(movie, warning: "The GIF could not be written: \(error.localizedDescription) The movie recording is kept."))
+            }
+        }
+    }
+
+    /// Stops writing the GIF and reviews the movie instead. The movie is untouched.
+    func cancelGIFConversion() {
+        guard case .convertingToGIF = state, let task = conversionTask else { return }
+        task.cancel()
     }
 
     private func setState(_ newState: RecordingState) {
@@ -235,5 +294,22 @@ final class RecordingCoordinator: ObservableObject {
         default:
             break
         }
+    }
+}
+
+/// Forwards progress only when it moved by at least a percent (or reached the
+/// end), so thousands of frame callbacks do not become thousands of UI updates.
+final class ProgressThrottle: @unchecked Sendable {
+    private let lock = NSLock()
+    private var last: Double = -1
+    private let step: Double
+
+    init(step: Double = 0.01) { self.step = step }
+
+    func shouldReport(_ progress: Double) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        guard progress >= 1 || progress - last >= step else { return false }
+        last = progress
+        return true
     }
 }

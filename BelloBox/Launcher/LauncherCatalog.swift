@@ -2,7 +2,7 @@ import Foundation
 
 enum LauncherCommand: String, CaseIterable, Identifiable {
     case json, compare, jwt, regex, url, time, cron, convert, snippets, http, generate
-    case ai, screenshot, scrollCapture, recording, worldClock, qr, textTools, settings, home
+    case ai, screenshot, scrollCapture, recording, videoToGIF, worldClock, qr, textTools, settings, home
     var id: String { rawValue }
     var isDeveloperTool: Bool { Self.allCases.firstIndex(of: self)! < Self.allCases.firstIndex(of: .ai)! }
     var title: String {
@@ -22,6 +22,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         case .screenshot: return "Screenshot"
         case .scrollCapture: return "Scrolling Screenshot"
         case .recording: return "Screen Recording"
+        case .videoToGIF: return "Video to GIF"
         case .worldClock: return "World Clock"
         case .qr: return "QR Code"
         case .textTools: return "Text Tools"
@@ -44,8 +45,9 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         case .generate: return "UUIDs, random strings, timestamps, and sample records"
         case .ai: return "Rewrite, explain, summarize, or ask about the selected text"
         case .screenshot: return "Capture an area, window, or screen and annotate"
-        case .scrollCapture: return "Capture a longer page and stitch it into one image"
-        case .recording: return "Record screen, audio, cursor, clicks, and keys"
+        case .scrollCapture: return "Capture a scrolling page and stitch it into one tall image"
+        case .recording: return "Record screen, audio, cursor, clicks, and keys as a movie or GIF"
+        case .videoToGIF: return "Turn a movie on this Mac into a trimmed, resized GIF"
         case .worldClock: return "Compare live time or plan a meeting across locations"
         case .qr: return "Create a scannable code from text or a link"
         case .textTools: return "Case, encode, decode, hashes, lines, and counts"
@@ -70,6 +72,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         case .screenshot: return "camera.viewfinder"
         case .scrollCapture: return "arrow.down.doc"
         case .recording: return "record.circle"
+        case .videoToGIF: return "film.stack"
         case .worldClock: return "globe"
         case .qr: return "qrcode"
         case .textTools: return "wrench.and.screwdriver"
@@ -90,6 +93,8 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         case .snippets: return "template boilerplate saved text variables insert"
         case .http: return "curl request api response rest headers post get endpoint"
         case .generate: return "generate uuid guid random password string test data fixture records"
+        case .videoToGIF: return "gif convert video movie mov mp4 animated export frames"
+        case .recording: return subtitle + " gif movie mov"
         default: return subtitle
         }
     }
@@ -123,7 +128,14 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
                 // selection. Explicit search prefixes still take precedence.
                 if let i = suggested.firstIndex(of: command) { score += 1_000 - i * 200 }
                 if let i = recents.firstIndex(of: command.id) { score += 40 - i }
-                if !query.isEmpty && command.title.lowercased().hasPrefix(query.lowercased()) { score += 10_000 }
+                let title = command.title.lowercased()
+                if !query.isEmpty && title.hasPrefix(query.lowercased()) {
+                    score += 10_000
+                } else if !terms.isEmpty && terms.allSatisfy({ term in title.split(whereSeparator: \.isWhitespace).contains { $0.hasPrefix(term) } || title.contains(term) }) {
+                    // Every term names the tool itself ("gif" → Video to GIF), which
+                    // outranks tools that only mention it in their keywords or subtitle.
+                    score += 5_000
+                }
                 return score
             }
             let a = score(left), b = score(right)

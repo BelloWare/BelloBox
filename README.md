@@ -54,9 +54,12 @@ The floating toolbar and palette also provide:
   **Professional** or **Friendly** tone, **Summarize**, **Explain**, or
   **Translate to English** — one click each.
 - Capture an **area**, **window**, **screen**, or **scrolling page**, then
-  annotate, redact, OCR, copy, or save the result.
+  annotate, mask (opaque colours and patterns), erase parts of annotations,
+  zoom, OCR, copy, or save the result.
 - Start **screen recordings** from the same capture overlay, with configurable
-  audio, cursor, click, keystroke, privacy, countdown, and quality defaults.
+  audio, cursor, click, keystroke, privacy, countdown, and quality defaults,
+  delivered as a movie or a silent GIF. **Video to GIF** converts any movie on
+  your Mac locally.
 - Type your own instruction ("make this a bullet list", "rephrase as a tweet", …).
 - Watch the answer stream in, then **Copy** it or **Replace** the original
   selection in place.

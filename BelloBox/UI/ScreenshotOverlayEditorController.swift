@@ -117,7 +117,7 @@ private struct ScreenshotOverlayDimView: View {
 private struct ScreenshotOverlayEditorView: View {
     private static let toolbarHeight: CGFloat = 54
     private static let toolbarMinimumWidth: CGFloat = 700
-    private static let toolbarMaximumWidth: CGFloat = 920
+    private static let toolbarMaximumWidth: CGFloat = 980
     private static let gap: CGFloat = 10
     private static let inset: CGFloat = 12
 

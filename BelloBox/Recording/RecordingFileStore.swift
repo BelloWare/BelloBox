@@ -8,9 +8,14 @@ enum RecordingFileStore {
         url.standardizedFileURL.resolvingSymlinksInPath()
     }
 
-    static func stagedURL(for destination: URL) -> URL {
-        resolved(destination).deletingLastPathComponent()
-            .appendingPathComponent(".BelloBox-export-\(UUID().uuidString).mov")
+    /// A hidden sibling of the destination on the same volume, so the final rename is
+    /// atomic. The extension follows the destination (or `pathExtension`) so ImageIO
+    /// and AVFoundation pick the right container.
+    static func stagedURL(for destination: URL, pathExtension: String? = nil) -> URL {
+        let resolvedDestination = resolved(destination)
+        let ext = pathExtension ?? (resolvedDestination.pathExtension.isEmpty ? "mov" : resolvedDestination.pathExtension)
+        return resolvedDestination.deletingLastPathComponent()
+            .appendingPathComponent(".BelloBox-export-\(UUID().uuidString).\(ext)")
     }
 
     static func copy(from source: URL, to destination: URL) throws {

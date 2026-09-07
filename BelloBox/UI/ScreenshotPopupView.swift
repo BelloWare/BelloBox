@@ -40,6 +40,35 @@ final class ScreenshotPopupViewModel: ObservableObject {
     @Published var style: AnnotationStyle = .default {
         didSet { updateEditingTextStyle() }
     }
+    /// Style for new masks: an opaque fill plus a pattern. Never translucent.
+    /// A `@Published` observer re-enters on every write, so it only writes back
+    /// when normalization actually changes the value.
+    @Published var maskStyle: AnnotationStyle = .redaction {
+        didSet {
+            let normalized = AnnotationStyle.mask(fill: maskStyle.maskFill, pattern: maskStyle.maskPattern)
+            if maskStyle != normalized { maskStyle = normalized }
+        }
+    }
+    /// Eraser brush diameter in image pixels, clamped to `eraserWidthRange`.
+    @Published var eraserWidth: CGFloat = 24 {
+        didSet {
+            let clamped = Self.clampedEraserWidth(eraserWidth)
+            if eraserWidth != clamped { eraserWidth = clamped }
+        }
+    }
+    static let eraserWidthRange: ClosedRange<CGFloat> = 6...96
+    static func clampedEraserWidth(_ width: CGFloat) -> CGFloat {
+        guard width.isFinite else { return 24 }
+        return min(max(width, eraserWidthRange.lowerBound), eraserWidthRange.upperBound)
+    }
+    /// How the popup editor shows the image. Tall scrolling captures open fitted
+    /// to the width so they read like the page they came from.
+    @Published var zoom: CanvasZoom
+    /// View points per image pixel as actually laid out by the canvas host, so
+    /// zoom steps start from what is on screen and the Fit label stays current.
+    @Published private(set) var displayedScale: CGFloat = 1
+    @Published private(set) var showsCaptureNotes: Bool
+    @Published var showsAllCaptureNotes = false
     @Published var ocrPanel = OCRPanelViewModel()
     @Published var errorMessage: String?
     @Published private(set) var statusMessage: String?
@@ -66,6 +95,11 @@ final class ScreenshotPopupViewModel: ObservableObject {
     private let allowsSelectionAdjustment: Bool
     private var isAdjustingSelection = false
     private var selectionAdjustmentUndoPushed = false
+    private var isErasing = false
+    private var eraserUndoPushed = false
+    private var eraserLastPoint: CGPoint?
+    /// Index of the erasure stroke the current gesture is extending, per annotation.
+    private var eraserStrokeIndices: [UUID: Int] = [:]
 
     var onClose: () -> Void = {}
 
@@ -83,6 +117,8 @@ final class ScreenshotPopupViewModel: ObservableObject {
         self.allowsSelectionAdjustment = allowsSelectionAdjustment
         self.originalAnnotations = document.annotations
         self.originalCropRect = document.cropRect
+        self.zoom = Self.initialZoom(for: document)
+        self.showsCaptureNotes = !document.captureNotes.isEmpty
         if let llmOCRServiceFactory {
             self.makeLLMOCRService = llmOCRServiceFactory
         } else if let llmOCRService {
@@ -168,11 +204,11 @@ final class ScreenshotPopupViewModel: ObservableObject {
     }
 
     var visibleAnnotations: [ScreenshotAnnotation] {
-        document.annotations.compactMap { annotation in
+        let crop = document.cropRect
+        return document.annotations.compactMap { annotation in
             guard annotation.id != editingTextAnnotationID else { return nil }
-            var copy = annotation
-            copy.kind = shiftDocumentKindToVisible(annotation.kind)
-            return copy
+            guard let crop else { return annotation }
+            return annotation.offset(dx: -crop.minX, dy: -crop.minY)
         }
     }
 
@@ -196,7 +232,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         let shifted = shiftVisibleKindToDocument(kind)
         var annotationStyle = style
         if case .highlight = shifted { annotationStyle = .highlight }
-        if case .blur = shifted { annotationStyle = .redaction }
+        if case .blur = shifted { annotationStyle = maskStyle }
         addAnnotation(ScreenshotAnnotation(kind: shifted, style: annotationStyle))
     }
 
@@ -205,19 +241,107 @@ final class ScreenshotPopupViewModel: ObservableObject {
         case .text:
             beginTextAnnotation(atVisiblePoint: visiblePoint)
         case .eraser:
-            eraseAnnotation(atVisiblePoint: visiblePoint)
+            beginErasing()
+            erase(toVisiblePoint: visiblePoint)
+            endErasing()
         default:
             break
         }
     }
 
-    func eraseAnnotation(atVisiblePoint point: CGPoint) {
-        let docPoint = shiftVisiblePointToDocument(point)
-        guard let index = document.annotations.lastIndex(where: { $0.kind.bounds.insetBy(dx: -8, dy: -8).contains(docPoint) }) else { return }
+    // MARK: - Eraser
+
+    /// Starts one eraser gesture. The first change records a single undo step, so
+    /// the whole drag reverts at once; nothing is recorded until something is touched.
+    func beginErasing() {
+        endTextEditing()
+        isErasing = true
+        eraserUndoPushed = false
+        eraserLastPoint = nil
+        eraserStrokeIndices = [:]
+    }
+
+    /// Extends the gesture to `point` (visible-image pixels). Every annotation under the
+    /// brush pass gets an erasure stroke; the screenshot pixels are never changed, and
+    /// annotations drawn later over the same area are unaffected.
+    func erase(toVisiblePoint point: CGPoint) {
+        guard isErasing else { beginErasing(); erase(toVisiblePoint: point); endErasing(); return }
+        let end = shiftVisiblePointToDocument(point)
+        let start = eraserLastPoint ?? end
+        eraserLastPoint = end
+        let radius = eraserWidth / 2
+        var touched = false
+        for index in document.annotations.indices {
+            let annotation = document.annotations[index]
+            guard annotation.id != editingTextAnnotationID,
+                  AnnotationGeometry.brush(from: start, to: end, radius: radius, touches: annotation)
+            else { continue }
+            if !eraserUndoPushed {
+                pushUndo()
+                eraserUndoPushed = true
+            } else {
+                documentRevision += 1
+            }
+            touched = true
+            var erasures = document.annotations[index].erasures
+            if let strokeIndex = eraserStrokeIndices[annotation.id], strokeIndex < erasures.count,
+               erasures[strokeIndex].points.last == start, erasures[strokeIndex].width == eraserWidth {
+                erasures[strokeIndex].points.append(end)
+            } else {
+                erasures.append(EraserStroke(points: start == end ? [end] : [start, end], width: eraserWidth))
+                eraserStrokeIndices[annotation.id] = erasures.count - 1
+            }
+            document.annotations[index].erasures = erasures
+        }
+        if touched { markOCRStale() }
+    }
+
+    /// Ends the gesture. Annotations keep their erasure history; nothing is ever
+    /// removed on the eraser's behalf, so paint outside the brush always survives.
+    func endErasing() {
+        guard isErasing else { return }
+        isErasing = false
+        eraserLastPoint = nil
+        eraserStrokeIndices = [:]
+    }
+
+    /// Whole-object removal, used by tests and by Select-mode deletion.
+    func removeAnnotation(id: UUID) {
+        guard let index = document.annotations.firstIndex(where: { $0.id == id }) else { return }
+        if editingTextAnnotationID == id { editingTextAnnotationID = nil }
         pushUndo()
         document.annotations.remove(at: index)
         markOCRStale()
     }
+
+    // MARK: - Zoom and capture notes
+
+    static func initialZoom(for document: ScreenshotDocument) -> CanvasZoom {
+        let size = document.cropRect?.size ?? document.imageSize
+        let tall = size.height > size.width * 1.6
+        return document.source.scrollingFrameCount > 0 && tall ? .fitWidth : .fit
+    }
+
+    /// Called by the canvas host after it laid out, never during a SwiftUI update.
+    func reportDisplayedScale(_ scale: CGFloat) {
+        guard scale.isFinite, scale > 0, abs(scale - displayedScale) > 0.0005 else { return }
+        displayedScale = scale
+    }
+
+    func zoomIn() { zoom = CanvasZoom.zoomedIn(from: displayedScale) }
+    func zoomOut() { zoom = CanvasZoom.zoomedOut(from: displayedScale) }
+    func zoomToFit() { zoom = .fit }
+    func zoomToFitWidth() { zoom = .fitWidth }
+    func zoomToActualSize() { zoom = .scale(1) }
+
+    var zoomLabel: String {
+        switch zoom {
+        case .scale: return zoom.label
+        case .fit, .fitWidth: return "\(Int((displayedScale * 100).rounded()))% · \(zoom.label)"
+        }
+    }
+
+    func dismissCaptureNotes() { showsCaptureNotes = false }
 
     func applyVisibleCrop(_ rect: CGRect) {
         let docRect = shiftVisibleRectToDocument(rect).intersection(CGRect(origin: .zero, size: document.imageSize)).integral
@@ -670,7 +794,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
 
     private func moveTextAnnotation(id: UUID, toVisibleOrigin origin: CGPoint, recordUndoIfNeeded: Bool) {
         guard let index = document.annotations.firstIndex(where: { $0.id == id }),
-              case let .text(text, currentOrigin, maxWidth) = document.annotations[index].kind
+              case let .text(_, currentOrigin, maxWidth) = document.annotations[index].kind
         else { return }
         let visibleOrigin = clampedVisibleTextOrigin(
             origin,
@@ -694,10 +818,9 @@ final class ScreenshotPopupViewModel: ObservableObject {
         if !didAdvanceRevision {
             documentRevision += 1
         }
-        document.annotations[index].kind = .text(
-            text,
-            origin: documentOrigin,
-            maxWidth: maxWidth
+        document.annotations[index] = document.annotations[index].offset(
+            dx: documentOrigin.x - currentOrigin.x,
+            dy: documentOrigin.y - currentOrigin.y
         )
         markOCRStale()
     }
@@ -772,23 +895,6 @@ final class ScreenshotPopupViewModel: ObservableObject {
         }
     }
 
-    private func shiftDocumentKindToVisible(_ kind: AnnotationKind) -> AnnotationKind {
-        switch kind {
-        case let .freehand(points):
-            return .freehand(points: points.map(shiftDocumentPointToVisible))
-        case let .arrow(start, end):
-            return .arrow(start: shiftDocumentPointToVisible(start), end: shiftDocumentPointToVisible(end))
-        case let .rectangle(rect):
-            return .rectangle(shiftDocumentRectToVisible(rect))
-        case let .highlight(rect):
-            return .highlight(shiftDocumentRectToVisible(rect))
-        case let .text(text, origin, maxWidth):
-            return .text(text, origin: shiftDocumentPointToVisible(origin), maxWidth: maxWidth)
-        case let .blur(rect):
-            return .blur(shiftDocumentRectToVisible(rect))
-        }
-    }
-
     private func shiftVisiblePointToDocument(_ point: CGPoint) -> CGPoint {
         guard let crop = document.cropRect else { return point }
         return CGPoint(x: point.x + crop.minX, y: point.y + crop.minY)
@@ -804,10 +910,6 @@ final class ScreenshotPopupViewModel: ObservableObject {
         return rect.offsetBy(dx: crop.minX, dy: crop.minY).standardized
     }
 
-    private func shiftDocumentRectToVisible(_ rect: CGRect) -> CGRect {
-        guard let crop = document.cropRect else { return rect.standardized }
-        return rect.offsetBy(dx: -crop.minX, dy: -crop.minY).standardized
-    }
 }
 
 struct ScreenshotPopupView: View {
@@ -830,8 +932,12 @@ struct ScreenshotPopupView: View {
 
                 AnnotationToolbarView(viewModel: viewModel)
 
+                if viewModel.showsCaptureNotes, !viewModel.document.captureNotes.isEmpty {
+                    captureNotes
+                }
+
                 HStack(alignment: .top, spacing: 12) {
-                    AnnotationCanvasView(viewModel: viewModel)
+                    ZoomableAnnotationCanvas(viewModel: viewModel)
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.primary.opacity(0.08), lineWidth: 1))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -867,6 +973,52 @@ struct ScreenshotPopupView: View {
         }
     }
 
+    /// Notes from the capture itself (a scrolling frame without overlap, frames
+    /// left out), where the user reviews the result rather than in the text reader.
+    /// Every note stays reachable: two are shown inline, the rest behind "Show all",
+    /// which lists them in a bounded scrolling area. The engine puts notes about an
+    /// incomplete capture first, so they are always among the visible two.
+    private var captureNotes: some View {
+        CaptureNotesBanner(
+            title: viewModel.document.source.scrollingFrameCount > 0
+                ? "Scrolling capture · \(viewModel.document.source.scrollingFrameCount) frames"
+                : "About this capture",
+            notes: viewModel.document.captureNotes,
+            showsAll: $viewModel.showsAllCaptureNotes,
+            onDismiss: viewModel.dismissCaptureNotes
+        )
+    }
+
+    private var zoomControls: some View {
+        HStack(spacing: 4) {
+            Button { viewModel.zoomOut() } label: { Image(systemName: "minus.magnifyingglass") }
+                .buttonStyle(SecondaryButtonStyle())
+                .keyboardShortcut("-", modifiers: .command)
+                .accessibilityLabel("Zoom out")
+                .help("Zoom out (⌘−)")
+            Menu {
+                Button("Fit", action: viewModel.zoomToFit).keyboardShortcut("9", modifiers: .command)
+                Button("Fit Width", action: viewModel.zoomToFitWidth)
+                Button("Actual Size", action: viewModel.zoomToActualSize).keyboardShortcut("0", modifiers: .command)
+                Divider()
+                ForEach(CanvasZoom.steps, id: \.self) { step in
+                    Button("\(Int(step * 100))%") { viewModel.zoom = .scale(step) }
+                }
+            } label: {
+                Text(viewModel.zoomLabel).font(.caption.monospacedDigit()).frame(minWidth: 88)
+            }
+            .menuStyle(.borderlessButton).fixedSize()
+            .accessibilityLabel("Zoom")
+            .accessibilityValue(viewModel.zoomLabel)
+            .help("Fit (⌘9), Actual Size (⌘0), or a magnification. Scroll to pan.")
+            Button { viewModel.zoomIn() } label: { Image(systemName: "plus.magnifyingglass") }
+                .buttonStyle(SecondaryButtonStyle())
+                .keyboardShortcut("=", modifiers: .command)
+                .accessibilityLabel("Zoom in")
+                .help("Zoom in (⌘+)")
+        }
+    }
+
     private var footer: some View {
         HStack(spacing: 10) {
             Button {
@@ -877,6 +1029,7 @@ struct ScreenshotPopupView: View {
             .buttonStyle(SecondaryButtonStyle())
             .keyboardShortcut("o", modifiers: [.command, .option])
             .help("Show or hide the text reader (⌥⌘O)")
+            zoomControls
             if let message = viewModel.errorMessage ?? viewModel.statusMessage {
                 Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                     .font(.caption)
@@ -905,7 +1058,7 @@ struct ScreenshotPopupView: View {
         case .display:
             return "Screen capture"
         case let .scrolling(_, frameCount):
-            return "Scrolling capture · \(frameCount) frames"
+            return "Scrolling capture · \(frameCount) frame\(frameCount == 1 ? "" : "s")"
         case .importedClipboard:
             return "Clipboard image"
         }
@@ -958,4 +1111,167 @@ private struct LLMOCRConfirmationView: View {
         .popupCard()
         .shadow(radius: 20)
     }
+}
+
+/// The capture notes card. `CaptureNotesBanner.inlineCount` notes are always
+/// visible; "Show all" reveals the rest in a scrolling list capped in height.
+struct CaptureNotesBanner: View {
+    static let inlineCount = 2
+    static let expandedMaxHeight: CGFloat = 132
+
+    var title: String
+    var notes: [String]
+    @Binding var showsAll: Bool
+    var onDismiss: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "info.circle.fill").foregroundStyle(BoxTheme.warning).padding(.top, 1)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    Text(title).font(.caption.weight(.semibold))
+                    if notes.count > Self.inlineCount {
+                        Text("\(notes.count) notes").font(.caption2).foregroundStyle(.secondary)
+                    }
+                }
+                if showsAll {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 5) {
+                            ForEach(Array(notes.enumerated()), id: \.offset) { _, note in
+                                Text(note).font(.caption).foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                    }
+                    .frame(maxHeight: Self.expandedMaxHeight)
+                    .accessibilityIdentifier("captureNotesAll")
+                } else {
+                    ForEach(Array(notes.prefix(Self.inlineCount).enumerated()), id: \.offset) { _, note in
+                        Text(note).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                if notes.count > Self.inlineCount {
+                    Button(showsAll ? "Show fewer" : "Show all \(notes.count) notes") {
+                        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { showsAll.toggle() }
+                    }
+                    .buttonStyle(.link).font(.caption)
+                    .accessibilityIdentifier("captureNotesToggle")
+                }
+            }
+            Spacer(minLength: 8)
+            Button("Dismiss", action: onDismiss)
+                .buttonStyle(.link).font(.caption)
+                .accessibilityLabel("Dismiss capture notes")
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(BoxTheme.warning.opacity(0.10), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Capture notes")
+        .accessibilityValue(notes.joined(separator: ". "))
+    }
+}
+
+/// Hosts the canvas in an `NSScrollView` sized for the current zoom. The render
+/// scale is explicit: "Fit" and "Fit Width" are computed from the real clip size
+/// (legacy scrollers deducted), magnifications are applied literally, and the
+/// document is padded to the viewport only for centring, which never changes
+/// the magnification. The scale actually laid out is reported back so zoom
+/// steps and the Fit label follow what is on screen.
+struct ZoomableAnnotationCanvas: NSViewRepresentable {
+    @ObservedObject var viewModel: ScreenshotPopupViewModel
+
+    func makeNSView(context: Context) -> ZoomableCanvasScrollView {
+        ZoomableCanvasScrollView(viewModel: viewModel)
+    }
+
+    func updateNSView(_ view: ZoomableCanvasScrollView, context: Context) {
+        view.apply(zoom: viewModel.zoom, imageSize: viewModel.visibleImageSize)
+    }
+}
+
+final class ZoomableCanvasScrollView: NSScrollView {
+    private let viewModel: ScreenshotPopupViewModel
+    private let hosting: NSHostingView<AnnotationCanvasView>
+    private let document = FlippedDocumentView()
+    private var zoom: CanvasZoom = .fit
+    private var imageSize: CGSize = .zero
+    private var laidOut: (bounds: CGSize, zoom: CanvasZoom, image: CGSize)?
+    /// The scale the document is currently laid out at (0 until the first layout).
+    private(set) var renderScale: CGFloat = 0
+
+    init(viewModel: ScreenshotPopupViewModel) {
+        self.viewModel = viewModel
+        hosting = NSHostingView(rootView: AnnotationCanvasView(viewModel: viewModel, renderScale: 1))
+        super.init(frame: .zero)
+        hasVerticalScroller = true
+        hasHorizontalScroller = true
+        autohidesScrollers = true
+        borderType = .noBorder
+        drawsBackground = false
+        hosting.autoresizingMask = [.width, .height]
+        document.addSubview(hosting)
+        documentView = document
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    func apply(zoom: CanvasZoom, imageSize: CGSize) {
+        self.zoom = zoom
+        self.imageSize = imageSize
+        relayout()
+    }
+
+    override func layout() {
+        super.layout()
+        relayout()
+    }
+
+    /// The viewport the image can use for `zoom`, deducting legacy scrollers when
+    /// the content will overflow that axis.
+    static func availableSize(bounds: CGSize, zoom: CanvasZoom, imageSize: CGSize, legacyScrollerWidth: CGFloat) -> CGSize {
+        var available = bounds
+        guard legacyScrollerWidth > 0, imageSize.width > 0, imageSize.height > 0 else { return available }
+        let first = zoom.scale(imageSize: imageSize, available: available)
+        if imageSize.height * first > available.height + 0.5 { available.width = max(1, available.width - legacyScrollerWidth) }
+        let second = zoom.scale(imageSize: imageSize, available: available)
+        if imageSize.width * second > available.width + 0.5 { available.height = max(1, available.height - legacyScrollerWidth) }
+        return available
+    }
+
+    private func relayout() {
+        let full = bounds.size
+        guard full.width > 0, full.height > 0, imageSize.width > 0, imageSize.height > 0 else { return }
+        if let laidOut, laidOut.bounds == full, laidOut.zoom == zoom, laidOut.image == imageSize { return }
+        let legacy = scrollerStyle == .legacy ? NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy) : 0
+        let available = Self.availableSize(bounds: full, zoom: zoom, imageSize: imageSize, legacyScrollerWidth: legacy)
+        let scale = zoom.scale(imageSize: imageSize, available: available)
+        let content = zoom.contentSize(imageSize: imageSize, available: available)
+        // Keep the point at the centre of the viewport where it was, in image terms.
+        let visible = contentView.bounds
+        let previous = document.frame.size
+        let centre = previous.width > 0 && previous.height > 0
+            ? CGPoint(x: visible.midX / previous.width, y: visible.midY / previous.height)
+            : CGPoint(x: 0.5, y: 0)
+        hosting.rootView = AnnotationCanvasView(viewModel: viewModel, renderScale: scale)
+        document.frame = CGRect(origin: .zero, size: content)
+        hosting.frame = document.bounds
+        laidOut = (full, zoom, imageSize)
+        renderScale = scale
+        let clip = contentView.bounds.size
+        let target = CGPoint(x: min(max(0, centre.x * content.width - clip.width / 2), max(0, content.width - clip.width)),
+                             y: min(max(0, centre.y * content.height - clip.height / 2), max(0, content.height - clip.height)))
+        contentView.scroll(to: target)
+        reflectScrolledClipView(contentView)
+        let viewModel = self.viewModel
+        DispatchQueue.main.async { viewModel.reportDisplayedScale(scale) }
+    }
+}
+
+/// A flipped document view so a tall image starts at its top, like a page.
+final class FlippedDocumentView: NSView {
+    override var isFlipped: Bool { true }
 }

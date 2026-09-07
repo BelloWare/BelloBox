@@ -11,7 +11,7 @@ enum HomeCategory: String, CaseIterable, Identifiable {
         switch self {
         case .overview: return [.screenshot, .recording, .worldClock, .json, .textTools, .qr, .ai, .snippets, .compare]
         case .developer: return LauncherCommand.allCases.filter(\.isDeveloperTool)
-        case .capture: return [.screenshot, .scrollCapture, .recording]
+        case .capture: return [.screenshot, .scrollCapture, .recording, .videoToGIF]
         case .text: return [.ai, .textTools, .qr, .worldClock, .snippets, .compare]
         }
     }
@@ -133,7 +133,7 @@ struct MainView: View {
                 Image(systemName: "magnifyingglass").font(.system(size: 16)).foregroundStyle(BoxTheme.accent)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Search all tools and commands").font(.system(size: 13, weight: .medium))
-                    Text("20 commands. One place to start.").font(.system(size: 10)).foregroundStyle(.secondary)
+                    Text("\(LauncherCommand.allCases.count) commands. One place to start.").font(.system(size: 10)).foregroundStyle(.secondary)
                 }
                 Spacer()
                 ShortcutBadge(text: settings.globalHotkeyEnabled ? settings.globalHotkey.displayString : "Open")
@@ -162,6 +162,7 @@ struct MainView: View {
         case .screenshot: return "mainScreenshotButton"
         case .scrollCapture: return "mainScrollButton"
         case .recording: return "mainRecordingButton"
+        case .videoToGIF: return "mainVideoToGIFButton"
         case .worldClock: return "mainWorldClockButton"
         case .qr: return "mainQRButton"
         case .textTools: return "mainTextToolsButton"

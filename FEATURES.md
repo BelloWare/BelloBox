@@ -107,8 +107,21 @@ categories offer **Copy** and **Replace**.
 
 Capture an **area**, **window**, **screen**, or **scrolling page**. Bello Box
 opens the image in an annotation editor with pen, arrows, rectangles,
-highlights, text labels, crop, blur/redaction, undo/redo, OCR, copy image, and
-save PNG.
+highlights, text labels, crop, masks, an eraser, undo/redo, OCR, copy image,
+and save PNG.
+
+- **Mask** hides content behind an opaque fill. Pick charcoal, black, white,
+  orange, teal or plum (or any custom colour) and a solid, striped or dotted
+  finish; whatever you choose, the export and OCR upload never let the pixels
+  underneath show through.
+- **Eraser** is a brush: drag it over part of an arrow, line, shape, label or
+  mask and only that part disappears, revealing the screenshot beneath. One
+  drag is one undo step; annotations drawn afterwards over the erased spot are
+  untouched; nothing outside the brush is ever removed. To delete a whole
+  label, right-click it.
+- **Zoom** in the editor window: Fit, Fit Width, Actual Size (⌘0), Fit (⌘9),
+  ⌘+/⌘− steps, and scrolling to pan. Tall scrolling captures open fitted to
+  the width so they read like the page.
 
 For area, window, and screen captures the displays are frozen the moment you
 trigger the capture, before the dim overlay appears, so hover-only UI such as
@@ -125,17 +138,18 @@ covered part is filled in. Scroll-to-capture samples the live content.
 - **Window** — hover a window to highlight it, then click to capture it.
 - **Screen** — click blank space to capture the display; the selection handles
   work here too.
-- **Scroll to capture more** — after an area or window capture, press the
-  scroll button in the editor toolbar (or start from Screenshot → Scrolling).
-  The selection turns live: scroll the content yourself or press Auto-scroll,
-  and Bello Box captures a frame each time the content settles while a small
-  preview beside the frame shows the screenshot growing; pressing Done
-  stitches the frames into one long screenshot, removing duplicated overlap.
-  Every control in the capture overlay explains itself with a tooltip on
-  hover. Bars that stay fixed at the top or bottom of the area (browser
-  chrome, status or input bars) are recognised and kept once, and the content
-  hidden under a bottom bar is filled in from the next frame. Cancel returns
-  to the editor.
+- **Scrolling Capture** — after an area or window capture, press
+  **Scrolling Capture** in the editor toolbar (or start from Screenshot →
+  Scrolling). The selection turns live and a card beside it shows which mode
+  is active (**Manual**: you scroll inside the orange frame; **Auto-scroll**:
+  Bello Box scrolls until the content ends), how much is captured (screens,
+  pixel height, frames used of the maximum) and a preview of the stitched
+  result growing. It warns when a jump skipped more than a screen. **Finish**
+  stitches the frames into one tall screenshot (duplicated overlap removed,
+  fixed headers and footers kept once) and opens it in the editor, fitted to
+  the width and with any capture notes shown above the image; **Cancel**
+  returns to the editor with the original capture. Every control explains
+  itself with a tooltip.
 
 **OCR:**
 - **Mac OCR** uses Apple Vision locally and works offline.
@@ -156,11 +170,22 @@ Start a screen recording from the toolbar, capture chooser, menu bar, or global
 recording shortcut.
 
 - Capture an **area**, **window**, or **screen**.
+- Choose the output: a **Movie** (.mov with audio) or a **GIF** (silent; the
+  movie is kept too). GIF frame rate, longest edge and looping are set before
+  recording; trimming happens afterwards. Loop off writes a GIF that plays
+  once in browsers and viewers; loop on repeats forever.
 - Choose no audio, microphone, Mac audio, or mic + Mac audio.
 - Configure cursor, click rings, keystroke overlays, secure-field redaction,
-  countdown, quality, and whether Bello Box windows are excluded.
-- Pause/resume or stop from the recording HUD; review the movie afterward to
-  save, copy, reveal, or discard it.
+  countdown, quality, and whether Bello Box windows are excluded, all on one
+  compact card.
+- Pause/resume, change click/key tracking, or stop from the recording HUD
+  (which shows a GIF badge in GIF mode); review the movie or the GIF
+  afterwards to save, copy, reveal, or discard it. **Make GIF…** in the review
+  turns any recording into a GIF with your own clip, frame rate and width.
+- **Video to GIF** (palette, Home → Capture, menu bar) converts a movie you
+  choose from disk. Everything is decoded and written locally; progress is
+  real, cancelling writes nothing, and an existing file is only replaced once
+  the new GIF is complete.
 
 ---
 
@@ -198,7 +223,8 @@ The ✨ menu-bar icon gives you:
 - **Open Bello Box** (the home window)
 - **Ask Bello Box About Selection**, **Capture Screenshot…**,
   **Capture Scrolling Screenshot…**, **Record Screen…**, **Stop Recording**,
-  **Generate QR Code from Selection**, and **Text Tools on Selection**
+  **Convert Video to GIF…**, **Generate QR Code from Selection**, and
+  **Text Tools on Selection**
 - **Set Up Bello Box…**, **Settings…**
 - **Check for Updates…**
 - **Quit**

@@ -149,6 +149,12 @@ final class ScrollCaptureEngine: ObservableObject {
     /// Full-resolution rows the preview currently represents.
     var previewRowCount: Int { previewPieces.reduce(0) { $0 + $1.rowCount } }
 
+    /// How many selection heights have been captured so far (1 = the first frame).
+    var screensCaptured: Double {
+        guard let height = frames.first?.height, height > 0 else { return 0 }
+        return Double(previewRowCount) / Double(height)
+    }
+
     /// Production wiring: samples only the selected region and scrolls with synthetic
     /// wheel events posted at the centre of the area.
     convenience init(
@@ -258,10 +264,14 @@ final class ScrollCaptureEngine: ObservableObject {
                         stitchTask.cancel()
                     }
                     try checkFinishing(token)
-                    if let finalSampleWarning { result.warnings.append(finalSampleWarning) }
+                    // Notes about an incomplete capture come first so they are always
+                    // among the notes the editor shows without expanding.
+                    var incomplete: [String] = []
                     if droppedFrames > 0 {
-                        result.warnings.append("The last \(droppedFrames) frame\(droppedFrames == 1 ? " was" : "s were") left out to keep the screenshot within the maximum height.")
+                        incomplete.append("The last \(droppedFrames) frame\(droppedFrames == 1 ? " was" : "s were") left out to keep the screenshot within the maximum height.")
                     }
+                    if let finalSampleWarning { incomplete.append(finalSampleWarning) }
+                    result.warnings = incomplete + result.warnings
 #if DEBUG
                     debugLastPlacements = result.placements
 #endif
@@ -397,6 +407,12 @@ final class ScrollCaptureEngine: ObservableObject {
         let slack = match == nil ? 0 : min(ImageStitcher.seamSlackRows, overlap)
         append(sample, croppedTop: header + overlap - slack, trimmingPreviousBottom: match == nil ? 0 : previousFooter + slack)
         lastAppendedFooter = footer
+        if match == nil, message == nil {
+            // A jump of more than a screen, or content that changed in place: the frame
+            // cannot be joined to the previous one, so say so now rather than only in
+            // the stitched result.
+            message = "Could not match this section to the previous one. Some content may be missing or repeated; try smaller scrolls, and restart if content was skipped."
+        }
     }
 
     private func append(_ frame: CGImage, croppedTop: Int, trimmingPreviousBottom: Int) {
@@ -406,7 +422,7 @@ final class ScrollCaptureEngine: ObservableObject {
         trace("append#\(frames.count)")
         message = nil
         if frames.count >= configuration.maxFrames {
-            message = "Maximum of \(configuration.maxFrames) frames reached. Press Done to stitch."
+            message = "Maximum of \(configuration.maxFrames) frames reached. Press Finish to stitch."
             stopAutoScroll()
             samplingTask?.cancel()
             samplingTask = nil
@@ -521,7 +537,7 @@ final class ScrollCaptureEngine: ObservableObject {
                 guard !Task.isCancelled, self.autoScrollToken == token else { return }
                 self.trace("end")
                 self.reachedEnd = true
-                self.message = "Reached the end of the content. Press Done to stitch."
+                self.message = "Reached the end of the content. Press Finish to stitch."
                 break
             }
             guard self.autoScrollToken == token else { return }
@@ -607,31 +623,20 @@ final class ScrollCaptureEngine: ObservableObject {
         event.post(tap: .cghidEventTap)
     }
 
+    /// Stitch warnings travel as capture notes, which the editor shows above the
+    /// image, rather than as a fake OCR result hidden in the text reader.
     nonisolated static func makeDocument(
         from result: StitchResult,
         target: ScrollCaptureTargetSummary,
         frameCount: Int,
         createdAt: Date = Date()
     ) -> ScreenshotDocument {
-        let warningResult = result.warnings.isEmpty ? nil : OCRResult(
-            id: UUID(),
-            engine: .appleVision(revision: nil, recognitionLevel: .accurate),
-            target: .fullImage,
-            plainText: "",
-            markdownText: nil,
-            regions: [],
-            languageHints: [],
-            imageDigest: "",
-            warnings: result.warnings,
-            createdAt: createdAt
-        )
-        return ScreenshotDocument(
+        ScreenshotDocument(
             baseImage: result.image,
             scale: 1,
             source: .scrolling(target: target, frameCount: frameCount),
-            ocrResults: warningResult.map { [$0] } ?? [],
-            activeOCRResultID: warningResult?.id,
-            createdAt: createdAt
+            createdAt: createdAt,
+            captureNotes: result.warnings
         )
     }
 }
