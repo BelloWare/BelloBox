@@ -228,6 +228,7 @@ final class SelectionOverlayController: NSObject {
     func triggerOnCurrentSelection() {
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
         guard let selection = nonEmpty(currentSelection()) else { NSSound.beep(); return }
+        rememberToolbarChoice(.ai, selection: selection)
         hideToolbar()
         showAIPopup(for: selection)
     }
@@ -370,17 +371,20 @@ final class SelectionOverlayController: NSObject {
 
     private func activateAI() {
         guard let selection = pendingSelection else { return }
+        rememberToolbarChoice(.ai, selection: selection)
         hideToolbar()
         showAIPopup(for: selection)
     }
 
     private func activateScreenshot() {
+        if let selection = pendingSelection { rememberToolbarChoice(.screenshot, selection: selection) }
         let anchor = pendingSelection?.anchorRect
         hideToolbar(animated: false)
         beginUnifiedScreenshotCapture(anchorRect: anchor)
     }
 
     private func activateRecording() {
+        if let selection = pendingSelection { rememberToolbarChoice(.recording, selection: selection) }
         let anchor = pendingSelection?.anchorRect
         hideToolbar(animated: false)
         beginUnifiedRecordingCapture(anchorRect: anchor)
@@ -388,19 +392,26 @@ final class SelectionOverlayController: NSObject {
 
     private func activateQR() {
         guard let selection = pendingSelection else { return }
+        rememberToolbarChoice(.qr, selection: selection)
         hideToolbar()
         showQRPopup(for: selection)
     }
 
     private func activateTools() {
         guard let selection = pendingSelection else { return }
+        rememberToolbarChoice(.textTools, selection: selection)
         hideToolbar()
         showTextToolsPopup(for: selection)
     }
 
     private func activateWorldClock(at date: Date) {
+        if let selection = pendingSelection { rememberToolbarChoice(.worldClock, selection: selection) }
         hideToolbar()
         openWorldClock(WorldClockHandoff(instant: date))
+    }
+
+    private func rememberToolbarChoice(_ command: LauncherCommand, selection: TextSelection) {
+        LauncherUsageStore().record(command, kind: LauncherSelectionContext(text: selection.text).contentKind)
     }
 
     private func updateToolbarTooltip(_ text: String?) {
@@ -477,8 +488,9 @@ final class SelectionOverlayController: NSObject {
             view,
             size: ActionPopupView.preferredSize,
             anchorRect: selection.anchorRect,
+            centered: true,
             minimizedIcon: "wand.and.stars",
-            minimizedTitle: "Bello Box",
+            minimizedTitle: "Ask AI",
             onDismiss: { viewModel.cancel() },
             minimizedSubtitle: { viewModel.providerSummary }
         )
@@ -2227,6 +2239,7 @@ final class SelectionOverlayController: NSObject {
         _ view: V,
         size: CGSize,
         anchorRect: CGRect?,
+        centered: Bool = false,
         minimizedIcon: String,
         minimizedTitle: String,
         onDismiss: (() -> Void)? = nil,
@@ -2234,19 +2247,20 @@ final class SelectionOverlayController: NSObject {
         minimizedSubtitle: @escaping () -> String? = { nil }
     ) {
         hidePopup(runDismissAction: runExistingDismissAction)
-        let origin = ScreenPlacement.popupOrigin(
-            anchorRect: anchorRect,
-            mouse: NSEvent.mouseLocation,
-            size: size
-        )
-        let panel = PopupPanel(contentRect: CGRect(origin: origin, size: size))
+        let mouse = NSEvent.mouseLocation
+        let reference = anchorRect.map { CGPoint(x: $0.midX, y: $0.midY) } ?? mouse
+        let frame = centered
+            ? ScreenPlacement.centeredFrame(size: size, visibleFrame: ScreenPlacement.screen(containing: reference).visibleFrame)
+            : CGRect(origin: ScreenPlacement.popupOrigin(anchorRect: anchorRect, mouse: mouse, size: size), size: size)
+        let panel = PopupPanel(contentRect: frame)
+        panel.title = minimizedTitle
         let hosting = NSHostingView(rootView: view)
         panel.contentView = hosting
-        panel.setFrameOrigin(origin)
+        panel.setFrame(frame, display: false)
         panel.makeKeyAndOrderFront(nil)
         popupPanel = panel
         popupFullContentView = hosting
-        popupFullSize = size
+        popupFullSize = frame.size
         popupIsMinimized = false
         popupMinimizedIcon = minimizedIcon
         popupMinimizedTitle = minimizedTitle

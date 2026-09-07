@@ -12,16 +12,22 @@ or **Esc** to go back and close. The compact palette focuses search immediately
 and dismisses when you click elsewhere. Drafts survive tool switching until the
 palette is closed; recent commands remember tool names only.
 
+Tool suggestions learn from what you open for similar text. Repeated choices
+can become the default for JSON, timestamps, links, and other text categories;
+explicit searches still take priority. Older preferences gradually fade.
+Learning stores only tool/category IDs, bounded weights, and usage times on
+this Mac. Reset it from **Settings → General → Tool Suggestions**.
+
 With selected text, the best match is selected automatically and expands into
 a preview: JSON and tabular data show a formatted excerpt, URLs and cURL show
 their structure, JWTs show decoded content with an unverified-signature
 warning, cron shows upcoming runs, and plain text shows counts. Press
-**Return** to open the full tool. Searching returns to the compact list;
-clearing search restores the cached preview. Preview generation runs locally
+**Return** to open the full tool. **↑/↓** expand the focused command and collapse
+the previous row, including when searching. Preview generation runs locally
 in the background and never sends requests or changes the selected text.
 Window and selection transitions honor macOS **Reduce Motion**.
 
-A selected timestamp expands into a working World Clock planner: drag the
+A selected timestamp initially suggests a working World Clock planner: drag the
 timeline, scroll sideways over it for 15-minute steps, use **←/→** while the
 search field is empty (**⌥** for an hour, **⇧** for a day), or step days with
 the arrows, and up to four locations update together with day-change badges.
@@ -41,6 +47,10 @@ controls and color-coded icons in both themes. Choose **System**, **Light**, or
 **Dark** in Settings → General. Theme previews show each option, and changes
 apply to windows that are already open. Shared accent and status text colors
 are checked for contrast on both themes.
+Home and Settings show the actual orange toolbox icon. World Clock shares
+Home's standard native window controls. **Ask AI** opens centered on the
+relevant display with its instruction field focused, and scrolls to keep
+content accessible on smaller screens.
 
 Long selections show a short preview and a character count while keeping the
 complete input, up to 500 KB. Above 64 KB, rich parsing is deferred until the

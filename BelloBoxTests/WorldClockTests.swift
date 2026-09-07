@@ -793,6 +793,16 @@ final class WorldClockTests: XCTestCase {
     @MainActor
     func testWorldClockPanelStaysVisibleAcrossSpacesAndAppDeactivation() {
         let panel = WorldClockPanel(contentViewController: NSViewController())
+        let home = NSWindow(contentViewController: NSViewController())
+        AppWindowChrome.apply(to: home, title: "Bello Box")
+        defer { panel.close(); home.close() }
+
+        XCTAssertFalse(panel.styleMask.contains(.utilityWindow))
+        XCTAssertEqual(panel.styleMask, home.styleMask)
+        for button in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
+            XCTAssertNotNil(panel.standardWindowButton(button))
+            XCTAssertEqual(panel.standardWindowButton(button)?.frame.size, home.standardWindowButton(button)?.frame.size)
+        }
 
         XCTAssertTrue(panel.isFloatingPanel)
         XCTAssertEqual(panel.level, .floating)

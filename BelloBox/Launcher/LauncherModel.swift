@@ -52,6 +52,9 @@ final class LauncherModel: ObservableObject {
     @Published var workbench: UtilityWorkbenchModel?
     @Published private(set) var favorites: Set<String>
     @Published private(set) var recents: [String]
+    /// Snapshot for this selection: opening a tool teaches the next palette,
+    /// without moving the rows while someone is navigating the current one.
+    private var learnedScores: [String: Int] = [:]
     var onCommand: (LauncherCommand, TextSelection, LauncherCommandContext) -> Void = { _, _, _ in }
     var onClose: () -> Void = {}
     var onPresentationChange: () -> Void = {}
@@ -81,6 +84,7 @@ final class LauncherModel: ObservableObject {
         self.previewBuilder = previewBuilder
         favorites = Set(defaults.stringArray(forKey: "launcherFavorites") ?? ["json", "compare", "screenshot", "worldClock"])
         recents = defaults.stringArray(forKey: "launcherRecents") ?? []
+        learnedScores = LauncherUsageStore(defaults: defaults).scores(for: context.contentKind)
         selectedID = commands.first?.id
         lastReportedHeight = paletteSize.height
         ensurePreviewForSelection()
@@ -88,14 +92,14 @@ final class LauncherModel: ObservableObject {
     deinit { previewTask?.cancel() }
     var suggestions: [LauncherCommand] { context.suggestions }
     var commands: [LauncherCommand] {
-        LauncherCommand.search(query, input: "", favorites: favorites, recents: recents, suggested: suggestions)
+        LauncherCommand.search(query, input: "", favorites: favorites, recents: recents, suggested: suggestions, learnedScores: learnedScores)
     }
     var selectedCommand: LauncherCommand? { commands.first { $0.id == selectedID } }
     /// The top interpretation of the selection, labelled "Best match" while the
     /// search is empty. It does not move with the focus.
     var bestMatch: LauncherCommand? {
         guard query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, context.hasText, !context.exceedsLimit else { return nil }
-        return suggestions.first
+        return commands.first
     }
     /// The row that shows its preview: the focused command.
     var expandedCommand: LauncherCommand? { selectedCommand }
@@ -138,6 +142,7 @@ final class LauncherModel: ObservableObject {
         workbench = nil
         workbenches = [:]
         context = LauncherSelectionContext(text: selection.text)
+        learnedScores = LauncherUsageStore(defaults: defaults).scores(for: context.contentKind)
         self.selection = context.usableSelection(selection)
         contextMessage = nil
         query = ""
@@ -245,6 +250,7 @@ final class LauncherModel: ObservableObject {
     func openSelected() { if let command = selectedCommand ?? commands.first { open(command) } }
     func open(_ command: LauncherCommand) {
         selectedID = command.id
+        LauncherUsageStore(defaults: defaults).record(command, kind: context.contentKind)
         recents = [command.id] + recents.filter { $0 != command.id }.prefix(7)
         defaults.set(recents, forKey: "launcherRecents")
         if command.isDeveloperTool {

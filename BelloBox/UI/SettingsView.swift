@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var microphonePermission = MicrophonePermission.status()
     @State private var inputMonitoringPermission = InputMonitoringPermission.status()
     @State private var diagnosticsExportMessage: String?
+    @State private var learnedOrderReset = false
     private let permissionTimer = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -41,7 +42,7 @@ struct SettingsView: View {
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
-                ToolBadge(symbol: "shippingbox.fill")
+                AppBrandIcon()
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Bello Box").font(.headline)
                     Text("Settings").font(.caption).foregroundStyle(.secondary)
@@ -133,6 +134,18 @@ struct SettingsView: View {
                     }
                 }
                 helpText("Applies immediately to every Bello Box window, including tools already open.")
+            }
+
+            settingsSection("Tool Suggestions", subtitle: "Your frequent choices rise to the top for similar text.", systemImage: "sparkles") {
+                helpText("Bello Box learns from the tools you open for JSON, dates, links, and other text. Only tool choices, text categories, and usage times are stored on this Mac.")
+                HStack {
+                    Button("Reset learned tool order") {
+                        settings.resetLearnedToolOrder()
+                        learnedOrderReset = true
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                    if learnedOrderReset { Text("Reset. Applies next time you open the palette.").font(.caption).foregroundStyle(.secondary) }
+                }
             }
         }
     }

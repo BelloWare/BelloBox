@@ -28,8 +28,6 @@ final class WorldClockWindowController: NSObject, NSWindowDelegate {
         let hosting = NSHostingController(rootView: rootView)
         let panel = WorldClockPanel(contentViewController: hosting)
         panel.delegate = self
-        panel.titlebarAppearsTransparent = true
-        panel.backgroundColor = NSColor(BoxTheme.background)
         panel.setContentSize(NSSize(width: 920, height: 740))
         panel.contentMinSize = NSSize(width: 780, height: 640)
         panel.setFrameAutosaveName("BelloBoxWorldClockWindow")
@@ -96,17 +94,17 @@ final class WorldClockPanel: NSPanel {
     init(contentViewController: NSViewController) {
         super.init(
             contentRect: .zero,
-            styleMask: [.titled, .closable, .miniaturizable, .resizable, .utilityWindow],
+            styleMask: AppWindowChrome.styleMask,
             backing: .buffered,
             defer: false
         )
         self.contentViewController = contentViewController
-        title = "World Clock"
+        AppWindowChrome.apply(to: self, title: "World Clock")
         isFloatingPanel = true
         level = .floating
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         hidesOnDeactivate = false
         isReleasedWhenClosed = false
-        animationBehavior = .utilityWindow
+        animationBehavior = .default
     }
 }

@@ -14,13 +14,16 @@ This document lists what Bello Box can do and how you interact with each feature
 2. A small **floating toolbar** appears just above your selection with one button
    per tool: **AI ✨**, **Screenshot 📸**, **Record ⏺**, **QR ▦**, and
    **Text Tools 🔧**.
-3. **Click a tool** (or dismiss by clicking elsewhere). A popup opens next to the
-   selection.
+3. **Click a tool** (or dismiss by clicking elsewhere). Tools open with the
+   selection; Ask AI centers on that display.
 4. Act on the result — most tools offer **Copy** and **Replace** (Replace pastes
    the result back over your original selection in the source app).
 
-You can also summon the AI tool on the current selection from anywhere with the
-global hotkey **⌃⌥⌘B**, or run any tool from the menu-bar menu.
+You can also summon the command palette from anywhere with **⌃⌥⌘B**, or run
+tools from the menu-bar menu. Frequent choices rise in the ranking for similar
+text, while explicit tool searches retain priority. Only tool/category IDs,
+bounded weights, and usage times are saved locally. Reset learned order in
+**Settings → General → Tool Suggestions**.
 
 > The toolbar and popups never steal focus from the app you're working in, so
 > your selection stays put.
@@ -30,6 +33,8 @@ global hotkey **⌃⌥⌘B**, or run any tool from the menu-bar menu.
 ## Tool 1 — AI Assistant ✨
 
 Ask a configurable AI to act on the selected text. The answer **streams in live**.
+The panel centers on the relevant display, opens ready for typing, and keeps
+its content scrollable when the screen is smaller than the preferred size.
 
 **One-click actions:**
 - Fix Spelling & Grammar

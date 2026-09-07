@@ -80,7 +80,7 @@ struct MainView: View {
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
-                ToolBadge(symbol: "shippingbox.fill", size: 34)
+                AppBrandIcon(size: 38)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Bello Box").font(.system(size: 15, weight: .semibold))
                     Text("YOUR WORKSPACE").font(.system(size: 8, weight: .semibold)).tracking(1.4).foregroundStyle(.secondary)

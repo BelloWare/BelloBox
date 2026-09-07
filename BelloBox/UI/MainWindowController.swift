@@ -45,11 +45,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
         )
         let hosting = NSHostingController(rootView: view)
         let window = NSWindow(contentViewController: hosting)
-        window.title = "Bello Box"
-        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
-        window.titlebarAppearsTransparent = true
-        window.backgroundColor = NSColor(BoxTheme.background)
-        window.isReleasedWhenClosed = false
+        AppWindowChrome.apply(to: window, title: "Bello Box")
         window.delegate = self
         window.setContentSize(NSSize(width: 1000, height: 760))
         window.contentMinSize = NSSize(width: 900, height: 640)

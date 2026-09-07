@@ -7,6 +7,10 @@ struct LauncherSelectionContext {
     let characterCount: Int
     let preview: String
     let suggestions: [LauncherCommand]
+    /// Rejected selections never teach a preference for the empty/text bucket.
+    var contentKind: LauncherContentKind? {
+        exceedsLimit ? nil : LauncherContentKind(hasText: hasText, suggestions: suggestions)
+    }
 
     init(text: String) {
         hasText = !text.isEmpty

@@ -35,7 +35,18 @@ Add commands in `Launcher/LauncherCatalog.swift`; developer tools share
 `UtilityWorkbenchModel`/`UtilityWorkbenchView`, with engines in `DeveloperTools`.
 Existing popup routes remain in `SelectionOverlayController.swift`. The global
 shortcut reads AX selection without synthesizing copy; clipboard import is an
-explicit palette action. Only tool IDs are stored in recents/favorites. Drafts
+explicit palette action. Only tool IDs are stored in recents/favorites.
+`LauncherUsageStore` separately learns explicit tool opens by coarse content
+category (JSON, timestamp, URL, JWT, cron, data, cURL, text, or empty). It saves
+only category/tool IDs, bounded weights, and last-use times; never selected
+text, app identity, URLs, or fingerprints. Four uses can outweigh the default
+suggestion; a 30-day half-life reduces old preferences. The bonus is capped
+below explicit title matches. `LauncherModel` snapshots scores per selection
+so arrow navigation/previews do not teach or reshuffle the current list; a
+replacement selection refreshes them. Floating-toolbar opens teach too, without
+double-counting palette routes. Rejected oversized inputs do not teach.
+Settings → General can reset learned order. DEBUG fixtures and XCTest sessions
+using standard defaults keep learning in a volatile review domain. Drafts
 live for the palette session and pinned comparison text lives until quit.
 The compact launcher uses a key-capable non-activating `LauncherPanel` and a
 native `LauncherSearchField` with explicit first-responder focus. It dismisses
@@ -57,7 +68,7 @@ faked transformation). Empty selections get the same concise actions.
 current selection; work for a row that lost focus is cancelled and discarded,
 and a new selection clears the cache. Above 64 KB parsing tools show a
 compact notice. Previews never create workbenches, send requests, copy text,
-or persist input. Timestamp selections rank World Clock first and reserve the
+or persist input. Timestamp selections initially rank World Clock first and reserve the
 planner height synchronously (`expandsClock`); `LauncherModel` then installs a
 `WorldClockViewModel` in `.preview` mode (no preference writes, up to four
 zones: saved order, then local and UTC) rendered by `LauncherClockPreviewView`,
@@ -87,6 +98,11 @@ explicit Search actions open the palette. `HomeCategory` organizes the tool
 catalog and Home has ⌘1–⌘4 category shortcuts plus ⌘K search. Shared colors,
 `ToolBadge`, `ShortcutBadge`, surfaces, and button styles live in `UI/Theme.swift`.
 Use these tokens when adding or updating tools; honor Reduce Motion.
+`AppBrandIcon` uses the shipped app artwork in Home and Settings. Main and
+World Clock share `AppWindowChrome` and standard-sized native window controls;
+World Clock remains floating across Spaces without the smaller utility style.
+Ask AI centers in the selection's display (the pointer's display without a
+selection), fits its visible frame, and scrolls its content on smaller screens.
 The palette follows the orange toolbox icon: `BoxTheme.accent` is adaptive
 text/icon ink (burnt orange in light, peach in dark); use
 `accentFill`/`accentGradient` behind white labels; `BoxTheme.brand` is the

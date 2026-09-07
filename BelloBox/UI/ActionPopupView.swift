@@ -10,35 +10,41 @@ struct ActionPopupView: View {
     var onMinimize: () -> Void = {}
 
     @State private var showsSelection = true
+    @FocusState private var instructionFocused: Bool
 
     private let columns = [GridItem(.adaptive(minimum: 210), spacing: 10)]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
-            if !viewModel.selection.text.isEmpty { selectionPreview }
-            else { Text("Ask a question below, or open AI with selected text to use the writing actions.").font(.callout).foregroundStyle(.secondary) }
-
-            if !viewModel.isConfigured {
-                setupBanner
-            }
-
-            actionsGrid
-            customPromptRow
-
-            if viewModel.didRun {
-                resultSection
-            } else {
-                Spacer(minLength: 0)
-                footerHint
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if !viewModel.selection.text.isEmpty { selectionPreview }
+                        else { Text("Ask a question below, or open AI with selected text to use the writing actions.").font(.callout).foregroundStyle(.secondary) }
+                        if !viewModel.isConfigured { setupBanner }
+                        actionsGrid
+                        customPromptRow
+                        if viewModel.didRun {
+                            resultSection.frame(height: max(240, geometry.size.height - 250))
+                        } else {
+                            Spacer(minLength: 0)
+                            footerHint
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .topLeading)
+                }
             }
         }
         .padding(16)
-        .frame(width: Self.preferredSize.width, height: Self.preferredSize.height, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .popupCard()
         .appearPop()
         .onExitCommand { viewModel.close() }
-        .onAppear { showsSelection = viewModel.selection.text.count <= 800 }
+        .onAppear {
+            showsSelection = viewModel.selection.text.count <= 800
+            instructionFocused = true
+        }
         .onChange(of: viewModel.didRun) { if $0 { showsSelection = false } }
     }
 
@@ -104,6 +110,7 @@ struct ActionPopupView: View {
     private var customPromptRow: some View {
         HStack(spacing: 8) {
             TextField("Ask Bello Box to…", text: $viewModel.instruction)
+                .focused($instructionFocused)
                 .textFieldStyle(.roundedBorder)
                 .font(.callout)
                 .onSubmit { viewModel.runCustom() }

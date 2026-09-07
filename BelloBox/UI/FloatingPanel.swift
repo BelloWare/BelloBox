@@ -107,6 +107,16 @@ final class PopupPanel: NSPanel {
 /// Geometry helpers for placing overlays near a selection while keeping them
 /// fully on-screen.
 enum ScreenPlacement {
+    /// Exact visual centering, with the Dock/menu bar excluded. Unlike
+    /// NSWindow.center(), this also centers vertically rather than above center.
+    static func centeredFrame(size: CGSize, visibleFrame: CGRect) -> CGRect {
+        let fitted = CGSize(width: min(size.width, max(1, visibleFrame.width - 12)),
+                            height: min(size.height, max(1, visibleFrame.height - 12)))
+        return CGRect(x: visibleFrame.midX - fitted.width / 2,
+                      y: visibleFrame.midY - fitted.height / 2,
+                      width: fitted.width, height: fitted.height)
+    }
+
     static func screen(containing point: CGPoint) -> NSScreen {
         ScreenCoordinateSpace.screen(containingOrNearestTo: point)
     }

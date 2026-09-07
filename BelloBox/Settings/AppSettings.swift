@@ -115,6 +115,8 @@ final class AppSettings: ObservableObject {
 
     private let defaults: UserDefaults
 
+    func resetLearnedToolOrder() { LauncherUsageStore(defaults: defaults).reset() }
+
     @Published var providerKind: ProviderKind {
         didSet {
             guard providerKind != oldValue else { return }

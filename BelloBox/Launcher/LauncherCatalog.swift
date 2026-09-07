@@ -114,7 +114,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         if text.contains("\n") && (text.contains(": ") || text.contains(",") || text.contains("\t")) { return [.convert, .compare] }
         return [.textTools, .compare, .snippets]
     }
-    static func search(_ query: String, input: String, favorites: Set<String>, recents: [String], suggested: [LauncherCommand]? = nil) -> [LauncherCommand] {
+    static func search(_ query: String, input: String, favorites: Set<String>, recents: [String], suggested: [LauncherCommand]? = nil, learnedScores: [String: Int] = [:]) -> [LauncherCommand] {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let terms = query.lowercased().split(whereSeparator: \.isWhitespace)
         let suggested = suggested ?? suggestions(for: input)
@@ -128,6 +128,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
                 // selection. Explicit search prefixes still take precedence.
                 if let i = suggested.firstIndex(of: command) { score += 1_000 - i * 200 }
                 if let i = recents.firstIndex(of: command.id) { score += 40 - i }
+                score += min(LauncherUsageStore.maximumBonus, max(0, learnedScores[command.id] ?? 0))
                 let title = command.title.lowercased()
                 if !query.isEmpty && title.hasPrefix(query.lowercased()) {
                     score += 10_000
