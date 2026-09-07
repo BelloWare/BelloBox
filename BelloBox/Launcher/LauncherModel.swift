@@ -286,6 +286,7 @@ final class LauncherModel: ObservableObject {
         if workbench?.busy == true { workbench?.cancel() }
         workbench = nil
         presentationChanged()
+        onFocusSearch()
     }
     func cancelAll() {
         cancelPreviewTask()

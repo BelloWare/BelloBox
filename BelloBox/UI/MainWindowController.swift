@@ -24,6 +24,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
     ) {
         if let window {
             AppActivation.bringAppForward()
+            AppWindowChrome.place(window, on: window.screen, centered: false)
             window.makeKeyAndOrderFront(nil)
             return
         }
@@ -43,13 +44,13 @@ final class MainWindowController: NSObject, NSWindowDelegate {
             onCheckForUpdates: onCheckForUpdates,
             onOpenTool: onOpenTool
         )
-        let hosting = NSHostingController(rootView: view)
+        let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 900, height: 640)) { view })
         let window = NSWindow(contentViewController: hosting)
         AppWindowChrome.apply(to: window, title: "Bello Box")
         window.delegate = self
         window.setContentSize(NSSize(width: 1000, height: 760))
         window.contentMinSize = NSSize(width: 900, height: 640)
-        window.center()
+        AppWindowChrome.place(window, centered: true)
         self.window = window
 
         AppActivation.bringAppForward()

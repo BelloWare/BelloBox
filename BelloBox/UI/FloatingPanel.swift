@@ -110,11 +110,25 @@ enum ScreenPlacement {
     /// Exact visual centering, with the Dock/menu bar excluded. Unlike
     /// NSWindow.center(), this also centers vertically rather than above center.
     static func centeredFrame(size: CGSize, visibleFrame: CGRect) -> CGRect {
-        let fitted = CGSize(width: min(size.width, max(1, visibleFrame.width - 12)),
-                            height: min(size.height, max(1, visibleFrame.height - 12)))
+        let fitted = fittedSize(size, visibleFrame: visibleFrame)
         return CGRect(x: visibleFrame.midX - fitted.width / 2,
                       y: visibleFrame.midY - fitted.height / 2,
                       width: fitted.width, height: fitted.height)
+    }
+
+    static func fittedSize(_ size: CGSize, visibleFrame: CGRect) -> CGSize {
+        CGSize(width: min(size.width, max(1, visibleFrame.width - 12)),
+               height: min(size.height, max(1, visibleFrame.height - 12)))
+    }
+
+    /// A selection-relative popup must fit in size as well as position.
+    /// Without a selection, use the same centered placement as Ask AI.
+    static func popupFrame(size: CGSize, anchorRect: CGRect?, visibleFrame: CGRect) -> CGRect {
+        guard let reference = anchorRect else { return centeredFrame(size: size, visibleFrame: visibleFrame) }
+        let fitted = fittedSize(size, visibleFrame: visibleFrame)
+        var origin = CGPoint(x: reference.minX, y: reference.minY - 12 - fitted.height)
+        if origin.y < visibleFrame.minY { origin.y = reference.maxY + 12 }
+        return CGRect(origin: clamp(origin: origin, size: fitted, visibleFrame: visibleFrame), size: fitted)
     }
 
     static func screen(containing point: CGPoint) -> NSScreen {

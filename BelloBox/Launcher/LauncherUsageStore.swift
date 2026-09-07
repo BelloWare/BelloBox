@@ -40,8 +40,10 @@ struct LauncherUsageStore {
 
 #if DEBUG
     // Native UI fixtures/tests sometimes construct a real launcher controller.
-    // Keep their learning in a volatile domain, never in the person's history.
-    private static let reviewDefaults = UserDefaults(suiteName: "BelloBox.UsageReview.\(UUID().uuidString)")!
+    // Keep their learning in memory, never in the person's history. The
+    // argument domain is shared across UserDefaults suites, so it is not an
+    // isolated place for review data.
+    private static var reviewData: Data?
     private var isReview: Bool {
         defaults === UserDefaults.standard && (
             ProcessInfo.processInfo.environment.keys.contains { $0.hasPrefix("BELLOBOX_E2E_") || $0 == "XCTestConfigurationFilePath" }
@@ -49,17 +51,17 @@ struct LauncherUsageStore {
     }
 #endif
 
-    private var activeDefaults: UserDefaults {
+    private var storedData: Data? {
 #if DEBUG
-        if isReview { return Self.reviewDefaults }
+        if isReview { return Self.reviewData }
 #endif
-        return defaults
+        return defaults.data(forKey: Self.defaultsKey)
     }
 
     private func write(_ data: Data?) {
 #if DEBUG
         if isReview {
-            Self.reviewDefaults.setVolatileDomain(data.map { [Self.defaultsKey: $0] } ?? [:], forName: UserDefaults.argumentDomain)
+            Self.reviewData = data
             return
         }
 #endif
@@ -99,7 +101,7 @@ struct LauncherUsageStore {
     }
 
     private func load() -> History {
-        guard let data = activeDefaults.data(forKey: Self.defaultsKey), data.count <= 32_768,
+        guard let data = storedData, data.count <= 32_768,
               let history = try? JSONDecoder().decode(History.self, from: data) else { return [:] }
         var result: History = [:]
         for kind in LauncherContentKind.allCases {

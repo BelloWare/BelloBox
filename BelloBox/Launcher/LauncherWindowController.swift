@@ -32,6 +32,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     private var trackingMenu = false
     private(set) var model: LauncherModel?
     private weak var searchField: LauncherSearchTextField?
+    private var pendingSearchFocus = false
     private weak var copilotField: LauncherSearchTextField?
     private var presentationID = UUID()
 #if DEBUG
@@ -66,6 +67,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         panel.delegate = self
         panel.contentViewController = NSHostingController(rootView: LauncherView(model: model, onSearchReady: { [weak self] field in
             self?.searchField = field
+            if self?.pendingSearchFocus == true { self?.focusSearch(force: true) }
         }, onCopilotFieldReady: { [weak self] field in
             self?.copilotField = field
         }))
@@ -190,8 +192,17 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         let id = presentationID
         let finish = { [weak self, weak panel] in
             guard let self, let panel, self.panel === panel, self.presentationID == id else { return }
-            panel.contentMinSize = isWorkbench ? NSSize(width: 740, height: 560) : size
+            panel.contentMinSize = isWorkbench ? Self.fittedSize(NSSize(width: 740, height: 560), visibleFrame: screen.visibleFrame) : size
             panel.contentMaxSize = isWorkbench ? NSSize(width: 1_600, height: 1_200) : size
+            // A quick Back → Open can reuse the fading editor before it ever
+            // detaches from the window, so attachment alone cannot restore focus.
+            if isWorkbench, let root = panel.contentView {
+                let current = panel.firstResponder as? NSTextView
+                let ownsInput = current?.window === panel && !(current?.delegate is LauncherSearchTextField)
+                if !ownsInput, let editor = LiteralTextView.initialEditor(in: root) {
+                    panel.makeFirstResponder(editor)
+                }
+            }
         }
         if frame == oldFrame || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
             panel.setFrame(frame, display: true)
@@ -208,11 +219,14 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     /// Returns focus to the search field. Unless forced, it leaves another
     /// text input (the copilot question) alone so typing is never interrupted.
     private func focusSearch(force: Bool = false) {
+        if force { pendingSearchFocus = true }
         DispatchQueue.main.async { [weak self] in
             guard let self, self.model?.workbench == nil, let panel = self.panel, panel.isVisible,
                   let field = self.searchField, field.window === panel else { return }
-            if !force, self.isSecondaryTextInputFocused(in: panel) { return }
-            if panel.firstResponder !== field.currentEditor() { panel.makeFirstResponder(field) }
+            if !self.pendingSearchFocus, self.isSecondaryTextInputFocused(in: panel) { return }
+            if panel.firstResponder === field.currentEditor() || panel.makeFirstResponder(field) {
+                self.pendingSearchFocus = false
+            }
         }
     }
     func windowDidBecomeKey(_ notification: Notification) { focusSearch() }
@@ -240,7 +254,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         menuObservers = []; trackingMenu = false
         panel?.delegate = nil
         panel?.close()
-        searchField = nil; copilotField = nil; panel = nil; model = nil
+        searchField = nil; copilotField = nil; pendingSearchFocus = false; panel = nil; model = nil
     }
     func windowWillClose(_ notification: Notification) { close() }
 #if DEBUG

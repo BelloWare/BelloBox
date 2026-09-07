@@ -4,6 +4,7 @@ struct UtilityWorkbenchView: View {
     @ObservedObject var model: UtilityWorkbenchModel
     var onBack: () -> Void
     @State private var showDeleteSnippet = false
+    @FocusState private var focusedEditor: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -32,6 +33,9 @@ struct UtilityWorkbenchView: View {
             footer
                 .background(BoxTheme.surface.opacity(0.6))
         }.tint(BoxTheme.accent)
+            .task(id: model.command) {
+                if model.command == .regex { focusedEditor = "Regular expression" }
+            }
     }
 
     @ViewBuilder private var controls: some View {
@@ -47,6 +51,7 @@ struct UtilityWorkbenchView: View {
         case .regex:
             VStack(alignment: .leading, spacing: 10) {
                 TextField("Pattern, for example [A-Z]+-\\d+", text: $model.regexPattern).textFieldStyle(.roundedBorder).font(.system(.body, design: .monospaced)).accessibilityLabel("Regular expression")
+                    .focused($focusedEditor, equals: "Regular expression")
                 HStack {
                     Toggle("Ignore case", isOn: $model.regexIgnoreCase)
                     Toggle("Multiline anchors", isOn: $model.regexMultiline)
@@ -153,7 +158,8 @@ struct UtilityWorkbenchView: View {
         }
     }
     private func editor(_ title: String, text: Binding<String>, height: CGFloat) -> some View {
-        TextEditor(text: text)
+        LiteralTextEditor(text: text, label: title, monospaced: true,
+                          focusesWhenAttached: model.command != .regex && title != "Second text")
             .font(.system(size: 12, design: .monospaced))
             .scrollContentBackground(.hidden)
             .padding(9).frame(height: height)

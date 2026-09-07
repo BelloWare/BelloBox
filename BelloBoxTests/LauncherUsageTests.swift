@@ -12,6 +12,17 @@ final class LauncherUsageTests: XCTestCase {
     }
     override func tearDown() { defaults.removePersistentDomain(forName: suite) }
 
+    func testReviewLearningCannotOverrideAnIsolatedPreferenceSuite() {
+        let review = LauncherUsageStore()
+        defer { review.reset() }
+        review.record(.json, kind: .empty, now: now)
+        XCTAssertNil(defaults.data(forKey: LauncherUsageStore.defaultsKey))
+        let isolated = LauncherUsageStore(defaults: defaults)
+        isolated.record(.ai, kind: .json, now: now)
+        XCTAssertEqual(isolated.scores(for: .json, now: now), ["ai": 350])
+        XCTAssertTrue(isolated.scores(for: .empty, now: now).isEmpty)
+    }
+
     private func ranked(_ text: String, query: String = "", date: Date? = nil) -> [LauncherCommand] {
         let context = LauncherSelectionContext(text: text)
         return LauncherCommand.search(query, input: "", favorites: ["json", "worldClock", "compare"], recents: [],

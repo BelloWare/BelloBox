@@ -210,8 +210,13 @@ Dock icon whenever the main app is running.
 
 ## Appearance / Themes
 
-- Choose **System**, **Light**, or **Dark** in **Settings → Appearance**.
+- Choose **System**, **Light**, or **Dark** in **Settings → General → Appearance**.
 - "System" follows your macOS setting; Light/Dark force Bello Box either way.
+- Home, World Clock, Settings, and Setup share standard native window controls.
+- Tool panels fit the visible screen; smaller screens keep every control reachable
+  with scrolling. Popups opened without selected text appear centered.
+- Full and minimized popup headers use matching buttons. Restoring a popup
+  returns to its active text field. Reduce Motion disables size transitions.
 
 ## Onboarding
 

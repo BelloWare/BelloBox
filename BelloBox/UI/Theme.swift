@@ -124,24 +124,35 @@ struct PopupHeader: View {
         HStack(spacing: 11) {
             ToolBadge(symbol: icon)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.system(size: 15, weight: .semibold))
+                Text(title).font(.system(size: 15, weight: .semibold)).lineLimit(1)
                 if let subtitle, !subtitle.isEmpty {
                     Text(subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                 }
             }
             Spacer(minLength: 8)
-            if let onMinimize { chromeButton("minus", help: "Minimize popup", action: onMinimize) }
-            chromeButton("xmark", help: "Close (Esc)", action: onClose)
+            if let onMinimize { PopupChromeButton(symbol: "minus", label: "Minimize popup", action: onMinimize) }
+            PopupChromeButton(symbol: "xmark", label: "Close (Esc)", action: onClose)
         }
         .padding(.bottom, 8)
         .overlay(alignment: .bottom) { Rectangle().fill(BoxTheme.border).frame(height: 1) }
     }
-    private func chromeButton(_ symbol: String, help: String, action: @escaping () -> Void) -> some View {
+}
+
+/// Matching hit targets and hover feedback in full and minimized tool headers.
+struct PopupChromeButton: View {
+    let symbol: String
+    let label: String
+    var action: () -> Void
+    @State private var hovered = false
+
+    var body: some View {
         Button(action: action) {
             Image(systemName: symbol).font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary).frame(width: 26, height: 26)
-                .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
-        }.buttonStyle(.plain).help(help).accessibilityLabel(help)
+                .foregroundStyle(hovered ? BoxTheme.accent : Color.secondary).frame(width: 28, height: 28)
+                .background(hovered ? BoxTheme.accentSoft : BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
+                .contentShape(RoundedRectangle(cornerRadius: 7))
+        }.buttonStyle(.plain).help(label).accessibilityLabel(label)
+            .onHover { hovered = $0 }
     }
 }
 
@@ -159,10 +170,8 @@ struct MinimizedPopupBar: View {
                 if let subtitle, !subtitle.isEmpty { Text(subtitle).font(.caption2).foregroundStyle(.secondary).lineLimit(1) }
             }
             Spacer(minLength: 8)
-            Button(action: onRestore) { Image(systemName: "arrow.up.left.and.arrow.down.right") }
-                .buttonStyle(SecondaryButtonStyle()).help("Restore").accessibilityLabel("Restore")
-            Button(action: onClose) { Image(systemName: "xmark") }
-                .buttonStyle(SecondaryButtonStyle()).help("Close").accessibilityLabel("Close")
+            PopupChromeButton(symbol: "arrow.up.left.and.arrow.down.right", label: "Restore", action: onRestore)
+            PopupChromeButton(symbol: "xmark", label: "Close", action: onClose)
         }.padding(10).popupCard().onExitCommand(perform: onClose)
     }
 }

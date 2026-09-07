@@ -106,13 +106,13 @@ struct QRCodePopupView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
-            qrArea
+            qrArea.frame(maxHeight: .infinity)
             editor
             messageArea
             footer
         }
         .padding(16)
-        .frame(width: Self.preferredSize.width, height: Self.preferredSize.height, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .popupCard()
         .appearPop()
         .onExitCommand { viewModel.close() }
@@ -147,7 +147,7 @@ struct QRCodePopupView: View {
                 .padding()
             }
         }
-        .frame(height: 300)
+        .frame(minHeight: 160, maxHeight: 300)
         .shadow(color: .black.opacity(0.08), radius: 4, y: 1)
     }
 
@@ -162,7 +162,7 @@ struct QRCodePopupView: View {
                     .buttonStyle(.link).font(.caption)
                     .help("Use text from your clipboard")
             }
-            TextEditor(text: $viewModel.text)
+            LiteralTextEditor(text: $viewModel.text, label: "Encoded text", focusesWhenAttached: true)
                 .font(.callout)
                 .frame(height: 100)
                 .scrollContentBackground(.hidden)

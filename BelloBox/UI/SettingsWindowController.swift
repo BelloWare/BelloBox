@@ -10,21 +10,18 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     func show(settings: AppSettings) {
         if let window {
             AppActivation.bringAppForward()
+            AppWindowChrome.place(window, on: window.screen, centered: false)
             window.makeKeyAndOrderFront(nil)
             return
         }
 
-        let hosting = NSHostingController(rootView: SettingsView(settings: settings))
+        let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 900, height: 680)) { SettingsView(settings: settings) })
         let window = NSWindow(contentViewController: hosting)
-        window.title = "Bello Box Settings"
-        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
-        window.titlebarAppearsTransparent = true
-        window.backgroundColor = NSColor(BoxTheme.background)
+        AppWindowChrome.apply(to: window, title: "Bello Box Settings")
         window.contentMinSize = NSSize(width: 900, height: 680)
-        window.isReleasedWhenClosed = false
         window.delegate = self
         window.setContentSize(NSSize(width: 900, height: 720))
-        window.center()
+        AppWindowChrome.place(window, centered: true)
         self.window = window
 
         AppActivation.bringAppForward()

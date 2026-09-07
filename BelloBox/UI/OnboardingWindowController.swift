@@ -15,6 +15,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
         if let window {
             AppActivation.bringAppForward()
+            AppWindowChrome.place(window, on: window.screen, centered: false)
             window.makeKeyAndOrderFront(nil)
             return
         }
@@ -24,17 +25,14 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             onPermissionGranted: onPermissionGranted,
             onFinish: { [weak self] in self?.finish() }
         )
-        let hosting = NSHostingController(rootView: view)
+        let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 680, height: 500)) { view })
         let window = NSWindow(contentViewController: hosting)
-        window.title = "Welcome to Bello Box"
-        window.styleMask = [.titled, .closable]
-        window.titlebarAppearsTransparent = true
-        window.backgroundColor = NSColor(BoxTheme.background)
-        window.isReleasedWhenClosed = false
+        AppWindowChrome.apply(to: window, title: "Welcome to Bello Box")
+        window.contentMinSize = NSSize(width: 680, height: 500)
         window.delegate = self
         // Size before centering so the window lands in the middle of the screen.
         window.setContentSize(NSSize(width: 680, height: 720))
-        window.center()
+        AppWindowChrome.place(window, centered: true)
         self.window = window
 
         AppActivation.bringAppForward()

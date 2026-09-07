@@ -13,6 +13,20 @@ enum AppWindowChrome {
         window.backgroundColor = NSColor(BoxTheme.background)
         window.isReleasedWhenClosed = false
     }
+
+    /// Use the invocation display, including its title bar in the fitted frame.
+    /// Existing windows keep their position unless a display change strands them.
+    static func place(_ window: NSWindow, on screen: NSScreen? = nil, centered: Bool) {
+        let host = screen ?? ScreenPlacement.screen(containing: NSEvent.mouseLocation)
+        let size = ScreenPlacement.fittedSize(window.frame.size, visibleFrame: host.visibleFrame)
+        let fitted = centered
+            ? ScreenPlacement.centeredFrame(size: size, visibleFrame: host.visibleFrame)
+            : CGRect(origin: ScreenPlacement.clamp(origin: window.frame.origin, size: size, into: host), size: size)
+        let contentSize = window.contentRect(forFrameRect: fitted).size
+        window.contentMinSize = NSSize(width: min(window.contentMinSize.width, contentSize.width),
+                                       height: min(window.contentMinSize.height, contentSize.height))
+        window.setFrame(fitted, display: false)
+    }
 }
 
 /// Use the shipped orange toolbox artwork wherever the app identifies itself.

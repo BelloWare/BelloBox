@@ -175,6 +175,28 @@ final class LauncherInteractionTests: XCTestCase {
         XCTAssertFalse(controller.isVisible, "The second Escape closes the palette")
     }
 
+    func testReturningFromNativeUtilityEditorRestoresSearchFocus() async throws {
+        try await settleHostStartup()
+        let controller = LauncherWindowController()
+        defer { controller.close() }
+        let panel = try await showKeyPalette(controller, text: "")
+        let model = try XCTUnwrap(controller.model)
+        for useEscape in [false, true] {
+            model.open(.json)
+            for _ in 0..<100 where !(panel.firstResponder is LiteralTextView) {
+                try await Task.sleep(nanoseconds: 10_000_000)
+            }
+            XCTAssertTrue(panel.firstResponder is LiteralTextView, "Editor must focus on each open (Escape round: \(useEscape))")
+            if useEscape {
+                XCTAssertTrue(controller.handleKeyEvent(try keyEvent(53, "", in: panel)))
+            } else { model.back() }
+            for _ in 0..<100 where !controller.isSearchFieldFocused {
+                try await Task.sleep(nanoseconds: 10_000_000)
+            }
+            XCTAssertTrue(controller.isSearchFieldFocused, "Returning from a tool must make search ready to type")
+        }
+    }
+
     func testArrowKeysNudgeTheClockPreviewOnlyWhileSearchIsEmpty() async throws {
         try await settleHostStartup()
         let controller = LauncherWindowController()

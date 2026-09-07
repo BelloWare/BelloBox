@@ -137,7 +137,6 @@ struct TextToolsPopupView: View {
 
     @ObservedObject var viewModel: TextToolsPopupViewModel
     var onMinimize: () -> Void = {}
-    @FocusState private var inputFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -149,7 +148,7 @@ struct TextToolsPopupView: View {
             footer
         }
         .padding(16)
-        .frame(width: Self.preferredSize.width, height: Self.preferredSize.height, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .popupCard()
         .appearPop()
         .onExitCommand { viewModel.close() }
@@ -200,10 +199,8 @@ struct TextToolsPopupView: View {
                     .disabled(!viewModel.canResetInput)
                     .help("Restore the text this tool opened with")
             }
-            TextEditor(text: $viewModel.input)
+            LiteralTextEditor(text: $viewModel.input, label: "Text Tools input", focusesWhenAttached: true)
                 .font(.callout)
-                .focused($inputFocused)
-                .task { inputFocused = true }
                 .accessibilityLabel("Text Tools input")
                 .scrollContentBackground(.hidden)
                 .frame(height: 120)

@@ -175,7 +175,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
 #if DEBUG
-            let previewKeys = ["BELLOBOX_E2E_SCREENSHOT_IMAGE", "BELLOBOX_E2E_QR_TEXT", "BELLOBOX_E2E_AI_PREVIEW_TEXT",
+            let previewKeys = ["BELLOBOX_E2E_SCREENSHOT_IMAGE", "BELLOBOX_E2E_QR_TEXT", "BELLOBOX_E2E_TEXT_TOOLS_TEXT", "BELLOBOX_E2E_AI_PREVIEW_TEXT",
                                "BELLOBOX_E2E_RECORDING_OPTIONS", "BELLOBOX_E2E_RECORDING_REVIEW_FILE",
                                "BELLOBOX_E2E_RECORDING_HUD", "BELLOBOX_E2E_CONVERTING_GIF", "BELLOBOX_E2E_VIDEO_TO_GIF",
                                "BELLOBOX_E2E_WRITE_SYNTHETIC_ASSETS", "BELLOBOX_E2E_SCROLL_HUD_DEMO", "BELLOBOX_E2E_SCROLL_FRAMES_DIR",

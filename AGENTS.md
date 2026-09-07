@@ -46,7 +46,7 @@ so arrow navigation/previews do not teach or reshuffle the current list; a
 replacement selection refreshes them. Floating-toolbar opens teach too, without
 double-counting palette routes. Rejected oversized inputs do not teach.
 Settings → General can reset learned order. DEBUG fixtures and XCTest sessions
-using standard defaults keep learning in a volatile review domain. Drafts
+using standard defaults keep learning in memory outside all preference domains. Drafts
 live for the palette session and pinned comparison text lives until quit.
 The compact launcher uses a key-capable non-activating `LauncherPanel` and a
 native `LauncherSearchField` with explicit first-responder focus. It dismisses
@@ -98,11 +98,26 @@ explicit Search actions open the palette. `HomeCategory` organizes the tool
 catalog and Home has ⌘1–⌘4 category shortcuts plus ⌘K search. Shared colors,
 `ToolBadge`, `ShortcutBadge`, surfaces, and button styles live in `UI/Theme.swift`.
 Use these tokens when adding or updating tools; honor Reduce Motion.
-`AppBrandIcon` uses the shipped app artwork in Home and Settings. Main and
-World Clock share `AppWindowChrome` and standard-sized native window controls;
+`AppBrandIcon` uses the shipped app artwork in Home, Settings, and Setup. Main,
+World Clock, Settings, and Setup share `AppWindowChrome` and standard-sized native window controls;
 World Clock remains floating across Spaces without the smaller utility style.
 Ask AI centers in the selection's display (the pointer's display without a
 selection), fits its visible frame, and scrolls its content on smaller screens.
+Other unanchored tool popups center too; recording HUDs keep pointer-relative
+placement. `ScreenPlacement.popupFrame` fits both size and position.
+`ToolViewport` preserves usable layout dimensions and enables scrolling only
+on overflowing axes; adaptive AI, QR, text and screenshot views absorb height
+changes. Workspace controllers fit their full native frame (title bar included)
+and recover off-screen windows on reopen. Popup minimize/restore retains the
+first responder and honors Reduce Motion. `PopupChromeButton` is shared by
+full and minimized headers. QR and developer editors focus their first input.
+Returning from a workbench explicitly requests search focus; a pending request
+survives until the newly mounted native search field is ready.
+`LiteralTextEditor` uses a plain native NSTextView for utility, QR and text
+inputs: smart quotes, dashes, text replacement and spell correction are off;
+local typing keeps native undo, selection and input-method composition.
+DEBUG `BELLOBOX_E2E_POPUP_VIEWPORT=width,height` reviews constrained tool panels;
+`BELLOBOX_E2E_TEXT_TOOLS_TEXT` opens an isolated text editor fixture.
 The palette follows the orange toolbox icon: `BoxTheme.accent` is adaptive
 text/icon ink (burnt orange in light, peach in dark); use
 `accentFill`/`accentGradient` behind white labels; `BoxTheme.brand` is the

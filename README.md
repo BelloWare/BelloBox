@@ -47,10 +47,14 @@ controls and color-coded icons in both themes. Choose **System**, **Light**, or
 **Dark** in Settings → General. Theme previews show each option, and changes
 apply to windows that are already open. Shared accent and status text colors
 are checked for contrast on both themes.
-Home and Settings show the actual orange toolbox icon. World Clock shares
-Home's standard native window controls. **Ask AI** opens centered on the
-relevant display with its instruction field focused, and scrolls to keep
-content accessible on smaller screens.
+Home, Settings, and the setup guide use the actual orange toolbox icon and
+shared controls. Workspace windows open centered on the invocation display;
+tools opened without a selection center there too. All tool panels fit the
+available screen, with scrolling for layouts that need more space. Ask AI, QR
+Code, Text Tools, and developer editors focus their input when opened.
+Minimizing and restoring a popup preserves the active text field, and popup
+transitions respect Reduce Motion. Utility, QR and text editors preserve literal
+quotes and dashes while typing, so macOS prose substitutions cannot break code.
 
 Long selections show a short preview and a character count while keeping the
 complete input, up to 500 KB. Above 64 KB, rich parsing is deferred until the

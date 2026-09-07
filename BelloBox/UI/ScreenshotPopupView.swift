@@ -952,7 +952,7 @@ struct ScreenshotPopupView: View {
                 footer
             }
             .padding(16)
-            .frame(width: Self.preferredSize.width, height: Self.preferredSize.height)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .popupCard()
             .onExitCommand(perform: viewModel.handleEscape)
             .alert("Discard screenshot edits?", isPresented: $viewModel.showDiscardCloseConfirmation) {

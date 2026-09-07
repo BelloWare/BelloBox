@@ -26,6 +26,7 @@ final class SelectionOverlayController: NSObject {
     private var toolbarTooltipPanel: FloatingTooltipPanel?
     private var popupPanel: PopupPanel?
     private var popupFullContentView: NSView?
+    private weak var popupSavedFirstResponder: NSResponder?
     private var popupFullSize: CGSize = .zero
     private var popupIsMinimized = false
     private var popupMinimizedIcon = ""
@@ -487,6 +488,7 @@ final class SelectionOverlayController: NSObject {
         present(
             view,
             size: ActionPopupView.preferredSize,
+            minimumSize: CGSize(width: 480, height: 360),
             anchorRect: selection.anchorRect,
             centered: true,
             minimizedIcon: "wand.and.stars",
@@ -506,6 +508,7 @@ final class SelectionOverlayController: NSObject {
         present(
             view,
             size: QRCodePopupView.preferredSize,
+            minimumSize: CGSize(width: 480, height: 500),
             anchorRect: selection.anchorRect,
             minimizedIcon: "qrcode",
             minimizedTitle: "QR Code"
@@ -522,6 +525,7 @@ final class SelectionOverlayController: NSObject {
         present(
             view,
             size: TextToolsPopupView.preferredSize,
+            minimumSize: CGSize(width: 720, height: 520),
             anchorRect: selection.anchorRect,
             minimizedIcon: "wrench.and.screwdriver",
             minimizedTitle: "Text Tools"
@@ -747,7 +751,7 @@ final class SelectionOverlayController: NSObject {
             present(
                 view,
                 size: recordingHUDSize(),
-                anchorRect: nil,
+                anchorRect: CGRect(origin: NSEvent.mouseLocation, size: .zero),
                 minimizedIcon: "record.circle",
                 minimizedTitle: "Recording",
                 runExistingDismissAction: false
@@ -765,7 +769,7 @@ final class SelectionOverlayController: NSObject {
             present(
                 view,
                 size: recordingHUDSize(),
-                anchorRect: nil,
+                anchorRect: CGRect(origin: NSEvent.mouseLocation, size: .zero),
                 minimizedIcon: "record.circle",
                 minimizedTitle: "Recording",
                 runExistingDismissAction: false
@@ -1037,6 +1041,7 @@ final class SelectionOverlayController: NSObject {
         present(
             view,
             size: ScreenshotPopupView.preferredSize,
+            minimumSize: CGSize(width: 1040, height: 500),
             anchorRect: anchorRect,
             minimizedIcon: "camera.viewfinder",
             minimizedTitle: "Screenshot",
@@ -1114,6 +1119,10 @@ final class SelectionOverlayController: NSObject {
             showQRPopup(for: TextSelection(text: text, anchorRect: nil, appName: nil, bundleID: nil, pid: nil))
             return
         }
+        if let text = env["BELLOBOX_E2E_TEXT_TOOLS_TEXT"] {
+            showTextToolsPopup(for: TextSelection(text: text, anchorRect: nil, appName: nil, bundleID: nil, pid: nil))
+            return
+        }
         if let text = env["BELLOBOX_E2E_AI_PREVIEW_TEXT"] {
             showAIPopup(for: TextSelection(text: text, anchorRect: nil, appName: nil, bundleID: nil, pid: nil))
             return
@@ -1145,7 +1154,7 @@ final class SelectionOverlayController: NSObject {
                     show()
                 }
             )
-            present(view, size: RecordingHUDView.preferredSize, anchorRect: nil, minimizedIcon: "record.circle",
+            present(view, size: RecordingHUDView.preferredSize, anchorRect: CGRect(origin: NSEvent.mouseLocation, size: .zero), minimizedIcon: "record.circle",
                     minimizedTitle: "Recording", runExistingDismissAction: false)
         }
         show()
@@ -1521,6 +1530,7 @@ final class SelectionOverlayController: NSObject {
         present(
             view,
             size: ScreenshotPopupView.preferredSize,
+            minimumSize: CGSize(width: 1040, height: 500),
             anchorRect: nil,
             minimizedIcon: "camera.viewfinder",
             minimizedTitle: "Screenshot",
@@ -2238,6 +2248,7 @@ final class SelectionOverlayController: NSObject {
     private func present<V: View>(
         _ view: V,
         size: CGSize,
+        minimumSize: CGSize? = nil,
         anchorRect: CGRect?,
         centered: Bool = false,
         minimizedIcon: String,
@@ -2249,12 +2260,21 @@ final class SelectionOverlayController: NSObject {
         hidePopup(runDismissAction: runExistingDismissAction)
         let mouse = NSEvent.mouseLocation
         let reference = anchorRect.map { CGPoint(x: $0.midX, y: $0.midY) } ?? mouse
-        let frame = centered
-            ? ScreenPlacement.centeredFrame(size: size, visibleFrame: ScreenPlacement.screen(containing: reference).visibleFrame)
-            : CGRect(origin: ScreenPlacement.popupOrigin(anchorRect: anchorRect, mouse: mouse, size: size), size: size)
+        let visible = ScreenPlacement.screen(containing: reference).visibleFrame
+        var frame = centered
+            ? ScreenPlacement.centeredFrame(size: size, visibleFrame: visible)
+            : ScreenPlacement.popupFrame(size: size, anchorRect: anchorRect, visibleFrame: visible)
+#if DEBUG
+        if let raw = ProcessInfo.processInfo.environment["BELLOBOX_E2E_POPUP_VIEWPORT"] {
+            let dimensions = raw.split(separator: ",").compactMap { Double($0) }
+            if dimensions.count == 2, dimensions.allSatisfy({ $0.isFinite && $0 >= 240 }) {
+                frame = ScreenPlacement.centeredFrame(size: CGSize(width: dimensions[0], height: dimensions[1]), visibleFrame: visible)
+            }
+        }
+#endif
         let panel = PopupPanel(contentRect: frame)
         panel.title = minimizedTitle
-        let hosting = NSHostingView(rootView: view)
+        let hosting = NSHostingView(rootView: ToolViewport(minimumSize: minimumSize ?? size) { view }.popupCard())
         panel.contentView = hosting
         panel.setFrame(frame, display: false)
         panel.makeKeyAndOrderFront(nil)
@@ -2272,9 +2292,11 @@ final class SelectionOverlayController: NSObject {
     }
 
     /// Resizes the presented popup in place, keeping its top-left corner on screen.
-    private func resizePopup(to size: CGSize) {
-        guard let panel = popupPanel, !popupIsMinimized, panel.frame.size != size else { return }
+    private func resizePopup(to requestedSize: CGSize) {
+        guard let panel = popupPanel, !popupIsMinimized else { return }
         let old = panel.frame
+        let size = ScreenPlacement.fittedSize(requestedSize, visibleFrame: ScreenPlacement.screen(containing: CGPoint(x: old.midX, y: old.midY)).visibleFrame)
+        guard panel.frame.size != size else { return }
         let origin = ScreenPlacement.clamp(
             origin: CGPoint(x: old.minX, y: old.maxY - size.height),
             size: size,
@@ -2288,6 +2310,7 @@ final class SelectionOverlayController: NSObject {
         guard let panel = popupPanel, !popupIsMinimized else { return }
         OverlayTooltipPresenter.shared.hide()
         popupFullContentView = panel.contentView
+        popupSavedFirstResponder = panel.firstResponder
         popupIsMinimized = true
 
         let size = minimizedPopupSize()
@@ -2306,23 +2329,25 @@ final class SelectionOverlayController: NSObject {
             onClose: { [weak self] in self?.hidePopup() }
         )
         panel.contentView = NSHostingView(rootView: bar.frame(width: size.width, height: size.height))
-        panel.setFrame(NSRect(origin: origin, size: size), display: true, animate: true)
+        panel.setFrame(NSRect(origin: origin, size: size), display: true, animate: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
         panel.orderFrontRegardless()
     }
 
     private func restorePopup() {
         guard let panel = popupPanel, popupIsMinimized, let contentView = popupFullContentView else { return }
-        let size = popupFullSize
         let oldFrame = panel.frame
+        let size = ScreenPlacement.fittedSize(popupFullSize, visibleFrame: ScreenPlacement.screen(containing: CGPoint(x: oldFrame.midX, y: oldFrame.midY)).visibleFrame)
         let origin = ScreenPlacement.clamp(
             origin: CGPoint(x: oldFrame.minX, y: oldFrame.maxY - size.height),
             size: size,
             into: ScreenPlacement.screen(containing: CGPoint(x: oldFrame.midX, y: oldFrame.midY))
         )
 
-        panel.setFrame(NSRect(origin: origin, size: size), display: true, animate: true)
+        panel.setFrame(NSRect(origin: origin, size: size), display: true, animate: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
         panel.contentView = contentView
         panel.makeKeyAndOrderFront(nil)
+        if let responder = popupSavedFirstResponder { panel.makeFirstResponder(responder) }
+        popupSavedFirstResponder = nil
         popupIsMinimized = false
     }
 
@@ -2344,6 +2369,7 @@ final class SelectionOverlayController: NSObject {
         conversionProgress = nil
         hideScreenshotOverlayEditor()
         popupFullContentView = nil
+        popupSavedFirstResponder = nil
         popupFullSize = .zero
         popupIsMinimized = false
         popupMinimizedIcon = ""

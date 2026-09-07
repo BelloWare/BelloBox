@@ -9,6 +9,7 @@ struct OnboardingView: View {
     var onPermissionGranted: () -> Void
     var onFinish: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var step = 0
     @State private var trusted = AccessibilityService.isTrusted
     @State private var screenRecordingTrusted = ScreenCapturePermission.isTrusted
@@ -35,7 +36,7 @@ struct OnboardingView: View {
                 .padding(.horizontal, 28)
                 .padding(.vertical, 16)
         }
-        .frame(width: 680, height: 720)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(WorkspaceBackground()).tint(BoxTheme.accent)
         .onReceive(poll) { _ in
             let now = AccessibilityService.isTrusted
@@ -321,7 +322,7 @@ struct OnboardingView: View {
     private var footer: some View {
         HStack {
             if step > 0 {
-                Button("Back") { withAnimation { step -= 1 } }
+                Button("Back") { withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { step -= 1 } }
             }
             if step < stepCount - 1 {
                 Button("Skip") { onFinish() }
@@ -343,15 +344,13 @@ struct OnboardingView: View {
             }
             Spacer()
             if step < stepCount - 1 {
-                Button("Continue") { withAnimation { step += 1 } }
+                Button("Continue") { withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { step += 1 } }
                     .keyboardShortcut(.defaultAction)
-                    .buttonStyle(.borderedProminent)
-                    .tint(BoxTheme.accent)
+                    .buttonStyle(PrimaryButtonStyle())
             } else {
                 Button("Start Using Bello Box") { onFinish() }
                     .keyboardShortcut(.defaultAction)
-                    .buttonStyle(.borderedProminent)
-                    .tint(BoxTheme.accent)
+                    .buttonStyle(PrimaryButtonStyle())
             }
         }
     }
@@ -359,15 +358,7 @@ struct OnboardingView: View {
     // MARK: - Pieces
 
     private var appBadge: some View {
-        Group {
-            if let icon = NSApp.applicationIconImage {
-                Image(nsImage: icon).resizable().frame(width: 88, height: 88)
-            } else {
-                Image(systemName: "wand.and.stars")
-                    .font(.system(size: 48))
-                    .foregroundStyle(BoxTheme.accent)
-            }
-        }
+        AppBrandIcon(size: 88)
     }
 
     private var doneSummary: String {
