@@ -118,13 +118,7 @@ struct RecordingOptionsBar: View {
 
     private var outputControls: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Picker("Output format", selection: $options.outputFormat) {
-                ForEach(RecordingOutputFormat.allCases) { format in
-                    Text(format.label).tag(format)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            ToolChoiceBar(selection: $options.outputFormat, choices: RecordingOutputFormat.allCases.map { ($0, $0.label) }, label: "Output format", compact: true)
             .accessibilityLabel("Output format")
             .help("Movie keeps audio. GIF is a silent looping image; the movie is kept as well.")
             Text(options.outputFormat.detail)
@@ -137,13 +131,7 @@ struct RecordingOptionsBar: View {
 
     private var qualityControls: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Picker("Quality", selection: $options.quality) {
-                ForEach(RecordingQualityPreset.allCases) { preset in
-                    Text(preset.label).tag(preset)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            ToolChoiceBar(selection: $options.quality, choices: RecordingQualityPreset.allCases.map { ($0, $0.label) }, label: "Quality", compact: true)
             .accessibilityLabel("Recording quality")
             Stepper(value: $options.countdownSeconds, in: 0...10) {
                 Text(options.countdownSeconds == 0 ? "No countdown" : "Countdown \(options.countdownSeconds) s")
@@ -234,7 +222,7 @@ struct RecordingOptionsBar: View {
             Spacer(minLength: 6)
             if secureFieldRedactionWarning != nil {
                 Button("Open Accessibility Settings") { AccessibilityService.openAccessibilitySettings() }
-                    .buttonStyle(.link).font(.caption)
+                    .buttonStyle(ToolLinkButtonStyle()).font(.caption)
             }
             Picker("Redaction", selection: $options.secureFieldRedactionMode) {
                 ForEach(SecureFieldRedactionMode.allCases) { mode in

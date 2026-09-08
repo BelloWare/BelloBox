@@ -8,6 +8,7 @@ final class SelectionMonitor {
     private let accessibility: AccessibilityService
 
     private var mouseUpMonitor: Any?
+    private var mouseDownMonitor: Any?
     private var hotkeyRefs: [UInt32: EventHotKeyRef] = [:]
     private var hotkeyHandlerRef: EventHandlerRef?
     private var debounce: DispatchWorkItem?
@@ -62,6 +63,7 @@ final class SelectionMonitor {
         }
     }
     var onSelection: ((TextSelection) -> Void)?
+    var onMouseDown: (() -> Void)?
     var onHotkey: (() -> Void)?
     var onScreenshotHotkey: (() -> Void)?
     var onRecordingHotkey: (() -> Void)?
@@ -79,6 +81,10 @@ final class SelectionMonitor {
     func start() {
         stop()
         isRunning = true
+        mouseDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            self?.debounce?.cancel()
+            self?.onMouseDown?()
+        }
         mouseUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
             self?.scheduleSelectionRead()
         }
@@ -91,6 +97,8 @@ final class SelectionMonitor {
             NSEvent.removeMonitor(mouseUpMonitor)
         }
         mouseUpMonitor = nil
+        if let mouseDownMonitor { NSEvent.removeMonitor(mouseDownMonitor) }
+        mouseDownMonitor = nil
         unregisterHotkey()
         isRunning = false
     }
@@ -110,6 +118,9 @@ final class SelectionMonitor {
     }
 
     private func handleRegisteredHotkey(id: UInt32) {
+        // A mouse-up read must not race the shortcut and mount a toolbar while
+        // the shortcut is waiting for the host's Accessibility selection.
+        debounce?.cancel()
         switch id {
         case boardHotkeyID:
             onHotkey?()

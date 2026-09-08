@@ -31,35 +31,83 @@ final class AccessibilityService {
 
     // MARK: - Reading selection
 
-    /// Reads the current selection from the focused UI element. Returns nil when
-    /// nothing is selected or the app does not expose its selection over AX.
-    func readSelection() -> TextSelection? {
-        guard AXIsProcessTrusted() else { return nil }
-        guard let element = focusedElement() else { return nil }
-
-        var textRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(element, kAXSelectedTextAttribute as CFString, &textRef) == .success,
-              let text = textRef as? String,
-              text.unicodeScalars.contains(where: { !CharacterSet.whitespacesAndNewlines.contains($0) })
-        else { return nil }
-
-        let front = NSWorkspace.shared.frontmostApplication
-        return TextSelection(
-            text: text,
-            anchorRect: selectionBounds(of: element),
-            appName: front?.localizedName,
-            bundleID: front?.bundleIdentifier,
-            pid: front?.processIdentifier
-        )
+    struct SelectionSource {
+        let app: NSRunningApplication
+        let window: AXUIElement?
     }
 
-    private func focusedElement() -> AXUIElement? {
-        let system = AXUIElementCreateSystemWide()
-        var focused: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(system, kAXFocusedUIElementAttribute as CFString, &focused) == .success,
-              let element = Self.axElement(from: focused)
-        else { return nil }
-        return element
+    func selectionSource() -> SelectionSource? {
+        guard AXIsProcessTrusted(), let app = NSWorkspace.shared.frontmostApplication,
+              app.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return nil }
+        let element = AXUIElementCreateApplication(app.processIdentifier)
+        AXUIElementSetMessagingTimeout(element, 0.08)
+        return SelectionSource(app: app, window: Self.axElement(from: attribute(element, kAXFocusedWindowAttribute)))
+    }
+
+    func isCurrent(_ source: SelectionSource) -> Bool {
+        guard NSWorkspace.shared.frontmostApplication?.processIdentifier == source.app.processIdentifier else { return false }
+        guard let window = source.window else { return true }
+        let app = AXUIElementCreateApplication(source.app.processIdentifier)
+        AXUIElementSetMessagingTimeout(app, 0.08)
+        guard let current = Self.axElement(from: attribute(app, kAXFocusedWindowAttribute)) else { return false }
+        return CFEqual(window, current)
+    }
+
+    func readSelection() -> TextSelection? {
+        guard let source = selectionSource() else { return nil }
+        return readSelection(from: source)
+    }
+
+    /// Read from the captured source application, not a possibly newer
+    /// system-wide focus paired with stale frontmost-app metadata.
+    func readSelection(from source: SelectionSource) -> TextSelection? {
+        guard isCurrent(source) else { return nil }
+        let app = AXUIElementCreateApplication(source.app.processIdentifier)
+        AXUIElementSetMessagingTimeout(app, 0.08)
+        guard let focused = Self.axElement(from: attribute(app, kAXFocusedUIElementAttribute)) else { return nil }
+        var candidate: AXUIElement? = focused
+        var visited: [AXUIElement] = []
+        // Some web content exposes selection on its text container instead of
+        // the focused link/static-text child. Walk only that ancestor chain.
+        while let element = candidate, visited.count < 6, !visited.contains(where: { CFEqual($0, element) }) {
+            visited.append(element)
+            var pid: pid_t = 0
+            guard AXUIElementGetPid(element, &pid) == .success, pid == source.app.processIdentifier else { break }
+            if attribute(element, kAXSubroleAttribute) as? String == kAXSecureTextFieldSubrole
+                || attribute(element, "AXProtectedContent") as? Bool == true { return nil }
+            let range = selectedRange(of: element)
+            let direct = attribute(element, kAXSelectedTextAttribute) as? String
+            let text = SelectionTextResolver.resolve(direct: direct, range: range,
+                stringForRange: { range in
+                    var cfRange = CFRange(location: range.location, length: range.length)
+                    guard let value = AXValueCreate(.cfRange, &cfRange) else { return nil }
+                    var result: CFTypeRef?
+                    guard AXUIElementCopyParameterizedAttributeValue(element, kAXStringForRangeParameterizedAttribute as CFString, value, &result) == .success else { return nil }
+                    return result as? String
+                }, value: { self.attribute(element, kAXValueAttribute) as? String })
+            if let text, isCurrent(source) {
+                return TextSelection(text: text, anchorRect: selectionBounds(of: element),
+                    appName: source.app.localizedName, bundleID: source.app.bundleIdentifier, pid: source.app.processIdentifier)
+            }
+            // An explicit caret/empty selection is authoritative. Do not borrow
+            // a different field's old selection from elsewhere in the window.
+            if range != nil || direct != nil { return nil }
+            candidate = Self.axElement(from: attribute(element, kAXParentAttribute))
+        }
+        return nil
+    }
+
+    private func attribute(_ element: AXUIElement, _ name: String) -> CFTypeRef? {
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, name as CFString, &value) == .success else { return nil }
+        return value
+    }
+
+    private func selectedRange(of element: AXUIElement) -> NSRange? {
+        guard let value = Self.axValue(from: attribute(element, kAXSelectedTextRangeAttribute)), AXValueGetType(value) == .cfRange else { return nil }
+        var range = CFRange()
+        guard AXValueGetValue(value, .cfRange, &range), range.location >= 0, range.length >= 0 else { return nil }
+        return NSRange(location: range.location, length: range.length)
     }
 
     private func selectionBounds(of element: AXUIElement) -> CGRect? {
@@ -150,5 +198,24 @@ final class AccessibilityService {
     static func axValue(from value: CFTypeRef?) -> AXValue? {
         guard let value, CFGetTypeID(value) == AXValueGetTypeID() else { return nil }
         return unsafeBitCast(value, to: AXValue.self)
+    }
+}
+
+/// AX ranges index UTF-16, not Swift Characters. Never substitute the complete
+/// field value when its selected range is empty, invalid, or unsupported.
+enum SelectionTextResolver {
+    static func resolve(direct: String?, range: NSRange?, stringForRange: (NSRange) -> String?, value: () -> String?) -> String? {
+        if let range, range.length == 0 { return nil }
+        func nonempty(_ text: String?) -> String? {
+            guard let text, text.unicodeScalars.contains(where: { !CharacterSet.whitespacesAndNewlines.contains($0) }) else { return nil }
+            return text
+        }
+        if let text = nonempty(direct) { return text }
+        guard let range, range.location != NSNotFound, range.length > 0 else { return nil }
+        if let text = nonempty(stringForRange(range)) { return text }
+        guard let text = value() else { return nil }
+        let utf16 = text as NSString
+        guard range.location <= utf16.length, range.length <= utf16.length - range.location else { return nil }
+        return nonempty(utf16.substring(with: range))
     }
 }

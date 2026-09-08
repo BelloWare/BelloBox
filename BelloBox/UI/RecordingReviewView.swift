@@ -405,11 +405,7 @@ struct RecordingReviewView: View {
     private var facts: some View {
         HStack(spacing: 10) {
             if viewModel.hasGIF {
-                Picker("Preview", selection: $viewModel.showsGIFPreview) {
-                    Text("GIF").tag(true)
-                    Text("Movie").tag(false)
-                }
-                .pickerStyle(.segmented).labelsHidden().fixedSize()
+                ToolChoiceBar(selection: $viewModel.showsGIFPreview, choices: [(true, "GIF"), (false, "Movie")], label: "Preview", compact: true).fixedSize()
                 .help("Switch the preview between the GIF and the movie it came from")
             }
             Label(viewModel.hasGIF ? "GIF \(viewModel.gifSizeText ?? "")" : viewModel.fileSizeText, systemImage: viewModel.hasGIF ? "photo.stack" : "doc")

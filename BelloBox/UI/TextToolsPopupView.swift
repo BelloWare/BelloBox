@@ -142,7 +142,7 @@ final class TextToolsPopupViewModel: ObservableObject {
 }
 
 struct TextToolsPopupView: View {
-    static let preferredSize = CGSize(width: 720, height: 760)
+    static let preferredSize = CGSize(width: 720, height: 660)
 
     @ObservedObject var viewModel: TextToolsPopupViewModel
     var onMinimize: () -> Void = {}
@@ -156,7 +156,7 @@ struct TextToolsPopupView: View {
             ScrollView { content.frame(maxWidth: .infinity, alignment: .leading) }
             footer
         }
-        .padding(16)
+        .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .popupCard()
         .appearPop()
@@ -168,30 +168,9 @@ struct TextToolsPopupView: View {
     }
 
     private var categoryBar: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)], alignment: .leading, spacing: 8) {
-            ForEach(Array(TextToolsPopupViewModel.Category.allCases.enumerated()), id: \.element.id) { index, category in
-                let selected = viewModel.category == category
-                Button {
-                    viewModel.category = category
-                } label: {
-                    Label(category.rawValue, systemImage: category.symbol)
-                        .font(.caption.weight(.semibold))
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8).fill(selected ? BoxTheme.accentFill : BoxTheme.surface)
-                        )
-                        .foregroundStyle(selected ? .white : .primary)
-                        .contentShape(RoundedRectangle(cornerRadius: 8))
-                }
-                .buttonStyle(.plain)
-                .accessibilityValue(selected ? "Selected" : "Not selected")
-                .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
-                .help("\(category.rawValue) (⌘\(index + 1))")
-            }
-        }
+        ToolChoiceBar(selection: $viewModel.category,
+            choices: TextToolsPopupViewModel.Category.allCases.map { ($0, $0.rawValue) },
+            label: "Text tool", numberedShortcuts: true)
     }
 
     private var inputField: some View {
@@ -200,11 +179,11 @@ struct TextToolsPopupView: View {
                 Text("Input · \(viewModel.input.count.formatted()) characters").font(.caption2.bold()).foregroundStyle(.secondary)
                 Spacer()
                 Button("Paste") { if let text = NSPasteboard.general.string(forType: .string) { viewModel.input = text } }
-                    .buttonStyle(.link).font(.caption).help("Paste clipboard text as input")
+                    .buttonStyle(ToolLinkButtonStyle()).font(.caption).help("Paste clipboard text as input")
                 Button("Clear") { viewModel.input = "" }
-                    .buttonStyle(.link).font(.caption).disabled(viewModel.input.isEmpty)
+                    .buttonStyle(ToolLinkButtonStyle()).font(.caption).disabled(viewModel.input.isEmpty)
                 Button("Reset", action: viewModel.resetInput)
-                    .buttonStyle(.link).font(.caption)
+                    .buttonStyle(ToolLinkButtonStyle()).font(.caption)
                     .disabled(!viewModel.canResetInput)
                     .help("Restore the text this tool opened with")
             }
@@ -333,15 +312,11 @@ struct TextToolsPopupView: View {
     private var modelControl: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Token model").font(.caption2.bold()).foregroundStyle(.secondary)
-            Picker("Provider", selection: $viewModel.tokenProvider) {
-                ForEach(ProviderKind.allCases) { Text($0.shortName).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            ToolChoiceBar(selection: $viewModel.tokenProvider, choices: ProviderKind.allCases.map { ($0, $0.shortName) }, label: "Token provider")
 
             HStack(spacing: 6) {
                 TextField("model", text: modelBinding)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(ToolTextFieldStyle())
                     .font(.callout)
                     .autocorrectionDisabled()
                 Menu {

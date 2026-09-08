@@ -1583,7 +1583,7 @@ private struct CaptureScreenshotOverlaySurface: View {
             let toolbar = CaptureOverlayAccessoryLayout.frame(
                 selection: selected,
                 bounds: bounds,
-                preferredSize: CGSize(width: AnnotationToolbarView.overlayToolbarWidth, height: 54)
+                preferredSize: CGSize(width: AnnotationToolbarView.overlayToolbarWidth, height: 44)
             )
 
             ZStack(alignment: .topLeading) {
@@ -1596,8 +1596,8 @@ private struct CaptureScreenshotOverlaySurface: View {
                     .position(x: selected.midX, y: selected.midY)
 
                 AnnotationToolbarView(viewModel: viewModel, showExportActions: true, onClose: onCancel, onScrollCapture: onScrollCapture)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
                     .frame(width: toolbar.width, height: toolbar.height)
                     .popupCard()
                     .position(x: toolbar.midX, y: toolbar.midY)

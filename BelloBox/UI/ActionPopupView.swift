@@ -3,7 +3,7 @@ import SwiftUI
 /// The popup shown when the user clicks the floating button: a selected-text
 /// preview, one-click actions, a custom prompt, and the streamed result.
 struct ActionPopupView: View {
-    static let preferredSize = CGSize(width: 720, height: 760)
+    static let preferredSize = CGSize(width: 720, height: 600)
 
     @ObservedObject var viewModel: ActionPopupViewModel
     @ObservedObject var settings: AppSettings
@@ -36,7 +36,7 @@ struct ActionPopupView: View {
                 }
             }
         }
-        .padding(16)
+        .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .popupCard()
         .appearPop()
@@ -111,7 +111,7 @@ struct ActionPopupView: View {
         HStack(spacing: 8) {
             TextField("Ask Bello Box to…", text: $viewModel.instruction)
                 .focused($instructionFocused)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(ToolTextFieldStyle())
                 .font(.callout)
                 .onSubmit { viewModel.runCustom() }
             Button {

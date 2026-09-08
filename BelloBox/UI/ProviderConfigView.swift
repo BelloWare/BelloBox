@@ -23,12 +23,7 @@ struct ProviderConfigView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Picker("API format", selection: $settings.providerKind) {
-                ForEach(ProviderKind.allCases) { kind in
-                    Text(kind.displayName).tag(kind)
-                }
-            }
-            .pickerStyle(.segmented)
+            ToolChoiceBar(selection: $settings.providerKind, choices: ProviderKind.allCases.map { ($0, $0.displayName) }, label: "API format")
             .onChange(of: settings.providerKind) { _ in
                 resetTransientState(clearModels: true)
             }
@@ -65,7 +60,7 @@ struct ProviderConfigView: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-        }
+        }.buttonStyle(SecondaryButtonStyle())
     }
 
     // MARK: - Fields
@@ -75,14 +70,14 @@ struct ProviderConfigView: View {
             labeledField("Endpoint") {
                 HStack {
                     TextField("Base URL", text: endpointBinding)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(ToolTextFieldStyle())
                         .autocorrectionDisabled()
                     Button("Default") { resetEndpoint() }
                 }
             }
             labeledField("API key") {
                 SecureField(apiKeyPlaceholder, text: $settings.apiKey)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(ToolTextFieldStyle())
             }
         }
     }
@@ -91,7 +86,7 @@ struct ProviderConfigView: View {
         labeledField("Codex command (optional)") {
             HStack {
                 TextField("codex (from your shell PATH)", text: $settings.codexPath)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(ToolTextFieldStyle())
                     .autocorrectionDisabled()
                 Button("Detect") { Task { await settings.detectCodexPath() } }
                     .help("Fill in the full path to your codex binary")
@@ -101,12 +96,7 @@ struct ProviderConfigView: View {
 
     private var openAIAPIKindRow: some View {
         labeledField("Request API") {
-            Picker("Request API", selection: $settings.openAIAPIKind) {
-                ForEach(OpenAIAPIKind.allCases) { kind in
-                    Text(kind.fullLabel).tag(kind)
-                }
-            }
-            .pickerStyle(.segmented)
+            ToolChoiceBar(selection: $settings.openAIAPIKind, choices: OpenAIAPIKind.allCases.map { ($0, $0.fullLabel) }, label: "Request API")
         }
     }
 
@@ -114,7 +104,7 @@ struct ProviderConfigView: View {
         labeledField("Model") {
             HStack(spacing: 6) {
                 TextField(modelPlaceholder, text: modelBinding)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(ToolTextFieldStyle())
                     .autocorrectionDisabled()
                 Menu {
                     if !models.isEmpty {
@@ -151,12 +141,7 @@ struct ProviderConfigView: View {
 
     private var codexReasoningRow: some View {
         labeledField("Reasoning") {
-            Picker("Reasoning", selection: $settings.codexReasoningEffort) {
-                ForEach(CodexCLI.reasoningEfforts, id: \.self) { effort in
-                    Text(effortLabel(effort)).tag(effort)
-                }
-            }
-            .pickerStyle(.segmented)
+            ToolChoiceBar(selection: $settings.codexReasoningEffort, choices: CodexCLI.reasoningEfforts.map { ($0, effortLabel($0)) }, label: "Reasoning")
         }
     }
 
@@ -194,12 +179,7 @@ struct ProviderConfigView: View {
     private var temperatureRow: some View {
         labeledField("Temperature") {
             VStack(alignment: .leading, spacing: 7) {
-                Picker("Temperature", selection: $settings.temperatureMode) {
-                    ForEach(TemperatureMode.allCases) { mode in
-                        Text(mode.label).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
+                ToolChoiceBar(selection: $settings.temperatureMode, choices: TemperatureMode.allCases.map { ($0, $0.label) }, label: "Temperature")
                 .frame(maxWidth: 220)
 
                 if settings.temperatureMode == .custom {

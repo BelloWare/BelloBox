@@ -35,7 +35,15 @@ Add commands in `Launcher/LauncherCatalog.swift`; developer tools share
 `UtilityWorkbenchModel`/`UtilityWorkbenchView`, with engines in `DeveloperTools`.
 Existing popup routes remain in `SelectionOverlayController.swift`. The global
 shortcut reads AX selection without synthesizing copy; clipboard import is an
-explicit palette action. Only tool IDs are stored in recents/favorites.
+explicit palette action. `SelectionRequest` gives an empty immediate AX read
+three bounded retries (35, 65, 100 ms) before opening an empty palette, keeping
+the source app in focus. Requests are cancelled by another shortcut, a new mouse
+down, capture, or an app/window change; the mouse-up hint cannot race them.
+`AccessibilityService` captures the source app/window together, reads its focused
+element and at most six ancestors, rejects secure fields, and falls back from
+selected text to the selected range's parameterized string or a validated UTF-16
+slice of AXValue. It never treats a caret or a complete field as selected text.
+Only tool IDs are stored in recents/favorites.
 `LauncherUsageStore` separately learns explicit tool opens by coarse content
 category (JSON, timestamp, URL, JWT, cron, data, cURL, text, or empty). It saves
 only category/tool IDs, bounded weights, and last-use times; never selected
@@ -174,6 +182,15 @@ explicit Search actions open the palette. `HomeCategory` organizes the tool
 catalog and Home has ⌘1–⌘4 category shortcuts plus ⌘K search. Shared colors,
 `ToolBadge`, `ShortcutBadge`, surfaces, and button styles live in `UI/Theme.swift`.
 Use these tokens when adding or updating tools; honor Reduce Motion.
+Surfaces are quiet warm gray in light mode and graphite in dark mode. Tool badges
+share the orange accent; semantic status colors stay distinct. `ToolChoiceBar`
+serves compact previews and full tool tabs, `ToolTextFieldStyle` styles native
+fields, and `ToolLinkButtonStyle` prevents macOS link buttons from reverting to
+blue. Native controls also inherit `accentColor(accentFill)`. Text actions use
+shared primary/secondary styles, square actions use 28 pt `ToolIconButtonStyle`,
+and hover feedback respects Reduce Motion. Screenshot hosts own toolbar padding
+once (44 pt overlay); popup toolbars and footers rearrange below 760 pt and remain
+usable at 640 × 440, keeping the canvas and export actions on screen.
 `AppBrandIcon` uses the shipped app artwork in Home, Settings, and Setup. Main,
 World Clock, Settings, and Setup share `AppWindowChrome` and standard-sized native window controls;
 World Clock remains floating across Spaces without the smaller utility style.

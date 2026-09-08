@@ -120,7 +120,7 @@ struct QRCodePopupView: View {
             messageArea
             footer
         }
-        .padding(16)
+        .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .popupCard()
         .appearPop()
@@ -166,9 +166,9 @@ struct QRCodePopupView: View {
                 Text("Encoded text").font(.caption.bold()).foregroundStyle(.secondary)
                 Spacer()
                 Button("Clear") { viewModel.text = "" }
-                    .buttonStyle(.link).font(.caption).disabled(viewModel.text.isEmpty)
+                    .buttonStyle(ToolLinkButtonStyle()).font(.caption).disabled(viewModel.text.isEmpty)
                 Button("Paste Text", action: viewModel.pasteText)
-                    .buttonStyle(.link).font(.caption)
+                    .buttonStyle(ToolLinkButtonStyle()).font(.caption)
                     .help("Use text from your clipboard")
             }
             LiteralTextEditor(text: $viewModel.text, label: "Encoded text", focusesWhenAttached: true)

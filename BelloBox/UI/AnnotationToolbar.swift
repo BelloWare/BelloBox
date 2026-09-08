@@ -3,6 +3,7 @@ import SwiftUI
 struct AnnotationToolbarView: View {
     @ObservedObject var viewModel: ScreenshotPopupViewModel
     var showExportActions = false
+    var compact = false
     var onClose: (() -> Void)?
     /// Shown only in the capture overlay for area and window captures.
     var onScrollCapture: (() -> Void)?
@@ -10,60 +11,38 @@ struct AnnotationToolbarView: View {
     static let scrollCaptureTitle = "Scrolling Capture"
     /// Width the capture overlay reserves for the toolbar with every action shown
     /// (mask controls are the widest style row); `AnnotationToolbarLayoutTests` keeps it honest.
-    static let overlayToolbarWidth: CGFloat = 1_060
+    static let overlayToolbarWidth: CGFloat = 980
     static let scrollCaptureTooltip = "Capture a scrolling page: the selection goes live, you scroll it (or let Bello Box auto-scroll) and every screen is stitched into one tall screenshot"
 
     var body: some View {
-        HStack(spacing: 6) {
-            ForEach(Array(AnnotationTool.allCases.enumerated()), id: \.element.id) { index, tool in
-                Button {
-                    viewModel.activeTool = tool
-                } label: {
-                    Image(systemName: tool.symbol)
-                        .font(.system(size: 13, weight: .medium))
-                        .frame(width: 30, height: 30)
-                }
-                .buttonStyle(.plain)
-                .background(RoundedRectangle(cornerRadius: 7).fill(viewModel.activeTool == tool ? BoxTheme.accentSoft : .clear))
-                .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(viewModel.activeTool == tool ? BoxTheme.accent : .clear, lineWidth: 1.5))
-                .accessibilityLabel(tool.label)
-                .accessibilityValue(viewModel.activeTool == tool ? "Selected" : "Not selected")
-                .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: [.command, .option])
-                .overlayTooltip("\(Self.tooltip(for: tool)) (⌥⌘\(index + 1))")
-            }
+        if compact && !showExportActions && onScrollCapture == nil {
+            VStack(spacing: 6) {
+                HStack(spacing: 4) { toolButtons; Spacer(minLength: 8); historyButtons }
+                HStack(spacing: 8) {
+                    styleControls.frame(width: styleControlsWidth, alignment: .leading)
+                    imageOptions
+                    Spacer(minLength: 0)
+                }.frame(height: 28)
+            }.tint(BoxTheme.accent)
+        } else {
+            fullToolbar
+        }
+    }
+
+    private var fullToolbar: some View {
+        HStack(spacing: 4) {
+            toolButtons
 
             Divider().frame(height: 24)
 
             styleControls
                 .frame(width: styleControlsWidth, alignment: .leading)
 
-            Menu {
-                Text("\(Int(viewModel.visibleImageSize.width)) × \(Int(viewModel.visibleImageSize.height)) pixels")
-                Button("Reset Crop", action: viewModel.resetCrop)
-                    .disabled(!viewModel.canResetCrop)
-                Divider()
-                Text("Choose tools with ⌥⌘1 through ⌥⌘9")
-            } label: { Image(systemName: "ellipsis.circle") }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
-            .accessibilityLabel("Image options")
-            .overlayTooltip("Image size and reset crop")
+            imageOptions
 
             Spacer(minLength: 8)
 
-            Button { viewModel.undo() } label: { Image(systemName: "arrow.uturn.backward") }
-                .buttonStyle(SecondaryButtonStyle())
-                .disabled(!viewModel.canUndo)
-                .keyboardShortcut("z", modifiers: .command)
-                .accessibilityLabel("Undo")
-                .overlayTooltip("Undo (⌘Z)")
-
-            Button { viewModel.redo() } label: { Image(systemName: "arrow.uturn.forward") }
-                .buttonStyle(SecondaryButtonStyle())
-                .disabled(!viewModel.canRedo)
-                .keyboardShortcut("z", modifiers: [.command, .shift])
-                .accessibilityLabel("Redo")
-                .overlayTooltip("Redo (⇧⌘Z)")
+            historyButtons
 
             if let onScrollCapture {
                 Divider().frame(height: 24)
@@ -82,12 +61,12 @@ struct AnnotationToolbarView: View {
                 Divider().frame(height: 24)
 
                 Button { viewModel.copyRenderedImage() } label: { Image(systemName: "doc.on.doc") }
-                    .buttonStyle(SecondaryButtonStyle())
+                    .buttonStyle(ToolIconButtonStyle())
                     .keyboardShortcut("c", modifiers: [.command, .shift])
                     .accessibilityLabel("Copy Image")
                     .overlayTooltip("Copy image to the clipboard (⇧⌘C)")
                 Button { viewModel.saveRenderedImage() } label: { Image(systemName: "square.and.arrow.down") }
-                    .buttonStyle(SecondaryButtonStyle())
+                    .buttonStyle(ToolIconButtonStyle())
                     .keyboardShortcut("s", modifiers: .command)
                     .accessibilityLabel("Save PNG")
                     .overlayTooltip("Save as PNG… (⌘S)")
@@ -95,18 +74,66 @@ struct AnnotationToolbarView: View {
                     Button(action: onClose) {
                         Image(systemName: "xmark")
                     }
-                    .buttonStyle(SecondaryButtonStyle())
+                    .buttonStyle(ToolIconButtonStyle())
                     .accessibilityLabel("Cancel Screenshot")
                     .overlayTooltip("Cancel (esc)")
                 }
             }
 
-            Button { viewModel.finish() } label: { Image(systemName: "checkmark") }
-                .buttonStyle(PrimaryButtonStyle())
-                .keyboardShortcut(.defaultAction)
-                .accessibilityLabel("Copy and Finish")
-                .overlayTooltip("Copy the image and finish (return)")
-        }.padding(showExportActions ? 0 : 8).surfaceCard().tint(BoxTheme.accent)
+            if showExportActions {
+                Button { viewModel.finish() } label: { Image(systemName: "checkmark") }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .keyboardShortcut(.defaultAction)
+                    .accessibilityLabel("Copy and Finish")
+                    .overlayTooltip("Copy the image and finish (return)")
+            }
+        }.tint(BoxTheme.accent)
+    }
+
+    private var toolButtons: some View {
+        ForEach(Array(AnnotationTool.allCases.enumerated()), id: \.element.id) { index, tool in
+            Button {
+                viewModel.activeTool = tool
+            } label: {
+                Image(systemName: tool.symbol)
+                    .font(.system(size: 13, weight: .medium))
+            }
+            .buttonStyle(ToolIconButtonStyle(selected: viewModel.activeTool == tool))
+            .accessibilityLabel(tool.label)
+            .accessibilityValue(viewModel.activeTool == tool ? "Selected" : "Not selected")
+            .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: [.command, .option])
+            .overlayTooltip("\(Self.tooltip(for: tool)) (⌥⌘\(index + 1))")
+        }
+    }
+
+    private var imageOptions: some View {
+        Menu {
+            Text("\(Int(viewModel.visibleImageSize.width)) × \(Int(viewModel.visibleImageSize.height)) pixels")
+            Button("Reset Crop", action: viewModel.resetCrop)
+                .disabled(!viewModel.canResetCrop)
+            Divider()
+            Text("Choose tools with ⌥⌘1 through ⌥⌘9")
+        } label: { Image(systemName: "ellipsis.circle") }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .accessibilityLabel("Image options")
+        .overlayTooltip("Image size and reset crop")
+    }
+
+    @ViewBuilder private var historyButtons: some View {
+        Button { viewModel.undo() } label: { Image(systemName: "arrow.uturn.backward") }
+            .buttonStyle(ToolIconButtonStyle())
+            .disabled(!viewModel.canUndo)
+            .keyboardShortcut("z", modifiers: .command)
+            .accessibilityLabel("Undo")
+            .overlayTooltip("Undo (⌘Z)")
+
+        Button { viewModel.redo() } label: { Image(systemName: "arrow.uturn.forward") }
+            .buttonStyle(ToolIconButtonStyle())
+            .disabled(!viewModel.canRedo)
+            .keyboardShortcut("z", modifiers: [.command, .shift])
+            .accessibilityLabel("Redo")
+            .overlayTooltip("Redo (⇧⌘Z)")
     }
 
     /// The mask row carries swatches, a custom colour and the pattern menu, so it

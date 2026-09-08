@@ -82,7 +82,7 @@ struct WindowCapturePickerView: View {
                     .frame(maxHeight: .infinity)
             } else if let error = viewModel.errorMessage {
                 VStack(spacing: 10) {
-                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(BoxTheme.warning)
                     Text(error).foregroundStyle(.secondary)
                     Button("Reload") { viewModel.load() }
                 }

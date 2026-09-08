@@ -41,12 +41,12 @@ struct WorldClockCopilotView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sparkles").foregroundStyle(BoxTheme.purple)
+            Image(systemName: "sparkles").foregroundStyle(BoxTheme.accent)
             Text("Copilot").font(.caption.weight(.semibold))
             Text("Knows the selected time and your locations").font(.caption).foregroundStyle(.secondary)
             Spacer()
             if session.hasTranscript {
-                Button("Clear", action: session.clear).buttonStyle(.link).font(.caption)
+                Button("Clear", action: session.clear).buttonStyle(ToolLinkButtonStyle()).font(.caption)
                     .help("Forget this conversation")
             }
         }
@@ -98,7 +98,7 @@ struct WorldClockCopilotView: View {
             }
         case .assistant:
             HStack(alignment: .top, spacing: 6) {
-                Image(systemName: "sparkles").font(.system(size: 10)).foregroundStyle(BoxTheme.purple).padding(.top, 3)
+                Image(systemName: "sparkles").font(.system(size: 10)).foregroundStyle(BoxTheme.accent).padding(.top, 3)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 5) {
                     Text(message.text).font(.system(size: isCompact ? 11 : 12)).textSelection(.enabled)
@@ -163,7 +163,7 @@ struct WorldClockCopilotView: View {
             HStack(spacing: 6) {
                 ProgressView().controlSize(.small)
                 Text("Thinking…").font(.system(size: 10)).foregroundStyle(.secondary)
-                Button("Cancel", action: session.cancel).buttonStyle(.link).font(.system(size: 10))
+                Button("Cancel", action: session.cancel).buttonStyle(ToolLinkButtonStyle()).font(.system(size: 10))
                     .accessibilityIdentifier("worldClockCopilotCancel")
             }
         } else if let error = session.errorMessage {
@@ -171,7 +171,7 @@ struct WorldClockCopilotView: View {
                 Image(systemName: "exclamationmark.circle").foregroundStyle(BoxTheme.danger)
                 Text(error).font(.system(size: 10)).foregroundStyle(BoxTheme.danger).textSelection(.enabled)
                 if session.canRetry {
-                    Button("Retry", action: session.retry).buttonStyle(.link).font(.system(size: 10))
+                    Button("Retry", action: session.retry).buttonStyle(ToolLinkButtonStyle()).font(.system(size: 10))
                         .accessibilityIdentifier("worldClockCopilotRetry")
                 }
             }
@@ -179,7 +179,7 @@ struct WorldClockCopilotView: View {
             HStack(spacing: 6) {
                 Text(status).font(.system(size: 10)).foregroundStyle(.secondary)
                 if session.canRetry {
-                    Button("Ask again", action: session.retry).buttonStyle(.link).font(.system(size: 10))
+                    Button("Ask again", action: session.retry).buttonStyle(ToolLinkButtonStyle()).font(.system(size: 10))
                         .accessibilityIdentifier("worldClockCopilotRetry")
                 }
             }
@@ -188,7 +188,7 @@ struct WorldClockCopilotView: View {
 
     private var inputRow: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sparkles").font(.system(size: 11)).foregroundStyle(BoxTheme.purple)
+            Image(systemName: "sparkles").font(.system(size: 11)).foregroundStyle(BoxTheme.accent)
                 .accessibilityHidden(true)
             LauncherSearchField(text: $session.draft, onMove: { _ in }, onSubmit: session.send, onEscape: onEscape,
                 onReady: onFieldReady,
@@ -215,7 +215,7 @@ struct WorldClockCopilotView: View {
     private var providerNotice: some View {
         HStack(spacing: 5) {
             Text("The copilot needs an AI provider.").foregroundStyle(.secondary)
-            Button("Open Settings", action: onOpenSettings).buttonStyle(.link)
+            Button("Open Settings", action: onOpenSettings).buttonStyle(ToolLinkButtonStyle())
                 .accessibilityIdentifier("worldClockCopilotOpenSettings")
         }.font(.system(size: 10))
     }

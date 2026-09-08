@@ -914,61 +914,65 @@ final class ScreenshotPopupViewModel: ObservableObject {
 
 struct ScreenshotPopupView: View {
     static let preferredSize = CGSize(width: 1040, height: 760)
+    static let minimumSize = CGSize(width: 640, height: 440)
 
     @ObservedObject var viewModel: ScreenshotPopupViewModel
     var onMinimize: () -> Void
     @State private var showsOCR = false
 
     var body: some View {
-        ZStack {
-            VStack(alignment: .leading, spacing: 12) {
-                PopupHeader(
-                    icon: "camera.viewfinder",
-                    title: "Screenshot",
-                    subtitle: "\(sourceSummary) · \(Int(viewModel.visibleImageSize.width)) × \(Int(viewModel.visibleImageSize.height)) px",
-                    onMinimize: onMinimize,
-                    onClose: viewModel.requestClose
-                )
+        GeometryReader { geometry in
+            let compact = geometry.size.width < 760
+            ZStack {
+                VStack(alignment: .leading, spacing: 8) {
+                    PopupHeader(
+                        icon: "camera.viewfinder",
+                        title: "Screenshot",
+                        subtitle: "\(sourceSummary) · \(Int(viewModel.visibleImageSize.width)) × \(Int(viewModel.visibleImageSize.height)) px",
+                        onMinimize: onMinimize,
+                        onClose: viewModel.requestClose
+                    )
 
-                AnnotationToolbarView(viewModel: viewModel)
+                    AnnotationToolbarView(viewModel: viewModel, compact: compact)
 
-                if viewModel.showsCaptureNotes, !viewModel.document.captureNotes.isEmpty {
-                    captureNotes
-                }
-
-                HStack(alignment: .top, spacing: 12) {
-                    ZoomableAnnotationCanvas(viewModel: viewModel)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.primary.opacity(0.08), lineWidth: 1))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                    if showsOCR {
-                        OCRPanelView(viewModel: viewModel.ocrPanel)
-                            .frame(width: 285)
-                            .toolPanel()
+                    if viewModel.showsCaptureNotes, !viewModel.document.captureNotes.isEmpty {
+                        captureNotes
                     }
+
+                    HStack(alignment: .top, spacing: 12) {
+                        ZoomableAnnotationCanvas(viewModel: viewModel)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(BoxTheme.border, lineWidth: 1))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                        if showsOCR {
+                            OCRPanelView(viewModel: viewModel.ocrPanel)
+                                .frame(width: 285)
+                                .toolPanel()
+                        }
+                    }
+
+                    footer(compact: compact)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .popupCard()
+                .onExitCommand(perform: viewModel.handleEscape)
+                .alert("Discard screenshot edits?", isPresented: $viewModel.showDiscardCloseConfirmation) {
+                    Button("Keep Editing", role: .cancel) { viewModel.cancelDiscardClose() }
+                    Button("Discard", role: .destructive) { viewModel.confirmDiscardAndClose() }
+                } message: {
+                    Text("Your screenshot annotations and crop changes will be lost.")
                 }
 
-                footer
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .popupCard()
-            .onExitCommand(perform: viewModel.handleEscape)
-            .alert("Discard screenshot edits?", isPresented: $viewModel.showDiscardCloseConfirmation) {
-                Button("Keep Editing", role: .cancel) { viewModel.cancelDiscardClose() }
-                Button("Discard", role: .destructive) { viewModel.confirmDiscardAndClose() }
-            } message: {
-                Text("Your screenshot annotations and crop changes will be lost.")
-            }
-
-            if let confirmation = viewModel.llmConfirmation {
-                LLMOCRConfirmationView(
-                    confirmation: confirmation,
-                    onConfirm: viewModel.confirmLLMOCR,
-                    onCancel: viewModel.cancelLLMOCR
-                )
-                .padding(32)
+                if let confirmation = viewModel.llmConfirmation {
+                    LLMOCRConfirmationView(
+                        confirmation: confirmation,
+                        onConfirm: viewModel.confirmLLMOCR,
+                        onCancel: viewModel.cancelLLMOCR
+                    )
+                    .padding(32)
+                }
             }
         }
     }
@@ -992,7 +996,7 @@ struct ScreenshotPopupView: View {
     private var zoomControls: some View {
         HStack(spacing: 4) {
             Button { viewModel.zoomOut() } label: { Image(systemName: "minus.magnifyingglass") }
-                .buttonStyle(SecondaryButtonStyle())
+                .buttonStyle(ToolIconButtonStyle())
                 .keyboardShortcut("-", modifiers: .command)
                 .accessibilityLabel("Zoom out")
                 .help("Zoom out (⌘−)")
@@ -1012,41 +1016,57 @@ struct ScreenshotPopupView: View {
             .accessibilityValue(viewModel.zoomLabel)
             .help("Fit (⌘9), Actual Size (⌘0), or a magnification. Scroll to pan.")
             Button { viewModel.zoomIn() } label: { Image(systemName: "plus.magnifyingglass") }
-                .buttonStyle(SecondaryButtonStyle())
+                .buttonStyle(ToolIconButtonStyle())
                 .keyboardShortcut("=", modifiers: .command)
                 .accessibilityLabel("Zoom in")
                 .help("Zoom in (⌘+)")
         }
     }
 
-    private var footer: some View {
-        HStack(spacing: 10) {
-            Button {
-                showsOCR.toggle()
-            } label: {
-                Label(showsOCR ? "Hide Text Reader" : "Show Text Reader", systemImage: "sidebar.right")
+    @ViewBuilder private func footer(compact: Bool) -> some View {
+        if compact {
+            VStack(spacing: 6) {
+                HStack(spacing: 8) { navigationControls; Spacer(minLength: 0) }
+                HStack(spacing: 8) { status; Spacer(minLength: 0); exportControls }
             }
-            .buttonStyle(SecondaryButtonStyle())
-            .keyboardShortcut("o", modifiers: [.command, .option])
-            .help("Show or hide the text reader (⌥⌘O)")
-            zoomControls
-            if let message = viewModel.errorMessage ?? viewModel.statusMessage {
-                Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                    .font(.caption)
-                    .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : BoxTheme.warning)
-                    .lineLimit(2)
-            }
-            Spacer()
-            Button("Copy Image") { viewModel.copyRenderedImage() }
-                .buttonStyle(PrimaryButtonStyle())
-                .keyboardShortcut("c", modifiers: [.command, .shift])
-                .help("Copy image (⇧⌘C)")
-            Button("Save PNG…") { viewModel.saveRenderedImage() }
-                .buttonStyle(SecondaryButtonStyle())
-                .keyboardShortcut("s", modifiers: .command)
-            Button("Copy & Finish") { viewModel.finish() }
-                .buttonStyle(SecondaryButtonStyle())
+        } else {
+            HStack(spacing: 10) { navigationControls; status; Spacer(minLength: 0); exportControls }
         }
+    }
+
+    @ViewBuilder private var navigationControls: some View {
+        Button {
+            showsOCR.toggle()
+        } label: {
+            Label("Text Reader", systemImage: "sidebar.right")
+        }
+        .buttonStyle(SecondaryButtonStyle())
+        .accessibilityValue(showsOCR ? "Shown" : "Hidden")
+        .keyboardShortcut("o", modifiers: [.command, .option])
+        .help("Show or hide the text reader (⌥⌘O)")
+        zoomControls
+    }
+
+    @ViewBuilder private var status: some View {
+        if let message = viewModel.errorMessage ?? viewModel.statusMessage {
+            Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                .font(.caption)
+                .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : BoxTheme.warning)
+                .lineLimit(2)
+        }
+    }
+
+    @ViewBuilder private var exportControls: some View {
+        Button("Copy Image") { viewModel.copyRenderedImage() }
+            .buttonStyle(SecondaryButtonStyle())
+            .keyboardShortcut("c", modifiers: [.command, .shift])
+            .help("Copy image (⇧⌘C)")
+        Button("Save PNG…") { viewModel.saveRenderedImage() }
+            .buttonStyle(SecondaryButtonStyle())
+            .keyboardShortcut("s", modifiers: .command)
+        Button("Copy & Finish") { viewModel.finish() }
+            .buttonStyle(PrimaryButtonStyle())
+            .keyboardShortcut(.defaultAction)
     }
 
     private var sourceSummary: String {
@@ -1158,13 +1178,13 @@ struct CaptureNotesBanner: View {
                     Button(showsAll ? "Show fewer" : "Show all \(notes.count) notes") {
                         withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { showsAll.toggle() }
                     }
-                    .buttonStyle(.link).font(.caption)
+                    .buttonStyle(ToolLinkButtonStyle()).font(.caption)
                     .accessibilityIdentifier("captureNotesToggle")
                 }
             }
             Spacer(minLength: 8)
             Button("Dismiss", action: onDismiss)
-                .buttonStyle(.link).font(.caption)
+                .buttonStyle(ToolLinkButtonStyle()).font(.caption)
                 .accessibilityLabel("Dismiss capture notes")
         }
         .padding(.horizontal, 12).padding(.vertical, 8)

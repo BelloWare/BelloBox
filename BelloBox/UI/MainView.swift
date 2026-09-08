@@ -51,7 +51,7 @@ struct MainView: View {
             sidebar
             Divider()
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 20) {
                     header
                     searchButton
                     if !trusted { permissionNotice }
@@ -71,10 +71,10 @@ struct MainView: View {
                              : "Enable the command palette shortcut in Settings to open your tools from any app.")
                             .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(14).surfaceCard()
-                }.padding(28)
+                }.padding(24)
             }.id(category)
         }
-        .background(WorkspaceBackground()).tint(BoxTheme.accent)
+        .background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .frame(minWidth: 900, minHeight: 640)
         .onReceive(timer) { _ in trusted = AccessibilityService.isTrusted }
         .onAppear { if let requested = navigation.requested { category = requested } }

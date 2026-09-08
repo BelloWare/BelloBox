@@ -235,7 +235,7 @@ struct LauncherAIPreviewView: View {
                 }
             }
             HStack(spacing: 8) {
-                Image(systemName: "sparkles").font(.system(size: 11)).foregroundStyle(BoxTheme.purple).accessibilityHidden(true)
+                Image(systemName: "sparkles").font(.system(size: 11)).foregroundStyle(BoxTheme.accent).accessibilityHidden(true)
                 LauncherPreviewField(text: $model.draft, placeholder: model.hasSelection ? "Ask Bello Box to…" : "Ask Bello Box a question…",
                                      label: "Ask AI instruction", monospaced: false, onSubmit: send, onEscape: onEscape)
                 Button(action: send) { Label("Send", systemImage: "arrow.up") }

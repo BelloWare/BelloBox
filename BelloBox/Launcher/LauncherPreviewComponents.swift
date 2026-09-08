@@ -146,28 +146,10 @@ struct LauncherChoiceBar<Value: Hashable>: View {
     var label: String
 
     var body: some View {
-        HStack(spacing: 2) {
-            ForEach(choices, id: \.0) { value, title in
-                let selected = selection == value
-                Button { selection = value } label: {
-                    Text(title).font(.system(size: 10, weight: selected ? .semibold : .medium)).lineLimit(1)
-                        .foregroundStyle(selected ? Color.white : Color.primary)
-                        .padding(.horizontal, 8).frame(height: 20)
-                        .background(selected ? AnyShapeStyle(BoxTheme.accentGradient) : AnyShapeStyle(Color.clear),
-                                    in: RoundedRectangle(cornerRadius: 5))
-                        .contentShape(RoundedRectangle(cornerRadius: 5))
-                }.buttonStyle(.plain)
-                    .accessibilityLabel("\(label): \(title)")
-                    .accessibilityValue(selected ? "Selected" : "Not selected")
-                    .accessibilityIdentifier("launcherChoice_\(label)_\(title)")
-            }
-        }
-        .padding(2)
-        .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
-        .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.border))
-        .fixedSize(horizontal: true, vertical: false)
-        .accessibilityElement(children: .contain)
+        ToolChoiceBar(selection: $selection, choices: choices, label: label, compact: true, identifierPrefix: "launcherChoice")
+            .fixedSize(horizontal: true, vertical: false)
     }
+
 }
 
 /// A compact popover menu for option lists too long for a choice bar.

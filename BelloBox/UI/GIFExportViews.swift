@@ -487,11 +487,7 @@ struct VideoToGIFSourceCard: View {
             if let result = viewModel.result {
                 Divider()
                 HStack(spacing: 8) {
-                    Picker("Preview", selection: $viewModel.showsResult) {
-                        Text("GIF").tag(true)
-                        Text("Movie").tag(false)
-                    }
-                    .pickerStyle(.segmented).labelsHidden().fixedSize()
+                    ToolChoiceBar(selection: $viewModel.showsResult, choices: [(true, "GIF"), (false, "Movie")], label: "Preview", compact: true).fixedSize()
                     .help("Switch the preview between the GIF and the movie it came from")
                     .accessibilityLabel("Preview")
                     Label(Self.resultSummary(result), systemImage: "photo.stack")

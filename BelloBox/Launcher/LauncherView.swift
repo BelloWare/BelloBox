@@ -36,7 +36,7 @@ struct LauncherView: View {
                 footer
             }
         }
-        .background(WorkspaceBackground()).tint(BoxTheme.accent)
+        .background(WorkspaceBackground()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.primary.opacity(0.12), lineWidth: 1))
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.14), value: model.workbench != nil)
@@ -90,7 +90,7 @@ struct LauncherView: View {
                         VStack(spacing: 7) {
                             Text("No matching tools").font(.system(size: 13, weight: .medium))
                             Text("Try JSON, diff, capture, or time.").font(.system(size: 11)).foregroundStyle(.secondary)
-                            Button("Clear search") { model.query = "" }.buttonStyle(.link).font(.system(size: 11))
+                            Button("Clear search") { model.query = "" }.buttonStyle(ToolLinkButtonStyle()).font(.system(size: 11))
                         }.frame(maxWidth: .infinity).frame(height: 118)
                     }
                     ForEach(model.commands) { command in

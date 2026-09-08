@@ -115,7 +115,7 @@ private struct ScreenshotOverlayDimView: View {
 }
 
 private struct ScreenshotOverlayEditorView: View {
-    private static let toolbarHeight: CGFloat = 54
+    private static let toolbarHeight: CGFloat = 44
     private static let toolbarMinimumWidth: CGFloat = 700
     private static let toolbarMaximumWidth: CGFloat = 980
     private static let gap: CGFloat = 10
@@ -161,7 +161,7 @@ private struct ScreenshotOverlayEditorView: View {
                         .lineLimit(2)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)
-                        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.regularMaterial))
+                        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(BoxTheme.surface))
                         .frame(width: error.width, alignment: .leading)
                         .position(x: error.midX, y: error.midY)
                 }
@@ -188,9 +188,9 @@ private struct ScreenshotOverlayEditorView: View {
             AnnotationToolbarView(viewModel: viewModel, showExportActions: true, onClose: viewModel.requestClose)
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BoxTheme.surface))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(BoxTheme.border, lineWidth: 1))
+        .padding(.vertical, 6)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(BoxTheme.surface))
+        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(BoxTheme.border, lineWidth: 1))
         .shadow(color: .black.opacity(0.28), radius: 16, y: 8)
     }
 

@@ -14,18 +14,18 @@ struct WorldClockView: View {
             header
             Divider()
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 16) {
                     timelineSection
                     locationsSection
                 }
-                .padding(20)
+                .padding(16)
             }
             .accessibilityIdentifier("worldClockLocationList")
             Divider()
             footer
         }
         .frame(minWidth: 780, minHeight: 640)
-        .background(WorkspaceBackground()).tint(BoxTheme.accent)
+        .background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .onReceive(timer) { viewModel.refreshCurrentTime($0) }
         .sheet(isPresented: $showingZonePicker) {
             WorldClockZonePicker(viewModel: viewModel) { showingZonePicker = false }
@@ -43,9 +43,9 @@ struct WorldClockView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            ToolBadge(symbol: "globe.americas.fill", size: 40)
+            ToolBadge(symbol: "globe.americas.fill", size: 34)
             VStack(alignment: .leading, spacing: 4) {
-                Text("World Clock").font(.system(size: 22, weight: .semibold))
+                Text("World Clock").font(.system(size: 20, weight: .semibold))
                 Text("One moment. Every time zone.").font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
@@ -60,7 +60,7 @@ struct WorldClockView: View {
                 .keyboardShortcut("n", modifiers: .command)
                 .help("Return to live time (⌘N)")
         }
-        .padding(20)
+        .padding(16)
     }
 
     private var timelineSection: some View {
@@ -317,7 +317,7 @@ private struct WorldClockZonePicker: View {
                 Button("Add Location", action: addSelected).buttonStyle(PrimaryButtonStyle()).disabled(selectedID == nil)
             }.padding(12).background(BoxTheme.surface)
         }
-        .frame(width: 440).background(WorkspaceBackground()).tint(BoxTheme.accent)
+        .frame(width: 440).background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .onAppear { viewModel.searchQuery = ""; selectedID = results.first?.id }
         .onChange(of: viewModel.searchQuery) { _ in selectedID = results.first?.id }
         .onExitCommand(perform: onClose)

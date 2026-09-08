@@ -19,15 +19,15 @@ struct UtilityWorkbenchView: View {
                 }
                 Spacer()
                 ShortcutBadge(text: "⌘K")
-            }.padding(18)
+            }.padding(14)
             Divider()
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 14) {
                     controls
                     inputArea
                     extraControls
                     resultArea
-                }.padding(20)
+                }.padding(16)
             }
             Divider()
             footer
@@ -41,16 +41,15 @@ struct UtilityWorkbenchView: View {
     @ViewBuilder private var controls: some View {
         switch model.command {
         case .json:
-            Picker("Action", selection: $model.jsonMode) { ForEach(["Pretty-print", "Minify", "Validate"], id: \.self) { Text($0) } }
-                .pickerStyle(.segmented).labelsHidden()
+            ToolChoiceBar(selection: $model.jsonMode, choices: [("Pretty-print", "Pretty"), ("Minify", "Minify"), ("Validate", "Validate")], label: "JSON action")
         case .compare:
             HStack {
-                Picker("Compare", selection: $model.comparisonMode) { ForEach(ComparisonMode.allCases, id: \.self) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented)
+                ToolChoiceBar(selection: $model.comparisonMode, choices: ComparisonMode.allCases.map { ($0, $0.rawValue) }, label: "Compare")
                 Toggle("Ignore whitespace", isOn: $model.ignoreWhitespace).disabled(model.comparisonMode != .lines)
             }
         case .regex:
             VStack(alignment: .leading, spacing: 10) {
-                TextField("Pattern, for example [A-Z]+-\\d+", text: $model.regexPattern).textFieldStyle(.roundedBorder).font(.system(.body, design: .monospaced)).accessibilityLabel("Regular expression")
+                TextField("Pattern, for example [A-Z]+-\\d+", text: $model.regexPattern).textFieldStyle(ToolTextFieldStyle()).font(.system(.body, design: .monospaced)).accessibilityLabel("Regular expression")
                     .focused($focusedEditor, equals: "Regular expression")
                 HStack {
                     Toggle("Ignore case", isOn: $model.regexIgnoreCase)
@@ -58,9 +57,9 @@ struct UtilityWorkbenchView: View {
                     Spacer()
                     Text("ICU engine").font(.caption).foregroundStyle(.secondary)
                 }
-                Picker("Output", selection: $model.regexOutput) { ForEach(["Matches", "Extract", "Replace"], id: \.self) { Text($0) } }.pickerStyle(.segmented)
+                ToolChoiceBar(selection: $model.regexOutput, choices: ["Matches", "Extract", "Replace"].map { ($0, $0) }, label: "Regex output")
                 if model.regexOutput == "Replace" {
-                    TextField("Replacement ($1, $2… for groups)", text: $model.replacement).textFieldStyle(.roundedBorder)
+                    TextField("Replacement ($1, $2… for groups)", text: $model.replacement).textFieldStyle(ToolTextFieldStyle())
                 }
             }
         case .time:
@@ -88,7 +87,7 @@ struct UtilityWorkbenchView: View {
         case .snippets: snippetControls
         case .generate:
             VStack(alignment: .leading, spacing: 12) {
-                Picker("Generate", selection: $model.generatorKind) { ForEach(GeneratorKind.allCases, id: \.self) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented)
+                ToolChoiceBar(selection: $model.generatorKind, choices: GeneratorKind.allCases.map { ($0, $0.rawValue) }, label: "Generate")
                 HStack {
                     Stepper("\(model.generatorCount) items", value: $model.generatorCount, in: 1...1_000)
                     if model.generatorKind == .random { Stepper("Length \(model.generatorLength)", value: $model.generatorLength, in: 1...256) }
@@ -104,7 +103,7 @@ struct UtilityWorkbenchView: View {
     private var zonePicker: some View {
         HStack {
             Text("Time zone").font(.caption).foregroundStyle(.secondary)
-            TextField("Asia/Singapore", text: $model.zoneID).textFieldStyle(.roundedBorder).accessibilityLabel("Time zone")
+            TextField("Asia/Singapore", text: $model.zoneID).textFieldStyle(ToolTextFieldStyle()).accessibilityLabel("Time zone")
             Menu("Choose") {
                 Button("My time zone") { model.zoneID = TimeZone.current.identifier }
                 ForEach(["UTC", "Asia/Singapore", "Asia/Tokyo", "Europe/London", "America/New_York", "America/Los_Angeles"], id: \.self) { zone in Button(zone) { model.zoneID = zone } }
@@ -122,19 +121,19 @@ struct UtilityWorkbenchView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         inputLabel("First text", second: false)
                         editor("First text", text: $model.input, height: 190)
-                        Button("Pin this text", action: model.pin).buttonStyle(.link)
+                        Button("Pin this text", action: model.pin).buttonStyle(ToolLinkButtonStyle())
                     }
                     VStack(alignment: .leading, spacing: 8) {
                         inputLabel("Second text", second: true)
                         editor("Second text", text: $model.secondInput, height: 190)
-                        Button("Use pinned text", action: model.usePinned).buttonStyle(.link)
+                        Button("Use pinned text", action: model.usePinned).buttonStyle(ToolLinkButtonStyle())
                     }
                 }
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     inputLabel(model.command == .snippets ? "Template" : model.command == .http ? "Import cURL or URL" : "Input", second: false)
                     editor(model.command == .snippets ? "Snippet template" : "Utility input", text: $model.input, height: inputHeight)
-                    if model.command == .time { TextField("Optional second timestamp to compare", text: $model.secondInput).textFieldStyle(.roundedBorder) }
+                    if model.command == .time { TextField("Optional second timestamp to compare", text: $model.secondInput).textFieldStyle(ToolTextFieldStyle()) }
                 }
             }
         }
@@ -151,10 +150,10 @@ struct UtilityWorkbenchView: View {
             Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             Spacer()
             if !second && ![LauncherCommand.snippets, .compare].contains(model.command) {
-                Button("Example") { model.input = example }.buttonStyle(.link).font(.caption)
+                Button("Example") { model.input = example }.buttonStyle(ToolLinkButtonStyle()).font(.caption)
             }
-            Button("Paste") { model.pasteInput(second: second) }.buttonStyle(.link).font(.caption)
-            Button("Clear") { if second { model.secondInput = "" } else { model.input = "" } }.buttonStyle(.link).font(.caption)
+            Button("Paste") { model.pasteInput(second: second) }.buttonStyle(ToolLinkButtonStyle()).font(.caption)
+            Button("Clear") { if second { model.secondInput = "" } else { model.input = "" } }.buttonStyle(ToolLinkButtonStyle()).font(.caption)
         }
     }
     private func editor(_ title: String, text: Binding<String>, height: CGFloat) -> some View {
@@ -176,7 +175,7 @@ struct UtilityWorkbenchView: View {
                 ForEach(model.customFields, id: \.self) { field in
                     HStack {
                         Text(field).frame(width: 130, alignment: .leading)
-                        TextField("Value", text: Binding(get: { model.snippetValues[field] ?? "" }, set: { model.snippetValues[field] = $0 })).textFieldStyle(.roundedBorder)
+                        TextField("Value", text: Binding(get: { model.snippetValues[field] ?? "" }, set: { model.snippetValues[field] = $0 })).textFieldStyle(ToolTextFieldStyle())
                     }
                 }
             }
@@ -192,7 +191,7 @@ struct UtilityWorkbenchView: View {
     @ViewBuilder private var resultArea: some View {
         if let error = model.error {
             Label(error, systemImage: "exclamationmark.circle").font(.callout).foregroundStyle(BoxTheme.danger).textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
-                .padding(12).frame(maxWidth: .infinity, alignment: .leading).background(RoundedRectangle(cornerRadius: 10).fill(.red.opacity(0.07)))
+                .padding(12).frame(maxWidth: .infinity, alignment: .leading).background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.danger.opacity(0.07)))
         }
         if let result = model.result {
             if let table = result.table { tablePreview(table) }
@@ -263,25 +262,25 @@ struct UtilityWorkbenchView: View {
                 HStack {
                     Picker("Scheme", selection: Binding(get: { model.urlDraft?.scheme ?? "https" }, set: { model.urlDraft?.scheme = $0 })) { Text("https").tag("https"); Text("http").tag("http") }.frame(width: 135)
                     Text("Host").font(.caption).foregroundStyle(.secondary)
-                    TextField("example.com", text: Binding(get: { model.urlDraft?.host ?? "" }, set: { model.urlDraft?.host = $0 })).textFieldStyle(.roundedBorder)
+                    TextField("example.com", text: Binding(get: { model.urlDraft?.host ?? "" }, set: { model.urlDraft?.host = $0 })).textFieldStyle(ToolTextFieldStyle())
                     Text("Port").font(.caption).foregroundStyle(.secondary)
-                    TextField("Default", text: Binding(get: { model.urlDraft?.port ?? "" }, set: { model.urlDraft?.port = $0 })).textFieldStyle(.roundedBorder).frame(width: 80)
+                    TextField("Default", text: Binding(get: { model.urlDraft?.port ?? "" }, set: { model.urlDraft?.port = $0 })).textFieldStyle(ToolTextFieldStyle()).frame(width: 80)
                 }
                 HStack {
                     Text("Path").font(.caption).foregroundStyle(.secondary).frame(width: 55, alignment: .leading)
-                    TextField("/", text: Binding(get: { model.urlDraft?.path ?? "" }, set: { model.urlDraft?.path = $0 })).textFieldStyle(.roundedBorder)
+                    TextField("/", text: Binding(get: { model.urlDraft?.path ?? "" }, set: { model.urlDraft?.path = $0 })).textFieldStyle(ToolTextFieldStyle())
                 }
                 HStack {
                     Text("Fragment").font(.caption).foregroundStyle(.secondary).frame(width: 55, alignment: .leading)
-                    TextField("Optional", text: Binding(get: { model.urlDraft?.fragment ?? "" }, set: { model.urlDraft?.fragment = $0 })).textFieldStyle(.roundedBorder)
+                    TextField("Optional", text: Binding(get: { model.urlDraft?.fragment ?? "" }, set: { model.urlDraft?.fragment = $0 })).textFieldStyle(ToolTextFieldStyle())
                 }
                 Text("Query parameters · \((model.urlDraft?.parameters.count ?? 0).formatted())").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 // Lazy: a URL may carry thousands of parameters within the input limit.
                 LazyVStack(alignment: .leading, spacing: 10) {
                     ForEach(model.urlDraft?.parameters ?? []) { parameter in
                         HStack {
-                            TextField("Name", text: parameterBinding(parameter.id, name: true)).textFieldStyle(.roundedBorder)
-                            TextField("Value", text: parameterBinding(parameter.id, name: false)).textFieldStyle(.roundedBorder)
+                            TextField("Name", text: parameterBinding(parameter.id, name: true)).textFieldStyle(ToolTextFieldStyle())
+                            TextField("Value", text: parameterBinding(parameter.id, name: false)).textFieldStyle(ToolTextFieldStyle())
                             Toggle("=", isOn: Binding(get: { model.urlDraft?.parameters.first(where: { $0.id == parameter.id })?.hasValue ?? true }, set: { value in
                                 if let i = model.urlDraft?.parameters.firstIndex(where: { $0.id == parameter.id }) { model.urlDraft?.parameters[i].hasValue = value }
                             })).help("Include an equals sign; turn off for a flag parameter")
@@ -312,7 +311,7 @@ struct UtilityWorkbenchView: View {
                 Picker("Method", selection: $model.request.method) {
                     ForEach(Array(Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", model.request.method])).sorted(), id: \.self) { Text($0) }
                 }.frame(width: 140)
-                TextField("https://example.com", text: $model.request.url).textFieldStyle(.roundedBorder).accessibilityLabel("Request URL")
+                TextField("https://example.com", text: $model.request.url).textFieldStyle(ToolTextFieldStyle()).accessibilityLabel("Request URL")
                 Button("Send", action: model.sendRequest).buttonStyle(PrimaryButtonStyle()).disabled(model.busy || model.request.url.isEmpty).keyboardShortcut(.return, modifiers: .command)
             }
             HStack(alignment: .top, spacing: 12) {
@@ -326,7 +325,7 @@ struct UtilityWorkbenchView: View {
         VStack(alignment: .leading, spacing: 10) {
             SnippetLibraryMenu(store: model.snippets, onSelect: model.loadSnippet)
             HStack {
-                TextField("Snippet name", text: $model.snippetName).textFieldStyle(.roundedBorder)
+                TextField("Snippet name", text: $model.snippetName).textFieldStyle(ToolTextFieldStyle())
                 Button("New", action: model.newSnippet).buttonStyle(SecondaryButtonStyle())
                 Button("Save Snippet", action: model.saveSnippet).buttonStyle(PrimaryButtonStyle()).disabled(model.snippetName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.input.isEmpty)
                 if model.snippetID != nil { Button("Delete…") { showDeleteSnippet = true }.buttonStyle(SecondaryButtonStyle()) }
@@ -361,12 +360,12 @@ struct UtilityWorkbenchView: View {
         var text = AttributedString(model.input)
         for range in ranges {
             if let swiftRange = Range(range, in: model.input), let start = AttributedString.Index(swiftRange.lowerBound, within: text), let end = AttributedString.Index(swiftRange.upperBound, within: text) {
-                text[start..<end].backgroundColor = .orange.opacity(0.25)
+                text[start..<end].backgroundColor = BoxTheme.accentSoft
             }
         }
         return text
     }
-    private func diffColor(_ kind: ComparisonRow.Kind) -> Color { kind == .added ? .green : kind == .removed ? .red : .clear }
+    private func diffColor(_ kind: ComparisonRow.Kind) -> Color { kind == .added ? BoxTheme.success : kind == .removed ? BoxTheme.danger : .clear }
     private func wordDiff(_ result: ComparisonResult) -> AttributedString {
         var output = AttributedString()
         for row in result.rows {
@@ -399,7 +398,7 @@ private struct SnippetLibraryMenu: View {
     @State private var query = ""
     var body: some View {
         HStack {
-            TextField("Find a saved snippet…", text: $query).textFieldStyle(.roundedBorder)
+            TextField("Find a saved snippet…", text: $query).textFieldStyle(ToolTextFieldStyle())
             Menu("Saved Snippets (\(store.snippets.count))") {
                 ForEach(store.snippets.filter { query.isEmpty || $0.name.localizedCaseInsensitiveContains(query) }) { snippet in
                     Button(snippet.name) { onSelect(snippet) }

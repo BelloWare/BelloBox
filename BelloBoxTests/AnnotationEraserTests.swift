@@ -514,10 +514,17 @@ final class AnnotationToolbarLayoutTests: XCTestCase {
         for tool in AnnotationTool.allCases {
             viewModel.activeTool = tool
             let toolbar = AnnotationToolbarView(viewModel: viewModel, showExportActions: true, onClose: {}, onScrollCapture: {})
-                .padding(.horizontal, 10).padding(.vertical, 8)
+                .padding(.horizontal, 8).padding(.vertical, 6)
             let view = NSHostingView(rootView: toolbar)
             XCTAssertLessThanOrEqual(view.fittingSize.width, AnnotationToolbarView.overlayToolbarWidth, "\(tool) overflows the overlay toolbar")
-            XCTAssertLessThanOrEqual(view.fittingSize.height, 54, "\(tool) makes the toolbar taller than its slot")
+            XCTAssertLessThanOrEqual(view.fittingSize.height, 44, "\(tool) makes the toolbar taller than its slot")
+        }
+        for tool in AnnotationTool.allCases {
+            viewModel.activeTool = tool
+            let compact = NSHostingView(rootView: AnnotationToolbarView(viewModel: viewModel, compact: true))
+            XCTAssertLessThanOrEqual(compact.fittingSize.width, ScreenshotPopupView.minimumSize.width - 20,
+                                     "\(tool) must keep every action reachable in a narrow popup")
+            XCTAssertLessThanOrEqual(compact.fittingSize.height, 62)
         }
         viewModel.activeTool = .blur
         let popup = NSHostingView(rootView: AnnotationToolbarView(viewModel: viewModel))

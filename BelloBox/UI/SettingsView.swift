@@ -32,13 +32,13 @@ struct SettingsView: View {
                     header
                     selectedContent
                 }
-                .padding(24)
+                .padding(20)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
             }
             .id(selectedCategory)
         }
         .frame(minWidth: 900, minHeight: 680)
-        .background(WorkspaceBackground()).tint(BoxTheme.accent)
+        .background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .onReceive(navigation.$requested) { requested in
             if let requested { selectedCategory = requested }
         }
@@ -53,9 +53,9 @@ struct SettingsView: View {
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
-                AppBrandIcon()
+                AppBrandIcon(size: 38)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Bello Box").font(.headline)
+                    Text("Bello Box").font(.system(size: 15, weight: .semibold))
                     Text("Settings").font(.caption).foregroundStyle(.secondary)
                 }
             }

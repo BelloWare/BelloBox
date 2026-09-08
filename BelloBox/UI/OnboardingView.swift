@@ -23,11 +23,11 @@ struct OnboardingView: View {
                 ForEach(0..<stepCount, id: \.self) { index in
                     RoundedRectangle(cornerRadius: 2).fill(index <= step ? BoxTheme.accent : Color.primary.opacity(0.08)).frame(height: 3)
                 }
-            }.padding(.horizontal, 34).padding(.top, 24).accessibilityLabel("Setup step \(step + 1) of \(stepCount)")
+            }.padding(.horizontal, 28).padding(.top, 24).accessibilityLabel("Setup step \(step + 1) of \(stepCount)")
             ScrollView {
                 content
                     .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .padding(34)
+                    .padding(28)
             }
             .id(step)
 
@@ -37,7 +37,7 @@ struct OnboardingView: View {
                 .padding(.vertical, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(WorkspaceBackground()).tint(BoxTheme.accent)
+        .background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .onReceive(poll) { _ in
             let now = AccessibilityService.isTrusted
             if now != trusted {

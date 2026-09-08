@@ -85,13 +85,7 @@ struct OCRPanelView: View {
             }
 
             if viewModel.result?.markdownText != nil {
-                Picker("OCR display", selection: $viewModel.activeDisplayMode) {
-                    ForEach(OCRDisplayMode.allCases) { mode in
-                        Text(mode.label).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
+                ToolChoiceBar(selection: $viewModel.activeDisplayMode, choices: OCRDisplayMode.allCases.map { ($0, $0.label) }, label: "OCR display", compact: true)
             }
 
             ScrollView {

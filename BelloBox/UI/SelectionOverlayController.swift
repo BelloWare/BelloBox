@@ -7,6 +7,7 @@ import SwiftUI
 final class SelectionOverlayController: NSObject {
     private let settings: AppSettings
     private let accessibility = AccessibilityService()
+    private let selectionRequest = SelectionRequest()
     private let client = AIClient()
     private let monitor: SelectionMonitor
     private let screenCaptureService = ScreenCaptureService()
@@ -60,6 +61,7 @@ final class SelectionOverlayController: NSObject {
         self.settings = settings
         self.monitor = SelectionMonitor(accessibility: accessibility)
         super.init()
+        monitor.onMouseDown = { [weak self] in self?.selectionRequest.cancel() }
         monitor.onSelection = { [weak self] selection in
             self?.handleSelection(selection)
         }
@@ -73,6 +75,7 @@ final class SelectionOverlayController: NSObject {
             self?.triggerRecording()
         }
         screenCaptureService.beforeCapture = { [weak self] in
+            self?.selectionRequest.cancel()
             self?.hideToolbar(animated: false)
             self?.launcher.close()
             // Skip the utility-window fade: a panel still fading out would be frozen
@@ -180,6 +183,7 @@ final class SelectionOverlayController: NSObject {
     // MARK: - Selection handling
 
     private func handleSelection(_ selection: TextSelection) {
+        guard !selectionRequest.isPending else { return }
         guard settings.floatingButtonEnabled else { return }
         guard popupPanel == nil, !launcher.isVisible else { return } // do not interrupt an open tool
         guard !isCaptureSurfaceActive else { return }
@@ -244,12 +248,21 @@ final class SelectionOverlayController: NSObject {
 #endif
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
         if launcher.isVisible { launcher.close(); return }
-        let isOwnApp = NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Bundle.main.bundleIdentifier
-        let selection = isOwnApp ? nil : nonEmpty(currentSelection(allowCopyFallback: false))
-        openLauncher(selection: selection)
+        if selectionRequest.isPending { selectionRequest.cancel(); return }
+#if DEBUG
+        if let injected = e2eInjectedSelection() { openLauncher(selection: injected); return }
+#endif
+        guard let source = accessibility.selectionSource() else { openLauncher(); return }
+        selectionRequest.start(read: { [weak self] in self?.accessibility.readSelection(from: source) },
+            isCurrent: { [weak self] in self?.accessibility.isCurrent(source) == true },
+            completion: { [weak self] selection in
+                guard let self, !self.isCaptureSurfaceActive else { return }
+                self.openLauncher(selection: selection)
+            })
     }
 
     func openLauncher(selection: TextSelection? = nil, command: LauncherCommand? = nil, focus: LauncherCommand? = nil) {
+        selectionRequest.cancel()
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
         hideToolbar(animated: false)
         hidePopup()
@@ -1070,7 +1083,7 @@ final class SelectionOverlayController: NSObject {
         present(
             view,
             size: ScreenshotPopupView.preferredSize,
-            minimumSize: CGSize(width: 1040, height: 500),
+            minimumSize: ScreenshotPopupView.minimumSize,
             anchorRect: anchorRect,
             minimizedIcon: "camera.viewfinder",
             minimizedTitle: "Screenshot",
@@ -1559,7 +1572,7 @@ final class SelectionOverlayController: NSObject {
         present(
             view,
             size: ScreenshotPopupView.preferredSize,
-            minimumSize: CGSize(width: 1040, height: 500),
+            minimumSize: ScreenshotPopupView.minimumSize,
             anchorRect: nil,
             minimizedIcon: "camera.viewfinder",
             minimizedTitle: "Screenshot",

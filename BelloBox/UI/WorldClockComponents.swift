@@ -225,7 +225,8 @@ func clockIconButton(_ symbol: String, label: String, size: CGFloat = 28, action
     Button(action: action) {
         Image(systemName: symbol).font(.system(size: size * 0.43, weight: .medium))
             .frame(width: size, height: size)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
+            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 6))
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(BoxTheme.border))
             .contentShape(RoundedRectangle(cornerRadius: 7))
     }.buttonStyle(.plain).help(label).accessibilityLabel(label)
 }

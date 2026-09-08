@@ -12,7 +12,7 @@ struct AudioSourcePickerView: View {
             if compact {
                 audioPicker.pickerStyle(.menu).labelsHidden()
             } else {
-                audioPicker.pickerStyle(.segmented)
+                ToolChoiceBar(selection: $audioSource, choices: RecordingAudioSource.allCases.map { ($0, $0.label) }, label: "Audio")
             }
 
             if audioSource.includesMicrophone, microphoneDevices.count > 1 {
