@@ -1,4 +1,5 @@
 import XCTest
+import ApplicationServices
 @testable import BelloBox
 
 final class SelectionTextResolverTests: XCTestCase {
@@ -35,6 +36,58 @@ final class SelectionTextResolverTests: XCTestCase {
             stringForRange: { _ in nil }, value: { "short" }))
         XCTAssertNil(SelectionTextResolver.resolve(direct: nil, range: nil,
             stringForRange: { _ in nil }, value: { XCTFail("No range, no value read"); return "full field" }))
+    }
+}
+
+final class SelectionMarkerResolverTests: XCTestCase {
+    private func marker(_ offset: UInt8) -> AXTextMarker {
+        var bytes: [UInt8] = [42, offset]
+        return AXTextMarkerCreate(nil, &bytes, bytes.count)
+    }
+
+    func testDocumentSelectionSurvivesAnEmptyFocusedControlRange() {
+        // Observed in Chromium: a focused message-action button has {0, 0},
+        // while AXSelectedTextMarkerRange still selects a word in the message.
+        XCTAssertNil(SelectionTextResolver.resolve(direct: nil, range: NSRange(location: 0, length: 0),
+            stringForRange: { _ in nil }, value: { nil }))
+        let range = AXTextMarkerRangeCreate(nil, marker(2), marker(9))
+        var checked = 0
+        XCTAssertEqual(SelectionMarkerResolver.resolve(range,
+            isSafeEndpoint: { _ in checked += 1; return true },
+            stringForRange: { _ in "capture" }), "capture")
+        XCTAssertEqual(checked, 2)
+    }
+
+    func testBackwardAndUnicodeSelectionsArePreserved() {
+        let range = AXTextMarkerRangeCreate(nil, marker(9), marker(2))
+        XCTAssertEqual(SelectionMarkerResolver.resolve(range, isSafeEndpoint: { _ in true },
+            stringForRange: { _ in "café 世界 👋🏼" }), "café 世界 👋🏼")
+    }
+
+    func testCollapsedAndWronglyTypedMarkersNeverRequestText() {
+        let point = marker(2)
+        for value: CFTypeRef in [AXTextMarkerRangeCreate(nil, point, point), "not a marker" as CFString] {
+            XCTAssertNil(SelectionMarkerResolver.resolve(value,
+                isSafeEndpoint: { _ in XCTFail("Invalid range"); return true },
+                stringForRange: { _ in XCTFail("Do not read stale text at a caret"); return "stale" }))
+        }
+    }
+
+    func testBothEndpointsMustBelongToUnprotectedSourceContent() {
+        let range = AXTextMarkerRangeCreate(nil, marker(2), marker(9))
+        for rejectedEndpoint in [1, 2] {
+            var checked = 0
+            XCTAssertNil(SelectionMarkerResolver.resolve(range,
+                isSafeEndpoint: { _ in checked += 1; return checked != rejectedEndpoint },
+                stringForRange: { _ in XCTFail("Never read protected or foreign-window content"); return "secret" }))
+        }
+    }
+
+    func testEmptyAndUnavailableDocumentSelectionsAreRejected() {
+        let range = AXTextMarkerRangeCreate(nil, marker(2), marker(9))
+        for text: String? in [nil, "", " \n\t"] {
+            XCTAssertNil(SelectionMarkerResolver.resolve(range, isSafeEndpoint: { _ in true }, stringForRange: { _ in text }))
+        }
     }
 }
 

@@ -42,7 +42,14 @@ down, capture, or an app/window change; the mouse-up hint cannot race them.
 `AccessibilityService` captures the source app/window together, reads its focused
 element and at most six ancestors, rejects secure fields, and falls back from
 selected text to the selected range's parameterized string or a validated UTF-16
-slice of AXValue. It never treats a caret or a complete field as selected text.
+slice of AXValue. Before treating an empty focused-control range as authoritative,
+it reads `AXSelectedTextMarkerRange` when available: Chromium/Electron message
+actions can retain keyboard focus while another element has the document's
+selection. Marker types and noncollapsed endpoints are checked before requesting
+`AXStringForTextMarkerRange`; both endpoint owners must belong to the captured
+window and have an inspectable, unprotected ancestor path (16 elements and a
+shared 160 ms validation budget). It never scans other fields or reads a whole
+document as a fallback, and never treats a caret or a complete field as selected text.
 Only tool IDs are stored in recents/favorites.
 `LauncherUsageStore` separately learns explicit tool opens by coarse content
 category (JSON, timestamp, URL, JWT, cron, data, cURL, text, or empty). It saves

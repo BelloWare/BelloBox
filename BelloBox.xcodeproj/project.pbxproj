@@ -168,6 +168,7 @@
 		D4671EAA46AD4FC24F7A127F /* RecordingCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35DFC1A56361A7B54A2D29C /* RecordingCoordinatorTests.swift */; };
 		D72161554E56B234AD07C607 /* AppWindowChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEE8DF9D6116CB5E011C350 /* AppWindowChrome.swift */; };
 		D737884ACFFE082C2817B94E /* DisplayCaptureVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED260DECF74C028BDA2FA9C5 /* DisplayCaptureVerificationTests.swift */; };
+		D7509438BB10085C4CCB98E3 /* SelectionFocus.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5EDDD6DDA17BF5DBC7F51C /* SelectionFocus.html */; };
 		D7912311BA017CE241C50405 /* WorldClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDF60D273C5788D7C5ECD873 /* WorldClockTests.swift */; };
 		D7D31D26EA9CA740885F8FFD /* ThemeContrastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61236C150B6BC57BB0A9C069 /* ThemeContrastTests.swift */; };
 		D93FAC85138695EF088AAC6F /* LLMOCRResponseParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F644D5CDDEC738B44A1694F /* LLMOCRResponseParserTests.swift */; };
@@ -353,6 +354,7 @@
 		98735DED41F0CE8FCE9FC5AB /* LauncherSelectionContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherSelectionContext.swift; sourceTree = "<group>"; };
 		98DC0948C3E1FBC14B77BFA5 /* TextToolsPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToolsPopupView.swift; sourceTree = "<group>"; };
 		9A1F19FA474E63FAC1BB2574 /* ScreenshotPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotPopupView.swift; sourceTree = "<group>"; };
+		9C5EDDD6DDA17BF5DBC7F51C /* SelectionFocus.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = SelectionFocus.html; sourceTree = "<group>"; };
 		9C8374FE4C7B510B4F2F2113 /* OCRResultFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRResultFormatter.swift; sourceTree = "<group>"; };
 		9E4E018A6A6D23B482C29D96 /* RecordingPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingPermission.swift; sourceTree = "<group>"; };
 		9E8A9544E2A9E55028C5C851 /* OCRImagePreprocessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRImagePreprocessor.swift; sourceTree = "<group>"; };
@@ -601,6 +603,14 @@
 			path = Selection;
 			sourceTree = "<group>";
 		};
+		66FAA30435A5073E81DBE673 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				9C5EDDD6DDA17BF5DBC7F51C /* SelectionFocus.html */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
 		692B53E71AAC3B24922530E1 /* BelloBoxTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -670,6 +680,7 @@
 				E69BBCC1085F9D0DA8C5B3AE /* WindowCapturePickerViewModelTests.swift */,
 				62BAF09F1C84E3B46FEE918B /* WorkspaceNavigationTests.swift */,
 				CDF60D273C5788D7C5ECD873 /* WorldClockTests.swift */,
+				66FAA30435A5073E81DBE673 /* Fixtures */,
 			);
 			path = BelloBoxTests;
 			sourceTree = "<group>";
@@ -808,6 +819,7 @@
 			buildConfigurationList = A780C74F61A87CA7FD476C3E /* Build configuration list for PBXNativeTarget "BelloBoxTests" */;
 			buildPhases = (
 				C3D294D138E5CBD8A519EC73 /* Sources */,
+				AF1F1C3E53EA871778F6FF42 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -894,6 +906,14 @@
 			files = (
 				A70FE683F28B82E315741EE0 /* Assets.xcassets in Resources */,
 				487498D9C57F8803B813BB67 /* ThirdPartyNotices.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF1F1C3E53EA871778F6FF42 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7509438BB10085C4CCB98E3 /* SelectionFocus.html in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1252,7 +1272,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 69;
+				CURRENT_PROJECT_VERSION = 70;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1272,7 +1292,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.69;
+				MARKETING_VERSION = 0.0.70;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1318,7 +1338,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 69;
+				CURRENT_PROJECT_VERSION = 70;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1332,7 +1352,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.69;
+				MARKETING_VERSION = 0.0.70;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>BelloBox selection focus fixture</title>
+<style>
+  body { max-width: 760px; margin: 48px auto; font: 18px system-ui; }
+  article { padding: 24px; border: 1px solid #888; border-radius: 12px; }
+  button, textarea, input { margin-top: 20px; font: inherit; }
+  textarea { display: block; width: 100%; }
+  output { display: block; margin-top: 24px; white-space: pre-wrap; }
+</style>
+<h1>Document selection and keyboard focus</h1>
+<p>Open in Chromium. Double-click a message word, then invoke BelloBox's shortcut.
+   The selected word should be captured even though Message actions owns focus.
+   Dragging a selection should also work; a composer caret and a password selection
+   should produce no captured text. This isolates a browser focus/selection mismatch,
+   rather than reproducing a particular Slack version.</p>
+<article tabindex="0">
+  <p>Doubleclick selection should capture only the selected word.</p>
+  <p>Hello café 世界 👋🏼 and another message.</p>
+</article>
+<button id="actions">Message actions</button>
+<textarea aria-label="Message composer">Composer draft with a caret</textarea>
+<input type="password" aria-label="Synthetic password" value="synthetic-secret">
+<output aria-label="Selection state"></output>
+<script>
+  const article = document.querySelector('article');
+  const actions = document.querySelector('#actions');
+  const state = document.querySelector('output');
+  function updateState() {
+    state.textContent = `Focused: ${document.activeElement.tagName}\nDocument selection: ${window.getSelection()}`;
+  }
+  article.addEventListener('dblclick', () => {
+    actions.focus({ preventScroll: true });
+    updateState();
+  });
+  document.addEventListener('selectionchange', updateState);
+  document.addEventListener('focusin', updateState);
+  document.querySelector('textarea').focus();
+</script>
+</html>

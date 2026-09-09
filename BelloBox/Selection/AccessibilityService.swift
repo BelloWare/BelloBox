@@ -73,8 +73,7 @@ final class AccessibilityService {
             visited.append(element)
             var pid: pid_t = 0
             guard AXUIElementGetPid(element, &pid) == .success, pid == source.app.processIdentifier else { break }
-            if attribute(element, kAXSubroleAttribute) as? String == kAXSecureTextFieldSubrole
-                || attribute(element, "AXProtectedContent") as? Bool == true { return nil }
+            if isProtected(element) { return nil }
             let range = selectedRange(of: element)
             let direct = attribute(element, kAXSelectedTextAttribute) as? String
             let text = SelectionTextResolver.resolve(direct: direct, range: range,
@@ -89,12 +88,79 @@ final class AccessibilityService {
                 return TextSelection(text: text, anchorRect: selectionBounds(of: element),
                     appName: source.app.localizedName, bundleID: source.app.bundleIdentifier, pid: source.app.processIdentifier)
             }
-            // An explicit caret/empty selection is authoritative. Do not borrow
-            // a different field's old selection from elsewhere in the window.
+            // Chromium/Electron can keep keyboard focus on a message action
+            // while its document has a selection elsewhere. Such a control
+            // reports a zero AXSelectedTextRange: that is not a document caret.
+            // Ask for the actual document selection before accepting that zero.
+            if let selection = markerSelection(of: element, source: source), isCurrent(source) {
+                return selection
+            }
+            // Without a validated document selection, an explicit caret/empty
+            // selection is authoritative. Never search other fields/windows.
             if range != nil || direct != nil { return nil }
             candidate = Self.axElement(from: attribute(element, kAXParentAttribute))
         }
         return nil
+    }
+
+    /// Text markers identify the selected span in a web document independently
+    /// of keyboard focus. No tree search, clipboard access or full-value read.
+    func markerSelection(of element: AXUIElement, source: SelectionSource) -> TextSelection? {
+        guard !isProtected(element),
+              let markerRange = attribute(element, "AXSelectedTextMarkerRange") else { return nil }
+        let deadline = Date().addingTimeInterval(0.16)
+        let text = SelectionMarkerResolver.resolve(markerRange,
+            isSafeEndpoint: { marker in
+                guard let owner = Self.axElement(from: self.parameterizedAttribute(element,
+                    "AXUIElementForTextMarker", marker)) else { return false }
+                return self.isSafeSelectionOwner(owner, source: source, deadline: deadline)
+            }, stringForRange: { range in
+                guard Date() < deadline else { return nil }
+                return self.parameterizedAttribute(element, "AXStringForTextMarkerRange", range) as? String
+            })
+        guard let text else { return nil }
+        var bounds: CGRect?
+        if let value = Self.axValue(from: parameterizedAttribute(element, "AXBoundsForTextMarkerRange", markerRange)),
+           AXValueGetType(value) == .cgRect {
+            var rect = CGRect.zero
+            if AXValueGetValue(value, .cgRect, &rect), !rect.isNull, !rect.isInfinite,
+               rect.width > 0, rect.height > 0 { bounds = Self.cocoaRect(fromAXRect: rect) }
+        }
+        return TextSelection(text: text, anchorRect: bounds, appName: source.app.localizedName,
+            bundleID: source.app.bundleIdentifier, pid: source.app.processIdentifier)
+    }
+
+    private func isProtected(_ element: AXUIElement) -> Bool {
+        attribute(element, kAXSubroleAttribute) as? String == kAXSecureTextFieldSubrole
+            || attribute(element, "AXProtectedContent") as? Bool == true
+    }
+
+    private func isSafeSelectionOwner(_ owner: AXUIElement, source: SelectionSource, deadline: Date) -> Bool {
+        // A marker must resolve to this captured window, never another tab's
+        // window or another app. Check ancestors too: static text may sit in a
+        // protected field. Reject an uninspectable or excessively deep path.
+        guard Date() < deadline, let window = source.window,
+              let ownerWindow = Self.axElement(from: attribute(owner, kAXWindowAttribute)),
+              CFEqual(window, ownerWindow) else { return false }
+        var candidate: AXUIElement? = owner
+        var visited: [AXUIElement] = []
+        while Date() < deadline, let element = candidate, visited.count < 16,
+              !visited.contains(where: { CFEqual($0, element) }) {
+            visited.append(element)
+            AXUIElementSetMessagingTimeout(element, 0.08)
+            var pid: pid_t = 0
+            guard AXUIElementGetPid(element, &pid) == .success,
+                  pid == source.app.processIdentifier, !isProtected(element) else { return false }
+            if CFEqual(element, window) || attribute(element, kAXRoleAttribute) as? String == "AXWebArea" { return true }
+            candidate = Self.axElement(from: attribute(element, kAXParentAttribute))
+        }
+        return false
+    }
+
+    private func parameterizedAttribute(_ element: AXUIElement, _ name: String, _ parameter: CFTypeRef) -> CFTypeRef? {
+        var value: CFTypeRef?
+        guard AXUIElementCopyParameterizedAttributeValue(element, name as CFString, parameter, &value) == .success else { return nil }
+        return value
     }
 
     private func attribute(_ element: AXUIElement, _ name: String) -> CFTypeRef? {
@@ -217,5 +283,22 @@ enum SelectionTextResolver {
         let utf16 = text as NSString
         guard range.location <= utf16.length, range.length <= utf16.length - range.location else { return nil }
         return nonempty(utf16.substring(with: range))
+    }
+}
+
+/// Markers are opaque CF objects. Validate their type and both endpoints before
+/// asking an app for text. A collapsed marker is a caret, even if a buggy app
+/// would return a stale string for it.
+enum SelectionMarkerResolver {
+    static func resolve(_ value: CFTypeRef, isSafeEndpoint: (AXTextMarker) -> Bool,
+                        stringForRange: (AXTextMarkerRange) -> String?) -> String? {
+        guard CFGetTypeID(value) == AXTextMarkerRangeGetTypeID() else { return nil }
+        let range = unsafeBitCast(value, to: AXTextMarkerRange.self)
+        let start = AXTextMarkerRangeCopyStartMarker(range)
+        let end = AXTextMarkerRangeCopyEndMarker(range)
+        guard !CFEqual(start, end), isSafeEndpoint(start), isSafeEndpoint(end),
+              let text = stringForRange(range),
+              text.unicodeScalars.contains(where: { !CharacterSet.whitespacesAndNewlines.contains($0) }) else { return nil }
+        return text
     }
 }
