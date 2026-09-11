@@ -147,6 +147,16 @@ in `~/Library/Application Support/BelloBox/Snippets.json`.
 Bello Box does not ship a model or an API key. In **Settings** you choose:
 
 - **Provider** — OpenAI-compatible, Anthropic-compatible, or local Codex app-server.
+- **Model behavior** — temperature and reasoning effort are saved separately for
+  each provider, endpoint, and model. Choose **Model default** to omit an optional
+  parameter entirely, including for models that reject temperature. Switching
+  models restores that model's choices; **Reset** affects only the current model.
+  Anthropic offers model-default, off, adaptive, or budgeted thinking, plus an
+  output token limit; explicitly enabled thinking omits temperature and leaves
+  room for the answer. Codex keeps its own per-model reasoning effort.
+  These options apply to Ask AI, World Clock copilot, and confirmed AI OCR
+  (HTTP providers only). **Test connection** sends a short hello with the current
+  options and shows the provider's error if a model does not support them.
 - **Endpoint** — any base URL. Works with the OpenAI and Anthropic APIs as well
   as OpenRouter, Groq, together.ai, and local servers like Ollama or LM Studio.
 - **Model** and **API key** (the key is stored in your macOS Keychain).

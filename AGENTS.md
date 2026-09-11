@@ -338,6 +338,21 @@ BelloBox/
 
 ## Conventions
 
+- AI generation preferences live in `AIGenerationOptions.swift` and the bounded
+  `AppSettings.modelGeneration` store, keyed by a hash of provider/endpoint/model.
+  New models omit temperature, effort and thinking overrides; explicit changes
+  persist only numeric/enum options, never prompts or credentials. Legacy global
+  temperature migrates once to the selected HTTP model; Codex effort migrates to
+  its configured model. Reset cannot reimport a legacy value. Use
+  `AIConfig.applyGenerationOptions(to:format:)` for all text and image builders:
+  Chat uses `reasoning_effort`, Responses `reasoning.effort`, Anthropic
+  `output_config.effort`. Anthropic adaptive/budgeted thinking omits temperature;
+  budgeted thinking reserves 2,048 output tokens beyond its bounded budget.
+  Reasoning-only token exhaustion produces actionable settings guidance, and
+  thinking blocks never appear in user output. `AIGenerationSettingsView` is
+  shared by Settings and Setup; editing never sends. A config change clears a
+  previous connection-test result, and late replies cannot validate newer options.
+
 - Bundle id: `com.ainoob.BelloBox`; Team: `43TXHV3TM3`.
 - Regular app with a menu-bar extra and Dock presence for app windows. Not
   sandboxed — it reads the selection from other apps over the Accessibility API

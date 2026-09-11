@@ -127,6 +127,9 @@ struct AIConfig: Equatable {
     var codexSandboxMode: CodexSandboxMode = .readOnly
     var openAIAPIKind: OpenAIAPIKind = .chatCompletions
     var temperature: Double?
+    var reasoningEffort: AIReasoningEffort = .providerDefault
+    var anthropicThinking: AnthropicThinkingMode = .providerDefault
+    var anthropicThinkingBudget: Int = 4096
 
     var isUsable: Bool {
         switch kind {
@@ -165,6 +168,7 @@ enum AIError: LocalizedError, Equatable {
     case invalidEndpoint(String)
     case http(status: Int, message: String)
     case emptyResponse
+    case reasoningOutputLimit
     case transport(String)
 
     var errorDescription: String? {
@@ -178,6 +182,8 @@ enum AIError: LocalizedError, Equatable {
             return "The provider returned HTTP \(status).\(trimmed.isEmpty ? "" : " \(trimmed)")"
         case .emptyResponse:
             return "The provider returned an empty response."
+        case .reasoningOutputLimit:
+            return "The model used its output token limit before returning an answer. In Settings → AI Provider → Model behavior → Thinking & token limits, increase the output token limit or lower the thinking budget or reasoning effort."
         case let .transport(message):
             return message
         }

@@ -111,6 +111,8 @@ final class AIClient: @unchecked Sendable {
                     case .stop:
                         if !sawAny { throw AIError.emptyResponse }
                         return
+                    case .outputLimit:
+                        if !sawAny { throw AIError.reasoningOutputLimit }
                     case .ignore:
                         break
                     }
@@ -248,9 +250,7 @@ final class AIClient: @unchecked Sendable {
             "messages": messages,
             "stream": stream,
         ]
-        if let temperature = config.temperature {
-            body["temperature"] = temperature
-        }
+        config.applyGenerationOptions(to: &body, format: .openAIChat)
         request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [.sortedKeys])
         return request
     }
@@ -275,9 +275,7 @@ final class AIClient: @unchecked Sendable {
             ],
             "stream": stream,
         ]
-        if let temperature = config.temperature {
-            body["temperature"] = temperature
-        }
+        config.applyGenerationOptions(to: &body, format: .openAIResponses)
         let system = config.systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
         if !system.isEmpty {
             body["instructions"] = system
@@ -300,9 +298,7 @@ final class AIClient: @unchecked Sendable {
             "messages": [["role": "user", "content": userText]],
             "stream": stream,
         ]
-        if let temperature = config.temperature {
-            body["temperature"] = temperature
-        }
+        config.applyGenerationOptions(to: &body, format: .anthropic)
         let system = config.systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
         if !system.isEmpty {
             body["system"] = system
@@ -389,6 +385,7 @@ final class AIClient: @unchecked Sendable {
         case delta(String)
         case error(String)
         case stop
+        case outputLimit
         case ignore
     }
 
@@ -400,6 +397,11 @@ final class AIClient: @unchecked Sendable {
         else { return .ignore }
 
         switch type {
+        case "message_delta":
+            if (obj["delta"] as? [String: Any])?["stop_reason"] as? String == "max_tokens" {
+                return .outputLimit
+            }
+            return .ignore
         case "content_block_delta":
             if let delta = obj["delta"] as? [String: Any], let text = delta["text"] as? String {
                 return .delta(text)

@@ -41,6 +41,8 @@ final class AIClientTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(settings.currentConfig.temperature), 0.8, accuracy: 0.0001)
 
         settings.providerKind = .anthropic
+        XCTAssertNil(settings.currentConfig.temperature, "A different model starts with its own defaults")
+        settings.temperatureMode = .custom
         settings.temperature = 1.7
         XCTAssertEqual(try XCTUnwrap(settings.currentConfig.temperature), 1.0, accuracy: 0.0001)
     }

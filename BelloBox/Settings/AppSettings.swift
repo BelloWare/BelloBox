@@ -61,6 +61,8 @@ final class AppSettings: ObservableObject {
         static let systemPrompt = "systemPrompt"
         static let temperatureMode = "temperatureMode"
         static let temperature = "temperature"
+        static let modelGeneration = "aiModelGeneration.v1"
+        static let generationMigrated = "aiModelGenerationMigrated.v1"
         static let floatingButtonEnabled = "floatingButtonEnabled"
         static let globalHotkeyEnabled = "globalHotkeyEnabled"
         static let globalHotkeyKeyCode = "globalHotkeyKeyCode"
@@ -131,13 +133,28 @@ final class AppSettings: ObservableObject {
     @Published var openAIAPIKind: OpenAIAPIKind { didSet { defaults.set(openAIAPIKind.rawValue, forKey: Keys.openAIAPIKind) } }
     @Published var anthropicModel: String { didSet { defaults.set(anthropicModel, forKey: Keys.anthropicModel) } }
     @Published var systemPrompt: String { didSet { defaults.set(systemPrompt, forKey: Keys.systemPrompt) } }
-    @Published var temperatureMode: TemperatureMode { didSet { defaults.set(temperatureMode.rawValue, forKey: Keys.temperatureMode) } }
-    @Published var temperature: Double {
-        didSet {
-            let normalized = Self.normalizedTemperature(temperature)
-            if temperature != normalized { temperature = normalized }
-            defaults.set(normalized, forKey: Keys.temperature)
+    @Published private var modelGeneration: [String: AIModelPreferenceEntry] = [:]
+
+    var generationPreferences: AIGenerationPreferences {
+        get { (modelGeneration[generationKey]?.options ?? AIGenerationPreferences()).normalized(for: providerKind) }
+        set {
+            var entries = modelGeneration
+            entries[generationKey] = AIModelPreferenceEntry(options: newValue.normalized(for: providerKind), modifiedAt: Date())
+            saveGenerationPreferences(entries)
         }
+    }
+
+    var temperatureMode: TemperatureMode {
+        get { generationPreferences.temperatureMode }
+        set { generationPreferences.temperatureMode = newValue }
+    }
+    var temperature: Double {
+        get { generationPreferences.temperature }
+        set { generationPreferences.temperature = newValue }
+    }
+    var reasoningEffort: AIReasoningEffort {
+        get { generationPreferences.reasoningEffort }
+        set { generationPreferences.reasoningEffort = newValue }
     }
 
     @Published var floatingButtonEnabled: Bool { didSet { defaults.set(floatingButtonEnabled, forKey: Keys.floatingButtonEnabled) } }
@@ -154,7 +171,21 @@ final class AppSettings: ObservableObject {
     @Published var appearance: AppearancePreference { didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) } }
     @Published var codexPath: String { didSet { defaults.set(codexPath, forKey: Keys.codexPath) } }
     @Published var codexModel: String { didSet { defaults.set(codexModel, forKey: Keys.codexModel) } }
-    @Published var codexReasoningEffort: String { didSet { defaults.set(codexReasoningEffort, forKey: Keys.codexReasoningEffort) } }
+    var codexReasoningEffort: String {
+        get {
+            let key = AIGenerationPreferences.key(provider: .codexCLI, endpoint: codexPath, model: codexModel)
+            let effort = modelGeneration[key]?.options.normalized(for: .codexCLI).reasoningEffort ?? .providerDefault
+            return effort == .providerDefault ? CodexCLI.defaultReasoningEffort : effort.rawValue
+        }
+        set {
+            let key = AIGenerationPreferences.key(provider: .codexCLI, endpoint: codexPath, model: codexModel)
+            var options = modelGeneration[key]?.options ?? AIGenerationPreferences()
+            options.reasoningEffort = AIReasoningEffort(rawValue: newValue) ?? .providerDefault
+            var entries = modelGeneration
+            entries[key] = AIModelPreferenceEntry(options: options.normalized(for: .codexCLI), modifiedAt: Date())
+            saveGenerationPreferences(entries)
+        }
+    }
     @Published var codexApprovalPolicy: CodexApprovalPolicy { didSet { defaults.set(codexApprovalPolicy.rawValue, forKey: Keys.codexApprovalPolicy) } }
     @Published var codexSandboxMode: CodexSandboxMode { didSet { defaults.set(codexSandboxMode.rawValue, forKey: Keys.codexSandboxMode) } }
     @Published var screenshotIncludeCursor: Bool { didSet { defaults.set(screenshotIncludeCursor, forKey: Keys.screenshotIncludeCursor) } }
@@ -240,9 +271,6 @@ final class AppSettings: ObservableObject {
         openAIAPIKind = OpenAIAPIKind(rawValue: defaults.string(forKey: Keys.openAIAPIKind) ?? "") ?? .chatCompletions
         anthropicModel = defaults.string(forKey: Keys.anthropicModel) ?? ProviderKind.anthropic.defaultModel
         systemPrompt = defaults.string(forKey: Keys.systemPrompt) ?? Self.defaultSystemPrompt
-        temperatureMode = TemperatureMode(rawValue: defaults.string(forKey: Keys.temperatureMode) ?? "") ?? .providerDefault
-        let storedTemperature = defaults.object(forKey: Keys.temperature) as? Double
-        temperature = Self.normalizedTemperature(storedTemperature ?? 1.0)
         floatingButtonEnabled = (defaults.object(forKey: Keys.floatingButtonEnabled) as? Bool) ?? true
         globalHotkeyEnabled = (defaults.object(forKey: Keys.globalHotkeyEnabled) as? Bool) ?? true
         let storedHotkeyKeyCode = defaults.object(forKey: Keys.globalHotkeyKeyCode) as? Int
@@ -277,10 +305,6 @@ final class AppSettings: ObservableObject {
         codexModel = storedCodexModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? CodexCLI.defaultModel
             : storedCodexModel
-        let storedEffort = defaults.string(forKey: Keys.codexReasoningEffort) ?? ""
-        codexReasoningEffort = CodexCLI.reasoningEfforts.contains(storedEffort)
-            ? storedEffort
-            : CodexCLI.defaultReasoningEffort
         codexApprovalPolicy = CodexApprovalPolicy(rawValue: defaults.string(forKey: Keys.codexApprovalPolicy) ?? "") ?? CodexCLI.defaultApprovalPolicy
         codexSandboxMode = CodexSandboxMode(rawValue: defaults.string(forKey: Keys.codexSandboxMode) ?? "") ?? CodexCLI.defaultSandboxMode
         screenshotIncludeCursor = (defaults.object(forKey: Keys.screenshotIncludeCursor) as? Bool) ?? false
@@ -334,6 +358,7 @@ final class AppSettings: ObservableObject {
         recordingGIFMaxWidth = Self.normalizedGIFMaxWidth(defaults.object(forKey: Keys.recordingGIFMaxWidth) as? Int ?? GIFExportOptions.default.maxWidth)
         recordingGIFLoops = (defaults.object(forKey: Keys.recordingGIFLoops) as? Bool) ?? GIFExportOptions.default.loops
         apiKey = KeychainStore.get(account: KeychainStore.account(for: kind)) ?? ""
+        loadGenerationPreferences()
         persistLoadedValues()
     }
 
@@ -348,7 +373,8 @@ final class AppSettings: ObservableObject {
                 apiKey: apiKey,
                 systemPrompt: systemPrompt,
                 openAIAPIKind: openAIAPIKind,
-                temperature: resolvedTemperature(maximum: 2.0)
+                temperature: resolvedTemperature(maximum: 2.0),
+                reasoningEffort: reasoningEffort
             )
         case .anthropic:
             return AIConfig(
@@ -357,7 +383,11 @@ final class AppSettings: ObservableObject {
                 model: anthropicModel,
                 apiKey: apiKey,
                 systemPrompt: systemPrompt,
-                temperature: resolvedTemperature(maximum: 1.0)
+                maxTokens: generationPreferences.anthropicOutputTokenLimit,
+                temperature: generationPreferences.thinkingMode.isEnabled ? nil : resolvedTemperature(maximum: 1.0),
+                reasoningEffort: reasoningEffort,
+                anthropicThinking: generationPreferences.thinkingMode,
+                anthropicThinkingBudget: generationPreferences.thinkingBudget
             )
         case .codexCLI:
             return AIConfig(
@@ -374,6 +404,72 @@ final class AppSettings: ObservableObject {
     }
 
     var isConfigured: Bool { currentConfig.isUsable }
+
+    var generationModelName: String {
+        switch providerKind {
+        case .openAI: return openAIModel
+        case .anthropic: return anthropicModel
+        case .codexCLI: return codexModel
+        }
+    }
+
+    private var generationKey: String {
+        let endpoint: String
+        switch providerKind {
+        case .openAI: endpoint = openAIBaseURL
+        case .anthropic: endpoint = anthropicBaseURL
+        case .codexCLI: endpoint = codexPath
+        }
+        return AIGenerationPreferences.key(provider: providerKind, endpoint: endpoint, model: generationModelName)
+    }
+
+    private var persistsGenerationPreferences: Bool {
+#if DEBUG
+        if defaults === UserDefaults.standard && (
+            ProcessInfo.processInfo.environment.keys.contains { $0.hasPrefix("BELLOBOX_E2E_") || $0 == "XCTestConfigurationFilePath" }
+            || NSClassFromString("XCTestCase") != nil) { return false }
+#endif
+        return true
+    }
+
+    func resetModelGenerationPreferences() {
+        var entries = modelGeneration
+        entries.removeValue(forKey: generationKey)
+        saveGenerationPreferences(entries)
+    }
+
+    private func saveGenerationPreferences(_ entries: [String: AIModelPreferenceEntry]) {
+        // Merely browsing or typing model names never creates a profile.
+        let bounded = Dictionary(uniqueKeysWithValues: entries.sorted { $0.value.modifiedAt > $1.value.modifiedAt }
+            .prefix(128).map { ($0.key, $0.value) })
+        guard let data = try? JSONEncoder().encode(bounded) else { return }
+        modelGeneration = bounded
+        if persistsGenerationPreferences { defaults.set(data, forKey: Keys.modelGeneration) }
+    }
+
+    private func loadGenerationPreferences() {
+        guard persistsGenerationPreferences else { return }
+        if let data = defaults.data(forKey: Keys.modelGeneration),
+           let entries = try? JSONDecoder().decode([String: AIModelPreferenceEntry].self, from: data) {
+            modelGeneration = Dictionary(uniqueKeysWithValues: entries.sorted { $0.value.modifiedAt > $1.value.modifiedAt }
+                .prefix(128).map { ($0.key, $0.value) })
+        }
+        guard !defaults.bool(forKey: Keys.generationMigrated) else { return }
+        defaults.set(true, forKey: Keys.generationMigrated)
+        // Migrate the old global temperature only to the selected HTTP model.
+        // Future models start without optional sampling or reasoning fields.
+        if providerKind.isHTTP, modelGeneration[generationKey] == nil,
+           defaults.object(forKey: Keys.temperature) != nil || defaults.object(forKey: Keys.temperatureMode) != nil {
+            var options = AIGenerationPreferences()
+            options.temperatureMode = TemperatureMode(rawValue: defaults.string(forKey: Keys.temperatureMode) ?? "") ?? .providerDefault
+            options.temperature = defaults.object(forKey: Keys.temperature) as? Double ?? 1
+            generationPreferences = options
+        }
+        let codexKey = AIGenerationPreferences.key(provider: .codexCLI, endpoint: codexPath, model: codexModel)
+        if modelGeneration[codexKey] == nil, let effort = defaults.string(forKey: Keys.codexReasoningEffort) {
+            codexReasoningEffort = effort
+        }
+    }
 
     var globalHotkey: GlobalHotkey {
         GlobalHotkey(
@@ -617,8 +713,14 @@ final class AppSettings: ObservableObject {
     private func persistLoadedValues() {
         persistLoadedString(providerKind.rawValue, forKey: Keys.provider)
         persistLoadedString(openAIAPIKind.rawValue, forKey: Keys.openAIAPIKind)
-        persistLoadedString(temperatureMode.rawValue, forKey: Keys.temperatureMode)
-        persistLoadedDouble(temperature, forKey: Keys.temperature)
+        // Keep legacy values well-formed for downgrades; they are no longer
+        // updated from the active profile and can never leak into a new model.
+        if persistsGenerationPreferences {
+            let legacyTemperatureMode = TemperatureMode(rawValue: defaults.string(forKey: Keys.temperatureMode) ?? "") ?? .providerDefault
+            persistLoadedString(legacyTemperatureMode.rawValue, forKey: Keys.temperatureMode)
+            persistLoadedDouble(Self.normalizedTemperature(defaults.double(forKey: Keys.temperature)), forKey: Keys.temperature)
+            persistLoadedString(codexReasoningEffort, forKey: Keys.codexReasoningEffort)
+        }
 
         persistLoadedHotkey(
             keyCode: globalHotkeyKeyCode,
@@ -640,7 +742,6 @@ final class AppSettings: ObservableObject {
         )
 
         persistLoadedString(codexModel, forKey: Keys.codexModel)
-        persistLoadedString(codexReasoningEffort, forKey: Keys.codexReasoningEffort)
         persistLoadedString(codexApprovalPolicy.rawValue, forKey: Keys.codexApprovalPolicy)
         persistLoadedString(codexSandboxMode.rawValue, forKey: Keys.codexSandboxMode)
         persistLoadedString(screenshotDefaultMode.rawValue, forKey: Keys.screenshotDefaultMode)

@@ -526,7 +526,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .general:
             return "Set how Bello Box starts, appears, and follows your system theme."
         case .ai:
-            return "Choose the AI provider Bello Box uses for rewrite, summarize, translate, and ask actions."
+            return "Connect your AI and tune how each model responds across Bello Box."
         case .capture:
             return "Configure screenshot shortcuts and the capture behavior users see before editing."
         case .recording:

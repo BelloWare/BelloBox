@@ -138,9 +138,7 @@ final class AIImageClient {
         if case .json = responseFormat {
             body["text"] = ["format": ["type": "json_object"]]
         }
-        if let temperature = config.temperature {
-            body["temperature"] = temperature
-        }
+        config.applyGenerationOptions(to: &body, format: .openAIResponses)
         return body
     }
 
@@ -156,9 +154,7 @@ final class AIImageClient {
                 ],
             ]],
         ]
-        if let temperature = config.temperature {
-            body["temperature"] = temperature
-        }
+        config.applyGenerationOptions(to: &body, format: .openAIChat)
         return body
     }
 
@@ -195,9 +191,7 @@ final class AIImageClient {
                 ],
             ]],
         ]
-        if let temperature = config.temperature {
-            body["temperature"] = temperature
-        }
+        config.applyGenerationOptions(to: &body, format: .anthropic)
         return body
     }
 
@@ -261,9 +255,10 @@ final class AIImageClient {
             }
         case .anthropic:
             if let content = object["content"] as? [[String: Any]] {
-                let parts = content.compactMap { $0["text"] as? String }
+                let parts = content.compactMap { $0["text"] as? String }.filter { !$0.isEmpty }
                 if !parts.isEmpty { return parts.joined(separator: "\n") }
             }
+            if object["stop_reason"] as? String == "max_tokens" { throw AIError.reasoningOutputLimit }
         case .codexCLI:
             break
         }

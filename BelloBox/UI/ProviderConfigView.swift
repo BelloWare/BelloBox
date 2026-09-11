@@ -47,20 +47,27 @@ struct ProviderConfigView: View {
             }
 
             modelRow
-            if settings.providerKind.isHTTP {
-                temperatureRow
-            }
-            if settings.providerKind == .codexCLI {
-                codexReasoningRow
-                codexPolicyRows
-            }
+            AIGenerationSettingsView(settings: settings)
+            if settings.providerKind == .codexCLI { codexPolicyRows }
+            Text(settings.providerKind.isHTTP
+                 ? "Used by Ask AI, World Clock copilot, and AI screenshot text recognition."
+                 : "Used by Ask AI and World Clock copilot.")
+                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             testRow
 
             Text(hint)
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-        }.buttonStyle(SecondaryButtonStyle())
+        }
+        .buttonStyle(SecondaryButtonStyle())
+        .accentColor(BoxTheme.accentFill)
+        .onChange(of: settings.currentConfig) { _ in
+            testToken = UUID()
+            isTesting = false
+            testState = .idle
+        }
     }
 
     // MARK: - Fields
@@ -78,7 +85,7 @@ struct ProviderConfigView: View {
             labeledField("API key") {
                 SecureField(apiKeyPlaceholder, text: $settings.apiKey)
                     .textFieldStyle(ToolTextFieldStyle())
-              }
+            }
         }
     }
 
@@ -90,7 +97,7 @@ struct ProviderConfigView: View {
                     .autocorrectionDisabled()
                 Button("Detect") { Task { await settings.detectCodexPath() } }
                     .help("Fill in the full path to your codex binary")
-              }
+            }
         }
     }
 
@@ -111,39 +118,33 @@ struct ProviderConfigView: View {
                         if !models.isEmpty {
                             ForEach(models, id: \.self) { name in
                                 Button(name) { setModel(name) }
-                            }
-                        } else {
+                          }
+                      } else {
                             ForEach(fallbackModels, id: \.self) { name in
                                 Button(name) { setModel(name) }
-                            }
-                        }
-                    } label: {
+                          }
+                      }
+                  } label: {
                         Image(systemName: "chevron.down.circle.fill").foregroundStyle(BoxTheme.accent)
-                    }
+                  }
                     .menuStyle(.borderlessButton)
                     .fixedSize()
                     if settings.providerKind.isHTTP {
                         Button {
                             loadModels()
-                        } label: {
+                      } label: {
                             if isLoadingModels { ProgressView().controlSize(.small) } else { Text("Load") }
-                        }
+                      }
                         .disabled(isLoadingModels || modelLoadRequiresAPIKey)
                         .help("Fetch the available models from the endpoint")
-                    }
-                }
+                  }
+              }
             }
             if let loadError {
                 Label(loadError, systemImage: "exclamationmark.circle")
                     .font(.system(size: 11)).foregroundStyle(BoxTheme.danger)
                     .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
             }
-        }
-    }
-
-    private var codexReasoningRow: some View {
-        labeledField("Reasoning") {
-            ToolChoiceBar(selection: $settings.codexReasoningEffort, choices: CodexCLI.reasoningEfforts.map { ($0, effortLabel($0)) }, label: "Reasoning")
         }
     }
 
@@ -154,21 +155,21 @@ struct ProviderConfigView: View {
                     Picker("Sandbox", selection: $settings.codexSandboxMode) {
                         ForEach(CodexCLI.sandboxModes) { mode in
                             Text(mode.label).tag(mode)
-                        }
-                    }
-                    .pickerStyle(.menu)
+                      }
+                  }
+                    .labelsHidden().pickerStyle(.menu)
                     .frame(maxWidth: 190, alignment: .leading)
-                }
+              }
 
                 labeledField("Approvals") {
                     Picker("Approvals", selection: $settings.codexApprovalPolicy) {
                         ForEach(CodexCLI.approvalPolicies) { policy in
                             Text(policy.label).tag(policy)
-                        }
-                    }
-                    .pickerStyle(.menu)
+                      }
+                  }
+                    .labelsHidden().pickerStyle(.menu)
                     .frame(maxWidth: 190, alignment: .leading)
-                }
+              }
             }
 
             Text(codexPolicyHelp)
@@ -178,56 +179,34 @@ struct ProviderConfigView: View {
         }
     }
 
-    private var temperatureRow: some View {
-        labeledField("Temperature") {
-            VStack(alignment: .leading, spacing: 7) {
-                ToolChoiceBar(selection: $settings.temperatureMode, choices: TemperatureMode.allCases.map { ($0, $0.label) }, label: "Temperature")
-                .frame(maxWidth: 220)
-
-                if settings.temperatureMode == .custom {
-                    HStack(spacing: 10) {
-                        Slider(value: temperatureBinding, in: 0 ... temperatureMaximum, step: 0.1)
-                        Stepper(value: temperatureBinding, in: 0 ... temperatureMaximum, step: 0.1) {
-                            Text(temperatureText)
-                                .font(.system(.caption, design: .monospaced).weight(.semibold))
-                                .frame(width: 34, alignment: .trailing)
-                        }
-                        .fixedSize()
-                    }
-                }
-
-                Text(temperatureHelp)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-              }
-        }
-    }
-
     private var testRow: some View {
-        HStack(spacing: 10) {
-            Button {
-                runTest()
-            } label: {
-                if isTesting {
-                    HStack(spacing: 6) { ProgressView().controlSize(.small); Text("Saying hi…") }
-                } else {
-                    Text("Test connection")
-                }
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Button { runTest() } label: {
+                    if isTesting {
+                        HStack(spacing: 6) { ProgressView().controlSize(.small); Text("Testing model…") }
+                  } else {
+                        Label("Test connection", systemImage: "arrow.up.right.circle")
+                  }
+              }
+                .disabled(isTesting || !settings.isConfigured)
+                Text("Sends a short hello with these settings.")
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                Spacer(minLength: 0)
             }
-            .disabled(isTesting || !settings.isConfigured)
-
             switch testState {
-            case .idle:
-                EmptyView()
+            case .idle: EmptyView()
             case let .success(message):
                 Label(message, systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(BoxTheme.success).font(.caption).lineLimit(2)
+                    .foregroundStyle(BoxTheme.success).font(.caption)
+                    .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
             case let .failure(message):
-                Label(message, systemImage: "xmark.octagon.fill")
-                    .foregroundStyle(BoxTheme.danger).font(.caption).lineLimit(2)
+                // API compatibility errors often name the rejected parameter.
+                // Keep that explanation readable instead of clipping it to two lines.
+                Label(message, systemImage: "exclamationmark.circle.fill")
+                    .foregroundStyle(BoxTheme.danger).font(.caption)
+                    .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
             }
-            Spacer()
         }
     }
 
@@ -261,36 +240,12 @@ struct ProviderConfigView: View {
         }
     }
 
-    private var temperatureMaximum: Double {
-        settings.providerKind == .anthropic ? 1.0 : 2.0
-    }
-
     private var apiKeyPlaceholder: String {
         settings.providerKind == .openAI ? "Optional for local endpoints" : "Paste your key"
     }
 
     private var modelLoadRequiresAPIKey: Bool {
         settings.providerKind == .anthropic && settings.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    private var temperatureBinding: Binding<Double> {
-        Binding(
-            get: { min(settings.temperature, temperatureMaximum) },
-            set: { settings.setTemperature(min($0, temperatureMaximum)) }
-        )
-    }
-
-    private var temperatureText: String {
-        String(format: "%.1f", min(settings.temperature, temperatureMaximum))
-    }
-
-    private var temperatureHelp: String {
-        switch settings.temperatureMode {
-        case .providerDefault:
-            return "Temperature is omitted so models that require their default sampling can run."
-        case .custom:
-            return "Temperature is sent with each request. Use 1.0 for endpoints that require the default value."
-        }
     }
 
     private var hint: String {
@@ -335,13 +290,6 @@ struct ProviderConfigView: View {
 
     private func setModel(_ name: String) {
         modelBinding.wrappedValue = name
-    }
-
-    private func effortLabel(_ effort: String) -> String {
-        switch effort {
-        case "xhigh": return "XHigh"
-        default: return effort.capitalized
-        }
     }
 
     private func loadModels() {

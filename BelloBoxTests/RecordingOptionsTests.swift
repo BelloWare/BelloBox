@@ -173,7 +173,7 @@ final class RecordingOptionsTests: XCTestCase {
         XCTAssertEqual(settings.recordingCountdownSeconds, 10)
         XCTAssertEqual(settings.scrollingScreenshotMaxFrames, 2)
         XCTAssertEqual(settings.llmOCRMaxUploadLongEdge, 5000)
-        XCTAssertEqual(defaults.double(forKey: "temperature"), 1.0)
+        XCTAssertEqual(AppSettings(defaults: defaults).temperature, 1.0)
         XCTAssertEqual(defaults.integer(forKey: "recordingCountdownSeconds"), 10)
         XCTAssertEqual(defaults.integer(forKey: "scrollingScreenshotMaxFrames"), 2)
         XCTAssertEqual(defaults.integer(forKey: "llmOCRMaxUploadLongEdge"), 5000)
