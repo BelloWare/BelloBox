@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// The popup shown when the user clicks the floating button: a selected-text
@@ -12,7 +13,7 @@ struct ActionPopupView: View {
     @State private var showsSelection = true
     @FocusState private var instructionFocused: Bool
 
-    private let columns = [GridItem(.adaptive(minimum: 210), spacing: 10)]
+    private let columns = [GridItem(.adaptive(minimum: 180), spacing: 10)]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -20,11 +21,14 @@ struct ActionPopupView: View {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
-                        if !viewModel.selection.text.isEmpty { selectionPreview }
+                        if !viewModel.selection.text.isEmpty { selectionPreview(width: geometry.size.width) }
                         else { Text("Ask a question below, or open AI with selected text to use the writing actions.").font(.callout).foregroundStyle(.secondary) }
                         if !viewModel.isConfigured { setupBanner }
-                        actionsGrid
                         customPromptRow
+                        if !viewModel.selection.text.isEmpty {
+                            ToolSectionHeading(title: "Writing actions")
+                            actionsGrid
+                        }
                         if viewModel.didRun {
                             resultSection.frame(height: max(240, geometry.size.height - 250))
                         } else {
@@ -56,7 +60,7 @@ struct ActionPopupView: View {
         }
     }
 
-    private var selectionPreview: some View {
+    private func selectionPreview(width: CGFloat) -> some View {
         DisclosureGroup(isExpanded: $showsSelection) {
             ScrollView {
                 Text(viewModel.selection.text)
@@ -64,13 +68,24 @@ struct ActionPopupView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
-            .frame(height: 120)
+            .frame(height: Self.selectionPreviewHeight(text: viewModel.selection.text, width: width))
         } label: {
             Text("Selected text · \(viewModel.selection.text.count.formatted()) characters")
-                .font(.caption.weight(.semibold))
+                .font(.system(size: 12, weight: .semibold))
         }
         .padding(8)
-        .background(RoundedRectangle(cornerRadius: 9).fill(BoxTheme.accentSoft))
+        .background(RoundedRectangle(cornerRadius: 9).fill(BoxTheme.well))
+    }
+
+    /// Measure only enough text to fill the bounded preview. A short selection
+    /// should not reserve the same space as a full passage; long text still scrolls.
+    static func selectionPreviewHeight(text: String, width: CGFloat) -> CGFloat {
+        let sample = String(text.prefix(4_096))
+        let bounds = (sample as NSString).boundingRect(
+            with: CGSize(width: max(1, width - 40), height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: NSFont.preferredFont(forTextStyle: .callout)])
+        return min(120, max(32, ceil(bounds.height) + 4))
     }
 
     private var setupBanner: some View {
@@ -94,10 +109,10 @@ struct ActionPopupView: View {
                     viewModel.run(action)
                 } label: {
                     Label(action.title, systemImage: action.symbol)
-                        .font(.callout)
+                        .font(.system(size: 12, weight: .medium))
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 8)
                         .padding(.horizontal, 12)
                         .contentShape(Rectangle())
                 }
@@ -133,7 +148,7 @@ struct ActionPopupView: View {
                     Text(viewModel.resultText.isEmpty ? "Thinking…" : "Writing…")
                         .font(.caption).foregroundStyle(.secondary)
                 } else {
-                    Text("Result").font(.caption.bold()).foregroundStyle(.secondary)
+                    Text("Result").font(.system(size: 12, weight: .semibold))
                 }
                 Spacer()
                 if viewModel.isStreaming {

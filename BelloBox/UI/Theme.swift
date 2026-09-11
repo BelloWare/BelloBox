@@ -16,10 +16,12 @@ enum BoxTheme {
     /// The icon's orange. Never use it for text; it fails small-text contrast.
     static let brand = adaptive(light: (0.89, 0.46, 0.15), dark: (0.95, 0.53, 0.22))
     static let brandSoft = brand.opacity(0.14)
-    static let background = adaptive(light: (0.977, 0.974, 0.970), dark: (0.082, 0.081, 0.079))
-    static let surface = adaptive(light: (1, 1, 1), dark: (0.135, 0.133, 0.130))
-    static let well = adaptive(light: (0.960, 0.956, 0.950), dark: (0.102, 0.100, 0.097))
-    static let border = adaptive(light: (0.845, 0.838, 0.827), dark: (0.270, 0.263, 0.252))
+    static let background = adaptive(light: (0.965, 0.960, 0.951), dark: (0.085, 0.083, 0.080))
+    static let surface = adaptive(light: (1, 0.998, 0.994), dark: (0.145, 0.141, 0.136))
+    static let well = adaptive(light: (0.947, 0.941, 0.931), dark: (0.112, 0.108, 0.103))
+    static let border = adaptive(light: (0.865, 0.849, 0.824), dark: (0.280, 0.266, 0.248))
+    static let separator = border.opacity(0.55)
+    static let sidebarWidth: CGFloat = 200
     static let success = adaptive(light: (0.08, 0.42, 0.27), dark: (0.40, 0.83, 0.63))
     // Warning stays golden so it never reads as the orange accent.
     static let warning = adaptive(light: (0.50, 0.36, 0), dark: (1, 0.80, 0.42))
@@ -46,7 +48,7 @@ enum BoxTheme {
 struct WorkspaceBackground: View {
     var body: some View {
         BoxTheme.background.overlay(alignment: .topLeading) {
-            LinearGradient(colors: [BoxTheme.brand.opacity(0.025), .clear], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [BoxTheme.brand.opacity(0.045), .clear], startPoint: .top, endPoint: .bottom)
                 .frame(height: 160).allowsHitTesting(false)
         }
     }
@@ -72,7 +74,7 @@ struct ShortcutBadge: View {
         Text(text).font(.system(size: 11, weight: .medium, design: .monospaced))
             .foregroundStyle(.secondary).padding(.horizontal, 7).padding(.vertical, 4)
             .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 5))
-            .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(BoxTheme.separator))
     }
 }
 
@@ -80,7 +82,7 @@ struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(.white).padding(.vertical, 6).padding(.horizontal, 12)
+            .foregroundStyle(.white).padding(.horizontal, 13).frame(minHeight: 28)
             .background(BoxTheme.accentGradient, in: RoundedRectangle(cornerRadius: 8))
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.white.opacity(0.12)))
             .opacity(isEnabled ? (configuration.isPressed ? 0.8 : 1) : 0.4)
@@ -93,9 +95,9 @@ struct SecondaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(size: 12, weight: .medium))
-            .foregroundStyle(configuration.role == .destructive ? BoxTheme.danger : .primary).padding(.vertical, 6).padding(.horizontal, 11)
+            .foregroundStyle(configuration.role == .destructive ? BoxTheme.danger : .primary).padding(.horizontal, 11).frame(minHeight: 28)
             .background(configuration.isPressed ? BoxTheme.well : BoxTheme.surface, in: RoundedRectangle(cornerRadius: 8))
-            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.separator))
             .opacity(isEnabled ? 1 : 0.4)
             .contentShape(RoundedRectangle(cornerRadius: 8))
             .modifier(ControlHoverFeedback(radius: 8))
@@ -107,7 +109,8 @@ struct ToolCardButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background(configuration.isPressed ? BoxTheme.accentSoft : BoxTheme.surface, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(BoxTheme.separator))
+            .shadow(color: .black.opacity(0.035), radius: 3, y: 1)
             .opacity(isEnabled ? 1 : 0.4)
             .contentShape(RoundedRectangle(cornerRadius: 12))
             .modifier(ControlHoverFeedback(radius: 12))
@@ -122,9 +125,9 @@ struct PopupHeader: View {
     var onClose: () -> Void
     var body: some View {
         HStack(spacing: 9) {
-            ToolBadge(symbol: icon, size: 30)
+            ToolBadge(symbol: icon, size: 32)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.system(size: 15, weight: .semibold)).lineLimit(1)
+                Text(title).font(.system(size: 16, weight: .semibold)).lineLimit(1)
                 if let subtitle, !subtitle.isEmpty {
                     Text(subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                 }
@@ -134,7 +137,7 @@ struct PopupHeader: View {
             PopupChromeButton(symbol: "xmark", label: "Close (Esc)", action: onClose)
         }
         .padding(.bottom, 10)
-        .overlay(alignment: .bottom) { Rectangle().fill(BoxTheme.border).frame(height: 1) }
+        .overlay(alignment: .bottom) { Rectangle().fill(BoxTheme.separator).frame(height: 1) }
     }
 }
 
@@ -180,12 +183,13 @@ extension View {
     func popupCard() -> some View {
         buttonStyle(SecondaryButtonStyle()).background(WorkspaceBackground())
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(BoxTheme.separator))
             .tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
     }
     func surfaceCard() -> some View {
         background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(BoxTheme.border))
+            .shadow(color: .black.opacity(0.025), radius: 3, y: 1)
+            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(BoxTheme.separator))
     }
     func toolPanel() -> some View { padding(10).surfaceCard() }
     func appearPop() -> some View { modifier(AppearAnimation()) }
@@ -265,10 +269,10 @@ struct ToolLinkButtonStyle: ButtonStyle {
 /// The native editor still handles focus, selection, keyboard input and undo.
 struct ToolTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
-        configuration.textFieldStyle(.plain).font(.system(size: 12))
-            .padding(.horizontal, 8).padding(.vertical, 5)
+        configuration.textFieldStyle(.plain).font(.system(size: 13))
+            .padding(.horizontal, 10).padding(.vertical, 7)
             .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(BoxTheme.separator))
     }
 }
 
@@ -289,10 +293,12 @@ struct ToolChoiceBar<Value: Hashable>: View {
                 let selected = selection == value
                 Button { selection = value } label: {
                     Text(title).font(.system(size: compact ? 10 : 12, weight: selected ? .semibold : .medium)).lineLimit(1)
-                        .foregroundStyle(selected ? Color.white : Color.primary)
+                        .foregroundStyle(selected ? BoxTheme.accent : Color.secondary)
                         .padding(.horizontal, compact ? 8 : 10).frame(height: compact ? 20 : 26)
                         .frame(maxWidth: compact ? nil : .infinity)
-                        .background(selected ? AnyShapeStyle(BoxTheme.accentGradient) : AnyShapeStyle(Color.clear), in: RoundedRectangle(cornerRadius: 5))
+                        .background(selected ? AnyShapeStyle(BoxTheme.surface) : AnyShapeStyle(Color.clear), in: RoundedRectangle(cornerRadius: 5))
+                        .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(selected ? BoxTheme.separator : .clear))
+                        .shadow(color: .black.opacity(selected ? 0.05 : 0), radius: 2, y: 1)
                         .contentShape(RoundedRectangle(cornerRadius: 5))
                 }.buttonStyle(.plain)
                     .modifier(ToolNumberShortcut(index: index, enabled: numberedShortcuts))
@@ -302,7 +308,7 @@ struct ToolChoiceBar<Value: Hashable>: View {
             }
         }.padding(2)
             .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
-            .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.separator))
             .opacity(isEnabled ? 1 : 0.45)
             .accessibilityElement(children: .contain)
     }
@@ -311,15 +317,17 @@ struct ToolChoiceBar<Value: Hashable>: View {
 /// Square actions use consistent hit targets instead of text-button padding.
 struct ToolIconButtonStyle: ButtonStyle {
     var selected = false
+    var size: CGFloat = 28
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.font(.system(size: 12, weight: .medium))
+        configuration.label.font(.system(size: size * 0.43, weight: .medium))
             .foregroundStyle(selected ? BoxTheme.accent : Color.primary)
-            .frame(width: 28, height: 28)
-            .background(selected || configuration.isPressed ? BoxTheme.accentSoft : BoxTheme.well, in: RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(selected ? BoxTheme.accent.opacity(0.6) : BoxTheme.border))
+            .frame(width: size, height: size)
+            .background(selected || configuration.isPressed ? BoxTheme.accentSoft : Color.clear, in: RoundedRectangle(cornerRadius: 6))
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(selected ? BoxTheme.accent.opacity(0.5) : Color.clear))
             .opacity(isEnabled ? 1 : 0.35)
             .contentShape(RoundedRectangle(cornerRadius: 6))
+            .modifier(ControlHoverFeedback(radius: 6))
     }
 }
 
@@ -344,5 +352,35 @@ private struct ControlHoverFeedback: ViewModifier {
             .allowsHitTesting(false))
             .onHover { hovered = $0 }
             .animation(reduceMotion ? nil : .easeOut(duration: 0.1), value: hovered)
+    }
+}
+
+/// Shared section hierarchy without a second card around every label.
+struct ToolSectionHeading: View {
+    let title: String
+    var detail: String? = nil
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(title).font(.system(size: 12, weight: .semibold))
+            Spacer(minLength: 8)
+            if let detail { Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1) }
+        }
+    }
+}
+
+/// A common sidebar target in Home and Settings, with a clear current page.
+struct SidebarItemStyle: ButtonStyle {
+    var selected = false
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(selected ? BoxTheme.accent : Color.primary)
+            .padding(.horizontal, 12).frame(height: 40)
+            .background(selected ? BoxTheme.accentSoft : configuration.isPressed ? BoxTheme.well : .clear,
+                        in: RoundedRectangle(cornerRadius: 8))
+            .overlay(alignment: .leading) {
+                if selected { Capsule().fill(BoxTheme.accent).frame(width: 3, height: 16) }
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 8))
+            .modifier(ControlHoverFeedback(radius: 8))
     }
 }

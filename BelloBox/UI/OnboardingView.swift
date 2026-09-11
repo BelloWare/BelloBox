@@ -66,7 +66,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 18) {
             appBadge
             Text("Welcome to Bello Box")
-                .font(.system(size: 32, weight: .bold))
+                .font(.system(size: 30, weight: .semibold))
             Text("Your workspace for text, developer tools, capture, and time. Open Home to explore, or use the shortcut from any app.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
@@ -291,7 +291,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 18) {
             appBadge
             Text("You're all set")
-                .font(.system(size: 32, weight: .bold))
+                .font(.system(size: 30, weight: .semibold))
             Text(doneSummary)
                 .font(.title3)
                 .foregroundStyle(.secondary)
@@ -395,7 +395,7 @@ struct OnboardingView: View {
     private func stepHeader(_ title: String, systemImage: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: systemImage).font(.title2).foregroundStyle(BoxTheme.accent)
-            Text(title).font(.system(size: 26, weight: .bold))
+            Text(title).font(.system(size: 26, weight: .semibold))
         }
     }
 

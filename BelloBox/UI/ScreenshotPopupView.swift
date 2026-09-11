@@ -942,7 +942,7 @@ struct ScreenshotPopupView: View {
                     HStack(alignment: .top, spacing: 12) {
                         ZoomableAnnotationCanvas(viewModel: viewModel)
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(BoxTheme.border, lineWidth: 1))
+                            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(BoxTheme.separator, lineWidth: 1))
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                         if showsOCR {

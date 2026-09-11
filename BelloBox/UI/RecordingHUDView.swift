@@ -128,7 +128,7 @@ struct RecordingHUDView: View {
             .fixedSize()
             .padding(.horizontal, 8).padding(.vertical, 4)
             .background(BoxTheme.well, in: Capsule())
-            .overlay(Capsule().strokeBorder(BoxTheme.border))
+            .overlay(Capsule().strokeBorder(BoxTheme.separator))
             .help(help)
             .accessibilityLabel(accessibilityLabel)
     }

@@ -221,7 +221,7 @@ struct AnnotationToolbarView: View {
                     }
                 }
             ), supportsOpacity: false)
-            .labelsHidden()
+            .labelsHidden().controlSize(.small)
             .frame(width: 30)
             .overlayTooltip("Custom mask fill (always opaque)")
             Menu {
@@ -262,7 +262,7 @@ struct AnnotationToolbarView: View {
                     }
                 }
             ), supportsOpacity: false)
-            .labelsHidden()
+            .labelsHidden().controlSize(.small)
             .frame(width: 34)
             .overlayTooltip("Stroke and text color")
     }

@@ -205,9 +205,9 @@ private struct LauncherCommandRow: View {
                   .accessibilityIdentifier("launcherPreview_\(command.id)")
           }
         }
-        .background((selected ? BoxTheme.accentSoft : hovered ? Color.primary.opacity(0.035) : .clear),
+        .background((selected ? BoxTheme.surface : hovered ? BoxTheme.well : .clear),
                     in: RoundedRectangle(cornerRadius: expanded ? 12 : 8))
-        .overlay(RoundedRectangle(cornerRadius: expanded ? 12 : 8).strokeBorder(expanded ? BoxTheme.accent.opacity(0.35) : .clear))
+        .overlay(RoundedRectangle(cornerRadius: expanded ? 12 : 8).strokeBorder(expanded ? BoxTheme.accent.opacity(0.28) : .clear))
         .onHover { hovered = $0 }
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: selected)
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)

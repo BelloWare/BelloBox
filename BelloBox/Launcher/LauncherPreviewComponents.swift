@@ -95,7 +95,7 @@ struct LauncherPreviewField: View {
             .frame(height: 18)
             .padding(.horizontal, 7).padding(.vertical, 2)
             .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(BoxTheme.separator))
     }
 }
 
@@ -114,7 +114,7 @@ struct LauncherPreviewEditor: View {
             .frame(height: height)
             .padding(.horizontal, 4).padding(.vertical, 1)
             .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
-            .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.separator))
             .accessibilityLabel(label)
     }
 }
@@ -132,7 +132,7 @@ struct LauncherChipButtonStyle: ButtonStyle {
             .background(prominent ? AnyShapeStyle(BoxTheme.accentGradient)
                                   : AnyShapeStyle(configuration.isPressed ? BoxTheme.accentSoft : BoxTheme.well),
                         in: RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(prominent ? Color.white.opacity(0.12) : BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(prominent ? Color.white.opacity(0.12) : BoxTheme.separator))
             .opacity(isEnabled ? (configuration.isPressed && prominent ? 0.85 : 1) : 0.4)
             .contentShape(RoundedRectangle(cornerRadius: 6))
     }
@@ -190,7 +190,7 @@ struct LauncherOutputWell<Content: View>: View {
             .frame(maxWidth: .infinity, minHeight: 0, idealHeight: height ?? 0, maxHeight: .infinity)
             .frame(height: height)
             .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 8))
-            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.border))
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.separator))
     }
 }
 

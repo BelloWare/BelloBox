@@ -69,7 +69,7 @@ struct GIFExportPanel: View {
         .padding(18)
         .frame(width: Self.preferredSize.width)
         .popupCard()
-        .shadow(radius: 20)
+        .shadow(color: .black.opacity(0.16), radius: 18, y: 8)
         .onExitCommand(perform: onCancel)
     }
 

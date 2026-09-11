@@ -55,13 +55,9 @@ struct MainView: View {
                     header
                     searchButton
                     if !trusted { permissionNotice }
-                    HStack {
-                        Text(category == .overview ? "QUICK ACCESS" : "\(category.rawValue.uppercased()) TOOLS")
-                            .font(.system(size: 10, weight: .semibold)).tracking(1.5).foregroundStyle(.secondary)
-                        Spacer()
-                        Text("\(category.commands.count) tools").font(.caption).foregroundStyle(.secondary)
-                    }
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: 12)], spacing: 12) {
+                    ToolSectionHeading(title: category == .overview ? "Quick access" : "\(category.rawValue) tools",
+                                       detail: "\(category.commands.count) tools")
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: 12)], spacing: 12) {
                         ForEach(category.commands) { command in homeTool(command) }
                     }
                     HStack(alignment: .top, spacing: 10) {
@@ -87,21 +83,17 @@ struct MainView: View {
                 AppBrandIcon(size: 38)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Bello Box").font(.system(size: 15, weight: .semibold))
-                    Text("YOUR WORKSPACE").font(.system(size: 8, weight: .semibold)).tracking(1.4).foregroundStyle(.secondary)
+                    Text("Your workspace").font(.system(size: 11)).foregroundStyle(.secondary)
                 }
             }.padding(.vertical, 22).padding(.horizontal, 16)
             ForEach(Array(HomeCategory.allCases.enumerated()), id: \.element.id) { index, item in
                 Button { category = item } label: {
                     HStack(spacing: 10) {
                         Image(systemName: item.symbol).frame(width: 20)
-                        Text(item.rawValue).font(.system(size: 12, weight: category == item ? .semibold : .medium))
+                        Text(item.rawValue).font(.system(size: 13, weight: category == item ? .semibold : .medium))
                         Spacer()
-                        if category == item { Circle().fill(BoxTheme.accent).frame(width: 4, height: 4) }
-                    }.foregroundStyle(category == item ? BoxTheme.accent : .primary)
-                        .padding(.horizontal, 12).frame(height: 38)
-                        .background(category == item ? BoxTheme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 8))
-                        .contentShape(Rectangle())
-                }.buttonStyle(.plain).padding(.horizontal, 10)
+                    }
+                }.buttonStyle(SidebarItemStyle(selected: category == item)).padding(.horizontal, 10)
                     .accessibilityValue(category == item ? "Selected" : "Not selected")
                     .accessibilityIdentifier("homeCategory_\(item.id)")
                     .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
@@ -111,18 +103,18 @@ struct MainView: View {
                 Label(trusted ? "Selection tools ready" : "Selection access needed", systemImage: trusted ? "checkmark.shield" : "lock")
                     .foregroundStyle(trusted ? BoxTheme.teal : .secondary)
                 Label(settings.isConfigured ? "AI connected" : "AI is optional", systemImage: "sparkles").foregroundStyle(.secondary)
-            }.font(.system(size: 10)).padding(18)
+            }.font(.system(size: 11)).padding(18)
             Divider().padding(.horizontal, 16)
             sidebarAction("Settings", symbol: "gearshape", action: onOpenSettings)
             sidebarAction("Setup guide", symbol: "questionmark.circle", action: onOpenGuide)
             if canCheckForUpdates { sidebarAction("Check for updates", symbol: "arrow.triangle.2.circlepath", action: onCheckForUpdates) }
             Text("Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")")
                 .font(.system(size: 10)).foregroundStyle(.tertiary).padding(18)
-        }.frame(width: 186).background(BoxTheme.surface.opacity(0.6))
+        }.frame(width: BoxTheme.sidebarWidth).background(BoxTheme.surface.opacity(0.6))
     }
     private func sidebarAction(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) { Label(title, systemImage: symbol).font(.system(size: 11)).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 18).padding(.vertical, 7) }
-            .buttonStyle(.plain)
+        Button(action: action) { Label(title, systemImage: symbol).font(.system(size: 12)).frame(maxWidth: .infinity, alignment: .leading) }
+            .buttonStyle(SidebarItemStyle()).padding(.horizontal, 10)
     }
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -137,7 +129,7 @@ struct MainView: View {
                 Image(systemName: "magnifyingglass").font(.system(size: 16)).foregroundStyle(BoxTheme.accent)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Search all tools and commands").font(.system(size: 13, weight: .medium))
-                    Text("\(LauncherCommand.allCases.count) commands. One place to start.").font(.system(size: 10)).foregroundStyle(.secondary)
+                    Text("\(LauncherCommand.allCases.count) commands. One place to start.").font(.system(size: 11)).foregroundStyle(.secondary)
                 }
                 Spacer()
                 ShortcutBadge(text: settings.globalHotkeyEnabled ? settings.globalHotkey.displayString : "Open")
@@ -192,21 +184,17 @@ private struct HomeToolCard: View {
     @State private var hovered = false
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    ToolBadge(symbol: command.symbol, size: 32)
-                    Spacer()
-                    Image(systemName: "arrow.up.right").font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(hovered ? BoxTheme.accent : Color.secondary.opacity(0.45))
-                }
+            HStack(spacing: 12) {
+                ToolBadge(symbol: command.symbol, size: 36)
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(command.title).font(.system(size: 12, weight: .semibold)).lineLimit(1)
-                    Text(command.subtitle).font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(2)
-                        .frame(height: 28, alignment: .topLeading)
+                    Text(command.title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                    Text(command.subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
+                        .frame(height: 30, alignment: .topLeading)
                 }.frame(maxWidth: .infinity, alignment: .leading)
-            }.padding(15)
+                Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(hovered ? BoxTheme.accent : Color.secondary.opacity(0.45))
+            }.padding(14)
         }.buttonStyle(ToolCardButtonStyle())
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(BoxTheme.accent.opacity(hovered ? 0.4 : 0)))
             .onHover { hovered = $0 }.help(command.subtitle)
             .accessibilityLabel(command.title).accessibilityHint(command.subtitle)
     }

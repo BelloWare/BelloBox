@@ -9,12 +9,12 @@ struct UtilityWorkbenchView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                Button(action: onBack) { Image(systemName: "chevron.left").font(.headline) }
-                    .buttonStyle(SecondaryButtonStyle()).help("All tools (⌘K or Esc)").accessibilityLabel("Back to all tools")
+                Button(action: onBack) { Image(systemName: "chevron.left") }
+                    .buttonStyle(ToolIconButtonStyle()).help("All tools (⌘K or Esc)").accessibilityLabel("Back to all tools")
                 ToolBadge(symbol: model.command.symbol)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(model.command.title).font(.headline)
-                    Text(model.command == .http ? "Requests run when you choose Send" : "Processed on your Mac")
+                    Text(model.command.title).font(.system(size: 16, weight: .semibold))
+                    Text(model.command == .http ? "Requests run when you choose Send" : model.command.subtitle)
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -147,7 +147,7 @@ struct UtilityWorkbenchView: View {
     }
     private func inputLabel(_ title: String, second: Bool) -> some View {
         HStack {
-            Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Text(title).font(.system(size: 12, weight: .semibold))
             Spacer()
             if !second && ![LauncherCommand.snippets, .compare].contains(model.command) {
                 Button("Example") { model.input = example }.buttonStyle(ToolLinkButtonStyle()).font(.caption)
@@ -163,7 +163,7 @@ struct UtilityWorkbenchView: View {
             .scrollContentBackground(.hidden)
             .padding(9).frame(height: height)
             .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(.primary.opacity(0.1)))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(BoxTheme.separator))
             .accessibilityLabel(title)
     }
     @ViewBuilder private var extraControls: some View {
@@ -196,11 +196,7 @@ struct UtilityWorkbenchView: View {
         if let result = model.result {
             if let table = result.table { tablePreview(table) }
             if !result.text.isEmpty {
-                HStack {
-                    Text("Result").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                    Spacer()
-                    Text(result.status).font(.caption).foregroundStyle(.secondary).lineLimit(2)
-                }
+                ToolSectionHeading(title: "Result", detail: result.status)
                 if let comparison = result.comparison {
                     if model.comparisonMode == .words {
                         Text(wordDiff(comparison)).font(.system(.body, design: .monospaced)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading).padding(12)

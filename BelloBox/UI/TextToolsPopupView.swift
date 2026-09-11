@@ -176,7 +176,7 @@ struct TextToolsPopupView: View {
     private var inputField: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack {
-                Text("Input · \(viewModel.input.count.formatted()) characters").font(.caption2.bold()).foregroundStyle(.secondary)
+                Text("Input · \(viewModel.input.count.formatted()) characters").font(.system(size: 12, weight: .semibold))
                 Spacer()
                 Button("Paste") { if let text = NSPasteboard.general.string(forType: .string) { viewModel.input = text } }
                     .buttonStyle(ToolLinkButtonStyle()).font(.caption).help("Paste clipboard text as input")
@@ -311,7 +311,7 @@ struct TextToolsPopupView: View {
 
     private var modelControl: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Token model").font(.caption2.bold()).foregroundStyle(.secondary)
+            Text("Token model").font(.system(size: 12, weight: .semibold))
             ToolChoiceBar(selection: $viewModel.tokenProvider, choices: ProviderKind.allCases.map { ($0, $0.shortName) }, label: "Token provider")
 
             HStack(spacing: 6) {
@@ -365,14 +365,15 @@ struct TextToolsPopupView: View {
                 let selected = isSelected(option)
                 Button { action(option) } label: {
                     Text(label(option))
-                        .font(.caption)
+                        .font(.system(size: 12, weight: selected ? .semibold : .medium))
+                        .foregroundStyle(selected ? BoxTheme.accent : Color.secondary)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 8)
-                        .background(RoundedRectangle(cornerRadius: 7).fill(selected ? BoxTheme.accentSoft : Color.primary.opacity(0.05)))
+                        .background(RoundedRectangle(cornerRadius: 7).fill(selected ? BoxTheme.surface : BoxTheme.well))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 7).strokeBorder(selected ? BoxTheme.accent : .clear, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 7).strokeBorder(selected ? BoxTheme.accent.opacity(0.35) : BoxTheme.separator, lineWidth: 1)
                         )
                         .contentShape(Rectangle())
                 }
@@ -382,7 +383,8 @@ struct TextToolsPopupView: View {
     }
 
     private func outputBlock(_ text: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
+            ToolSectionHeading(title: "Result")
             ScrollView {
                 Text(text.isEmpty ? "Your result appears here." : text)
                     .font(.system(.callout, design: .monospaced))

@@ -66,8 +66,8 @@ struct WorldClockView: View {
     private var timelineSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) {
-                Label("MEETING PLANNER", systemImage: "calendar.badge.clock")
-                    .font(.system(size: 10, weight: .semibold)).tracking(1).foregroundStyle(.secondary)
+                Label("Meeting planner", systemImage: "calendar.badge.clock")
+                    .font(.system(size: 12, weight: .semibold))
                 Spacer()
                 Menu {
                     ForEach(viewModel.zonePresentations) { zone in
@@ -128,7 +128,7 @@ struct WorldClockView: View {
                     Spacer()
                     Text(viewModel.dayEndLabel)
                 }
-                .font(.system(size: 10)).foregroundStyle(.secondary)
+                .font(.system(size: 11)).foregroundStyle(.secondary)
             }
         }
         .padding(16).surfaceCard()
@@ -136,12 +136,7 @@ struct WorldClockView: View {
 
     private var locationsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("YOUR LOCATIONS").font(.system(size: 10, weight: .semibold)).tracking(1)
-                Text("\(viewModel.zoneIDs.count)").font(.caption).monospacedDigit()
-                Spacer()
-                Text("All times stay in sync").font(.caption)
-            }.foregroundStyle(.secondary)
+            ToolSectionHeading(title: "Your locations · \(viewModel.zoneIDs.count)", detail: "All times stay in sync")
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.zonePresentations) { zone in
                     WorldClockZoneRow(zone: zone, canRemove: viewModel.canRemoveZone,
@@ -219,7 +214,7 @@ private struct WorldClockZoneRow: View {
                 HStack(spacing: 8) {
                     Text(zone.name).font(.system(size: 14, weight: .semibold)).lineLimit(1)
                     if zone.isAnchor {
-                        Text("REFERENCE").font(.system(size: 8, weight: .bold)).tracking(0.5)
+                        Text("Reference").font(.system(size: 10, weight: .medium))
                             .foregroundStyle(BoxTheme.accent)
                             .padding(.horizontal, 6).padding(.vertical, 3)
                             .background(BoxTheme.accentSoft, in: RoundedRectangle(cornerRadius: 4))
@@ -238,7 +233,7 @@ private struct WorldClockZoneRow: View {
                             .foregroundStyle(BoxTheme.accent).fontWeight(.semibold)
                             .help("\(zone.dayDifference) calendar days from the reference location")
                     }
-                }.font(.system(size: 10)).foregroundStyle(.secondary)
+                }.font(.system(size: 11)).foregroundStyle(.secondary)
             }.frame(minWidth: 145, alignment: .trailing)
             clockIconButton(zone.isAnchor ? "mappin.circle.fill" : "mappin", label: "Use \(zone.name) as reference", action: onMakeAnchor)
                 .foregroundStyle(zone.isAnchor ? BoxTheme.accent : .secondary).disabled(zone.isAnchor)
@@ -246,7 +241,7 @@ private struct WorldClockZoneRow: View {
                 .foregroundStyle(.secondary).disabled(!canRemove)
         }
         .padding(14).surfaceCard()
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(zone.isAnchor ? BoxTheme.accent.opacity(0.4) : .clear))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(zone.isAnchor ? BoxTheme.accent.opacity(0.25) : .clear))
         .accessibilityElement(children: .contain)
     }
 }

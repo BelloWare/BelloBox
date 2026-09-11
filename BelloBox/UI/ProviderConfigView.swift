@@ -57,7 +57,7 @@ struct ProviderConfigView: View {
             testRow
 
             Text(hint)
-                .font(.caption2)
+                .font(.system(size: 11))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }.buttonStyle(SecondaryButtonStyle())
@@ -78,7 +78,7 @@ struct ProviderConfigView: View {
             labeledField("API key") {
                 SecureField(apiKeyPlaceholder, text: $settings.apiKey)
                     .textFieldStyle(ToolTextFieldStyle())
-            }
+              }
         }
     }
 
@@ -90,7 +90,7 @@ struct ProviderConfigView: View {
                     .autocorrectionDisabled()
                 Button("Detect") { Task { await settings.detectCodexPath() } }
                     .help("Fill in the full path to your codex binary")
-            }
+              }
         }
     }
 
@@ -101,40 +101,42 @@ struct ProviderConfigView: View {
     }
 
     private var modelRow: some View {
-        labeledField("Model") {
-            HStack(spacing: 6) {
-                TextField(modelPlaceholder, text: modelBinding)
-                    .textFieldStyle(ToolTextFieldStyle())
-                    .autocorrectionDisabled()
-                Menu {
-                    if !models.isEmpty {
-                        ForEach(models, id: \.self) { name in
-                            Button(name) { setModel(name) }
+        VStack(alignment: .leading, spacing: 6) {
+            labeledField("Model") {
+                HStack(spacing: 6) {
+                    TextField(modelPlaceholder, text: modelBinding)
+                        .textFieldStyle(ToolTextFieldStyle())
+                        .autocorrectionDisabled()
+                    Menu {
+                        if !models.isEmpty {
+                            ForEach(models, id: \.self) { name in
+                                Button(name) { setModel(name) }
+                            }
+                        } else {
+                            ForEach(fallbackModels, id: \.self) { name in
+                                Button(name) { setModel(name) }
+                            }
                         }
-                    } else {
-                        ForEach(fallbackModels, id: \.self) { name in
-                            Button(name) { setModel(name) }
-                        }
-                    }
-                } label: {
-                    Image(systemName: "chevron.down.circle.fill").foregroundStyle(BoxTheme.accent)
-                }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-                if settings.providerKind.isHTTP {
-                    Button {
-                        loadModels()
                     } label: {
-                        if isLoadingModels { ProgressView().controlSize(.small) } else { Text("Load") }
+                        Image(systemName: "chevron.down.circle.fill").foregroundStyle(BoxTheme.accent)
                     }
-                    .disabled(isLoadingModels || modelLoadRequiresAPIKey)
-                    .help("Fetch the available models from the endpoint")
+                    .menuStyle(.borderlessButton)
+                    .fixedSize()
+                    if settings.providerKind.isHTTP {
+                        Button {
+                            loadModels()
+                        } label: {
+                            if isLoadingModels { ProgressView().controlSize(.small) } else { Text("Load") }
+                        }
+                        .disabled(isLoadingModels || modelLoadRequiresAPIKey)
+                        .help("Fetch the available models from the endpoint")
+                    }
                 }
             }
-        }
-        .overlay(alignment: .bottomLeading) {
             if let loadError {
-                Text(loadError).font(.caption2).foregroundStyle(BoxTheme.danger).lineLimit(1).offset(y: 16)
+                Label(loadError, systemImage: "exclamationmark.circle")
+                    .font(.system(size: 11)).foregroundStyle(BoxTheme.danger)
+                    .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
             }
         }
     }
@@ -170,7 +172,7 @@ struct ProviderConfigView: View {
             }
 
             Text(codexPolicyHelp)
-                .font(.caption2)
+                .font(.system(size: 11))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -195,10 +197,10 @@ struct ProviderConfigView: View {
                 }
 
                 Text(temperatureHelp)
-                    .font(.caption2)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-            }
+              }
         }
     }
 

@@ -32,7 +32,7 @@ struct SettingsView: View {
                     header
                     selectedContent
                 }
-                .padding(20)
+                .padding(24)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
             }
             .id(selectedCategory)
@@ -51,7 +51,7 @@ struct SettingsView: View {
     }
 
     private var sidebar: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
                 AppBrandIcon(size: 38)
                 VStack(alignment: .leading, spacing: 1) {
@@ -59,9 +59,8 @@ struct SettingsView: View {
                     Text("Settings").font(.caption).foregroundStyle(.secondary)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 14)
-            .padding(.bottom, 8)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 22)
 
             ForEach(SettingsCategory.allCases) { category in
                 sidebarButton(category)
@@ -69,7 +68,7 @@ struct SettingsView: View {
 
             Spacer()
         }
-        .frame(width: 200)
+        .frame(width: BoxTheme.sidebarWidth)
         .background(BoxTheme.surface.opacity(0.6))
     }
 
@@ -77,23 +76,19 @@ struct SettingsView: View {
         Button { selectedCategory = category } label: {
             HStack(spacing: 11) {
                 Image(systemName: category.symbol).font(.system(size: 13)).frame(width: 20)
-                Text(category.title).font(.system(size: 12, weight: selectedCategory == category ? .semibold : .medium))
+                Text(category.title).font(.system(size: 13, weight: selectedCategory == category ? .semibold : .medium))
                 Spacer()
             }
-            .foregroundStyle(selectedCategory == category ? BoxTheme.accent : .primary)
-            .padding(.horizontal, 12).frame(height: 40)
-            .background(selectedCategory == category ? BoxTheme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 8))
-            .contentShape(Rectangle())
-        }.buttonStyle(.plain)
+        }.buttonStyle(SidebarItemStyle(selected: selectedCategory == category))
             .accessibilityValue(selectedCategory == category ? "Selected" : "Not selected")
             .help(category.explanation).padding(.horizontal, 10)
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Label(selectedCategory.title, systemImage: selectedCategory.symbol)
-                .font(.system(size: 26, weight: .semibold))
-            Text(selectedCategory.explanation)
+            Text(selectedCategory.title)
+                .font(.system(size: 28, weight: .semibold)).tracking(-0.6)
+            Text(selectedCategory.explanation).font(.system(size: 12))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -211,7 +206,7 @@ struct SettingsView: View {
                     }
                     if let diagnosticsExportMessage {
                         Text(diagnosticsExportMessage)
-                            .font(.caption2)
+                            .font(.system(size: 11))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -395,7 +390,7 @@ struct SettingsView: View {
             HStack(alignment: .top, spacing: 10) {
                 ToolBadge(symbol: systemImage, size: 32)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(title).font(.headline)
+                    Text(title).font(.system(size: 13, weight: .semibold))
                     Text(subtitle).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -423,7 +418,7 @@ struct SettingsView: View {
 
     private func helpText(_ text: String) -> some View {
         Text(text)
-            .font(.caption2)
+            .font(.system(size: 11))
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -434,7 +429,7 @@ struct SettingsView: View {
                 .foregroundStyle(BoxTheme.warning)
             VStack(alignment: .leading, spacing: 5) {
                 Text(message)
-                    .font(.caption2)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Button("Open Accessibility Settings", action: action)
@@ -449,7 +444,7 @@ struct SettingsView: View {
     private func hotkeyConflictWarnings() -> some View {
         ForEach(settings.hotkeyConflictMessages, id: \.self) { message in
             Label(message, systemImage: "exclamationmark.triangle.fill")
-                .font(.caption2)
+                .font(.system(size: 11))
                 .foregroundStyle(BoxTheme.warning)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -464,7 +459,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                 Text(detail)
-                    .font(.caption2)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
             Spacer()

@@ -189,6 +189,14 @@ explicit Search actions open the palette. `HomeCategory` organizes the tool
 catalog and Home has ⌘1–⌘4 category shortcuts plus ⌘K search. Shared colors,
 `ToolBadge`, `ShortcutBadge`, surfaces, and button styles live in `UI/Theme.swift`.
 Use these tokens when adding or updating tools; honor Reduce Motion.
+Home and Settings share `SidebarItemStyle` and a 200 pt sidebar. `ToolSectionHeading`
+provides the common section hierarchy. Quiet dividers use `BoxTheme.separator`;
+selected tabs use a raised surface and orange ink, reserving filled orange for
+primary actions. World Clock icon controls reuse `ToolIconButtonStyle` at their
+existing reserved sizes. Ask AI measures a bounded prefix for selection-preview
+height (32–120 pt), so short text leaves room for the prompt and writing actions;
+the complete selection remains scrollable. Provider model-load errors take
+their own layout space instead of overlapping the next field.
 Surfaces are quiet warm gray in light mode and graphite in dark mode. Tool badges
 share the orange accent; semantic status colors stay distinct. `ToolChoiceBar`
 serves compact previews and full tool tabs, `ToolTextFieldStyle` styles native

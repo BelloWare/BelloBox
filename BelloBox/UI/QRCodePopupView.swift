@@ -117,7 +117,7 @@ struct QRCodePopupView: View {
             header
             qrArea.frame(maxHeight: .infinity)
             editor
-            messageArea
+            if viewModel.errorMessage != nil || viewModel.statusMessage != nil { messageArea }
             footer
         }
         .padding(12)
@@ -163,7 +163,7 @@ struct QRCodePopupView: View {
     private var editor: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("Encoded text").font(.caption.bold()).foregroundStyle(.secondary)
+                Text("Encoded text").font(.system(size: 12, weight: .semibold))
                 Spacer()
                 Button("Clear") { viewModel.text = "" }
                     .buttonStyle(ToolLinkButtonStyle()).font(.caption).disabled(viewModel.text.isEmpty)
@@ -175,7 +175,7 @@ struct QRCodePopupView: View {
                 .font(.callout)
                 .frame(height: 100)
                 .scrollContentBackground(.hidden)
-                .padding(6)
+                .padding(8)
                 .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
                 .accessibilityLabel("Encoded text")
             HStack {
@@ -183,7 +183,7 @@ struct QRCodePopupView: View {
                 Spacer()
                 Text(viewModel.capacityMessage)
             }
-            .font(.caption2)
+            .font(.system(size: 11))
             .foregroundStyle(viewModel.isTooLong ? BoxTheme.danger : .secondary)
             .help("QR capacity is measured in UTF-8 bytes. Emoji and some characters use more than one byte.")
         }

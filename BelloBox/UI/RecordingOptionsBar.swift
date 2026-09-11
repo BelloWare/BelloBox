@@ -104,12 +104,11 @@ struct RecordingOptionsBar: View {
     private func section<Content: View>(_ title: String, systemImage: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Label(title, systemImage: systemImage)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 12, weight: .semibold))
                 .labelStyle(.titleAndIcon)
             content()
         }
-        .padding(.horizontal, 10).padding(.vertical, 8)
+        .padding(.horizontal, 10).padding(.vertical, 7)
         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         .surfaceCard()
     }
