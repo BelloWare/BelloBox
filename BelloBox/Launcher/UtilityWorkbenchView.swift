@@ -198,7 +198,7 @@ struct UtilityWorkbenchView: View {
                 .padding(12).frame(maxWidth: .infinity, alignment: .leading).background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.danger.opacity(0.07)))
         }
         if let result = model.result {
-            if let visual = result.visual { AdditionalUtilityVisualView(visual: visual, compact: false).frame(height: model.command == .markdown ? 300 : 120) }
+            if let visual = result.visual { AdditionalUtilityVisualView(visual: visual, compact: false, onBezierChange: { model.input = $0.map(MathTool.display).joined(separator: ", ") }).frame(height: [.markdown, .csvExplore].contains(model.command) ? 300 : model.command == .bezier ? 220 : 140) }
             if let table = result.table { tablePreview(table) }
             if !result.text.isEmpty {
                 ToolSectionHeading(title: "Result", detail: result.status)

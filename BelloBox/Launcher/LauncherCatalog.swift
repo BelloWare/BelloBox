@@ -3,13 +3,14 @@ import Foundation
 enum LauncherCommand: String, CaseIterable, Identifiable {
     case json, compare, jwt, regex, url, time, cron, convert, snippets, http, generate
     case calculator, units, numberBase, color, contrast, gradient, markdown, jsonPointer, jsonFlatten, jsonCode, sqlInsert, xmlJSON, unicode, stringEscape, extract, listSet, semver, subnet, chmod, hmac
+    case jsonSchema, jsonMerge, jsonRedact, jsonLines, csvExplore, envFile, plist, sqlFormat, httpHeaders, cookies, certificate, sshKey, uuidInspect, bitwise, statistics, dateMath, aspectRatio, bezier, boxShadow, textTable
     case ai, screenshot, scrollCapture, recording, videoToGIF, worldClock, qr, textTools, settings, home
     var id: String { rawValue }
     var additionalTool: AdditionalUtilityKind? { AdditionalUtilityKind(rawValue: rawValue) }
     var isDeveloperTool: Bool { additionalTool != nil || [.json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .generate].contains(self) }
     var title: String {
         switch self {
-        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return additionalTool!.title
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac, .jsonSchema, .jsonMerge, .jsonRedact, .jsonLines, .csvExplore, .envFile, .plist, .sqlFormat, .httpHeaders, .cookies, .certificate, .sshKey, .uuidInspect, .bitwise, .statistics, .dateMath, .aspectRatio, .bezier, .boxShadow, .textTable: return additionalTool!.title
         case .json: return "JSON Tools"
         case .compare: return "Compare Text & JSON"
         case .jwt: return "Inspect JWT"
@@ -35,7 +36,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
     }
     var subtitle: String {
         switch self {
-        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return additionalTool!.subtitle
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac, .jsonSchema, .jsonMerge, .jsonRedact, .jsonLines, .csvExplore, .envFile, .plist, .sqlFormat, .httpHeaders, .cookies, .certificate, .sshKey, .uuidInspect, .bitwise, .statistics, .dateMath, .aspectRatio, .bezier, .boxShadow, .textTable: return additionalTool!.subtitle
         case .json: return "Pretty-print, minify, and validate without rounding numbers"
         case .compare: return "Find changes between selections, clipboard text, and JSON fields"
         case .jwt: return "Read token claims and expiration times locally"
@@ -61,7 +62,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
     }
     var symbol: String {
         switch self {
-        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return additionalTool!.symbol
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac, .jsonSchema, .jsonMerge, .jsonRedact, .jsonLines, .csvExplore, .envFile, .plist, .sqlFormat, .httpHeaders, .cookies, .certificate, .sshKey, .uuidInspect, .bitwise, .statistics, .dateMath, .aspectRatio, .bezier, .boxShadow, .textTable: return additionalTool!.symbol
         case .json: return "curlybraces"
         case .compare: return "arrow.left.arrow.right"
         case .jwt: return "key.horizontal"
@@ -87,7 +88,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
     }
     var keywords: String {
         switch self {
-        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return additionalTool!.keywords
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac, .jsonSchema, .jsonMerge, .jsonRedact, .jsonLines, .csvExplore, .envFile, .plist, .sqlFormat, .httpHeaders, .cookies, .certificate, .sshKey, .uuidInspect, .bitwise, .statistics, .dateMath, .aspectRatio, .bezier, .boxShadow, .textTable: return additionalTool!.keywords
         case .json: return "format prettify pretty print compact lint errors sort object array"
         case .compare: return "diff difference compare clipboard changes"
         case .jwt: return "bearer authorization auth token decode exp iat nbf"
@@ -108,6 +109,14 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         guard !text.isEmpty, text.utf8.prefix(UtilityLimits.inputBytes + 1).count <= UtilityLimits.inputBytes else { return [] }
         let sample = String(String.UnicodeScalarView(text.unicodeScalars.prefix(2_048)))
         let text = sample.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text.hasPrefix("-----BEGIN CERTIFICATE-----") { return [.certificate] }
+        if text.hasPrefix("ssh-") || text.hasPrefix("ecdsa-sha2-") { return [.sshKey] }
+        if text.utf8.count <= 80, (try? ProtocolTools.uuid(text)) != nil { return [.uuidInspect, .generate] }
+        if text.hasPrefix("HTTP/") || text.lowercased().hasPrefix("content-type:") { return [.httpHeaders] }
+        if text.lowercased().hasPrefix("set-cookie:") || text.lowercased().hasPrefix("cookie:") { return [.cookies, .httpHeaders] }
+        if text.contains("<plist"), text.hasPrefix("<") { return [.plist, .xmlJSON] }
+        let firstLines = DataWorkshop.normalizedLines(text).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        if firstLines.count >= 2, firstLines.prefix(2).allSatisfy({ $0.hasPrefix("{") && $0.hasSuffix("}") && (try? DeveloperJSON.parse($0)) != nil }) { return [.jsonLines, .json] }
         if text.hasPrefix("{") || text.hasPrefix("[") { return [.json, .compare, .convert] }
         if text.hasPrefix("curl ") || text.hasPrefix("curl\n") { return [.http] }
         if text.split(separator: ".", omittingEmptySubsequences: false).count == 3 && !text.contains(where: \.isWhitespace), text.hasPrefix("eyJ") { return [.jwt] }

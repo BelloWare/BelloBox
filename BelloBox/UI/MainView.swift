@@ -43,6 +43,9 @@ struct MainView: View {
     @ObservedObject var navigation: WindowNavigation<HomeCategory> = WindowNavigation()
 
     @State private var category: HomeCategory = .overview
+    @State private var toolQuery = ""
+    @State private var toolGroup: AdditionalUtilityKind.Group?
+    @State private var newToolsOnly = false
     @State private var trusted = AccessibilityService.isTrusted
     private let timer = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
 
@@ -58,10 +61,20 @@ struct MainView: View {
                     ToolSectionHeading(title: category == .overview ? "Quick access" : "\(category.rawValue) tools",
                                        detail: "\(category.commands.count) tools")
                     if category == .developer {
-                        toolGrid(category.commands.filter { $0.additionalTool == nil })
-                        ForEach(AdditionalUtilityKind.Group.allCases, id: \.self) { group in
-                            ToolSectionHeading(title: group.rawValue, detail: "Local tools")
-                            toolGrid(AdditionalUtilityKind.allCases.filter { $0.group == group }.map(\.command))
+                        developerFilters
+                        ForEach([AdditionalUtilityKind.Group.data, .text, .math, .design, .security], id: \.self) { group in
+                            let commands = filteredTools.filter { DeveloperToolBrowser.group(for: $0) == group }
+                            if !commands.isEmpty {
+                                ToolSectionHeading(title: group.rawValue, detail: "\(commands.count) tools")
+                                toolGrid(commands)
+                            }
+                        }
+                        if filteredTools.isEmpty {
+                            VStack(spacing: 12) {
+                                Image(systemName: "magnifyingglass").font(.system(size: 24)).foregroundStyle(.secondary)
+                                Text("No tools match these filters").font(.system(size: 14, weight: .medium))
+                                Button("Clear filters") { toolQuery = ""; toolGroup = nil; newToolsOnly = false }
+                            }.frame(maxWidth: .infinity).padding(30).surfaceCard()
                         }
                     } else { toolGrid(category.commands) }
                     HStack(alignment: .top, spacing: 10) {
@@ -84,6 +97,32 @@ struct MainView: View {
     private func toolGrid(_ commands: [LauncherCommand]) -> some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: 12)], spacing: 12) {
             ForEach(commands) { command in homeTool(command) }
+        }
+    }
+    private var filteredTools: [LauncherCommand] { DeveloperToolBrowser.commands(query: toolQuery, group: toolGroup, newOnly: newToolsOnly) }
+    private var developerFilters: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                    TextField("Find a developer tool…", text: $toolQuery).textFieldStyle(.plain)
+                        .disableAutocorrection(true).accessibilityLabel("Filter developer tools")
+                        .onSubmit { if filteredTools.count == 1, let command = filteredTools.first { open(command) } }
+                    if !toolQuery.isEmpty { Button { toolQuery = "" } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain).foregroundStyle(.secondary).accessibilityLabel("Clear tool filter") }
+                }.padding(10).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 9))
+                    .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(BoxTheme.separator))
+                Menu {
+                    Button("All groups") { toolGroup = nil }
+                    ForEach(AdditionalUtilityKind.Group.allCases, id: \.self) { group in Button(group.rawValue) { toolGroup = group } }
+                } label: { Text(toolGroup?.rawValue ?? "All groups") }
+                    .menuStyle(.borderlessButton).fixedSize().padding(10).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 9))
+                    .accessibilityLabel("Tool group").accessibilityValue(toolGroup?.rawValue ?? "All groups")
+            }
+            HStack(spacing: 10) {
+                Toggle("New in 0.0.74", isOn: $newToolsOnly).toggleStyle(.checkbox)
+                Spacer()
+                Text("\(filteredTools.count) tools · Enter opens a single match").foregroundStyle(.secondary)
+            }.font(.system(size: 11))
         }
     }
     private var sidebar: some View {
@@ -196,7 +235,7 @@ private struct HomeToolCard: View {
             HStack(spacing: 12) {
                 ToolBadge(symbol: command.symbol, size: 36)
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(command.title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                    Text(command.title).font(.system(size: 13, weight: .semibold)).lineLimit(2).frame(height: 32, alignment: .topLeading)
                     Text(command.subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
                         .frame(height: 30, alignment: .topLeading)
                 }.frame(maxWidth: .infinity, alignment: .leading)
@@ -206,5 +245,22 @@ private struct HomeToolCard: View {
         }.buttonStyle(ToolCardButtonStyle())
             .onHover { hovered = $0 }.help(command.subtitle)
             .accessibilityLabel(command.title).accessibilityHint(command.subtitle)
+    }
+}
+
+enum DeveloperToolBrowser {
+    static func group(for command: LauncherCommand) -> AdditionalUtilityKind.Group {
+        if let tool = command.additionalTool { return tool.group }
+        switch command {
+        case .json, .convert: return .data
+        case .time, .cron, .generate: return .math
+        case .url, .http, .jwt: return .security
+        default: return .text
+        }
+    }
+    static func commands(query: String, group: AdditionalUtilityKind.Group?, newOnly: Bool) -> [LauncherCommand] {
+        LauncherCommand.search(query, input: "", favorites: [], recents: []).filter {
+            $0.isDeveloperTool && (group == nil || self.group(for: $0) == group) && (!newOnly || $0.additionalTool?.extendedDefinition != nil)
+        }
     }
 }

@@ -1,0 +1,27 @@
+import Foundation
+
+// Public, self-signed test certificate. Its disposable private key is not shipped.
+extension CertificateTool {
+    static let example = """
+    -----BEGIN CERTIFICATE-----
+    MIIDUzCCAjugAwIBAgIUdeiB/9/bsGrrpiHGIje4PERp3sAwDQYJKoZIhvcNAQEL
+    BQAwOTEaMBgGA1UEAwwRQmVsbG8gQm94IEV4YW1wbGUxGzAZBgNVBAoMEkxvY2Fs
+    IFRlc3QgRml4dHVyZTAeFw0yNjA5MTIwNjQ5MDRaFw0zNjA5MDkwNjQ5MDRaMDkx
+    GjAYBgNVBAMMEUJlbGxvIEJveCBFeGFtcGxlMRswGQYDVQQKDBJMb2NhbCBUZXN0
+    IEZpeHR1cmUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDsI95qER5O
+    ObfpmkAf/yFHpuVv+7QBXmIgG4cLKFA2kjcVL+Vn8zSfcK+d8IuI3mT6punA0OEX
+    Sam7/z0UGDRc5BArfz5+8BVv4C4vK0slzv8hZMUerlo3aVe+NI96L8vF5dbdUbpd
+    Ph7x8t3QMHDdRFWYzAIBFE69yh/oPPAsHPzFPlIOVY19PNTJwEdTOOXrf1JMOw3c
+    U7nhConS8QXLOraIXUMuhmGTcBX354cbkqxBYCZRQueEitjwnjkgzkfeSKtu/E7V
+    AdAw1cJinIGB8RqpeHC+yJyiQzbDbLXGmdDioQbjRvjiEXAt9AEtOt2ghN10MZxc
+    +X+D89DSb/4fAgMBAAGjUzBRMB0GA1UdDgQWBBR21+IrV/mLimnCM/7A3LkeIc/M
+    qDAfBgNVHSMEGDAWgBR21+IrV/mLimnCM/7A3LkeIc/MqDAPBgNVHRMBAf8EBTAD
+    AQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBEJW9OUyYypOopEPhNm9FtUO08GbAOzsgG
+    /mmRlWbGdYvBLT5xYVFEnMVILVgHbEHAmcGPGs92/ER9FMoF61JXgCDysBMvhHaN
+    zm0DIxKSy7+NKH/Jksr4aQ6BvALBFe90BeQCvzVFl1yKihvqVulYZ4wIABhpiInZ
+    kgXvFb80zgFe/5Fk7kEA7elhJGdJzOqpJZmLA0MafjSMnkvUEA7q6uF28tFLRAWH
+    lixWssn4pq2V8eBIT/qu4leWbIkSH3ja2RVCxXudI6gzfD91C6nKlp1AqquMVVAB
+    j6r/xpv38GnaKjjnDZ6P8tS3ZIK7RIU4rUKsoyejMLEueSaKKqcg
+    -----END CERTIFICATE-----
+    """
+}

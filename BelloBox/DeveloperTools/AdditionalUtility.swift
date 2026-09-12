@@ -1,13 +1,15 @@
 import Foundation
 
-/// Twenty local tools. One definition drives discovery, examples and both editor sizes.
+/// Local tools. One definition drives discovery, examples and both editor sizes.
 enum AdditionalUtilityKind: String, CaseIterable, Identifiable {
     case calculator, units, numberBase, color, contrast, gradient, markdown
     case jsonPointer, jsonFlatten, jsonCode, sqlInsert, xmlJSON
     case unicode, stringEscape, extract, listSet, semver, subnet, chmod, hmac
+    case jsonSchema, jsonMerge, jsonRedact, jsonLines, csvExplore, envFile, plist, sqlFormat, httpHeaders, cookies, certificate, sshKey, uuidInspect, bitwise, statistics, dateMath, aspectRatio, bezier, boxShadow, textTable
     var id: String { rawValue }
     var command: LauncherCommand { LauncherCommand(rawValue: rawValue)! }
     var title: String {
+        if let definition = extendedDefinition { return definition.title }
         switch self {
         case .calculator: return "Calculator"
         case .units: return "Unit Converter"
@@ -29,9 +31,11 @@ enum AdditionalUtilityKind: String, CaseIterable, Identifiable {
         case .subnet: return "IPv4 Subnet Calculator"
         case .chmod: return "Chmod Permissions"
         case .hmac: return "HMAC Signer"
+        default: preconditionFailure("Missing utility metadata")
         }
     }
     var subtitle: String {
+        if let definition = extendedDefinition { return definition.subtitle }
         switch self {
         case .calculator: return "Evaluate arithmetic, powers, constants, and math functions"
         case .units: return "Convert length, mass, temperature, data, duration, and speed"
@@ -53,9 +57,11 @@ enum AdditionalUtilityKind: String, CaseIterable, Identifiable {
         case .subnet: return "Inspect a CIDR network, netmask, address range, and host count"
         case .chmod: return "Build Unix permissions with an interactive read/write/execute grid"
         case .hmac: return "Sign text locally with SHA-256 or SHA-512 and an ephemeral key"
+        default: preconditionFailure("Missing utility metadata")
         }
     }
     var symbol: String {
+        if let definition = extendedDefinition { return definition.symbol }
         switch self {
         case .calculator: return "plus.forwardslash.minus"
         case .units: return "ruler"
@@ -77,20 +83,24 @@ enum AdditionalUtilityKind: String, CaseIterable, Identifiable {
         case .subnet: return "point.3.connected.trianglepath.dotted"
         case .chmod: return "lock.shield"
         case .hmac: return "signature"
+        default: preconditionFailure("Missing utility metadata")
         }
     }
     enum Group: String, CaseIterable { case math = "Math & numbers", design = "Color & design", data = "Data & code", text = "Text & debugging", security = "Network & security" }
     var group: Group {
+        if let definition = extendedDefinition { return definition.group }
         switch self {
         case .calculator, .units, .numberBase: return .math
         case .color, .contrast, .gradient, .markdown: return .design
         case .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON: return .data
         case .unicode, .stringEscape, .extract, .listSet, .semver: return .text
         case .subnet, .chmod, .hmac: return .security
+        default: preconditionFailure("Missing utility metadata")
         }
     }
-    var keywords: String { subtitle + " " + group.rawValue + " " + (self == .hmac ? "hash authentication digest secret key" : self == .numberBase ? "radix hexadecimal binary octal decimal" : "") }
+    var keywords: String { subtitle + " " + group.rawValue + " " + rawValue + " " + (self == .hmac ? "hash authentication digest secret key" : self == .numberBase ? "radix hexadecimal binary octal decimal" : "") }
     var inputLabel: String {
+        if let definition = extendedDefinition { return definition.inputLabel }
         switch self {
         case .calculator: return "Expression · radians · e.g. sqrt(144) + 2^3"
         case .units: return "Value"
@@ -108,8 +118,9 @@ enum AdditionalUtilityKind: String, CaseIterable, Identifiable {
         default: return "Input"
         }
     }
-    var multiline: Bool { ![.calculator, .units, .numberBase, .color, .contrast, .gradient, .subnet, .chmod].contains(self) }
+    var multiline: Bool { extendedDefinition?.multiline ?? ![.calculator, .units, .numberBase, .color, .contrast, .gradient, .subnet, .chmod].contains(self) }
     var example: String {
+        if let definition = extendedDefinition { return definition.example }
         switch self {
         case .calculator: return "(125 + 75) * 1.08"
         case .units: return "1024"
@@ -129,6 +140,7 @@ enum AdditionalUtilityKind: String, CaseIterable, Identifiable {
         case .subnet: return "192.168.1.42/24"
         case .chmod: return "755"
         case .hmac: return "what do ya want for nothing?"
+        default: preconditionFailure("Missing utility metadata")
         }
     }
     struct Option: Identifiable {
@@ -139,6 +151,7 @@ enum AdditionalUtilityKind: String, CaseIterable, Identifiable {
         let id: String, label: String, initial: String
     }
     var options: [Option] {
+        if let definition = extendedDefinition { return definition.options }
         switch self {
         case .units: return [.init(id: "from", label: "From", choices: UnitTool.units.map(\.name)), .init(id: "to", label: "To", choices: UnitTool.units.map(\.name))]
         case .numberBase: return [.init(id: "base", label: "Input base", choices: ["10", "2", "8", "16"]), .init(id: "outputBase", label: "Output", choices: ["All bases", "10", "16", "2", "8"])]
@@ -156,6 +169,7 @@ enum AdditionalUtilityKind: String, CaseIterable, Identifiable {
         }
     }
     var fields: [Field] {
+        if let definition = extendedDefinition { return definition.fields }
         switch self {
         case .contrast: return [.init(id: "background", label: "Background", initial: "#FFFFFF")]
         case .gradient: return [.init(id: "end", label: "End color", initial: "#F6B76B"), .init(id: "angle", label: "Angle (°)", initial: "135")]
@@ -187,6 +201,7 @@ enum AdditionalUtilityEngine {
         case .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON: result = try StructuredUtility.run(kind, input: input, options: options)
         case .unicode, .stringEscape, .extract, .listSet, .semver: result = try TextUtility.run(kind, input: input, second: second, options: options)
         case .subnet, .chmod, .hmac: result = try SecurityUtility.run(kind, input: input, second: second, options: options)
+        default: result = try ExtendedUtilityEngine.run(kind, input: input, second: second, options: options)
         }
         guard result.text.utf8.count <= 4_096_000 else { throw UtilityError("The result exceeds 4 MB. Use a smaller input.") }
         try Task.checkCancellation()

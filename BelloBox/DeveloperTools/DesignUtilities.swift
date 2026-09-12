@@ -76,6 +76,12 @@ enum UtilityVisual {
     case gradient(UtilityColor, UtilityColor, Double)
     case markdown([MarkdownBlock])
     case permissions(Int)
+    case table(DataTable)
+    case bits(String, String)
+    case statistics(StatisticsVisual)
+    case aspect(Int, Int, Int, Int)
+    case bezier(BezierCurve)
+    case shadow(BoxShadowSpec)
 }
 
 enum ColorTool {

@@ -33,19 +33,42 @@ text. A floating toolbar still appears when selecting text in another app:
 
 Add commands in `Launcher/LauncherCatalog.swift`; developer tools share
 `UtilityWorkbenchModel`/`UtilityWorkbenchView`, with engines in `DeveloperTools`.
-The 20 added local tools are defined by `AdditionalUtilityKind` in
+The 40 added local tools are defined by `AdditionalUtilityKind` in
 `DeveloperTools/AdditionalUtility.swift`; metadata drives examples, menus and
 Home groups. Their bounded engines live beside it in Math/Design/Structured/
 Text/Security utilities and `JSONCodeTool`. `AdditionalUtilityEditor` and
 `AdditionalUtilityVisualView` share the palette/full UI. Options live only in
 `UtilityWorkbenchModel.utilityOptions`, and all input/option sizes participate
 in the preview gate. HMAC uses a masked `secondInput` key, never persisted.
-New tools reserve 232–304 pt per preview according to their controls. Native
+New tools reserve 232–328 pt per preview according to their controls. Native
 menus must use one Text label including the selected value (AppKit drops later
 Text children of a menu label). JSON flattening uses typed pointer entries to
 preserve empty containers and arrays; code generation never executes output;
 XML disables entity resolution and rejects DTDs; Markdown escapes HTML and
 never fetches images. No new dependencies are needed.
+The second twenty definitions live in `ExtendedUtilityDefinitions.swift` and
+reuse those same sessions. `DataWorkshop`, `JSONSchemaTool`, `PlistTool`,
+`SQLFormatterTool`, `ProtocolTools`, `CertificateTool`, `QuantTools`, and
+`LayoutTools` contain their local engines. JSON Schema is an explicit bounded
+2020-12 subset: unknown keywords and remote references are rejected (including
+constraints in unused branches); numeric comparisons preserve decimal lexemes,
+Unicode length counts code points, and local refs/work are bounded. Merge Patch
+follows RFC 7396. Field redaction matches configured names recursively; it does
+not claim to discover every secret. Environment values stay literal. Plists use
+a fully typed JSON tree to preserve date/data/numeric types and arbitrary keys;
+the standard plist DOCTYPE is stripped locally and other DTDs/entities rejected.
+SQL formatting never executes or claims to validate SQL; its dialect controls
+literal/comment rules. Certificate inspection never evaluates network trust or
+revocation. Only public SSH keys/certificates are accepted. Cookie/header fields
+remain ordered with duplicates. CSV projection/filtering keeps complete export
+data; its table previews 100 rows/30 columns and unique rows compare exact bytes.
+New visual previews include a histogram, 64-bit word grid, aspect diagram,
+draggable Bézier curve, CSS shadow, and scrolling CSV table. Shadow blur is drawn
+by Core Graphics so rasterization preserves the soft edge. Converter directions
+follow recognizable selection formats; Use as Input reverses the direction.
+Paired editors have independent Paste actions and equal heights; full editors
+size from a bounded prefix. Home's developer browser searches all 51 developer
+tools by task group and can isolate the 20 additions in 0.0.74.
 Existing popup routes remain in `SelectionOverlayController.swift`. The global
 shortcut reads AX selection without synthesizing copy; clipboard import is an
 explicit palette action. `SelectionRequest` gives an empty immediate AX read

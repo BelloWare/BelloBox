@@ -6,6 +6,7 @@ struct DataTable {
     let columns: [String]
     let rows: [[String]]
     let totalRows: Int
+    var totalColumns: Int? = nil
 }
 enum DataConversion {
     static func detectFormat(_ text: String) -> DataFormat {

@@ -12,6 +12,7 @@ struct WorkbenchResult {
     var url: URLInspection?
     var request: HTTPRequestDraft?
     var visual: UtilityVisual?
+    var warning = false
 }
 
 @MainActor
@@ -67,6 +68,11 @@ final class UtilityWorkbenchModel: ObservableObject {
         self.inputNotice = inputNotice
         input = selection.text
         utilityOptions = command.additionalTool?.defaults ?? [:]
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        if command == .cookies && trimmed.lowercased().hasPrefix("cookie:") { utilityOptions["mode"] = "Cookie" }
+        if command == .jsonLines && trimmed.hasPrefix("[") { utilityOptions["mode"] = "Array → Lines" }
+        if command == .envFile && trimmed.hasPrefix("{") { utilityOptions["mode"] = "JSON → Env" }
+        if command == .plist && trimmed.hasPrefix("{") { utilityOptions["mode"] = "JSON → Plist" }
         if command == .snippets && input.isEmpty { input = "Hello {{name}},\n\n{{selection}}" }
         if command == .convert && !input.isEmpty {
             fromFormat = DataConversion.detectFormat(input)
@@ -86,7 +92,7 @@ final class UtilityWorkbenchModel: ObservableObject {
         guard let kind = command.additionalTool else { return }
         utilityOptions = kind.defaults
         if kind == .jsonPointer { utilityOptions["pointer"] = "/users/0/name" }
-        secondInput = kind == .listSet ? "Rust\nGo\nSwift" : kind == .hmac ? "Jefe" : ""
+        secondInput = kind.secondExample
         input = kind.example
     }
     /// The model is only a palette row session (not the open tool): a draft
@@ -94,7 +100,7 @@ final class UtilityWorkbenchModel: ObservableObject {
     var previewsOnly = false
     var customFields: [String] { SnippetTemplate.placeholders(input).filter { !["selection", "date", "timestamp", "uuid"].contains($0) } }
     var canChain: Bool {
-        [.json, .regex, .convert, .url, .jsonFlatten].contains(command) && !output.isEmpty && output != input && !busy && error == nil
+        [.json, .regex, .convert, .url, .jsonFlatten, .jsonLines, .envFile, .plist].contains(command) && !output.isEmpty && output != input && !busy && error == nil
             && output.utf8.count <= UtilityLimits.inputBytes
             && !(command == .json && jsonMode == "Validate") && !(command == .regex && regexOutput == "Matches")
     }
@@ -103,6 +109,9 @@ final class UtilityWorkbenchModel: ObservableObject {
         guard canChain else { return }
         if command == .convert { let previous = fromFormat; fromFormat = toFormat; toFormat = previous }
         if command == .jsonFlatten { utilityOptions["mode"] = utilityOptions["mode"] == "Flatten" ? "Unflatten" : "Flatten" }
+        if [.jsonLines, .envFile, .plist].contains(command), let choices = command.additionalTool?.options.first?.choices {
+            utilityOptions["mode"] = utilityOptions["mode"] == choices[0] ? choices[1] : choices[0]
+        }
         input = text
     }
 

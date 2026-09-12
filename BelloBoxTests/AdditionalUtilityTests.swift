@@ -8,13 +8,13 @@ final class AdditionalUtilityTests: XCTestCase {
         try AdditionalUtilityEngine.run(kind, input: input, second: second, options: options)
     }
     func testTwentyDistinctDiscoverableLocalToolsHaveWorkingExamples() throws {
-        XCTAssertEqual(AdditionalUtilityKind.allCases.count, 20)
-        XCTAssertEqual(LauncherCommand.allCases.count, 41)
+        XCTAssertEqual(AdditionalUtilityKind.allCases.count, 40)
+        XCTAssertEqual(LauncherCommand.allCases.count, 61)
         for kind in AdditionalUtilityKind.allCases {
             XCTAssertTrue(kind.command.isDeveloperTool)
             XCTAssertNotNil(NSImage(systemSymbolName: kind.symbol, accessibilityDescription: nil), kind.title)
             XCTAssertEqual(LauncherCommand.search(kind.title, input: "", favorites: [], recents: []).first, kind.command)
-            let result = try run(kind, kind.example, second: kind == .hmac ? "Jefe" : kind == .listSet ? "Rust\nGo" : "")
+            let result = try run(kind, kind.example, second: kind.secondExample)
             XCTAssertFalse(result.text.isEmpty, kind.title)
         }
     }

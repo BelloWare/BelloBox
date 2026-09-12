@@ -65,7 +65,7 @@ struct LauncherWorkbenchPreviewView: View {
         }
     }
     private var header: some View {
-        LauncherPreviewHeader(title: headerTitle, subtitle: headerSubtitle, warning: isUnrecognized || model.command == .jwt) {
+        LauncherPreviewHeader(title: headerTitle, subtitle: headerSubtitle, warning: isUnrecognized || model.command == .jwt || model.result?.warning == true) {
             if model.command == .json {
                 LauncherChoiceBar(selection: $model.jsonMode, choices: [("Pretty-print", "Pretty"), ("Minify", "Minify"), ("Validate", "Validate")], label: "JSON action")
             } else if model.command == .regex {
@@ -82,6 +82,7 @@ struct LauncherWorkbenchPreviewView: View {
         if let error = model.error { return error }
         if model.busy { return model.sending ? "Waiting for the server…" : "Calculating…" }
         if let message = model.message { return message }
+        if model.command.additionalTool != nil, let result = model.result { return "\(result.text.utf8.count.formatted()) UTF-8 bytes · complete result" }
         switch model.command {
         case .jwt: return "Decoded locally · signature not verified"
         case .url: return "+ stays a literal plus · edits rebuild the URL below"
@@ -94,7 +95,7 @@ struct LauncherWorkbenchPreviewView: View {
     }
     private var footer: some View {
         HStack(spacing: 8) {
-            LauncherStatusLine(text: footerText, warning: model.error != nil)
+            LauncherStatusLine(text: footerText, warning: model.error != nil || model.result?.warning == true)
             Spacer(minLength: 6)
             if model.busy {
                 ProgressView().controlSize(.mini)
@@ -317,7 +318,7 @@ struct LauncherWorkbenchPreviewView: View {
 
     @ViewBuilder private var output: some View {
         if let visual = model.result?.visual {
-            AdditionalUtilityVisualView(visual: visual, compact: true)
+            AdditionalUtilityVisualView(visual: visual, compact: true, onBezierChange: { model.input = $0.map(MathTool.display).joined(separator: ", ") })
         } else {
         switch model.command {
         case .compare: compareOutput
@@ -328,6 +329,7 @@ struct LauncherWorkbenchPreviewView: View {
         }
     }
     private var placeholder: String {
+        if model.command.additionalTool != nil { return "Edit the input, paste text, or choose Example to see this tool in action." }
         switch model.command {
         case .regex: return model.regexPattern.isEmpty ? "Matches, groups, extracted text, or replacements appear here." : "No matches."
         case .time: return "Enter a Unix timestamp or an ISO date."

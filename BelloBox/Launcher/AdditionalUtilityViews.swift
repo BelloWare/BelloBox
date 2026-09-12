@@ -10,12 +10,22 @@ struct AdditionalUtilityEditor: View {
     private var kind: AdditionalUtilityKind { model.command.additionalTool! }
     private func option(_ id: String) -> Binding<String> {
         Binding(get: { model.utilityOptions[id] ?? kind.defaults[id] ?? "" }, set: { value in
+            if kind == .bitwise && id == "operation" && (value.contains("shift") || value.contains("Rotate")) && !(model.utilityOptions[id]?.contains("shift") == true || model.utilityOptions[id]?.contains("Rotate") == true) { model.utilityOptions["operand"] = "1" }
             model.utilityOptions[id] = value
             if kind == .units && id == "from", let source = UnitTool.units.first(where: { $0.name == value }),
                let target = UnitTool.units.first(where: { $0.name == model.utilityOptions["to"] }), source.dimension != target.dimension {
                 model.utilityOptions["to"] = UnitTool.units.first(where: { $0.dimension == source.dimension && $0.name != source.name })?.name ?? source.name
             }
         })
+    }
+    private var mainLabel: String {
+        switch kind {
+        case .jsonLines: return model.utilityOptions["mode"] == "Array → Lines" ? "JSON array · one output record per item" : kind.inputLabel
+        case .envFile: return model.utilityOptions["mode"] == "JSON → Env" ? "JSON object · string values only" : kind.inputLabel
+        case .plist: return model.utilityOptions["mode"] == "JSON → Plist" ? "Typed JSON · each node has type and value" : "XML property list · standard plist declaration is handled locally"
+        case .cookies: return model.utilityOptions["mode"] == "Cookie" ? "Cookie request header · name=value; name=value" : "One Set-Cookie field per line"
+        default: return kind.inputLabel
+        }
     }
     var body: some View {
         VStack(alignment: .leading, spacing: compact ? 6 : 12) {
@@ -33,36 +43,48 @@ struct AdditionalUtilityEditor: View {
                 }
             }
             HStack(spacing: 6) {
-                Text(kind == .listSet ? "List A (left) · List B (right) · one item per line" : kind.inputLabel).font(.system(size: compact ? 10 : 12, weight: .medium)).foregroundStyle(.secondary).lineLimit(1)
+                Text(kind.secondInputLabel == nil ? mainLabel : "Two inputs · edit either side").font(.system(size: compact ? 10 : 12, weight: .medium)).foregroundStyle(.secondary).lineLimit(1)
                 Spacer(minLength: 0)
                 Button("Example", action: model.loadUtilityExample).help("Load an example and reset the options")
-                Button(kind == .listSet ? "Paste A" : "Paste") { model.pasteInput() }
-                if kind == .listSet { Button("Paste B") { model.pasteInput(second: true) } }
-                Button("Clear") { model.input = ""; if kind == .hmac { model.secondInput = "" } }
+                if kind.secondInputLabel == nil { Button("Paste") { model.pasteInput() } }
+                Button("Clear") { model.input = ""; if kind.secondInputLabel != nil || kind == .hmac { model.secondInput = "" } }
             }.buttonStyle(LauncherChipButtonStyle())
-            if kind == .listSet {
+            if let secondLabel = kind.secondInputLabel {
                 HStack(spacing: 8) {
-                    textEditor($model.input, label: "First list")
-                    VStack(alignment: .leading, spacing: 3) {
-                        textEditor($model.secondInput, label: "Second list · one item per line")
+                    ForEach(0..<2) { side in
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(side == 0 ? mainLabel : secondLabel).font(.system(size: compact ? 10 : 12)).foregroundStyle(.secondary).lineLimit(1)
+                                Spacer(minLength: 2)
+                                Button("Paste") { model.pasteInput(second: side == 1) }.buttonStyle(LauncherChipButtonStyle()).accessibilityLabel(side == 0 ? "Paste first input" : "Paste second input")
+                            }
+                            textEditor(side == 0 ? $model.input : $model.secondInput, label: side == 0 ? mainLabel : secondLabel, secondary: side == 1)
+                        }
                     }
                 }
-            } else if kind.multiline { textEditor($model.input, label: kind.inputLabel) }
-            else { field($model.input, label: kind.inputLabel, placeholder: kind.example) }
+            } else if kind.multiline { textEditor($model.input, label: mainLabel) }
+            else { field($model.input, label: mainLabel, placeholder: kind.example) }
+            if kind == .bezier {
+                HStack(spacing: 5) {
+                    ForEach(["linear", "ease", "ease-in", "ease-out", "ease-in-out"], id: \.self) { preset in
+                        Button(preset) { model.input = preset }.buttonStyle(LauncherChipButtonStyle()).help("Use the \(preset) curve")
+                    }
+                }
+            }
             if !kind.fields.isEmpty {
                 HStack(spacing: 8) {
                     ForEach(kind.fields) { definition in
                         VStack(alignment: .leading, spacing: compact ? 2 : 5) {
                             if compact {
                                 HStack(spacing: 6) {
-                                    Text(definition.id == "pointer" ? "Pointer" : definition.label).font(.system(size: 10)).foregroundStyle(.secondary).fixedSize()
+                                    Text(compactLabel(definition)).font(.system(size: 10)).foregroundStyle(.secondary).fixedSize()
                                     field(option(definition.id), label: definition.label, placeholder: definition.label)
                                 }
                             } else {
                                 Text(definition.label).font(.caption).foregroundStyle(.secondary)
                                 field(option(definition.id), label: definition.label, placeholder: definition.label)
                             }
-                        }
+                        }.disabled(kind == .bitwise && definition.id == "operand" && model.utilityOptions["operation"] == "NOT")
                     }
                 }
             }
@@ -110,17 +132,31 @@ struct AdditionalUtilityEditor: View {
         else {
             LauncherSearchField(text: text, onMove: { _ in }, onSubmit: {}, onEscape: onEscape, onReady: { _ in },
                                 placeholder: placeholder, accessibilityID: "utilityField_" + label,
-                                accessibilityLabel: label, fontSize: 13, focusesWhenAttached: label == kind.inputLabel,
+                                accessibilityLabel: label, fontSize: 13, focusesWhenAttached: label == mainLabel,
                                 monospaced: true, consumesVerticalArrows: false)
                 .frame(height: 22).padding(8).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.separator))
         }
     }
-    private func textEditor(_ text: Binding<String>, label: String) -> some View {
-        LiteralTextEditor(text: text, label: label, monospaced: true, focusesWhenAttached: !compact && label != "Second list · one item per line", fontSize: compact ? 11 : 13)
-            .frame(height: compact ? 46 : 140).padding(compact ? 4 : 8)
+    private func compactLabel(_ field: AdditionalUtilityKind.Field) -> String {
+        switch field.id { case "pointer": return "Pointer"; case "keys": return "Fields"; case "columns": return "Columns"; case "operand": return "B / shift"; default: return field.label }
+    }
+    private func textEditor(_ text: Binding<String>, label: String, secondary: Bool = false) -> some View {
+        LiteralTextEditor(text: text, label: label, monospaced: true, focusesWhenAttached: !compact && !secondary, fontSize: compact ? 11 : 13)
+            .frame(height: compact ? 46 : fullEditorHeight).padding(compact ? 4 : 8)
             .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: compact ? 7 : 10))
             .overlay(RoundedRectangle(cornerRadius: compact ? 7 : 10).strokeBorder(BoxTheme.separator))
+    }
+    private var fullEditorHeight: CGFloat {
+        // Measure a bounded prefix, including wraps, so short inputs leave room
+        // for results. Paired editors keep equal heights and retain native scroll.
+        let columns = kind.secondInputLabel == nil ? 76 : 36
+        func height(_ input: String) -> CGFloat {
+            let sample = String(String.UnicodeScalarView(input.unicodeScalars.prefix(8_192)))
+            let lines = DataWorkshop.normalizedLines(sample).reduce(0) { $0 + max(1, ($1.utf16.count + columns - 1) / columns) }
+            return CGFloat(min(140, max(64, lines * 17 + 12)))
+        }
+        return kind.secondInputLabel == nil ? height(model.input) : max(height(model.input), height(model.secondInput))
     }
     private func permission(_ mask: Int) -> Binding<Bool> {
         Binding(get: { ((try? SecurityUtility.permissionBits(model.input)) ?? 0) & mask != 0 }, set: { enabled in
@@ -156,10 +192,42 @@ struct AdditionalUtilityEditor: View {
 struct AdditionalUtilityVisualView: View {
     let visual: UtilityVisual
     let compact: Bool
+    var onBezierChange: (([Double]) -> Void)? = nil
     private func color(_ c: UtilityColor) -> Color { Color(.sRGB, red: c.red, green: c.green, blue: c.blue, opacity: c.alpha) }
     var body: some View {
         Group {
             switch visual {
+            case .table(let table): UtilityTableVisual(table: table)
+            case .bezier(let curve): BezierGraphView(curve: curve, onChange: onBezierChange)
+            case .shadow(let spec): ShadowPreviewView(value: spec)
+            case .statistics(let stats): StatisticsChartView(value: stats)
+            case .bits(let bits, let signed):
+                GeometryReader { _ in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Signed result: " + signed).font(.system(size: 12, weight: .semibold, design: .monospaced)).textSelection(.enabled)
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 16), spacing: 4) {
+                            ForEach(Array(bits.enumerated()), id: \.offset) { i, bit in
+                                Text(String(bit)).font(.system(size: 10, weight: .medium, design: .monospaced))
+                                    .frame(maxWidth: .infinity).padding(.vertical, 3)
+                                    .foregroundStyle(bit == "1" ? BoxTheme.accent : .secondary)
+                                    .background(bit == "1" ? BoxTheme.accent.opacity(0.12) : BoxTheme.surface, in: RoundedRectangle(cornerRadius: 3)).help("Bit \(bits.count - 1 - i)")
+                            }
+                        }
+                    }.padding(10)
+                }.accessibilityLabel("Binary result \(bits), signed \(signed)")
+            case .aspect(let w, let h, let targetW, let targetH):
+                GeometryReader { proxy in
+                    let ratio = Double(w) / Double(h), availableW = max(1, proxy.size.width * 0.4), availableH = max(1, proxy.size.height - 20)
+                    let height = min(availableH, availableW / ratio), width = height * ratio
+                    HStack(spacing: 20) {
+                        RoundedRectangle(cornerRadius: 6).fill(BoxTheme.accent.opacity(0.1)).overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(BoxTheme.accent, lineWidth: 1.5))
+                            .frame(width: max(1, width), height: max(1, height))
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("\(targetW) × \(targetH)").font(.system(size: compact ? 19 : 26, weight: .semibold, design: .rounded))
+                            Text("Target pixels · proportional to \(w) × \(h)").font(.system(size: 10)).foregroundStyle(.secondary)
+                        }.textSelection(.enabled)
+                    }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                }.padding(10)
             case .color(let c):
                 HStack(spacing: 14) {
                     RoundedRectangle(cornerRadius: 10).fill(color(c)).frame(width: compact ? 68 : 110)
