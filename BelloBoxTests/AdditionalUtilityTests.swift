@@ -71,6 +71,11 @@ final class AdditionalUtilityTests: XCTestCase {
         XCTAssertTrue(result.text.contains("&lt;img src=x&gt;"))
         XCTAssertNotNil(result.visual)
     }
+    func testMarkdownTreatsCRLFAsOneBreakIncludingFencedCode() throws {
+        let lf = "# Heading\n\n```swift\nlet a = 1\nlet b = 2\n```"
+        XCTAssertEqual(try run(.markdown, lf).text, try run(.markdown, lf.replacingOccurrences(of: "\n", with: "\r\n")).text)
+        XCTAssertEqual(try run(.markdown, lf).text, try run(.markdown, lf.replacingOccurrences(of: "\n", with: "\r")).text)
+    }
     func testRFC6901PointersEscapesFragmentsAndMissingValues() throws {
         let json = try DeveloperJSON.parse(#"{"foo":["bar","baz"],"":0,"a/b":1,"m~n":8,"~1":9,"large":9007199254740993}"#)
         let expected = ["/foo/0": "\"bar\"", "/": "0", "/a~1b": "1", "/m~0n": "8", "/~01": "9", "#/a%7E1b": "1", "/large": "9007199254740993"]

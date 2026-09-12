@@ -128,7 +128,9 @@ enum MarkdownTool {
         output += escapeHTML(ns.substring(from: offset)); return output
     }
     static func render(_ input: String) throws -> WorkbenchResult {
-        let lines = input.components(separatedBy: .newlines)
+        // CommonMark line endings: CRLF is one break, including in fenced code.
+        let normalized = input.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
+        let lines = normalized.components(separatedBy: "\n")
         guard lines.count <= 4_000 else { throw UtilityError("Preview up to 4,000 Markdown lines at a time.") }
         var blocks: [MarkdownBlock] = [], code: [String] = [], fenced = false, paragraph: [String] = []
         func flush() { if !paragraph.isEmpty { blocks.append(.init(kind: .paragraph, text: paragraph.joined(separator: "\n"))); paragraph.removeAll() } }
