@@ -971,7 +971,7 @@ final class LauncherInteractivePreviewTests: XCTestCase {
             Data(text.utf8).base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
         }
         let jwt = base64("{\"alg\":\"HS256\",\"typ\":\"JWT\"}") + "." + base64("{\"sub\":\"example-user\",\"exp\":1893456000}") + ".example"
-        let samples: [LauncherCommand: String] = [
+        var samples: [LauncherCommand: String] = [
             .json: "{\"name\":\"Bello Box\",\"id\":9007199254740993,\"tools\":[\"clock\",\"screenshot\"]}",
             .compare: "alpha\nbeta\ngamma", .jwt: jwt, .regex: "Fixed BOX-123 and API-456.",
             .url: "https://example.com/search?q=Bello%20Box&tag=swift&tag=macOS#results", .time: "2026-09-06T09:30:00Z",
@@ -980,6 +980,7 @@ final class LauncherInteractivePreviewTests: XCTestCase {
             .generate: "", .ai: "Some words to work with", .screenshot: "", .scrollCapture: "", .recording: "", .videoToGIF: "",
             .qr: "https://example.com", .textTools: "Hello there, world", .settings: "", .home: ""
         ]
+        for kind in AdditionalUtilityKind.allCases { samples[kind.command] = kind.example }
         for (command, text) in samples {
             let model = model(text, settings: settings)
             defer { model.cancelAll() }
@@ -1001,7 +1002,9 @@ final class LauncherInteractivePreviewTests: XCTestCase {
                 XCTAssertLessThanOrEqual(fitted, reserved - Self.minimumOutputHeight, "\(command) controls leave room for output (chrome \(fitted))")
             } else {
                 XCTAssertLessThanOrEqual(fitted, reserved, "\(command) must fit the height the palette reserves (fitted \(fitted))")
-                XCTAssertGreaterThan(fitted, reserved - 24, "\(command) should not leave a large gap (fitted \(fitted))")
+                // New swatches/contrast/permission views have an intrinsic output
+                // height: it is already included in fitted, unlike a text well.
+                if command.additionalTool == nil { XCTAssertGreaterThan(fitted, reserved - 24, "\(command) should not leave a large gap (fitted \(fitted))") }
             }
         }
         // The enlarged QR card and the draft-limit notice fit their rows too.
@@ -1028,7 +1031,8 @@ final class LauncherInteractivePreviewTests: XCTestCase {
     static func hasFlexibleOutput(_ command: LauncherCommand) -> Bool {
         switch command {
         case .json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .generate, .textTools: return true
-        case .qr, .ai, .screenshot, .scrollCapture, .recording, .videoToGIF, .worldClock, .settings, .home: return false
+        case .qr, .ai, .screenshot, .scrollCapture, .recording, .videoToGIF, .worldClock, .settings, .home, .color, .contrast, .chmod: return false
+        default: return true
         }
     }
 }

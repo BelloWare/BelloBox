@@ -57,9 +57,13 @@ struct MainView: View {
                     if !trusted { permissionNotice }
                     ToolSectionHeading(title: category == .overview ? "Quick access" : "\(category.rawValue) tools",
                                        detail: "\(category.commands.count) tools")
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: 12)], spacing: 12) {
-                        ForEach(category.commands) { command in homeTool(command) }
-                    }
+                    if category == .developer {
+                        toolGrid(category.commands.filter { $0.additionalTool == nil })
+                        ForEach(AdditionalUtilityKind.Group.allCases, id: \.self) { group in
+                            ToolSectionHeading(title: group.rawValue, detail: "Local tools")
+                            toolGrid(AdditionalUtilityKind.allCases.filter { $0.group == group }.map(\.command))
+                        }
+                    } else { toolGrid(category.commands) }
                     HStack(alignment: .top, spacing: 10) {
                         Image(systemName: "cursorarrow.rays").foregroundStyle(BoxTheme.accent)
                         Text(settings.globalHotkeyEnabled
@@ -77,6 +81,11 @@ struct MainView: View {
         .onReceive(navigation.$requested) { requested in if let requested { category = requested } }
     }
 
+    private func toolGrid(_ commands: [LauncherCommand]) -> some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: 12)], spacing: 12) {
+            ForEach(commands) { command in homeTool(command) }
+        }
+    }
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {

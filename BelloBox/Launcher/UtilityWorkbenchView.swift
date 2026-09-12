@@ -23,8 +23,12 @@ struct UtilityWorkbenchView: View {
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    controls
-                    inputArea
+                    if model.command.additionalTool != nil {
+                        AdditionalUtilityEditor(model: model, compact: false, onEscape: onBack)
+                    } else {
+                        controls
+                        inputArea
+                    }
                     extraControls
                     resultArea
                 }.padding(16)
@@ -194,10 +198,15 @@ struct UtilityWorkbenchView: View {
                 .padding(12).frame(maxWidth: .infinity, alignment: .leading).background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.danger.opacity(0.07)))
         }
         if let result = model.result {
+            if let visual = result.visual { AdditionalUtilityVisualView(visual: visual, compact: false).frame(height: model.command == .markdown ? 300 : 120) }
             if let table = result.table { tablePreview(table) }
             if !result.text.isEmpty {
                 ToolSectionHeading(title: "Result", detail: result.status)
-                if let comparison = result.comparison {
+                if model.command.additionalTool != nil {
+                    LauncherOutputText(text: result.text, label: model.command.title + " result")
+                        .frame(height: 210).padding(6).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 10))
+                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(BoxTheme.separator))
+                } else if let comparison = result.comparison {
                     if model.comparisonMode == .words {
                         Text(wordDiff(comparison)).font(.system(.body, design: .monospaced)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading).padding(12)
                     } else {

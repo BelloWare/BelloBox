@@ -129,6 +129,10 @@ final class LauncherModel: ObservableObject {
     /// `LauncherInteractivePreviewTests.testEveryInteractivePreviewFitsItsReservedHeight`.
     static func previewHeight(for command: LauncherCommand) -> CGFloat {
         switch command {
+        case .calculator, .subnet: return 232
+        case .units, .numberBase, .color, .contrast, .gradient: return 256
+        case .chmod, .listSet: return 280
+        case .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .semver, .hmac: return 304
         case .worldClock: return clockPreviewHeight
         case .json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .generate: return 224
         case .qr, .textTools: return 224
@@ -154,6 +158,7 @@ final class LauncherModel: ObservableObject {
     /// shown as a notice instead of being handed to editors and parsers.
     static func consumesText(_ command: LauncherCommand) -> Bool {
         switch command {
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return true
         case .json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .qr, .textTools: return true
         case .generate, .ai, .screenshot, .scrollCapture, .recording, .videoToGIF, .worldClock, .settings, .home: return false
         }
@@ -254,7 +259,7 @@ final class LauncherModel: ObservableObject {
         if Self.consumesText(command), workbenches[command] == nil, !fitsPreviewLimit { return }
         let session: LauncherInteractivePreview
         switch command {
-        case .json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .generate:
+        case .json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .generate, .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac:
             let tool = workbenchModel(for: command)
             tool.previewsOnly = true
             if tool.result == nil, tool.error == nil, !tool.busy { tool.schedule() }

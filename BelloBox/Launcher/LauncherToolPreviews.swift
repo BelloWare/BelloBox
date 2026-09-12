@@ -18,12 +18,14 @@ struct LauncherWorkbenchPreviewView: View {
                 // A paste, a loaded snippet, "Use as Input" or editing in the
                 // full tool grew the draft: the row shows neither editors nor a
                 // stale result, and Enter opens the complete draft.
-                LauncherDraftLimitNotice(byteCount: max(model.input.utf8.count, model.secondInput.utf8.count),
+                LauncherDraftLimitNotice(byteCount: model.draftByteCount,
                     detail: "The complete draft stays in \(model.command.title); nothing has been truncated. Open it to keep working, or replace the input to preview here again.",
                     openTitle: "Open \(model.command.title)", onOpen: onOpen)
             } else {
                 header
-                controls
+                if model.command.additionalTool != nil {
+                    AdditionalUtilityEditor(model: model, compact: true, onEscape: onEscape)
+                } else { controls }
                 output.frame(maxWidth: .infinity, maxHeight: .infinity)
                 footer
             }
@@ -46,7 +48,7 @@ struct LauncherWorkbenchPreviewView: View {
         return model.command.title
     }
     private var headerSubtitle: String? {
-        if model.error != nil { return "Edit the input in the full tool ↵" }
+        if model.error != nil { return model.command.additionalTool == nil ? "Edit the input in the full tool ↵" : "Edit the draft below or try the example" }
         switch model.command {
         case .json: return model.result.map { "\($0.text.count.formatted()) characters · complete output below" }
         case .compare: return model.secondInput.isEmpty ? "Add a second text below" : nil
@@ -314,11 +316,15 @@ struct LauncherWorkbenchPreviewView: View {
     // MARK: Output
 
     @ViewBuilder private var output: some View {
+        if let visual = model.result?.visual {
+            AdditionalUtilityVisualView(visual: visual, compact: true)
+        } else {
         switch model.command {
         case .compare: compareOutput
         case .url: urlOutput
         case .http: httpOutput
         default: textOutput(model.output, placeholder: placeholder)
+        }
         }
     }
     private var placeholder: String {

@@ -11,6 +11,7 @@ struct WorkbenchResult {
     var table: DataTable?
     var url: URLInspection?
     var request: HTTPRequestDraft?
+    var visual: UtilityVisual?
 }
 
 @MainActor
@@ -20,6 +21,7 @@ final class UtilityWorkbenchModel: ObservableObject {
     let inputNotice: String?
     let snippets: SnippetStore
     @Published var input: String { didSet { schedule() } }
+    @Published var utilityOptions: [String: String] = [:] { didSet { schedule() } }
     @Published var secondInput = "" { didSet { schedule() } }
     @Published var jsonMode = "Pretty-print" { didSet { schedule() } }
     @Published var comparisonMode = ComparisonMode.lines { didSet { schedule() } }
@@ -64,6 +66,7 @@ final class UtilityWorkbenchModel: ObservableObject {
         self.command = command; self.selection = selection; self.snippets = snippets
         self.inputNotice = inputNotice
         input = selection.text
+        utilityOptions = command.additionalTool?.defaults ?? [:]
         if command == .snippets && input.isEmpty { input = "Hello {{name}},\n\n{{selection}}" }
         if command == .convert && !input.isEmpty {
             fromFormat = DataConversion.detectFormat(input)
@@ -76,20 +79,30 @@ final class UtilityWorkbenchModel: ObservableObject {
     /// Whether the current draft (either text) has grown past what a palette
     /// row previews (64 KB); the complete draft still belongs to the full tool.
     var draftExceedsPreviewLimit: Bool {
-        input.utf8.count > LauncherPreview.parsingByteLimit || secondInput.utf8.count > LauncherPreview.parsingByteLimit
+        draftByteCount > LauncherPreview.parsingByteLimit
+    }
+    var draftByteCount: Int { max(input.utf8.count, secondInput.utf8.count, utilityOptions.values.map { $0.utf8.count }.max() ?? 0) }
+    func loadUtilityExample() {
+        guard let kind = command.additionalTool else { return }
+        utilityOptions = kind.defaults
+        if kind == .jsonPointer { utilityOptions["pointer"] = "/users/0/name" }
+        secondInput = kind == .listSet ? "Rust\nGo\nSwift" : kind == .hmac ? "Jefe" : ""
+        input = kind.example
     }
     /// The model is only a palette row session (not the open tool): a draft
     /// past the row limit is not calculated until the tool opens.
     var previewsOnly = false
     var customFields: [String] { SnippetTemplate.placeholders(input).filter { !["selection", "date", "timestamp", "uuid"].contains($0) } }
     var canChain: Bool {
-        [.json, .regex, .convert, .url].contains(command) && !output.isEmpty && output != input && !busy && error == nil
+        [.json, .regex, .convert, .url, .jsonFlatten].contains(command) && !output.isEmpty && output != input && !busy && error == nil
+            && output.utf8.count <= UtilityLimits.inputBytes
             && !(command == .json && jsonMode == "Validate") && !(command == .regex && regexOutput == "Matches")
     }
     func useOutputAsInput() {
         let text = output
         guard canChain else { return }
         if command == .convert { let previous = fromFormat; fromFormat = toFormat; toFormat = previous }
+        if command == .jsonFlatten { utilityOptions["mode"] = utilityOptions["mode"] == "Flatten" ? "Unflatten" : "Flatten" }
         input = text
     }
 
@@ -101,7 +114,7 @@ final class UtilityWorkbenchModel: ObservableObject {
         runID = UUID()
         let id = runID
         result = nil; error = nil; message = nil; sending = false
-        guard !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || command == .generate || (command == .compare && !secondInput.isEmpty) else { busy = false; return }
+        guard !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || command == .generate || ([LauncherCommand.compare, .listSet, .hmac].contains(command) && !secondInput.isEmpty) else { busy = false; return }
         // A row shows a notice for an oversized draft; the full tool calculates it when opened.
         if previewsOnly && draftExceedsPreviewLimit { busy = false; return }
         let operation = makeOperation()
@@ -179,9 +192,11 @@ final class UtilityWorkbenchModel: ObservableObject {
         let pattern = regexPattern, replacement = replacement, insensitive = regexIgnoreCase, multiline = regexMultiline, regexOutput = regexOutput
         let unit = epochUnit, zoneID = zoneID, from = fromFormat, to = toFormat, infer = inferTypes, delimiter = delimiter
         let kind = generatorKind, count = generatorCount, length = generatorLength, format = generatorFormat
+        let utilityOptions = utilityOptions
         let fields = snippetValues, selectionText = selection.text, uuid = snippetUUID
         return {
             try UtilityLimits.check(input)
+            if let kind = command.additionalTool { return try AdditionalUtilityEngine.run(kind, input: input, second: second, options: utilityOptions) }
             switch command {
             case .json:
                 let value = try DeveloperJSON.parse(input)

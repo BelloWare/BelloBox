@@ -2,11 +2,14 @@ import Foundation
 
 enum LauncherCommand: String, CaseIterable, Identifiable {
     case json, compare, jwt, regex, url, time, cron, convert, snippets, http, generate
+    case calculator, units, numberBase, color, contrast, gradient, markdown, jsonPointer, jsonFlatten, jsonCode, sqlInsert, xmlJSON, unicode, stringEscape, extract, listSet, semver, subnet, chmod, hmac
     case ai, screenshot, scrollCapture, recording, videoToGIF, worldClock, qr, textTools, settings, home
     var id: String { rawValue }
-    var isDeveloperTool: Bool { Self.allCases.firstIndex(of: self)! < Self.allCases.firstIndex(of: .ai)! }
+    var additionalTool: AdditionalUtilityKind? { AdditionalUtilityKind(rawValue: rawValue) }
+    var isDeveloperTool: Bool { additionalTool != nil || [.json, .compare, .jwt, .regex, .url, .time, .cron, .convert, .snippets, .http, .generate].contains(self) }
     var title: String {
         switch self {
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return additionalTool!.title
         case .json: return "JSON Tools"
         case .compare: return "Compare Text & JSON"
         case .jwt: return "Inspect JWT"
@@ -32,6 +35,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
     }
     var subtitle: String {
         switch self {
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return additionalTool!.subtitle
         case .json: return "Pretty-print, minify, and validate without rounding numbers"
         case .compare: return "Find changes between selections, clipboard text, and JSON fields"
         case .jwt: return "Read token claims and expiration times locally"
@@ -57,6 +61,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
     }
     var symbol: String {
         switch self {
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return additionalTool!.symbol
         case .json: return "curlybraces"
         case .compare: return "arrow.left.arrow.right"
         case .jwt: return "key.horizontal"
@@ -82,6 +87,7 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
     }
     var keywords: String {
         switch self {
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return additionalTool!.keywords
         case .json: return "format prettify pretty print compact lint errors sort object array"
         case .compare: return "diff difference compare clipboard changes"
         case .jwt: return "bearer authorization auth token decode exp iat nbf"
@@ -108,9 +114,16 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
         if text.lowercased().hasPrefix("bearer eyj") { return [.jwt] }
         if text.lowercased().hasPrefix("https://") || text.lowercased().hasPrefix("http://") { return [.url, .qr, .http] }
         if text.utf8.count <= 256 {
+            if (text.hasPrefix("#") || text.hasPrefix("rgb(") || text.hasPrefix("hsl(")), (try? UtilityColor.parse(text)) != nil { return [.color, .contrast, .gradient] }
+            if text.contains("/"), (try? SecurityUtility.subnet(text)) != nil { return [.subnet] }
+            if (try? SemanticVersion(text)) != nil { return [.semver] }
+
             if TimestampSummary.make(from: text) != nil { return [.worldClock, .time] }
             if (try? CronSchedule(text)) != nil { return [.cron] }
         }
+        if text.hasPrefix("<?xml") || text.hasPrefix("<") && text.contains("</") { return [.xmlJSON, .textTools] }
+        if text.hasPrefix("# ") || text.hasPrefix("## ") || text.hasPrefix("```") { return [.markdown, .textTools] }
+        if text.utf8.count <= 256, text.contains(where: { "+*/^".contains($0) }), (try? MathTool.calculate(text)) != nil { return [.calculator] }
         if text.contains("\n") && (text.contains(": ") || text.contains(",") || text.contains("\t")) { return [.convert, .compare] }
         return [.textTools, .compare, .snippets]
     }
@@ -132,7 +145,11 @@ enum LauncherCommand: String, CaseIterable, Identifiable {
                 let title = command.title.lowercased()
                 if !query.isEmpty && title.hasPrefix(query.lowercased()) {
                     score += 10_000
-                } else if !terms.isEmpty && terms.allSatisfy({ term in title.split(whereSeparator: \.isWhitespace).contains { $0.hasPrefix(term) } || title.contains(term) }) {
+                } else if !terms.isEmpty && terms.allSatisfy({ term in title.split(whereSeparator: \.isWhitespace).contains { $0.hasPrefix(term) } }) {
+                    // Whole title words beat incidental substrings: "ai" means
+                    // Ask AI before the "ai" inside Emails in the larger catalog.
+                    score += 6_500
+                } else if !terms.isEmpty && terms.allSatisfy({ title.contains($0) }) {
                     // Every term names the tool itself ("gif" → Video to GIF), which
                     // outranks tools that only mention it in their keywords or subtitle.
                     score += 5_000

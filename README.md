@@ -129,6 +129,41 @@ can use copy followed by **Use Clipboard**.
 | HTTP & cURL | Import a literal cURL command, edit URL/method/headers/body, and explicitly choose **Send**. Inspect responses and redirects; cancel in-flight requests. |
 | Developer Generators | UUIDs, secure random strings, Unix timestamps, and synthetic records in line, JSON, or CSV form. |
 
+| Calculator | Arithmetic, powers, parentheses, constants, and functions; radians and 15 significant digits. |
+| Unit Converter | Length, mass, temperature, data, duration, and speed; compatible unit pickers and a swap action. |
+| Number Base Converter | Exact binary/octal/decimal/hex integers, including values beyond 64 bits (up to 256 input digits). |
+| Color Converter | HEX/RGB/HSL, alpha, and a live sRGB swatch. |
+| Contrast Checker | Text/background sample and unrounded WCAG AA/AAA thresholds for normal and large text. |
+| CSS Gradient Builder | Two colors, angle, a live gradient, and copyable CSS. |
+| Markdown Preview | Offline headings, paragraphs, bullet lists, quotes, fenced code, emphasis, and links; copy safe HTML. Raw HTML is escaped and images are not fetched. |
+| JSON Pointer | RFC 6901 paths, escaped keys, URI fragments, and exact numeric values. |
+| Flatten & Unflatten JSON | Reversible typed path entries that retain arrays, empty containers, and scalar types. |
+| JSON to Code | Infer TypeScript interfaces or Swift Codable types from all samples, including missing/null fields and mixed values. |
+| SQL INSERT Builder | JSON records to PostgreSQL or SQLite text; quoted identifiers/literals and missing fields as NULL. Never executes SQL. |
+| XML to JSON | Ordered element/attribute/children trees preserve mixed content and repeated children. DTDs/entities are rejected. |
+| Unicode Inspector | Code-point names, UTF-8/UTF-16 bytes, grapheme counts, and NFC/NFD/NFKC/NFKD normalization. |
+| String Literal Escaper | JSON quote/unquote, Swift string literals, and POSIX shell arguments. Never executes generated text. |
+| Extract Links & Emails | Local detection, original text, and optional duplicate removal. |
+| List Set Operations | Union, intersection, A minus B, B minus A, and symmetric difference; exact/trim/case-insensitive matching. |
+| Semantic Versions | Strict SemVer 2.0 comparison and stable sorting; numeric prereleases and build metadata handled correctly. |
+| IPv4 Subnet Calculator | CIDR network, mask, wildcard, broadcast, address range, and host count, including /0, /31, and /32. |
+| Chmod Permissions | Editable octal/symbolic permissions, read/write/execute grid, special bits, and a command to copy. Does not change files. |
+| HMAC Signer | SHA-256/SHA-512, UTF-8 or hex keys, hex/Base64 output; masked key kept only in the palette draft. |
+
+
+The catalog has **41 commands**, with developer tools grouped on Home. Every new
+utility has editable palette inputs and options; **Example** loads sample data
+and resets its options. **Return** opens the same draft and result in the full
+tool. Switching rows does not discard edits, copy text, or send anything.
+
+Tool-specific limits keep previews responsive: code inference accepts 5,000 JSON
+values, typed JSON paths accept 20,000 values (8 KB per path), Unicode inspection
+accepts 4,000 code points, and Markdown accepts 4,000 lines. A limit shows an
+error instead of silently dropping content. Generated types are a starting point,
+not schema validation: Swift uses `Decimal` and TypeScript uses JavaScript
+`number`, so check numeric ranges for your application. XML output is an ordered
+tree, not a lossy object mapping; comments and processing instructions are omitted.
+
 CSV requires unique column names in its first row. Values remain strings unless
 type inference is enabled; null/missing cells export as empty and nested values
 as JSON. YAML conversion rejects duplicate/non-string keys, recursive aliases,

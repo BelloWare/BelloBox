@@ -55,6 +55,8 @@ struct LauncherPreview: Equatable {
                 content: .notice("Open \(command.title) to work with the complete selection. Nothing has been truncated."))
         }
         switch command {
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac:
+            return Self(title: command.title, subtitle: command.subtitle, content: .actions(capabilities(for: command)))
         case .worldClock:
             guard let summary = TimestampSummary.make(from: input, relativeTo: now, locale: locale, timeZone: localZone) else {
                 return clocks(at: now, zoneIDs: context.zoneIDs, localZone: localZone, locale: locale, showSeconds: false,
@@ -164,6 +166,8 @@ struct LauncherPreview: Equatable {
     /// The preview for a tool that opens without input, or for the palette without a selection.
     private static func empty(for command: LauncherCommand, context: LauncherPreviewContext, now: Date, localZone: TimeZone, locale: Locale) -> Self {
         switch command {
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac:
+            return Self(title: command.title, subtitle: command.subtitle, content: .actions(capabilities(for: command)))
         case .worldClock:
             return clocks(at: now, zoneIDs: context.zoneIDs, localZone: localZone, locale: locale, showSeconds: false,
                           title: "Current time", subtitle: "Your locations · press ↵ to plan a meeting")
@@ -198,6 +202,7 @@ struct LauncherPreview: Equatable {
     /// Two or three sentences per tool: what opening it lets you do.
     static func capabilities(for command: LauncherCommand, context: LauncherPreviewContext = LauncherPreviewContext()) -> [Action] {
         switch command {
+        case .calculator, .units, .numberBase, .color, .contrast, .gradient, .markdown, .jsonPointer, .jsonFlatten, .jsonCode, .sqlInsert, .xmlJSON, .unicode, .stringEscape, .extract, .listSet, .semver, .subnet, .chmod, .hmac: return [Action(symbol: command.symbol, text: command.subtitle), Action(symbol: "slider.horizontal.3", text: "Edit here or open the full tool; your draft carries over")]
         case .json: return [Action(symbol: "curlybraces", text: "Pretty-print, minify, validate, and sort keys"),
                             Action(symbol: "number", text: "Large numbers are never rounded")]
         case .compare: return [Action(symbol: "arrow.left.arrow.right", text: "Diff lines, words, or JSON fields"),
@@ -257,7 +262,8 @@ struct LauncherPreview: Equatable {
 
     /// Tools whose preview has to parse the whole selection.
     private static func parses(_ command: LauncherCommand) -> Bool {
-        [.json, .jwt, .url, .http, .cron, .convert, .time, .worldClock].contains(command)
+        if command.additionalTool != nil { return true }
+        return [.json, .jwt, .url, .http, .cron, .convert, .time, .worldClock].contains(command)
     }
 
     private static func clocks(at instant: Date, zoneIDs: [String], localZone: TimeZone, locale: Locale, showSeconds: Bool,

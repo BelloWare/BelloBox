@@ -33,6 +33,19 @@ text. A floating toolbar still appears when selecting text in another app:
 
 Add commands in `Launcher/LauncherCatalog.swift`; developer tools share
 `UtilityWorkbenchModel`/`UtilityWorkbenchView`, with engines in `DeveloperTools`.
+The 20 added local tools are defined by `AdditionalUtilityKind` in
+`DeveloperTools/AdditionalUtility.swift`; metadata drives examples, menus and
+Home groups. Their bounded engines live beside it in Math/Design/Structured/
+Text/Security utilities and `JSONCodeTool`. `AdditionalUtilityEditor` and
+`AdditionalUtilityVisualView` share the palette/full UI. Options live only in
+`UtilityWorkbenchModel.utilityOptions`, and all input/option sizes participate
+in the preview gate. HMAC uses a masked `secondInput` key, never persisted.
+New tools reserve 232–304 pt per preview according to their controls. Native
+menus must use one Text label including the selected value (AppKit drops later
+Text children of a menu label). JSON flattening uses typed pointer entries to
+preserve empty containers and arrays; code generation never executes output;
+XML disables entity resolution and rejects DTDs; Markdown escapes HTML and
+never fetches images. No new dependencies are needed.
 Existing popup routes remain in `SelectionOverlayController.swift`. The global
 shortcut reads AX selection without synthesizing copy; clipboard import is an
 explicit palette action. `SelectionRequest` gives an empty immediate AX read
