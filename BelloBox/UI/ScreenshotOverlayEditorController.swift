@@ -14,7 +14,7 @@ final class ScreenshotOverlayEditorController {
         }
     }
 
-    func show(viewModel: ScreenshotPopupViewModel, captureFrame: CGRect) {
+    func show(viewModel: ScreenshotPopupViewModel, captureFrame: CGRect, settings: AppSettings) {
         close()
         self.viewModel = viewModel
         installKeyMonitor(viewModel: viewModel)
@@ -31,7 +31,7 @@ final class ScreenshotOverlayEditorController {
                     screenFrame: screen.frame,
                     captureFrame: captureFrame
                 )
-                window.contentView = NSHostingView(rootView: view)
+                window.contentView = NSHostingView(rootView: view.windowSurfacePreferences(settings))
                 targetWindow = window
             } else {
                 window.contentView = NSHostingView(rootView: ScreenshotOverlayDimView())
@@ -189,7 +189,8 @@ private struct ScreenshotOverlayEditorView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(BoxTheme.surface))
+        .workspaceBackground(role: .popup)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(BoxTheme.border, lineWidth: 1))
         .shadow(color: .black.opacity(0.28), radius: 16, y: 8)
     }

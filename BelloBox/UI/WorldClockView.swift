@@ -25,7 +25,7 @@ struct WorldClockView: View {
             footer
         }
         .frame(minWidth: 780, minHeight: 640)
-        .background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
+        .workspaceBackground().buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .onReceive(timer) { viewModel.refreshCurrentTime($0) }
         .sheet(isPresented: $showingZonePicker) {
             WorldClockZonePicker(viewModel: viewModel) { showingZonePicker = false }
@@ -173,7 +173,7 @@ struct WorldClockView: View {
             }
             if showingCopilot { copilotSection }
         }
-        .padding(16).background(BoxTheme.surface)
+        .padding(16).background(ChromeSurface())
     }
 
     private var copilotSection: some View {
@@ -312,7 +312,7 @@ private struct WorldClockZonePicker: View {
                 Button("Add Location", action: addSelected).buttonStyle(PrimaryButtonStyle()).disabled(selectedID == nil)
             }.padding(12).background(BoxTheme.surface)
         }
-        .frame(width: 440).background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
+        .frame(width: 440).workspaceBackground(newWindow: true).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .onAppear { viewModel.searchQuery = ""; selectedID = results.first?.id }
         .onChange(of: viewModel.searchQuery) { _ in selectedID = results.first?.id }
         .onExitCommand(perform: onClose)

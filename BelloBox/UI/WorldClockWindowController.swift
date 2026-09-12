@@ -25,7 +25,7 @@ final class WorldClockWindowController: NSObject, NSWindowDelegate {
 #endif
         let viewModel = WorldClockViewModel(settings: settings, seedDate: handoff?.instant, preferences: preferences)
         if let handoff { viewModel.adopt(handoff) }
-        let rootView = WorldClockView(viewModel: viewModel, onOpenSettings: onOpenSettings)
+        let rootView = WorldClockView(viewModel: viewModel, onOpenSettings: onOpenSettings).windowSurfacePreferences(settings)
         let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 780, height: 640)) { rootView })
         let panel = WorldClockPanel(contentViewController: hosting)
         panel.delegate = self

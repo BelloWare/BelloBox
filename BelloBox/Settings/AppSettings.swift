@@ -76,6 +76,7 @@ final class AppSettings: ObservableObject {
         static let hasCompletedSetup = "hasCompletedSetup"
         static let launchAtLoginEnabled = "launchAtLoginEnabled"
         static let appearance = "appearance"
+        static let windowSurfaceStyle = "windowSurfaceStyle"
         static let codexPath = "codexPath"
         static let codexModel = "codexModel"
         static let codexReasoningEffort = "codexReasoningEffort"
@@ -169,6 +170,7 @@ final class AppSettings: ObservableObject {
     @Published var recordingHotkeyModifiersRawValue: Int { didSet { defaults.set(recordingHotkeyModifiersRawValue, forKey: Keys.recordingHotkeyModifiers) } }
     @Published var launchAtLoginEnabled: Bool { didSet { defaults.set(launchAtLoginEnabled, forKey: Keys.launchAtLoginEnabled) } }
     @Published var appearance: AppearancePreference { didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) } }
+    @Published var windowSurfaceStyle: WindowSurfaceStyle { didSet { defaults.set(windowSurfaceStyle.rawValue, forKey: Keys.windowSurfaceStyle) } }
     @Published var codexPath: String { didSet { defaults.set(codexPath, forKey: Keys.codexPath) } }
     @Published var codexModel: String { didSet { defaults.set(codexModel, forKey: Keys.codexModel) } }
     var codexReasoningEffort: String {
@@ -300,6 +302,7 @@ final class AppSettings: ObservableObject {
         recordingHotkeyModifiersRawValue = Int(storedRecordingHotkey.modifiers.rawValue)
         launchAtLoginEnabled = (defaults.object(forKey: Keys.launchAtLoginEnabled) as? Bool) ?? LaunchAtLoginController.isEnabled
         appearance = AppearancePreference(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
+        windowSurfaceStyle = WindowSurfaceStyle(rawValue: defaults.string(forKey: Keys.windowSurfaceStyle) ?? "") ?? .glass
         codexPath = defaults.string(forKey: Keys.codexPath) ?? ""
         let storedCodexModel = defaults.string(forKey: Keys.codexModel) ?? ""
         codexModel = storedCodexModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty

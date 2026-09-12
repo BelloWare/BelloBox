@@ -522,6 +522,7 @@ final class CaptureOverlayController {
         let supportsScrollCapture = Self.selectionSupportsScrollCapture(selection)
         selectedView.showScreenshotEditor(
             viewModel: viewModel,
+            settings: settings,
             selection: selection,
             onScrollCapture: supportsScrollCapture ? { [weak self] in self?.beginScrollCapture() } : nil
         )
@@ -766,7 +767,7 @@ final class CaptureOverlayController {
                 layout: hudLayout,
                 onDone: { [weak self] in self?.finishScrollCapture() },
                 onCancel: { [weak self] in self?.cancelScrollCapture() }
-            )
+            ).windowSurfacePreferences(settings)
         )
         panel.contentView = hosting
         panel.onEscape = { [weak self] in self?.cancelScrollCapture() }
@@ -1232,6 +1233,7 @@ private final class CaptureOverlayView: NSView {
 
     func showScreenshotEditor(
         viewModel: ScreenshotPopupViewModel,
+        settings: AppSettings,
         selection: CaptureSelection,
         onScrollCapture: (() -> Void)? = nil
     ) {
@@ -1245,7 +1247,7 @@ private final class CaptureOverlayView: NSView {
                 },
                 onScrollCapture: onScrollCapture,
                 onCancel: viewModel.close
-            )
+            ).windowSurfacePreferences(settings)
         )
     }
 
@@ -1284,7 +1286,7 @@ private final class CaptureOverlayView: NSView {
                 selectionFrame: selection.cocoaRect,
                 onStart: onStart,
                 onCancel: onCancel
-            )
+            ).windowSurfacePreferences(settings)
         )
     }
 

@@ -36,7 +36,7 @@ struct LauncherView: View {
                 footer
             }
         }
-        .background(WorkspaceBackground()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
+        .workspaceBackground(role: .popup).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.primary.opacity(0.12), lineWidth: 1))
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.14), value: model.workbench != nil)
@@ -138,7 +138,7 @@ struct LauncherView: View {
             Text("Open").font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
             keycap("↵")
         }.padding(.horizontal, 16).frame(height: 41)
-            .background(BoxTheme.surface.opacity(0.45))
+            .background(ChromeSurface())
     }
     private func keycap(_ key: String) -> some View {
         Text(key).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)

@@ -291,6 +291,21 @@ It follows the same packaging conventions as the sibling Bello macOS apps
 (BelloGesture, BelloWall, BelloTracker): xcodegen project, Developer-ID signed
 DMG, Sparkle appcast, published to belloware.com.
 
+Native frosted window backgrounds live in `UI/WindowMaterials.swift`. Settings →
+General → Appearance independently selects System/Light/Dark and Glass/Solid.
+Glass is the default; Reduce Transparency or Increase Contrast uses the solid
+fallback without rewriting that choice. Each hosting-window root injects its
+own `windowSurfacePreferences(settings)` scope. `workspaceBackground` owns one
+`NSVisualEffectView` behind the window; nested popup cards inherit it, while a
+separate SwiftUI sheet requests `newWindow: true`. Sidebars and footers use the
+lightweight `ChromeSurface`, never another native blur. Editors, output cards,
+QR codes and capture/media content keep opaque backing. The effect cannot hit
+test or become first responder, and preference changes keep the content tree
+mounted (native selection and undo survive). Do not add per-row materials,
+blur timers or custom snapshot loops. This uses macOS 13-compatible materials,
+not the macOS 26-only Liquid Glass API. `WindowMaterialTests` checks persistence,
+accessibility fallback, effect reuse and native editing across live changes.
+
 ## Project Structure
 
 ```

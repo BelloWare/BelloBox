@@ -87,7 +87,8 @@ struct MainView: View {
                 }.padding(24)
             }.id(category)
         }
-        .background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
+        .workspaceBackground().buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
+        .windowSurfacePreferences(settings)
         .frame(minWidth: 900, minHeight: 640)
         .onReceive(timer) { _ in trusted = AccessibilityService.isTrusted }
         .onAppear { if let requested = navigation.requested { category = requested } }
@@ -158,7 +159,7 @@ struct MainView: View {
             if canCheckForUpdates { sidebarAction("Check for updates", symbol: "arrow.triangle.2.circlepath", action: onCheckForUpdates) }
             Text("Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")")
                 .font(.system(size: 10)).foregroundStyle(.tertiary).padding(18)
-        }.frame(width: BoxTheme.sidebarWidth).background(BoxTheme.surface.opacity(0.6))
+        }.frame(width: BoxTheme.sidebarWidth).background(ChromeSurface())
     }
     private func sidebarAction(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
         Button(action: action) { Label(title, systemImage: symbol).font(.system(size: 12)).frame(maxWidth: .infinity, alignment: .leading) }

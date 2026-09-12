@@ -350,7 +350,7 @@ final class SelectionOverlayController: NSObject {
             onHoverHelp: { [weak self] text in self?.updateToolbarTooltip(text) },
             timestampSummary: timestampSummary
         )
-        let hosting = NSHostingView(rootView: view)
+        let hosting = NSHostingView(rootView: view.windowSurfacePreferences(settings))
         var size = hosting.fittingSize
         if size.width < 1 || size.height < 1 {
             size = timestampSummary == nil
@@ -1060,7 +1060,7 @@ final class SelectionOverlayController: NSObject {
                 self?.screenshotOverlayEditorController = nil
             }
         }
-        controller.show(viewModel: viewModel, captureFrame: frame)
+        controller.show(viewModel: viewModel, captureFrame: frame, settings: settings)
         screenshotOverlayEditorController = controller
     }
 
@@ -1929,7 +1929,7 @@ final class SelectionOverlayController: NSObject {
             engine: engine, layout: layout,
             onDone: { [weak self] in self?.finishE2EScrollHUDDemo() },
             onCancel: { [weak self] in self?.closeE2EScrollHUDDemo() }
-        ))
+        ).windowSurfacePreferences(settings))
         panel.onEscape = { [weak self] in self?.closeE2EScrollHUDDemo() }
         panel.setFrame(CGRect(x: rect.minX - padding, y: rect.minY - 16 - size.height + padding, width: size.width, height: size.height), display: true)
         panel.orderFrontRegardless()
@@ -2316,7 +2316,7 @@ final class SelectionOverlayController: NSObject {
 #endif
         let panel = PopupPanel(contentRect: frame)
         panel.title = minimizedTitle
-        let hosting = NSHostingView(rootView: ToolViewport(minimumSize: minimumSize ?? size) { view }.popupCard())
+        let hosting = NSHostingView(rootView: ToolViewport(minimumSize: minimumSize ?? size) { view }.popupCard().windowSurfacePreferences(settings))
         panel.contentView = hosting
         panel.setFrame(frame, display: false)
         panel.makeKeyAndOrderFront(nil)
@@ -2370,7 +2370,7 @@ final class SelectionOverlayController: NSObject {
             onRestore: { [weak self] in self?.restorePopup() },
             onClose: { [weak self] in self?.hidePopup() }
         )
-        panel.contentView = NSHostingView(rootView: bar.frame(width: size.width, height: size.height))
+        panel.contentView = NSHostingView(rootView: bar.frame(width: size.width, height: size.height).windowSurfacePreferences(settings))
         panel.setFrame(NSRect(origin: origin, size: size), display: true, animate: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
         panel.orderFrontRegardless()
     }

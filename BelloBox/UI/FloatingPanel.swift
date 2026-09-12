@@ -29,7 +29,7 @@ final class FloatingButtonPanel: NSPanel {
 /// AppKit help tags are not reliably delivered while another app remains key.
 final class FloatingTooltipPanel: NSPanel {
     private let label = NSTextField(wrappingLabelWithString: "")
-    private let container = NSView()
+    private let container = FloatingTooltipBackgroundView()
 
     init() {
         super.init(
@@ -48,10 +48,9 @@ final class FloatingTooltipPanel: NSPanel {
         isReleasedWhenClosed = false
 
         container.wantsLayer = true
-        container.layer?.backgroundColor = NSColor(calibratedWhite: 0.12, alpha: 0.97).cgColor
         container.layer?.cornerRadius = 6
         label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .white
+        label.textColor = .labelColor
         label.maximumNumberOfLines = 3
         label.cell?.truncatesLastVisibleLine = true
         label.preferredMaxLayoutWidth = 320
@@ -76,6 +75,18 @@ final class FloatingTooltipPanel: NSPanel {
 
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+}
+
+/// Help text stays opaque and follows the app's light/dark appearance.
+private final class FloatingTooltipBackgroundView: NSView {
+    override func draw(_ dirtyRect: NSRect) {
+        NSColor.windowBackgroundColor.setFill()
+        NSBezierPath(roundedRect: bounds, xRadius: 6, yRadius: 6).fill()
+    }
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        needsDisplay = true
+    }
 }
 
 /// The interactive popup. It can become key so the user can type a custom

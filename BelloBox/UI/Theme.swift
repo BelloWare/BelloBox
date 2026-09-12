@@ -45,15 +45,6 @@ enum BoxTheme {
 
 }
 
-struct WorkspaceBackground: View {
-    var body: some View {
-        BoxTheme.background.overlay(alignment: .topLeading) {
-            LinearGradient(colors: [BoxTheme.brand.opacity(0.045), .clear], startPoint: .top, endPoint: .bottom)
-                .frame(height: 160).allowsHitTesting(false)
-        }
-    }
-}
-
 struct ToolBadge: View {
     let symbol: String
     var size: CGFloat = 34
@@ -181,7 +172,7 @@ struct MinimizedPopupBar: View {
 
 extension View {
     func popupCard() -> some View {
-        buttonStyle(SecondaryButtonStyle()).background(WorkspaceBackground())
+        buttonStyle(SecondaryButtonStyle()).workspaceBackground(role: .popup)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(BoxTheme.separator))
             .tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)

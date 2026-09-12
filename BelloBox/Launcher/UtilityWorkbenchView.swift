@@ -35,7 +35,7 @@ struct UtilityWorkbenchView: View {
             }
             Divider()
             footer
-                .background(BoxTheme.surface.opacity(0.6))
+                .background(ChromeSurface())
         }.tint(BoxTheme.accent)
             .task(id: model.command) {
                 if model.command == .regex { focusedEditor = "Regular expression" }

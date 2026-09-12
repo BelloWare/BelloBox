@@ -79,7 +79,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
             if self.pendingSearchFocus { self.focusSearch(force: true) }
         }, onCopilotFieldReady: { [weak self] field in
             self?.copilotField = field
-        }))
+        }).windowSurfacePreferences(settings))
         let screen = ScreenPlacement.screen(containing: NSEvent.mouseLocation)
         let contentSize = Self.fittedSize(model.paletteSize, visibleFrame: screen.visibleFrame)
         panel.setContentSize(contentSize)

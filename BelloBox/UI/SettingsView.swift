@@ -38,7 +38,8 @@ struct SettingsView: View {
             .id(selectedCategory)
         }
         .frame(minWidth: 900, minHeight: 680)
-        .background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
+        .workspaceBackground().buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
+        .windowSurfacePreferences(settings)
         .onReceive(navigation.$requested) { requested in
             if let requested { selectedCategory = requested }
         }
@@ -69,7 +70,7 @@ struct SettingsView: View {
             Spacer()
         }
         .frame(width: BoxTheme.sidebarWidth)
-        .background(BoxTheme.surface.opacity(0.6))
+        .background(ChromeSurface())
     }
 
     private func sidebarButton(_ category: SettingsCategory) -> some View {
@@ -139,7 +140,9 @@ struct SettingsView: View {
                         }
                     }
                 }
-                helpText("Applies immediately to every Bello Box window, including tools already open.")
+                WindowSurfaceChoices(selection: $settings.windowSurfaceStyle)
+                    .padding(.top, 6)
+                helpText("Theme and background changes apply immediately to every open window.")
             }
 
             settingsSection("Tool Suggestions", subtitle: "Your frequent choices rise to the top for similar text.", systemImage: "sparkles") {

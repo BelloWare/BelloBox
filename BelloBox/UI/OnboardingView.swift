@@ -37,7 +37,8 @@ struct OnboardingView: View {
                 .padding(.vertical, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(WorkspaceBackground()).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
+        .workspaceBackground().buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
+        .windowSurfacePreferences(settings)
         .onReceive(poll) { _ in
             let now = AccessibilityService.isTrusted
             if now != trusted {

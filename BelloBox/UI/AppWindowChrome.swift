@@ -11,6 +11,7 @@ enum AppWindowChrome {
         window.title = title
         window.titlebarAppearsTransparent = true
         window.backgroundColor = NSColor(BoxTheme.background)
+        window.isOpaque = false
         window.isReleasedWhenClosed = false
     }
 
