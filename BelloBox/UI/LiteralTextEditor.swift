@@ -23,7 +23,7 @@ struct LiteralTextEditor: NSViewRepresentable {
         editor.importsGraphics = false
         editor.allowsUndo = true
         editor.drawsBackground = false
-        editor.textColor = .labelColor
+        editor.textColor = NSColor(BoxTheme.primaryText)
         editor.font = monospaced ? .monospacedSystemFont(ofSize: fontSize ?? 12, weight: .regular) : .systemFont(ofSize: fontSize ?? 13)
         editor.textContainerInset = NSSize(width: 2, height: 4)
         editor.minSize = .zero

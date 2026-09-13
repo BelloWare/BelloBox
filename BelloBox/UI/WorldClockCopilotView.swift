@@ -43,7 +43,7 @@ struct WorldClockCopilotView: View {
         HStack(spacing: 8) {
             Image(systemName: "sparkles").foregroundStyle(BoxTheme.accent)
             Text("Copilot").font(.caption.weight(.semibold))
-            Text("Knows the selected time and your locations").font(.caption).foregroundStyle(.secondary)
+            Text("Knows the selected time and your locations").font(.caption).foregroundStyle(BoxTheme.secondaryText)
             Spacer()
             if session.hasTranscript {
                 Button("Clear", action: session.clear).buttonStyle(ToolLinkButtonStyle()).font(.caption)
@@ -58,7 +58,7 @@ struct WorldClockCopilotView: View {
                 Button(prompt) { session.ask(prompt) }
                     .buttonStyle(.plain).font(.system(size: 10, weight: .medium))
                     .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(BoxTheme.well, in: Capsule())
+                    .background { ToolSurface(role: .control).clipShape(Capsule()) }
                     .overlay(Capsule().strokeBorder(BoxTheme.border))
                     .help("Ask: \(prompt)")
             }
@@ -78,7 +78,7 @@ struct WorldClockCopilotView: View {
                 .padding(isCompact ? 6 : 8)
             }
             .frame(height: isCompact ? Self.compactTranscriptHeight : 220)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 8))
+            .toolSurface(.input, cornerRadius: 8)
             .accessibilityIdentifier("worldClockCopilotTranscript")
             .onChange(of: session.messages.count) { _ in
                 withAnimation(reduceMotion ? nil : .easeOut(duration: 0.12)) { reader.scrollTo("status", anchor: .bottom) }
@@ -110,7 +110,7 @@ struct WorldClockCopilotView: View {
                     if message.suggestion != nil { suggestionRow(message) }
                 }
                 .padding(.horizontal, 9).padding(.vertical, 6)
-                .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 8))
+                .toolSurface(.card, cornerRadius: 8)
                 .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.border))
             }
         }
@@ -125,7 +125,7 @@ struct WorldClockCopilotView: View {
         VStack(alignment: .leading, spacing: 5) {
             if applicable == nil, deferred == nil {
                 if applied.isEmpty {
-                    Text("Already in effect.").font(.system(size: 10)).foregroundStyle(.secondary)
+                    Text("Already in effect.").font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
                 } else {
                     Label("Applied", systemImage: "checkmark.circle.fill").font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(BoxTheme.success)
@@ -146,7 +146,7 @@ struct WorldClockCopilotView: View {
                         .buttonStyle(PrimaryButtonStyle())
                         .accessibilityIdentifier("worldClockCopilotApply")
                         .help("Apply this suggestion. Nothing changes until you do.")
-                        Text(applicable.summary).font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(2)
+                        Text(applicable.summary).font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText).lineLimit(2)
                     }
                 }
                 if let deferred {
@@ -162,7 +162,7 @@ struct WorldClockCopilotView: View {
         if session.isBusy {
             HStack(spacing: 6) {
                 ProgressView().controlSize(.small)
-                Text("Thinking…").font(.system(size: 10)).foregroundStyle(.secondary)
+                Text("Thinking…").font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
                 Button("Cancel", action: session.cancel).buttonStyle(ToolLinkButtonStyle()).font(.system(size: 10))
                     .accessibilityIdentifier("worldClockCopilotCancel")
             }
@@ -177,7 +177,7 @@ struct WorldClockCopilotView: View {
             }
         } else if let status = session.statusMessage {
             HStack(spacing: 6) {
-                Text(status).font(.system(size: 10)).foregroundStyle(.secondary)
+                Text(status).font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
                 if session.canRetry {
                     Button("Ask again", action: session.retry).buttonStyle(ToolLinkButtonStyle()).font(.system(size: 10))
                         .accessibilityIdentifier("worldClockCopilotRetry")
@@ -208,13 +208,13 @@ struct WorldClockCopilotView: View {
             }
         }
         .padding(.horizontal, 8).padding(.vertical, isCompact ? 4 : 5)
-        .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 9))
+        .toolSurface(.card, cornerRadius: 9)
         .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(BoxTheme.border))
     }
 
     private var providerNotice: some View {
         HStack(spacing: 5) {
-            Text("The copilot needs an AI provider.").foregroundStyle(.secondary)
+            Text("The copilot needs an AI provider.").foregroundStyle(BoxTheme.secondaryText)
             Button("Open Settings", action: onOpenSettings).buttonStyle(ToolLinkButtonStyle())
                 .accessibilityIdentifier("worldClockCopilotOpenSettings")
         }.font(.system(size: 10))

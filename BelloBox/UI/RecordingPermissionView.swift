@@ -75,7 +75,7 @@ struct RecordingPermissionView: View {
             } else {
                 Text("Bello Box hides detected secure fields and suppresses key overlays while typing into them. Microphone audio may still include anything spoken aloud.")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -107,7 +107,7 @@ struct RecordingPermissionView: View {
                 .foregroundStyle(status == .granted ? BoxTheme.success : BoxTheme.warning)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.callout.weight(.semibold))
-                Text(detail).font(.caption2).foregroundStyle(.secondary)
+                Text(detail).font(.caption2).foregroundStyle(BoxTheme.secondaryText)
             }
             Spacer()
             if status != .granted {

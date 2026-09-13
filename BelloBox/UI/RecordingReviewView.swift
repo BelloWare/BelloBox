@@ -363,7 +363,7 @@ struct RecordingReviewView: View {
         if viewModel.isConverting {
             VStack(spacing: 10) {
                 ProgressView(value: viewModel.conversionProgress).progressViewStyle(.linear).tint(BoxTheme.accent).frame(width: 260)
-                Text("Writing GIF · \(Int((viewModel.conversionProgress * 100).rounded()))%").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                Text("Writing GIF · \(Int((viewModel.conversionProgress * 100).rounded()))%").font(.caption.monospacedDigit()).foregroundStyle(BoxTheme.secondaryText)
                 Button("Cancel", action: viewModel.cancelGIFExport).buttonStyle(SecondaryButtonStyle())
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -392,7 +392,7 @@ struct RecordingReviewView: View {
             } else if let message = viewModel.statusMessage {
                 Label(message, systemImage: "checkmark.circle.fill")
                     .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
                     .textSelection(.enabled)
             }
         }
@@ -409,13 +409,13 @@ struct RecordingReviewView: View {
                 .help("Switch the preview between the GIF and the movie it came from")
             }
             Label(viewModel.hasGIF ? "GIF \(viewModel.gifSizeText ?? "")" : viewModel.fileSizeText, systemImage: viewModel.hasGIF ? "photo.stack" : "doc")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
             if viewModel.hasGIF {
                 Label("Movie \(viewModel.fileSizeText)", systemImage: "film")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
             }
             if let summary = viewModel.mediaSummary {
-                Text(summary).foregroundStyle(.secondary).monospacedDigit()
+                Text(summary).foregroundStyle(BoxTheme.secondaryText).monospacedDigit()
             }
             Spacer()
         }

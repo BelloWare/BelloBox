@@ -27,7 +27,7 @@ struct LauncherView: View {
                 Divider().opacity(0.6)
                 HStack {
                     Text(model.query.isEmpty ? (model.suggestions.isEmpty ? "Your tools" : "Suggested for your selection") : "Results")
-                        .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+                        .font(.system(size: 11, weight: .medium)).foregroundStyle(BoxTheme.secondaryText)
                     Spacer()
                     Text("\(model.commands.count)").font(.system(size: 10, design: .monospaced)).foregroundStyle(.tertiary)
                 }.padding(.horizontal, 18).frame(height: 25)
@@ -44,7 +44,7 @@ struct LauncherView: View {
 
     private var search: some View {
         HStack(spacing: 13) {
-            Image(systemName: "magnifyingglass").font(.system(size: 18, weight: .medium)).foregroundStyle(.secondary)
+            Image(systemName: "magnifyingglass").font(.system(size: 18, weight: .medium)).foregroundStyle(BoxTheme.secondaryText)
             LauncherSearchField(text: $model.query, onMove: model.move, onSubmit: model.openSelected,
                 onEscape: model.onClose, onReady: onSearchReady, parked: model.workbench != nil).frame(height: 26)
             if !model.query.isEmpty {
@@ -58,27 +58,27 @@ struct LauncherView: View {
     private var selectionContext: some View {
         HStack(spacing: 10) {
             Image(systemName: model.context.exceedsLimit ? "text.badge.minus" : "text.alignleft")
-                .font(.system(size: 12)).foregroundStyle(.secondary)
+                .font(.system(size: 12)).foregroundStyle(BoxTheme.secondaryText)
                 .frame(width: 26, height: 26).background(.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
             VStack(alignment: .leading, spacing: 3) {
                 if let message = model.contextMessage {
-                    Text(message).font(.system(size: 11)).foregroundStyle(.secondary)
+                    Text(message).font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
                 } else if model.context.exceedsLimit {
                     Text("Selection exceeds 500 KB").font(.system(size: 11, weight: .medium))
                     Text("Select a smaller passage. Tools will open with an empty input.")
-                        .font(.system(size: 10)).foregroundStyle(.secondary)
+                        .font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
                 } else {
                     HStack(spacing: 5) {
                         Text(model.selection.appName ?? "Selected text")
                         Text("·").foregroundStyle(.tertiary)
                         Text("\(model.context.characterCount.formatted()) characters")
-                    }.font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
-                    Text(model.context.preview).font(.system(size: 11)).lineLimit(1).truncationMode(.tail).foregroundStyle(.secondary)
+                    }.font(.system(size: 10, weight: .medium)).foregroundStyle(BoxTheme.secondaryText)
+                    Text(model.context.preview).font(.system(size: 11)).lineLimit(1).truncationMode(.tail).foregroundStyle(BoxTheme.secondaryText)
                 }
             }
             Spacer(minLength: 6)
             Button(action: model.clearSelection) { Image(systemName: "xmark").font(.system(size: 9, weight: .semibold)) }
-                .buttonStyle(.plain).foregroundStyle(.secondary).help("Clear selected text").accessibilityLabel("Clear selected text")
+                .buttonStyle(.plain).foregroundStyle(BoxTheme.secondaryText).help("Clear selected text").accessibilityLabel("Clear selected text")
         }.padding(.horizontal, 18).padding(.bottom, 8).frame(height: 48)
     }
 
@@ -89,7 +89,7 @@ struct LauncherView: View {
                     if model.commands.isEmpty {
                         VStack(spacing: 7) {
                             Text("No matching tools").font(.system(size: 13, weight: .medium))
-                            Text("Try JSON, diff, capture, or time.").font(.system(size: 11)).foregroundStyle(.secondary)
+                            Text("Try JSON, diff, capture, or time.").font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
                             Button("Clear search") { model.query = "" }.buttonStyle(ToolLinkButtonStyle()).font(.system(size: 11))
                         }.frame(maxWidth: .infinity).frame(height: 118)
                     }
@@ -119,29 +119,29 @@ struct LauncherView: View {
 
     private var footer: some View {
         HStack(spacing: 8) {
-            Image(systemName: "shippingbox").font(.system(size: 12)).foregroundStyle(.secondary)
-            Text("Bello Box").font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
+            Image(systemName: "shippingbox").font(.system(size: 12)).foregroundStyle(BoxTheme.secondaryText)
+            Text("Bello Box").font(.system(size: 10, weight: .medium)).foregroundStyle(BoxTheme.secondaryText)
             Divider().frame(height: 12).padding(.horizontal, 3)
             Button { model.useClipboard() } label: {
                 Label("Use Clipboard", systemImage: "doc.on.clipboard").font(.system(size: 10))
-            }.buttonStyle(.plain).foregroundStyle(.secondary).help("Use clipboard text as input")
+            }.buttonStyle(.plain).foregroundStyle(BoxTheme.secondaryText).help("Use clipboard text as input")
             Spacer()
             if model.featuresClock, model.query.isEmpty {
                 keycap("←"); keycap("→")
-                Text("Time").font(.system(size: 10)).foregroundStyle(.secondary)
+                Text("Time").font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
                     .help("← → move 15 minutes, ⌥ moves an hour, ⇧ moves a day")
                 Divider().frame(height: 12).padding(.horizontal, 3)
             }
             keycap("↑"); keycap("↓")
-            Text("Navigate").font(.system(size: 10)).foregroundStyle(.secondary)
+            Text("Navigate").font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
             Divider().frame(height: 12).padding(.horizontal, 3)
-            Text("Open").font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
+            Text("Open").font(.system(size: 10, weight: .medium)).foregroundStyle(BoxTheme.secondaryText)
             keycap("↵")
         }.padding(.horizontal, 16).frame(height: 41)
             .background(ChromeSurface())
     }
     private func keycap(_ key: String) -> some View {
-        Text(key).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
+        Text(key).font(.system(size: 10, weight: .medium)).foregroundStyle(BoxTheme.secondaryText)
             .padding(.horizontal, 5).frame(height: 19)
             .background(.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 4))
             .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(.primary.opacity(0.06)))
@@ -188,7 +188,7 @@ private struct LauncherCommandRow: View {
                 .accessibilityValue((selected ? "Selected" : "Not selected") + (expanded ? ". " + accessibilityPreview : ""))
             Button(action: onFavorite) {
                 Image(systemName: favorite ? "star.fill" : "star").font(.system(size: 10))
-                    .foregroundStyle(favorite ? Color.secondary : Color.secondary.opacity(0.6))
+                    .foregroundStyle(favorite ? BoxTheme.secondaryText : BoxTheme.secondaryText.opacity(0.6))
                     .opacity(favorite || selected || hovered ? 1 : 0)
                     .frame(width: 24, height: 28).contentShape(Rectangle())
             }.buttonStyle(.plain).help(favorite ? "Remove favorite" : "Add favorite")
@@ -205,8 +205,12 @@ private struct LauncherCommandRow: View {
                   .accessibilityIdentifier("launcherPreview_\(command.id)")
           }
         }
-        .background((selected ? BoxTheme.surface : hovered ? BoxTheme.well : .clear),
-                    in: RoundedRectangle(cornerRadius: expanded ? 12 : 8))
+        .background {
+            if selected || hovered {
+                ToolSurface(role: selected ? .card : .control)
+                    .clipShape(RoundedRectangle(cornerRadius: expanded ? 12 : 8))
+            }
+        }
         .overlay(RoundedRectangle(cornerRadius: expanded ? 12 : 8).strokeBorder(expanded ? BoxTheme.accent.opacity(0.28) : .clear))
         .onHover { hovered = $0 }
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: selected)

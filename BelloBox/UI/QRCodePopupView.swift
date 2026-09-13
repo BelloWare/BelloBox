@@ -134,23 +134,24 @@ struct QRCodePopupView: View {
     @ViewBuilder
     private var qrArea: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.white)
+            ToolSurface(role: .card).clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             if let image = viewModel.image {
                 Image(nsImage: image)
                     .resizable()
                     .interpolation(.none)
                     .scaledToFit()
                     .padding(14)
+                    .background(.white, in: RoundedRectangle(cornerRadius: 8))
             } else {
                 VStack(spacing: 6) {
                     Image(systemName: viewModel.isEmpty ? "qrcode" : "exclamationmark.triangle")
                         .font(.system(size: 26))
-                        .foregroundStyle(Color.black.opacity(0.6))
+                        .foregroundStyle(BoxTheme.secondaryText)
                     Text(viewModel.isEmpty
                         ? "Enter text to encode"
                         : (viewModel.isTooLong ? viewModel.capacityMessage : "Could not generate a QR code"))
                         .font(.caption)
-                        .foregroundStyle(Color.black.opacity(0.6))
+                        .foregroundStyle(BoxTheme.secondaryText)
                         .multilineTextAlignment(.center)
                 }
                 .padding()
@@ -176,7 +177,7 @@ struct QRCodePopupView: View {
                 .frame(height: 100)
                 .scrollContentBackground(.hidden)
                 .padding(8)
-                .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
+                .toolSurface(.input, cornerRadius: 10)
                 .accessibilityLabel("Encoded text")
             HStack {
                 Text("\(viewModel.byteCount.formatted()) / \(QRCodeGenerator.maxByteCount.formatted()) bytes")
@@ -200,7 +201,7 @@ struct QRCodePopupView: View {
             } else if let status = viewModel.statusMessage {
                 Label(status, systemImage: "checkmark.circle.fill")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
                     .textSelection(.enabled)
             }
         }

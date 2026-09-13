@@ -193,10 +193,10 @@ struct TextToolsPopupView: View {
                 .scrollContentBackground(.hidden)
                 .frame(height: 120)
                 .padding(6)
-                .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
+                .toolSurface(.input, cornerRadius: 10)
                 .overlay(alignment: .topLeading) {
                     if viewModel.input.isEmpty {
-                        Text("Type or paste text to begin…").font(.callout).foregroundStyle(.secondary)
+                        Text("Type or paste text to begin…").font(.callout).foregroundStyle(BoxTheme.secondaryText)
                             .padding(.horizontal, 11).padding(.vertical, 12)
                             .allowsHitTesting(false).accessibilityHidden(true)
                     }
@@ -243,10 +243,10 @@ struct TextToolsPopupView: View {
 
     private var decodeControls: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Picker("Format", selection: $viewModel.decodeFormat) {
+            ToolMenuPicker("Format", value: viewModel.decodeFormat.rawValue, selection: $viewModel.decodeFormat) {
                 ForEach(TextDecoder.Format.allCases) { Text($0.rawValue).tag($0) }
             }
-            .pickerStyle(.menu)
+
             .fixedSize()
 
             if let result = viewModel.decodeResult {
@@ -282,13 +282,13 @@ struct TextToolsPopupView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     Button { viewModel.copy(value, label: algorithm.rawValue) } label: { Image(systemName: "doc.on.doc") }
                         .buttonStyle(.plain)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(BoxTheme.secondaryText)
                         .help("Copy \(algorithm.rawValue)")
                         .accessibilityLabel("Copy \(algorithm.rawValue)")
                 }
                 .padding(.vertical, 8)
                 .padding(.horizontal, 8)
-                .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
+                .toolSurface(.input, cornerRadius: 10)
             }
         }
     }
@@ -304,7 +304,7 @@ struct TextToolsPopupView: View {
 
             Text("Token estimate for \(viewModel.modelLabel) · \(viewModel.tokenFamily).")
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -366,12 +366,12 @@ struct TextToolsPopupView: View {
                 Button { action(option) } label: {
                     Text(label(option))
                         .font(.system(size: 12, weight: selected ? .semibold : .medium))
-                        .foregroundStyle(selected ? BoxTheme.accent : Color.secondary)
+                        .foregroundStyle(selected ? BoxTheme.accent : BoxTheme.secondaryText)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 8)
-                        .background(RoundedRectangle(cornerRadius: 7).fill(selected ? BoxTheme.surface : BoxTheme.well))
+                        .toolSurface(selected ? .control : .input, cornerRadius: 7)
                         .overlay(
                             RoundedRectangle(cornerRadius: 7).strokeBorder(selected ? BoxTheme.accent.opacity(0.35) : BoxTheme.separator, lineWidth: 1)
                         )
@@ -394,14 +394,14 @@ struct TextToolsPopupView: View {
             }
             .frame(minHeight: 200)
             .padding(8)
-            .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
+            .toolSurface(.input, cornerRadius: 10)
         }
     }
 
     private var footer: some View {
         HStack(spacing: 8) {
             if let message = viewModel.statusMessage {
-                Text(message).font(.caption).foregroundStyle(.secondary)
+                Text(message).font(.caption).foregroundStyle(BoxTheme.secondaryText)
             }
             Spacer()
             if let output = viewModel.primaryOutput {
@@ -434,13 +434,13 @@ struct TextToolsPopupView: View {
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 10)
-        .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
+        .toolSurface(.input, cornerRadius: 10)
     }
 
     private func notice(_ text: String) -> some View {
         Text(text)
             .font(.caption)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(BoxTheme.secondaryText)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(10)
             .background(RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.04)))

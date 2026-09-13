@@ -10,13 +10,13 @@ struct AudioSourcePickerView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if compact {
-                audioPicker.pickerStyle(.menu).labelsHidden()
+                audioPicker.labelsHidden()
             } else {
                 ToolChoiceBar(selection: $audioSource, choices: RecordingAudioSource.allCases.map { ($0, $0.label) }, label: "Audio")
             }
 
             if audioSource.includesMicrophone, microphoneDevices.count > 1 {
-                Picker("Microphone", selection: Binding(
+                ToolMenuPicker("Microphone", value: microphoneDevices.first(where: { $0.id == microphoneDeviceID })?.name ?? "System Default", selection: Binding(
                     get: { microphoneDeviceID ?? "" },
                     set: { microphoneDeviceID = $0.isEmpty ? nil : $0 }
                 )) {
@@ -32,7 +32,7 @@ struct AudioSourcePickerView: View {
     }
 
     private var audioPicker: some View {
-        Picker("Audio", selection: $audioSource) {
+        ToolMenuPicker("Audio", value: audioSource.label, showsLabel: false, compact: true, selection: $audioSource) {
             ForEach(RecordingAudioSource.allCases) { source in
                 Text(source.label).tag(source)
             }

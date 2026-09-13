@@ -25,12 +25,12 @@ final class WorldClockWindowController: NSObject, NSWindowDelegate {
 #endif
         let viewModel = WorldClockViewModel(settings: settings, seedDate: handoff?.instant, preferences: preferences)
         if let handoff { viewModel.adopt(handoff) }
-        let rootView = WorldClockView(viewModel: viewModel, onOpenSettings: onOpenSettings).windowSurfacePreferences(settings)
-        let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 780, height: 640)) { rootView })
+        let rootView = WorldClockView(viewModel: viewModel, onOpenSettings: onOpenSettings)
+        let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 780, height: 640)) { rootView }
+            .workspaceBackground().windowSurfacePreferences(settings))
         let panel = WorldClockPanel(contentViewController: hosting)
         panel.delegate = self
-        panel.setContentSize(NSSize(width: 920, height: 740))
-        panel.contentMinSize = NSSize(width: 780, height: 640)
+        AppWindowChrome.size(panel, content: NSSize(width: 920, height: 740), minimum: NSSize(width: 780, height: 640))
         panel.setFrameAutosaveName("BelloBoxWorldClockWindow")
         AppWindowChrome.place(panel, on: Self.hasSavedFrame ? panel.screen : nil, centered: !Self.hasSavedFrame)
 

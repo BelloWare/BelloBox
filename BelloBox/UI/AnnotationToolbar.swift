@@ -169,13 +169,13 @@ struct AnnotationToolbarView: View {
             }
         case .eraser:
             HStack(spacing: 5) {
-                Image(systemName: "circle").font(.system(size: 9)).foregroundStyle(.secondary)
+                Image(systemName: "circle").font(.system(size: 9)).foregroundStyle(BoxTheme.secondaryText)
                     .accessibilityHidden(true)
                 Slider(value: $viewModel.eraserWidth, in: ScreenshotPopupViewModel.eraserWidthRange, step: 2)
                     .accessibilityLabel("Eraser size")
                     .accessibilityValue("\(Int(viewModel.eraserWidth)) pixels")
                     .overlayTooltip("Eraser size: drag over an arrow, line, shape, label, or mask to remove just that part")
-                Image(systemName: "circle").font(.system(size: 15)).foregroundStyle(.secondary)
+                Image(systemName: "circle").font(.system(size: 15)).foregroundStyle(BoxTheme.secondaryText)
                     .accessibilityHidden(true)
                 Text("\(Int(viewModel.eraserWidth)) px")
                     .font(.caption2.monospacedDigit())
@@ -186,7 +186,7 @@ struct AnnotationToolbarView: View {
         case .select, .crop, .highlight:
             Text(Self.tooltip(for: viewModel.activeTool))
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .lineLimit(2)
         }
     }

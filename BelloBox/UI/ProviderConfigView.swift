@@ -52,13 +52,13 @@ struct ProviderConfigView: View {
             Text(settings.providerKind.isHTTP
                  ? "Used by Ask AI, World Clock copilot, and AI screenshot text recognition."
                  : "Used by Ask AI and World Clock copilot.")
-                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
             testRow
 
             Text(hint)
                 .font(.system(size: 11))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .buttonStyle(SecondaryButtonStyle())
@@ -152,29 +152,29 @@ struct ProviderConfigView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 10) {
                 labeledField("Sandbox") {
-                    Picker("Sandbox", selection: $settings.codexSandboxMode) {
+                    ToolMenuPicker("Sandbox", value: settings.codexSandboxMode.label, showsLabel: false, selection: $settings.codexSandboxMode) {
                         ForEach(CodexCLI.sandboxModes) { mode in
                             Text(mode.label).tag(mode)
                       }
                   }
-                    .labelsHidden().pickerStyle(.menu)
+                    .labelsHidden()
                     .frame(maxWidth: 190, alignment: .leading)
               }
 
                 labeledField("Approvals") {
-                    Picker("Approvals", selection: $settings.codexApprovalPolicy) {
+                    ToolMenuPicker("Approvals", value: settings.codexApprovalPolicy.label, showsLabel: false, selection: $settings.codexApprovalPolicy) {
                         ForEach(CodexCLI.approvalPolicies) { policy in
                             Text(policy.label).tag(policy)
                       }
                   }
-                    .labelsHidden().pickerStyle(.menu)
+                    .labelsHidden()
                     .frame(maxWidth: 190, alignment: .leading)
               }
             }
 
             Text(codexPolicyHelp)
                 .font(.system(size: 11))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -191,7 +191,7 @@ struct ProviderConfigView: View {
               }
                 .disabled(isTesting || !settings.isConfigured)
                 Text("Sends a short hello with these settings.")
-                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                    .font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
                 Spacer(minLength: 0)
             }
             switch testState {
@@ -368,7 +368,7 @@ struct ProviderConfigView: View {
     @ViewBuilder
     private func labeledField<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(label).font(.caption2.bold()).foregroundStyle(.secondary)
+            Text(label).font(.caption2.bold()).foregroundStyle(BoxTheme.secondaryText)
             content()
         }
     }

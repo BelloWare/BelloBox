@@ -33,7 +33,7 @@ struct GIFExportPanel: View {
             } else {
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text("Reading the movie…").font(.caption).foregroundStyle(.secondary)
+                    Text("Reading the movie…").font(.caption).foregroundStyle(BoxTheme.secondaryText)
                 }
                 .frame(height: 44)
             }
@@ -46,7 +46,7 @@ struct GIFExportPanel: View {
                     .font(.caption.monospacedDigit())
                     .accessibilityLabel("GIF estimate")
                 Text("Silent · file size depends on the content and is shown after writing")
-                    .font(.caption2).foregroundStyle(.secondary)
+                    .font(.caption2).foregroundStyle(BoxTheme.secondaryText)
             }
 
             if isConverting {
@@ -87,12 +87,12 @@ struct GIFFormatControls: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            Picker("Frame rate", selection: $options.framesPerSecond) {
+            ToolMenuPicker("Frame rate", value: "\(options.framesPerSecond) fps", showsLabel: false, compact: true, selection: $options.framesPerSecond) {
                 ForEach(GIFExportOptions.frameRateChoices, id: \.self) { rate in Text("\(rate) fps").tag(rate) }
             }
             .fixedSize()
             .help("Frames per second in the GIF; fewer frames make a smaller file")
-            Picker("Longest edge", selection: $options.maxWidth) {
+            ToolMenuPicker("Longest edge", value: "\(options.maxWidth) px", showsLabel: false, compact: true, selection: $options.maxWidth) {
                 ForEach(GIFExportOptions.widthChoices, id: \.self) { width in Text("\(width) px").tag(width) }
             }
             .fixedSize()
@@ -148,13 +148,13 @@ struct GIFTrimControls: View {
         let end = min(options.trimEnd ?? total, total)
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("Clip").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text("Clip").font(.caption.weight(.semibold)).foregroundStyle(BoxTheme.secondaryText)
                 Spacer()
                 Text("\(GIFExportPanel.timeText(options.trimStart)) – \(GIFExportPanel.timeText(end)) · \(GIFExportPanel.timeText(end - options.trimStart)) of \(GIFExportPanel.timeText(total))")
-                    .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                    .font(.caption.monospacedDigit()).foregroundStyle(BoxTheme.secondaryText)
             }
             HStack(spacing: 8) {
-                Text("Start").font(.caption2).foregroundStyle(.secondary).frame(width: 30, alignment: .leading)
+                Text("Start").font(.caption2).foregroundStyle(BoxTheme.secondaryText).frame(width: 30, alignment: .leading)
                 Slider(value: Binding(
                     get: { options.trimStart },
                     set: { value in
@@ -166,7 +166,7 @@ struct GIFTrimControls: View {
                 .accessibilityValue(GIFExportPanel.timeText(options.trimStart))
             }
             HStack(spacing: 8) {
-                Text("End").font(.caption2).foregroundStyle(.secondary).frame(width: 30, alignment: .leading)
+                Text("End").font(.caption2).foregroundStyle(BoxTheme.secondaryText).frame(width: 30, alignment: .leading)
                 Slider(value: Binding(
                     get: { end },
                     set: { value in
@@ -179,7 +179,7 @@ struct GIFTrimControls: View {
             }
             if total > GIFExportOptions.maxDuration {
                 Text("GIF clips are limited to \(Int(GIFExportOptions.maxDuration)) seconds; the other end follows to keep within it.")
-                    .font(.caption2).foregroundStyle(.secondary)
+                    .font(.caption2).foregroundStyle(BoxTheme.secondaryText)
                     .lineLimit(2).fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -396,7 +396,7 @@ struct VideoToGIFContent: View {
                     Image(systemName: "film").font(.system(size: 34)).foregroundStyle(BoxTheme.accent)
                     Text("Choose a movie to convert").font(.callout.weight(.semibold))
                     Text("MOV or MP4 from this Mac. The GIF is silent and can be trimmed, resized and looped.")
-                        .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        .font(.caption).foregroundStyle(BoxTheme.secondaryText).multilineTextAlignment(.center)
                     Button("Choose Video…", action: viewModel.chooseVideo)
                         .buttonStyle(PrimaryButtonStyle())
                         .keyboardShortcut("o", modifiers: .command)
@@ -431,12 +431,12 @@ struct VideoToGIFContent: View {
                 Label(error, systemImage: "exclamationmark.triangle.fill").font(.caption).foregroundStyle(BoxTheme.danger)
                     .lineLimit(2).fixedSize(horizontal: false, vertical: true)
             } else if let status = viewModel.statusMessage {
-                Label(status, systemImage: "checkmark.circle.fill").font(.caption).foregroundStyle(.secondary)
+                Label(status, systemImage: "checkmark.circle.fill").font(.caption).foregroundStyle(BoxTheme.secondaryText)
                     .lineLimit(2).fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
             Text("Converted on this Mac. Nothing is uploaded.")
-                .font(.caption2).foregroundStyle(.secondary)
+                .font(.caption2).foregroundStyle(BoxTheme.secondaryText)
         }
         .padding(18)
         .frame(width: VideoToGIFView.preferredSize.width)
@@ -475,7 +475,7 @@ struct VideoToGIFSourceCard: View {
                     .help(viewModel.sourceURL?.path ?? "")
                 if let info = viewModel.sourceInfo {
                     Text("\(GIFExportPanel.timeText(info.duration)) · \(Int(info.displaySize.width)) × \(Int(info.displaySize.height))")
-                        .font(.caption.monospacedDigit()).foregroundStyle(.secondary).lineLimit(1).fixedSize()
+                        .font(.caption.monospacedDigit()).foregroundStyle(BoxTheme.secondaryText).lineLimit(1).fixedSize()
                         .accessibilityLabel("Movie length and size")
                 }
                 Spacer(minLength: 8)
@@ -491,7 +491,7 @@ struct VideoToGIFSourceCard: View {
                     .help("Switch the preview between the GIF and the movie it came from")
                     .accessibilityLabel("Preview")
                     Label(Self.resultSummary(result), systemImage: "photo.stack")
-                        .font(.caption.monospacedDigit()).foregroundStyle(.secondary).lineLimit(1).fixedSize()
+                        .font(.caption.monospacedDigit()).foregroundStyle(BoxTheme.secondaryText).lineLimit(1).fixedSize()
                         .accessibilityLabel("GIF result: \(Self.resultSummary(result))")
                     Spacer(minLength: 8)
                     Button(action: viewModel.copyResultFile) { Image(systemName: "doc.on.doc") }
@@ -528,14 +528,14 @@ struct GIFExportPanelBody: View {
             } else {
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text("Reading the movie…").font(.caption).foregroundStyle(.secondary)
+                    Text("Reading the movie…").font(.caption).foregroundStyle(BoxTheme.secondaryText)
                 }
             }
             GIFFormatControls(options: $options).disabled(isConverting)
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(plan?.summary ?? "Reading…").font(.caption.monospacedDigit())
-                    Text("Silent · size shown after writing").font(.caption2).foregroundStyle(.secondary)
+                    Text("Silent · size shown after writing").font(.caption2).foregroundStyle(BoxTheme.secondaryText)
                 }
                 Spacer()
                 if isConverting {

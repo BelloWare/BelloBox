@@ -43,7 +43,7 @@ struct AdditionalUtilityEditor: View {
                 }
             }
             HStack(spacing: 6) {
-                Text(kind.secondInputLabel == nil ? mainLabel : "Two inputs · edit either side").font(.system(size: compact ? 10 : 12, weight: .medium)).foregroundStyle(.secondary).lineLimit(1)
+                Text(kind.secondInputLabel == nil ? mainLabel : "Two inputs · edit either side").font(.system(size: compact ? 10 : 12, weight: .medium)).foregroundStyle(BoxTheme.secondaryText).lineLimit(1)
                 Spacer(minLength: 0)
                 Button("Example", action: model.loadUtilityExample).help("Load an example and reset the options")
                 if kind.secondInputLabel == nil { Button("Paste") { model.pasteInput() } }
@@ -54,7 +54,7 @@ struct AdditionalUtilityEditor: View {
                     ForEach(0..<2) { side in
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
-                                Text(side == 0 ? mainLabel : secondLabel).font(.system(size: compact ? 10 : 12)).foregroundStyle(.secondary).lineLimit(1)
+                                Text(side == 0 ? mainLabel : secondLabel).font(.system(size: compact ? 10 : 12)).foregroundStyle(BoxTheme.secondaryText).lineLimit(1)
                                 Spacer(minLength: 2)
                                 Button("Paste") { model.pasteInput(second: side == 1) }.buttonStyle(LauncherChipButtonStyle()).accessibilityLabel(side == 0 ? "Paste first input" : "Paste second input")
                             }
@@ -77,11 +77,11 @@ struct AdditionalUtilityEditor: View {
                         VStack(alignment: .leading, spacing: compact ? 2 : 5) {
                             if compact {
                                 HStack(spacing: 6) {
-                                    Text(compactLabel(definition)).font(.system(size: 10)).foregroundStyle(.secondary).fixedSize()
+                                    Text(compactLabel(definition)).font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText).fixedSize()
                                     field(option(definition.id), label: definition.label, placeholder: definition.label)
                                 }
                             } else {
-                                Text(definition.label).font(.caption).foregroundStyle(.secondary)
+                                Text(definition.label).font(.caption).foregroundStyle(BoxTheme.secondaryText)
                                 field(option(definition.id), label: definition.label, placeholder: definition.label)
                             }
                         }.disabled(kind == .bitwise && definition.id == "operand" && model.utilityOptions["operation"] == "NOT")
@@ -118,7 +118,7 @@ struct AdditionalUtilityEditor: View {
             Text(definition.label + ": " + option(definition.id).wrappedValue).lineLimit(1)
         }.menuStyle(.borderlessButton).font(.system(size: compact ? 11 : 13))
             .controlSize(compact ? .small : .regular).fixedSize().padding(.horizontal, 8).frame(height: compact ? 26 : 32)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
+            .toolSurface(.input, cornerRadius: 7)
             .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.separator))
             .accessibilityLabel(definition.label).accessibilityValue(option(definition.id).wrappedValue)
     }
@@ -134,7 +134,7 @@ struct AdditionalUtilityEditor: View {
                                 placeholder: placeholder, accessibilityID: "utilityField_" + label,
                                 accessibilityLabel: label, fontSize: 13, focusesWhenAttached: label == mainLabel,
                                 monospaced: true, consumesVerticalArrows: false)
-                .frame(height: 22).padding(8).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 8))
+                .frame(height: 22).padding(8).toolSurface(.input, cornerRadius: 8)
                 .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.separator))
         }
     }
@@ -144,7 +144,7 @@ struct AdditionalUtilityEditor: View {
     private func textEditor(_ text: Binding<String>, label: String, secondary: Bool = false) -> some View {
         LiteralTextEditor(text: text, label: label, monospaced: true, focusesWhenAttached: !compact && !secondary, fontSize: compact ? 11 : 13)
             .frame(height: compact ? 46 : fullEditorHeight).padding(compact ? 4 : 8)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: compact ? 7 : 10))
+            .toolSurface(.input, cornerRadius: compact ? 7 : 10)
             .overlay(RoundedRectangle(cornerRadius: compact ? 7 : 10).strokeBorder(BoxTheme.separator))
     }
     private var fullEditorHeight: CGFloat {
@@ -169,7 +169,7 @@ struct AdditionalUtilityEditor: View {
             HStack(spacing: 12) {
                 ForEach(Array(["Owner", "Group", "Others"].enumerated()), id: \.offset) { group, title in
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(title).font(.system(size: compact ? 10 : 12, weight: .semibold)).foregroundStyle(.secondary)
+                        Text(title).font(.system(size: compact ? 10 : 12, weight: .semibold)).foregroundStyle(BoxTheme.secondaryText)
                         HStack(spacing: 8) {
                             ForEach(Array(["Read", "Write", "Exec"].enumerated()), id: \.offset) { bit, name in
                                 Toggle(compact ? String(name.prefix(1)) : name, isOn: permission(1 << (8 - group * 3 - bit)))
@@ -209,8 +209,9 @@ struct AdditionalUtilityVisualView: View {
                             ForEach(Array(bits.enumerated()), id: \.offset) { i, bit in
                                 Text(String(bit)).font(.system(size: 10, weight: .medium, design: .monospaced))
                                     .frame(maxWidth: .infinity).padding(.vertical, 3)
-                                    .foregroundStyle(bit == "1" ? BoxTheme.accent : .secondary)
-                                    .background(bit == "1" ? BoxTheme.accent.opacity(0.12) : BoxTheme.surface, in: RoundedRectangle(cornerRadius: 3)).help("Bit \(bits.count - 1 - i)")
+                                    .foregroundStyle(bit == "1" ? BoxTheme.accent : BoxTheme.secondaryText)
+                                    .toolSurface(.control, cornerRadius: 3)
+                                    .background(bit == "1" ? BoxTheme.accent.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 3)).help("Bit \(bits.count - 1 - i)")
                             }
                         }
                     }.padding(10)
@@ -224,7 +225,7 @@ struct AdditionalUtilityVisualView: View {
                             .frame(width: max(1, width), height: max(1, height))
                         VStack(alignment: .leading, spacing: 5) {
                             Text("\(targetW) × \(targetH)").font(.system(size: compact ? 19 : 26, weight: .semibold, design: .rounded))
-                            Text("Target pixels · proportional to \(w) × \(h)").font(.system(size: 10)).foregroundStyle(.secondary)
+                            Text("Target pixels · proportional to \(w) × \(h)").font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
                         }.textSelection(.enabled)
                     }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 }.padding(10)
@@ -234,7 +235,7 @@ struct AdditionalUtilityVisualView: View {
                         .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(BoxTheme.separator))
                     VStack(alignment: .leading, spacing: 5) {
                         Text(c.hex).font(.system(size: compact ? 17 : 23, weight: .semibold, design: .monospaced))
-                        Text(c.rgb + "\n" + c.hsl).font(.system(size: compact ? 10 : 12, design: .monospaced)).foregroundStyle(.secondary)
+                        Text(c.rgb + "\n" + c.hsl).font(.system(size: compact ? 10 : 12, design: .monospaced)).foregroundStyle(BoxTheme.secondaryText)
                     }.textSelection(.enabled)
                     Spacer(minLength: 0)
                 }.padding(10)
@@ -248,7 +249,7 @@ struct AdditionalUtilityVisualView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(String(format: "%.2f:1", ratio)).font(.system(size: compact ? 18 : 25, weight: .semibold, design: .rounded))
                         Text("AA normal: \(ratio >= 4.5 ? "Pass" : "Fail")\nAA large: \(ratio >= 3 ? "Pass" : "Fail")\nAAA normal: \(ratio >= 7 ? "Pass" : "Fail")")
-                            .font(.system(size: compact ? 10 : 12)).foregroundStyle(.secondary)
+                            .font(.system(size: compact ? 10 : 12)).foregroundStyle(BoxTheme.secondaryText)
                     }.frame(width: compact ? 118 : 170, alignment: .leading)
                 }.padding(8)
             case .gradient(let a, let b, let angle):
@@ -280,13 +281,13 @@ struct AdditionalUtilityVisualView: View {
                     Image(systemName: "lock.shield").foregroundStyle(BoxTheme.accent).font(.system(size: 25))
                     VStack(alignment: .leading, spacing: 4) {
                         Text(String(format: "%03o", bits) + "  " + SecurityUtility.symbolic(bits)).font(.system(size: compact ? 18 : 25, weight: .medium, design: .monospaced))
-                        Text("Changes apply to this preview only. Copy the command when ready.").font(.system(size: compact ? 10 : 12)).foregroundStyle(.secondary)
+                        Text("Changes apply to this preview only. Copy the command when ready.").font(.system(size: compact ? 10 : 12)).foregroundStyle(BoxTheme.secondaryText)
                     }.textSelection(.enabled)
                     Spacer(minLength: 0)
                 }.padding(10)
             }
         }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 10))
+            .toolSurface(.input, cornerRadius: 10)
             .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(BoxTheme.separator))
     }
     private func inline(_ text: String) -> Text {
@@ -297,8 +298,8 @@ struct AdditionalUtilityVisualView: View {
         case .heading(let level): inline(block.text).font(.system(size: CGFloat((compact ? 22 : 28) - (level - 1) * 2), weight: .semibold))
         case .paragraph: inline(block.text).font(.system(size: compact ? 12 : 14)).textSelection(.enabled)
         case .bullet: HStack(alignment: .top, spacing: 8) { Text("•").foregroundStyle(BoxTheme.accent); inline(block.text) }.font(.system(size: compact ? 12 : 14))
-        case .quote: HStack { Rectangle().fill(BoxTheme.accent).frame(width: 3); inline(block.text).foregroundStyle(.secondary) }.fixedSize(horizontal: false, vertical: true)
-        case .code: Text(block.text).font(.system(size: compact ? 11 : 12, design: .monospaced)).textSelection(.enabled).padding(8).frame(maxWidth: .infinity, alignment: .leading).background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 6))
+        case .quote: HStack { Rectangle().fill(BoxTheme.accent).frame(width: 3); inline(block.text).foregroundStyle(BoxTheme.secondaryText) }.fixedSize(horizontal: false, vertical: true)
+        case .code: Text(block.text).font(.system(size: compact ? 11 : 12, design: .monospaced)).textSelection(.enabled).padding(8).frame(maxWidth: .infinity, alignment: .leading).toolSurface(.card, cornerRadius: 6)
         case .rule: Divider()
         }
     }

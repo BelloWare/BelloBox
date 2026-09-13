@@ -22,7 +22,7 @@ struct ActionPopupView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
                         if !viewModel.selection.text.isEmpty { selectionPreview(width: geometry.size.width) }
-                        else { Text("Ask a question below, or open AI with selected text to use the writing actions.").font(.callout).foregroundStyle(.secondary) }
+                        else { Text("Ask a question below, or open AI with selected text to use the writing actions.").font(.callout).foregroundStyle(BoxTheme.secondaryText) }
                         if !viewModel.isConfigured { setupBanner }
                         customPromptRow
                         if !viewModel.selection.text.isEmpty {
@@ -74,7 +74,7 @@ struct ActionPopupView: View {
                 .font(.system(size: 12, weight: .semibold))
         }
         .padding(8)
-        .background(RoundedRectangle(cornerRadius: 9).fill(BoxTheme.well))
+        .toolSurface(.input, cornerRadius: 9)
     }
 
     /// Measure only enough text to fill the bounded preview. A short selection
@@ -146,7 +146,7 @@ struct ActionPopupView: View {
                 if viewModel.isStreaming {
                     ProgressView().controlSize(.small)
                     Text(viewModel.resultText.isEmpty ? "Thinking…" : "Writing…")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(BoxTheme.secondaryText)
                 } else {
                     Text("Result").font(.system(size: 12, weight: .semibold))
                 }
@@ -178,11 +178,11 @@ struct ActionPopupView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(8)
-            .background(RoundedRectangle(cornerRadius: 10).fill(BoxTheme.well))
+            .toolSurface(.input, cornerRadius: 10)
 
             HStack(spacing: 8) {
                 if let message = viewModel.copyMessage {
-                    Text(message).font(.caption).foregroundStyle(.secondary)
+                    Text(message).font(.caption).foregroundStyle(BoxTheme.secondaryText)
                 }
                 Spacer()
                 Button {
@@ -212,7 +212,7 @@ struct ActionPopupView: View {
     private var footerHint: some View {
         Text(footerHintText)
             .font(.caption2)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(BoxTheme.secondaryText)
             .fixedSize(horizontal: false, vertical: true)
     }
 

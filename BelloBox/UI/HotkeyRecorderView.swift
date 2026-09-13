@@ -110,7 +110,7 @@ private struct HotkeyRecorderControl: View {
             if let message {
                 Text(message)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
             }
         }
         .onChange(of: activeRecorderID) { activeID in

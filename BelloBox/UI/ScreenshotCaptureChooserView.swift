@@ -69,7 +69,7 @@ struct ScreenshotCaptureChooserView: View {
 
             Text("Screenshots stay on this Mac. OCR is available from the screenshot editor and LLM OCR asks before upload.")
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(18)
@@ -104,7 +104,7 @@ struct ScreenshotCaptureChooserView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Screen Recording permission is required for screenshots.", systemImage: "lock.shield")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
             HStack {
                 Button("Grant Screen Recording…") { viewModel.requestPermission() }
                     .buttonStyle(PrimaryButtonStyle())

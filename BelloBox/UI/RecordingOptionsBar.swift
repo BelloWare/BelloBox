@@ -48,7 +48,7 @@ struct RecordingOptionsBar: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             PopupHeader(icon: "record.circle", title: "Screen Recording", subtitle: targetLabel, onClose: onCancel)
 
             ScrollView {
@@ -117,12 +117,16 @@ struct RecordingOptionsBar: View {
 
     private var outputControls: some View {
         VStack(alignment: .leading, spacing: 5) {
-            ToolChoiceBar(selection: $options.outputFormat, choices: RecordingOutputFormat.allCases.map { ($0, $0.label) }, label: "Output format", compact: true)
+            ToolMenuPicker("Output format", value: options.outputFormat == .gif ? "Animated GIF" : "Movie",
+                           showsLabel: false, compact: true, selection: $options.outputFormat) {
+                Text("Movie").tag(RecordingOutputFormat.movie)
+                Text("Animated GIF").tag(RecordingOutputFormat.gif)
+            }.fixedSize()
             .accessibilityLabel("Output format")
             .help("Movie keeps audio. GIF is a silent looping image; the movie is kept as well.")
             Text(options.outputFormat.detail)
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -151,7 +155,7 @@ struct RecordingOptionsBar: View {
     /// note takes what is left, or its own line in the stacked layout.
     @ViewBuilder private var gifControls: some View {
         let note = Text(Self.gifGuidance)
-            .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+            .font(.caption2).foregroundStyle(BoxTheme.secondaryText).lineLimit(2)
             .fixedSize(horizontal: false, vertical: true)
         if compact {
             VStack(alignment: .leading, spacing: 5) {
@@ -177,7 +181,7 @@ struct RecordingOptionsBar: View {
             .accessibilityLabel("Audio source")
             if options.outputFormat == .gif {
                 Text(options.audioSource == .none ? "GIFs are silent." : "GIFs are silent; audio stays in the kept movie.")
-                    .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+                    .font(.caption2).foregroundStyle(BoxTheme.secondaryText).lineLimit(2)
             }
             Toggle("Show cursor", isOn: $options.includeCursor)
                 .font(.caption)
@@ -193,7 +197,7 @@ struct RecordingOptionsBar: View {
             .font(.caption)
             HStack(spacing: 6) {
                 Text("Keys").font(.caption)
-                Picker("Show keys", selection: $options.keystrokeMode) {
+                ToolMenuPicker("Show keys", value: options.keystrokeMode.label, showsLabel: false, compact: true, selection: $options.keystrokeMode) {
                     ForEach(KeystrokeCaptureMode.allCases) { mode in
                         Text(mode.label).tag(mode)
                     }
@@ -214,7 +218,7 @@ struct RecordingOptionsBar: View {
                 Text(secureFieldRedactionWarning == nil ? "Secure fields are hidden while you type in them" : "Secure-field hiding needs Accessibility")
                     .font(.caption)
                 if let warning = secureFieldRedactionWarning {
-                    Text(warning).font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+                    Text(warning).font(.caption2).foregroundStyle(BoxTheme.secondaryText).lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -223,7 +227,7 @@ struct RecordingOptionsBar: View {
                 Button("Open Accessibility Settings") { AccessibilityService.openAccessibilitySettings() }
                     .buttonStyle(ToolLinkButtonStyle()).font(.caption)
             }
-            Picker("Redaction", selection: $options.secureFieldRedactionMode) {
+            ToolMenuPicker("Redaction", value: options.secureFieldRedactionMode.label, showsLabel: false, compact: true, selection: $options.secureFieldRedactionMode) {
                 ForEach(SecureFieldRedactionMode.allCases) { mode in
                     Text(mode.label).tag(mode)
                 }
@@ -238,7 +242,7 @@ struct RecordingOptionsBar: View {
     private var footer: some View {
         HStack(spacing: 10) {
             Text(startSummary)
-                .font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                .font(.caption).foregroundStyle(BoxTheme.secondaryText).lineLimit(2)
             Spacer()
             Button("Cancel", action: onCancel)
                 .buttonStyle(SecondaryButtonStyle())

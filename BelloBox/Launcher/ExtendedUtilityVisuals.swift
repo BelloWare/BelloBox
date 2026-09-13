@@ -7,7 +7,7 @@ struct UtilityTableVisual: View {
         VStack(alignment: .leading, spacing: 4) {
         if table.rows.count < table.totalRows || table.columns.count < (table.totalColumns ?? table.columns.count) {
             Text("Preview: \(table.rows.count) of \(table.totalRows) rows · \(table.columns.count) of \(table.totalColumns ?? table.columns.count) columns · Copy includes all")
-                .font(.system(size: 10)).foregroundStyle(.secondary).padding(.horizontal, 8).padding(.top, 6)
+                .font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText).padding(.horizontal, 8).padding(.top, 6)
         }
         GeometryReader { proxy in
             let scroller = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy) + 2
@@ -15,7 +15,7 @@ struct UtilityTableVisual: View {
                 LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
                     Section {
                         ForEach(Array(table.rows.enumerated()), id: \.offset) { i, row in
-                            cells(row, header: false).background(i.isMultiple(of: 2) ? BoxTheme.surface.opacity(0.5) : .clear)
+                            cells(row, header: false).background { if i.isMultiple(of: 2) { ToolSurface(role: .card) } }
                         }
                     } header: { cells(table.columns, header: true).background(BoxTheme.surface) }
                 }.frame(minWidth: max(0, proxy.size.width - scroller), minHeight: max(0, proxy.size.height - scroller), alignment: .topLeading)
@@ -75,7 +75,7 @@ struct BezierGraphView: View {
                         .accessibilityLabel("Bézier control point \(i + 1)")
                         .accessibilityValue("X \(MathTool.display(points[i * 2])), Y \(MathTool.display(points[i * 2 + 1])). Edit exact coordinates in the input field.")
                 }
-                Text("Time →").font(.system(size: 9)).foregroundStyle(.secondary).position(x: 20 + w / 2, y: h + 22)
+                Text("Time →").font(.system(size: 9)).foregroundStyle(BoxTheme.secondaryText).position(x: 20 + w / 2, y: h + 22)
             }.coordinateSpace(name: "bezierGraph")
         }
     }
@@ -88,7 +88,7 @@ struct StatisticsChartView: View {
             HStack(spacing: 14) {
                 metric("Mean", value.mean); metric("Median", value.median)
                 Spacer(minLength: 0)
-                Text("\(value.count) values").font(.system(size: 10)).foregroundStyle(.secondary)
+                Text("\(value.count) values").font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
             }
             GeometryReader { proxy in
                 HStack(alignment: .bottom, spacing: 4) {
@@ -100,12 +100,12 @@ struct StatisticsChartView: View {
                 }.frame(maxHeight: .infinity, alignment: .bottom)
             }
             HStack { Text(MathTool.display(value.minimum)); Spacer(); Text(MathTool.display(value.maximum)) }
-                .font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+                .font(.system(size: 9, design: .monospaced)).foregroundStyle(BoxTheme.secondaryText)
         }.padding(10)
         .accessibilityLabel("Histogram of \(value.count) values. Mean \(MathTool.display(value.mean)), median \(MathTool.display(value.median)), range \(MathTool.display(value.minimum)) to \(MathTool.display(value.maximum)).")
     }
     private func metric(_ title: String, _ number: Double) -> some View {
-        HStack(spacing: 5) { Text(title).foregroundStyle(.secondary); Text(MathTool.display(number)).fontWeight(.semibold) }.font(.system(size: 11, design: .monospaced))
+        HStack(spacing: 5) { Text(title).foregroundStyle(BoxTheme.secondaryText); Text(MathTool.display(number)).fontWeight(.semibold) }.font(.system(size: 11, design: .monospaced))
     }
 }
 

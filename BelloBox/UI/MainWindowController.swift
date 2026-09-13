@@ -50,12 +50,12 @@ final class MainWindowController: NSObject, NSWindowDelegate {
             onOpenTool: onOpenTool,
             navigation: navigation
         )
-        let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 900, height: 640)) { view })
+        let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 900, height: 640)) { view }
+            .workspaceBackground().windowSurfacePreferences(settings))
         let window = NSWindow(contentViewController: hosting)
         AppWindowChrome.apply(to: window, title: "Bello Box")
         window.delegate = self
-        window.setContentSize(NSSize(width: 1000, height: 760))
-        window.contentMinSize = NSSize(width: 900, height: 640)
+        AppWindowChrome.size(window, content: NSSize(width: 1000, height: 760), minimum: NSSize(width: 900, height: 640))
         AppWindowChrome.place(window, centered: true)
         self.window = window
 

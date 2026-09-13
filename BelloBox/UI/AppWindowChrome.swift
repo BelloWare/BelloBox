@@ -4,15 +4,26 @@ import SwiftUI
 /// Full workspace windows share native controls; floating tool popups keep their
 /// non-activating panel behavior and the shared PopupHeader.
 enum AppWindowChrome {
-    static let styleMask: NSWindow.StyleMask = [.titled, .closable, .miniaturizable, .resizable]
+    static let styleMask: NSWindow.StyleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
 
     static func apply(to window: NSWindow, title: String) {
         window.styleMask = styleMask
         window.title = title
         window.titlebarAppearsTransparent = true
-        window.backgroundColor = NSColor(BoxTheme.background)
+        window.backgroundColor = .clear
         window.isOpaque = false
         window.isReleasedWhenClosed = false
+    }
+
+    /// Full-size content includes the title bar. Preserve the requested usable
+    /// area below it, including the minimum size used by ToolViewport.
+    static func size(_ window: NSWindow, content: CGSize, minimum: CGSize) {
+        // A newly created NSHostingController window can still have a zero
+        // frame. Give AppKit a real layout before reading the native inset.
+        window.setContentSize(content)
+        let titlebarHeight = max(0, window.frame.height - window.contentLayoutRect.height)
+        window.setContentSize(CGSize(width: content.width, height: content.height + titlebarHeight))
+        window.contentMinSize = CGSize(width: minimum.width, height: minimum.height + titlebarHeight)
     }
 
     /// Use the invocation display, including its title bar in the fitted frame.

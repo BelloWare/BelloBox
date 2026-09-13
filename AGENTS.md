@@ -295,16 +295,27 @@ Native frosted window backgrounds live in `UI/WindowMaterials.swift`. Settings â
 General â†’ Appearance independently selects System/Light/Dark and Glass/Solid.
 Glass is the default; Reduce Transparency or Increase Contrast uses the solid
 fallback without rewriting that choice. Each hosting-window root injects its
-own `windowSurfacePreferences(settings)` scope. `workspaceBackground` owns one
-`NSVisualEffectView` behind the window; nested popup cards inherit it, while a
-separate SwiftUI sheet requests `newWindow: true`. Sidebars and footers use the
-lightweight `ChromeSurface`, never another native blur. Editors, output cards,
-QR codes and capture/media content keep opaque backing. The effect cannot hit
-test or become first responder, and preference changes keep the content tree
-mounted (native selection and undo survive). Do not add per-row materials,
-blur timers or custom snapshot loops. This uses macOS 13-compatible materials,
-not the macOS 26-only Liquid Glass API. `WindowMaterialTests` checks persistence,
-accessibility fallback, effect reuse and native editing across live changes.
+own `windowSurfacePreferences(settings)` scope, which must not reset the
+ancestor's `hasWindowMaterial` marker. `workspaceBackground` owns one full-alpha
+`.hudWindow` `NSVisualEffectView`; workspace controllers put it outside
+`ToolViewport` so the title bar and scrolling edges share the same backdrop.
+`AppWindowChrome` uses full-size content with standard controls; its `size`
+helper preserves the requested usable height below the native title bar.
+Nested popup cards inherit the backdrop; a separate SwiftUI sheet requests
+`newWindow: true`. Sidebars and footers use lightweight `ChromeSurface`.
+Cards, controls, editors and results use `ToolSurface`/`toolSurface` with
+translucent backing in Glass, opaque backing in Solid/accessibility fallback,
+and full-opacity foreground. QR modules/quiet zones, screenshot pixels, media,
+and visual-tool samples keep their original colors. `ToolMenuPicker` provides
+native selection menus with shared control backing and a single current-value
+Text label. Opaque `primaryText`/`secondaryText` ink avoids fading descriptions
+into the desktop. The effect cannot hit-test or become first responder, and
+preference changes keep the content tree mounted (native selection and undo
+survive). Never lower the effect's alpha, add per-row materials, blur timers or
+custom snapshot loops. This uses macOS 13-compatible materials, not the macOS
+26-only Liquid Glass API. `WindowMaterialTests` checks persistence, accessibility
+fallback, effect reuse, title-bar coverage, usable height, foreground opacity,
+native menus and native editing across live changes.
 
 ## Project Structure
 

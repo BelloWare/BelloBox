@@ -71,7 +71,7 @@ struct ScrollCaptureHUDView: View {
                     .frame(width: Self.previewSize.width, height: Self.previewSize.height)
                 Text("Stitched so far")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
                     .lineLimit(1)
             }
             .overlayTooltip("The screenshot as it will be stitched: every frame captured so far, overlap removed")
@@ -90,7 +90,7 @@ struct ScrollCaptureHUDView: View {
 
                 Text(engine.message ?? Self.hint)
                     .font(.caption)
-                    .foregroundStyle(engine.message == nil ? Color.secondary : messageColor)
+                    .foregroundStyle(engine.message == nil ? BoxTheme.secondaryText : messageColor)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, minHeight: 30, alignment: .topLeading)
@@ -125,7 +125,7 @@ struct ScrollCaptureHUDView: View {
             }
             Text(Self.extentText(for: engine, compact: true))
                 .font(.caption.monospacedDigit())
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .lineLimit(1)
                 .layoutPriority(1)
             Spacer(minLength: 8)
@@ -156,11 +156,11 @@ struct ScrollCaptureHUDView: View {
                 .accessibilityHidden(true)
             Text(auto ? "Auto-scrolling for you" : "Manual · you scroll the frame")
                 .font(.caption2.weight(.medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .lineLimit(1)
         }
         .padding(.horizontal, 8).padding(.vertical, 3)
-        .background(BoxTheme.well, in: Capsule())
+        .background { ToolSurface(role: .control).clipShape(Capsule()) }
         .overlay(Capsule().strokeBorder(BoxTheme.border))
         .overlayTooltip(auto ? "Bello Box is scrolling the content for you until it ends. Pause any time and scroll yourself."
                              : "Scroll the content inside the orange frame; each new screen is captured once it settles.")
@@ -176,7 +176,7 @@ struct ScrollCaptureHUDView: View {
                 Spacer(minLength: 4)
                 Text(Self.frameCountText(for: engine))
                     .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
                     .lineLimit(1)
             }
             GeometryReader { geometry in

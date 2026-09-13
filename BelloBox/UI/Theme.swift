@@ -7,9 +7,14 @@ import SwiftUI
 /// the icon's own orange and is decorative only (washes, badges, marker
 /// fills). `accent` is the readable ink version of that orange, darkened in
 /// light mode and lifted to peach in dark mode so small text still clears
-/// 4.5:1 on every surface. `accentFill`/`accentDeep` sit behind white labels.
+/// 4.5:1 on the solid accessibility surfaces. Glass also responds to the
+/// desktop behind it. `accentFill`/`accentDeep` sit behind white labels.
 enum BoxTheme {
-    static let accent = adaptive(light: (0.64, 0.27, 0.04), dark: (1, 0.64, 0.40))
+    static let accent = adaptive(light: (0.54, 0.21, 0.025), dark: (1, 0.73, 0.52))
+    // Opaque ink keeps descriptions legible over a changing glass backdrop;
+    // system secondaryLabelColor blends the text itself with that backdrop.
+    static let primaryText = adaptive(light: (0.10, 0.095, 0.09), dark: (0.98, 0.975, 0.97))
+    static let secondaryText = adaptive(light: (0.26, 0.245, 0.23), dark: (0.87, 0.855, 0.84))
     static let accentFill = Color(red: 0.74, green: 0.34, blue: 0.05)
     static let accentDeep = Color(red: 0.64, green: 0.28, blue: 0.05)
     static let accentSoft = accent.opacity(0.09)
@@ -20,7 +25,7 @@ enum BoxTheme {
     static let surface = adaptive(light: (1, 0.998, 0.994), dark: (0.145, 0.141, 0.136))
     static let well = adaptive(light: (0.947, 0.941, 0.931), dark: (0.112, 0.108, 0.103))
     static let border = adaptive(light: (0.865, 0.849, 0.824), dark: (0.280, 0.266, 0.248))
-    static let separator = border.opacity(0.55)
+    static let separator = adaptive(light: (0.64, 0.60, 0.55), dark: (0.90, 0.88, 0.85)).opacity(0.16)
     static let sidebarWidth: CGFloat = 200
     static let success = adaptive(light: (0.08, 0.42, 0.27), dark: (0.40, 0.83, 0.63))
     // Warning stays golden so it never reads as the orange accent.
@@ -63,8 +68,8 @@ struct ShortcutBadge: View {
     let text: String
     var body: some View {
         Text(text).font(.system(size: 11, weight: .medium, design: .monospaced))
-            .foregroundStyle(.secondary).padding(.horizontal, 7).padding(.vertical, 4)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 5))
+            .foregroundStyle(BoxTheme.secondaryText).padding(.horizontal, 7).padding(.vertical, 4)
+            .toolSurface(.control, cornerRadius: 5)
             .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(BoxTheme.separator))
     }
 }
@@ -87,7 +92,8 @@ struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(size: 12, weight: .medium))
             .foregroundStyle(configuration.role == .destructive ? BoxTheme.danger : .primary).padding(.horizontal, 11).frame(minHeight: 28)
-            .background(configuration.isPressed ? BoxTheme.well : BoxTheme.surface, in: RoundedRectangle(cornerRadius: 8))
+            .toolSurface(.control, cornerRadius: 8)
+            .background(configuration.isPressed ? BoxTheme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 8))
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.separator))
             .opacity(isEnabled ? 1 : 0.4)
             .contentShape(RoundedRectangle(cornerRadius: 8))
@@ -99,7 +105,8 @@ struct ToolCardButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(configuration.isPressed ? BoxTheme.accentSoft : BoxTheme.surface, in: RoundedRectangle(cornerRadius: 12))
+            .toolSurface(.card, cornerRadius: 12)
+            .background(configuration.isPressed ? BoxTheme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(BoxTheme.separator))
             .shadow(color: .black.opacity(0.035), radius: 3, y: 1)
             .opacity(isEnabled ? 1 : 0.4)
@@ -120,7 +127,7 @@ struct PopupHeader: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).font(.system(size: 16, weight: .semibold)).lineLimit(1)
                 if let subtitle, !subtitle.isEmpty {
-                    Text(subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                    Text(subtitle).font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText).lineLimit(1).truncationMode(.middle)
                 }
             }
             Spacer(minLength: 8)
@@ -142,8 +149,9 @@ struct PopupChromeButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: symbol).font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(hovered ? BoxTheme.accent : Color.secondary).frame(width: 28, height: 28)
-                .background(hovered ? BoxTheme.accentSoft : BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
+                .foregroundStyle(hovered ? BoxTheme.accent : BoxTheme.secondaryText).frame(width: 28, height: 28)
+                .toolSurface(.control, cornerRadius: 7)
+                .background(hovered ? BoxTheme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 7))
                 .contentShape(RoundedRectangle(cornerRadius: 7))
         }.buttonStyle(.plain).help(label).accessibilityLabel(label)
             .onHover { hovered = $0 }
@@ -161,7 +169,7 @@ struct MinimizedPopupBar: View {
             ToolBadge(symbol: icon, size: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.callout.weight(.semibold)).lineLimit(1)
-                if let subtitle, !subtitle.isEmpty { Text(subtitle).font(.caption2).foregroundStyle(.secondary).lineLimit(1) }
+                if let subtitle, !subtitle.isEmpty { Text(subtitle).font(.caption2).foregroundStyle(BoxTheme.secondaryText).lineLimit(1) }
             }
             Spacer(minLength: 8)
             PopupChromeButton(symbol: "arrow.up.left.and.arrow.down.right", label: "Restore", action: onRestore)
@@ -178,7 +186,7 @@ extension View {
             .tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
     }
     func surfaceCard() -> some View {
-        background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 12))
+        toolSurface(.card, cornerRadius: 12)
             .shadow(color: .black.opacity(0.025), radius: 3, y: 1)
             .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(BoxTheme.separator))
     }
@@ -219,10 +227,11 @@ struct AppearanceChoice: View {
                     if isSelected { Image(systemName: "checkmark.circle.fill").foregroundStyle(BoxTheme.accent) }
                 }
                 Text(preference == .system ? "Follow macOS" : "Always \(preference.label.lowercased())")
-                    .font(.system(size: 10)).foregroundStyle(.secondary)
+                    .font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
             }
             .padding(10).frame(maxWidth: .infinity)
-            .background(isSelected ? BoxTheme.accentSoft : BoxTheme.well, in: RoundedRectangle(cornerRadius: 10))
+            .toolSurface(.control, cornerRadius: 10)
+            .background(isSelected ? BoxTheme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 10))
             .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(isSelected ? BoxTheme.accent : BoxTheme.border))
             .contentShape(RoundedRectangle(cornerRadius: 10))
         }.buttonStyle(.plain)
@@ -262,8 +271,46 @@ struct ToolTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration.textFieldStyle(.plain).font(.system(size: 13))
             .padding(.horizontal, 10).padding(.vertical, 7)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 6))
+            .toolSurface(.input, cornerRadius: 6)
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(BoxTheme.separator))
+    }
+}
+
+/// A native, keyboard-operable selection menu with the same glass backing as
+/// other controls. One Text label includes the current value for AppKit.
+struct ToolMenuPicker<Value: Hashable, Options: View>: View {
+    let title: String
+    let value: String
+    let showsLabel: Bool
+    let compact: Bool
+    @Binding var selection: Value
+    let options: Options
+    @Environment(\.isEnabled) private var isEnabled
+
+    init(_ title: String, value: String, showsLabel: Bool = true, compact: Bool = false,
+         selection: Binding<Value>, @ViewBuilder options: () -> Options) {
+        self.title = title
+        self.value = value
+        self.showsLabel = showsLabel
+        self.compact = compact
+        _selection = selection
+        self.options = options()
+    }
+
+    var body: some View {
+        Menu {
+            Picker(title, selection: $selection) { options }.labelsHidden().pickerStyle(.inline)
+        } label: {
+            Text(showsLabel ? "\(title): \(value)" : value).lineLimit(1)
+        }
+        .menuStyle(.borderlessButton).font(.system(size: compact ? 11 : 12))
+        .controlSize(compact ? .small : .regular)
+        .foregroundStyle(BoxTheme.primaryText)
+        .padding(.horizontal, 8).frame(minHeight: compact ? 22 : 26)
+        .toolSurface(.control, cornerRadius: 7)
+        .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.separator))
+        .opacity(isEnabled ? 1 : 0.45)
+        .accessibilityLabel(title).accessibilityValue(value)
     }
 }
 
@@ -284,10 +331,10 @@ struct ToolChoiceBar<Value: Hashable>: View {
                 let selected = selection == value
                 Button { selection = value } label: {
                     Text(title).font(.system(size: compact ? 10 : 12, weight: selected ? .semibold : .medium)).lineLimit(1)
-                        .foregroundStyle(selected ? BoxTheme.accent : Color.secondary)
+                        .foregroundStyle(selected ? BoxTheme.accent : BoxTheme.secondaryText)
                         .padding(.horizontal, compact ? 8 : 10).frame(height: compact ? 20 : 26)
                         .frame(maxWidth: compact ? nil : .infinity)
-                        .background(selected ? AnyShapeStyle(BoxTheme.surface) : AnyShapeStyle(Color.clear), in: RoundedRectangle(cornerRadius: 5))
+                        .background { if selected { ToolSurface(role: .control).clipShape(RoundedRectangle(cornerRadius: 5)) } }
                         .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(selected ? BoxTheme.separator : .clear))
                         .shadow(color: .black.opacity(selected ? 0.05 : 0), radius: 2, y: 1)
                         .contentShape(RoundedRectangle(cornerRadius: 5))
@@ -298,7 +345,7 @@ struct ToolChoiceBar<Value: Hashable>: View {
                     .accessibilityIdentifier("\(identifierPrefix)_\(label)_\(title)")
             }
         }.padding(2)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
+            .toolSurface(.control, cornerRadius: 7)
             .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.separator))
             .opacity(isEnabled ? 1 : 0.45)
             .accessibilityElement(children: .contain)
@@ -354,7 +401,7 @@ struct ToolSectionHeading: View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(title).font(.system(size: 12, weight: .semibold))
             Spacer(minLength: 8)
-            if let detail { Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1) }
+            if let detail { Text(detail).font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText).lineLimit(1) }
         }
     }
 }
@@ -366,8 +413,10 @@ struct SidebarItemStyle: ButtonStyle {
         configuration.label
             .foregroundStyle(selected ? BoxTheme.accent : Color.primary)
             .padding(.horizontal, 12).frame(height: 40)
-            .background(selected ? BoxTheme.accentSoft : configuration.isPressed ? BoxTheme.well : .clear,
-                        in: RoundedRectangle(cornerRadius: 8))
+            .background {
+                if selected { RoundedRectangle(cornerRadius: 8).fill(BoxTheme.accentSoft) }
+                else if configuration.isPressed { ToolSurface(role: .control).clipShape(RoundedRectangle(cornerRadius: 8)) }
+            }
             .overlay(alignment: .leading) {
                 if selected { Capsule().fill(BoxTheme.accent).frame(width: 3, height: 16) }
             }

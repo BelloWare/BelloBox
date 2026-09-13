@@ -61,7 +61,7 @@ struct LauncherOutputText: NSViewRepresentable {
         guard view.shownAttributed != nil || view.string != text || view.font != font else { return }
         view.shownAttributed = nil
         view.font = font
-        view.textColor = .labelColor
+        view.textColor = NSColor(BoxTheme.primaryText)
         view.string = text
         view.font = font
         view.scroll(.zero)
@@ -94,7 +94,7 @@ struct LauncherPreviewField: View {
                             consumesVerticalArrows: false)
             .frame(height: 18)
             .padding(.horizontal, 7).padding(.vertical, 2)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 6))
+            .toolSurface(.input, cornerRadius: 6)
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(BoxTheme.separator))
     }
 }
@@ -113,7 +113,7 @@ struct LauncherPreviewEditor: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .frame(height: height)
             .padding(.horizontal, 4).padding(.vertical, 1)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 7))
+            .toolSurface(.input, cornerRadius: 7)
             .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.separator))
             .accessibilityLabel(label)
     }
@@ -129,9 +129,15 @@ struct LauncherChipButtonStyle: ButtonStyle {
         configuration.label.font(.system(size: 10, weight: .medium)).lineLimit(1)
             .foregroundStyle(prominent ? Color.white : Color.primary)
             .padding(.horizontal, 8).frame(height: 22)
-            .background(prominent ? AnyShapeStyle(BoxTheme.accentGradient)
-                                  : AnyShapeStyle(configuration.isPressed ? BoxTheme.accentSoft : BoxTheme.well),
-                        in: RoundedRectangle(cornerRadius: 6))
+            .background {
+                ZStack {
+                    if prominent { BoxTheme.accentGradient }
+                    else {
+                        ToolSurface(role: .control)
+                        if configuration.isPressed { BoxTheme.accentSoft }
+                    }
+                }.clipShape(RoundedRectangle(cornerRadius: 6))
+            }
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(prominent ? Color.white.opacity(0.12) : BoxTheme.separator))
             .opacity(isEnabled ? (configuration.isPressed && prominent ? 0.85 : 1) : 0.4)
             .contentShape(RoundedRectangle(cornerRadius: 6))
@@ -189,7 +195,7 @@ struct LauncherOutputWell<Content: View>: View {
             // never asks for more when the content is measured on its own.
             .frame(maxWidth: .infinity, minHeight: 0, idealHeight: height ?? 0, maxHeight: .infinity)
             .frame(height: height)
-            .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 8))
+            .toolSurface(.output, cornerRadius: 8)
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.separator))
     }
 }
@@ -213,7 +219,7 @@ struct LauncherPreviewHeader<Trailing: View>: View {
             Text(title).fontWeight(.medium).lineLimit(1)
             if let subtitle, !subtitle.isEmpty {
                 Text("·").foregroundStyle(.tertiary)
-                Text(subtitle).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
+                Text(subtitle).foregroundStyle(BoxTheme.secondaryText).lineLimit(1).truncationMode(.tail)
             }
             Spacer(minLength: 4)
             trailing
@@ -252,9 +258,9 @@ struct LauncherDraftLimitNotice: View {
                     .help("Open the full tool with the complete draft")
                     .accessibilityIdentifier("launcherPreviewOpenFull")
             }
-            Text(detail).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(4)
+            Text(detail).font(.system(size: 12)).foregroundStyle(BoxTheme.secondaryText).lineLimit(4)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(12).background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 9))
+                .padding(12).toolSurface(.card, cornerRadius: 9)
         }
     }
     static func kilobytes(_ bytes: Int) -> String { "\((Double(bytes) / 1_000).formatted(.number.precision(.fractionLength(0)))) KB" }
@@ -262,5 +268,5 @@ struct LauncherDraftLimitNotice: View {
 
 extension View {
     /// The small caption label beside preview controls.
-    func previewCaption() -> some View { font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1) }
+    func previewCaption() -> some View { font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText).lineLimit(1) }
 }

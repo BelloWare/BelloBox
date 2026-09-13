@@ -1726,7 +1726,7 @@ private struct CaptureScreenshotOverlaySurface: View {
     private func errorLabel(_ message: String) -> some View {
         Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
             .font(.caption)
-            .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : BoxTheme.warning)
+            .foregroundStyle(viewModel.errorMessage == nil ? BoxTheme.secondaryText : BoxTheme.warning)
             .lineLimit(2)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)

@@ -123,11 +123,11 @@ struct RecordingHUDView: View {
     private func chip(_ title: String, symbol: String, on: Bool, tint: Color? = nil, help: String, accessibilityLabel: String) -> some View {
         Label(title, systemImage: symbol)
             .font(.caption2.weight(.medium))
-            .foregroundStyle(tint ?? (on ? Color.primary : Color.secondary))
+            .foregroundStyle(tint ?? (on ? Color.primary : BoxTheme.secondaryText))
             .lineLimit(1)
             .fixedSize()
             .padding(.horizontal, 8).padding(.vertical, 4)
-            .background(BoxTheme.well, in: Capsule())
+            .background { ToolSurface(role: .control).clipShape(Capsule()) }
             .overlay(Capsule().strokeBorder(BoxTheme.separator))
             .help(help)
             .accessibilityLabel(accessibilityLabel)
@@ -171,7 +171,7 @@ struct RecordingCountdownView: View {
             } else {
                 Text("Bello Box hides detected secure fields and suppresses key overlays while typing into them.")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
                     .multilineTextAlignment(.center)
             }
         }
@@ -196,7 +196,7 @@ struct RecordingFinishingView: View {
                     .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(BoxTheme.accentGradient))
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Finishing Recording").font(.headline)
-                    Text("Saving movie").font(.caption2).foregroundStyle(.secondary)
+                    Text("Saving movie").font(.caption2).foregroundStyle(BoxTheme.secondaryText)
                 }
                 Spacer()
             }
@@ -204,7 +204,7 @@ struct RecordingFinishingView: View {
                 .controlSize(.large)
             Text("Preparing the recording file.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
         }
         .padding(20)
         .frame(width: 320, height: 190)
@@ -237,7 +237,7 @@ struct RecordingConversionView: View {
                     .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(BoxTheme.accentGradient))
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Writing GIF").font(.headline)
-                    Text("The movie is saved; the GIF is being built from it").font(.caption2).foregroundStyle(.secondary)
+                    Text("The movie is saved; the GIF is being built from it").font(.caption2).foregroundStyle(BoxTheme.secondaryText)
                 }
                 Spacer()
             }
@@ -249,7 +249,7 @@ struct RecordingConversionView: View {
             HStack {
                 Text("\(Int((progress * 100).rounded()))% · frames written")
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
                 Spacer()
                 Button("Keep Movie Only", action: onCancel)
                     .buttonStyle(SecondaryButtonStyle())
@@ -278,7 +278,7 @@ struct RecordingErrorView: View {
             )
             Text(message)
                 .font(.callout)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
                 Spacer()

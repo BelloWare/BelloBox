@@ -97,7 +97,7 @@ struct OCRPanelView: View {
                              ? "Choose Read on Mac to extract text without uploading the image."
                              : "Try a closer crop or use AI OCR for difficult text.")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(10)
@@ -146,7 +146,7 @@ struct OCRPanelView: View {
             } else if let status = viewModel.statusMessage {
                 Label(status, systemImage: "checkmark.circle")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
             }
         }
     }

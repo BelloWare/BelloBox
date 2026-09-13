@@ -25,13 +25,13 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             onPermissionGranted: onPermissionGranted,
             onFinish: { [weak self] in self?.finish() }
         )
-        let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 680, height: 500)) { view })
+        let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 680, height: 500)) { view }
+            .workspaceBackground().windowSurfacePreferences(settings))
         let window = NSWindow(contentViewController: hosting)
         AppWindowChrome.apply(to: window, title: "Welcome to Bello Box")
-        window.contentMinSize = NSSize(width: 680, height: 500)
         window.delegate = self
         // Size before centering so the window lands in the middle of the screen.
-        window.setContentSize(NSSize(width: 680, height: 720))
+        AppWindowChrome.size(window, content: NSSize(width: 680, height: 720), minimum: NSSize(width: 680, height: 500))
         AppWindowChrome.place(window, centered: true)
         self.window = window
 

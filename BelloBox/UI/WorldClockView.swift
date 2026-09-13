@@ -46,14 +46,14 @@ struct WorldClockView: View {
             ToolBadge(symbol: "globe.americas.fill", size: 34)
             VStack(alignment: .leading, spacing: 4) {
                 Text("World Clock").font(.system(size: 20, weight: .semibold))
-                Text("One moment. Every time zone.").font(.caption).foregroundStyle(.secondary)
+                Text("One moment. Every time zone.").font(.caption).foregroundStyle(BoxTheme.secondaryText)
             }
             Spacer()
             Label(viewModel.isFollowingNow ? "Live time" : "Planning", systemImage: viewModel.isFollowingNow ? "dot.radiowaves.left.and.right" : "calendar")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(viewModel.isFollowingNow ? BoxTheme.success : BoxTheme.accent)
                 .padding(.horizontal, 10).padding(.vertical, 6)
-                .background(BoxTheme.well, in: Capsule())
+                .background { ToolSurface(role: .control).clipShape(Capsule()) }
                 .accessibilityIdentifier("worldClockTimeMode")
             Button("Now", action: viewModel.goToNow)
                 .buttonStyle(SecondaryButtonStyle())
@@ -128,7 +128,7 @@ struct WorldClockView: View {
                     Spacer()
                     Text(viewModel.dayEndLabel)
                 }
-                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
             }
         }
         .padding(16).surfaceCard()
@@ -164,7 +164,7 @@ struct WorldClockView: View {
                     .help("Ask your configured AI provider about the selected time and locations (⌘J)")
                 Spacer()
                 if let message = viewModel.copyMessage {
-                    Text(message).font(.caption).foregroundStyle(.secondary)
+                    Text(message).font(.caption).foregroundStyle(BoxTheme.secondaryText)
                 }
                 Button(action: viewModel.copyMeeting) { Label("Copy Times", systemImage: "doc.on.doc") }
                     .buttonStyle(PrimaryButtonStyle())
@@ -186,7 +186,7 @@ struct WorldClockView: View {
             onEscape: { withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { showingCopilot = false } },
             quickPrompts: Self.quickPrompts(for: viewModel)
         )
-        .padding(12).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 10))
+        .padding(12).toolSurface(.input, cornerRadius: 10)
     }
 
     static func quickPrompts(for viewModel: WorldClockViewModel) -> [String] {
@@ -220,7 +220,7 @@ private struct WorldClockZoneRow: View {
                             .background(BoxTheme.accentSoft, in: RoundedRectangle(cornerRadius: 4))
                     }
                 }
-                Text(zone.zoneText).font(.system(size: 11)).foregroundStyle(.secondary)
+                Text(zone.zoneText).font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
             }
             Spacer(minLength: 6)
             QualityBadge(quality: zone.quality).frame(width: 86)
@@ -233,12 +233,12 @@ private struct WorldClockZoneRow: View {
                             .foregroundStyle(BoxTheme.accent).fontWeight(.semibold)
                             .help("\(zone.dayDifference) calendar days from the reference location")
                     }
-                }.font(.system(size: 11)).foregroundStyle(.secondary)
+                }.font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
             }.frame(minWidth: 145, alignment: .trailing)
             clockIconButton(zone.isAnchor ? "mappin.circle.fill" : "mappin", label: "Use \(zone.name) as reference", action: onMakeAnchor)
                 .foregroundStyle(zone.isAnchor ? BoxTheme.accent : .secondary).disabled(zone.isAnchor)
             clockIconButton("xmark", label: canRemove ? "Remove \(zone.name)" : "Keep at least one location", action: onRemove)
-                .foregroundStyle(.secondary).disabled(!canRemove)
+                .foregroundStyle(BoxTheme.secondaryText).disabled(!canRemove)
         }
         .padding(14).surfaceCard()
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(zone.isAnchor ? BoxTheme.accent.opacity(0.25) : .clear))
@@ -262,16 +262,16 @@ private struct WorldClockZonePicker: View {
                 clockIconButton("xmark", label: "Cancel (Esc)", action: onClose)
             }.padding(16)
             HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                Image(systemName: "magnifyingglass").foregroundStyle(BoxTheme.secondaryText)
                 LauncherSearchField(text: $viewModel.searchQuery, onMove: move, onSubmit: addSelected,
                     onEscape: onClose, onReady: { _ in }, placeholder: "Search city or time zone…",
                     accessibilityID: "worldClockZoneSearch", accessibilityLabel: "Search locations", fontSize: 16)
                     .frame(height: 26)
                 if !viewModel.searchQuery.isEmpty {
-                    Button { viewModel.searchQuery = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary) }
+                    Button { viewModel.searchQuery = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(BoxTheme.secondaryText) }
                         .buttonStyle(.plain).help("Clear search").accessibilityLabel("Clear search")
                 }
-            }.padding(12).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 10)).padding(.horizontal, 16)
+            }.padding(12).toolSurface(.input, cornerRadius: 10).padding(.horizontal, 16)
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: 4) {
@@ -280,7 +280,7 @@ private struct WorldClockZonePicker: View {
                                 Image(systemName: "globe").font(.title2).foregroundStyle(BoxTheme.teal)
                                 Text("No matching locations").font(.headline)
                                 Text("Try a nearby city or Asia/Tokyo. Locations already added are hidden.")
-                                    .font(.caption).foregroundStyle(.secondary)
+                                    .font(.caption).foregroundStyle(BoxTheme.secondaryText)
                             }.multilineTextAlignment(.center).padding(24)
                         }
                         ForEach(results) { option in
@@ -288,7 +288,7 @@ private struct WorldClockZonePicker: View {
                                 HStack(spacing: 10) {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(option.name).font(.system(size: 13, weight: .medium))
-                                        Text(option.subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                                        Text(option.subtitle).font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText).lineLimit(1)
                                     }
                                     Spacer()
                                     Image(systemName: selectedID == option.id ? "return" : "plus").foregroundStyle(BoxTheme.accent)
@@ -306,11 +306,11 @@ private struct WorldClockZonePicker: View {
             Divider()
             HStack(spacing: 8) {
                 ShortcutBadge(text: "↑↓")
-                Text("Navigate").font(.caption).foregroundStyle(.secondary)
+                Text("Navigate").font(.caption).foregroundStyle(BoxTheme.secondaryText)
                 Spacer()
                 Button("Cancel", action: onClose).buttonStyle(SecondaryButtonStyle())
                 Button("Add Location", action: addSelected).buttonStyle(PrimaryButtonStyle()).disabled(selectedID == nil)
-            }.padding(12).background(BoxTheme.surface)
+            }.padding(12).background(ChromeSurface())
         }
         .frame(width: 440).workspaceBackground(newWindow: true).buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .onAppear { viewModel.searchQuery = ""; selectedID = results.first?.id }

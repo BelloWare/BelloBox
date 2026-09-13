@@ -24,7 +24,8 @@ struct ToolViewport<Content: View>: View {
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
-        .background(BoxTheme.background)
+        // The hosted tool owns its glass/solid surface. An opaque viewport
+        // underneath would cover the desktop through translucent materials.
     }
 
 }

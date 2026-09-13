@@ -57,7 +57,7 @@ struct SettingsView: View {
                 AppBrandIcon(size: 38)
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Bello Box").font(.system(size: 15, weight: .semibold))
-                    Text("Settings").font(.caption).foregroundStyle(.secondary)
+                    Text("Settings").font(.caption).foregroundStyle(BoxTheme.secondaryText)
                 }
             }
             .padding(.horizontal, 16)
@@ -90,7 +90,7 @@ struct SettingsView: View {
             Text(selectedCategory.title)
                 .font(.system(size: 28, weight: .semibold)).tracking(-0.6)
             Text(selectedCategory.explanation).font(.system(size: 12))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -153,7 +153,7 @@ struct SettingsView: View {
                         learnedOrderReset = true
                     }
                     .buttonStyle(SecondaryButtonStyle())
-                    if learnedOrderReset { Text("Reset. Applies next time you open the palette.").font(.caption).foregroundStyle(.secondary) }
+                    if learnedOrderReset { Text("Reset. Applies next time you open the palette.").font(.caption).foregroundStyle(BoxTheme.secondaryText) }
                 }
             }
         }
@@ -190,12 +190,12 @@ struct SettingsView: View {
                 }
                 Toggle("Remove repeated sticky headers/footers", isOn: $settings.scrollingScreenshotAutoCompact)
                 Divider()
-                Picker("Advanced capture engine", selection: $settings.screenshotCaptureEngine) {
+                ToolMenuPicker("Advanced capture engine", value: settings.screenshotCaptureEngine.label, selection: $settings.screenshotCaptureEngine) {
                     ForEach(ScreenshotCaptureEngine.allCases) { engine in
                         Text(engine.label).tag(engine)
                     }
                 }
-                .pickerStyle(.menu)
+
                 helpText("Scrolling capture stays available from the menu. OCR only runs from the screenshot editor when you ask for it.")
             }
 
@@ -210,7 +210,7 @@ struct SettingsView: View {
                     if let diagnosticsExportMessage {
                         Text(diagnosticsExportMessage)
                             .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                     }
                 }
                 helpText("Logs include display IDs, screen frames, overlay decisions, and capture errors only. Bello Box does not log screenshot pixels, OCR text, image payloads, or API keys.")
@@ -228,7 +228,7 @@ struct SettingsView: View {
                 ),
                 microphoneDeviceID: $settings.recordingLastMicrophoneDeviceID
             )
-            Picker("Click overlays", selection: Binding(
+            ToolMenuPicker("Click overlays", value: settings.recordingClickOverlayMode.label, selection: Binding(
                 get: { settings.recordingClickOverlayMode },
                 set: { settings.recordingClickOverlayMode = $0 }
             )) {
@@ -236,7 +236,7 @@ struct SettingsView: View {
                     Text(mode.label).tag(mode)
                 }
             }
-            Picker("Keystroke overlays", selection: Binding(
+            ToolMenuPicker("Keystroke overlays", value: settings.recordingKeystrokeMode.label, selection: Binding(
                 get: { settings.recordingKeystrokeMode },
                 set: { settings.recordingKeystrokeMode = $0 }
             )) {
@@ -244,7 +244,7 @@ struct SettingsView: View {
                     Text(mode.label).tag(mode)
                 }
             }
-            Picker("Secure-field protection", selection: Binding(
+            ToolMenuPicker("Secure-field protection", value: settings.recordingSecureFieldRedactionMode.label, selection: Binding(
                 get: { settings.recordingSecureFieldRedactionMode },
                 set: { settings.recordingSecureFieldRedactionMode = $0 }
             )) {
@@ -258,7 +258,7 @@ struct SettingsView: View {
                     AccessibilityService.openAccessibilitySettings()
                 }
             }
-            Picker("Quality", selection: Binding(
+            ToolMenuPicker("Quality", value: settings.recordingQualityPreset.label, selection: Binding(
                 get: { settings.recordingQualityPreset },
                 set: { settings.recordingQualityPreset = $0 }
             )) {
@@ -269,7 +269,7 @@ struct SettingsView: View {
             Stepper(value: $settings.recordingCountdownSeconds, in: 0...10) {
                 Text("Countdown: \(settings.recordingCountdownSeconds)s")
             }
-            Picker("Output", selection: Binding(
+            ToolMenuPicker("Output", value: settings.recordingOutputFormat.label, selection: Binding(
                 get: { settings.recordingOutputFormat },
                 set: { settings.recordingOutputFormat = $0 }
             )) {
@@ -278,10 +278,10 @@ struct SettingsView: View {
                 }
             }
             if settings.recordingOutputFormat == .gif {
-                Picker("GIF frame rate", selection: $settings.recordingGIFFrameRate) {
+                ToolMenuPicker("GIF frame rate", value: "\(settings.recordingGIFFrameRate) fps", selection: $settings.recordingGIFFrameRate) {
                     ForEach(GIFExportOptions.frameRateChoices, id: \.self) { rate in Text("\(rate) fps").tag(rate) }
                 }
-                Picker("GIF longest edge", selection: $settings.recordingGIFMaxWidth) {
+                ToolMenuPicker("GIF longest edge", value: "\(settings.recordingGIFMaxWidth) px", selection: $settings.recordingGIFMaxWidth) {
                     ForEach(GIFExportOptions.widthChoices, id: \.self) { width in Text("\(width) px").tag(width) }
                 }
                 Toggle("Loop GIFs", isOn: $settings.recordingGIFLoops)
@@ -300,7 +300,7 @@ struct SettingsView: View {
 
     private var ocrPage: some View {
         settingsSection("Screenshot OCR", subtitle: "OCR is never automatic. These defaults apply only after you request OCR in the screenshot editor.", systemImage: "text.viewfinder") {
-            Picker("OCR recognition", selection: $settings.ocrRecognitionLevel) {
+            ToolMenuPicker("OCR recognition", value: settings.ocrRecognitionLevel.label, selection: $settings.ocrRecognitionLevel) {
                 ForEach(OCRRecognitionLevel.allCases) { level in
                     Text(level.label).tag(level)
                 }
@@ -394,7 +394,7 @@ struct SettingsView: View {
                 ToolBadge(symbol: systemImage, size: 32)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title).font(.system(size: 13, weight: .semibold))
-                    Text(subtitle).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Text(subtitle).font(.caption).foregroundStyle(BoxTheme.secondaryText).fixedSize(horizontal: false, vertical: true)
                 }
             }
 
@@ -415,14 +415,14 @@ struct SettingsView: View {
                 .frame(width: 54, alignment: .leading)
             Text(detail)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
         }
     }
 
     private func helpText(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 11))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(BoxTheme.secondaryText)
             .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -433,7 +433,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(message)
                     .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
                 Button("Open Accessibility Settings", action: action)
                     .font(.caption)
@@ -463,7 +463,7 @@ struct SettingsView: View {
                 Text(title)
                 Text(detail)
                     .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
             }
             Spacer()
             if !trusted {

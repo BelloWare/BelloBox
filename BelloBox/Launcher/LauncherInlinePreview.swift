@@ -82,7 +82,7 @@ struct LauncherInlinePreview: View {
             } else {
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text("Preparing preview…").font(.system(size: 11)).foregroundStyle(.secondary)
+                    Text("Preparing preview…").font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
                 }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }
@@ -104,41 +104,41 @@ struct LauncherInlinePreview: View {
                         }
                         Text(clock.time).font(.system(size: 23, weight: .medium, design: .rounded)).monospacedDigit()
                             .lineLimit(1).minimumScaleFactor(0.8)
-                        Text(clock.date).font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)
-                        Text(clock.zone).font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+                        Text(clock.date).font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText).lineLimit(1)
+                        Text(clock.zone).font(.system(size: 9, design: .monospaced)).foregroundStyle(BoxTheme.secondaryText)
                     }.padding(10).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                        .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 9))
+                        .toolSurface(.card, cornerRadius: 9)
                 }
             }
         case .code(let text):
             Text(text).font(.system(size: 11, design: .monospaced)).lineSpacing(2).lineLimit(6)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(9).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 8))
+                .padding(9).toolSurface(.input, cornerRadius: 8)
         case .fields(let fields):
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
                     HStack(alignment: .firstTextBaseline, spacing: 12) {
-                        Text(field.label).foregroundStyle(.secondary).frame(width: 76, alignment: .leading)
+                        Text(field.label).foregroundStyle(BoxTheme.secondaryText).frame(width: 76, alignment: .leading)
                         Text(field.value).font(.system(size: 11, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading)
                     }.font(.system(size: 11)).lineLimit(1).truncationMode(.middle)
                 }
             }.padding(10).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 8))
+                .toolSurface(.card, cornerRadius: 8)
         case .statistics(let fields):
             HStack(spacing: 8) {
                 ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(field.label).font(.system(size: 10)).foregroundStyle(.secondary)
+                        Text(field.label).font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
                         Text(field.value).font(.system(size: 23, weight: .medium, design: .rounded)).monospacedDigit()
                             .lineLimit(1).minimumScaleFactor(0.8)
                     }.padding(12).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                        .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 9))
+                        .toolSurface(.card, cornerRadius: 9)
                 }
             }
         case .notice(let text):
-            Text(text).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(4)
+            Text(text).font(.system(size: 12)).foregroundStyle(BoxTheme.secondaryText).lineLimit(4)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .padding(12).background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 9))
+                .padding(12).toolSurface(.card, cornerRadius: 9)
         case .actions(let actions):
             VStack(alignment: .leading, spacing: 7) {
                 ForEach(Array(actions.enumerated()), id: \.offset) { _, action in
@@ -149,7 +149,7 @@ struct LauncherInlinePreview: View {
                     }
                 }
             }.padding(11).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 9))
+                .toolSurface(.card, cornerRadius: 9)
         }
     }
 }
@@ -206,7 +206,7 @@ struct LauncherClockPreviewView: View {
             Text(headerTitle).fontWeight(.medium)
             if let subtitle = headerSubtitle {
                 Text("·").foregroundStyle(.tertiary)
-                Text(subtitle).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
+                Text(subtitle).foregroundStyle(BoxTheme.secondaryText).lineLimit(1).truncationMode(.tail)
             }
             Spacer(minLength: 4)
             Menu {
@@ -277,7 +277,7 @@ struct LauncherClockPreviewView: View {
                 Spacer()
                 Text(clock.dayEndLabel)
             }
-            .font(.system(size: 9)).foregroundStyle(.secondary)
+            .font(.system(size: 9)).foregroundStyle(BoxTheme.secondaryText)
         }
         .padding(.horizontal, 10).padding(.vertical, 8).surfaceCard()
     }
@@ -305,13 +305,13 @@ struct LauncherClockPreviewView: View {
                                 .foregroundStyle(BoxTheme.accent).fontWeight(.semibold)
                                 .help("\(zone.dayDifference) calendar days from the reference location")
                         }
-                    }.font(.system(size: 10)).foregroundStyle(.secondary)
+                    }.font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText)
                     // The offset gets its own line; four cards leave no room beside the date.
-                    Text(zone.compactZoneText).font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+                    Text(zone.compactZoneText).font(.system(size: 9, design: .monospaced)).foregroundStyle(BoxTheme.secondaryText)
                         .lineLimit(1).help(zone.zoneText)
                 }
                 .padding(8).frame(maxWidth: .infinity, alignment: .topLeading)
-                .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 9))
+                .toolSurface(.card, cornerRadius: 9)
                 .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(zone.isAnchor ? BoxTheme.accent.opacity(0.35) : BoxTheme.border))
                 .accessibilityElement(children: .combine)
             }

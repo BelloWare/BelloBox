@@ -70,7 +70,7 @@ struct OnboardingView: View {
                 .font(.system(size: 30, weight: .semibold))
             Text("Your workspace for text, developer tools, capture, and time. Open Home to explore, or use the shortcut from any app.")
                 .font(.title3)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 12) {
@@ -87,11 +87,11 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 18) {
             stepHeader("Grant Accessibility access", systemImage: "lock.shield")
             Text("Bello Box uses macOS Accessibility to read the text you select and paste replacements back. It only reads a selection when you ask it to. Nothing is sent anywhere except to the AI endpoint you configure.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
             Text("Screenshots and screen recordings use macOS Screen Recording permission. Bello Box can ask later when you first capture, or you can grant it now.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             permissionCard(
@@ -122,7 +122,7 @@ struct OnboardingView: View {
                 .controlSize(.large)
                 Text("This window updates automatically once you grant access.")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
             }
 
             if !screenRecordingTrusted {
@@ -141,7 +141,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 18) {
             stepHeader("Choose how Bello Box appears", systemImage: "switch.2")
             Text("Keep the automatic hint on for quick mouse selections, or turn it off and use a keyboard shortcut only.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 14) {
@@ -151,7 +151,7 @@ struct OnboardingView: View {
                             .font(.headline)
                         Text("Keeps the menu-bar toolbox ready after sign-in.")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                     }
                 }
 
@@ -161,7 +161,7 @@ struct OnboardingView: View {
                             .font(.headline)
                         Text("Bello Box shows the command palette next to fresh text selections.")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                     }
                 }
 
@@ -171,7 +171,7 @@ struct OnboardingView: View {
                             .font(.headline)
                         Text("Press the shortcut to show the same command palette for the current selection.")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                     }
                 }
 
@@ -191,7 +191,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 18) {
             stepHeader("Set up capture tools", systemImage: "camera.viewfinder")
             Text("Screenshots and recordings use one capture overlay: hover to highlight a window, click to capture it, click blank space for the screen, or drag a custom rectangle.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 14) {
@@ -219,7 +219,7 @@ struct OnboardingView: View {
                             .font(.headline)
                         Text("Opens the capture overlay for window, screen, or rectangle screenshots.")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                     }
                 }
                 ScreenshotHotkeyRecorderView(settings: settings)
@@ -232,7 +232,7 @@ struct OnboardingView: View {
                             .font(.headline)
                         Text("Useful when the pointer location is part of what you are explaining.")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                     }
                 }
 
@@ -242,7 +242,7 @@ struct OnboardingView: View {
                             .font(.headline)
                         Text("Copies the image as soon as the screenshot editor opens.")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                     }
                 }
 
@@ -262,7 +262,7 @@ struct OnboardingView: View {
                             .font(.headline)
                         Text("Opens the same capture overlay, then shows recording options inline.")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                     }
                 }
                 RecordingHotkeyRecorderView(settings: settings)
@@ -281,7 +281,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 14) {
             stepHeader("Connect your AI", systemImage: "antenna.radiowaves.left.and.right")
             Text("Bring your own AI: pick a format, add your details, optionally Load the model list, then run a quick hello to confirm it works. You can Skip and set this up later in Settings.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             ProviderConfigView(settings: settings)
@@ -295,7 +295,7 @@ struct OnboardingView: View {
                 .font(.system(size: 30, weight: .semibold))
             Text(doneSummary)
                 .font(.title3)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(BoxTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 12) {
@@ -313,7 +313,7 @@ struct OnboardingView: View {
             if !settings.isConfigured {
                 Label("No AI provider is configured yet — you can add one anytime in Settings.", systemImage: "info.circle")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
             }
         }
     }
@@ -328,12 +328,12 @@ struct OnboardingView: View {
             if step < stepCount - 1 {
                 Button("Skip") { onFinish() }
                     .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
             }
             Spacer()
             VStack(spacing: 5) {
               Text("Step \(step + 1) of \(stepCount) · \(["Welcome", "Permissions", "Behavior", "Capture", "AI Provider", "Ready"][step])")
-                .font(.caption2).foregroundStyle(.secondary)
+                .font(.caption2).foregroundStyle(BoxTheme.secondaryText)
               HStack(spacing: 6) {
                 ForEach(0..<stepCount, id: \.self) { index in
                     Circle()
@@ -385,7 +385,7 @@ struct OnboardingView: View {
                     .font(.headline)
                 Text(detail)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(BoxTheme.secondaryText)
             }
             Spacer()
         }
@@ -409,7 +409,7 @@ struct OnboardingView: View {
                 .background(Circle().fill(BoxTheme.accentSoft))
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.headline)
-                Text(detail).font(.subheadline).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Text(detail).font(.subheadline).foregroundStyle(BoxTheme.secondaryText).fixedSize(horizontal: false, vertical: true)
             }
         }
     }

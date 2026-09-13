@@ -49,7 +49,7 @@ struct AIGenerationSettingsView: View {
             }
         }
         .padding(14)
-        .background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .toolSurface(.input, cornerRadius: 12)
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(BoxTheme.separator, lineWidth: 1))
         .disabled(settings.generationModelName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         .onAppear { updateDisclosure() }
@@ -97,11 +97,11 @@ struct AIGenerationSettingsView: View {
             HStack(spacing: 12) {
                 Text("Reasoning effort").font(.system(size: 12, weight: .medium))
                 Spacer(minLength: 8)
-                Picker("Reasoning effort", selection: effortBinding) {
+                ToolMenuPicker("Reasoning effort", value: effortBinding.wrappedValue.label, showsLabel: false, selection: effortBinding) {
                     ForEach(AIReasoningEffort.choices(for: settings.providerKind)) { effort in
                         Text(effort.label).tag(effort)
                     }
-                }.labelsHidden().pickerStyle(.menu).frame(width: 168)
+                }.labelsHidden().frame(width: 168)
             }
             helpText(effortBinding.wrappedValue == .providerDefault
                      ? "No effort is sent. Choose a level only if your model supports it."
@@ -114,9 +114,9 @@ struct AIGenerationSettingsView: View {
             HStack {
                 Text("Thinking").font(.system(size: 12, weight: .medium))
                 Spacer()
-                Picker("Thinking mode", selection: optionBinding(\.thinkingMode)) {
+                ToolMenuPicker("Thinking mode", value: options.thinkingMode.label, showsLabel: false, selection: optionBinding(\.thinkingMode)) {
                     ForEach(AnthropicThinkingMode.allCases) { mode in Text(mode.label).tag(mode) }
-                }.labelsHidden().pickerStyle(.menu).frame(width: 168)
+                }.labelsHidden().frame(width: 168)
             }
             helpText(thinkingHelp)
             if options.thinkingMode == .budgeted {
@@ -177,7 +177,7 @@ struct AIGenerationSettingsView: View {
     }
 
     private func helpText(_ text: String) -> some View {
-        Text(text).font(.system(size: 11)).foregroundStyle(.secondary)
+        Text(text).font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
             .fixedSize(horizontal: false, vertical: true)
     }
 

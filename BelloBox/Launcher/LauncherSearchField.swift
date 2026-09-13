@@ -49,7 +49,7 @@ struct LauncherSearchField: NSViewRepresentable {
         field.drawsBackground = false
         field.focusRingType = .none
         field.font = monospaced ? .monospacedSystemFont(ofSize: fontSize, weight: .regular) : .systemFont(ofSize: fontSize, weight: .regular)
-        field.textColor = .labelColor
+        field.textColor = NSColor(BoxTheme.primaryText)
         field.placeholderString = placeholder
         field.maximumNumberOfLines = 1
         field.cell?.isScrollable = true

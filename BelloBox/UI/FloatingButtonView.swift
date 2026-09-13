@@ -53,7 +53,7 @@ struct FloatingToolbarView: View {
                             .font(.system(size: 13, weight: .semibold))
                         Text(summary.localDateTime)
                             .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(BoxTheme.secondaryText)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }
@@ -62,7 +62,7 @@ struct FloatingToolbarView: View {
 
                     Image(systemName: "globe")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(BoxTheme.secondaryText)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 7)

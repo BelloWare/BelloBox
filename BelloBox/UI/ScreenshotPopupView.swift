@@ -1051,7 +1051,7 @@ struct ScreenshotPopupView: View {
         if let message = viewModel.errorMessage ?? viewModel.statusMessage {
             Label(message, systemImage: viewModel.errorMessage == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                 .font(.caption)
-                .foregroundStyle(viewModel.errorMessage == nil ? Color.secondary : BoxTheme.warning)
+                .foregroundStyle(viewModel.errorMessage == nil ? BoxTheme.secondaryText : BoxTheme.warning)
                 .lineLimit(2)
         }
     }
@@ -1112,7 +1112,7 @@ private struct LLMOCRConfirmationView: View {
                 Text(confirmation.includesLocalHint ? "Mac OCR text will be included as a hint." : "No Mac OCR hint will be included.")
             }
             .font(.caption)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(BoxTheme.secondaryText)
 
             Text("Only the redaction-aware OCR image shown above will be sent. Decorative annotations are excluded.")
                 .font(.caption)
@@ -1153,14 +1153,14 @@ struct CaptureNotesBanner: View {
                 HStack(spacing: 8) {
                     Text(title).font(.caption.weight(.semibold))
                     if notes.count > Self.inlineCount {
-                        Text("\(notes.count) notes").font(.caption2).foregroundStyle(.secondary)
+                        Text("\(notes.count) notes").font(.caption2).foregroundStyle(BoxTheme.secondaryText)
                     }
                 }
                 if showsAll {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 5) {
                             ForEach(Array(notes.enumerated()), id: \.offset) { _, note in
-                                Text(note).font(.caption).foregroundStyle(.secondary)
+                                Text(note).font(.caption).foregroundStyle(BoxTheme.secondaryText)
                                     .fixedSize(horizontal: false, vertical: true)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
@@ -1170,7 +1170,7 @@ struct CaptureNotesBanner: View {
                     .accessibilityIdentifier("captureNotesAll")
                 } else {
                     ForEach(Array(notes.prefix(Self.inlineCount).enumerated()), id: \.offset) { _, note in
-                        Text(note).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                        Text(note).font(.caption).foregroundStyle(BoxTheme.secondaryText).lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }

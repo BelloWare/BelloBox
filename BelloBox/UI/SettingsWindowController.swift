@@ -22,12 +22,11 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         self.navigation = navigation
         let hosting = NSHostingController(rootView: ToolViewport(minimumSize: NSSize(width: 900, height: 680)) {
             SettingsView(settings: settings, navigation: navigation)
-        })
+        }.workspaceBackground().windowSurfacePreferences(settings))
         let window = NSWindow(contentViewController: hosting)
         AppWindowChrome.apply(to: window, title: "Bello Box Settings")
-        window.contentMinSize = NSSize(width: 900, height: 680)
         window.delegate = self
-        window.setContentSize(NSSize(width: 900, height: 720))
+        AppWindowChrome.size(window, content: NSSize(width: 900, height: 720), minimum: NSSize(width: 900, height: 680))
         AppWindowChrome.place(window, centered: true)
         self.window = window
 

@@ -84,13 +84,15 @@ struct LauncherQRPreviewView: View {
 
     private var card: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.white)
+            ToolSurface().clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             if let image = model.cardImage {
+                // Preserve the code's white quiet zone on any desktop color.
+                RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.white)
                 Image(nsImage: image).resizable().interpolation(.none).scaledToFit().padding(LauncherQRPreview.cardInset)
                     .accessibilityLabel("QR code for the encoded text")
             } else {
                 Image(systemName: code.isEmpty ? "qrcode" : "exclamationmark.triangle").font(.system(size: 22))
-                    .foregroundStyle(Color.black.opacity(0.5))
+                    .foregroundStyle(BoxTheme.secondaryText)
             }
         }
         .frame(width: model.cardPoints, height: model.cardPoints)
@@ -179,7 +181,7 @@ struct LauncherTextToolsPreviewView: View {
                             Text(value).font(.system(size: 10, design: .monospaced)).lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                             Spacer(minLength: 2)
                             Button { model.copy(value, label: algorithm.rawValue) } label: { Image(systemName: "doc.on.doc").font(.system(size: 9)) }
-                                .buttonStyle(.plain).foregroundStyle(.secondary).help("Copy \(algorithm.rawValue)")
+                                .buttonStyle(.plain).foregroundStyle(BoxTheme.secondaryText).help("Copy \(algorithm.rawValue)")
                         }
                     }
                 }.padding(8).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -195,7 +197,7 @@ struct LauncherTextToolsPreviewView: View {
                     LauncherOutputText(text: text, label: "\(model.category.rawValue) result", monospaced: model.category != .caseConvert)
                 } else {
                     Text(model.input.isEmpty ? "No text selected." : "No result for this text.")
-                        .font(.system(size: 11)).foregroundStyle(.secondary).padding(8)
+                        .font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText).padding(8)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 }
             }
@@ -203,10 +205,10 @@ struct LauncherTextToolsPreviewView: View {
     }
     private func statistic(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(label).font(.system(size: 9)).foregroundStyle(.secondary).lineLimit(1)
+            Text(label).font(.system(size: 9)).foregroundStyle(BoxTheme.secondaryText).lineLimit(1)
             Text(value).font(.system(size: 20, weight: .medium, design: .rounded)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
         }.padding(10).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 8))
+            .toolSurface(.card, cornerRadius: 8)
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(BoxTheme.border))
     }
 }
@@ -248,7 +250,7 @@ struct LauncherAIPreviewView: View {
                     Button { if let handoff = model.handoff(for: action) { onRun(handoff) } } label: {
                         Label(action.title, systemImage: action.symbol).font(.system(size: 10, weight: .medium)).lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 8).frame(height: 24)
-                            .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 6))
+                            .toolSurface(.card, cornerRadius: 6)
                             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(BoxTheme.border))
                             .contentShape(RoundedRectangle(cornerRadius: 6))
                     }
@@ -326,7 +328,7 @@ struct LauncherCapturePreviewView: View {
                         }
                     }
                     if command == .scrollCapture {
-                        Text(detail).font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)
+                        Text(detail).font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText).lineLimit(1)
                     }
                 }
                 Spacer(minLength: 0)
@@ -532,7 +534,7 @@ struct LauncherAppStatusPreviewView: View {
                 }
             }
             .padding(.horizontal, 8).frame(height: 26).frame(maxWidth: .infinity)
-            .background(BoxTheme.surface, in: RoundedRectangle(cornerRadius: 7))
+            .toolSurface(.card, cornerRadius: 7)
             .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(BoxTheme.border))
         }
     }

@@ -221,7 +221,7 @@ struct LauncherWorkbenchPreviewView: View {
     private var convertControls: some View {
         HStack(spacing: 8) {
             LauncherChoiceBar(selection: $model.fromFormat, choices: DataFormat.allCases.map { ($0, $0.rawValue) }, label: "From")
-            Image(systemName: "arrow.right").font(.system(size: 9)).foregroundStyle(.secondary)
+            Image(systemName: "arrow.right").font(.system(size: 9)).foregroundStyle(BoxTheme.secondaryText)
             LauncherChoiceBar(selection: $model.toFormat, choices: DataFormat.allCases.map { ($0, $0.rawValue) }, label: "To")
             if model.fromFormat == .csv || model.toFormat == .csv {
                 Menu {
@@ -347,7 +347,7 @@ struct LauncherWorkbenchPreviewView: View {
                 } else if !text.isEmpty {
                     LauncherOutputText(text: text, label: "\(model.command.title) result")
                 } else if !model.busy {
-                    Text(placeholder).font(.system(size: 11)).foregroundStyle(.secondary).padding(8)
+                    Text(placeholder).font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText).padding(8)
                 }
             }
         }
@@ -363,7 +363,7 @@ struct LauncherWorkbenchPreviewView: View {
                     LauncherDiffOutput(result: result, comparison: comparison, mode: model.comparisonMode)
                 } else if !model.busy {
                     Text("Type, paste, or use the pinned text on the left to see the differences.")
-                        .font(.system(size: 11)).foregroundStyle(.secondary).padding(8).frame(maxWidth: .infinity, alignment: .topLeading)
+                        .font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText).padding(8).frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
         }
@@ -399,10 +399,10 @@ struct LauncherWorkbenchPreviewView: View {
                 } else if let result = model.result, !result.text.isEmpty {
                     LauncherOutputText(text: result.text, label: "Response")
                 } else if model.sending {
-                    HStack(spacing: 6) { ProgressView().controlSize(.small); Text("Waiting for the server…").font(.system(size: 11)).foregroundStyle(.secondary) }.padding(8)
+                    HStack(spacing: 6) { ProgressView().controlSize(.small); Text("Waiting for the server…").font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText) }.padding(8)
                 } else if !model.busy {
                     Text(model.result == nil ? "Import a cURL command or enter a URL, then choose Send." : "The response appears here after you choose Send.")
-                        .font(.system(size: 11)).foregroundStyle(.secondary).padding(8)
+                        .font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText).padding(8)
                 }
             }
         }
@@ -426,7 +426,7 @@ struct LauncherURLParameterList: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 4) {
                 if draft.parameters.isEmpty {
-                    Text("No query parameters").font(.system(size: 10)).foregroundStyle(.secondary).padding(.leading, 2)
+                    Text("No query parameters").font(.system(size: 10)).foregroundStyle(BoxTheme.secondaryText).padding(.leading, 2)
                 }
                 ForEach(shown) { parameter in row(parameter) }
                 if hiddenCount > 0 {
@@ -454,7 +454,7 @@ struct LauncherURLParameterList: View {
             LauncherPreviewField(text: binding(parameter.id, \.value), placeholder: "value", label: "Parameter value", onEscape: onEscape)
                 .disabled(!(draft.parameters.first(where: { $0.id == parameter.id })?.hasValue ?? true))
             Button { draft.parameters.removeAll { $0.id == parameter.id } } label: { Image(systemName: "minus.circle").font(.system(size: 11)) }
-                .buttonStyle(.plain).foregroundStyle(.secondary).accessibilityLabel("Remove parameter")
+                .buttonStyle(.plain).foregroundStyle(BoxTheme.secondaryText).accessibilityLabel("Remove parameter")
         }
     }
     private func binding(_ id: UUID, _ keyPath: WritableKeyPath<URLParameter, String>) -> Binding<String> {

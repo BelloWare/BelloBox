@@ -7,6 +7,7 @@ import XCTest
 final class ThemeContrastTests: XCTestCase {
     func testSemanticTextRemainsReadableOnEverySurfaceInBothThemes() throws {
         let inks: [(String, Color)] = [
+            ("primary", BoxTheme.primaryText), ("secondary", BoxTheme.secondaryText),
             ("accent", BoxTheme.accent), ("success", BoxTheme.success),
             ("warning", BoxTheme.warning), ("danger", BoxTheme.danger),
             ("teal", BoxTheme.teal), ("cyan", BoxTheme.cyan),

@@ -71,7 +71,7 @@ struct MainView: View {
                         }
                         if filteredTools.isEmpty {
                             VStack(spacing: 12) {
-                                Image(systemName: "magnifyingglass").font(.system(size: 24)).foregroundStyle(.secondary)
+                                Image(systemName: "magnifyingglass").font(.system(size: 24)).foregroundStyle(BoxTheme.secondaryText)
                                 Text("No tools match these filters").font(.system(size: 14, weight: .medium))
                                 Button("Clear filters") { toolQuery = ""; toolGroup = nil; newToolsOnly = false }
                             }.frame(maxWidth: .infinity).padding(30).surfaceCard()
@@ -82,7 +82,7 @@ struct MainView: View {
                         Text(settings.globalHotkeyEnabled
                              ? "Select text in another app, then press \(settings.globalHotkey.displayString) for tools that fit your selection."
                              : "Enable the command palette shortcut in Settings to open your tools from any app.")
-                            .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                            .font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText).fixedSize(horizontal: false, vertical: true)
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(14).surfaceCard()
                 }.padding(24)
             }.id(category)
@@ -105,24 +105,24 @@ struct MainView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                    Image(systemName: "magnifyingglass").foregroundStyle(BoxTheme.secondaryText)
                     TextField("Find a developer tool…", text: $toolQuery).textFieldStyle(.plain)
                         .disableAutocorrection(true).accessibilityLabel("Filter developer tools")
                         .onSubmit { if filteredTools.count == 1, let command = filteredTools.first { open(command) } }
-                    if !toolQuery.isEmpty { Button { toolQuery = "" } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain).foregroundStyle(.secondary).accessibilityLabel("Clear tool filter") }
-                }.padding(10).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 9))
+                    if !toolQuery.isEmpty { Button { toolQuery = "" } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain).foregroundStyle(BoxTheme.secondaryText).accessibilityLabel("Clear tool filter") }
+                }.padding(10).toolSurface(.input, cornerRadius: 9)
                     .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(BoxTheme.separator))
                 Menu {
                     Button("All groups") { toolGroup = nil }
                     ForEach(AdditionalUtilityKind.Group.allCases, id: \.self) { group in Button(group.rawValue) { toolGroup = group } }
                 } label: { Text(toolGroup?.rawValue ?? "All groups") }
-                    .menuStyle(.borderlessButton).fixedSize().padding(10).background(BoxTheme.well, in: RoundedRectangle(cornerRadius: 9))
+                    .menuStyle(.borderlessButton).fixedSize().padding(10).toolSurface(.input, cornerRadius: 9)
                     .accessibilityLabel("Tool group").accessibilityValue(toolGroup?.rawValue ?? "All groups")
             }
             HStack(spacing: 10) {
                 Toggle("New in 0.0.74", isOn: $newToolsOnly).toggleStyle(.checkbox)
                 Spacer()
-                Text("\(filteredTools.count) tools · Enter opens a single match").foregroundStyle(.secondary)
+                Text("\(filteredTools.count) tools · Enter opens a single match").foregroundStyle(BoxTheme.secondaryText)
             }.font(.system(size: 11))
         }
     }
@@ -132,7 +132,7 @@ struct MainView: View {
                 AppBrandIcon(size: 38)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Bello Box").font(.system(size: 15, weight: .semibold))
-                    Text("Your workspace").font(.system(size: 11)).foregroundStyle(.secondary)
+                    Text("Your workspace").font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
                 }
             }.padding(.vertical, 22).padding(.horizontal, 16)
             ForEach(Array(HomeCategory.allCases.enumerated()), id: \.element.id) { index, item in
@@ -151,7 +151,7 @@ struct MainView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Label(trusted ? "Selection tools ready" : "Selection access needed", systemImage: trusted ? "checkmark.shield" : "lock")
                     .foregroundStyle(trusted ? BoxTheme.teal : .secondary)
-                Label(settings.isConfigured ? "AI connected" : "AI is optional", systemImage: "sparkles").foregroundStyle(.secondary)
+                Label(settings.isConfigured ? "AI connected" : "AI is optional", systemImage: "sparkles").foregroundStyle(BoxTheme.secondaryText)
             }.font(.system(size: 11)).padding(18)
             Divider().padding(.horizontal, 16)
             sidebarAction("Settings", symbol: "gearshape", action: onOpenSettings)
@@ -169,7 +169,7 @@ struct MainView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(category == .overview ? "Everything within reach." : category.rawValue)
                 .font(.system(size: 28, weight: .semibold)).tracking(-0.6)
-            Text(category.subtitle).font(.system(size: 12)).foregroundStyle(.secondary)
+            Text(category.subtitle).font(.system(size: 12)).foregroundStyle(BoxTheme.secondaryText)
         }
     }
     private var searchButton: some View {
@@ -178,7 +178,7 @@ struct MainView: View {
                 Image(systemName: "magnifyingglass").font(.system(size: 16)).foregroundStyle(BoxTheme.accent)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Search all tools and commands").font(.system(size: 13, weight: .medium))
-                    Text("\(LauncherCommand.allCases.count) commands. One place to start.").font(.system(size: 11)).foregroundStyle(.secondary)
+                    Text("\(LauncherCommand.allCases.count) commands. One place to start.").font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
                 }
                 Spacer()
                 ShortcutBadge(text: settings.globalHotkeyEnabled ? settings.globalHotkey.displayString : "Open")
@@ -192,7 +192,7 @@ struct MainView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Connect to your selection").font(.system(size: 12, weight: .semibold))
                 Text("Allow Accessibility to read and replace selected text. You can use the other tools now.")
-                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                    .font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText)
             }
             Spacer()
             Button("Allow access") { AccessibilityService.requestPermissionPrompt(); AccessibilityService.openAccessibilitySettings() }
@@ -237,11 +237,11 @@ private struct HomeToolCard: View {
                 ToolBadge(symbol: command.symbol, size: 36)
                 VStack(alignment: .leading, spacing: 5) {
                     Text(command.title).font(.system(size: 13, weight: .semibold)).lineLimit(2).frame(height: 32, alignment: .topLeading)
-                    Text(command.subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
+                    Text(command.subtitle).font(.system(size: 11)).foregroundStyle(BoxTheme.secondaryText).lineLimit(2)
                         .frame(height: 30, alignment: .topLeading)
                 }.frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(hovered ? BoxTheme.accent : Color.secondary.opacity(0.45))
+                    .foregroundStyle(hovered ? BoxTheme.accent : BoxTheme.secondaryText.opacity(0.45))
             }.padding(14)
         }.buttonStyle(ToolCardButtonStyle())
             .onHover { hovered = $0 }.help(command.subtitle)
