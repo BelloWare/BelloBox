@@ -237,12 +237,15 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
 
     func testPreviewIsCachedDuringNavigationAndOnlyEnterOpensTool() async throws {
         let model = model("{\"id\":42}")
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         defer { model.cancelAll() }
         try await waitUntil { model.expandedPreview != nil }
         let preview = model.expandedPreview
         XCTAssertEqual(model.selectedCommand, .json)
         XCTAssertEqual(model.bestMatch, .json)
-        XCTAssertNil(model.workbench)
+        XCTAssertNil(opened.last)
         XCTAssertNil(defaults.object(forKey: "launcherRecents"))
         let size = model.paletteSize
         model.move(1)
@@ -265,8 +268,7 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         XCTAssertEqual(model.bestMatch, .json)
         XCTAssertEqual(model.expandedPreview, preview)
         model.openSelected()
-        XCTAssertEqual(model.workbench?.input, "{\"id\":42}")
-        model.back()
+        XCTAssertEqual(opened.last?.input, "{\"id\":42}")
         XCTAssertEqual(model.expandedPreview, preview)
         XCTAssertEqual(defaults.stringArray(forKey: "launcherRecents"), ["json"], "Only Enter records a recent")
         XCTAssertEqual(model.previews.count, 3, "One cached preview per focused command")
@@ -368,6 +370,9 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
     func testTimestampEnterPassesSelectionAndPreviewedInstantToDedicatedWindow() async throws {
         let text = "2026-09-07T12:00:00Z"
         let model = model(text)
+        var openedTools: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { openedTools.append($0) }
+        defer { openedTools.forEach { $0.cancel() } }
         defer { model.cancelAll() }
         var opened: LauncherCommand?
         var input: String?
@@ -383,7 +388,7 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
         XCTAssertEqual(opened, .worldClock)
         XCTAssertEqual(input, text)
         XCTAssertEqual(instant, Date(timeIntervalSince1970: 1_788_782_400 + 1_800), "Enter opens at the scrubbed time")
-        XCTAssertNil(model.workbench)
+        XCTAssertNil(openedTools.last)
     }
 
     func testClockPreviewIsInteractiveWithoutTouchingSavedLocationsOrSendingOnItsOwn() async throws {
@@ -585,12 +590,15 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
 
     func testInvalidJSONShowsNoticeButKeepsCompleteEditableInput() async throws {
         let model = model("{invalid}")
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         defer { model.cancelAll() }
         try await waitUntil { model.expandedPreview != nil }
         XCTAssertTrue(model.expandedPreview?.isWarning == true)
         XCTAssertEqual(model.expandedPreview?.title, "Not recognized for JSON Tools")
         model.openSelected()
-        XCTAssertEqual(model.workbench?.input, "{invalid}")
+        XCTAssertEqual(opened.last?.input, "{invalid}")
     }
 
     func testClockPreviewLayoutFitsTheHeightThePaletteReserves() throws {
@@ -619,17 +627,20 @@ final class LauncherPreviewLifecycleTests: XCTestCase {
     func testLongSelectionOpensCompleteDocumentAndOversizedSelectionHasNoPreview() async throws {
         let text = "{\"body\":\"" + String(repeating: "x", count: 300_000) + "\"}"
         let model = model(text)
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         defer { model.cancelAll() }
         try await waitUntil { model.expandedPreview != nil }
         XCTAssertEqual(model.expandedPreview?.title, "Full selection ready")
         XCTAssertNil(model.expandedSession, "A selection over 64 KB is not parsed or edited in the row")
         XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight, "The notice keeps the compact height")
         model.openSelected()
-        XCTAssertEqual(model.workbench?.input, text)
+        XCTAssertEqual(opened.last?.input, text)
         model.useClipboard(String(repeating: "x", count: UtilityLimits.inputBytes + 1))
         XCTAssertNil(model.expandedPreview)
         XCTAssertNil(model.bestMatch)
-        XCTAssertNil(model.workbench)
+        XCTAssertEqual(opened.last?.input, text, "Changing the palette selection cannot clear an open window")
         XCTAssertTrue(model.selection.text.isEmpty)
     }
 }

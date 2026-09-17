@@ -7,46 +7,30 @@ struct LauncherView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        let inTool = model.workbench != nil
         VStack(spacing: 0) {
-            // The search field stays mounted while a tool is open: parked at
-            // zero height, invisible, disabled and hidden from accessibility.
-            // Escape, Back and ⌘K can then hand it keyboard focus at once, so
-            // typing, paste and input methods continue natively with no gap.
             search
-                .frame(height: inTool ? 0 : 64)
-                .opacity(inTool ? 0 : 1)
-                .clipped()
-                .allowsHitTesting(!inTool)
-                .accessibilityHidden(inTool)
-            if let workbench = model.workbench {
-                UtilityWorkbenchView(model: workbench, onBack: model.back)
-                    .transition(.opacity)
-            } else {
-                if model.context.hasText || model.contextMessage != nil { selectionContext }
-                Divider().opacity(0.6)
-                HStack {
-                    Text(model.query.isEmpty ? (model.suggestions.isEmpty ? "Your tools" : "Suggested for your selection") : "Results")
-                        .font(.system(size: 11, weight: .medium)).foregroundStyle(BoxTheme.secondaryText)
-                    Spacer()
-                    Text("\(model.commands.count)").font(.system(size: 10, design: .monospaced)).foregroundStyle(.tertiary)
-                }.padding(.horizontal, 18).frame(height: 25)
-                commandList
-                Divider().opacity(0.6)
-                footer
-            }
+            if model.context.hasText || model.contextMessage != nil { selectionContext }
+            Divider().opacity(0.6)
+            HStack {
+                Text(model.query.isEmpty ? (model.suggestions.isEmpty ? "Your tools" : "Suggested for your selection") : "Results")
+                    .font(.system(size: 11, weight: .medium)).foregroundStyle(BoxTheme.secondaryText)
+                Spacer()
+                Text("\(model.commands.count)").font(.system(size: 10, design: .monospaced)).foregroundStyle(.tertiary)
+            }.padding(.horizontal, 18).frame(height: 25)
+            commandList
+            Divider().opacity(0.6)
+            footer
         }
         .workspaceBackground(role: .popup).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.primary.opacity(0.12), lineWidth: 1))
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.14), value: model.workbench != nil)
     }
 
     private var search: some View {
         HStack(spacing: 13) {
             Image(systemName: "magnifyingglass").font(.system(size: 18, weight: .medium)).foregroundStyle(BoxTheme.secondaryText)
             LauncherSearchField(text: $model.query, onMove: model.move, onSubmit: model.openSelected,
-                onEscape: model.onClose, onReady: onSearchReady, parked: model.workbench != nil).frame(height: 26)
+                onEscape: model.onClose, onReady: onSearchReady).frame(height: 26)
             if !model.query.isEmpty {
                 Button { model.query = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.tertiary) }
                     .buttonStyle(.plain).accessibilityLabel("Clear search")

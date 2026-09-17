@@ -98,7 +98,8 @@ replacement selection refreshes them. Floating-toolbar opens teach too, without
 double-counting palette routes. Rejected oversized inputs do not teach.
 Settings → General can reset learned order. DEBUG fixtures and XCTest sessions
 using standard defaults keep learning in memory outside all preference domains. Drafts
-live for the palette session and pinned comparison text lives until quit.
+live for the palette session or until their transferred tool window closes;
+pinned comparison text lives until quit.
 The compact launcher uses a key-capable non-activating `LauncherPanel` and a
 native `LauncherSearchField` with explicit first-responder focus. It dismisses
 on outside clicks or loss of key focus, except for its own menus/sheets/children.
@@ -113,8 +114,9 @@ interactive (`LauncherInteractivePreview` in `Launcher/LauncherPreviewSessions.s
 `LauncherModel.sessions` keeps one session per focused command for the
 palette session (it survives arrowing and searching) and drops them all with
 the selection. Developer tools reuse `UtilityWorkbenchModel` itself as the
-session, so Enter opens the same instance and every option or draft edit
-carries over; QR reuses `QRCodePopupViewModel`, Text Tools reuses
+session. Enter transfers the same instance to a persistent native window,
+removing it from the palette before palette cleanup so every draft, option,
+and in-flight calculation survives; QR reuses `QRCodePopupViewModel`, Text Tools reuses
 `TextToolsPopupViewModel`, World Clock the `.preview` planner, and the rest
 have small session classes (AI prompt draft, capture permission/modes, a
 session copy of the recording options, GIF options, app status).
@@ -145,14 +147,13 @@ one per focused command, work for a row that lost focus is cancelled and
 discarded, and a new selection clears the cache. Row headers and
 `LauncherInteractivePreview.accessibilitySummary` always describe the live
 session, never the original selection. Drafts that grow past 64 KB inside a
-session (a pasted second text, a loaded snippet, "Use as Input", editing in
-the full tool then Back) show `LauncherDraftLimitNotice` instead of editors
+session (a pasted second text, a loaded snippet, or "Use as Input") show
+`LauncherDraftLimitNotice` instead of editors
 or a stale result; `UtilityWorkbenchModel.previewsOnly` (true for a row,
 false while the tool is open) makes `schedule()` skip such drafts, so the
-row never parses them and the full tool calculates them on open; Back
-restarts an interrupted calculation when the draft fits. Eligibility follows
-the current draft: a tool that was opened keeps its session (notice or
-preview) on the same model even when the original selection was too large.
+row never parses them and the full tool calculates them on open. A transferred
+model stays in full-editor mode until its window closes; another open receives
+a separate session, never the previous window's mutable draft.
 The URL row edits the first 100 parameters (`LauncherURLParameterList.
 compactLimit`, lazy rows, "Open for all" chip) while the model, the rebuilt
 URL and Copy keep every parameter; the full workbench lists parameters in a
@@ -164,13 +165,9 @@ an input: arrows and Enter still navigate and open, Escape returns to search,
 ⌘C copies, and typing a character refocuses search before the key is
 delivered. Tracked native menus (`isTrackingMenu`) and attached sheets own
 the keyboard entirely and never dismiss the palette or open a tool. The
-search field is one native field for the whole palette session: while a
-tool is open `LauncherView` parks it (zero height, invisible, disabled so
-Tab skips it, hidden from accessibility) instead of unmounting it, so
-Escape, Back and ⌘K make it first responder synchronously; there is no
-mount gap, no key buffering, and typing, paste, input methods and undo
-continue natively while the tool fades out. Sheets from a preview (QR
-Save…) attach to the palette panel through `model.hostWindow` so it does
+search field belongs only to the transient palette; opening a developer tool
+closes search and opens a regular, independently resizable window. Sheets from
+a preview (QR Save…) attach to the palette panel through `model.hostWindow` so it does
 not dismiss. The QR row (`LauncherQRPreview`) shows a real code on a 128 pt
 card rendered at two pixels per point; a code whose modules would get fewer
 than two pixels on a standard display is "dense" and its Enlarge chip grows
@@ -255,8 +252,8 @@ changes. Workspace controllers fit their full native frame (title bar included)
 and recover off-screen windows on reopen. Popup minimize/restore retains the
 first responder and honors Reduce Motion. `PopupChromeButton` is shared by
 full and minimized headers. QR and developer editors focus their first input.
-Returning from a workbench explicitly requests search focus; a pending request
-survives until the newly mounted native search field is ready.
+Searching from a workbench opens a new palette without closing the tool; its
+pending focus request survives until the native search field is ready.
 `LiteralTextEditor` uses a plain native NSTextView for utility, QR and text
 inputs: smart quotes, dashes, text replacement and spell correction are off;
 local typing keeps native undo, selection and input-method composition.
@@ -286,6 +283,19 @@ Never log prompts or replies. Review fixtures (DEBUG only): `BELLOBOX_E2E_WORLD_
 seeds isolated locations for both the window and the palette, and
 `BELLOBOX_E2E_WORLD_CLOCK_COPILOT=scripted|error|slow` swaps in an offline
 responder; neither enables a real provider.
+
+Full developer tools live in `Launcher/UtilityWorkbenchWindowController.swift`.
+`UtilityWorkbenchWindows` owns independent windows outside palette lifetime.
+All 51 developer tools stay open across outside clicks, focus changes and later
+shortcuts, with standard close/minimize controls and native glass styling.
+“New Window” / ⌘N opens a fresh instance of the same tool, ⌘K opens search, and
+⌘W closes only the key tool. Escape leaves the tool open. Keyboard equivalents
+belong to the key window, not one global SwiftUI shortcut per instance; sheets
+and input-method composition keep their keys. Opening Home's tool shortcuts
+skips the transient panel entirely. Search requests from an open tool go through
+the overlay's capture guards. Closing a tool cancels only its own work and
+releases that window; ordinary palette cleanup never cancels transferred work.
+Pin callbacks survive the handoff; drafts and request data stay in memory only.
 
 It follows the same packaging conventions as the sibling Bello macOS apps
 (BelloGesture, BelloWall, BelloTracker): xcodegen project, Developer-ID signed

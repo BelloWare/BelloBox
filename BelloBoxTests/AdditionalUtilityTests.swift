@@ -208,6 +208,9 @@ final class AdditionalUtilityWorkflowTests: XCTestCase {
         let settings = AppSettings(defaults: defaults)
         let launcher = LauncherModel(selection: TextSelection(text: "", anchorRect: nil, appName: "Tests", bundleID: nil, pid: nil), snippets: SnippetStore(), defaults: defaults, settings: settings)
         defer { launcher.cancelAll() }
+        var opened: [UtilityWorkbenchModel] = []
+        launcher.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         let pasteboardChange = NSPasteboard.general.changeCount
         for kind in AdditionalUtilityKind.allCases {
             launcher.selectedID = kind.id
@@ -221,10 +224,9 @@ final class AdditionalUtilityWorkflowTests: XCTestCase {
             launcher.selectedID = kind.id
             XCTAssertTrue(launcher.expandedSession?.workbench === tool)
             launcher.openSelected()
-            XCTAssertTrue(launcher.workbench === tool)
+            XCTAssertTrue(opened.last === tool)
             XCTAssertEqual(tool.input, input); XCTAssertEqual(tool.utilityOptions, options); XCTAssertEqual(tool.secondInput, second); XCTAssertEqual(tool.output, output)
-            launcher.back()
-            XCTAssertTrue(launcher.expandedSession?.workbench === tool)
+            XCTAssertNil(launcher.expandedSession, "Each tool transfers ownership to its window")
         }
         XCTAssertEqual(NSPasteboard.general.changeCount, pasteboardChange, "Edits, preview focus and opening never copy")
         XCTAssertFalse(defaults.dictionaryRepresentation().values.contains { String(describing: $0).contains("Jefe") }, "The HMAC key is never persisted")

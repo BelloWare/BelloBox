@@ -17,6 +17,7 @@ final class SelectionOverlayController: NSObject {
     private lazy var launcher: LauncherWindowController = {
         let controller = LauncherWindowController()
         controller.settings = settings
+        controller.onSearchTools = { [weak self] in self?.openLauncher() }
         controller.onCommand = { [weak self] command, selection, context in
             self?.runLauncherCommand(command, selection: selection, context: context)
         }

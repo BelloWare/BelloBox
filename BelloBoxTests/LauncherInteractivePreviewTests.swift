@@ -68,6 +68,9 @@ final class LauncherInteractivePreviewTests: XCTestCase {
     func testSelectionsOverThePreviewLimitShowANoticeInsteadOfParsingOrEditing() async throws {
         let text = "{\"body\":\"" + String(repeating: "x", count: LauncherPreview.parsingByteLimit) + "\"}"
         let model = model(text)
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         defer { model.cancelAll() }
         XCTAssertFalse(model.context.exceedsLimit)
         XCTAssertFalse(model.fitsPreviewLimit)
@@ -84,12 +87,15 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         try await waitUntil { model.expandedPreview != nil }
         XCTAssertEqual(model.expandedPreview?.title, "Full selection ready")
         model.openSelected()
-        XCTAssertEqual(model.workbench?.input, text, "Enter opens the complete selection, never a truncation")
-        XCTAssertEqual(model.workbench?.input.count, text.count)
+        XCTAssertEqual(opened.last?.input, text, "Enter opens the complete selection, never a truncation")
+        XCTAssertEqual(opened.last?.input.count, text.count)
     }
 
     func testDraftsThatGrowPastThePreviewLimitShowTheNoticeAndKeepTheCompleteDraft() async throws {
         let model = model("alpha\nbeta")
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         defer { model.cancelAll() }
         // Pasting a large second text into Compare.
         focus(model, .compare)
@@ -101,17 +107,17 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         XCTAssertEqual(compare.secondInput.count, large.count, "The complete draft stays with the tool")
         compare.secondInput = "beta\ngamma"
         XCTAssertFalse(compare.draftExceedsPreviewLimit, "Replacing the input previews again")
-        // Loading a large saved snippet, then editing it in the full tool and coming back.
+        // Loading a large saved snippet, then transferring the complete draft.
         focus(model, .snippets)
         let snippets = try XCTUnwrap(model.expandedSession?.workbench)
         snippets.loadSnippet(DeveloperSnippet(name: "Big", template: String(repeating: "{{name}} ", count: 12_000)))
         XCTAssertTrue(snippets.draftExceedsPreviewLimit)
         model.open(.snippets)
-        XCTAssertTrue(model.workbench === snippets)
-        model.workbench?.input += " tail"
-        model.back()
-        XCTAssertTrue(model.expandedSession?.workbench?.draftExceedsPreviewLimit == true, "Back keeps the notice for the grown draft")
-        XCTAssertTrue(model.expandedSession?.workbench?.input.hasSuffix(" tail") == true)
+        XCTAssertTrue(opened.last === snippets)
+        opened.last?.input += " tail"
+        XCTAssertTrue(snippets.draftExceedsPreviewLimit)
+        XCTAssertTrue(snippets.input.hasSuffix(" tail"))
+        XCTAssertNil(model.expandedSession, "The palette no longer owns the open window's draft")
         // "Use as Input" expanding a result past the limit.
         focus(model, .generate)
         let generate = try XCTUnwrap(model.expandedSession?.workbench)
@@ -159,36 +165,34 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         XCTAssertEqual(launched?.text.count, LauncherPreview.parsingByteLimit + 1, "Enter still carries the complete draft")
     }
 
-    func testALargeSelectionEditedDownInTheToolPreviewsOnBackAndGrowsBackToTheNoticeOnTheSameModel() async throws {
+    func testLargeSelectionTransfersCompletelyAndLaterOpensHaveIndependentDrafts() async throws {
         let large = "{\"body\":\"" + String(repeating: "x", count: LauncherPreview.parsingByteLimit) + "\"}"
         let model = model(large)
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         defer { model.cancelAll() }
         XCTAssertNil(model.expandedSession, "The original selection is too large for the row")
         XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight)
         model.open(.json)
-        let tool = try XCTUnwrap(model.workbench)
+        let tool = try XCTUnwrap(opened.last)
         XCTAssertEqual(tool.input, large)
         tool.input = "{\"small\":true}"
-        model.back()
-        XCTAssertTrue(model.expandedSession?.workbench === tool, "Back previews the edited draft on the same model")
-        XCTAssertFalse(tool.previewsOnly == false)
-        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight(for: .json), "The row grows to the interactive height")
+        XCTAssertNil(model.expandedSession, "The palette has transferred ownership")
+        XCTAssertFalse(tool.previewsOnly)
         try await waitUntil { tool.result != nil }
         XCTAssertTrue(tool.output.contains("\"small\": true"))
         XCTAssertFalse(tool.draftExceedsPreviewLimit)
-        // Growing again keeps the session (now a notice) and still hands over the same model.
+        // Full windows keep calculating even after their original palette closes.
         tool.input = large
         XCTAssertTrue(tool.draftExceedsPreviewLimit)
-        XCTAssertTrue(model.expandedSession?.workbench === tool)
-        XCTAssertEqual(model.expandedPreviewHeight, LauncherModel.previewHeight(for: .json))
         model.openSelected()
-        XCTAssertTrue(model.workbench === tool)
-        XCTAssertEqual(model.workbench?.input, large, "The complete draft, never a truncation")
-        // Editing down again while open, then Back, previews again.
+        XCTAssertFalse(opened.last === tool, "Another open owns another model")
+        XCTAssertEqual(opened.last?.input, large, "The complete draft, never a truncation")
+        model.cancelAll()
         tool.input = "[1,2,3]"
-        model.back()
-        XCTAssertTrue(model.expandedSession?.workbench === tool)
         try await waitUntil { tool.result?.text.contains("1") == true }
+        XCTAssertEqual(opened.last?.input, large, "Editing one window cannot change another")
     }
 
     func testURLsWithThousandsOfParametersKeepEveryParameterButMountOnlyABoundedEditor() async throws {
@@ -216,7 +220,7 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         url.buildURL()
         XCTAssertEqual(url.output.components(separatedBy: "&").count, 3_001, "Copy builds the complete URL")
         // The full workbench mounts its parameter rows lazily as well.
-        let workbench = NSHostingView(rootView: UtilityWorkbenchView(model: url, onBack: {}).frame(width: 820, height: 660))
+        let workbench = NSHostingView(rootView: UtilityWorkbenchView(model: url, onSearchTools: {}, onNewWindow: {}).frame(width: 820, height: 660))
         let toolWindow = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 820, height: 660), styleMask: [.titled], backing: .buffered, defer: false)
         toolWindow.isReleasedWhenClosed = false
         defer { toolWindow.close() }
@@ -275,6 +279,9 @@ final class LauncherInteractivePreviewTests: XCTestCase {
 
     func testDeveloperToolPreviewIsTheWorkbenchThatEnterOpensWithEveryEditIntact() async throws {
         let model = model("{\"b\":1,\"a\":[1,2]}")
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         defer { model.cancelAll() }
         let session = try XCTUnwrap(model.expandedSession?.workbench)
         XCTAssertEqual(session.command, .json)
@@ -283,13 +290,12 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         XCTAssertTrue(session.output.contains("\"a\": [\n"), "The full formatted output is available, not an excerpt")
         session.jsonMode = "Minify"
         try await waitUntil { session.result?.text == "{\"a\":[1,2],\"b\":1}" }
-        XCTAssertNil(model.workbench, "Editing the preview never opens the tool")
+        XCTAssertNil(opened.last, "Editing the preview never opens the tool")
         XCTAssertNil(defaults.stringArray(forKey: "launcherRecents"), "Focus and edits are not uses")
         model.openSelected()
-        XCTAssertTrue(model.workbench === session, "Enter opens the same model, so the draft survives")
-        XCTAssertEqual(model.workbench?.jsonMode, "Minify")
-        model.back()
-        XCTAssertTrue(model.expandedSession?.workbench === session, "Back returns to the same session")
+        XCTAssertTrue(opened.last === session, "Enter opens the same model, so the draft survives")
+        XCTAssertEqual(opened.last?.jsonMode, "Minify")
+        XCTAssertNil(model.expandedSession, "The exact session has left the palette")
         focus(model, .regex)
         let regex = try XCTUnwrap(model.expandedSession?.workbench)
         regex.regexPattern = "\\d+"
@@ -300,13 +306,16 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         XCTAssertTrue(model.expandedSession?.workbench === regex)
         XCTAssertEqual(regex.regexPattern, "\\d+", "Navigating away and back keeps the draft")
         model.open(.regex)
-        XCTAssertEqual(model.workbench?.regexPattern, "\\d+")
+        XCTAssertEqual(opened.last?.regexPattern, "\\d+")
     }
 
     func testPinStorageInstalledAfterTheFirstSessionStillReachesAnInitiallyFocusedCompare() throws {
         // Compare is the only favorite and nothing is selected, so it is the first row.
         defaults.set(["compare"], forKey: "launcherFavorites")
         let model = model("")
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         defer { model.cancelAll() }
         XCTAssertEqual(model.selectedCommand, .compare, "Compare is the first row before the host installs anything")
         let compare = try XCTUnwrap(model.expandedSession?.workbench)
@@ -320,7 +329,11 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         compare.usePinned()
         XCTAssertEqual(compare.secondInput, "first text", "Use Pinned reads the late-installed storage")
         model.open(.compare)
-        XCTAssertTrue(model.workbench === compare)
+        XCTAssertTrue(opened.last === compare)
+        model.cancelAll()
+        compare.input = "still pinned"
+        compare.pin()
+        XCTAssertEqual(pinned, "still pinned", "The transferred model keeps the pin store after palette cleanup")
     }
 
     func testFocusingRowsHasNoSideEffectsBeyondBoundedPreviewWork() async throws {
@@ -689,8 +702,9 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         XCTAssertFalse(compare.previewsOnly)
         try await waitUntil { compare.result != nil || compare.error != nil }
         XCTAssertNotNil(compare.result, "The full tool calculates the complete draft")
-        model.back()
-        XCTAssertTrue(compare.previewsOnly, "Back returns the model to row duty")
+        model.cancelAll()
+        XCTAssertFalse(compare.previewsOnly, "Closing search never returns an open window to preview limits")
+        compare.cancel()
     }
 
     func testAIPromptSummaryIsBoundedAndRecordingPrivacyCopyFollowsAccessibility() {
@@ -843,7 +857,7 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         controller.show(selection: BelloBox.TextSelection(text: "hello", anchorRect: nil, appName: "Editor", bundleID: nil, pid: nil), focus: .qr)
         XCTAssertEqual(controller.model?.selectedCommand, .qr)
         XCTAssertNotNil(controller.model?.expandedSession?.qr)
-        XCTAssertNil(controller.model?.workbench)
+        XCTAssertTrue(controller.workspaces.windows.isEmpty)
         XCTAssertNotNil(controller.model?.hostWindow(), "Sheets from the preview attach to the palette")
     }
 
@@ -870,60 +884,45 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         return panel
     }
 
-    func testTypingImmediatelyAfterEscapeFromAToolReachesTheSearchFieldNativelyNotTheOldEditor() async throws {
+    func testSearchFromAnOpenToolKeepsTheEditorAndRoutesTypingToSearch() async throws {
         let controller = LauncherWindowController()
-        defer { controller.close() }
+        defer {
+            controller.close()
+            controller.workspaces.windows.forEach { $0.close() }
+        }
         let original = "{\"id\":1,\"name\":\"Bello\"}"
-        let panel = try await showKeyPalette(controller, text: original)
-        let model = try XCTUnwrap(controller.model)
-        for _ in 0..<100 where !controller.isSearchFieldFocused { try await Task.sleep(nanoseconds: 10_000_000) }
-        let searchFields = Self.descendants(of: try XCTUnwrap(panel.contentView)).compactMap { $0 as? LauncherSearchTextField }
-            .filter { $0.identifier?.rawValue == "launcherSearch" }
-        let search = try XCTUnwrap(searchFields.first)
-        model.open(.json)
-        for _ in 0..<100 where !(panel.firstResponder is LiteralTextView) { try await Task.sleep(nanoseconds: 10_000_000) }
-        let editor = try XCTUnwrap(panel.firstResponder as? LiteralTextView)
-        let workbench = try XCTUnwrap(model.session(for: .json)?.workbench)
-        try await Task.sleep(nanoseconds: 200_000_000) // the tool has fully replaced the palette content
-        XCTAssertTrue(search.window === panel, "The search field stays attached while the tool is open")
-        XCTAssertFalse(search.isEnabled, "…but parked: disabled, so Tab never reaches it")
-        XCTAssertTrue(search.isAccessibilityHidden())
-
-        XCTAssertTrue(controller.handleKeyEvent(try keyEvent(53, "\u{1B}", in: panel)), "Escape returns to the palette")
-        // No waiting at all: the very next events must already belong to the search field.
-        XCTAssertNil(model.workbench)
-        XCTAssertTrue(controller.isSearchFieldFocused, "The same attached field is first responder at once")
-        XCTAssertFalse(panel.firstResponder === editor)
-        XCTAssertTrue(search.isEnabled)
-        XCTAssertFalse(controller.handleKeyEvent(try keyEvent(12, "q", in: panel)), "Characters are not intercepted; they go to the field")
+        _ = try await showKeyPalette(controller, text: original)
+        controller.model?.open(.json)
+        let workspace = try XCTUnwrap(controller.workspaces.windows.first)
+        let window = try XCTUnwrap(workspace.window)
+        try await waitUntil { window.isKeyWindow && window.firstResponder is LiteralTextView }
+        let editor = try XCTUnwrap(window.firstResponder as? LiteralTextView)
+        window.cancelOperation(nil)
+        XCTAssertTrue(window.isVisible, "Escape never closes a persistent tool")
+        XCTAssertTrue(window.performKeyEquivalent(with: try keyEvent(40, "k", modifiers: .command, in: window)))
+        try await waitUntil { controller.isSearchFieldFocused }
+        let panel = try XCTUnwrap(controller.panel)
+        let search = try XCTUnwrap(Self.descendants(of: try XCTUnwrap(panel.contentView)).compactMap { $0 as? LauncherSearchTextField }
+            .first { $0.identifier?.rawValue == "launcherSearch" })
+        XCTAssertFalse(panel === window)
+        XCTAssertTrue(window.isVisible)
         panel.sendEvent(try keyEvent(12, "q", in: panel))
         panel.sendEvent(try keyEvent(15, "r", in: panel))
-        XCTAssertEqual(search.stringValue, "qr", "Native typing landed in the search field")
-        XCTAssertEqual(workbench.input, original, "Nothing reached the tool's draft")
+        XCTAssertEqual(search.stringValue, "qr")
+        XCTAssertEqual(workspace.model.input, original)
         XCTAssertEqual(editor.string, original)
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString("-paste", forType: .string)
         defer { pasteboard.clearContents() }
-        XCTAssertFalse(controller.handleKeyEvent(try keyEvent(9, "v", modifiers: .command, in: panel)), "⌘V is never swallowed")
         (panel.firstResponder as? NSTextView)?.paste(nil)
-        XCTAssertEqual(search.stringValue, "qr-paste", "Paste is native and reaches the search field")
-        XCTAssertEqual(workbench.input, original)
-        for _ in 0..<50 where model.query != "qr-paste" { try await Task.sleep(nanoseconds: 10_000_000) }
-        XCTAssertEqual(model.query, "qr-paste")
-        XCTAssertEqual((panel.firstResponder as? NSTextView)?.undoManager?.canUndo, true, "Native undo keeps working")
-        try await Task.sleep(nanoseconds: 250_000_000) // the tool's fade-out finished
-        XCTAssertTrue(controller.isSearchFieldFocused, "Focus survives the transition")
-        XCTAssertNil(editor.window, "The outgoing editor is gone")
-        // ⌘K from a tool takes the same synchronous route.
-        model.query = ""
-        model.open(.json)
-        for _ in 0..<100 where !(panel.firstResponder is LiteralTextView) { try await Task.sleep(nanoseconds: 10_000_000) }
-        XCTAssertTrue(controller.handleKeyEvent(try keyEvent(40, "k", modifiers: .command, in: panel)))
-        XCTAssertTrue(controller.isSearchFieldFocused)
-        panel.sendEvent(try keyEvent(12, "q", in: panel))
-        XCTAssertEqual(search.stringValue, "q")
-        XCTAssertEqual(workbench.input, original)
+        XCTAssertEqual(search.stringValue, "qr-paste")
+        XCTAssertEqual((panel.firstResponder as? NSTextView)?.undoManager?.canUndo, true)
+        controller.close()
+        window.makeKeyAndOrderFront(nil)
+        XCTAssertTrue(window.isVisible)
+        XCTAssertTrue(editor.window === window, "The old editor stays attached with its native editing state")
+        XCTAssertEqual(workspace.model.input, original)
     }
 
     func testTrackedMenusAndAttachedSheetsOwnTheKeyboardAndNeverDismissOrOpen() async throws {
@@ -938,7 +937,7 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         XCTAssertFalse(controller.handleKeyEvent(try keyEvent(36, "\r", in: panel)), "Return selects the menu item, not a tool")
         XCTAssertFalse(controller.handleKeyEvent(try keyEvent(53, "\u{1B}", in: panel)), "Escape closes the menu, not the palette")
         XCTAssertEqual(model.selectedID, selected)
-        XCTAssertNil(model.workbench)
+        XCTAssertTrue(controller.workspaces.windows.isEmpty)
         XCTAssertTrue(controller.isVisible)
         controller.setMenuTracking(false)
         XCTAssertTrue(controller.handleKeyEvent(try keyEvent(125, "", in: panel)))
@@ -954,7 +953,7 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         XCTAssertFalse(controller.handleKeyEvent(try keyEvent(36, "\r", in: panel)))
         XCTAssertFalse(controller.handleKeyEvent(try keyEvent(53, "\u{1B}", in: panel)))
         XCTAssertEqual(model.selectedID, before)
-        XCTAssertNil(model.workbench)
+        XCTAssertTrue(controller.workspaces.windows.isEmpty)
         try await Task.sleep(nanoseconds: 60_000_000)
         XCTAssertTrue(controller.isVisible, "The sheet taking key focus does not dismiss the palette")
         panel.endSheet(sheet)

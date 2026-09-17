@@ -256,14 +256,16 @@ final class DeveloperWorkflowTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suite) }
         let selection = TextSelection(text: "{\"id\":1}", anchorRect: nil, appName: "Test", bundleID: nil, pid: nil)
         let model = LauncherModel(selection: selection, snippets: SnippetStore(), defaults: defaults)
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         XCTAssertEqual(model.selectedID, "json")
         model.query = "regex"
         XCTAssertEqual(model.selectedID, "regex")
         model.openSelected()
-        XCTAssertEqual(model.workbench?.input, selection.text)
-        XCTAssertFalse(model.workbench!.canReplace)
-        model.back()
-        XCTAssertNil(model.workbench)
+        XCTAssertEqual(opened.last?.input, selection.text)
+        XCTAssertFalse(opened.last!.canReplace)
+        XCTAssertNil(model.session(for: .regex), "The opened draft has transferred out of the palette")
         model.query = ""
         model.move(-1)
         XCTAssertNotNil(model.selectedID)
@@ -273,13 +275,16 @@ final class DeveloperWorkflowTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suite) }
         let selection = TextSelection(text: "original", anchorRect: nil, appName: "Editor", bundleID: nil, pid: 123)
         let model = LauncherModel(selection: selection, snippets: SnippetStore(), defaults: defaults)
+        var opened: [UtilityWorkbenchModel] = []
+        model.onOpenWorkbench = { opened.append($0) }
+        defer { opened.forEach { $0.cancel() } }
         model.open(.json)
-        model.back()
         model.useClipboard("{\"copied\":true}")
         model.open(.json)
-        XCTAssertEqual(model.workbench?.input, "{\"copied\":true}")
-        XCTAssertNil(model.workbench?.selection.pid)
-        model.back()
+        XCTAssertEqual(opened.last?.input, "{\"copied\":true}")
+        XCTAssertNil(opened.last?.selection.pid)
+        XCTAssertEqual(opened.first?.selection.pid, 123, "The previous window retains its own source context")
+        XCTAssertEqual(opened.count, 2)
     }
 
     func testStaleCalculationsCannotReplaceNewInputOrRestoreCancelledOutput() async throws {

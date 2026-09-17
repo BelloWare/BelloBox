@@ -17,29 +17,34 @@ final class LauncherInteractionTests: XCTestCase {
     func testLargeSelectionKeepsTheEntireDocumentButBoundsItsPreview() {
         let text = "{\"body\":\"" + String(repeating: "long text ", count: 30_000) + "\",\"tail\":true}"
         withModel(text) { model in
+            var opened: [UtilityWorkbenchModel] = []
+            model.onOpenWorkbench = { opened.append($0) }
+            defer { opened.forEach { $0.cancel() } }
             XCTAssertFalse(model.context.exceedsLimit)
             XCTAssertLessThanOrEqual(model.context.preview.unicodeScalars.count, 160)
             XCTAssertEqual(model.context.characterCount, text.count)
             XCTAssertEqual(model.suggestions.first, .json)
             for query in ["regex", "clock", "json", "url"] { model.query = query }
             model.open(.json)
-            XCTAssertEqual(model.workbench?.input, text)
-            XCTAssertEqual(model.workbench?.selection.pid, 123)
+            XCTAssertEqual(opened.last?.input, text)
+            XCTAssertEqual(opened.last?.selection.pid, 123)
         }
     }
     func testOversizedSelectionNeverBecomesAPartialDocumentOrReplacement() {
         withModel(String(repeating: "x", count: UtilityLimits.inputBytes + 1)) { model in
+            var opened: [UtilityWorkbenchModel] = []
+            model.onOpenWorkbench = { opened.append($0) }
+            defer { opened.forEach { $0.cancel() } }
             XCTAssertTrue(model.context.exceedsLimit)
             XCTAssertTrue(model.context.hasText)
             XCTAssertTrue(model.selection.text.isEmpty)
             XCTAssertNil(model.selection.pid)
             model.open(.json)
-            XCTAssertTrue(model.workbench!.input.isEmpty)
-            XCTAssertEqual(model.workbench?.inputNotice, LauncherSelectionContext.limitNotice)
-            XCTAssertFalse(model.workbench!.canReplace)
-            model.back()
+            XCTAssertTrue(opened.last!.input.isEmpty)
+            XCTAssertEqual(opened.last?.inputNotice, LauncherSelectionContext.limitNotice)
+            XCTAssertFalse(opened.last!.canReplace)
             model.open(.generate)
-            XCTAssertEqual(model.workbench?.command, .generate)
+            XCTAssertEqual(opened.last?.command, .generate)
         }
     }
     func testLimitUsesUTF8BytesAndPreviewBoundsCombiningCharacters() {
@@ -64,6 +69,9 @@ final class LauncherInteractionTests: XCTestCase {
     }
     func testPaletteAdaptsToResultsAndArrowNavigationWraps() {
         withModel("{}") { model in
+            var opened: [UtilityWorkbenchModel] = []
+            model.onOpenWorkbench = { opened.append($0) }
+            defer { opened.forEach { $0.cancel() } }
             let fullHeight = model.paletteSize.height
             model.query = "  regex  "
             XCTAssertEqual(model.commands, [.regex])
@@ -75,11 +83,14 @@ final class LauncherInteractionTests: XCTestCase {
             XCTAssertGreaterThan(model.paletteSize.height, 200)
             model.move(1)
             model.openSelected()
-            XCTAssertNil(model.workbench)
+            XCTAssertNil(opened.last)
         }
     }
     func testNativeSearchDelegateNavigatesAndOpensWithoutMouseFocus() {
         withModel("{}") { model in
+            var opened: [UtilityWorkbenchModel] = []
+            model.onOpenWorkbench = { opened.append($0) }
+            defer { opened.forEach { $0.cancel() } }
             var query = ""
             let search = LauncherSearchField(text: .init(get: { query }, set: { query = $0 }),
                 onMove: model.move, onSubmit: model.openSelected, onEscape: model.onClose, onReady: { _ in })
@@ -90,7 +101,7 @@ final class LauncherInteractionTests: XCTestCase {
             XCTAssertTrue(coordinator.control(field, textView: editor, doCommandBy: #selector(NSResponder.moveDown(_:))))
             XCTAssertEqual(model.selectedID, "compare")
             XCTAssertTrue(coordinator.control(field, textView: editor, doCommandBy: #selector(NSResponder.insertNewline(_:))))
-            XCTAssertEqual(model.workbench?.command, .compare)
+            XCTAssertEqual(opened.last?.command, .compare)
             XCTAssertFalse(coordinator.control(field, textView: editor, doCommandBy: #selector(NSResponder.moveLeft(_:))))
         }
     }
@@ -175,26 +186,29 @@ final class LauncherInteractionTests: XCTestCase {
         XCTAssertFalse(controller.isVisible, "The second Escape closes the palette")
     }
 
-    func testReturningFromNativeUtilityEditorRestoresSearchFocus() async throws {
+    func testOpeningAnEditorClosesOnlySearchAndNewSearchGetsFocus() async throws {
         try await settleHostStartup()
         let controller = LauncherWindowController()
-        defer { controller.close() }
-        let panel = try await showKeyPalette(controller, text: "")
-        let model = try XCTUnwrap(controller.model)
-        for useEscape in [false, true] {
-            model.open(.json)
-            for _ in 0..<100 where !(panel.firstResponder is LiteralTextView) {
-                try await Task.sleep(nanoseconds: 10_000_000)
-            }
-            XCTAssertTrue(panel.firstResponder is LiteralTextView, "Editor must focus on each open (Escape round: \(useEscape))")
-            if useEscape {
-                XCTAssertTrue(controller.handleKeyEvent(try keyEvent(53, "", in: panel)))
-            } else { model.back() }
-            for _ in 0..<100 where !controller.isSearchFieldFocused {
-                try await Task.sleep(nanoseconds: 10_000_000)
-            }
-            XCTAssertTrue(controller.isSearchFieldFocused, "Returning from a tool must make search ready to type")
+        defer {
+            controller.close()
+            controller.workspaces.windows.forEach { $0.close() }
         }
+        _ = try await showKeyPalette(controller, text: "")
+        controller.model?.open(.json)
+        let workspace = try XCTUnwrap(controller.workspaces.windows.first)
+        let window = try XCTUnwrap(workspace.window)
+        for _ in 0..<100 where !(window.firstResponder is LiteralTextView) {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertTrue(window.firstResponder is LiteralTextView)
+        XCTAssertFalse(controller.isVisible, "Opening a developer tool transfers it out of search")
+        workspace.onSearchTools()
+        for _ in 0..<100 where !controller.isSearchFieldFocused {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertTrue(controller.isSearchFieldFocused)
+        XCTAssertTrue(window.isVisible, "Searching keeps the original tool window open")
+        XCTAssertEqual(controller.workspaces.windows.count, 1)
     }
 
     func testArrowKeysNudgeTheClockPreviewOnlyWhileSearchIsEmpty() async throws {

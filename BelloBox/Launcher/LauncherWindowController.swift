@@ -33,8 +33,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     /// open: it owns the keyboard and must not dismiss the palette.
     private(set) var isTrackingMenu = false
     private(set) var model: LauncherModel?
-    /// The one search field. It stays attached while a tool is open (parked
-    /// by `LauncherView`), so returning to the palette never waits for a mount.
+    /// The search field belongs only to this transient palette.
     private weak var searchField: LauncherSearchTextField?
     /// A focus request made before the field was attached (palette opening).
     private var pendingSearchFocus = false
@@ -46,6 +45,14 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     private let snippets = SnippetStore()
 #endif
     private var pinned: String?
+    /// These windows outlive any palette presentation, focus change or shortcut.
+    private(set) lazy var workspaces = UtilityWorkbenchWindows(onSearchTools: { [weak self] in
+        guard let self else { return }
+        if let onSearchTools = self.onSearchTools { onSearchTools() }
+        else { self.show(selection: TextSelection(text: "", anchorRect: nil, appName: nil, bundleID: nil, pid: nil)) }
+    })
+    /// The app can enforce its capture/selection rules when a tool opens search.
+    var onSearchTools: (() -> Void)?
     var settings: AppSettings = .shared
     var isVisible: Bool { panel?.isVisible == true }
     var onCommand: (LauncherCommand, TextSelection, LauncherCommandContext) -> Void = { _, _, _ in }
@@ -65,11 +72,24 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         model.onCommand = { [weak self] command, selection, context in
             self?.close(); self?.onCommand(command, selection, context)
         }
+        model.onOpenWorkbench = { [weak self] tool in
+            guard let self else { tool.cancel(); return }
+            let frame = self.panel?.frame
+            self.close()
+            self.workspaces.open(tool, settings: self.settings, near: frame)
+        }
         model.pinnedText = { [weak self] in self?.pinned }
         model.pinText = { [weak self] in self?.pinned = $0 }
         model.onPresentationChange = { [weak self] in self?.updatePresentation() }
         model.onPreviewResize = { [weak self] in self?.updatePresentation(refocusSearch: false) }
         model.onFocusSearch = { [weak self] in self?.focusSearch(force: true) }
+        // Home already chose a tool; open its durable window without flashing
+        // a search panel that would immediately close again.
+        if let initialCommand, initialCommand.isDeveloperTool {
+            self.model = model
+            model.open(initialCommand)
+            return
+        }
         let panel = LauncherPanel()
         self.panel = panel; self.model = model
         panel.delegate = self
@@ -161,14 +181,14 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         if let editor = panel.firstResponder as? NSTextView, editor.hasMarkedText() { return false }
         let modifiers = event.modifierFlags.intersection([.command, .control, .option, .shift])
         if modifiers == .command && event.charactersIgnoringModifiers?.lowercased() == "k" {
-            model.back(); model.query = ""; focusSearch(force: true); return true
+            model.query = ""; focusSearch(force: true); return true
         }
-        if model.workbench == nil, isSecondaryTextInputFocused(in: panel) {
+        if isSecondaryTextInputFocused(in: panel) {
             // A preview's input owns Enter and the arrows; Escape hands focus back.
             if modifiers.isEmpty, event.keyCode == 53 { focusSearch(force: true); return true }
             return false
         }
-        if model.workbench == nil, isReadOnlyOutputFocused(in: panel) {
+        if isReadOnlyOutputFocused(in: panel) {
             // A clicked result keeps ⌘C and selection; Escape returns to search,
             // navigation keys still move rows, and typing goes to the search field.
             if modifiers.isEmpty, event.keyCode == 53 { focusSearch(force: true); return true }
@@ -183,7 +203,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
                 return false
             }
         }
-        if model.workbench == nil, model.featuresClock, model.query.isEmpty, [123, 124].contains(event.keyCode),
+        if model.featuresClock, model.query.isEmpty, [123, 124].contains(event.keyCode),
            modifiers.isSubset(of: [.option, .shift]) {
             let direction = event.keyCode == 124 ? 1 : -1
             let step: TimeInterval = modifiers.contains(.shift) ? 24 * 3_600 : modifiers.contains(.option) ? 3_600 : 15 * 60
@@ -192,10 +212,9 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         }
         guard modifiers.isEmpty else { return false }
         if event.keyCode == 53 {
-            if model.workbench != nil { model.back() } else { close() }
+            close()
             return true
         }
-        guard model.workbench == nil else { return false }
         switch event.keyCode {
         case 125: model.move(1)
         case 126: model.move(-1)
@@ -222,10 +241,9 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
 
     private func updatePresentation(refocusSearch: Bool = true) {
         guard let panel, let model else { return }
-        let isWorkbench = model.workbench != nil
         let oldFrame = panel.frame
         let screen = panel.screen ?? ScreenPlacement.screen(containing: oldFrame.origin)
-        let size = Self.fittedSize(isWorkbench ? NSSize(width: 820, height: 660) : model.paletteSize, visibleFrame: screen.visibleFrame)
+        let size = Self.fittedSize(model.paletteSize, visibleFrame: screen.visibleFrame)
         panel.contentMinSize = NSSize(width: 1, height: 1)
         panel.contentMaxSize = NSSize(width: 10_000, height: 10_000)
         let origin = ScreenPlacement.clamp(origin: CGPoint(x: oldFrame.midX - size.width / 2,
@@ -235,17 +253,8 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         let id = presentationID
         let finish = { [weak self, weak panel] in
             guard let self, let panel, self.panel === panel, self.presentationID == id else { return }
-            panel.contentMinSize = isWorkbench ? Self.fittedSize(NSSize(width: 740, height: 560), visibleFrame: screen.visibleFrame) : size
-            panel.contentMaxSize = isWorkbench ? NSSize(width: 1_600, height: 1_200) : size
-            // A quick Back → Open can reuse the fading editor before it ever
-            // detaches from the window, so attachment alone cannot restore focus.
-            if isWorkbench, let root = panel.contentView {
-                let current = panel.firstResponder as? NSTextView
-                let ownsInput = current?.window === panel && !(current?.delegate is LauncherSearchTextField)
-                if !ownsInput, let editor = LiteralTextView.initialEditor(in: root) {
-                    panel.makeFirstResponder(editor)
-                }
-            }
+            panel.contentMinSize = size
+            panel.contentMaxSize = size
         }
         if frame == oldFrame || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
             panel.setFrame(frame, display: true)
@@ -256,12 +265,12 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
                 panel.animator().setFrame(frame, display: true)
             }, completionHandler: finish)
         }
-        if !isWorkbench, refocusSearch { focusSearch() }
+        if refocusSearch { focusSearch() }
     }
 
     /// Returns focus to the search field. Unless forced, it leaves another
     /// text input (the copilot question, a preview field) alone so typing is
-    /// never interrupted. A forced request (Escape, Back, ⌘K) takes effect
+    /// never interrupted. A forced request (Escape, ⌘K) takes effect
     /// at once: the field is always attached, so the next key event already
     /// belongs to it. Before the field is attached (the palette opening) the
     /// request waits for `onSearchReady`.
@@ -277,10 +286,8 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
     /// else should keep typing. Returns whether it is editing afterwards.
     @discardableResult
     private func focusSearchNow() -> Bool {
-        guard model?.workbench == nil, let panel, panel.isVisible, let field = searchField, field.window === panel else { return false }
+        guard let panel, panel.isVisible, let field = searchField, field.window === panel else { return false }
         if !pendingSearchFocus, isSecondaryTextInputFocused(in: panel) { return false }
-        // The parked state may not have been cleared by SwiftUI yet.
-        field.isEnabled = true
         guard panel.firstResponder === field.currentEditor() || panel.makeFirstResponder(field) else { return false }
         pendingSearchFocus = false
         return true

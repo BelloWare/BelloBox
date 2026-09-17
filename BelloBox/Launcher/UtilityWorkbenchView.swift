@@ -2,15 +2,14 @@ import SwiftUI
 
 struct UtilityWorkbenchView: View {
     @ObservedObject var model: UtilityWorkbenchModel
-    var onBack: () -> Void
+    var onSearchTools: () -> Void
+    var onNewWindow: () -> Void
     @State private var showDeleteSnippet = false
     @FocusState private var focusedEditor: String?
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                Button(action: onBack) { Image(systemName: "chevron.left") }
-                    .buttonStyle(ToolIconButtonStyle()).help("All tools (⌘K or Esc)").accessibilityLabel("Back to all tools")
                 ToolBadge(symbol: model.command.symbol)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(model.command.title).font(.system(size: 16, weight: .semibold))
@@ -18,13 +17,16 @@ struct UtilityWorkbenchView: View {
                         .font(.caption).foregroundStyle(BoxTheme.secondaryText)
                 }
                 Spacer()
-                ShortcutBadge(text: "⌘K")
+                Button(action: onNewWindow) { Label("New Window", systemImage: "plus.square.on.square") }
+                    .buttonStyle(SecondaryButtonStyle()).help("Open another \(model.command.title) window with a fresh input (⌘N)")
+                Button(action: onSearchTools) { Image(systemName: "magnifyingglass") }
+                    .buttonStyle(ToolIconButtonStyle()).help("Search all tools (⌘K)").accessibilityLabel("Search all tools")
             }.padding(14)
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     if model.command.additionalTool != nil {
-                        AdditionalUtilityEditor(model: model, compact: false, onEscape: onBack)
+                        AdditionalUtilityEditor(model: model, compact: false, onEscape: {})
                     } else {
                         controls
                         inputArea
@@ -254,7 +256,7 @@ struct UtilityWorkbenchView: View {
                 Button("Use as Input", action: model.useOutputAsInput).buttonStyle(SecondaryButtonStyle())
             }
             Button(action: model.copyOutput) { Label("Copy Result", systemImage: "doc.on.doc") }
-                .buttonStyle(SecondaryButtonStyle()).keyboardShortcut("c", modifiers: [.command, .shift])
+                .buttonStyle(SecondaryButtonStyle()).help("Copy result (⌘⇧C)")
                 .disabled(model.output.isEmpty || model.busy || model.error != nil)
             if model.selection.pid != nil {
                 Button("Replace Selection") { model.onReplace(model.output) }.buttonStyle(PrimaryButtonStyle()).disabled(!model.canReplace)
@@ -317,7 +319,7 @@ struct UtilityWorkbenchView: View {
                     ForEach(Array(Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", model.request.method])).sorted(), id: \.self) { Text($0) }
                 }.frame(width: 140)
                 TextField("https://example.com", text: $model.request.url).textFieldStyle(ToolTextFieldStyle()).accessibilityLabel("Request URL")
-                Button("Send", action: model.sendRequest).buttonStyle(PrimaryButtonStyle()).disabled(model.busy || model.request.url.isEmpty).keyboardShortcut(.return, modifiers: .command)
+                Button("Send", action: model.sendRequest).buttonStyle(PrimaryButtonStyle()).disabled(model.busy || model.request.url.isEmpty).help("Send request (⌘Return)")
             }
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) { Text("Headers · one per line").font(.caption).foregroundStyle(BoxTheme.secondaryText); editor("Request headers", text: $model.request.headers, height: 140) }

@@ -79,6 +79,7 @@
 		49096E6ECF88088E10A8C03E /* RecordingOptionsBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B138A1EEA822E792E8A987 /* RecordingOptionsBar.swift */; };
 		4A1C6EED4A05BC13D35DF5EF /* CaptureDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F19F7D308C1D43482CF001 /* CaptureDiagnostics.swift */; };
 		4CD21CD523F082696F720893 /* CodexCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35473BCCCB42BD6B76AF1F82 /* CodexCLI.swift */; };
+		4F9948AD6E664225A3EE1A9D /* UtilityWorkbenchWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DD83D328823BE3A60322CA9 /* UtilityWorkbenchWindowTests.swift */; };
 		5090888F0784A116E24FE607 /* GIFTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56711D07055991D784D5C292 /* GIFTranscoder.swift */; };
 		540E4C202C4BFE896B901BD1 /* SecurityUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00B7FD87CDFBB93F6A3EB9AD /* SecurityUtilities.swift */; };
 		541EAD161493F6730CFF066C /* CertificateTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0F9E87370BAC9CBCD0CA92 /* CertificateTool.swift */; };
@@ -199,6 +200,7 @@
 		DD7A5C06D428698B0B3F8063 /* ExtendedUtilityVisuals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 733BDA03C6EAEA0CCE0FBA22 /* ExtendedUtilityVisuals.swift */; };
 		DD869F615B5104766EE7D1E3 /* WorldClockCopilot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27A64C2575C07ACECF84829B /* WorldClockCopilot.swift */; };
 		DE5BBAC32ED08D0413F413D9 /* LauncherInteractivePreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FCB6FBA4B6B0FDF5BA95CE /* LauncherInteractivePreviewTests.swift */; };
+		DEF309F3FBA09D2D6044B4FA /* UtilityWorkbenchWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A88AB61CAA29F39E53596C26 /* UtilityWorkbenchWindowController.swift */; };
 		DF215D5B42CBFC5366CCCA4E /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8937A9C45A6753018FD65683 /* KeychainStore.swift */; };
 		E2AF422116DBD41167003EF2 /* WorldClockComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B98E57C3E6E5FE805E22A9AA /* WorldClockComponents.swift */; };
 		E36975C67FFF65F463D13F57 /* AppActivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C533015D8A378E8201BE18FE /* AppActivation.swift */; };
@@ -376,6 +378,7 @@
 		782A3CD02B34861CB6787FE8 /* AnnotationRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationRenderer.swift; sourceTree = "<group>"; };
 		78EF8932B67CFD76E3393310 /* CaptureOverlayPanelConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureOverlayPanelConfiguration.swift; sourceTree = "<group>"; };
 		7AA97F2574A4CCC015F742F0 /* DataConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataConversion.swift; sourceTree = "<group>"; };
+		7DD83D328823BE3A60322CA9 /* UtilityWorkbenchWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityWorkbenchWindowTests.swift; sourceTree = "<group>"; };
 		7E11803E3A01D23D921FB933 /* OCRPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRPanelView.swift; sourceTree = "<group>"; };
 		7F6E773D2923F91EDB2C26E2 /* AISelectionLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISelectionLayoutTests.swift; sourceTree = "<group>"; };
 		811AD718949634788A9F5E2F /* FloatingButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingButtonView.swift; sourceTree = "<group>"; };
@@ -411,6 +414,7 @@
 		A46A64CBB1E527BEE463FDE0 /* HotkeyRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyRecorderView.swift; sourceTree = "<group>"; };
 		A6ECC566D550EF9A16FC9786 /* RecordingPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingPermissionView.swift; sourceTree = "<group>"; };
 		A779EB3E456F16BE1E1560FB /* ActionPopupViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionPopupViewModelTests.swift; sourceTree = "<group>"; };
+		A88AB61CAA29F39E53596C26 /* UtilityWorkbenchWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityWorkbenchWindowController.swift; sourceTree = "<group>"; };
 		AAC2181180B0A661FDA1AC67 /* LauncherUtilityPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherUtilityPreviews.swift; sourceTree = "<group>"; };
 		AB3AA4D4C38402BBDF1601F1 /* QuantTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuantTools.swift; sourceTree = "<group>"; };
 		AEFBC046D389A0985854527F /* HTTPRequestTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTool.swift; sourceTree = "<group>"; };
@@ -754,6 +758,7 @@
 				61236C150B6BC57BB0A9C069 /* ThemeContrastTests.swift */,
 				070D5F61C4AA6D81748DE98E /* TimestampSummaryTests.swift */,
 				3065E35A1F46F5F92925D2DB /* UIUXBehaviorTests.swift */,
+				7DD83D328823BE3A60322CA9 /* UtilityWorkbenchWindowTests.swift */,
 				E69BBCC1085F9D0DA8C5B3AE /* WindowCapturePickerViewModelTests.swift */,
 				5330ADDCAD5558AF6CAD4997 /* WindowMaterialTests.swift */,
 				62BAF09F1C84E3B46FEE918B /* WorkspaceNavigationTests.swift */,
@@ -784,6 +789,7 @@
 				E1FB92523D357174CA7E8418 /* LauncherWindowController.swift */,
 				1A2ED0F69BADA8F45ED2D687 /* UtilityWorkbenchModel.swift */,
 				21C781B3A36385983843F9C3 /* UtilityWorkbenchView.swift */,
+				A88AB61CAA29F39E53596C26 /* UtilityWorkbenchWindowController.swift */,
 			);
 			path = Launcher;
 			sourceTree = "<group>";
@@ -1094,6 +1100,7 @@
 				D7D31D26EA9CA740885F8FFD /* ThemeContrastTests.swift in Sources */,
 				1D51253EC79DE514579E872D /* TimestampSummaryTests.swift in Sources */,
 				48FB6F3BACE8891F6FF7EE33 /* UIUXBehaviorTests.swift in Sources */,
+				4F9948AD6E664225A3EE1A9D /* UtilityWorkbenchWindowTests.swift in Sources */,
 				85566EACF6FBA22BAED7307B /* WindowCapturePickerViewModelTests.swift in Sources */,
 				5829EDB54C143A24E8847FEE /* WindowMaterialTests.swift in Sources */,
 				2B855B9D228959EFE0EFB62A /* WorkspaceNavigationTests.swift in Sources */,
@@ -1249,6 +1256,7 @@
 				43E70B53D84E418E22DC6BB2 /* ToolViewport.swift in Sources */,
 				E5C52E530C8BE67F0973DC12 /* UtilityWorkbenchModel.swift in Sources */,
 				C4665D9947EC9E8165A2AF9A /* UtilityWorkbenchView.swift in Sources */,
+				DEF309F3FBA09D2D6044B4FA /* UtilityWorkbenchWindowController.swift in Sources */,
 				2DF3C41E77F2E00F24094C28 /* WindowCapturePicker.swift in Sources */,
 				0B4BFB06A34BD7FDB4130458 /* WindowMaterials.swift in Sources */,
 				FE6B9347E08704851FF48762 /* WindowNavigation.swift in Sources */,
@@ -1380,7 +1388,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 76;
+				CURRENT_PROJECT_VERSION = 77;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1400,7 +1408,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.76;
+				MARKETING_VERSION = 0.0.77;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1446,7 +1454,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 76;
+				CURRENT_PROJECT_VERSION = 77;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 43TXHV3TM3;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1460,7 +1468,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.0.76;
+				MARKETING_VERSION = 0.0.77;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

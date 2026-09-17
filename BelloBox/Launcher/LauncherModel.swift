@@ -43,13 +43,15 @@ final class LauncherModel: ObservableObject {
         didSet { if selectedID != oldValue { selectionDidChange() } }
     }
     @Published var contextMessage: String?
-    @Published var workbench: UtilityWorkbenchModel?
     @Published private(set) var favorites: Set<String>
     @Published private(set) var recents: [String]
     /// Snapshot for this selection: opening a tool teaches the next palette,
     /// without moving the rows while someone is navigating the current one.
     private var learnedScores: [String: Int] = [:]
     var onCommand: (LauncherCommand, TextSelection, LauncherCommandContext) -> Void = { _, _, _ in }
+    /// Transfers the preview's exact draft to an independently owned window.
+    /// The palette must no longer cancel or edit this session after handoff.
+    var onOpenWorkbench: (UtilityWorkbenchModel) -> Void = { _ in }
     var onClose: () -> Void = {}
     var onPresentationChange: () -> Void = {}
     /// The expanded row changed height (another command was focused, or the
@@ -181,7 +183,6 @@ final class LauncherModel: ObservableObject {
     }
     private func replaceContext(_ selection: TextSelection) {
         cancelAll()
-        workbench = nil
         workbenches = [:]
         context = LauncherSelectionContext(text: selection.text)
         learnedScores = LauncherUsageStore(defaults: defaults).scores(for: context.contentKind)
@@ -254,9 +255,6 @@ final class LauncherModel: ObservableObject {
         guard sessions[command] == nil else { return }
         // Rejected and oversized selections only get the compact notice; the
         // full tool opens with the complete text on Enter, never a truncation.
-        // A tool that was opened already has a draft of its own: its session
-        // follows that draft (a notice while it is large, the preview once it
-        // was edited down), always on the same model instance.
         if Self.consumesText(command), workbenches[command] == nil, !fitsPreviewLimit { return }
         let session: LauncherInteractivePreview
         switch command {
@@ -360,10 +358,16 @@ final class LauncherModel: ObservableObject {
         defaults.set(recents, forKey: "launcherRecents")
         if command.isDeveloperTool {
             let tool = workbenchModel(for: command)
+            // Remove every palette owner before the host closes the palette.
+            // Closing it cancels its other previews, never the transferred job.
+            sessionObservers.removeValue(forKey: command)
+            sessions.removeValue(forKey: command)
+            workbenches.removeValue(forKey: command)
+            tool.pinnedText = pinnedText
+            tool.pinText = pinText
             tool.previewsOnly = false
-            workbench = tool
             if tool.result == nil && tool.error == nil && !tool.busy && command != .http { tool.schedule() }
-            presentationChanged()
+            onOpenWorkbench(tool)
         } else {
             var handoff = context(for: command)
             customize(&handoff)
@@ -403,20 +407,6 @@ final class LauncherModel: ObservableObject {
         if isTimestampSelection, case let .clocks(_, instant)? = previews[.worldClock]?.content { return instant }
         return nil
     }
-    func back() {
-        if let tool = workbench {
-            if tool.busy { tool.cancel() }
-            tool.previewsOnly = true
-            // A calculation interrupted by Back is restarted for the row when
-            // the draft fits it; an oversized draft waits for the next open.
-            if tool.result == nil, tool.error == nil, !tool.draftExceedsPreviewLimit { tool.schedule() }
-        }
-        workbench = nil
-        // The tool's draft may now fit the row (or not); the row follows it.
-        ensurePreviewForSelection()
-        presentationChanged()
-        onFocusSearch()
-    }
     func cancelAll() {
         cancelPreviewTask()
         previewGeneration = UUID()
@@ -426,5 +416,6 @@ final class LauncherModel: ObservableObject {
         sessionObservers = [:]
         sessions = [:]
         workbenches.values.forEach { $0.cancel() }
+        workbenches = [:]
     }
 }
