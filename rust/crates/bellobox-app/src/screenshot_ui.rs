@@ -4,7 +4,7 @@ use crate::{
     session::SessionJobs,
     theme::{self, Palette},
 };
-use bello_workbench_ui::{EditorAppearance, EditorView};
+use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::screenshot::{
     AnnotationKind, AnnotationStyle, AnnotationTool, MaskPattern, Point, Rect, RgbaColor,
     ScreenshotDocument, ScreenshotEditSession,
@@ -317,10 +317,16 @@ struct Gesture {
     selected: Option<u64>,
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
+enum ColorTarget {
+    Stroke,
+    Mask,
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum Menu {
     Zoom,
     MaskPattern,
     Image,
+    LabelDelete(u64),
 }
 struct ScreenshotEditor {
     session: ScreenshotEditSession,
@@ -335,6 +341,9 @@ struct ScreenshotEditor {
     scroll: gpui::ScrollHandle,
     export_busy: bool,
     image_bounds: Rc<Cell<Bounds<Pixels>>>,
+    preview_revision: u64,
+    label_drag: Option<LabelDrag>,
+    label_menu_position: ViewPoint<Pixels>,
     slider_bounds: Rc<Cell<Bounds<Pixels>>>,
     viewport_size: Rc<Cell<(f32, f32)>>,
     gesture: Option<Gesture>,
@@ -349,6 +358,11 @@ struct ScreenshotEditor {
     ocr_content: RevisionText,
     ocr: Entity<EditorView>,
     text_draft: Entity<EditorView>,
+    color_input: Entity<EditorView>,
+    color_target: Option<ColorTarget>,
+    color_error: Option<String>,
+    color_bounds: Rc<[Cell<Bounds<Pixels>>; 3]>,
+    _color_subscription: gpui::Subscription,
     text_origin: Option<Point>,
     show_discard: bool,
     open_menu: Option<Menu>,
@@ -390,6 +404,29 @@ impl ScreenshotEditor {
             e.set_appearance(EditorAppearance::plain(), cx);
             e
         });
+        let color_input = cx.new(|cx| {
+            let mut e = EditorView::new(String::new(), window, cx);
+            e.set_appearance(EditorAppearance::plain(), cx);
+            e.set_compact(true, cx);
+            e
+        });
+        let color_subscription = cx.subscribe(&color_input, |this, _, event: &EditorEvent, cx| {
+            if matches!(event, EditorEvent::Changed)
+                && let Some(target) = this.color_target
+            {
+                match crate::screenshot_color::updated_from_hex(
+                    this.picked_color(target),
+                    this.color_input.read(cx).text(),
+                ) {
+                    Ok(color) => {
+                        this.apply_custom_color(target, color);
+                        this.color_error = None;
+                    }
+                    Err(error) => this.color_error = Some(error.into()),
+                }
+                cx.notify();
+            }
+        });
         let mut view = Self {
             session,
             source,
@@ -403,6 +440,9 @@ impl ScreenshotEditor {
             scroll: gpui::ScrollHandle::new(),
             export_busy: false,
             image_bounds: Rc::new(Cell::new(Bounds::default())),
+            preview_revision: 0,
+            label_drag: None,
+            label_menu_position: point(px(0.), px(0.)),
             slider_bounds: Rc::new(Cell::new(Bounds::default())),
             viewport_size: Rc::new(Cell::new((0., 0.))),
             gesture: None,
@@ -417,6 +457,11 @@ impl ScreenshotEditor {
             ocr_content: RevisionText::default(),
             ocr,
             text_draft,
+            color_input,
+            color_target: None,
+            color_error: None,
+            color_bounds: Rc::new(std::array::from_fn(|_| Cell::new(Bounds::default()))),
+            _color_subscription: color_subscription,
             text_origin: None,
             show_discard: false,
             open_menu: None,
@@ -424,12 +469,17 @@ impl ScreenshotEditor {
             focus,
         };
         let weak = cx.entity().downgrade();
-        window.on_window_should_close(cx, move |_, cx| {
+        window.on_window_should_close(cx, move |window, cx| {
             weak.update(cx, |this, cx| {
                 if this.export_busy {
                     return false;
                 }
-                if this.session.has_edits() || this.text_origin.is_some() {
+                if this.text_origin.is_some() {
+                    this.cancel_active_text(window, cx);
+                    return false;
+                }
+                this.finish_label_drag(cx);
+                if this.session.has_edits() {
                     this.show_discard = true;
                     cx.notify();
                     false
@@ -445,6 +495,7 @@ impl ScreenshotEditor {
     fn changed(&mut self, cx: &mut Context<Self>) {
         self.ocr_jobs.cancel();
         self.ocr_busy = false;
+        self.preview_revision = self.preview_revision.wrapping_add(1);
         self.preview_tiles.clear();
         self.ocr_content.invalidate();
         self.ocr.update(cx, |e, cx| e.set_text(String::new(), cx));
@@ -469,11 +520,11 @@ impl ScreenshotEditor {
         }
         self.rendering = true;
         let token = self.jobs.begin();
-        let revision = self.session.revision();
-        let snapshot = self.session.render_snapshot();
+        let revision = self.preview_revision;
+        let snapshot = self.label_preview_snapshot();
         let task = cx
             .background_executor()
-            .spawn(async move { snapshot.render_preview_tiles() });
+            .spawn(async move { snapshot?.render_preview_tiles() });
         cx.spawn(async move |this, cx| {
             let result = task.await;
             let _ = this.update(cx, |this, cx| {
@@ -481,7 +532,7 @@ impl ScreenshotEditor {
                     return;
                 }
                 this.rendering = false;
-                if this.session.revision() != revision {
+                if this.preview_revision != revision {
                     this.render_preview(cx);
                     return;
                 }
@@ -550,11 +601,11 @@ impl ScreenshotEditor {
             cx.notify();
             return;
         }
-        self.selected = if self.tool == AnnotationTool::Select {
-            self.session.hit_test(point, 5. / self.scale)
-        } else {
-            None
-        };
+        self.selected = None;
+        if self.tool == AnnotationTool::Select {
+            cx.notify();
+            return;
+        }
         self.gesture = Some(Gesture {
             tool: self.tool,
             points: vec![point],
@@ -564,6 +615,10 @@ impl ScreenshotEditor {
     }
     fn mouse_move(&mut self, e: &gpui::MouseMoveEvent, _: &mut Window, cx: &mut Context<Self>) {
         let point = self.document_point(e.position);
+        if self.label_drag.is_some() {
+            self.update_label_drag(point, cx);
+            return;
+        }
         if let Some(gesture) = self.gesture.as_mut() {
             if gesture.points.len() >= 20_000 {
                 self.status =
@@ -586,6 +641,11 @@ impl ScreenshotEditor {
     }
     fn mouse_up(&mut self, e: &gpui::MouseUpEvent, _: &mut Window, cx: &mut Context<Self>) {
         let endpoint = self.document_point(e.position);
+        if self.label_drag.is_some() {
+            self.update_label_drag(endpoint, cx);
+            self.finish_label_drag(cx);
+            return;
+        }
         let Some(mut gesture) = self.gesture.take() else {
             return;
         };
@@ -648,7 +708,12 @@ impl ScreenshotEditor {
         self.report(result, cx);
     }
     fn close(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.session.has_edits() || self.text_origin.is_some() {
+        if self.text_origin.is_some() {
+            self.cancel_active_text(window, cx);
+            return;
+        }
+        self.finish_label_drag(cx);
+        if self.session.has_edits() {
             self.show_discard = true;
             cx.notify();
         } else {
@@ -656,6 +721,7 @@ impl ScreenshotEditor {
         }
     }
     fn copy(&mut self, finish: bool, window: &mut Window, cx: &mut Context<Self>) {
+        self.finish_label_drag(cx);
         if self.export_busy || !self.commit_text(cx) {
             return;
         }
@@ -692,15 +758,21 @@ impl ScreenshotEditor {
         .detach();
     }
     fn save(&mut self, cx: &mut Context<Self>) {
+        self.finish_label_drag(cx);
         if self.export_busy || !self.commit_text(cx) {
             return;
         }
         self.export_busy = true;
         cx.notify();
         let snapshot = self.session.render_snapshot();
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
+        let name = format!("BelloBox-Screenshot-{timestamp}.png");
         let dialog = cx.prompt_for_new_path(
             &std::env::current_dir().unwrap_or_else(|_| ".".into()),
-            Some("BelloBox Screenshot.png"),
+            Some(&name),
         );
         cx.spawn(async move |this, cx| {
             let path = match dialog.await {
@@ -757,6 +829,7 @@ impl ScreenshotEditor {
         .detach();
     }
     fn read_text(&mut self, cx: &mut Context<Self>) {
+        self.finish_label_drag(cx);
         if !self.commit_text(cx) {
             return;
         }
@@ -834,6 +907,15 @@ impl ScreenshotEditor {
 
         let primary = e.keystroke.modifiers.platform || e.keystroke.modifiers.control;
         if key == "escape" {
+            if let Some(drag) = self.label_drag.take() {
+                if drag.id.is_none() {
+                    self.text_origin = Some(drag.origin);
+                }
+                self.preview_revision = self.preview_revision.wrapping_add(1);
+                self.render_preview(cx);
+                cx.notify();
+                return;
+            }
             if self.text_origin.take().is_some()
                 || self.gesture.take().is_some()
                 || self.show_discard
@@ -846,12 +928,7 @@ impl ScreenshotEditor {
             return;
         }
         if primary && key == "z" {
-            if e.keystroke.modifiers.shift {
-                self.session.redo();
-            } else {
-                self.session.undo();
-            }
-            self.changed(cx);
+            self.apply_history(e.keystroke.modifiers.shift, cx);
             cx.stop_propagation();
         } else if primary && key == "s" {
             self.save(cx);
@@ -872,18 +949,16 @@ impl ScreenshotEditor {
         } else if primary && e.keystroke.modifiers.alt && key == "o" {
             self.shows_ocr = !self.shows_ocr;
             cx.notify();
-        } else if primary && e.keystroke.modifiers.alt {
-            if let Ok(n) = key.parse::<usize>()
-                && let Some((tool, _, _)) = n.checked_sub(1).and_then(|i| TOOLS.get(i))
-            {
-                self.tool = *tool;
-                cx.notify();
-            }
-        } else if (key == "backspace" || key == "delete")
-            && let Some(id) = self.selected.take()
+        } else if primary
+            && e.keystroke.modifiers.alt
+            && let Ok(n) = key.parse::<usize>()
+            && let Some((tool, _, _)) = n.checked_sub(1).and_then(|i| TOOLS.get(i))
         {
-            let result = self.session.remove_annotation(id).map(|_| ());
-            self.report(result, cx);
+            if !self.commit_text(cx) {
+                return;
+            }
+            self.tool = *tool;
+            cx.notify();
         }
     }
     fn zoom_step(&mut self, up: bool, cx: &mut Context<Self>) {
@@ -931,16 +1006,14 @@ impl ScreenshotEditor {
                 icon_button("undo", "arrow.uturn.backward", false, p)
                     .opacity(if self.session.can_undo() { 1. } else { 0.35 })
                     .on_click(cx.listener(|this, _, _, cx| {
-                        this.session.undo();
-                        this.changed(cx);
+                        this.apply_history(false, cx);
                     })),
             )
             .child(
                 icon_button("redo", "arrow.uturn.forward", false, p)
                     .opacity(if self.session.can_redo() { 1. } else { 0.35 })
                     .on_click(cx.listener(|this, _, _, cx| {
-                        this.session.redo();
-                        this.changed(cx);
+                        this.apply_history(true, cx);
                     })),
             );
         let controls = self.style_controls(p, cx);
@@ -1018,51 +1091,25 @@ impl ScreenshotEditor {
                             cx.notify();
                         }))
                 }));
-                let pattern = self.mask_style.mask_pattern;
+                row = row.child(self.color_well(ColorTarget::Mask, p, cx));
+                let symbol = match self.mask_style.mask_pattern {
+                    MaskPattern::Solid => "mask-solid",
+                    MaskPattern::Stripes => "mask-stripes",
+                    MaskPattern::Dots => "mask-dots",
+                };
                 row = row.child(
-                    button("mask-pattern", format!("{} ▾", pattern.label()), p).on_click(
-                        cx.listener(|this, _, _, cx| {
-                            this.toggle_menu(Menu::MaskPattern, cx);
-                        }),
-                    ),
+                    icon_button("mask-pattern", symbol, false, p)
+                        .size(px(24.))
+                        .on_click(
+                            cx.listener(|this, _, _, cx| this.toggle_menu(Menu::MaskPattern, cx)),
+                        ),
                 );
             }
             AnnotationTool::Pen
             | AnnotationTool::Arrow
             | AnnotationTool::Rectangle
             | AnnotationTool::Text => {
-                for (i, color) in [
-                    RgbaColor::new(0.95, 0.42, 0.08, 1.),
-                    RgbaColor::new(0.06, 0.40, 0.43, 1.),
-                    RgbaColor::new(0.46, 0.26, 0.70, 1.),
-                    RgbaColor::new(0.1, 0.1, 0.1, 1.),
-                ]
-                .into_iter()
-                .enumerate()
-                {
-                    row = row.child(
-                        div()
-                            .id(("stroke-fill", i))
-                            .size(px(16.))
-                            .rounded_full()
-                            .border_1()
-                            .border_color(if self.style.stroke_color == color {
-                                p.accent
-                            } else {
-                                p.border
-                            })
-                            .bg(gpui::Rgba {
-                                r: color.red,
-                                g: color.green,
-                                b: color.blue,
-                                a: 1.,
-                            })
-                            .on_click(cx.listener(move |this, _, _, cx| {
-                                this.style.stroke_color = color;
-                                cx.notify();
-                            })),
-                    );
-                }
+                row = row.child(self.color_well(ColorTarget::Stroke, p, cx));
                 let is_text = self.tool == AnnotationTool::Text;
                 let value = if is_text {
                     self.style.font_size
@@ -1135,13 +1182,7 @@ impl ScreenshotEditor {
             let style = self.style;
             self.text_draft.update(cx, |editor, cx| {
                 let mut appearance = editor.appearance().clone();
-                let color = gpui::Rgba {
-                    r: style.stroke_color.red,
-                    g: style.stroke_color.green,
-                    b: style.stroke_color.blue,
-                    a: 1.,
-                }
-                .into();
+                let color = p.primary;
                 let font_size = (style.font_size * scale).clamp(6., 256.);
                 if appearance.font_size != font_size || appearance.text != color {
                     appearance.font_size = font_size;
@@ -1251,6 +1292,7 @@ impl ScreenshotEditor {
                                     }),
                             )
                             .child(overlay)
+                            .children(self.label_overlays(visible, scale, p, cx))
                             .when_some(self.text_origin, |d, origin| {
                                 d.child(
                                     div()
@@ -1259,7 +1301,8 @@ impl ScreenshotEditor {
                                         .left(px((origin.x - visible.x) * scale))
                                         .top(px((origin.y - visible.y) * scale))
                                         .w(px((260. * scale).max(120.)))
-                                        .h(px(((self.style.font_size + 16.) * scale).max(34.)))
+                                        .h(px(((self.style.font_size + 16.).max(34.) * scale)
+                                            .max(30.)))
                                         .bg(p.surface)
                                         .border_1()
                                         .border_color(p.accent)
@@ -1277,14 +1320,40 @@ impl ScreenshotEditor {
                                                     window.focus(&this.focus);
                                                     cx.stop_propagation();
                                                 } else if e.keystroke.key == "escape" {
-                                                    this.text_origin = None;
-                                                    window.focus(&this.focus);
-                                                    cx.notify();
+                                                    this.cancel_active_text(window, cx);
                                                     cx.stop_propagation();
                                                 }
                                             },
                                         ))
-                                        .child(self.text_draft.clone()),
+                                        .child(self.text_draft.clone())
+                                        .child(
+                                            div()
+                                                .id("active-label-drag-handle")
+                                                .absolute()
+                                                .left(px(-10.))
+                                                .top(px(-10.))
+                                                .size(px(22.))
+                                                .rounded_full()
+                                                .bg(p.accent_fill)
+                                                .border_1()
+                                                .border_color(gpui::white().opacity(0.45))
+                                                .flex()
+                                                .items_center()
+                                                .justify_center()
+                                                .cursor_move()
+                                                .child(annotation_icon("move", p))
+                                                .on_mouse_down(
+                                                    MouseButton::Left,
+                                                    cx.listener(
+                                                        |this, e: &gpui::MouseDownEvent, _, cx| {
+                                                            this.begin_label_drag(
+                                                                None, e.position, cx,
+                                                            );
+                                                            cx.stop_propagation();
+                                                        },
+                                                    ),
+                                                ),
+                                        ),
                                 )
                             })
                             .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
@@ -1475,8 +1544,8 @@ impl Render for ScreenshotEditor {
         let viewport = window.viewport_size();
         let compact = f32::from(viewport.width) < 760.;
         let visible = self.session.document().visible_rect();
-        {
-            self.ocr.update(cx, |e, cx| {
+        for editor in [&self.ocr, &self.color_input] {
+            editor.update(cx, |e, cx| {
                 let mut appearance = e.appearance().clone();
                 if appearance.text != p.primary {
                     appearance.text = p.primary;
@@ -1508,7 +1577,25 @@ impl Render for ScreenshotEditor {
             .text_color(p.primary)
             .font_family(theme::ui_font())
             .track_focus(&self.focus)
-            .capture_key_down(cx.listener(|this, e: &gpui::KeyDownEvent, _, cx| {
+            .capture_key_down(cx.listener(|this, e: &gpui::KeyDownEvent, window, cx| {
+                if this.color_target.is_some()
+                    && !this.color_input.read(cx).has_marked_text()
+                    && matches!(e.keystroke.key.as_str(), "escape" | "enter")
+                {
+                    this.color_target = None;
+                    this.color_error = None;
+                    window_focus_after_color(this, window, cx);
+                    cx.stop_propagation();
+                    return;
+                }
+                if this.color_target.is_some()
+                    && (e.keystroke.modifiers.alt
+                        || ((e.keystroke.modifiers.platform || e.keystroke.modifiers.control)
+                            && !["a", "c", "v", "x", "z"].contains(&e.keystroke.key.as_str())))
+                {
+                    cx.stop_propagation();
+                    return;
+                }
                 if this.export_busy || this.show_discard {
                     if e.keystroke.key == "escape" && !this.export_busy {
                         this.show_discard = false;
@@ -1542,6 +1629,10 @@ impl Render for ScreenshotEditor {
         if self.open_menu.is_some() {
             root = root.child(self.menu(p, compact, cx));
         }
+        if self.color_target.is_some() {
+            root = root.child(self.color_panel(p, cx));
+        }
+
         if self.export_busy {
             root = root.child(
                 div()
@@ -1678,6 +1769,38 @@ fn annotation_icon(symbol: &'static str, p: Palette) -> gpui::AnyElement {
         |_, _, _| (),
         move |bounds, _, window, _| {
             let lines: Vec<Vec<(f32, f32)>> = match symbol {
+                "mask-solid" => vec![
+                    vec![(3., 3.), (21., 3.), (21., 21.), (3., 21.), (3., 3.)],
+                    vec![(3., 5.), (21., 5.)],
+                    vec![(3., 8.), (21., 8.)],
+                    vec![(3., 11.), (21., 11.)],
+                    vec![(3., 14.), (21., 14.)],
+                    vec![(3., 17.), (21., 17.)],
+                    vec![(3., 20.), (21., 20.)],
+                ],
+                "mask-stripes" => vec![
+                    vec![(3., 8.), (8., 3.)],
+                    vec![(3., 16.), (16., 3.)],
+                    vec![(7., 21.), (21., 7.)],
+                    vec![(15., 21.), (21., 15.)],
+                ],
+                "mask-dots" => (0..3)
+                    .flat_map(|y| {
+                        (0..3).map(move |x| {
+                            let x = 4. + x as f32 * 7.;
+                            let y = 4. + y as f32 * 7.;
+                            vec![(x, y), (x + 2., y), (x + 2., y + 2.), (x, y + 2.), (x, y)]
+                        })
+                    })
+                    .collect(),
+                "move" => vec![
+                    vec![(12., 2.), (12., 22.)],
+                    vec![(2., 12.), (22., 12.)],
+                    vec![(8., 6.), (12., 2.), (16., 6.)],
+                    vec![(8., 18.), (12., 22.), (16., 18.)],
+                    vec![(6., 8.), (2., 12.), (6., 16.)],
+                    vec![(18., 8.), (22., 12.), (18., 16.)],
+                ],
                 "cursorarrow" => vec![vec![
                     (4., 2.),
                     (4., 19.),
@@ -1812,6 +1935,7 @@ impl ScreenshotEditor {
                 .map(|pattern| pattern.label().into())
                 .into(),
             Some(Menu::Image) => vec!["Reset Crop".into()],
+            Some(Menu::LabelDelete(_)) => vec!["Delete Label".into()],
             None => Vec::new(),
         }
     }
@@ -1834,6 +1958,10 @@ impl ScreenshotEditor {
                 let result = self.session.set_crop(None).map(|_| ());
                 self.report(result, cx);
             }
+            Some(Menu::LabelDelete(id)) => {
+                let result = self.session.remove_annotation(id).map(|_| ());
+                self.report(result, cx);
+            }
             None => {}
         }
         self.open_menu = None;
@@ -1844,7 +1972,9 @@ impl ScreenshotEditor {
         let card = div()
             .id("screenshot-menu")
             .absolute()
-            .left(px(if menu == Menu::Zoom {
+            .left(px(if matches!(menu, Menu::LabelDelete(_)) {
+                f32::from(self.label_menu_position.x)
+            } else if menu == Menu::Zoom {
                 130.
             } else if compact {
                 12.
@@ -1855,7 +1985,13 @@ impl ScreenshotEditor {
                 d.bottom(px(if compact { 78. } else { 46. }))
             })
             .when(menu != Menu::Zoom, |d| {
-                d.top(px(if compact { 126. } else { 90. }))
+                d.top(px(if matches!(menu, Menu::LabelDelete(_)) {
+                    f32::from(self.label_menu_position.y)
+                } else if compact {
+                    126.
+                } else {
+                    90.
+                }))
             })
             .w(px(180.))
             .p(px(4.))
@@ -2121,6 +2257,502 @@ impl OcrTicket {
     }
 }
 
+fn window_focus_after_color(
+    this: &mut ScreenshotEditor,
+    window: &mut Window,
+    cx: &mut Context<ScreenshotEditor>,
+) {
+    if this.text_origin.is_some() {
+        this.text_draft.read(cx).focus(window);
+    } else {
+        window.focus(&this.focus);
+    }
+    cx.notify();
+}
+impl ScreenshotEditor {
+    fn picked_color(&self, target: ColorTarget) -> RgbaColor {
+        match target {
+            ColorTarget::Stroke => self.style.stroke_color,
+            ColorTarget::Mask => self.mask_style.mask_fill(),
+        }
+    }
+    fn apply_custom_color(&mut self, target: ColorTarget, mut color: RgbaColor) {
+        color.alpha = 1.;
+        match target {
+            ColorTarget::Stroke => self.style.stroke_color = color,
+            ColorTarget::Mask => self.mask_style.fill_color = Some(color),
+        }
+    }
+    fn open_color(&mut self, target: ColorTarget, window: &mut Window, cx: &mut Context<Self>) {
+        self.open_menu = None;
+        self.color_target = Some(target);
+        self.color_error = None;
+        let text = crate::screenshot_color::hex(self.picked_color(target));
+        self.color_input.update(cx, |e, cx| {
+            e.set_text(text, cx);
+            e.focus(window);
+        });
+        cx.notify();
+    }
+    fn color_well(
+        &self,
+        target: ColorTarget,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        let color = self.picked_color(target);
+        div()
+            .id(if target == ColorTarget::Mask {
+                "custom-mask-color"
+            } else {
+                "custom-stroke-color"
+            })
+            .w(px(34.))
+            .h(px(24.))
+            .p(px(3.))
+            .border_1()
+            .border_color(p.border)
+            .rounded(px(5.))
+            .bg(p.surface)
+            .cursor_pointer()
+            .child(div().size_full().rounded(px(2.)).bg(gpui::Rgba {
+                r: color.red,
+                g: color.green,
+                b: color.blue,
+                a: 1.,
+            }))
+            .on_click(cx.listener(move |this, _, window, cx| this.open_color(target, window, cx)))
+    }
+    fn update_color_slider(&mut self, index: usize, x: Pixels, cx: &mut Context<Self>) {
+        let Some(target) = self.color_target else {
+            return;
+        };
+        let bounds = self.color_bounds[index].get();
+        let value = ((f32::from(x - bounds.origin.x) - 5.)
+            / (f32::from(bounds.size.width) - 10.).max(1.))
+        .clamp(0., 1.)
+            * 255.;
+        let color = crate::screenshot_color::set_channel(self.picked_color(target), index, value);
+        self.apply_custom_color(target, color);
+        self.color_input.update(cx, |e, cx| {
+            e.set_text(crate::screenshot_color::hex(color), cx)
+        });
+        cx.notify();
+    }
+    fn color_panel(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
+        let color = self.picked_color(self.color_target.unwrap());
+        let channels = color.rgba8();
+        let rows = (0..3).map(|index| {
+            let bounds = self.color_bounds.clone();
+            let value = channels[index];
+            div()
+                .flex()
+                .items_center()
+                .gap(px(8.))
+                .child(
+                    div()
+                        .w(px(42.))
+                        .text_size(px(11.))
+                        .child(["Red", "Green", "Blue"][index]),
+                )
+                .child(
+                    div()
+                        .id(("color-channel", index))
+                        .flex_1()
+                        .h(px(24.))
+                        .on_mouse_down(
+                            MouseButton::Left,
+                            cx.listener(move |this, e: &gpui::MouseDownEvent, _, cx| {
+                                this.update_color_slider(index, e.position.x, cx)
+                            }),
+                        )
+                        .on_mouse_move(cx.listener(move |this, e: &gpui::MouseMoveEvent, _, cx| {
+                            if e.pressed_button == Some(MouseButton::Left) {
+                                this.update_color_slider(index, e.position.x, cx);
+                            }
+                        }))
+                        .child(
+                            canvas(
+                                move |b, _, _| bounds[index].set(b),
+                                move |b, _, window, _| {
+                                    let width = f32::from(b.size.width) - 10.;
+                                    let left = b.origin.x + px(5.);
+                                    let y = b.origin.y + px(11.);
+                                    let fraction = value as f32 / 255.;
+                                    window.paint_quad(
+                                        gpui::fill(
+                                            Bounds::new(point(left, y), size(px(width), px(3.))),
+                                            p.border,
+                                        )
+                                        .corner_radii(px(2.)),
+                                    );
+                                    window.paint_quad(
+                                        gpui::fill(
+                                            Bounds::new(
+                                                point(left, y),
+                                                size(px(width * fraction), px(3.)),
+                                            ),
+                                            p.accent,
+                                        )
+                                        .corner_radii(px(2.)),
+                                    );
+                                    window.paint_quad(
+                                        gpui::fill(
+                                            Bounds::new(
+                                                point(
+                                                    left + px(width * fraction) - px(5.),
+                                                    y - px(4.),
+                                                ),
+                                                size(px(11.), px(11.)),
+                                            ),
+                                            p.accent,
+                                        )
+                                        .corner_radii(px(6.)),
+                                    );
+                                },
+                            )
+                            .size_full(),
+                        ),
+                )
+                .child(div().w(px(26.)).text_size(px(11.)).child(value.to_string()))
+        });
+        div()
+            .id("color-panel-scrim")
+            .absolute()
+            .inset_0()
+            .occlude()
+            .on_mouse_down(
+                MouseButton::Left,
+                cx.listener(|this, _, window, cx| {
+                    this.color_target = None;
+                    this.color_error = None;
+                    window_focus_after_color(this, window, cx);
+                    cx.stop_propagation();
+                }),
+            )
+            .child(
+                div()
+                    .id("screenshot-color-panel")
+                    .absolute()
+                    .left(px(40.))
+                    .top(px(90.))
+                    .w(px(300.))
+                    .p(px(14.))
+                    .rounded(px(12.))
+                    .bg(p.surface)
+                    .border_1()
+                    .border_color(p.border)
+                    .shadow_lg()
+                    .flex()
+                    .flex_col()
+                    .gap(px(10.))
+                    .occlude()
+                    .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                    .child(
+                        div()
+                            .flex()
+                            .items_center()
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                                    .child("Colors"),
+                            )
+                            .child(icon_button("close-color", "xmark", false, p).on_click(
+                                cx.listener(|this, _, window, cx| {
+                                    this.color_target = None;
+                                    this.color_error = None;
+                                    window_focus_after_color(this, window, cx);
+                                }),
+                            )),
+                    )
+                    .children(rows)
+                    .child(
+                        div()
+                            .flex()
+                            .items_center()
+                            .gap(px(10.))
+                            .child(div().text_size(px(11.)).child("Hex"))
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .h(px(30.))
+                                    .bg(p.well)
+                                    .border_1()
+                                    .border_color(p.separator)
+                                    .rounded(px(5.))
+                                    .child(self.color_input.clone()),
+                            ),
+                    )
+                    .when_some(self.color_error.clone(), |d, error| {
+                        d.child(div().text_size(px(10.)).text_color(p.danger).child(error))
+                    })
+                    .child(
+                        div()
+                            .text_size(px(10.))
+                            .text_color(p.secondary)
+                            .child("Stroke, text and mask colors are always opaque."),
+                    ),
+            )
+    }
+}
+
+#[derive(Clone, Copy)]
+struct LabelDrag {
+    id: Option<u64>,
+    start: Point,
+    origin: Point,
+    current: Point,
+    max_width: f32,
+    font_size: f32,
+    moved: bool,
+}
+impl ScreenshotEditor {
+    fn begin_label_drag(
+        &mut self,
+        id: Option<u64>,
+        position: ViewPoint<Pixels>,
+        cx: &mut Context<Self>,
+    ) {
+        if self.export_busy || self.show_discard {
+            return;
+        }
+        if id.is_some() && !self.commit_text(cx) {
+            return;
+        }
+        let (origin, max_width, font_size) = if let Some(id) = id {
+            let Some(annotation) = self
+                .session
+                .document()
+                .annotations()
+                .iter()
+                .find(|a| a.id == id)
+            else {
+                return;
+            };
+            let AnnotationKind::Text {
+                origin, max_width, ..
+            } = annotation.kind
+            else {
+                return;
+            };
+            (origin, max_width, annotation.style.font_size)
+        } else {
+            let Some(origin) = self.text_origin else {
+                return;
+            };
+            (origin, 260., self.style.font_size)
+        };
+        self.gesture = None;
+        self.selected = id;
+        self.label_drag = Some(LabelDrag {
+            id,
+            start: self.document_point(position),
+            origin,
+            current: origin,
+            max_width,
+            font_size,
+            moved: false,
+        });
+        cx.notify();
+    }
+    fn update_label_drag(&mut self, point: Point, cx: &mut Context<Self>) {
+        let Some(mut drag) = self.label_drag else {
+            return;
+        };
+        if !drag.moved && !label_drag_exceeds_threshold(drag.start, point, self.scale) {
+            return;
+        }
+        drag.moved = true;
+        let proposed = Point::new(
+            drag.origin.x + point.x - drag.start.x,
+            drag.origin.y + point.y - drag.start.y,
+        );
+        let Ok(current) = bellobox_core::screenshot::selection::clamped_document_text_origin(
+            proposed,
+            drag.max_width,
+            drag.font_size,
+            self.session.document().visible_rect(),
+        ) else {
+            return;
+        };
+        if current == drag.current {
+            return;
+        }
+        drag.current = current;
+        self.label_drag = Some(drag);
+        if drag.id.is_none() {
+            self.text_origin = Some(current);
+        } else {
+            self.ocr_jobs.cancel();
+            self.ocr_busy = false;
+            self.ocr_content.invalidate();
+            self.ocr.update(cx, |e, cx| e.set_text(String::new(), cx));
+            self.preview_revision = self.preview_revision.wrapping_add(1);
+            self.render_preview(cx);
+        }
+        cx.notify();
+    }
+    fn finish_label_drag(&mut self, cx: &mut Context<Self>) {
+        let Some(drag) = self.label_drag.take() else {
+            return;
+        };
+        if let Some(id) = drag.id
+            && drag.current != drag.origin
+        {
+            let result = self
+                .session
+                .move_annotation(
+                    id,
+                    drag.current.x - drag.origin.x,
+                    drag.current.y - drag.origin.y,
+                )
+                .map(|_| ());
+            self.report(result, cx);
+        } else {
+            cx.notify();
+        }
+    }
+    fn label_preview_snapshot(&self) -> Result<bellobox_core::screenshot::RenderSnapshot, String> {
+        transient_label_snapshot(self.session.render_snapshot(), self.label_drag)
+    }
+    fn label_overlays(
+        &self,
+        visible: Rect,
+        scale: f32,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> Vec<gpui::Stateful<gpui::Div>> {
+        if !matches!(self.tool, AnnotationTool::Select | AnnotationTool::Text) {
+            return Vec::new();
+        }
+        self.session
+            .document()
+            .annotations()
+            .iter()
+            .filter_map(|annotation| {
+                let AnnotationKind::Text {
+                    origin, max_width, ..
+                } = annotation.kind
+                else {
+                    return None;
+                };
+                let origin = self
+                    .label_drag
+                    .filter(|d| d.id == Some(annotation.id))
+                    .map_or(origin, |d| d.current);
+                let frame = bellobox_core::screenshot::selection::visible_text_label_frame(
+                    origin,
+                    max_width,
+                    annotation.style.font_size,
+                    Point::new(visible.x, visible.y),
+                )
+                .ok()?;
+                let id = annotation.id;
+                Some(
+                    div()
+                        .id(("committed-text-label", id as usize))
+                        .absolute()
+                        .left(px((frame.x + frame.width / 2.) * scale
+                            - (frame.width * scale).max(44.) / 2.))
+                        .top(px((frame.y + frame.height / 2.) * scale
+                            - (frame.height * scale).max(30.) / 2.))
+                        .w(px((frame.width * scale).max(44.)))
+                        .h(px((frame.height * scale).max(30.)))
+                        .border_1()
+                        .border_color(p.accent.opacity(
+                            if self.label_drag.is_some_and(|d| d.id == Some(id)) {
+                                0.95
+                            } else {
+                                0.42
+                            },
+                        ))
+                        .rounded(px(7.))
+                        .cursor_move()
+                        .on_mouse_down(
+                            MouseButton::Left,
+                            cx.listener(move |this, e: &gpui::MouseDownEvent, window, cx| {
+                                this.begin_label_drag(Some(id), e.position, cx);
+                                window.focus(&this.focus);
+                                cx.stop_propagation();
+                            }),
+                        )
+                        .on_mouse_down(
+                            MouseButton::Right,
+                            cx.listener(move |this, e: &gpui::MouseDownEvent, window, cx| {
+                                this.open_menu = Some(Menu::LabelDelete(id));
+                                this.menu_index = 0;
+                                let size = window.viewport_size();
+                                this.label_menu_position = point(
+                                    e.position.x.min(size.width - px(190.)).max(px(0.)),
+                                    e.position.y.min(size.height - px(50.)).max(px(0.)),
+                                );
+                                window.focus(&this.focus);
+                                cx.notify();
+                                cx.stop_propagation();
+                            }),
+                        ),
+                )
+            })
+            .collect()
+    }
+}
+
+fn transient_label_snapshot(
+    snapshot: bellobox_core::screenshot::RenderSnapshot,
+    drag: Option<LabelDrag>,
+) -> Result<bellobox_core::screenshot::RenderSnapshot, String> {
+    if let Some(drag) = drag
+        && let Some(id) = drag.id
+        && drag.current != drag.origin
+    {
+        if !snapshot
+            .annotations()
+            .iter()
+            .any(|a| a.id == id && matches!(a.kind, AnnotationKind::Text { .. }))
+        {
+            return Err("Only text labels can be dragged in the screenshot editor.".into());
+        }
+        let mut preview = ScreenshotEditSession::new(snapshot);
+        preview.move_annotation(
+            id,
+            drag.current.x - drag.origin.x,
+            drag.current.y - drag.origin.y,
+        )?;
+        Ok(preview.render_snapshot())
+    } else {
+        Ok(snapshot)
+    }
+}
+impl ScreenshotEditor {
+    fn cancel_active_text(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.text_origin = None;
+        self.label_drag = None;
+        self.text_draft
+            .update(cx, |e, cx| e.set_text(String::new(), cx));
+        window.focus(&self.focus);
+        cx.notify();
+    }
+    fn apply_history(&mut self, redo: bool, cx: &mut Context<Self>) {
+        self.finish_label_drag(cx);
+        if !self.commit_text(cx) {
+            return;
+        }
+        if redo {
+            self.session.redo();
+        } else {
+            self.session.undo();
+        }
+        self.changed(cx);
+    }
+}
+
+fn label_drag_exceeds_threshold(start: Point, current: Point, scale: f32) -> bool {
+    scale.is_finite()
+        && scale > 0.
+        && (current.x - start.x).hypot(current.y - start.y) * scale >= 2.
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2263,5 +2895,91 @@ mod tests {
             point(px(0.), px(-1024.)),
             (800., 700.)
         ));
+    }
+
+    #[test]
+    fn label_drag_threshold_is_in_view_points() {
+        assert!(!label_drag_exceeds_threshold(
+            Point::new(2., 3.),
+            Point::new(3., 3.),
+            1.
+        ));
+        assert!(label_drag_exceeds_threshold(
+            Point::new(2., 3.),
+            Point::new(3., 3.),
+            2.
+        ));
+        assert!(!label_drag_exceeds_threshold(
+            Point::new(2., 3.),
+            Point::new(4., 3.),
+            0.5
+        ));
+        assert!(!label_drag_exceeds_threshold(
+            Point::new(0., 0.),
+            Point::new(10., 10.),
+            f32::NAN
+        ));
+    }
+    #[test]
+    fn transient_label_movement_preserves_undo_and_original_document() {
+        let Ok(font) = std::fs::read("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf") else {
+            return;
+        };
+        let png = bellobox_core::qr::png("synthetic").unwrap();
+        let mut session = ScreenshotEditSession::new(ScreenshotDocument::from_png(&png).unwrap());
+        session.set_text_font(&font).unwrap();
+        let id = session
+            .add_annotation(
+                AnnotationKind::Text {
+                    text: "LABEL".into(),
+                    origin: Point::new(10., 20.),
+                    max_width: 260.,
+                },
+                AnnotationStyle::default(),
+            )
+            .unwrap();
+        let revision = session.revision();
+        for x in [30., 40., 50.] {
+            let drag = LabelDrag {
+                id: Some(id),
+                start: Point::new(10., 20.),
+                origin: Point::new(10., 20.),
+                current: Point::new(x, 40.),
+                max_width: 260.,
+                font_size: 18.,
+                moved: true,
+            };
+            let preview = transient_label_snapshot(session.render_snapshot(), Some(drag)).unwrap();
+            assert_eq!(preview.annotations()[0].kind.bounds().x, x);
+            assert_eq!(session.document().annotations()[0].kind.bounds().x, 10.);
+            assert_eq!(session.revision(), revision);
+        }
+        session.move_annotation(id, 40., 20.).unwrap();
+        assert!(session.undo());
+        assert_eq!(session.document().annotations()[0].kind.bounds().x, 10.);
+        assert!(session.undo());
+        assert!(session.document().annotations().is_empty());
+        assert!(!session.undo());
+    }
+    #[test]
+    fn label_preview_rejects_nontext_annotations() {
+        let png = bellobox_core::qr::png("synthetic").unwrap();
+        let mut session = ScreenshotEditSession::new(ScreenshotDocument::from_png(&png).unwrap());
+        let id = session
+            .add_annotation(
+                AnnotationKind::Rectangle(Rect::new(1., 2., 20., 30.)),
+                AnnotationStyle::default(),
+            )
+            .unwrap();
+        let drag = LabelDrag {
+            id: Some(id),
+            start: Point::new(1., 2.),
+            origin: Point::new(1., 2.),
+            current: Point::new(30., 40.),
+            max_width: 260.,
+            font_size: 18.,
+            moved: true,
+        };
+        assert!(transient_label_snapshot(session.render_snapshot(), Some(drag)).is_err());
     }
 }

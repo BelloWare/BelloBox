@@ -14,8 +14,8 @@ or modified. This is an incremental, runnable port, **not feature parity**.
   explicit errors. The minimal `--no-default-features` build intentionally excludes
   all developer utility engines and labels them unavailable.
 
-The current source-preserving checkpoint passes 115 core unit tests, 3 malformed-input
-integration tests, 21 app layout/session/settings/screenshot tests, 16 platform unit tests and
+The current source-preserving checkpoint passes 140 core unit tests, 3 malformed-input
+integration tests, 28 app layout/session/settings/screenshot tests, 16 platform unit tests and
 3 opt-in subprocess tests. Local
 Tesseract OCR was exercised on a synthetic image. The first generic GUI prototype
 was rejected and replaced: the normal app now opens the current Swift Home
@@ -51,7 +51,8 @@ No claim of complete visual or interaction parity is made.
 | `WorldClock/WorldClockModels.swift` | `bellobox-core::clock`, CLI and GPUI text summary | Partial: IANA zones, instant parsing, DST-aware calendar-day movement, working-hour quality, zone search; tests cover spring gap and 23-hour day. GUI lacks scrubber, live timer, saved zone controls, reference/location menus and native keyboard interactions. |
 | `WorldClock/WorldClockCopilot.swift`, `WorldClockAIResolver.swift` | None | Not ported: copilot plan validation/apply, location mutations and shared ephemeral handoff. |
 | `Screenshot/ScreenCaptureService.swift`, capture resolver/overlay | `bello-platform` subprocess adapter and `screenshot_ui::CaptureChooser` | Partial: explicit full-screen PNG via grim/ImageMagick on Linux or macOS screencapture. Editor capture uses private staging removed before returning in-memory bytes; no raw screenshot is published automatically. Separate source-sized capture chooser, PNG clipboard import and editor are wired. Native capture/clipboard UI has not been exercised. Area/window/scrolling/frozen displays/multi-display selection remain unavailable and labeled. |
-| `Screenshot/AnnotationModel.swift`, `AnnotationRenderer.swift` | `bellobox-core::screenshot`; `screenshot_ui::ScreenshotEditor` | Implemented bounded pure model and raster pipeline with 34 screenshot tests: crop, vectors, highlights, explicit-font Unicode text, final opaque solid/stripe/dot masks, per-annotation eraser holes, move/select, 64-step/16 MB history and PNG export. Partial UI: source 1040×760 / min 640×440 layout, nine-tool strip, inline new text, width/eraser sliders, mask swatches/menu, Fit/Fit Width/100%/steps, scrolling, Text Reader and export footer. Native-resolution preview tiles never exceed 1024 px per side; only intersecting tiles are painted, separate from full export. Pixel reconstruction tests include 40,000-pixel-tall captures. Native preview seams, pointer/keyboard behavior and layout are not runtime-verified. Custom color picker, editing existing text, text drag handle, crop adjustment handles, continuous committed eraser preview, overlay capture editor and complete source interaction parity remain absent. Portable font metrics/pattern rasterization are not AppKit-identical. |
+| `Screenshot/AnnotationModel.swift`, `AnnotationRenderer.swift` | `bellobox-core::screenshot`; `screenshot_ui::ScreenshotEditor` | Implemented bounded pure model and raster pipeline with 34 renderer/tile tests and 25 overlay geometry tests: crop, vectors, highlights, explicit-font Unicode text, final opaque solid/stripe/dot masks, per-annotation eraser holes, move/select, 64-step/16 MB history and PNG export. Partial UI: source 1040×760 / min 640×440 layout, nine-tool strip, inline current-label editing/drag handle, committed text move/context-delete, opaque custom color wells, width/eraser sliders, mask swatches/menu, Fit/Fit Width/100%/steps, scrolling, Text Reader and export footer. Native-resolution preview tiles never exceed 1024 px per side; only intersecting tiles are painted, separate from full export. Pixel reconstruction tests include 40,000-pixel-tall captures. Native preview seams, pointer/keyboard behavior and layout are not runtime-verified. Custom colors use portable RGB/hex controls, not the native macOS color panel; its source color wheel/pipette modes remain absent. The Swift source has no committed-label reopen/edit gesture or popup crop-resize handles, and neither was invented. Continuous committed eraser preview, overlay capture editor and complete source interaction parity remain absent. Portable font metrics/pattern rasterization are not AppKit-identical. |
+| `Screenshot/SelectionResizeGeometry.swift`, `ScreenshotPopupViewModel` overlay adjustment | `screenshot::selection` | Implemented pure eight-handle geometry, move/clamp, nonoverlapping dim bands, Cocoa/display-pixel conversion and explicitly enabled adjustment draft. Repeated updates commit as one undo step; canceled/stale drafts leave the document unchanged. Popup adjustment is disabled. Text-label hit frames and movement clamps preserve crop offsets. Overlay/native capture UI remains unported; this is model/test coverage only. |
 | `Screenshot/ScrollCaptureEngine.swift`, `ImageStitcher.swift` | None | Not ported: manual/auto scrolling, overlap detection, fixed headers, capture notes and stitch UI. |
 | `Screenshot/OCR/MacVisionOCRService.swift` | `bello-platform` Tesseract on Linux and native Apple Vision on macOS | Partial: local bounded image OCR, signature validation, in-memory image snapshot, no network. Tesseract synthetic runtime test passed. Native Vision is Apple-target type-checked, not runtime-tested; image/dimension/text limits apply. Screenshot Text Reader runs on a crop/mask-aware rendered PNG supplied directly as bytes. Mask/crop/undo cancels old jobs, clears reader content/undo and disables stale-copy payloads; revision/cancellation regression tests reject late OCR. Line boxes, language/settings wiring, Markdown formatting and original structured-region output remain absent. |
 | `Screenshot/OCR/LLMOCRService.swift` and redaction-aware preprocessor | Sanitized image renderer only | Crop/redaction-aware image generation is implemented/tested, excluding all decorative annotations. Consent dialog, immutable provider/model/image approval snapshot, OCR tile segmentation, provider transport and Markdown output are not ported. AI OCR is disabled; no screenshot-to-provider route exists. |
@@ -173,3 +174,25 @@ files and atomic no-overwrite publication; choosing an existing filename returns
 an error rather than the original app's replace workflow. Export errors and
 invalid image bounds leave no partial destination. Full-image export and tile
 PNG encoders are bounded and reject even a failed final PNG chunk.
+
+## Label and color source follow-up
+
+The toolbar now uses one 34-point custom color well for strokes/text, and the
+source six mask presets plus a custom well and pattern icon menu. Color choices
+stay opaque; RGB sliders and six-digit hex edit the current tool style without
+applying it to unrelated committed annotations. Opening the well does not round
+or change the stored color. The portable Colors panel preserves focus and blocks
+underlying tool shortcuts while active. It does not claim native NSColorPanel
+visual parity.
+
+Committed text labels have the source interaction frame and right-click Delete
+Label action. Select does not move arbitrary vector shapes. A drag starts after
+2 view points and clamps the label inside the visible crop; erased holes move
+with it. Transient raster snapshots show movement without mutating history; one
+mouse release commits one undo step. The active inline label has its source
+22-point drag handle. Closing while editing cancels that label and keeps the
+editor open, following `requestClose()`; no existing-label edit/reopen gesture
+was found in the Swift source or added. Tests cover color opacity and malformed
+hex, zoom-scaled drag threshold, nontext rejection, transient snapshot isolation
+and a single committed history step. All new native pointer/keyboard behavior
+still awaits desktop verification.
