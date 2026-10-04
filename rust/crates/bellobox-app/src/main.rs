@@ -1,6 +1,7 @@
 mod desktop;
 mod home;
 mod launcher_ui;
+mod screenshot_ui;
 mod session;
 mod settings_ui;
 mod theme;

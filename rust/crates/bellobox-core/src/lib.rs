@@ -6,6 +6,7 @@ pub mod clock;
 pub mod developer;
 pub mod launcher;
 pub mod qr;
+pub mod screenshot;
 pub mod settings;
 pub mod text;
 

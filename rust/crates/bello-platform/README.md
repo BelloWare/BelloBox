@@ -9,7 +9,7 @@ run them off the GPUI thread, only from explicit user gestures.
 | --- | --- | --- | --- |
 | Read/write clipboard text | wl-paste / wl-copy | xclip | pbpaste / pbcopy |
 | Full-screen PNG capture | grim (screencopy-capable compositor) | ImageMagick import | screencapture (main display) |
-| Local image OCR | Tesseract | Tesseract | Tesseract |
+| Local image OCR | Tesseract | Tesseract | Apple Vision |
 | Read-only permission status | unavailable | unavailable | CoreGraphics / Accessibility preflight |
 
 Presence of a helper is reported as an implemented capability; permission and
@@ -26,15 +26,22 @@ Capture requires a fresh `.png` path in an existing writable directory. It uses
 a private sibling staging directory, bounds and checks the PNG header/ending,
 sets owner-only file permissions, and publishes atomically with a hard link.
 Existing files and dangling symlinks are never replaced. The destination
-filesystem must support hard links. Areas, windows, scrolling, and editing are
-not implemented by this crate.
+filesystem must support hard links. `capture_screenshot_snapshot()` instead uses
+a private temporary directory and returns PNG bytes after removing its staging
+file, for the annotation editor. `save_png_bytes()` atomically publishes an
+explicit rendered export; capture limits remain 32768 px/200 MP while editor
+export allows 60000 px/64 MP. Areas, windows, scrolling, and image editing are not
+implemented by this crate. Editing lives in bellobox-core/app.
 
 OCR accepts one existing PNG, JPEG, TIFF, BMP, GIF, or WebP file with a matching
 signature. It rejects text image-list files so Tesseract cannot implicitly read
 additional paths. Validated image bytes are supplied over stdin without reopening
 the path. Language strings are validated identifiers (`eng`, `eng+fra`,
 `chi_sim`), never shell commands/config arguments. Installed Tesseract language
-data is required. Apple Vision and provider/LLM OCR are not implemented.
+data is required on Linux. `recognize_image_bytes()` takes an already rendered
+crop/redaction-aware image without staging or reopening the original screenshot.
+Native Apple Vision is implemented/type-checked as described below. Provider/LLM
+OCR is not implemented; no image is uploaded.
 
 Bounds: clipboard 500 KiB; OCR input 32 MiB and text output 1 MiB; screenshot
 100 MiB, at most 32768 pixels per axis and 200 megapixels; helper stderr 64 KiB.
@@ -45,9 +52,10 @@ errors or logs. This crate has no networking, credentials, or text persistence.
 
 macOS permission checks never ask for authorization. An explicit settings action
 can open the relevant Privacy & Security pane, but cannot grant permission.
-Permission state does not imply feature implementation. Selection capture and
-replacement, global shortcut/monitoring, recording/GIF, Keychain/Secret Service,
-and Sparkle/updating are explicitly unavailable.
+Permission state does not imply feature implementation. Conservative selection
+reading and explicit Sparkle checking are implemented/type-checked below.
+Selection replacement, global shortcuts/monitoring, recording/GIF and
+Keychain/Secret Service remain unavailable.
 
 Default unit tests are pure or reject invalid input before any platform action.
 Three opt-in ignored subprocess tests use cat, sleep, and yes to check large

@@ -22,6 +22,15 @@ use std::path::Path;
 
 pub use capture::CapturedScreenshot;
 
+/// A captured PNG kept in memory after a private, automatically removed staging file.
+/// No user-visible image file is saved until the user explicitly exports it.
+pub struct ScreenshotSnapshot {
+    pub png: Vec<u8>,
+    pub width: u32,
+    pub height: u32,
+    pub backend: &'static str,
+}
+
 /// Maximum clipboard text accepted or returned, in UTF-8 bytes (500 KiB).
 pub const MAX_CLIPBOARD_BYTES: usize = 500 * 1024;
 /// Maximum image file accepted for local OCR (32 MiB).
@@ -225,20 +234,49 @@ impl Platform {
         capture::capture(destination)
     }
 
+    /// Explicit full-screen capture for the annotation editor. The private
+    /// staging file is removed before this function returns, including on error.
+    pub fn capture_screenshot_snapshot(&self) -> Result<ScreenshotSnapshot> {
+        capture::snapshot()
+    }
+
+    /// Publish an explicitly exported PNG atomically, without overwriting any
+    /// existing file or leaving a partial destination if writing fails.
+    pub fn save_png_bytes(&self, destination: &Path, png: &[u8]) -> Result<()> {
+        capture::save_png(destination, png)
+    }
+
     /// Explicit local OCR: Apple Vision on macOS, Tesseract on Linux.
     /// No image is uploaded. Native Vision must run on a worker and has no hard timeout.
     pub fn recognize_text(&self, image: &Path, languages: Option<&str>) -> Result<String> {
         let image = validate_ocr_input(image)?;
+        self.recognize_image_bytes(&image, languages)
+    }
+
+    /// Recognize an already rendered, crop/redaction-aware local image. This
+    /// avoids writing an OCR copy to disk or reopening the original screenshot.
+    /// No provider request is made by this API on any platform.
+    pub fn recognize_image_bytes(&self, image: &[u8], languages: Option<&str>) -> Result<String> {
+        if image.is_empty()
+            || image.len() as u64 > MAX_OCR_IMAGE_BYTES
+            || !is_supported_image(image)
+        {
+            return Err(PlatformError::new(
+                ErrorKind::InvalidInput,
+                "Local OCR",
+                "Provide a supported image of at most 32 MiB; image-list files are not accepted.",
+            ));
+        }
         #[cfg(target_os = "macos")]
         {
-            macos_native::recognize_text(&image, languages)
+            macos_native::recognize_text(image, languages)
         }
         #[cfg(not(target_os = "macos"))]
         {
             if let Some(languages) = languages {
                 validate_languages(languages)?;
             }
-            backend::recognize_text(&image, languages)
+            backend::recognize_text(image, languages)
         }
     }
 
@@ -340,6 +378,22 @@ fn is_supported_image(bytes: &[u8]) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn byte_ocr_rejects_nonimages_before_starting_a_backend() {
+        let platform = Platform::new();
+        assert_eq!(
+            platform
+                .recognize_image_bytes(b"/tmp/private-file.png\n", None)
+                .unwrap_err()
+                .kind,
+            ErrorKind::InvalidInput
+        );
+        assert_eq!(
+            platform.recognize_image_bytes(&[], None).unwrap_err().kind,
+            ErrorKind::InvalidInput
+        );
+    }
 
     #[test]
     fn language_identifiers_are_literal_and_bounded() {

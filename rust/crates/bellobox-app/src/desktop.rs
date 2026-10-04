@@ -32,7 +32,7 @@ struct BelloBox {
     #[cfg(target_os = "macos")]
     updater: Option<bello_platform::macos_native::SparkleUpdater>,
 }
-fn perf(event: &str, micros: u128) {
+pub(crate) fn perf(event: &str, micros: u128) {
     if let Some(path) = std::env::var_os("BELLO_PERF_LOG") {
         use std::io::Write;
         if let Ok(mut f) = std::fs::OpenOptions::new()
@@ -1523,6 +1523,11 @@ pub fn open_tool(id: &str, input: String, cx: &mut App) {
     {
         settings.explicit_open(id, launcher::category(&input), now());
         let _ = settings.save(&config_dir().join("settings.json"));
+    }
+
+    if id == "screenshot" {
+        crate::screenshot_ui::open(cx);
+        return;
     }
 
     let (width, height, min_w, min_h) = match id {

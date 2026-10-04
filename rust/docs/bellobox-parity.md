@@ -14,8 +14,8 @@ or modified. This is an incremental, runnable port, **not feature parity**.
   explicit errors. The minimal `--no-default-features` build intentionally excludes
   all developer utility engines and labels them unavailable.
 
-The current source-preserving checkpoint passes 81 core unit tests, 3 malformed-input
-integration tests, 16 app layout/session/settings tests, 13 platform unit tests and
+The current source-preserving checkpoint passes 115 core unit tests, 3 malformed-input
+integration tests, 21 app layout/session/settings/screenshot tests, 16 platform unit tests and
 3 opt-in subprocess tests. Local
 Tesseract OCR was exercised on a synthetic image. The first generic GUI prototype
 was rejected and replaced: the normal app now opens the current Swift Home
@@ -33,7 +33,8 @@ Official older visual references (0.0.66) corroborate the hierarchy but cannot
 replace current source (0.0.77) labels, horizontal cards or unified orange badges:
 [Home](https://belloware.com/assets/bello_box_home_workspace.jpg),
 [JSON](https://belloware.com/assets/bello_box_json_tools.jpg),
-[palette](https://belloware.com/assets/bello_box_command_palette.jpg).
+[palette](https://belloware.com/assets/bello_box_command_palette.jpg),
+[screenshot editor](https://belloware.com/assets/bello_box_screenshot_editor.jpg).
 No claim of complete visual or interaction parity is made.
 
 ## Application and domain parity
@@ -49,11 +50,11 @@ No claim of complete visual or interaction parity is made.
 | `AI/CodexAppServerClient.swift`, `Tools/CodexCLI.swift` | None | Not ported: Codex app-server transport/model discovery. |
 | `WorldClock/WorldClockModels.swift` | `bellobox-core::clock`, CLI and GPUI text summary | Partial: IANA zones, instant parsing, DST-aware calendar-day movement, working-hour quality, zone search; tests cover spring gap and 23-hour day. GUI lacks scrubber, live timer, saved zone controls, reference/location menus and native keyboard interactions. |
 | `WorldClock/WorldClockCopilot.swift`, `WorldClockAIResolver.swift` | None | Not ported: copilot plan validation/apply, location mutations and shared ephemeral handoff. |
-| `Screenshot/ScreenCaptureService.swift`, capture resolver/overlay | `bello-platform` subprocess adapter | Partial: explicit full-screen PNG via grim/ImageMagick on Linux or macOS screencapture, bounded private staging and no-overwrite publication. Explicit GPUI save-dialog capture action and image preview wired; desktop capture not yet exercised. Area/window/frozen displays/multi-display selection and editor absent. |
-| `Screenshot/AnnotationModel.swift`, `AnnotationRenderer.swift` | None | Not ported: pen/arrows/shapes/highlights/text/crop, opaque masks, per-annotation eraser, undo/redo, zoom/pan. |
+| `Screenshot/ScreenCaptureService.swift`, capture resolver/overlay | `bello-platform` subprocess adapter and `screenshot_ui::CaptureChooser` | Partial: explicit full-screen PNG via grim/ImageMagick on Linux or macOS screencapture. Editor capture uses private staging removed before returning in-memory bytes; no raw screenshot is published automatically. Separate source-sized capture chooser, PNG clipboard import and editor are wired. Native capture/clipboard UI has not been exercised. Area/window/scrolling/frozen displays/multi-display selection remain unavailable and labeled. |
+| `Screenshot/AnnotationModel.swift`, `AnnotationRenderer.swift` | `bellobox-core::screenshot`; `screenshot_ui::ScreenshotEditor` | Implemented bounded pure model and raster pipeline with 34 screenshot tests: crop, vectors, highlights, explicit-font Unicode text, final opaque solid/stripe/dot masks, per-annotation eraser holes, move/select, 64-step/16 MB history and PNG export. Partial UI: source 1040×760 / min 640×440 layout, nine-tool strip, inline new text, width/eraser sliders, mask swatches/menu, Fit/Fit Width/100%/steps, scrolling, Text Reader and export footer. Native-resolution preview tiles never exceed 1024 px per side; only intersecting tiles are painted, separate from full export. Pixel reconstruction tests include 40,000-pixel-tall captures. Native preview seams, pointer/keyboard behavior and layout are not runtime-verified. Custom color picker, editing existing text, text drag handle, crop adjustment handles, continuous committed eraser preview, overlay capture editor and complete source interaction parity remain absent. Portable font metrics/pattern rasterization are not AppKit-identical. |
 | `Screenshot/ScrollCaptureEngine.swift`, `ImageStitcher.swift` | None | Not ported: manual/auto scrolling, overlap detection, fixed headers, capture notes and stitch UI. |
-| `Screenshot/OCR/MacVisionOCRService.swift` | `bello-platform` Tesseract on Linux and native Apple Vision on macOS | Partial: local bounded image OCR, signature validation, in-memory image snapshot, no network. Tesseract synthetic runtime test passed. Native Vision is Apple-target type-checked, not runtime-tested; image/dimension/text limits apply. Explicit GPUI OCR file-picker action is wired; line overlay absent. |
-| `Screenshot/OCR/LLMOCRService.swift` and redaction-aware preprocessor | None | Not ported: consent dialog, sanitized upload, tile segmentation and Markdown output. No screenshot-to-provider route exists. |
+| `Screenshot/OCR/MacVisionOCRService.swift` | `bello-platform` Tesseract on Linux and native Apple Vision on macOS | Partial: local bounded image OCR, signature validation, in-memory image snapshot, no network. Tesseract synthetic runtime test passed. Native Vision is Apple-target type-checked, not runtime-tested; image/dimension/text limits apply. Screenshot Text Reader runs on a crop/mask-aware rendered PNG supplied directly as bytes. Mask/crop/undo cancels old jobs, clears reader content/undo and disables stale-copy payloads; revision/cancellation regression tests reject late OCR. Line boxes, language/settings wiring, Markdown formatting and original structured-region output remain absent. |
+| `Screenshot/OCR/LLMOCRService.swift` and redaction-aware preprocessor | Sanitized image renderer only | Crop/redaction-aware image generation is implemented/tested, excluding all decorative annotations. Consent dialog, immutable provider/model/image approval snapshot, OCR tile segmentation, provider transport and Markdown output are not ported. AI OCR is disabled; no screenshot-to-provider route exists. |
 | `Recording/RecordingEngine.swift`, coordinator/audio/input/privacy | None | Not ported: screen recording, audio mixing, cursor/click/key overlays, secure-field redaction, countdown, pause/review. |
 | `Recording/GIF/GIFTranscoder.swift` | None | Not ported: movie/GIF conversion, transactional exports, precise frame timing and loop validation. |
 | `Settings/AppSettings.swift`, `KeychainStore.swift` | Separate versioned Rust JSON settings; runtime AI environment | Partial: persisted appearance enum/IDs/provider metadata/zones, atomic private writes, corrupt-file preservation. No Swift migration or Keychain/Secret Service yet. No API key in settings. Source-shaped seven-page Settings now persists appearance, provider/request format/endpoint/model, system Prompt and learned-order reset. All open editors keep content/undo while ink changes. API keys remain runtime-only; inactive-provider drafts currently survive only within the Settings window. Unsupported source toggles remain disabled with explanations. New Settings controls are compile/unit-tested but not runtime-tested while the desktop is down. |
@@ -152,3 +153,23 @@ On macOS, `scripts/package-bellobox-macos.sh` builds a development `.app` only.
 Supply an official Sparkle2.8.1 framework and a Rust-only appcast to test updating.
 A macOS user still needs to compile, validate native APIs/permissions/entitlements,
 and test signing/notarization; the Linux port cannot attest to those checks.
+
+## Screenshot checkpoint verification limits
+
+The new screenshot editor has compiled and passed source/lifecycle tests, but has
+**never been launched for native visual QA** in this checkpoint: the desktop
+connection and isolated display-server route are blocked. Earlier Home/QR
+screenshots do not verify it. Use an explicitly chosen local synthetic PNG after
+access returns, for example `BELLOBOX_TOOL=screenshot BELLOBOX_SCREENSHOT_FILE=/path/to/synthetic.png`.
+The fixture loader is bounded and does not read files unless that variable is set.
+
+Preview generation runs off the UI thread and coalesces edits; errors clear the
+preview, never show an unmasked fallback. Its PNG tiles reconstruct exactly to
+full rendered pixels in tests. Native filtering seams still require runtime QA.
+Copy and Save independently render the current full-resolution snapshot; editor
+mutations and closing are blocked while an export is pending to prevent newer
+redactions racing an older save. Save uses private sibling staging, owner-only
+files and atomic no-overwrite publication; choosing an existing filename returns
+an error rather than the original app's replace workflow. Export errors and
+invalid image bounds leave no partial destination. Full-image export and tile
+PNG encoders are bounded and reject even a failed final PNG chunk.

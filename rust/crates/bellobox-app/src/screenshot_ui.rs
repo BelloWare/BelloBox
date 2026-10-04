@@ -1,0 +1,2267 @@
+//! Source-shaped Screenshot popup. All pixels remain local; AI OCR is deliberately
+//! unavailable until the original image-specific confirmation flow is ported.
+use crate::{
+    session::SessionJobs,
+    theme::{self, Palette},
+};
+use bello_workbench_ui::{EditorAppearance, EditorView};
+use bellobox_core::screenshot::{
+    AnnotationKind, AnnotationStyle, AnnotationTool, MaskPattern, Point, Rect, RgbaColor,
+    ScreenshotDocument, ScreenshotEditSession,
+};
+use gpui::{
+    App, Bounds, ClipboardEntry, ClipboardItem, Context, Entity, FocusHandle, Image, ImageFormat,
+    MouseButton, Pixels, Point as ViewPoint, SharedString, TitlebarOptions, Window, WindowBounds,
+    WindowOptions, canvas, div, img, point, prelude::*, px, size,
+};
+use std::{cell::Cell, rc::Rc, sync::Arc};
+
+const TOOLS: [(AnnotationTool, &str, &str); 9] = [
+    (AnnotationTool::Select, "Select", "cursorarrow"),
+    (AnnotationTool::Pen, "Pen", "pencil.tip"),
+    (AnnotationTool::Arrow, "Arrow", "arrow.up.right"),
+    (AnnotationTool::Rectangle, "Rectangle", "rectangle"),
+    (AnnotationTool::Highlight, "Highlight", "highlighter"),
+    (AnnotationTool::Text, "Text", "textformat"),
+    (AnnotationTool::Crop, "Crop", "crop"),
+    (AnnotationTool::Blur, "Mask", "checkerboard.rectangle"),
+    (AnnotationTool::Eraser, "Eraser", "eraser"),
+];
+const ZOOM_STEPS: [f32; 8] = [0.25, 0.5, 0.75, 1., 1.5, 2., 3., 4.];
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum Zoom {
+    Fit,
+    FitWidth,
+    Scale(f32),
+}
+impl Zoom {
+    fn scale(self, image: (f32, f32), viewport: (f32, f32)) -> f32 {
+        if image.0 <= 0. || image.1 <= 0. || viewport.0 <= 0. || viewport.1 <= 0. {
+            return 1.;
+        }
+        match self {
+            Self::Fit => (viewport.0 / image.0).min(viewport.1 / image.1),
+            Self::FitWidth => viewport.0 / image.0,
+            Self::Scale(s) => {
+                if s.is_finite() {
+                    s.clamp(0.05, 8.)
+                } else {
+                    1.
+                }
+            }
+        }
+    }
+    fn label(self, scale: f32) -> String {
+        match self {
+            Self::Fit => format!("{:.0}% · Fit", scale * 100.),
+            Self::FitWidth => format!("{:.0}% · Fit Width", scale * 100.),
+            Self::Scale(_) => format!("{:.0}%", scale * 100.),
+        }
+    }
+}
+fn button(
+    id: impl Into<gpui::ElementId>,
+    label: impl Into<SharedString>,
+    p: Palette,
+) -> gpui::Stateful<gpui::Div> {
+    div()
+        .id(id)
+        .h(px(30.))
+        .px(px(10.))
+        .flex()
+        .items_center()
+        .justify_center()
+        .rounded(px(7.))
+        .border_1()
+        .border_color(p.separator)
+        .bg(p.surface)
+        .text_size(px(12.))
+        .cursor_pointer()
+        .hover(move |s| s.bg(p.accent.opacity(0.09)))
+        .child(label.into())
+}
+fn icon_button(
+    id: impl Into<gpui::ElementId>,
+    symbol: &'static str,
+    selected: bool,
+    p: Palette,
+) -> gpui::Stateful<gpui::Div> {
+    div()
+        .id(id)
+        .size(px(30.))
+        .flex_none()
+        .rounded(px(6.))
+        .border_1()
+        .border_color(if selected { p.accent } else { p.separator })
+        .bg(if selected {
+            p.accent.opacity(0.12)
+        } else {
+            p.surface
+        })
+        .flex()
+        .items_center()
+        .justify_center()
+        .cursor_pointer()
+        .child(annotation_icon(symbol, p))
+}
+fn header(subtitle: String, p: Palette) -> gpui::Div {
+    div()
+        .flex()
+        .items_center()
+        .gap(px(10.))
+        .h(px(44.))
+        .flex_none()
+        .child(
+            div()
+                .size(px(34.))
+                .rounded(px(10.))
+                .bg(p.teal.opacity(0.1))
+                .flex()
+                .items_center()
+                .justify_center()
+                .child(theme::tool_icon("screenshot", 20., p)),
+        )
+        .child(
+            div()
+                .flex()
+                .flex_col()
+                .gap(px(3.))
+                .child(
+                    div()
+                        .text_size(px(16.))
+                        .font_weight(gpui::FontWeight::SEMIBOLD)
+                        .child("Screenshot"),
+                )
+                .child(
+                    div()
+                        .text_size(px(11.))
+                        .text_color(p.secondary)
+                        .child(subtitle),
+                ),
+        )
+}
+
+struct CaptureChooser {
+    busy: bool,
+    status: String,
+    jobs: SessionJobs,
+    focus: FocusHandle,
+}
+pub fn open(cx: &mut App) {
+    let bounds = Bounds::centered(None, size(px(460.), px(380.)), cx);
+    let _ = cx.open_window(
+        WindowOptions {
+            window_bounds: Some(WindowBounds::Windowed(bounds)),
+            window_min_size: Some(size(px(460.), px(380.))),
+            titlebar: Some(TitlebarOptions {
+                title: Some("Screenshot — Bello Box".into()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+        |window, cx| {
+            cx.new(|cx| {
+                let focus = cx.focus_handle();
+                window.focus(&focus);
+                let mut chooser = CaptureChooser {
+                    busy: false,
+                    status: String::new(),
+                    jobs: SessionJobs::default(),
+                    focus,
+                };
+                if let Some(path) = std::env::var_os("BELLOBOX_SCREENSHOT_FILE") {
+                    chooser.load_fixture(path.into(), window, cx);
+                }
+                chooser
+            })
+        },
+    );
+}
+impl CaptureChooser {
+    fn capture(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.busy {
+            return;
+        }
+        self.busy = true;
+        self.status = "Capturing locally…".into();
+        let token = self.jobs.begin();
+        window.minimize_window();
+        cx.notify();
+        let task = cx.background_executor().spawn(async move {
+            // Give the compositor a short chance to remove this chooser. Other app
+            // windows are not hidden implicitly; the full virtual screen is captured.
+            std::thread::sleep(std::time::Duration::from_millis(250));
+            let capture = bello_platform::Platform::new()
+                .capture_screenshot_snapshot()
+                .map_err(|e| e.to_string())?;
+            prepare(capture.png)
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            let result = task.await;
+            let _ = this.update_in(cx, |this, window, cx| {
+                if !this.jobs.accepts(token) {
+                    return;
+                }
+                this.busy = false;
+                window.activate_window();
+                match result {
+                    Ok(session) => {
+                        open_session(session, "Screen capture", cx);
+                        window.remove_window();
+                    }
+                    Err(e) => {
+                        this.status = e;
+                        cx.notify();
+                    }
+                }
+            });
+        })
+        .detach();
+    }
+    fn paste(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.busy {
+            return;
+        }
+        let image = cx.read_from_clipboard().and_then(|item| {
+            item.into_entries().find_map(|entry| match entry {
+                ClipboardEntry::Image(image) => Some(image),
+                _ => None,
+            })
+        });
+        let Some(image) = image else {
+            self.status = "The clipboard does not contain an image.".into();
+            cx.notify();
+            return;
+        };
+        if image.format != ImageFormat::Png {
+            self.status = "This preview accepts PNG clipboard images only.".into();
+            cx.notify();
+            return;
+        }
+        self.busy = true;
+        let token = self.jobs.begin();
+        cx.notify();
+        let task = cx
+            .background_executor()
+            .spawn(async move { prepare(image.bytes) });
+        cx.spawn_in(window, async move |this, cx| {
+            let result = task.await;
+            let _ = this.update_in(cx, |this, window, cx| {
+                if !this.jobs.accepts(token) {
+                    return;
+                }
+                this.busy = false;
+                match result {
+                    Ok(session) => {
+                        open_session(session, "Clipboard image", cx);
+                        window.remove_window();
+                    }
+                    Err(e) => {
+                        this.status = e;
+                        cx.notify();
+                    }
+                }
+            });
+        })
+        .detach();
+    }
+}
+impl Render for CaptureChooser {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let p = theme::for_window(window);
+        div().size_full().p(px(18.)).flex().flex_col().gap(px(16.)).bg(p.bg).text_color(p.primary).font_family(theme::ui_font()).track_focus(&self.focus)
+            .on_key_down(cx.listener(|_,e:&gpui::KeyDownEvent,window,_|{if e.keystroke.key=="escape"{window.remove_window();}}))
+            .child(header("Capture and annotate".into(),p))
+            .child(div().flex().flex_col().gap(px(10.)).child(div().flex().gap(px(10.)).child(button("area","Area · unavailable",p).flex_1().opacity(0.5)).child(button("window","Window · unavailable",p).flex_1().opacity(0.5))).child(div().flex().gap(px(10.)).child(button("screen",if self.busy{"Capturing…"}else{"Screen"},p).flex_1().on_click(cx.listener(Self::capture_click))).child(button("scroll","Scrolling · unavailable",p).flex_1().opacity(0.5))))
+            .child(div().text_size(px(11.)).text_color(p.secondary).child("Screen captures the full virtual screen on Linux and the main display on macOS. Area, window and scrolling selection are not ported yet."))
+            .child(button("paste-image","Paste Image",p).on_click(cx.listener(|this,_,window,cx|this.paste(window,cx))))
+            .child(div().text_size(px(11.)).text_color(p.danger).child(self.status.clone()))
+            .child(div().flex_1())
+            .child(div().text_size(px(10.)).text_color(p.secondary).child("Screenshots stay on this computer. Local OCR is available in the editor. AI OCR upload is not available in this preview."))
+    }
+}
+impl CaptureChooser {
+    fn capture_click(&mut self, _: &gpui::ClickEvent, window: &mut Window, cx: &mut Context<Self>) {
+        self.capture(window, cx);
+    }
+}
+
+fn prepare(png: Vec<u8>) -> Result<ScreenshotEditSession, String> {
+    let mut session = ScreenshotEditSession::new(ScreenshotDocument::from_png(&png)?);
+    // Fonts are optional local inputs, never downloaded or embedded without a license.
+    #[cfg(target_os = "linux")]
+    let paths = ["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"];
+    #[cfg(target_os = "macos")]
+    let paths = ["/System/Library/Fonts/Supplemental/Arial.ttf"];
+    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+    let paths: [&str; 0] = [];
+    for path in paths {
+        use std::io::Read;
+        let Ok(file) = std::fs::File::open(path) else {
+            continue;
+        };
+        let mut font = Vec::new();
+        if file.take(16_000_001).read_to_end(&mut font).is_ok()
+            && session.set_text_font(&font).is_ok()
+        {
+            break;
+        }
+    }
+    Ok(session)
+}
+
+#[derive(Clone)]
+struct Gesture {
+    tool: AnnotationTool,
+    points: Vec<Point>,
+    selected: Option<u64>,
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Menu {
+    Zoom,
+    MaskPattern,
+    Image,
+}
+struct ScreenshotEditor {
+    session: ScreenshotEditSession,
+    source: &'static str,
+    tool: AnnotationTool,
+    style: AnnotationStyle,
+    mask_style: AnnotationStyle,
+    eraser_width: f32,
+    zoom: Zoom,
+    scale: f32,
+    preview_tiles: Vec<PreviewTile>,
+    scroll: gpui::ScrollHandle,
+    export_busy: bool,
+    image_bounds: Rc<Cell<Bounds<Pixels>>>,
+    slider_bounds: Rc<Cell<Bounds<Pixels>>>,
+    viewport_size: Rc<Cell<(f32, f32)>>,
+    gesture: Option<Gesture>,
+    selected: Option<u64>,
+    status: String,
+    error: bool,
+    rendering: bool,
+    jobs: SessionJobs,
+    ocr_jobs: SessionJobs,
+    shows_ocr: bool,
+    ocr_busy: bool,
+    ocr_content: RevisionText,
+    ocr: Entity<EditorView>,
+    text_draft: Entity<EditorView>,
+    text_origin: Option<Point>,
+    show_discard: bool,
+    open_menu: Option<Menu>,
+    menu_index: usize,
+    focus: FocusHandle,
+}
+fn open_session(session: ScreenshotEditSession, source: &'static str, cx: &mut App) {
+    let bounds = Bounds::centered(None, size(px(1040.), px(760.)), cx);
+    let _ = cx.open_window(
+        WindowOptions {
+            window_bounds: Some(WindowBounds::Windowed(bounds)),
+            window_min_size: Some(size(px(640.), px(440.))),
+            titlebar: Some(TitlebarOptions {
+                title: Some("Screenshot — Bello Box".into()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+        move |window, cx| cx.new(|cx| ScreenshotEditor::new(session, source, window, cx)),
+    );
+}
+impl ScreenshotEditor {
+    fn new(
+        session: ScreenshotEditSession,
+        source: &'static str,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
+        let focus = cx.focus_handle();
+        window.focus(&focus);
+        let ocr = cx.new(|cx| {
+            let mut e = EditorView::new(String::new(), window, cx);
+            e.set_read_only(true, cx);
+            e.set_appearance(EditorAppearance::plain(), cx);
+            e
+        });
+        let text_draft = cx.new(|cx| {
+            let mut e = EditorView::new(String::new(), window, cx);
+            e.set_appearance(EditorAppearance::plain(), cx);
+            e
+        });
+        let mut view = Self {
+            session,
+            source,
+            tool: AnnotationTool::Select,
+            style: AnnotationStyle::default(),
+            mask_style: AnnotationStyle::redaction(),
+            eraser_width: 24.,
+            zoom: Zoom::Fit,
+            scale: 1.,
+            preview_tiles: Vec::new(),
+            scroll: gpui::ScrollHandle::new(),
+            export_busy: false,
+            image_bounds: Rc::new(Cell::new(Bounds::default())),
+            slider_bounds: Rc::new(Cell::new(Bounds::default())),
+            viewport_size: Rc::new(Cell::new((0., 0.))),
+            gesture: None,
+            selected: None,
+            status: String::new(),
+            error: false,
+            rendering: false,
+            jobs: SessionJobs::default(),
+            ocr_jobs: SessionJobs::default(),
+            shows_ocr: false,
+            ocr_busy: false,
+            ocr_content: RevisionText::default(),
+            ocr,
+            text_draft,
+            text_origin: None,
+            show_discard: false,
+            open_menu: None,
+            menu_index: 0,
+            focus,
+        };
+        let weak = cx.entity().downgrade();
+        window.on_window_should_close(cx, move |_, cx| {
+            weak.update(cx, |this, cx| {
+                if this.export_busy {
+                    return false;
+                }
+                if this.session.has_edits() || this.text_origin.is_some() {
+                    this.show_discard = true;
+                    cx.notify();
+                    false
+                } else {
+                    true
+                }
+            })
+            .unwrap_or(true)
+        });
+        view.render_preview(cx);
+        view
+    }
+    fn changed(&mut self, cx: &mut Context<Self>) {
+        self.ocr_jobs.cancel();
+        self.ocr_busy = false;
+        self.preview_tiles.clear();
+        self.ocr_content.invalidate();
+        self.ocr.update(cx, |e, cx| e.set_text(String::new(), cx));
+        self.status.clear();
+        self.error = false;
+        self.render_preview(cx);
+        cx.notify();
+    }
+    fn report(&mut self, result: Result<(), String>, cx: &mut Context<Self>) {
+        match result {
+            Ok(()) => self.changed(cx),
+            Err(e) => {
+                self.status = e;
+                self.error = true;
+                cx.notify();
+            }
+        }
+    }
+    fn render_preview(&mut self, cx: &mut Context<Self>) {
+        if self.rendering {
+            return;
+        }
+        self.rendering = true;
+        let token = self.jobs.begin();
+        let revision = self.session.revision();
+        let snapshot = self.session.render_snapshot();
+        let task = cx
+            .background_executor()
+            .spawn(async move { snapshot.render_preview_tiles() });
+        cx.spawn(async move |this, cx| {
+            let result = task.await;
+            let _ = this.update(cx, |this, cx| {
+                if !this.jobs.accepts(token) {
+                    return;
+                }
+                this.rendering = false;
+                if this.session.revision() != revision {
+                    this.render_preview(cx);
+                    return;
+                }
+                match result {
+                    Ok(tiles) => {
+                        this.preview_tiles = tiles
+                            .into_iter()
+                            .map(|tile| PreviewTile {
+                                x: tile.x,
+                                y: tile.y,
+                                width: tile.width,
+                                height: tile.height,
+                                image: Arc::new(Image::from_bytes(ImageFormat::Png, tile.png)),
+                            })
+                            .collect();
+                    }
+                    Err(e) => {
+                        this.preview_tiles.clear();
+                        this.status = e;
+                        this.error = true;
+                    }
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+    fn document_point(&self, position: ViewPoint<Pixels>) -> Point {
+        let b = self.image_bounds.get();
+        let visible = self.session.document().visible_rect();
+        Point {
+            x: ((f32::from(position.x - b.origin.x) / self.scale).clamp(0., visible.width))
+                + visible.x,
+            y: ((f32::from(position.y - b.origin.y) / self.scale).clamp(0., visible.height))
+                + visible.y,
+        }
+    }
+    fn mouse_down(
+        &mut self,
+        e: &gpui::MouseDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self.show_discard || self.export_busy {
+            return;
+        }
+        if self.text_origin.is_some() {
+            self.commit_text(cx);
+            window.focus(&self.focus);
+            return;
+        }
+        window.focus(&self.focus);
+        let point = self.document_point(e.position);
+        if self.tool == AnnotationTool::Text {
+            if !self.session.has_text_font() {
+                self.status = "A supported local font is required for text annotations.".into();
+                self.error = true;
+                cx.notify();
+                return;
+            }
+            self.text_origin = Some(point);
+            self.text_draft.update(cx, |e, cx| {
+                e.set_text(String::new(), cx);
+                e.focus(window);
+            });
+            cx.notify();
+            return;
+        }
+        self.selected = if self.tool == AnnotationTool::Select {
+            self.session.hit_test(point, 5. / self.scale)
+        } else {
+            None
+        };
+        self.gesture = Some(Gesture {
+            tool: self.tool,
+            points: vec![point],
+            selected: self.selected,
+        });
+        cx.notify();
+    }
+    fn mouse_move(&mut self, e: &gpui::MouseMoveEvent, _: &mut Window, cx: &mut Context<Self>) {
+        let point = self.document_point(e.position);
+        if let Some(gesture) = self.gesture.as_mut() {
+            if gesture.points.len() >= 20_000 {
+                self.status =
+                    "This stroke reached the 20,000-point limit; release to finish.".into();
+                return;
+            }
+            if matches!(gesture.tool, AnnotationTool::Pen | AnnotationTool::Eraser) {
+                let last = gesture.points.last().unwrap();
+                if (point.x - last.x).hypot(point.y - last.y) < 0.75 {
+                    return;
+                }
+                gesture.points.push(point);
+            } else if gesture.points.len() == 1 {
+                gesture.points.push(point);
+            } else {
+                gesture.points[1] = point;
+            }
+            cx.notify();
+        }
+    }
+    fn mouse_up(&mut self, e: &gpui::MouseUpEvent, _: &mut Window, cx: &mut Context<Self>) {
+        let endpoint = self.document_point(e.position);
+        let Some(mut gesture) = self.gesture.take() else {
+            return;
+        };
+        complete_gesture(&mut gesture, endpoint);
+        let first = gesture.points[0];
+        let last = *gesture.points.last().unwrap();
+        let rect = Rect {
+            x: first.x.min(last.x),
+            y: first.y.min(last.y),
+            width: (last.x - first.x).abs(),
+            height: (last.y - first.y).abs(),
+        };
+        let result = match gesture.tool {
+            AnnotationTool::Select => {
+                if let Some(id) = gesture.selected {
+                    self.session
+                        .move_annotation(id, last.x - first.x, last.y - first.y)
+                        .map(|_| ())
+                } else {
+                    Ok(())
+                }
+            }
+            AnnotationTool::Crop => {
+                if rect.width >= 1. && rect.height >= 1. {
+                    self.session.set_crop(Some(rect)).map(|_| ())
+                } else {
+                    Ok(())
+                }
+            }
+            AnnotationTool::Eraser => self
+                .session
+                .erase_stroke(gesture.points, self.eraser_width)
+                .map(|_| ()),
+            tool => {
+                let (kind, style) = match tool {
+                    AnnotationTool::Pen => (
+                        AnnotationKind::Freehand {
+                            points: gesture.points,
+                        },
+                        self.style,
+                    ),
+                    AnnotationTool::Arrow => (
+                        AnnotationKind::Arrow {
+                            start: first,
+                            end: last,
+                        },
+                        self.style,
+                    ),
+                    AnnotationTool::Rectangle => (AnnotationKind::Rectangle(rect), self.style),
+                    AnnotationTool::Highlight => (
+                        AnnotationKind::Highlight(rect),
+                        AnnotationStyle::highlight(),
+                    ),
+                    AnnotationTool::Blur => (AnnotationKind::Blur(rect), self.mask_style),
+                    _ => return,
+                };
+                self.session.add_annotation(kind, style).map(|_| ())
+            }
+        };
+        self.report(result, cx);
+    }
+    fn close(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.session.has_edits() || self.text_origin.is_some() {
+            self.show_discard = true;
+            cx.notify();
+        } else {
+            window.remove_window();
+        }
+    }
+    fn copy(&mut self, finish: bool, window: &mut Window, cx: &mut Context<Self>) {
+        if self.export_busy || !self.commit_text(cx) {
+            return;
+        }
+        self.export_busy = true;
+        cx.notify();
+        let snapshot = self.session.render_snapshot();
+        let task = cx
+            .background_executor()
+            .spawn(async move { snapshot.render_png() });
+        cx.spawn_in(window, async move |this, cx| {
+            let result = task.await;
+            let _ = this.update_in(cx, |this, window, cx| {
+                this.export_busy = false;
+                match result {
+                    Ok(png) => {
+                        cx.write_to_clipboard(ClipboardItem::new_image(&Image::from_bytes(
+                            ImageFormat::Png,
+                            png,
+                        )));
+                        this.status = "Copied image.".into();
+                        this.error = false;
+                        if finish {
+                            window.remove_window();
+                        }
+                    }
+                    Err(error) => {
+                        this.status = error;
+                        this.error = true;
+                    }
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+    fn save(&mut self, cx: &mut Context<Self>) {
+        if self.export_busy || !self.commit_text(cx) {
+            return;
+        }
+        self.export_busy = true;
+        cx.notify();
+        let snapshot = self.session.render_snapshot();
+        let dialog = cx.prompt_for_new_path(
+            &std::env::current_dir().unwrap_or_else(|_| ".".into()),
+            Some("BelloBox Screenshot.png"),
+        );
+        cx.spawn(async move |this, cx| {
+            let path = match dialog.await {
+                Ok(Ok(Some(path))) => path,
+                Ok(Ok(None)) => {
+                    let _ = this.update(cx, |this, cx| {
+                        this.export_busy = false;
+                        cx.notify();
+                    });
+                    return;
+                }
+                _ => {
+                    let _ = this.update(cx, |this, cx| {
+                        this.export_busy = false;
+                        this.status = "Could not open the save dialog.".into();
+                        this.error = true;
+                        cx.notify();
+                    });
+                    return;
+                }
+            };
+            if this.update(cx, |_, _| ()).is_err() {
+                return;
+            }
+            let task = cx.background_executor().spawn(async move {
+                if !path
+                    .extension()
+                    .is_some_and(|s| s.eq_ignore_ascii_case("png"))
+                {
+                    return Err("Choose a PNG filename.".into());
+                }
+                let png = snapshot.render_png()?;
+                bello_platform::Platform::new()
+                    .save_png_bytes(&path, &png)
+                    .map_err(|e| e.to_string())?;
+                Ok::<_, String>(())
+            });
+            let result = task.await;
+            let _ = this.update(cx, |this, cx| {
+                this.export_busy = false;
+                match result {
+                    Ok(()) => {
+                        this.status = "Saved PNG.".into();
+                        this.error = false;
+                    }
+                    Err(e) => {
+                        this.status = e;
+                        this.error = true;
+                    }
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+    fn read_text(&mut self, cx: &mut Context<Self>) {
+        if !self.commit_text(cx) {
+            return;
+        }
+        if self.ocr_busy {
+            return;
+        }
+        let snapshot = self.session.render_snapshot();
+        let revision = self.session.revision();
+        let token = OcrTicket {
+            job: self.ocr_jobs.begin(),
+            revision,
+        };
+        self.ocr_busy = true;
+        self.status = "Reading the cropped, masked image locally…".into();
+        self.error = false;
+        cx.notify();
+        let task = cx.background_executor().spawn(async move {
+            let image = snapshot.render_for_external_ocr_png()?;
+            bello_platform::Platform::new()
+                .recognize_image_bytes(&image, None)
+                .map_err(|e| e.to_string())
+        });
+        cx.spawn(async move |this, cx| {
+            let result = task.await;
+            let _ = this.update(cx, |this, cx| {
+                if !token.accepts(&this.ocr_jobs, this.session.revision()) {
+                    return;
+                }
+                this.ocr_busy = false;
+                match result {
+                    Ok(text) => {
+                        this.ocr_content = RevisionText {
+                            revision: Some(revision),
+                            text: text.clone(),
+                        };
+                        this.ocr.update(cx, |e, cx| e.set_text(text, cx));
+                        this.status = "Local OCR complete. Nothing was uploaded.".into();
+                    }
+                    Err(e) => {
+                        this.status = e;
+                        this.error = true;
+                    }
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+    fn key_down(&mut self, e: &gpui::KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        let key = e.keystroke.key.as_str();
+        if self.export_busy {
+            cx.stop_propagation();
+            return;
+        }
+        if self.show_discard {
+            if key == "escape" {
+                self.show_discard = false;
+                cx.notify();
+            }
+            cx.stop_propagation();
+            return;
+        }
+        if self.open_menu.is_some() {
+            match key {
+                "escape" => self.open_menu = None,
+                "up" => self.menu_index = self.menu_index.saturating_sub(1),
+                "down" => self.menu_index = (self.menu_index + 1).min(self.menu_labels().len() - 1),
+                "enter" => self.choose_menu(self.menu_index, cx),
+                _ => {}
+            }
+            cx.stop_propagation();
+            cx.notify();
+            return;
+        }
+
+        let primary = e.keystroke.modifiers.platform || e.keystroke.modifiers.control;
+        if key == "escape" {
+            if self.text_origin.take().is_some()
+                || self.gesture.take().is_some()
+                || self.show_discard
+            {
+                self.show_discard = false;
+                cx.notify();
+            } else {
+                self.close(window, cx);
+            }
+            return;
+        }
+        if primary && key == "z" {
+            if e.keystroke.modifiers.shift {
+                self.session.redo();
+            } else {
+                self.session.undo();
+            }
+            self.changed(cx);
+            cx.stop_propagation();
+        } else if primary && key == "s" {
+            self.save(cx);
+            cx.stop_propagation();
+        } else if primary && e.keystroke.modifiers.shift && key == "c" {
+            self.copy(false, window, cx);
+            cx.stop_propagation();
+        } else if primary && key == "0" {
+            self.zoom = Zoom::Scale(1.);
+            cx.notify();
+        } else if primary && key == "9" {
+            self.zoom = Zoom::Fit;
+            cx.notify();
+        } else if primary && key == "-" {
+            self.zoom_step(false, cx);
+        } else if primary && (key == "=" || key == "+") {
+            self.zoom_step(true, cx);
+        } else if primary && e.keystroke.modifiers.alt && key == "o" {
+            self.shows_ocr = !self.shows_ocr;
+            cx.notify();
+        } else if primary && e.keystroke.modifiers.alt {
+            if let Ok(n) = key.parse::<usize>()
+                && let Some((tool, _, _)) = n.checked_sub(1).and_then(|i| TOOLS.get(i))
+            {
+                self.tool = *tool;
+                cx.notify();
+            }
+        } else if (key == "backspace" || key == "delete")
+            && let Some(id) = self.selected.take()
+        {
+            let result = self.session.remove_annotation(id).map(|_| ());
+            self.report(result, cx);
+        }
+    }
+    fn zoom_step(&mut self, up: bool, cx: &mut Context<Self>) {
+        self.zoom = Zoom::Scale(if up {
+            ZOOM_STEPS
+                .into_iter()
+                .find(|s| *s > self.scale + 0.001)
+                .unwrap_or(4.)
+        } else {
+            ZOOM_STEPS
+                .into_iter()
+                .rev()
+                .find(|s| *s < self.scale - 0.001)
+                .unwrap_or(0.25)
+        });
+        cx.notify();
+    }
+}
+impl ScreenshotEditor {
+    fn toolbar(&self, compact: bool, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
+        let tools = div()
+            .flex()
+            .gap(px(4.))
+            .children(
+                TOOLS
+                    .into_iter()
+                    .enumerate()
+                    .map(|(index, (tool, _, symbol))| {
+                        icon_button(("annotation-tool", index), symbol, self.tool == tool, p)
+                            .on_click(cx.listener(move |this, _, window, cx| {
+                                if !this.commit_text(cx) {
+                                    return;
+                                }
+                                this.tool = tool;
+                                this.gesture = None;
+                                window.focus(&this.focus);
+                                cx.notify();
+                            }))
+                    }),
+            );
+        let history = div()
+            .flex()
+            .gap(px(4.))
+            .child(
+                icon_button("undo", "arrow.uturn.backward", false, p)
+                    .opacity(if self.session.can_undo() { 1. } else { 0.35 })
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.session.undo();
+                        this.changed(cx);
+                    })),
+            )
+            .child(
+                icon_button("redo", "arrow.uturn.forward", false, p)
+                    .opacity(if self.session.can_redo() { 1. } else { 0.35 })
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.session.redo();
+                        this.changed(cx);
+                    })),
+            );
+        let controls = self.style_controls(p, cx);
+        let options = icon_button("image-options", "ellipsis", false, p)
+            .on_click(cx.listener(|this, _, _, cx| this.toggle_menu(Menu::Image, cx)));
+        if compact {
+            div()
+                .flex_none()
+                .flex()
+                .flex_col()
+                .gap(px(6.))
+                .child(
+                    div()
+                        .flex()
+                        .items_center()
+                        .gap(px(4.))
+                        .child(tools)
+                        .child(div().flex_1())
+                        .child(history),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(controls)
+                        .child(options),
+                )
+        } else {
+            div()
+                .flex_none()
+                .flex()
+                .items_center()
+                .gap(px(8.))
+                .child(tools)
+                .child(div().h(px(24.)).w(px(1.)).bg(p.separator))
+                .child(controls)
+                .child(options)
+                .child(div().flex_1())
+                .child(history)
+        }
+    }
+    fn style_controls(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
+        let mut row = div().flex().items_center().gap(px(5.)).text_size(px(10.));
+        match self.tool {
+            AnnotationTool::Blur => {
+                let colors = [
+                    RgbaColor::new(0.16, 0.16, 0.16, 1.),
+                    RgbaColor::new(0.02, 0.02, 0.02, 1.),
+                    RgbaColor::new(0.98, 0.97, 0.95, 1.),
+                    RgbaColor::new(0.89, 0.46, 0.15, 1.),
+                    RgbaColor::new(0.06, 0.40, 0.43, 1.),
+                    RgbaColor::new(0.46, 0.26, 0.70, 1.),
+                ];
+                row = row.children(colors.into_iter().enumerate().map(|(i, color)| {
+                    div()
+                        .id(("mask-fill", i))
+                        .size(px(18.))
+                        .rounded_full()
+                        .bg(gpui::Rgba {
+                            r: color.red,
+                            g: color.green,
+                            b: color.blue,
+                            a: 1.,
+                        })
+                        .border_1()
+                        .border_color(if self.mask_style.fill_color == Some(color) {
+                            p.accent
+                        } else {
+                            p.border
+                        })
+                        .cursor_pointer()
+                        .on_click(cx.listener(move |this, _, _, cx| {
+                            this.mask_style.fill_color = Some(color);
+                            cx.notify();
+                        }))
+                }));
+                let pattern = self.mask_style.mask_pattern;
+                row = row.child(
+                    button("mask-pattern", format!("{} ▾", pattern.label()), p).on_click(
+                        cx.listener(|this, _, _, cx| {
+                            this.toggle_menu(Menu::MaskPattern, cx);
+                        }),
+                    ),
+                );
+            }
+            AnnotationTool::Pen
+            | AnnotationTool::Arrow
+            | AnnotationTool::Rectangle
+            | AnnotationTool::Text => {
+                for (i, color) in [
+                    RgbaColor::new(0.95, 0.42, 0.08, 1.),
+                    RgbaColor::new(0.06, 0.40, 0.43, 1.),
+                    RgbaColor::new(0.46, 0.26, 0.70, 1.),
+                    RgbaColor::new(0.1, 0.1, 0.1, 1.),
+                ]
+                .into_iter()
+                .enumerate()
+                {
+                    row = row.child(
+                        div()
+                            .id(("stroke-fill", i))
+                            .size(px(16.))
+                            .rounded_full()
+                            .border_1()
+                            .border_color(if self.style.stroke_color == color {
+                                p.accent
+                            } else {
+                                p.border
+                            })
+                            .bg(gpui::Rgba {
+                                r: color.red,
+                                g: color.green,
+                                b: color.blue,
+                                a: 1.,
+                            })
+                            .on_click(cx.listener(move |this, _, _, cx| {
+                                this.style.stroke_color = color;
+                                cx.notify();
+                            })),
+                    );
+                }
+                let is_text = self.tool == AnnotationTool::Text;
+                let value = if is_text {
+                    self.style.font_size
+                } else {
+                    self.style.line_width
+                };
+                if is_text {
+                    row = row
+                        .child(
+                            button("width-down", "−", p)
+                                .px(px(4.))
+                                .on_click(cx.listener(move |this, _, _, cx| {
+                                    if is_text {
+                                        this.style.font_size = (this.style.font_size - 2.).max(10.);
+                                    } else {
+                                        this.style.line_width =
+                                            (this.style.line_width - 1.).max(1.);
+                                    }
+                                    cx.notify();
+                                })),
+                        )
+                        .child(format!("{value:.0} px"))
+                        .child(button("width-up", "+", p).px(px(4.)).on_click(cx.listener(
+                            move |this, _, _, cx| {
+                                if is_text {
+                                    this.style.font_size = (this.style.font_size + 2.).min(72.);
+                                } else {
+                                    this.style.line_width = (this.style.line_width + 1.).min(12.);
+                                }
+                                cx.notify();
+                            },
+                        )));
+                } else {
+                    row = row
+                        .child(self.style_slider(p, cx))
+                        .child(format!("{value:.0} px"));
+                }
+            }
+            AnnotationTool::Eraser => {
+                row = row
+                    .child(self.style_slider(p, cx))
+                    .child(format!("{:.0} px", self.eraser_width));
+            }
+            tool => {
+                row = row.w(px(145.)).text_color(p.secondary).child(match tool {
+                    AnnotationTool::Select => "Select and move annotations",
+                    AnnotationTool::Crop => "Drag to crop the image",
+                    _ => "Drag to highlight a region",
+                })
+            }
+        }
+        row
+    }
+    fn canvas(
+        &mut self,
+        available: (f32, f32),
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        let measured = self.viewport_size.get();
+        let available = if measured.0 > 0. && measured.1 > 0. {
+            measured
+        } else {
+            available
+        };
+        let visible = self.session.document().visible_rect();
+        self.scale = self.zoom.scale((visible.width, visible.height), available);
+        let scale = self.scale;
+        if self.text_origin.is_some() {
+            let style = self.style;
+            self.text_draft.update(cx, |editor, cx| {
+                let mut appearance = editor.appearance().clone();
+                let color = gpui::Rgba {
+                    r: style.stroke_color.red,
+                    g: style.stroke_color.green,
+                    b: style.stroke_color.blue,
+                    a: 1.,
+                }
+                .into();
+                let font_size = (style.font_size * scale).clamp(6., 256.);
+                if appearance.font_size != font_size || appearance.text != color {
+                    appearance.font_size = font_size;
+                    appearance.line_height = font_size * 1.4;
+                    appearance.text = color;
+                    editor.set_appearance(appearance, cx);
+                    editor.set_compact(true, cx);
+                }
+            });
+        }
+        let (width, height) = (visible.width * scale, visible.height * scale);
+        let bounds_cell = self.image_bounds.clone();
+        let gesture = self.gesture.clone();
+        let style = self.style;
+        let eraser = self.eraser_width;
+        let overlay = canvas(
+            move |bounds, _, _| {
+                bounds_cell.set(bounds);
+            },
+            move |bounds, _, window, _| {
+                if let Some(g) = &gesture {
+                    paint_gesture(
+                        g,
+                        visible,
+                        scale,
+                        bounds,
+                        (style.line_width, eraser),
+                        p,
+                        window,
+                    );
+                }
+            },
+        )
+        .absolute()
+        .size_full();
+        let viewport_size = self.viewport_size.clone();
+        let weak = cx.entity().downgrade();
+        let measure = canvas(
+            move |bounds, _, cx| {
+                let next = (
+                    f32::from(bounds.size.width).max(1.),
+                    f32::from(bounds.size.height).max(1.),
+                );
+                if viewport_size.get() != next {
+                    viewport_size.set(next);
+                    let weak = weak.clone();
+                    cx.defer(move |cx| {
+                        let _ = weak.update(cx, |_, cx| cx.notify());
+                    });
+                }
+            },
+            |_, _, _, _| {},
+        )
+        .absolute()
+        .inset_0();
+        div()
+            .id("screenshot-viewport")
+            .relative()
+            .flex_1()
+            .min_w(px(0.))
+            .min_h(px(0.))
+            .rounded(px(10.))
+            .border_1()
+            .border_color(p.separator)
+            .bg(p.well)
+            .overflow_scroll()
+            .track_scroll(&self.scroll)
+            .on_scroll_wheel(cx.listener(|_, _, _, cx| cx.notify()))
+            .child(measure)
+            .child(
+                div()
+                    .w(px(width.max(available.0)))
+                    .h(px(height.max(available.1)))
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .child(
+                        div()
+                            .id("annotation-canvas")
+                            .relative()
+                            .flex_none()
+                            .w(px(width))
+                            .h(px(height))
+                            .children(
+                                self.preview_tiles
+                                    .iter()
+                                    .filter(|tile| {
+                                        tile_is_visible(
+                                            tile,
+                                            scale,
+                                            (
+                                                width.max(available.0) - width,
+                                                height.max(available.1) - height,
+                                            ),
+                                            self.scroll.offset(),
+                                            available,
+                                        )
+                                    })
+                                    .map(|tile| {
+                                        div()
+                                            .absolute()
+                                            .left(px(tile.x as f32 * scale))
+                                            .top(px(tile.y as f32 * scale))
+                                            .w(px(tile.width as f32 * scale))
+                                            .h(px(tile.height as f32 * scale))
+                                            .child(img(tile.image.clone()).size_full())
+                                    }),
+                            )
+                            .child(overlay)
+                            .when_some(self.text_origin, |d, origin| {
+                                d.child(
+                                    div()
+                                        .id("inline-annotation-text")
+                                        .absolute()
+                                        .left(px((origin.x - visible.x) * scale))
+                                        .top(px((origin.y - visible.y) * scale))
+                                        .w(px((260. * scale).max(120.)))
+                                        .h(px(((self.style.font_size + 16.) * scale).max(34.)))
+                                        .bg(p.surface)
+                                        .border_1()
+                                        .border_color(p.accent)
+                                        .rounded(px(4.))
+                                        .on_mouse_down(MouseButton::Left, |_, _, cx| {
+                                            cx.stop_propagation()
+                                        })
+                                        .capture_key_down(cx.listener(
+                                            |this, e: &gpui::KeyDownEvent, window, cx| {
+                                                if this.text_draft.read(cx).has_marked_text() {
+                                                    return;
+                                                }
+                                                if e.keystroke.key == "enter" {
+                                                    this.commit_text(cx);
+                                                    window.focus(&this.focus);
+                                                    cx.stop_propagation();
+                                                } else if e.keystroke.key == "escape" {
+                                                    this.text_origin = None;
+                                                    window.focus(&this.focus);
+                                                    cx.notify();
+                                                    cx.stop_propagation();
+                                                }
+                                            },
+                                        ))
+                                        .child(self.text_draft.clone()),
+                                )
+                            })
+                            .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
+                            .on_mouse_move(cx.listener(Self::mouse_move))
+                            .on_mouse_up(MouseButton::Left, cx.listener(Self::mouse_up))
+                            .on_mouse_up_out(MouseButton::Left, cx.listener(Self::mouse_up)),
+                    ),
+            )
+    }
+    fn reader(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
+        let current = self.ocr_content.current(self.session.revision()).is_some();
+        div()
+            .w(px(285.))
+            .flex_none()
+            .flex()
+            .flex_col()
+            .gap(px(10.))
+            .p(px(10.))
+            .bg(p.surface)
+            .rounded(px(10.))
+            .border_1()
+            .border_color(p.separator)
+            .child(
+                div()
+                    .text_size(px(14.))
+                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                    .child("Text Reader"),
+            )
+            .child(
+                div()
+                    .flex()
+                    .gap(px(8.))
+                    .child(
+                        button(
+                            "read-local",
+                            if self.ocr_busy {
+                                "Cancel"
+                            } else if cfg!(target_os = "macos") {
+                                "Read on Mac"
+                            } else {
+                                "Read Locally"
+                            },
+                            p,
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            if this.ocr_busy {
+                                this.ocr_jobs.cancel();
+                                this.ocr_busy = false;
+                                this.status =
+                                    "Local OCR canceled; its late result will be ignored.".into();
+                                cx.notify();
+                            } else {
+                                this.read_text(cx);
+                            }
+                        })),
+                    )
+                    .child(button("ai-ocr", "AI OCR…", p).opacity(0.4)),
+            )
+            .child(
+                div()
+                    .text_size(px(10.))
+                    .text_color(p.secondary)
+                    .child("AI OCR is not ported. No image is sent to a provider."),
+            )
+            .when(self.ocr_content.revision.is_some() && !current, |d| {
+                d.child(
+                    div()
+                        .text_size(px(11.))
+                        .text_color(p.danger)
+                        .child("The image changed. Read again before copying text."),
+                )
+            })
+            .child(
+                div()
+                    .flex_1()
+                    .min_h(px(130.))
+                    .rounded(px(8.))
+                    .bg(p.well)
+                    .p(px(8.))
+                    .child(self.ocr.clone()),
+            )
+            .child(
+                div()
+                    .flex()
+                    .gap(px(6.))
+                    .child(
+                        button("copy-ocr", "Copy Text", p)
+                            .opacity(if current { 1. } else { 0.4 })
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                if let Some(text) =
+                                    this.ocr_content.current(this.session.revision())
+                                {
+                                    cx.write_to_clipboard(ClipboardItem::new_string(text.into()));
+                                }
+                            })),
+                    )
+                    .child(button("copy-markdown", "Markdown", p).opacity(0.4)),
+            )
+    }
+    fn footer(&self, compact: bool, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
+        let navigation = div()
+            .flex()
+            .items_center()
+            .gap(px(5.))
+            .child(
+                button("text-reader", "Text Reader", p).on_click(cx.listener(|this, _, _, cx| {
+                    this.shows_ocr = !this.shows_ocr;
+                    cx.notify();
+                })),
+            )
+            .child(
+                button("zoom-out", "−", p)
+                    .on_click(cx.listener(|this, _, _, cx| this.zoom_step(false, cx))),
+            )
+            .child(
+                button("zoom", format!("{} ▾", self.zoom.label(self.scale)), p).on_click(
+                    cx.listener(|this, _, _, cx| {
+                        this.toggle_menu(Menu::Zoom, cx);
+                    }),
+                ),
+            )
+            .child(
+                button("zoom-in", "+", p)
+                    .on_click(cx.listener(|this, _, _, cx| this.zoom_step(true, cx))),
+            );
+        let exports = div()
+            .flex()
+            .items_center()
+            .gap(px(8.))
+            .child(button("copy-image", "Copy Image", p).on_click(cx.listener(
+                |this, _, window, cx| {
+                    this.copy(false, window, cx);
+                },
+            )))
+            .child(
+                button("save-png", "Save PNG…", p)
+                    .on_click(cx.listener(|this, _, _, cx| this.save(cx))),
+            )
+            .child(
+                button("copy-finish", "Copy & Finish", p)
+                    .bg(p.accent_fill)
+                    .text_color(gpui::white())
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        this.copy(true, window, cx);
+                    })),
+            );
+        let status = div()
+            .flex_1()
+            .min_w(px(0.))
+            .text_size(px(10.))
+            .text_color(if self.error { p.danger } else { p.secondary })
+            .child(if self.rendering {
+                "Rendering current edits…".to_string()
+            } else {
+                self.status.clone()
+            });
+        if compact {
+            div()
+                .flex_none()
+                .flex()
+                .flex_col()
+                .gap(px(6.))
+                .child(navigation)
+                .child(
+                    div()
+                        .flex()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(status)
+                        .child(exports),
+                )
+        } else {
+            div()
+                .flex_none()
+                .flex()
+                .items_center()
+                .gap(px(10.))
+                .child(navigation)
+                .child(status)
+                .child(exports)
+        }
+    }
+}
+impl Render for ScreenshotEditor {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let render_started = std::time::Instant::now();
+        let p = theme::for_window(window);
+        let viewport = window.viewport_size();
+        let compact = f32::from(viewport.width) < 760.;
+        let visible = self.session.document().visible_rect();
+        {
+            self.ocr.update(cx, |e, cx| {
+                let mut appearance = e.appearance().clone();
+                if appearance.text != p.primary {
+                    appearance.text = p.primary;
+                    appearance.caret = p.accent;
+                    appearance.selection = p.accent.opacity(0.18);
+                    e.set_appearance(appearance, cx);
+                }
+            });
+        }
+        let available = (
+            (f32::from(viewport.width) - 22. - if self.shows_ocr { 297. } else { 0. }).max(1.),
+            (f32::from(viewport.height) - if compact { 180. } else { 142. }).max(1.),
+        );
+        let body = div()
+            .flex()
+            .flex_1()
+            .min_h(px(0.))
+            .gap(px(12.))
+            .child(self.canvas(available, p, cx))
+            .when(self.shows_ocr, |d| d.child(self.reader(p, cx)));
+        let mut root = div()
+            .size_full()
+            .relative()
+            .p(px(10.))
+            .flex()
+            .flex_col()
+            .gap(px(8.))
+            .bg(p.bg)
+            .text_color(p.primary)
+            .font_family(theme::ui_font())
+            .track_focus(&self.focus)
+            .capture_key_down(cx.listener(|this, e: &gpui::KeyDownEvent, _, cx| {
+                if this.export_busy || this.show_discard {
+                    if e.keystroke.key == "escape" && !this.export_busy {
+                        this.show_discard = false;
+                        cx.notify();
+                    }
+                    cx.stop_propagation();
+                }
+            }))
+            .on_key_down(cx.listener(Self::key_down))
+            .child(
+                header(
+                    format!(
+                        "{} · {:.0} × {:.0} px",
+                        self.source, visible.width, visible.height
+                    ),
+                    p,
+                )
+                .child(div().flex_1())
+                .child(
+                    icon_button("minimize", "minus", false, p)
+                        .on_click(cx.listener(|_, _, window, _| window.minimize_window())),
+                )
+                .child(
+                    icon_button("close-screenshot", "xmark", false, p)
+                        .on_click(cx.listener(|this, _, window, cx| this.close(window, cx))),
+                ),
+            )
+            .child(self.toolbar(compact, p, cx))
+            .child(body)
+            .child(self.footer(compact, p, cx));
+        if self.open_menu.is_some() {
+            root = root.child(self.menu(p, compact, cx));
+        }
+        if self.export_busy {
+            root = root.child(
+                div()
+                    .id("screenshot-export-lock")
+                    .absolute()
+                    .inset_0()
+                    .occlude()
+                    .bg(p.bg.opacity(0.78))
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                    .child("Exporting the current screenshot…"),
+            );
+        }
+        if self.show_discard {
+            root = root.child(
+                div()
+                    .absolute()
+                    .inset_0()
+                    .id("screenshot-discard-confirmation")
+                    .occlude()
+                    .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                    .bg(gpui::black().opacity(0.3))
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .child(
+                        div()
+                            .w(px(390.))
+                            .p(px(18.))
+                            .rounded(px(12.))
+                            .bg(p.surface)
+                            .flex()
+                            .flex_col()
+                            .gap(px(14.))
+                            .child(
+                                div()
+                                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                                    .child("Discard screenshot edits?"),
+                            )
+                            .child(div().text_size(px(12.)).child(
+                                "Your screenshot annotations and crop changes will be lost.",
+                            ))
+                            .child(
+                                div()
+                                    .flex()
+                                    .justify_end()
+                                    .gap(px(8.))
+                                    .child(button("keep-editing", "Keep Editing", p).on_click(
+                                        cx.listener(|this, _, _, cx| {
+                                            this.show_discard = false;
+                                            cx.notify();
+                                        }),
+                                    ))
+                                    .child(
+                                        button("discard", "Discard", p)
+                                            .text_color(p.danger)
+                                            .on_click(cx.listener(|_, _, window, _| {
+                                                window.remove_window()
+                                            })),
+                                    ),
+                            ),
+                    ),
+            );
+        }
+        crate::desktop::perf("render_cpu", render_started.elapsed().as_micros());
+        root
+    }
+}
+
+fn paint_gesture(
+    g: &Gesture,
+    visible: Rect,
+    scale: f32,
+    bounds: Bounds<Pixels>,
+    brushes: (f32, f32),
+    p: Palette,
+    window: &mut Window,
+) {
+    let transform = |v: Point| {
+        point(
+            bounds.origin.x + px((v.x - visible.x) * scale),
+            bounds.origin.y + px((v.y - visible.y) * scale),
+        )
+    };
+    let mut path = gpui::PathBuilder::stroke(px(if g.tool == AnnotationTool::Eraser {
+        brushes.1 * scale
+    } else {
+        (brushes.0 * scale).max(1.)
+    }));
+    let first = g.points[0];
+    let last = *g.points.last().unwrap();
+    path.move_to(transform(first));
+    if matches!(
+        g.tool,
+        AnnotationTool::Rectangle
+            | AnnotationTool::Highlight
+            | AnnotationTool::Crop
+            | AnnotationTool::Blur
+    ) {
+        for v in [
+            Point {
+                x: last.x,
+                y: first.y,
+            },
+            last,
+            Point {
+                x: first.x,
+                y: last.y,
+            },
+            first,
+        ] {
+            path.line_to(transform(v));
+        }
+    } else {
+        for v in &g.points[1..] {
+            path.line_to(transform(*v));
+        }
+    }
+    if let Ok(path) = path.build() {
+        window.paint_path(
+            path,
+            p.accent.opacity(if g.tool == AnnotationTool::Eraser {
+                0.25
+            } else {
+                0.9
+            }),
+        );
+    }
+}
+fn annotation_icon(symbol: &'static str, p: Palette) -> gpui::AnyElement {
+    canvas(
+        |_, _, _| (),
+        move |bounds, _, window, _| {
+            let lines: Vec<Vec<(f32, f32)>> = match symbol {
+                "cursorarrow" => vec![vec![
+                    (4., 2.),
+                    (4., 19.),
+                    (9., 14.),
+                    (13., 21.),
+                    (16., 19.),
+                    (12., 12.),
+                    (19., 12.),
+                    (4., 2.),
+                ]],
+                "pencil.tip" | "highlighter" => vec![
+                    vec![
+                        (4., 20.),
+                        (6., 13.),
+                        (17., 2.),
+                        (22., 7.),
+                        (11., 18.),
+                        (4., 20.),
+                    ],
+                    vec![(6., 13.), (11., 18.)],
+                ],
+                "arrow.up.right" => vec![
+                    vec![(3., 21.), (21., 3.), (11., 3.)],
+                    vec![(21., 3.), (21., 13.)],
+                ],
+                "rectangle" => vec![vec![(3., 5.), (21., 5.), (21., 19.), (3., 19.), (3., 5.)]],
+                "textformat" => vec![
+                    vec![(2., 19.), (8., 4.), (14., 19.)],
+                    vec![(5., 13.), (11., 13.)],
+                    vec![
+                        (16., 11.),
+                        (21., 11.),
+                        (21., 20.),
+                        (16., 20.),
+                        (16., 15.),
+                        (21., 15.),
+                    ],
+                ],
+                "crop" => vec![
+                    vec![(6., 2.), (6., 18.), (22., 18.)],
+                    vec![(2., 6.), (18., 6.), (18., 22.)],
+                ],
+                "checkerboard.rectangle" => vec![
+                    vec![(3., 3.), (21., 3.), (21., 21.), (3., 21.), (3., 3.)],
+                    vec![(9., 3.), (9., 21.)],
+                    vec![(15., 3.), (15., 21.)],
+                    vec![(3., 9.), (21., 9.)],
+                    vec![(3., 15.), (21., 15.)],
+                ],
+                "eraser" => vec![
+                    vec![
+                        (3., 15.),
+                        (15., 3.),
+                        (22., 10.),
+                        (11., 21.),
+                        (8., 21.),
+                        (3., 15.),
+                    ],
+                    vec![(8., 10.), (16., 17.)],
+                    vec![(10., 21.), (22., 21.)],
+                ],
+                "arrow.uturn.backward" => vec![
+                    vec![(8., 4.), (3., 9.), (8., 14.)],
+                    vec![
+                        (3., 9.),
+                        (16., 9.),
+                        (20., 12.),
+                        (20., 17.),
+                        (17., 20.),
+                        (11., 20.),
+                    ],
+                ],
+                "arrow.uturn.forward" => vec![
+                    vec![(16., 4.), (21., 9.), (16., 14.)],
+                    vec![
+                        (21., 9.),
+                        (8., 9.),
+                        (4., 12.),
+                        (4., 17.),
+                        (7., 20.),
+                        (13., 20.),
+                    ],
+                ],
+                "ellipsis" => vec![
+                    vec![(4., 11.), (5., 11.), (5., 13.), (4., 13.), (4., 11.)],
+                    vec![(11., 11.), (12., 11.), (12., 13.), (11., 13.), (11., 11.)],
+                    vec![(18., 11.), (19., 11.), (19., 13.), (18., 13.), (18., 11.)],
+                ],
+                "minus" => vec![vec![(5., 12.), (19., 12.)]],
+                _ => vec![vec![(6., 6.), (18., 18.)], vec![(6., 18.), (18., 6.)]],
+            };
+            for line in lines {
+                let mut path = gpui::PathBuilder::stroke(px(1.35));
+                for (i, (x, y)) in line.into_iter().enumerate() {
+                    let v = point(
+                        bounds.origin.x + px(x / 24. * 18.),
+                        bounds.origin.y + px(y / 24. * 18.),
+                    );
+                    if i == 0 {
+                        path.move_to(v);
+                    } else {
+                        path.line_to(v);
+                    }
+                }
+                if let Ok(path) = path.build() {
+                    window.paint_path(path, p.primary);
+                }
+            }
+        },
+    )
+    .size(px(18.))
+    .into_any_element()
+}
+
+impl ScreenshotEditor {
+    fn toggle_menu(&mut self, menu: Menu, cx: &mut Context<Self>) {
+        self.open_menu = if self.open_menu == Some(menu) {
+            None
+        } else {
+            Some(menu)
+        };
+        self.menu_index = 0;
+        cx.notify();
+    }
+    fn menu_labels(&self) -> Vec<String> {
+        match self.open_menu {
+            Some(Menu::Zoom) => ["Fit".into(), "Fit Width".into(), "Actual Size".into()]
+                .into_iter()
+                .chain(ZOOM_STEPS.map(|s| format!("{:.0}%", s * 100.)))
+                .collect(),
+            Some(Menu::MaskPattern) => MaskPattern::ALL
+                .map(|pattern| pattern.label().into())
+                .into(),
+            Some(Menu::Image) => vec!["Reset Crop".into()],
+            None => Vec::new(),
+        }
+    }
+    fn choose_menu(&mut self, index: usize, cx: &mut Context<Self>) {
+        match self.open_menu {
+            Some(Menu::Zoom) => {
+                self.zoom = match index {
+                    0 => Zoom::Fit,
+                    1 => Zoom::FitWidth,
+                    2 => Zoom::Scale(1.),
+                    n => Zoom::Scale(*ZOOM_STEPS.get(n - 3).unwrap_or(&1.)),
+                }
+            }
+            Some(Menu::MaskPattern) => {
+                if let Some(pattern) = MaskPattern::ALL.get(index) {
+                    self.mask_style.mask_pattern = *pattern;
+                }
+            }
+            Some(Menu::Image) => {
+                let result = self.session.set_crop(None).map(|_| ());
+                self.report(result, cx);
+            }
+            None => {}
+        }
+        self.open_menu = None;
+        cx.notify();
+    }
+    fn menu(&self, p: Palette, compact: bool, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
+        let menu = self.open_menu.unwrap();
+        let card = div()
+            .id("screenshot-menu")
+            .absolute()
+            .left(px(if menu == Menu::Zoom {
+                130.
+            } else if compact {
+                12.
+            } else {
+                470.
+            }))
+            .when(menu == Menu::Zoom, |d| {
+                d.bottom(px(if compact { 78. } else { 46. }))
+            })
+            .when(menu != Menu::Zoom, |d| {
+                d.top(px(if compact { 126. } else { 90. }))
+            })
+            .w(px(180.))
+            .p(px(4.))
+            .bg(p.surface)
+            .border_1()
+            .border_color(p.border)
+            .rounded(px(8.))
+            .shadow_md()
+            .occlude()
+            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+            .children(
+                self.menu_labels()
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, label)| {
+                        button(("screenshot-menu-item", i), label, p)
+                            .w_full()
+                            .justify_start()
+                            .border_0()
+                            .when(i == self.menu_index, |d| d.bg(p.accent.opacity(0.12)))
+                            .on_click(cx.listener(move |this, _, _, cx| {
+                                this.choose_menu(i, cx);
+                                cx.stop_propagation();
+                            }))
+                    }),
+            );
+        div()
+            .id("screenshot-menu-scrim")
+            .absolute()
+            .inset_0()
+            .on_mouse_down(
+                MouseButton::Left,
+                cx.listener(|this, _, _, cx| {
+                    this.open_menu = None;
+                    cx.notify();
+                    cx.stop_propagation();
+                }),
+            )
+            .child(card)
+    }
+}
+
+impl ScreenshotEditor {
+    fn set_slider(&mut self, x: Pixels, cx: &mut Context<Self>) {
+        let bounds = self.slider_bounds.get();
+        let fraction = ((f32::from(x - bounds.origin.x) - 4.)
+            / (f32::from(bounds.size.width) - 8.).max(1.))
+        .clamp(0., 1.);
+        if self.tool == AnnotationTool::Eraser {
+            self.eraser_width = 6. + (fraction * 45.).round() * 2.;
+        } else {
+            self.style.line_width = 1. + (fraction * 11.).round();
+        }
+        cx.notify();
+    }
+    fn style_slider(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
+        let bounds = self.slider_bounds.clone();
+        let fraction = if self.tool == AnnotationTool::Eraser {
+            (self.eraser_width - 6.) / 90.
+        } else {
+            (self.style.line_width - 1.) / 11.
+        };
+        div()
+            .id("annotation-width-slider")
+            .w(px(if self.tool == AnnotationTool::Eraser {
+                108.
+            } else {
+                70.
+            }))
+            .h(px(24.))
+            .flex_none()
+            .cursor_pointer()
+            .on_mouse_down(
+                MouseButton::Left,
+                cx.listener(|this, e: &gpui::MouseDownEvent, _, cx| {
+                    this.set_slider(e.position.x, cx)
+                }),
+            )
+            .on_mouse_move(cx.listener(|this, e: &gpui::MouseMoveEvent, _, cx| {
+                if e.pressed_button == Some(MouseButton::Left) {
+                    this.set_slider(e.position.x, cx);
+                }
+            }))
+            .child(
+                canvas(
+                    move |b, _, _| bounds.set(b),
+                    move |b, _, window, _| {
+                        let y = b.origin.y + px(11.);
+                        let width = f32::from(b.size.width) - 8.;
+                        let left = b.origin.x + px(4.);
+                        let current = left + px(width * fraction);
+                        window.paint_quad(
+                            gpui::fill(
+                                Bounds::new(point(left, y), size(px(width), px(3.))),
+                                p.border,
+                            )
+                            .corner_radii(px(2.)),
+                        );
+                        window.paint_quad(
+                            gpui::fill(
+                                Bounds::new(point(left, y), size(px(width * fraction), px(3.))),
+                                p.accent,
+                            )
+                            .corner_radii(px(2.)),
+                        );
+                        window.paint_quad(
+                            gpui::fill(
+                                Bounds::new(
+                                    point(current - px(5.), y - px(4.)),
+                                    size(px(11.), px(11.)),
+                                ),
+                                p.surface,
+                            )
+                            .corner_radii(px(6.)),
+                        );
+                    },
+                )
+                .size_full(),
+            )
+    }
+}
+
+impl ScreenshotEditor {
+    fn commit_text(&mut self, cx: &mut Context<Self>) -> bool {
+        let Some(origin) = self.text_origin else {
+            return true;
+        };
+        let text = self.text_draft.read(cx).text().to_string();
+        if text.trim().is_empty() {
+            self.text_origin = None;
+            cx.notify();
+            return true;
+        }
+        match self.session.add_annotation(
+            AnnotationKind::Text {
+                text,
+                origin,
+                max_width: 260.,
+            },
+            self.style,
+        ) {
+            Ok(_) => {
+                self.text_origin = None;
+                self.changed(cx);
+                true
+            }
+            Err(error) => {
+                self.status = error;
+                self.error = true;
+                cx.notify();
+                false
+            }
+        }
+    }
+}
+
+fn complete_gesture(gesture: &mut Gesture, endpoint: Point) {
+    if gesture.points.last() == Some(&endpoint) {
+        return;
+    }
+    if (matches!(gesture.tool, AnnotationTool::Pen | AnnotationTool::Eraser)
+        && gesture.points.len() < 20_000)
+        || gesture.points.len() == 1
+    {
+        gesture.points.push(endpoint);
+    } else {
+        *gesture.points.last_mut().unwrap() = endpoint;
+    }
+}
+impl CaptureChooser {
+    fn load_fixture(
+        &mut self,
+        path: std::path::PathBuf,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.busy = true;
+        self.status = "Loading the explicit local PNG fixture…".into();
+        let token = self.jobs.begin();
+        let task = cx.background_executor().spawn(async move {
+            use std::io::Read;
+            let file = std::fs::File::open(path)
+                .map_err(|_| "Could not open the selected PNG fixture.")?;
+            if !file
+                .metadata()
+                .map_err(|_| "Could not inspect the PNG fixture.")?
+                .is_file()
+            {
+                return Err("Select a PNG file.".into());
+            }
+            let mut png = Vec::new();
+            file.take(bellobox_core::screenshot::MAX_PNG_BYTES as u64 + 1)
+                .read_to_end(&mut png)
+                .map_err(|_| "Could not read the PNG fixture.")?;
+            prepare(png)
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            let result = task.await;
+            let _ = this.update_in(cx, |this, window, cx| {
+                if !this.jobs.accepts(token) {
+                    return;
+                }
+                this.busy = false;
+                match result {
+                    Ok(session) => {
+                        open_session(session, "Local PNG fixture", cx);
+                        window.remove_window();
+                    }
+                    Err(error) => {
+                        this.status = error;
+                        cx.notify();
+                    }
+                }
+            });
+        })
+        .detach();
+    }
+}
+struct PreviewTile {
+    x: u32,
+    y: u32,
+    width: u32,
+    height: u32,
+    image: Arc<Image>,
+}
+fn tile_is_visible(
+    tile: &PreviewTile,
+    scale: f32,
+    padding: (f32, f32),
+    scroll: ViewPoint<Pixels>,
+    viewport: (f32, f32),
+) -> bool {
+    let x = tile.x as f32 * scale + padding.0 / 2. + f32::from(scroll.x);
+    let y = tile.y as f32 * scale + padding.1 / 2. + f32::from(scroll.y);
+    x < viewport.0
+        && y < viewport.1
+        && x + tile.width as f32 * scale > 0.
+        && y + tile.height as f32 * scale > 0.
+}
+
+#[derive(Default)]
+struct RevisionText {
+    revision: Option<u64>,
+    text: String,
+}
+impl RevisionText {
+    fn invalidate(&mut self) {
+        self.revision = None;
+        self.text.clear();
+    }
+    fn current(&self, revision: u64) -> Option<&str> {
+        (self.revision == Some(revision)).then_some(self.text.as_str())
+    }
+}
+#[derive(Clone, Copy)]
+struct OcrTicket {
+    job: crate::session::JobToken,
+    revision: u64,
+}
+impl OcrTicket {
+    fn accepts(self, jobs: &SessionJobs, current: u64) -> bool {
+        self.revision == current && jobs.accepts(self.job)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn zoom_matches_source_fit_and_width() {
+        assert_eq!(Zoom::Fit.scale((1200., 2400.), (600., 500.)), 500. / 2400.);
+        assert_eq!(Zoom::FitWidth.scale((1200., 2400.), (600., 500.)), 0.5);
+        assert_eq!(Zoom::Scale(20.).scale((1., 1.), (1., 1.)), 8.);
+        assert_eq!(Zoom::Scale(f32::NAN).scale((1., 1.), (1., 1.)), 1.);
+    }
+    #[test]
+    fn tool_order_matches_annotation_toolbar() {
+        assert_eq!(
+            TOOLS.map(|(_, label, _)| label),
+            [
+                "Select",
+                "Pen",
+                "Arrow",
+                "Rectangle",
+                "Highlight",
+                "Text",
+                "Crop",
+                "Mask",
+                "Eraser"
+            ]
+        );
+    }
+
+    #[test]
+    fn mouse_release_preserves_final_point_and_bounds_stroke_size() {
+        for tool in [
+            AnnotationTool::Pen,
+            AnnotationTool::Eraser,
+            AnnotationTool::Arrow,
+            AnnotationTool::Crop,
+        ] {
+            let mut g = Gesture {
+                tool,
+                points: vec![Point::new(1., 2.)],
+                selected: None,
+            };
+            complete_gesture(&mut g, Point::new(30., 40.));
+            assert_eq!(g.points.last(), Some(&Point::new(30., 40.)));
+        }
+        let mut g = Gesture {
+            tool: AnnotationTool::Eraser,
+            points: vec![Point::new(0., 0.); 20_000],
+            selected: None,
+        };
+        complete_gesture(&mut g, Point::new(50., 50.));
+        assert_eq!(g.points.len(), 20_000);
+        assert_eq!(g.points.last(), Some(&Point::new(50., 50.)));
+    }
+
+    #[test]
+    fn edited_screenshot_rejects_inflight_ocr_and_clears_all_copy_payloads() {
+        let png = bellobox_core::qr::png("synthetic screenshot").unwrap();
+        let mut session = ScreenshotEditSession::new(ScreenshotDocument::from_png(&png).unwrap());
+        let mut jobs = SessionJobs::default();
+        for edit in 0..3 {
+            let revision = session.revision();
+            let ticket = OcrTicket {
+                job: jobs.begin(),
+                revision,
+            };
+            let mut content = RevisionText {
+                revision: Some(revision),
+                text: "SYNTHETIC OLD OCR".into(),
+            };
+            assert!(ticket.accepts(&jobs, revision));
+            assert!(content.current(revision).is_some());
+            match edit {
+                0 => {
+                    session
+                        .add_annotation(
+                            AnnotationKind::Blur(Rect::new(0., 0., 20., 20.)),
+                            AnnotationStyle::redaction(),
+                        )
+                        .unwrap();
+                }
+                1 => {
+                    session.set_crop(Some(Rect::new(0., 0., 30., 30.))).unwrap();
+                }
+                _ => {
+                    assert!(session.undo());
+                }
+            }
+            // Even before cancellation, a changed document revision rejects the late response.
+            assert!(!ticket.accepts(&jobs, session.revision()));
+            assert!(content.current(session.revision()).is_none());
+            jobs.cancel();
+            content.invalidate();
+            assert!(content.text.is_empty());
+            assert!(content.current(revision).is_none());
+            assert!(!ticket.accepts(&jobs, revision));
+        }
+    }
+    #[test]
+    fn preview_only_requests_tiles_intersecting_viewport() {
+        let image = Arc::new(Image::empty());
+        let first = PreviewTile {
+            x: 0,
+            y: 0,
+            width: 1024,
+            height: 1024,
+            image: image.clone(),
+        };
+        let second = PreviewTile {
+            x: 0,
+            y: 1024,
+            width: 1024,
+            height: 1024,
+            image,
+        };
+        assert!(tile_is_visible(
+            &first,
+            1.,
+            (0., 0.),
+            point(px(0.), px(0.)),
+            (800., 700.)
+        ));
+        assert!(!tile_is_visible(
+            &second,
+            1.,
+            (0., 0.),
+            point(px(0.), px(0.)),
+            (800., 700.)
+        ));
+        assert!(tile_is_visible(
+            &second,
+            1.,
+            (0., 0.),
+            point(px(0.), px(-1000.)),
+            (800., 700.)
+        ));
+        assert!(!tile_is_visible(
+            &first,
+            1.,
+            (0., 0.),
+            point(px(0.), px(-1024.)),
+            (800., 700.)
+        ));
+    }
+}
