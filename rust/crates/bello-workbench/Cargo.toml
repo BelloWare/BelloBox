@@ -1,0 +1,12 @@
+[package]
+name = "bello-workbench"
+version = "0.1.0"
+edition = "2024"
+description = "Shared bounded file, Git, and modal editing core for Bello applications"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+unicode-normalization = "0.1"
+unicode-segmentation = "1.13"

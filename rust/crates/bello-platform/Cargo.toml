@@ -1,0 +1,8 @@
+[package]
+name = "bello-platform"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "Explicit, bounded platform adapters for the BelloBox Rust port"
+
+[dependencies]

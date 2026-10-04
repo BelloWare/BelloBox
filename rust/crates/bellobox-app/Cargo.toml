@@ -1,0 +1,22 @@
+[package]
+name = "bellobox-app"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "bellobox"
+path = "src/main.rs"
+
+[features]
+default = ["developer-tools"]
+developer-tools = ["bellobox-core/developer-tools"]
+
+[dependencies]
+gpui.workspace = true
+libc.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+bellobox-core = { path = "../bellobox-core", default-features = false }
+bello-platform = { path = "../bello-platform" }
+bello-workbench-ui = { path = "../bello-workbench-ui" }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }

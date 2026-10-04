@@ -1,0 +1,10 @@
+[package]
+name = "bello-workbench-ui"
+version = "0.1.0"
+edition = "2024"
+description = "Reusable GPUI folder, Git, and modal editor views for Bello applications"
+
+[dependencies]
+gpui.workspace = true
+libc.workspace = true
+bello-workbench = { path = "../bello-workbench" }
