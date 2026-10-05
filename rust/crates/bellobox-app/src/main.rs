@@ -1,5 +1,7 @@
+mod clock_preview_session;
 mod desktop;
 mod home;
+mod launcher_clock_ui;
 mod launcher_ui;
 mod screenshot_color;
 mod screenshot_ui;

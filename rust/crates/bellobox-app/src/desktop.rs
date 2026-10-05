@@ -1542,6 +1542,22 @@ impl Render for BelloBox {
     }
 }
 pub fn open_tool(id: &str, input: String, cx: &mut App) {
+    open_tool_with_clock_context(id, input, None, cx);
+}
+/// Explicit launcher adoption is distinct from an ordinary repeat-open.
+pub fn open_clock_handoff(
+    input: String,
+    handoff: crate::clock_preview_session::ClockHandoff,
+    cx: &mut App,
+) {
+    open_tool_with_clock_context("worldClock", input, Some(handoff), cx);
+}
+fn open_tool_with_clock_context(
+    id: &str,
+    input: String,
+    clock_handoff: Option<crate::clock_preview_session::ClockHandoff>,
+    cx: &mut App,
+) {
     if id == "settings" {
         crate::settings_ui::open(cx);
         return;
@@ -1555,7 +1571,7 @@ pub fn open_tool(id: &str, input: String, cx: &mut App) {
     }
 
     if id == "worldClock" {
-        crate::world_clock_ui::open(input, cx);
+        crate::world_clock_ui::open_with_handoff(input, clock_handoff, cx);
         return;
     }
 

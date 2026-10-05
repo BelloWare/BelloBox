@@ -1,5 +1,5 @@
 //! Dedicated offline planner, following WorldClockView and its window lifecycle.
-//! Locale-native date controls, Copilot and launcher session handoff remain unported.
+//! Locale-native date controls and Copilot remain unported.
 use crate::theme::Palette;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
@@ -16,11 +16,11 @@ const DATE_FIELD_WIDTH: f32 = 132.;
 const TIME_FIELD_WIDTH: f32 = 88.;
 
 #[derive(Default, Debug)]
-struct WheelAccumulator {
+pub(crate) struct WheelAccumulator {
     pending: f32,
 }
 impl WheelAccumulator {
-    fn consume(&mut self, x: f32, y: f32, reset: bool) -> Option<i64> {
+    pub(crate) fn consume(&mut self, x: f32, y: f32, reset: bool) -> Option<i64> {
         if x == 0. || x.abs() < y.abs() {
             return None;
         }
@@ -246,6 +246,27 @@ impl WorldClock {
         })
         .detach();
         result
+    }
+    fn adopt(
+        &mut self,
+        handoff: &crate::clock_preview_session::ClockHandoff,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let result = handoff.apply(&mut self.planner);
+        if result.is_ok() {
+            self.picker = false;
+            self.reference_menu = false;
+            self.reference_generation = self.reference_generation.wrapping_add(1);
+            self.reference_reveal_pending.set(false);
+            self.restore_focus = None;
+            self.drag_timeline = None;
+            self.wheel = WheelAccumulator::default();
+            self.consume_enter_release = false;
+            self.focus.focus(window);
+        }
+        // Adoption is deliberately not a persistence-bearing Reference action.
+        self.changed_in_day(result, false, cx);
     }
     fn displayed_date(&self) -> String {
         self.displayed_day
@@ -1552,7 +1573,7 @@ fn field(editor: Entity<EditorView>, width: f32, p: Palette) -> Div {
         .border_color(p.separator)
         .child(editor)
 }
-fn quality_color(quality: Quality, p: Palette) -> Hsla {
+pub(crate) fn quality_color(quality: Quality, p: Palette) -> Hsla {
     // Exact semantic tokens from UI/Theme.swift. Decorative fixed hues do not
     // provide the source's readable small-text ink in both appearances.
     let dark = p.bg.l < 0.5;
@@ -1576,7 +1597,7 @@ fn quality_color(quality: Quality, p: Palette) -> Hsla {
     Rgba { r, g, b, a: 1. }.into()
 }
 
-fn quality_badge(quality: Quality, p: Palette) -> Div {
+pub(crate) fn quality_badge(quality: Quality, p: Palette) -> Div {
     div()
         .px(px(8.))
         .py(px(5.))
@@ -1670,18 +1691,27 @@ fn quality_icon(quality: Quality, p: Palette) -> impl IntoElement {
     )
     .size(px(24.))
 }
-fn local_zone() -> Option<String> {
+pub(crate) fn local_zone() -> Option<String> {
     bello_platform::system_time_zone_identifier()
         .filter(|id| clock::search_zones(id).iter().any(|z| z == id))
 }
 
 /// Plain repeat-open preserves the existing plan. Closing drops the entity; a new
 /// open starts live from saved locations/reference, matching the Swift controller.
-pub fn open(input: String, cx: &mut App) {
+pub fn open_with_handoff(
+    input: String,
+    handoff: Option<crate::clock_preview_session::ClockHandoff>,
+    cx: &mut App,
+) {
     for window in cx.windows() {
         if let Some(clock) = window.downcast::<WorldClock>()
             && clock
-                .update(cx, |_, window, _| window.activate_window())
+                .update(cx, |this, window, cx| {
+                    if let Some(handoff) = &handoff {
+                        this.adopt(handoff, window, cx);
+                    }
+                    window.activate_window();
+                })
                 .is_ok()
         {
             cx.activate(true);
@@ -1699,7 +1729,15 @@ pub fn open(input: String, cx: &mut App) {
             }),
             ..Default::default()
         },
-        move |window, cx| cx.new(|cx| WorldClock::new(input, window, cx)),
+        move |window, cx| {
+            cx.new(|cx| {
+                let mut clock = WorldClock::new(input, window, cx);
+                if let Some(handoff) = &handoff {
+                    clock.adopt(handoff, window, cx);
+                }
+                clock
+            })
+        },
     ) {
         eprintln!("Cannot open World Clock: {e}");
     }
