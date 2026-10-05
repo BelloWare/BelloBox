@@ -295,9 +295,8 @@ unsafe fn validated_sparkle_bundle() -> Result<SparkleBundle> {
             "This bundle needs a valid 32-byte base64 Sparkle SUPublicEDKey.",
         ));
     }
-    if bundle_string(main, "CFBundleIdentifier")?.is_empty()
-        || bundle_string(main, "CFBundleVersion")?.is_empty()
-    {
+    validate_preview_identity(&bundle_string(main, "CFBundleIdentifier")?)?;
+    if bundle_string(main, "CFBundleVersion")?.is_empty() {
         return Err(unavailable(
             UPDATE,
             "The Rust app bundle is missing its identifier or build version.",
@@ -350,6 +349,16 @@ fn valid_public_key(key: &str) -> bool {
             .is_some_and(|index| index % 4 == 0)
 }
 
+fn validate_preview_identity(identifier: &str) -> Result<()> {
+    if identifier != "com.ainoob.BelloBox.rust.preview" {
+        return Err(unavailable(
+            UPDATE,
+            "Updates require the isolated Rust preview bundle identifier.",
+        ));
+    }
+    Ok(())
+}
+
 fn validate_feed(feed: &str) -> Result<()> {
     let Some(authority_and_path) = feed.strip_prefix("https://") else {
         return Err(unavailable(
@@ -361,19 +370,30 @@ fn validate_feed(feed: &str) -> Result<()> {
         .split(['/', '?', '#'])
         .next()
         .unwrap_or("");
-    if host.is_empty()
-        || host.contains('@')
+    // Keep this deliberately narrow grammar aligned with preview packaging.
+    // No URL normalization, DNS lookups, or production-host aliases are needed.
+    if !feed.is_ascii()
         || feed.chars().any(|c| c.is_whitespace() || c.is_control())
+        || feed.contains(['@', '#', '%', '\\'])
+        || host.len() > 253
+        || host.split('.').any(|label| {
+            label.is_empty()
+                || label.len() > 63
+                || !label.as_bytes()[0].is_ascii_alphanumeric()
+                || !label.as_bytes()[label.len() - 1].is_ascii_alphanumeric()
+                || !label
+                    .bytes()
+                    .all(|c| c.is_ascii_alphanumeric() || c == b'-')
+        })
     {
         return Err(unavailable(
             UPDATE,
-            "The Rust appcast URL is invalid or contains embedded credentials.",
+            "The preview feed requires unambiguous ASCII HTTPS and a DNS hostname without ports, credentials, fragments or escapes.",
         ));
     }
-    if feed.split(['?', '#']).next().is_some_and(|url| {
-        url.eq_ignore_ascii_case("https://belloware.com/assets/bello_box.appcast.xml")
-    }) {
-        return Err(unavailable(UPDATE, "The production Swift appcast cannot update the Rust port. Configure a separate Rust appcast."));
+    let host = host.to_ascii_lowercase();
+    if host == "belloware.com" || host.ends_with(".belloware.com") {
+        return Err(unavailable(UPDATE, "Production Belloware hosts cannot serve Rust preview updates. Configure a separate preview host."));
     }
     Ok(())
 }
@@ -941,6 +961,10 @@ mod tests {
 
     #[test]
     fn update_configuration_is_strict() {
+        assert!(validate_preview_identity("com.ainoob.BelloBox.rust.preview").is_ok());
+        for identifier in ["", "com.ainoob.BelloBox", "com.belloware.PiApp"] {
+            assert!(validate_preview_identity(identifier).is_err());
+        }
         assert!(validate_feed("https://example.com/rust.xml").is_ok());
         for feed in [
             "",
@@ -950,6 +974,16 @@ mod tests {
             "https://example.com/a b",
             "https://belloware.com/assets/bello_box.appcast.xml",
             "https://belloware.com/assets/bello_box.appcast.xml?rust=1",
+            "https://belloware.com./assets/bello_box.appcast.xml",
+            "https://belloware.com:443/assets/bello_box.appcast.xml",
+            "https://belloware.com/assets/./bello_box.appcast.xml",
+            "https://belloware.com/assets/%62ello_box.appcast.xml",
+            "https://updates.belloware.com/preview.xml",
+            "https://example.com:443/preview.xml",
+            "https://example.com/preview.xml#fragment",
+            "https://@example.com/preview.xml",
+            "https://example..com/preview.xml",
+            "https://éxample.com/preview.xml",
         ] {
             assert!(validate_feed(feed).is_err());
         }
@@ -957,6 +991,9 @@ mod tests {
             "slSJ7z2j8RDa266+E/7To5AOOloc2YtiMUZUVEIhwNA="
         ));
         assert!(!valid_public_key("not-a-key"));
+        assert!(!valid_public_key(
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB="
+        ));
     }
 
     #[test]

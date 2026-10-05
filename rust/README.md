@@ -36,9 +36,25 @@ references `ENOATTR`, removed in later libc versions. Retain the lockfile.
 
 ## Privacy and compatibility
 
-Preserve `com.ainoob.BelloBox`, UserDefaults keys, Keychain service/account names,
-Snippets.json data format and Sparkle update trust. Test these on a signed macOS
-upgrade. Do not persist selected text, HTTP/JWT drafts, HMAC keys, screenshots or
+The development preview uses `com.ainoob.BelloBox.rust.preview`, a separate
+preferences identity from the shipped Swift app. `scripts/package-bellobox-macos.sh`
+assembles an ad-hoc-signed preview without installing or launching it. By default
+it includes no Sparkle feed, key or framework, and disables automatic updates.
+An optional preview feed requires an explicit public key; the Swift production
+host (including subdomains) and Developer ID signing identities are rejected by
+preview packaging. Preview feeds use a deliberately narrow ASCII HTTPS DNS-name
+format without ports, credentials, fragments or percent escapes; public keys must
+be canonical base64. Native preflight applies the same restrictions.
+Packaging builds offline and requires dependencies cached by a prior normal build.
+`PACKAGE_PROFILE=debug` reuses the debug build configuration for offline CI checks.
+Run `python3 scripts/validate-bellobox-macos.py "dist/BelloBox Rust.app" --require-offline`
+to check default preview assembly. This does not establish native UI, permission,
+Sparkle runtime, notarization or distribution readiness.
+
+A future, separately reviewed production migration must preserve the original
+`com.ainoob.BelloBox` identity, UserDefaults keys, Keychain service/account names,
+Snippets.json data format and Sparkle update trust, tested on a signed macOS
+upgrade. The current preview updater deliberately rejects that production identity. Do not persist selected text, HTTP/JWT drafts, HMAC keys, screenshots or
 provider responses as a migration convenience. External requests require explicit
 in-app actions. No real provider calls are required for development tests.
 

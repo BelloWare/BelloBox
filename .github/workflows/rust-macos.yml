@@ -45,3 +45,14 @@ jobs:
         run: cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform
       - name: Build native applications without launching
         run: cargo build --locked --workspace
+      - name: Test isolated preview packaging policy
+        run: python3 -m unittest discover -s scripts -p 'test_package_bellobox_macos.py' -v
+      - name: Assemble and verify offline development preview
+        run: |
+          env -u SIGN_IDENTITY -u SPARKLE_FRAMEWORK -u RUST_SPARKLE_FEED_URL -u SPARKLE_PUBLIC_ED_KEY \
+            PACKAGE_PROFILE=debug OUT_DIR="$RUNNER_TEMP/bellobox-preview" \
+            bash scripts/package-bellobox-macos.sh
+          python3 scripts/validate-bellobox-macos.py \
+            "$RUNNER_TEMP/bellobox-preview/BelloBox Rust.app" --require-offline
+          codesign --verify --deep --strict --verbose=2 \
+            "$RUNNER_TEMP/bellobox-preview/BelloBox Rust.app"
