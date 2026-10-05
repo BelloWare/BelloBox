@@ -3,7 +3,8 @@ use crate::theme::{self, Palette, opacity};
 use bello_platform::{Permission, PermissionState, Platform};
 use bello_workbench_ui::{EditorAppearance, EditorView};
 use gpui::{prelude::*, *};
-use std::sync::Arc;
+use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc};
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Category {
@@ -126,6 +127,7 @@ pub struct Home {
     trusted: bool,
     status: Option<String>,
     editor_ink: Hsla,
+    card_labels: CardLabelCache,
     _subscriptions: Vec<Subscription>,
 }
 impl Home {
@@ -185,6 +187,7 @@ impl Home {
             trusted: selection_trusted(),
             status: None,
             editor_ink: p.primary,
+            card_labels: Rc::default(),
             _subscriptions: vec![observe, appearance],
         }
     }
@@ -676,26 +679,22 @@ impl Home {
                             .flex()
                             .flex_col()
                             .gap(px(5.))
-                            .child(
-                                div()
-                                    .h(px(32.))
-                                    .overflow_hidden()
-                                    .line_clamp(2)
-                                    .text_size(px(13.))
-                                    .line_height(px(16.))
-                                    .font_weight(FontWeight::SEMIBOLD)
-                                    .child(tool.title),
-                            )
-                            .child(
-                                div()
-                                    .h(px(30.))
-                                    .overflow_hidden()
-                                    .line_clamp(2)
-                                    .text_size(px(11.))
-                                    .line_height(px(15.))
-                                    .text_color(p.secondary)
-                                    .child(tool.subtitle),
-                            ),
+                            .child(card_label(
+                                tool.title,
+                                13.,
+                                16.,
+                                FontWeight::SEMIBOLD,
+                                p.primary,
+                                self.card_labels.clone(),
+                            ))
+                            .child(card_label(
+                                tool.subtitle,
+                                11.,
+                                15.,
+                                FontWeight::NORMAL,
+                                p.secondary,
+                                self.card_labels.clone(),
+                            )),
                     )
                     .child(glyph("chevronRight", 10., opacity(p.secondary, 0.45)))
                     .on_click(move |_, _, cx| crate::desktop::open_tool(id, String::new(), cx))
@@ -703,6 +702,133 @@ impl Home {
             .into_any_element()
     }
 }
+// Swift HomeToolCard reserves two lines and truncates only the final line.
+// GPUI 0.2.2's line_clamp + text_ellipsis truncates to 2 * width before word
+// wrapping, so unused space on line one can push the ellipsis outside line two.
+// Shape at the final width instead. The bounded cache keeps one layout per
+// catalog label and invalidates on width or any inherited typography change.
+type CardLabelCache = Rc<RefCell<HashMap<&'static str, CachedCardLabel>>>;
+struct CachedCardLabel {
+    width: Pixels,
+    style: TextStyle,
+    lines: Vec<ShapedLine>,
+}
+fn card_label(
+    text: &'static str,
+    font_size: f32,
+    line_height: f32,
+    weight: FontWeight,
+    ink: Hsla,
+    cache: CardLabelCache,
+) -> Div {
+    div()
+        .h(px(2. * line_height))
+        .overflow_hidden()
+        .text_size(px(font_size))
+        .line_height(px(line_height))
+        .font_weight(weight)
+        .text_color(ink)
+        .child(
+            canvas(
+                move |bounds, window, _| {
+                    let style = window.text_style();
+                    let mut cache = cache.borrow_mut();
+                    if let Some(cached) = cache.get(text)
+                        && cached.width == bounds.size.width
+                        && cached.style == style
+                    {
+                        return cached.lines.clone();
+                    }
+                    let shape = |value: &str| {
+                        window.text_system().shape_line(
+                            value.to_owned().into(),
+                            px(font_size),
+                            &[style.to_run(value.len())],
+                            None,
+                        )
+                    };
+                    let wrapped = window.text_system().shape_text(
+                        text.into(),
+                        px(font_size),
+                        &[style.to_run(text.len())],
+                        Some(bounds.size.width),
+                        None,
+                    );
+                    // If wrapping fails, retain a visible, measured single-line
+                    // tail-truncated fallback rather than terminating the app.
+                    let first_end = wrapped
+                        .as_ref()
+                        .ok()
+                        .and_then(|lines| {
+                            lines
+                                .first()
+                                .and_then(|line| {
+                                    line.wrap_boundaries.first().map(|boundary| {
+                                        line.runs()[boundary.run_ix].glyphs[boundary.glyph_ix].index
+                                    })
+                                })
+                                .or(Some(text.len()))
+                        })
+                        .unwrap_or(0);
+                    let lines = card_line_strings(text, first_end, |value| {
+                        shape(value).width <= bounds.size.width
+                    })
+                    .iter()
+                    .filter(|value| !value.is_empty())
+                    .map(|value| shape(value))
+                    .collect::<Vec<_>>();
+                    cache.insert(
+                        text,
+                        CachedCardLabel {
+                            width: bounds.size.width,
+                            style,
+                            lines: lines.clone(),
+                        },
+                    );
+                    lines
+                },
+                move |bounds, lines, window, cx| {
+                    for (index, line) in lines.iter().enumerate() {
+                        let origin = bounds.origin + point(px(0.), px(index as f32 * line_height));
+                        let _ = line.paint(origin, px(line_height), window, cx);
+                    }
+                },
+            )
+            .w_full()
+            .h_full(),
+        )
+}
+
+fn card_line_strings(text: &str, first_end: usize, fits: impl Fn(&str) -> bool) -> Vec<String> {
+    // Font shaping gives a byte boundary; keep composed characters and emoji
+    // intact even if a platform shaper offers a boundary inside a grapheme.
+    let first_end = text
+        .grapheme_indices(true)
+        .map(|(index, _)| index)
+        .chain(std::iter::once(text.len()))
+        .take_while(|index| *index <= first_end)
+        .last()
+        .unwrap_or(0);
+    if first_end == text.len() {
+        return vec![text.to_owned()];
+    }
+    let first = text[..first_end].trim_end().to_owned();
+    let remainder = text[first_end..].trim_start();
+    if fits(remainder) {
+        return vec![first, remainder.to_owned()];
+    }
+    let mut last = String::new();
+    // Catalog labels are short and this runs only when width/style changes.
+    // Test actual shaped prefixes rather than additive per-character estimates.
+    for (end, _) in remainder.grapheme_indices(true) {
+        let candidate = format!("{}…", remainder[..end].trim_end());
+        if fits(&candidate) {
+            last = candidate;
+        }
+    }
+    vec![first, last]
+}
+
 impl Render for Home {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let p = theme::for_window(window);
@@ -2080,6 +2206,96 @@ fn ai_is_configured() -> bool {
 #[cfg(test)]
 mod tests {
     use super::{Category, Group, TOOLS, filtered_tools, grid_columns, tool_title};
+    #[test]
+    fn card_labels_keep_source_typography_and_reservations() {
+        use gpui::{Styled, px};
+        for (font_size, line_height) in [(13., 16.), (11., 15.)] {
+            let mut label = super::card_label(
+                "label",
+                font_size,
+                line_height,
+                gpui::FontWeight::NORMAL,
+                gpui::black(),
+                Default::default(),
+            );
+            let mut expected = gpui::div()
+                .h(px(2. * line_height))
+                .text_size(px(font_size))
+                .line_height(px(line_height));
+            assert_eq!(label.style().size.height, expected.style().size.height);
+            assert_eq!(
+                label.text_style().as_ref().unwrap().font_size,
+                expected.text_style().as_ref().unwrap().font_size
+            );
+            assert_eq!(
+                label.text_style().as_ref().unwrap().line_height,
+                expected.text_style().as_ref().unwrap().line_height
+            );
+        }
+    }
+    #[test]
+    fn card_label_tail_uses_measured_width_not_character_count() {
+        let width = |text: &str| {
+            text.chars()
+                .map(|ch| match ch {
+                    'W' => 9,
+                    'i' => 2,
+                    '…' => 6,
+                    _ => 4,
+                })
+                .sum::<usize>()
+        };
+        for text in [
+            "first WWWWWWWWWWWWW",
+            "first iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+        ] {
+            let lines = super::card_line_strings(text, 6, |candidate| width(candidate) <= 30);
+            assert_eq!(lines[0], "first");
+            assert!(lines[1].ends_with('…'));
+            assert!(width(&lines[1]) <= 30);
+        }
+    }
+    #[test]
+    fn card_labels_truncate_only_the_last_line() {
+        let fit = |value: &str| value.chars().count() <= 12;
+        assert_eq!(
+            super::card_line_strings(
+                "Compare live time or plan a meeting across locations",
+                13,
+                fit
+            ),
+            ["Compare live", "time or pla…"]
+        );
+        assert_eq!(
+            super::card_line_strings("short label", 11, fit),
+            ["short label"]
+        );
+        assert_eq!(
+            super::card_line_strings("first line second", 11, fit),
+            ["first line", "second"]
+        );
+        assert_eq!(
+            super::card_line_strings("abcdefghijklmnopqrstuv", 12, fit),
+            ["abcdefghijkl", "mnopqrstuv"]
+        );
+    }
+    #[test]
+    fn card_labels_preserve_unicode_graphemes_and_ellipsis_width() {
+        use unicode_segmentation::UnicodeSegmentation;
+        let fit = |value: &str| value.graphemes(true).count() <= 3;
+        assert_eq!(
+            super::card_line_strings("abc 👩‍💻é中文", 4, fit),
+            ["abc", "👩‍💻é…"]
+        );
+        assert_eq!(
+            super::card_line_strings("abc def", 4, |_| false),
+            ["abc", ""]
+        );
+        assert_eq!(
+            super::card_line_strings("abc defghijklmnop", 4, fit),
+            ["abc", "de…"]
+        );
+    }
     #[test]
     fn home_categories_match_source() {
         assert_eq!(Category::Overview.commands().len(), 9);

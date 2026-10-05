@@ -570,6 +570,7 @@ dependencies = [
  "reqwest",
  "serde_json",
  "tempfile",
+ "unicode-segmentation",
  "uuid",
 ]
 

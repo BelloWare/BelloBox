@@ -26,6 +26,18 @@ Actual revised Rust Home screenshot `bellobox-source-home-20261004-0337.png` was
 - Native CUA transport disconnected at03:41:54 UTC; subsequent same-route inventory checks returned no apps / connection refused. Final-binary shadow/footer recaptures, intended520×620 QR size, minimum-size resizing and dark-mode testing are **not verified**. New source changes after the last capture are not visual evidence.
 - Final verdict for this review pass: **Home and QR structural restoration verified; full visual and interaction parity not accepted.** Remaining source checklist items and platform-specific typography/materials must stay explicit.
 
+## Home card truncation correction: 2026-10-05
+
+The real Linux CI Home/Developer captures from commit `1b58111` showed descriptions cut mid-word at the right edge. This is not the source's intended two-line tail truncation: `HomeToolCard` in `UI/MainView.swift` reserves 32pt for the 13pt title and 30pt for the 11pt subtitle, each with a two-line limit.
+
+Adding GPUI 0.2.2's `text_ellipsis()` to `line_clamp(2)` was tested in a fresh 1000×760 Home capture and was insufficient. That implementation truncates to twice the available width before wrapping; unused space on the first line can leave the ellipsis beyond the second line's visible bounds.
+
+The corrected Home label uses GPUI's font shaping for the first wrap and measures the final line together with its ellipsis. Cuts preserve Unicode graphemes, including composed accents and joined emoji. Layouts are cached per catalog label, width and text style; card dimensions, padding, fonts, colors and two-line reservations are unchanged. Bounds clipping is retained, and a wrapping error falls back to measured single-line truncation instead of terminating the app. Unit tests cover source reservations, variable-width measurement, long words, Unicode and widths too small for an ellipsis. These tests do not establish macOS typography or performance parity.
+
+Accessibility boundary: GPUI 0.2.2's existing Text/Div implementation exposes no accessibility-label or hint nodes, and the prior Rust Home did not reproduce Swift's `accessibilityLabel`/`accessibilityHint`. The shaped-label correction does not claim to close that existing gap. The complete tool title and subtitle remain in the catalog; a native accessibility bridge remains unverified and unimplemented.
+
+Fresh Linux captures of corrected binary SHA-256 `680453397fbfd5fa588093ae82d1a4f1cebbbe5110b640880c4fda9142e2b3ff` at 1000×760 were inspected: `box-home-shaped-1000.png` and `box-developer-shaped-1000.png`. Observed truncated card subtitles now end in a visible ellipsis, including Screenshot, World Clock, Ask AI, JSON, Snippets and the visible Developer cards. The card hierarchy and typography are retained. The app's 39 tests and clippy with warnings denied pass. At 900×760, native resize also confirmed Home/Developer change to two columns with readable subtitles; `box-home-shaped-900.png` was inspected. macOS capture verification remains pending; no full UI-parity acceptance is claimed.
+
 ## Shared visual contract
 
 Sources: `BelloBox/UI/Theme.swift`, `WindowMaterials.swift`, `AppWindowChrome.swift`.
