@@ -289,6 +289,55 @@ impl Editor {
     pub fn text(&self) -> &str {
         self.buffer.text()
     }
+    /// Conservative cache-budget accounting, not measured allocator/RSS bytes.
+    /// Includes inline storage, every owned String/Vec capacity (including undo,
+    /// redo, the open transaction and register), plus 64 bytes per allocation.
+    /// The allowance is a budgeting convention, not an allocator overhead bound.
+    pub fn accounted_bytes(&self) -> usize {
+        fn allocation(capacity: usize, element_size: usize) -> usize {
+            capacity
+                .saturating_mul(element_size)
+                .saturating_add(if capacity == 0 { 0 } else { 64 })
+        }
+        fn string(value: &String) -> usize {
+            allocation(value.capacity(), 1)
+        }
+        fn transaction(value: &Transaction) -> usize {
+            value.edits.iter().fold(
+                allocation(value.edits.capacity(), std::mem::size_of::<Edit>()),
+                |bytes, edit| {
+                    bytes
+                        .saturating_add(string(&edit.removed))
+                        .saturating_add(string(&edit.inserted))
+                },
+            )
+        }
+        let mut bytes = std::mem::size_of::<Self>();
+        for amount in [
+            string(&self.buffer.text),
+            allocation(self.buffer.lines.capacity(), std::mem::size_of::<usize>()),
+            allocation(
+                self.buffer.utf16_lines.capacity(),
+                std::mem::size_of::<usize>(),
+            ),
+            string(&self.message),
+            string(&self.search),
+            string(&self.register.text),
+            allocation(self.undo.capacity(), std::mem::size_of::<Transaction>()),
+            allocation(self.redo.capacity(), std::mem::size_of::<Transaction>()),
+        ] {
+            bytes = bytes.saturating_add(amount);
+        }
+        for value in self
+            .undo
+            .iter()
+            .chain(&self.redo)
+            .chain(self.transaction.iter())
+        {
+            bytes = bytes.saturating_add(transaction(value));
+        }
+        bytes
+    }
     pub fn revision(&self) -> u64 {
         self.revision
     }
@@ -1108,6 +1157,34 @@ mod tests {
         for c in s.chars() {
             e.key(Key::Char(c));
         }
+    }
+    #[test]
+    fn retained_accounting_includes_spare_capacity_and_all_history() {
+        let mut editor = Editor::new("a\r\n😀".into());
+        let baseline = editor.accounted_bytes();
+        editor.buffer.text.reserve(4096);
+        editor.buffer.lines.reserve(1024);
+        editor.buffer.utf16_lines.reserve(1024);
+        editor.message.reserve(1024);
+        editor.search.reserve(1024);
+        editor.register.text.reserve(1024);
+        assert!(editor.accounted_bytes() >= baseline + 8192);
+        let empty_history = editor.accounted_bytes();
+        editor.set_cursor(editor.text().len());
+        editor.insert_text("pending");
+        let pending = editor.accounted_bytes();
+        assert!(pending > empty_history);
+        editor.finish_transaction();
+        assert!(editor.accounted_bytes() >= pending);
+        let committed = editor.accounted_bytes();
+        editor.undo();
+        assert!(editor.accounted_bytes() >= committed);
+        assert!(!editor.redo.is_empty());
+        assert!(editor.transaction.is_none());
+        // Capacity, not length: deleting the register must not hide its allocation.
+        let retained = editor.accounted_bytes();
+        editor.register.text.clear();
+        assert_eq!(editor.accounted_bytes(), retained);
     }
     #[test]
     fn ordinary_arrows_follow_composed_characters_from_every_scalar_boundary() {

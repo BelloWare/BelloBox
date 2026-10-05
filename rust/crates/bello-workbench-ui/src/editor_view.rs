@@ -14,6 +14,89 @@ pub enum EditorEvent {
     SaveRequested,
     LayoutChanged,
 }
+/// In-memory, move-only editing state. Contains no GPUI/platform handles,
+/// composition, layout, subscriptions or persisted data. Deliberately neither
+/// Clone nor Debug: moving state must not duplicate history or expose its text.
+pub struct EditorEditState {
+    engine: Editor,
+    selection: Option<Range<usize>>,
+}
+impl EditorEditState {
+    /// Conservative cache accounting, not actual allocator/RSS measurement.
+    /// Includes capacities and an allocation allowance; see Editor::accounted_bytes.
+    pub fn accounted_bytes(&self) -> usize {
+        self.engine
+            .accounted_bytes()
+            .saturating_add(std::mem::size_of::<Self>() - std::mem::size_of::<Editor>())
+    }
+}
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum EditStateError {
+    Focused,
+    Composing,
+    Dragging,
+    MissingState,
+    StaleText,
+    EditedDestination,
+    IncompatibleConfiguration,
+}
+
+fn check_edit_state_transfer(
+    focused: bool,
+    marked: &Option<Range<usize>>,
+    dragging: &Option<usize>,
+) -> Result<(), EditStateError> {
+    if focused {
+        return Err(EditStateError::Focused);
+    }
+    if marked.is_some() {
+        return Err(EditStateError::Composing);
+    }
+    if dragging.is_some() {
+        return Err(EditStateError::Dragging);
+    }
+    Ok(())
+}
+fn take_edit_state(
+    engine: &mut Editor,
+    selection: &mut Option<Range<usize>>,
+    focused: bool,
+    marked: &Option<Range<usize>>,
+    dragging: &Option<usize>,
+) -> Result<EditorEditState, EditStateError> {
+    check_edit_state_transfer(focused, marked, dragging)?;
+    let mut detached = Editor::new(String::new());
+    detached.read_only = true;
+    Ok(EditorEditState {
+        engine: std::mem::replace(engine, detached),
+        selection: selection.take(),
+    })
+}
+fn restore_edit_state(
+    engine: &mut Editor,
+    selection: &mut Option<Range<usize>>,
+    state: &mut Option<EditorEditState>,
+    focused: bool,
+    marked: &Option<Range<usize>>,
+    dragging: &Option<usize>,
+) -> Result<(), EditStateError> {
+    check_edit_state_transfer(focused, marked, dragging)?;
+    let saved = state.as_ref().ok_or(EditStateError::MissingState)?;
+    if engine.text() != saved.engine.text() {
+        return Err(EditStateError::StaleText);
+    }
+    if engine.revision() != 0 {
+        return Err(EditStateError::EditedDestination);
+    }
+    if engine.vim != saved.engine.vim || engine.read_only != saved.engine.read_only {
+        return Err(EditStateError::IncompatibleConfiguration);
+    }
+    let saved = state.take().expect("checked above");
+    *engine = saved.engine;
+    *selection = saved.selection;
+    Ok(())
+}
+
 pub struct EditorView {
     pub engine: Editor,
     appearance: EditorAppearance,
@@ -62,6 +145,61 @@ impl EditorView {
             compact: false,
             requested_read_only: false,
         }
+    }
+    /// Let virtual hosts keep interacting rows mounted before attempting eviction.
+    /// The transfer methods repeat this check immediately before mutation.
+    pub fn suspension_blocker(&self, window: &Window) -> Option<EditStateError> {
+        check_edit_state_transfer(self.focus.is_focused(window), &self.marked, &self.dragging).err()
+    }
+    /// Suspend an inactive view before dropping it. On success this view is an
+    /// empty placeholder and must be dropped, not reused. Failure is nonmutating.
+    /// This does not commit an open edit group or emit Changed.
+    pub fn take_edit_state(
+        &mut self,
+        window: &Window,
+        cx: &mut Context<Self>,
+    ) -> Result<EditorEditState, EditStateError> {
+        let state = take_edit_state(
+            &mut self.engine,
+            &mut self.selection,
+            self.focus.is_focused(window),
+            &self.marked,
+            &self.dragging,
+        )?;
+        self.invalidate_edit_state_layout();
+        cx.notify();
+        Ok(state)
+    }
+    /// Restore into a newly created, already configured inactive view whose
+    /// text still exactly matches the retained state. Errors leave both intact.
+    /// Configure compact/Vim/read-only before restoration: mode setters can
+    /// finish edit groups. Hosts must also validate their document identity and
+    /// generation; equal text alone cannot detect replacement by another document.
+    /// No Changed event is emitted and pending edit groups remain open.
+    pub fn restore_edit_state(
+        &mut self,
+        state: &mut Option<EditorEditState>,
+        window: &Window,
+        cx: &mut Context<Self>,
+    ) -> Result<(), EditStateError> {
+        restore_edit_state(
+            &mut self.engine,
+            &mut self.selection,
+            state,
+            self.focus.is_focused(window),
+            &self.marked,
+            &self.dragging,
+        )?;
+        self.invalidate_edit_state_layout();
+        cx.notify();
+        Ok(())
+    }
+    fn invalidate_edit_state_layout(&mut self) {
+        self.layouts.clear();
+        self.wrapped.clear();
+        self.measured_viewport_width = None;
+        self.horizontal_column = 0;
+        self.reveal_cursor = true;
     }
     pub fn set_appearance(&mut self, mut appearance: EditorAppearance, cx: &mut Context<Self>) {
         appearance.validate();
@@ -979,6 +1117,166 @@ mod input_tests {
         set_vim_unless_marked,
     };
     use bello_workbench::editor::{Editor, Key, MAX_EDIT_BYTES, Mode};
+
+    #[test]
+    fn retained_state_keeps_pending_group_unicode_crlf_and_selection() {
+        let mut editor = Editor::new("😀\r\né".into());
+        editor.set_cursor(editor.text().len());
+        editor.insert_text("甲");
+        let cursor = editor.cursor;
+        let mut selection = Some(0..4);
+        let pointer = editor.text().as_ptr();
+        let mut state =
+            Some(super::take_edit_state(&mut editor, &mut selection, false, &None, &None).unwrap());
+        assert_eq!(editor.text(), "");
+        assert!(editor.read_only);
+        editor.insert_text("late callback");
+        assert_eq!(editor.text(), "");
+        assert_eq!(selection, None);
+        let mut target = Editor::new("😀\r\né甲".into());
+        super::restore_edit_state(&mut target, &mut selection, &mut state, false, &None, &None)
+            .unwrap();
+        assert!(state.is_none());
+        assert_eq!(target.text().as_ptr(), pointer);
+        assert_eq!(target.cursor, cursor);
+        assert_eq!(selection, Some(0..4));
+        target.insert_text("乙");
+        target.undo();
+        assert_eq!(target.text(), "😀\r\né");
+        target.redo();
+        assert_eq!(target.text(), "😀\r\né甲乙");
+        target.undo();
+        let mut state =
+            Some(super::take_edit_state(&mut target, &mut selection, false, &None, &None).unwrap());
+        let mut target = Editor::new("😀\r\né".into());
+        super::restore_edit_state(&mut target, &mut selection, &mut state, false, &None, &None)
+            .unwrap();
+        target.redo();
+        assert_eq!(target.text(), "😀\r\né甲乙");
+    }
+
+    #[test]
+    fn rejected_state_transfers_leave_both_owners_intact() {
+        use super::EditStateError::*;
+        for (focused, marked, dragging, error) in [
+            (true, None, None, Focused),
+            (false, Some(0..1), None, Composing),
+            (false, None, Some(0), Dragging),
+        ] {
+            let mut editor = Editor::new("a".into());
+            editor.set_cursor(1);
+            editor.insert_text("b");
+            let mut selection = Some(0..1);
+            let pointer = editor.text().as_ptr();
+            assert_eq!(
+                super::take_edit_state(&mut editor, &mut selection, focused, &marked, &dragging)
+                    .err(),
+                Some(error)
+            );
+            assert_eq!(editor.text().as_ptr(), pointer);
+            assert_eq!(selection, Some(0..1));
+            let mut state = Some(
+                super::take_edit_state(&mut editor, &mut selection, false, &None, &None).unwrap(),
+            );
+            let mut target = Editor::new("ab".into());
+            let mut target_selection = Some(1..2);
+            assert_eq!(
+                super::restore_edit_state(
+                    &mut target,
+                    &mut target_selection,
+                    &mut state,
+                    focused,
+                    &marked,
+                    &dragging
+                ),
+                Err(error)
+            );
+            assert_eq!(target.text(), "ab");
+            assert_eq!(target_selection, Some(1..2));
+            assert_eq!(state.as_ref().unwrap().engine.text().as_ptr(), pointer);
+            super::restore_edit_state(
+                &mut target,
+                &mut target_selection,
+                &mut state,
+                false,
+                &None,
+                &None,
+            )
+            .unwrap();
+            target.insert_text("c");
+            target.undo();
+            assert_eq!(target.text(), "a");
+        }
+        for error in [StaleText, EditedDestination, IncompatibleConfiguration] {
+            let mut original = Editor::new("saved".into());
+            let mut selection = Some(0..2);
+            let mut state = Some(
+                super::take_edit_state(&mut original, &mut selection, false, &None, &None).unwrap(),
+            );
+            let mut target = Editor::new("saved".into());
+            match error {
+                StaleText => target = Editor::new("newer".into()),
+                EditedDestination => {
+                    target.insert_text("x");
+                    target.undo();
+                }
+                IncompatibleConfiguration => target.set_vim(true),
+                _ => unreachable!(),
+            }
+            let before = target.text().to_owned();
+            let revision = target.revision();
+            let bytes = state.as_ref().unwrap().accounted_bytes();
+            assert_eq!(
+                super::restore_edit_state(
+                    &mut target,
+                    &mut selection,
+                    &mut state,
+                    false,
+                    &None,
+                    &None
+                ),
+                Err(error)
+            );
+            assert_eq!(target.text(), before);
+            assert_eq!(target.revision(), revision);
+            assert_eq!(state.as_ref().unwrap().accounted_bytes(), bytes);
+            assert_eq!(state.as_ref().unwrap().selection, Some(0..2));
+        }
+    }
+
+    #[test]
+    fn retained_vim_register_and_pending_operator_survive() {
+        for pending_delete in [false, true] {
+            let mut editor = Editor::new("one two".into());
+            editor.set_vim(true);
+            editor.key(Key::Char('y'));
+            editor.key(Key::Char('w'));
+            if pending_delete {
+                editor.key(Key::Char('d'));
+            }
+            let mut selection = None;
+            let mut state = Some(
+                super::take_edit_state(&mut editor, &mut selection, false, &None, &None).unwrap(),
+            );
+            let mut target = Editor::new("one two".into());
+            target.set_vim(true);
+            super::restore_edit_state(&mut target, &mut selection, &mut state, false, &None, &None)
+                .unwrap();
+            if pending_delete {
+                target.key(Key::Char('w'));
+                assert_eq!(target.text(), "two");
+            }
+            target.key(Key::Char('P'));
+            assert_eq!(
+                target.text(),
+                if pending_delete {
+                    "one two"
+                } else {
+                    "one one two"
+                }
+            );
+        }
+    }
 
     #[test]
     fn composition_owns_mode_until_commit_or_unmark() {
