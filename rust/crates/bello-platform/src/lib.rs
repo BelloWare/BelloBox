@@ -16,11 +16,13 @@ mod capture;
 pub mod macos_native;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 mod process;
+mod time_zone;
 
 use std::fmt;
 use std::path::Path;
 
 pub use capture::CapturedScreenshot;
+pub use time_zone::system_time_zone_identifier;
 
 /// A captured PNG kept in memory after a private, automatically removed staging file.
 /// No user-visible image file is saved until the user explicitly exports it.
