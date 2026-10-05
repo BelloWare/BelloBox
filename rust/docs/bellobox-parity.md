@@ -334,9 +334,10 @@ is composing is consumed without clearing its marked range or changing focus;
 this is an explicit large-template interaction constraint, not source parity.
 Outside clicks preserve the focus of any newly clicked input. Measurement callbacks
 never evict editor entities; actual viewport reconciliation synchronizes values
-before eviction. Evicted inactive fields retain their values but not EditorView
-undo stacks; undo across actual eviction remains a source-behavior gap. Small
-field sets and still-visible editors retain their existing entities/undo.
+before eviction. At checkpoint 4807399, evicted inactive fields retained their values but not
+EditorView undo stacks. The bounded cold-state checkpoint below addresses
+retention within an explicit memory/count limit. Small field sets and still-visible
+editors retain their existing entities/undo.
 A generation guard rejects queued events from
 old fields after New/load. Small field sets use flexible, wrapping source rows;
 large-list row heights reserve the measured label wrapping. This differs from the
@@ -382,3 +383,66 @@ Independent source re-review found the measurement/active-row fixes and final
 composition guard correct within their stated constraints. No actual OS IME
 commit, cancellation or candidate-window test was performed. These are scoped
 Linux checks, not full native TextField, macOS or overall feature parity.
+
+## Bounded snippet field edit-state retention (2026-10-05)
+
+The shared, independently backed-up `EditorEditState` API is now used by the
+Snippets field host. An inactive field moves its complete edit model into a
+per-window cold pool when its render entity is evicted. The state preserves undo,
+redo, pending edit groups, cursor and plain selection, without GPUI focus handles,
+platform input handlers, composition or rendered geometry. Fresh views are fully
+configured before restoration; restoration does not call set_text or mode setters
+and does not emit a synthetic Changed event. The API rejects active or mismatched
+state transfers without mutation.
+
+The cold pool holds at most 64 states and 16 MiB of conservatively accounted state
+bytes, using the shared accounting for model buffers, indexes and history
+capacities. This is not measured allocator/RSS usage; bounded cache metadata and
+still-mounted views are separate. Oldest inactive states are dropped when the
+limit is reached; oversized states are not retained. Authoritative field values
+remain in the session even when undo retention is pruned. Nothing is serialized
+or written to settings, snippet files, logs or temporary files. Native cross-field
+undo grouping/lifetime is not claimed equivalent to AppKit.
+
+Session and per-mount generations reject stale editor callbacks, including an old
+entity from the same field after remount. New/load clears both mounted and cold
+state; a removed/re-added field can recover its retained state only in the same
+session and while still cached. The exact current text/configuration is checked
+before restoration. Focused, composing or dragging fields remain mounted using
+the shared suspension blocker. Existing composition and scrolling constraints
+remain; this checkpoint changes no Return, Tab, paste or newline behavior.
+
+The virtual list sets both height and minimum height to at least twice its
+measured row height, with no internal padding/border. Thus its actual visible
+range always includes multiple rows; outer clipping does not change that layout
+range in pinned GPUI 0.2.2. The ordinary 304px layout is unchanged; exceptionally
+tall labels can enlarge this still-bounded viewport. A tall-row regression covers
+the invariant.
+
+Measurement returns only a correctly sized row after active-input pinning. It
+never creates a measured-only editor, consumes cold state or updates recency;
+only actual viewport reconciliation detaches editors. This avoids repeatedly
+restoring/suspending row zero solely for layout measurement.
+
+Seven new host regression tests cover the two-row viewport invariant, exact
+byte/count boundaries, replacement
+accounting, oversized rejection, opaque move identity, stale generations/mounts,
+10,000 evictions preserving all values, removal/re-add/reset semantics and drag
+protection. The shared API's separate tests exercise actual undo/redo/open-group
+transfer with Unicode/CRLF and atomic rejection. Host cache unit tests do not
+claim an end-to-end native editor or OS IME test. Locked offline workspace tests passed 325 executions with four ignored; strict
+workspace/all-target Clippy, formatting and the full build passed after the
+dependency cleanup checkpoint c1bb4c2. The final fields source was independently
+reviewed at SHA-256 f48a902f2b515bdf0901ebdb3bfac3ec135738a2552b0c1df9cd02ed1cc17ff0.
+
+Running Linux candidate
+`04a80bd5aace1ce4b839b5e28af9a8010c4a0c211b79828181fd6ba0dee4d100` passed
+fresh native checks: a nonzero-index field's edit made before eviction could be
+undone immediately after remount; its redo stack survived a separate eviction and
+remount. No new edit after remount was needed. Active-row pinning, continued typing
+and drag-selection replacement passed. Removing/re-adding fields retained values;
+New and loading a saved snippet cleared them. At exact740×560 client size, the
+last of twelve fields remained reachable/editable; a long label wrapped over
+three lines with a usable Value field and live result. Test windows closed
+cleanly. These are ordinary Linux-path checks, not actual OS IME, native macOS
+field-editor grouping or complete keyboard/paste parity.

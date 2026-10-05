@@ -1,12 +1,94 @@
 //! Source field rows, with a bounded viewport for exceptionally large templates.
 use super::*;
+use bello_workbench_ui::{EditStateError, EditorEditState};
 use gpui::{EntityInputHandler, Focusable, UniformListScrollHandle, uniform_list};
-use std::{collections::BTreeMap, ops::Range};
+use std::{
+    collections::{BTreeMap, VecDeque},
+    ops::Range,
+};
 
 const ROW_HEIGHT: f32 = 38.;
 const VIEWPORT_ROWS: usize = 8;
+const COLD_STATE_BYTES: usize = 16 * 1024 * 1024;
+const COLD_STATE_COUNT: usize = 64;
+
+// Only inactive model state is retained here, never GPUI entities/platform handles.
+// The byte bound is EditorEditState accounting, not an allocator/RSS claim.
+struct ColdEntry<T> {
+    generation: u64,
+    value: T,
+    bytes: usize,
+}
+struct ColdStates<T> {
+    entries: BTreeMap<String, ColdEntry<T>>,
+    order: VecDeque<String>,
+    bytes: usize,
+    byte_limit: usize,
+    count_limit: usize,
+}
+impl<T> ColdStates<T> {
+    fn new(byte_limit: usize, count_limit: usize) -> Self {
+        Self {
+            entries: BTreeMap::new(),
+            order: VecDeque::new(),
+            bytes: 0,
+            byte_limit,
+            count_limit,
+        }
+    }
+    fn remove(&mut self, name: &str) -> Option<ColdEntry<T>> {
+        let entry = self.entries.remove(name)?;
+        self.order.retain(|key| key != name);
+        self.bytes -= entry.bytes;
+        Some(entry)
+    }
+    fn take(&mut self, name: &str, generation: u64) -> Option<T> {
+        self.remove(name)
+            .filter(|entry| entry.generation == generation)
+            .map(|entry| entry.value)
+    }
+    fn insert(&mut self, name: String, generation: u64, value: T, bytes: usize) -> bool {
+        self.remove(&name);
+        if bytes > self.byte_limit || self.count_limit == 0 {
+            return false;
+        }
+        while self.bytes > self.byte_limit - bytes || self.entries.len() >= self.count_limit {
+            let oldest = self
+                .order
+                .front()
+                .expect("entries have recency keys")
+                .clone();
+            self.remove(&oldest);
+        }
+        self.bytes += bytes;
+        self.order.push_back(name.clone());
+        self.entries.insert(
+            name,
+            ColdEntry {
+                generation,
+                value,
+                bytes,
+            },
+        );
+        true
+    }
+    fn clear(&mut self) {
+        self.entries.clear();
+        self.order.clear();
+        self.bytes = 0;
+    }
+}
+fn current_mount(
+    generation: u64,
+    mount: u64,
+    current_generation: u64,
+    current: Option<u64>,
+) -> bool {
+    generation == current_generation && current == Some(mount)
+}
 struct FieldSlot {
     editor: Entity<EditorView>,
+    mount: u64,
     _subscription: Subscription,
 }
 pub(super) struct Fields {
@@ -16,6 +98,8 @@ pub(super) struct Fields {
     names: Vec<String>,
     row_height: f32,
     editors: BTreeMap<String, FieldSlot>,
+    cold: ColdStates<EditorEditState>,
+    next_mount: u64,
     scroll: UniformListScrollHandle,
 }
 impl Fields {
@@ -27,6 +111,8 @@ impl Fields {
             names: Vec::new(),
             row_height: ROW_HEIGHT,
             editors: BTreeMap::new(),
+            cold: ColdStates::new(COLD_STATE_BYTES, COLD_STATE_COUNT),
+            next_mount: 0,
             scroll: UniformListScrollHandle::new(),
         }
     }
@@ -34,12 +120,19 @@ impl Fields {
         self.generation = self.generation.wrapping_add(1);
         self.session.reset_fields();
         self.editors.clear();
+        self.cold.clear();
+        self.next_mount = 0;
         self.template = None;
         self.scroll = UniformListScrollHandle::new();
     }
 }
 fn viewport_height(count: usize) -> f32 {
     count.min(VIEWPORT_ROWS) as f32 * ROW_HEIGHT
+}
+fn virtual_viewport_height(count: usize, row_height: f32) -> f32 {
+    // Virtual lists have >8 items. Keeping at least two rows in their layout
+    // bounds means an actual viewport cannot be the ambiguous range 0..1.
+    viewport_height(count).max(row_height * 2.)
 }
 fn keep_editor(visible: &[String], name: &str, focused: bool, composing: bool) -> bool {
     focused || composing || visible.iter().any(|field| field == name)
@@ -137,7 +230,8 @@ impl BelloBox {
                     this.snippet_field_rows(range, true, p, window, cx)
                 }),
             )
-            .h(px(viewport_height(count)))
+            .h(px(virtual_viewport_height(count, ui.fields.row_height)))
+            .min_h(px(ui.fields.row_height * 2.))
             .flex_none()
             .track_scroll(ui.fields.scroll.clone())
             .into_any_element()
@@ -168,6 +262,8 @@ impl BelloBox {
         let Some(ui) = self.snippets.as_mut() else {
             return Vec::new();
         };
+        // Height + min-height >= two row heights, with no list padding/border,
+        // makes 0..1 measurement-only even when the outer scroll clips the list.
         let measuring = virtualized && range == (0..1);
         let visible = ui.fields.names.get(range).unwrap_or_default().to_vec();
         // GPUI measures row zero BEFORE applying deferred scrolling. Pin active
@@ -178,11 +274,12 @@ impl BelloBox {
                 .editors
                 .iter()
                 .map(|(name, slot)| {
-                    let focused = slot.editor.read(cx).focus_handle(cx).is_focused(window);
-                    let composing = slot.editor.update(cx, |editor, cx| {
-                        editor.marked_text_range(window, cx).is_some()
-                    });
-                    (name.as_str(), focused, composing)
+                    let blocker = slot.editor.read(cx).suspension_blocker(window);
+                    (
+                        name.as_str(),
+                        blocker == Some(EditStateError::Focused),
+                        blocker.is_some(),
+                    )
                 })
                 .collect::<Vec<_>>();
             if let Some(index) = pinned_row(&ui.fields.names, &active) {
@@ -190,29 +287,67 @@ impl BelloBox {
                     .scroll
                     .scroll_to_item(index, gpui::ScrollStrategy::Top);
             }
+            // The row height is known. Measurement must not create a view, consume
+            // a cold state or refresh its recency merely because row zero is sampled.
+            return vec![div().w_full().h(px(ui.fields.row_height))];
         }
-        let mut remove = Vec::new();
-        for (name, slot) in &ui.fields.editors {
-            let focused = slot.editor.read(cx).focus_handle(cx).is_focused(window);
-            let composing = slot.editor.update(cx, |editor, cx| {
-                editor.marked_text_range(window, cx).is_some()
-            });
-            if should_evict(measuring, &visible, name, focused, composing) {
-                // Synchronize before dropping an offscreen entity, even if its event is queued.
-                let value = slot.editor.read(cx).text();
-                if ui.fields.session.value(name).is_some() || !value.is_empty() {
-                    ui.fields.session.set_value(name.clone(), value.into());
-                }
-                remove.push(name.clone());
-            }
-        }
+        let remove = ui
+            .fields
+            .editors
+            .iter()
+            .filter_map(|(name, slot)| {
+                let blocker = slot.editor.read(cx).suspension_blocker(window);
+                should_evict(
+                    measuring,
+                    &visible,
+                    name,
+                    blocker == Some(EditStateError::Focused),
+                    blocker.is_some(),
+                )
+                .then(|| name.clone())
+            })
+            .collect::<Vec<_>>();
         for name in remove {
-            ui.fields.editors.remove(&name);
+            // Removing the slot first invalidates its mount token before any queued event.
+            let slot = ui
+                .fields
+                .editors
+                .remove(&name)
+                .expect("selected mounted field");
+            let view = slot.editor.read(cx);
+            let edited = ui.fields.session.value(&name).is_some() || view.engine.revision() != 0;
+            let value = view.text().to_owned();
+            if edited || !value.is_empty() {
+                ui.fields.session.set_value(name.clone(), value);
+            }
+            match slot
+                .editor
+                .update(cx, |editor, cx| editor.take_edit_state(window, cx))
+            {
+                Ok(state) => {
+                    // The detached shell/subscription are dropped; only plain state survives.
+                    drop(slot);
+                    if edited {
+                        let bytes = state.accounted_bytes();
+                        ui.fields
+                            .cold
+                            .insert(name, ui.fields.generation, state, bytes);
+                    }
+                }
+                Err(_) => {
+                    // Atomic API failure leaves the original view intact. Keep it live and
+                    // let the next measurement pin its newly active focus/IME/drag state.
+                    ui.fields.editors.insert(name, slot);
+                    cx.notify();
+                }
+            }
         }
         let mut rows = Vec::with_capacity(visible.len());
         for name in visible {
             if !ui.fields.editors.contains_key(&name) {
                 let value = ui.fields.session.value(&name).unwrap_or("").to_owned();
+                let mut retained = ui.fields.cold.take(&name, ui.fields.generation);
+                let mut restore_failed = false;
                 let editor = cx.new(|cx| {
                     let mut editor = EditorView::new(value, window, cx);
                     editor.set_compact(true, cx);
@@ -225,15 +360,33 @@ impl BelloBox {
                     style.caret = p.accent;
                     style.selection = p.accent.opacity(0.18);
                     editor.set_appearance(style, cx);
+                    // Configure before restore: mode setters can finish pending undo groups.
+                    if retained.is_some()
+                        && editor
+                            .restore_edit_state(&mut retained, window, cx)
+                            .is_err()
+                    {
+                        restore_failed = true;
+                    }
                     editor
                 });
+                if restore_failed {
+                    ui.error = Some("This field's undo history could not be restored. Its current value was kept.".into());
+                }
                 let key = name.clone();
                 let generation = ui.fields.generation;
+                ui.fields.next_mount = ui.fields.next_mount.wrapping_add(1);
+                let mount = ui.fields.next_mount;
                 let subscription =
                     cx.subscribe(&editor, move |this, editor, event: &EditorEvent, cx| {
                         if matches!(event, EditorEvent::Changed) {
                             if let Some(ui) = this.snippets.as_mut() {
-                                if ui.fields.generation != generation {
+                                if !current_mount(
+                                    generation,
+                                    mount,
+                                    ui.fields.generation,
+                                    ui.fields.editors.get(&key).map(|slot| slot.mount),
+                                ) {
                                     return;
                                 }
                                 ui.fields
@@ -247,6 +400,7 @@ impl BelloBox {
                     name.clone(),
                     FieldSlot {
                         editor,
+                        mount,
                         _subscription: subscription,
                     },
                 );
@@ -304,6 +458,123 @@ impl BelloBox {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn virtual_layout_always_contains_multiple_rows_even_for_tall_labels() {
+        for row_height in [38., 152., 304., 400., 1088.] {
+            let height = virtual_viewport_height(12, row_height);
+            assert!(height >= row_height * 2.);
+            assert!((height / row_height).ceil() >= 2.);
+        }
+        assert_eq!(virtual_viewport_height(12, ROW_HEIGHT), 304.);
+        assert_eq!(virtual_viewport_height(12, 400.), 800.);
+    }
+    #[test]
+    fn cold_state_limits_are_exact_and_replace_accounting_stays_consistent() {
+        let mut cold = ColdStates::new(10, 2);
+        assert!(cold.insert("a".into(), 1, 10, 5));
+        assert!(cold.insert("b".into(), 1, 20, 5));
+        assert_eq!(cold.bytes, 10);
+        assert!(cold.insert("c".into(), 1, 30, 5));
+        assert!(cold.take("a", 1).is_none());
+        assert_eq!(cold.entries.len(), 2);
+        assert!(cold.insert("b".into(), 1, 21, 1));
+        assert_eq!(cold.bytes, 6);
+        assert_eq!(
+            cold.order.iter().map(String::as_str).collect::<Vec<_>>(),
+            vec!["c", "b"]
+        );
+        assert_eq!(cold.take("b", 1), Some(21));
+        assert_eq!(cold.bytes, 5);
+        assert!(!cold.insert("huge".into(), 1, 99, usize::MAX));
+        assert_eq!(cold.bytes, 5);
+        assert!(cold.insert("edge".into(), 1, 100, 10));
+        assert_eq!(cold.bytes, 10);
+        assert_eq!(cold.entries.len(), 1);
+        assert_eq!(cold.take("edge", 1), Some(100));
+        assert_eq!(cold.bytes, 0);
+    }
+    #[test]
+    fn cold_models_move_without_cloning_and_old_epochs_are_rejected() {
+        // Opaque non-Clone payload represents the move-only shared edit state.
+        struct Payload(Box<[u8]>);
+        let state = Payload(vec![1, 2, 3].into_boxed_slice());
+        let pointer = state.0.as_ptr();
+        let mut cold = ColdStates::new(100, 4);
+        cold.insert("field".into(), 7, state, 3);
+        let state = cold.take("field", 7).unwrap();
+        assert_eq!(state.0.as_ptr(), pointer);
+        assert!(cold.entries.is_empty());
+        cold.insert("field".into(), 7, state, 3);
+        assert!(cold.take("field", 8).is_none());
+        assert_eq!(cold.bytes, 0);
+        assert!(cold.order.is_empty());
+    }
+    #[test]
+    fn ten_thousand_evictions_bound_history_without_dropping_values() {
+        let mut cold = ColdStates::new(16, 8);
+        let mut session = bellobox_core::snippets::Session::new(String::new());
+        for i in 0..10_000 {
+            let name = format!("field{i}");
+            session.set_value(name.clone(), format!("value{i}"));
+            cold.insert(name, 1, i, 2);
+            assert!(cold.bytes <= 16);
+            assert!(cold.entries.len() <= 8);
+            assert_eq!(cold.entries.len(), cold.order.len());
+        }
+        assert!(cold.take("field0", 1).is_none());
+        assert_eq!(session.value("field0"), Some("value0"));
+        assert_eq!(cold.take("field9999", 1), Some(9999));
+        assert_eq!(session.value("field9999"), Some("value9999"));
+        cold.clear();
+        assert_eq!(cold.bytes, 0);
+        assert!(cold.entries.is_empty() && cold.order.is_empty());
+        assert_eq!(session.value("field0"), Some("value0"));
+    }
+    #[test]
+    fn mount_tokens_fence_evicted_views_even_when_field_and_session_match() {
+        assert!(current_mount(3, 8, 3, Some(8)));
+        assert!(!current_mount(3, 8, 3, None));
+        assert!(!current_mount(3, 8, 3, Some(9)));
+        assert!(!current_mount(3, 8, 4, Some(8)));
+    }
+    #[test]
+    fn template_removal_readd_can_retain_state_but_new_session_cannot() {
+        let mut cold = ColdStates::new(100, 4);
+        let mut session = bellobox_core::snippets::Session::new(String::new());
+        session.set_value("name".into(), "value".into());
+        cold.insert("name".into(), 2, "retained state", 10);
+        assert!(
+            bellobox_core::snippets::custom_fields("plain")
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(session.value("name"), Some("value"));
+        assert_eq!(cold.take("name", 2), Some("retained state"));
+        cold.insert("name".into(), 2, "retained state", 10);
+        session.reset_fields();
+        cold.clear();
+        assert_eq!(session.value("name"), None);
+        assert!(cold.take("name", 3).is_none());
+    }
+    #[test]
+    fn drag_blocker_pins_and_rejects_eviction_like_other_active_input() {
+        let blocker = Some(EditStateError::Dragging);
+        let focused = blocker == Some(EditStateError::Focused);
+        assert!(!should_evict(
+            false,
+            &["other".into()],
+            "drag",
+            focused,
+            blocker.is_some()
+        ));
+        assert_eq!(
+            pinned_row(
+                &["other".into(), "drag".into()],
+                &[("drag", focused, blocker.is_some())]
+            ),
+            Some(1)
+        );
+    }
     #[test]
     fn field_viewport_has_zero_small_and_bounded_large_heights() {
         assert_eq!(viewport_height(0), 0.);
