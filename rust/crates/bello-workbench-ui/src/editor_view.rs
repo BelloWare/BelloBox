@@ -376,6 +376,12 @@ impl EditorView {
             {
                 let r = self.selection.take().unwrap();
                 self.engine.replace_range(r, "");
+            } else if !self.engine.vim && matches!(key, Key::Left | Key::Right) {
+                self.selection = self.engine.move_horizontal(
+                    key == Key::Right,
+                    k.modifiers.shift,
+                    self.selection.take(),
+                );
             } else {
                 if self.wraps()
                     && self.engine.mode == Mode::Insert

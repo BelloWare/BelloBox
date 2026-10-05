@@ -1,6 +1,8 @@
 //! A deliberately documented Vim subset, not a Vim emulator. Byte offsets are
-//! always UTF-8 boundaries; motions count Unicode scalar values (not graphemes).
+//! always UTF-8 boundaries; Vim motions count Unicode scalar values. Ordinary
+//! horizontal navigation follows extended grapheme clusters.
 use std::ops::Range;
+use unicode_segmentation::GraphemeCursor;
 
 pub const MAX_EDIT_BYTES: usize = 8 * 1024 * 1024;
 const UNDO_BUDGET: usize = 16 * 1024 * 1024;
@@ -103,6 +105,31 @@ impl TextBuffer {
             .next_back()
             .map(|(i, _)| i)
             .unwrap_or(0)
+    }
+    /// Find a neighboring composed-character boundary without scanning the
+    /// document or enumerating every grapheme before the caret. A full indexed
+    /// line supplies the context needed by regional indicators and ZWJ chains.
+    /// Include its terminator so CRLF remains one navigation step.
+    fn grapheme_step(&self, offset: usize, forward: bool) -> usize {
+        let p = self.floor_boundary(offset);
+        let mut row = self.row_at(p);
+        if !forward && row > 0 && p == self.line_start(row) {
+            row -= 1;
+        }
+        let range = self.line_full_range(row);
+        let line = &self.text[range.clone()];
+        let local = p - range.start;
+        let mut cursor = GraphemeCursor::new(local, line.len(), true);
+        let boundary = if forward {
+            cursor.next_boundary(line, 0)
+        } else {
+            cursor.prev_boundary(line, 0)
+        };
+        // The complete line is provided, so no additional chunk can be needed.
+        range.start
+            + boundary
+                .expect("complete grapheme context")
+                .unwrap_or(local)
     }
     pub fn utf16_offset(&self, byte: usize) -> usize {
         let p = self.floor_boundary(byte);
@@ -277,6 +304,33 @@ impl Editor {
         self.cursor = self.buffer.floor_boundary(offset);
         self.desired_column = None;
         self.clamp_cursor();
+    }
+    /// Ordinary (non-Vim) Left/Right, with the UI's half-open selection.
+    /// Without Shift, a selection collapses toward the requested side without
+    /// an extra step. With Shift, its opposite endpoint stays the anchor even
+    /// when the caret crosses it. Explicit selection endpoints remain literal.
+    pub fn move_horizontal(
+        &mut self,
+        forward: bool,
+        extend: bool,
+        selection: Option<Range<usize>>,
+    ) -> Option<Range<usize>> {
+        self.message.clear();
+        self.finish_transaction();
+        self.desired_column = None;
+        let old = self.cursor;
+        let selection = selection
+            .map(|r| self.buffer.floor_boundary(r.start)..self.buffer.floor_boundary(r.end));
+        if !extend && let Some(range) = selection.as_ref().filter(|r| !r.is_empty()) {
+            self.cursor = if forward { range.end } else { range.start };
+            return None;
+        }
+        let anchor = selection
+            .as_ref()
+            .map(|r| if old == r.start { r.end } else { r.start })
+            .unwrap_or(old);
+        self.cursor = self.buffer.grapheme_step(old, forward);
+        extend.then(|| anchor.min(self.cursor)..anchor.max(self.cursor))
     }
     pub fn selection(&self) -> Option<Range<usize>> {
         match self.mode {
@@ -814,6 +868,9 @@ impl Editor {
                         self.cursor = start;
                     }
                 }
+                Key::Left | Key::Right if !self.vim => {
+                    self.move_horizontal(key == Key::Right, false, None);
+                }
                 Key::Left => {
                     self.finish_transaction();
                     self.cursor = self.buffer.prev(self.cursor);
@@ -1051,6 +1108,175 @@ mod tests {
         for c in s.chars() {
             e.key(Key::Char(c));
         }
+    }
+    #[test]
+    fn ordinary_arrows_follow_composed_characters_from_every_scalar_boundary() {
+        use unicode_segmentation::UnicodeSegmentation;
+        for text in [
+            "",
+            "A",
+            "Ae\u{301}B",
+            "A👩‍💻B",
+            "A🇺🇸🇨🇦🇯B",
+            "A👍🏽B",
+            "a\r\nb\nc\r\n",
+            "\r\n\r\n",
+            "a\r\r\nb",
+            "क्‍षx",
+            "e\u{301}\u{302}x",
+        ] {
+            let boundaries: Vec<_> = text
+                .grapheme_indices(true)
+                .map(|(i, _)| i)
+                .chain(std::iter::once(text.len()))
+                .collect();
+            for p in text
+                .char_indices()
+                .map(|(i, _)| i)
+                .chain(std::iter::once(text.len()))
+            {
+                for forward in [false, true] {
+                    let expected = if forward {
+                        boundaries.iter().copied().find(|&b| b > p).unwrap_or(p)
+                    } else {
+                        boundaries
+                            .iter()
+                            .copied()
+                            .rev()
+                            .find(|&b| b < p)
+                            .unwrap_or(p)
+                    };
+                    let mut e = Editor::new(text.into());
+                    e.set_cursor(p);
+                    e.key(if forward { Key::Right } else { Key::Left });
+                    assert_eq!(e.cursor, expected, "{text:?} at {p}, forward={forward}");
+                    assert_eq!(e.text(), text);
+                    assert_eq!(e.revision(), 0);
+                }
+            }
+        }
+    }
+    #[test]
+    fn ordinary_selection_collapses_to_requested_side_without_a_step() {
+        let text = "Ae\u{301}👩‍💻B\r\nC";
+        // Endpoints can also originate from a literal platform/IME range
+        // inside a composed character or between CR and LF.
+        for range in [1..15, 2..4, 17..18, 0..text.len()] {
+            for caret in [range.start, range.end] {
+                for forward in [false, true] {
+                    let mut e = Editor::new(text.into());
+                    e.set_cursor(caret);
+                    assert_eq!(e.move_horizontal(forward, false, Some(range.clone())), None);
+                    assert_eq!(e.cursor, if forward { range.end } else { range.start });
+                }
+            }
+        }
+    }
+    #[test]
+    fn ordinary_shift_arrows_keep_anchor_when_shrinking_and_crossing() {
+        let mut e = Editor::new("Ae\u{301}👩‍💻B".into());
+        e.set_cursor(4);
+        let mut selection = None;
+        for (forward, cursor, expected) in [
+            (false, 1, 1..4),
+            (false, 0, 0..4),
+            (false, 0, 0..4),
+            (true, 1, 1..4),
+            (true, 4, 4..4),
+            (true, 15, 4..15),
+            (true, 16, 4..16),
+            (true, 16, 4..16),
+            (false, 15, 4..15),
+            (false, 4, 4..4),
+            (false, 1, 1..4),
+        ] {
+            selection = e.move_horizontal(forward, true, selection);
+            assert_eq!(e.cursor, cursor);
+            assert_eq!(selection, Some(expected));
+        }
+    }
+    #[test]
+    fn ordinary_shift_extends_existing_selection_in_either_direction() {
+        for (caret, forward, cursor, expected) in [
+            (1, false, 0, 0..4),
+            (1, true, 4, 4..4),
+            (4, false, 1, 1..1),
+            (4, true, 15, 1..15),
+        ] {
+            let mut e = Editor::new("Ae\u{301}👩‍💻B".into());
+            e.set_cursor(caret);
+            let selection = e.move_horizontal(forward, true, Some(1..4));
+            assert_eq!(e.cursor, cursor);
+            assert_eq!(selection, Some(expected));
+        }
+    }
+    #[test]
+    fn ordinary_navigation_preserves_literal_utf16_replacement_and_undo() {
+        let mut e = Editor::new("Ae\u{301}B\r\nC".into());
+        let range = e.buffer.byte_offset(2)..e.buffer.byte_offset(3);
+        assert_eq!(range, 2..4);
+        assert!(e.replace_range(range, "x"));
+        assert_eq!(e.text(), "AexB\r\nC");
+        e.move_horizontal(false, true, None);
+        e.undo();
+        assert_eq!(e.text(), "Ae\u{301}B\r\nC");
+        assert_eq!(e.buffer.byte_offset(5), 6); // literal position inside CRLF
+        e.set_cursor(6);
+        e.key(Key::Right);
+        assert_eq!(e.cursor, 7);
+    }
+    #[test]
+    fn ordinary_navigation_commits_typing_and_works_read_only() {
+        let mut e = Editor::new("A".into());
+        e.set_cursor(1);
+        e.insert_text("e\u{301}");
+        e.key(Key::Left);
+        assert_eq!(e.cursor, 1);
+        e.insert_text("x");
+        e.undo();
+        assert_eq!(e.text(), "Ae\u{301}");
+        e.undo();
+        assert_eq!(e.text(), "A");
+        e.read_only = true;
+        assert_eq!(e.move_horizontal(false, true, None), Some(0..1));
+        assert_eq!(e.cursor, 0);
+    }
+    #[test]
+    fn ordinary_grapheme_lookup_handles_long_lines_and_regional_context() {
+        let prefix = "a".repeat(1_000_000);
+        let text = format!("older\r\n{prefix}e\u{301}{}z\r\nlast", "🇺".repeat(257));
+        let mut e = Editor::new(text);
+        let base = 7 + prefix.len();
+        e.set_cursor(base);
+        e.key(Key::Right);
+        assert_eq!(e.cursor, base + 3);
+        e.set_cursor(base + 3 + 256 * 4);
+        e.key(Key::Left);
+        assert_eq!(e.cursor, base + 3 + 254 * 4);
+        e.key(Key::Right);
+        e.key(Key::Right);
+        assert_eq!(e.cursor, base + 3 + 257 * 4);
+        e.key(Key::Right);
+        e.key(Key::Right);
+        assert_eq!(e.cursor, e.buffer.line_start(2));
+        e.key(Key::Left);
+        assert_eq!(e.cursor, e.buffer.line_start(2) - 2);
+    }
+    #[test]
+    fn vim_horizontal_motions_remain_scalar_based() {
+        let mut e = vim("Ae\u{301}👩‍💻B");
+        for expected in [1, 2, 4, 8, 11, 15] {
+            e.key(Key::Right);
+            assert_eq!(e.cursor, expected);
+        }
+        e.key(Key::Char('i'));
+        e.set_cursor(4);
+        e.key(Key::Left);
+        assert_eq!(e.cursor, 2);
+        e.key(Key::Right);
+        assert_eq!(e.cursor, 4);
+        e.key(Key::Right);
+        assert_eq!(e.cursor, 8);
     }
     #[test]
     fn incremental_index_matches_rebuild() {
