@@ -438,9 +438,32 @@ impl Editor {
         self.begin_transaction();
         let r = self
             .selection()
-            .unwrap_or_else(|| self.buffer.prev(self.cursor)..self.cursor);
-        self.cursor = r.start;
-        self.replace(r, "");
+            .unwrap_or_else(|| self.deletion_range(true));
+        let start = r.start;
+        if self.replace(r, "") {
+            self.cursor = start;
+        }
+    }
+    /// A CRLF is one line ending for unselected deletion, including when a
+    /// platform range placed the caret between its two bytes. Explicit ranges
+    /// remain literal: deleting a selection must not consume adjacent text.
+    fn deletion_range(&self, backward: bool) -> Range<usize> {
+        let mut range = if backward {
+            self.buffer.prev(self.cursor)..self.cursor
+        } else {
+            self.cursor..self.buffer.next(self.cursor)
+        };
+        let bytes = self.text().as_bytes();
+        if range.start > 0
+            && bytes.get(range.start) == Some(&b'\n')
+            && bytes[range.start - 1] == b'\r'
+        {
+            range.start -= 1;
+        }
+        if range.end > 0 && bytes.get(range.end) == Some(&b'\n') && bytes[range.end - 1] == b'\r' {
+            range.end += 1;
+        }
+        range
     }
     fn delete_forward(&mut self, count: usize) {
         self.begin_transaction();
@@ -785,8 +808,11 @@ impl Editor {
                 Key::Enter => self.insert_text(self.buffer.newline()),
                 Key::Backspace => self.backspace(),
                 Key::Delete => {
-                    let p = self.cursor;
-                    self.replace(p..self.buffer.next(p), "");
+                    let range = self.deletion_range(false);
+                    let start = range.start;
+                    if self.replace(range, "") {
+                        self.cursor = start;
+                    }
                 }
                 Key::Left => {
                     self.finish_transaction();
@@ -1156,6 +1182,72 @@ mod tests {
         e.read_only = true;
         keys(&mut e, "ddiunsafe");
         assert_eq!(e.text(), "safe");
+    }
+    #[test]
+    fn unselected_deletion_joins_crlf_atomically_and_undo_restores_bytes() {
+        for vim_insert in [false, true] {
+            for (key, cursor) in [
+                (Key::Backspace, 6),
+                (Key::Delete, 4),
+                (Key::Backspace, 5),
+                (Key::Delete, 5),
+            ] {
+                let mut e = Editor::new("😀\r\n中".into());
+                if vim_insert {
+                    e.set_vim(true);
+                    e.key(Key::Char('i'));
+                }
+                e.set_cursor(cursor);
+                e.key(key);
+                assert_eq!(e.text(), "😀中");
+                assert_eq!(e.cursor, 4);
+                assert_eq!(e.buffer.line_count(), 1);
+                e.undo();
+                assert_eq!(e.text(), "😀\r\n中");
+                assert_eq!(e.cursor, cursor);
+                e.redo();
+                assert_eq!(e.text(), "😀中");
+                assert_eq!(e.cursor, 4);
+            }
+        }
+    }
+    #[test]
+    fn newline_deletion_preserves_single_cr_lf_and_document_boundaries() {
+        for newline in ["\n", "\r", "\r\n"] {
+            for (key, cursor) in [(Key::Backspace, 1 + newline.len()), (Key::Delete, 1)] {
+                let mut e = Editor::new(format!("a{newline}b"));
+                e.set_cursor(cursor);
+                e.key(key);
+                assert_eq!(e.text(), "ab");
+                e.undo();
+                assert_eq!(e.text(), format!("a{newline}b"));
+            }
+        }
+        for (key, cursor) in [(Key::Backspace, 0), (Key::Delete, 2)] {
+            let mut e = Editor::new("\r\n".into());
+            e.set_cursor(cursor);
+            e.key(key);
+            assert_eq!(e.text(), "\r\n");
+        }
+    }
+    #[test]
+    fn explicit_selection_deletion_is_literal_and_read_only_keeps_caret() {
+        // The UI routes an explicit selection through replace_range.
+        for (selection, expected) in [(1..3, "ab"), (1..2, "a\nb"), (2..3, "a\rb")] {
+            let mut e = Editor::new("a\r\nb".into());
+            e.replace_range(selection, "");
+            assert_eq!(e.text(), expected);
+            e.undo();
+            assert_eq!(e.text(), "a\r\nb");
+        }
+        for (key, cursor) in [(Key::Backspace, 3), (Key::Delete, 1)] {
+            let mut e = Editor::new("a\r\nb".into());
+            e.set_cursor(cursor);
+            e.read_only = true;
+            e.key(key);
+            assert_eq!(e.text(), "a\r\nb");
+            assert_eq!(e.cursor, cursor);
+        }
     }
     #[test]
     fn crlf_insert_and_delete() {
