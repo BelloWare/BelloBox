@@ -958,6 +958,9 @@ impl BelloBox {
                 | "jsonFlatten"
                 | "plist"
                 | "sqlFormat"
+                | "jsonLines"
+                | "envFile"
+                | "cookies"
                 | "certificate"
         );
         let height = if ["time", "cron", "url"].contains(&self.selected.as_str()) {
@@ -976,11 +979,7 @@ impl BelloBox {
                         .flex()
                         .flex_col()
                         .gap(px(8.))
-                        .child(self.input_actions(
-                            crate::tool_controls::input_label(&self.selected),
-                            p,
-                            cx,
-                        ))
+                        .child(self.input_actions(self.controls.input_label(&self.selected), p, cx))
                         .child(editor_card(self.input.clone(), 190., p)),
                 )
                 .child(
@@ -1004,7 +1003,7 @@ impl BelloBox {
                 .flex()
                 .flex_col()
                 .gap(px(8.))
-                .child(self.input_actions(crate::tool_controls::input_label(&self.selected), p, cx))
+                .child(self.input_actions(self.controls.input_label(&self.selected), p, cx))
                 .child(editor_card(self.input.clone(), height, p))
                 .when(has_second, |s| {
                     s.child(

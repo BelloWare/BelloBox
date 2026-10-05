@@ -16,8 +16,16 @@ impl ToolControls {
         for spec in choices(tool) {
             state.values.insert(spec.id, spec.choices[0].into());
         }
-        if tool == "plist" && input.trim_start().starts_with('{') {
-            state.values.insert("mode", "JSON → Plist".into());
+        let trimmed = input.trim_start();
+        let detected = match tool {
+            "plist" if trimmed.starts_with('{') => Some("JSON → Plist"),
+            "jsonLines" if trimmed.starts_with('[') => Some("Array → Lines"),
+            "envFile" if trimmed.starts_with('{') => Some("JSON → Env"),
+            "cookies" if trimmed.to_ascii_lowercase().starts_with("cookie:") => Some("Cookie"),
+            _ => None,
+        };
+        if let Some(mode) = detected {
+            state.values.insert("mode", mode.into());
         }
         state
     }
@@ -34,25 +42,52 @@ impl ToolControls {
         self.values.insert(spec.id, value.into());
         true
     }
-    pub fn second(&self, tool: &str, text: &str) -> String {
-        match tool{
-        "plist"=>self.value("mode").into(),
-        "sqlFormat"=>serde_json::json!({"keywords":self.value("keywords"),"dialect":self.value("dialect")}).to_string(),
-        _=>text.into(),
+    pub fn input_label(&self, tool: &str) -> &'static str {
+        match (tool, self.value("mode")) {
+            ("jsonLines", "Array → Lines") => "JSON array · one output record per item",
+            ("envFile", "JSON → Env") => "JSON object · string values only",
+            ("cookies", "Cookie") => "Cookie request header · name=value; name=value",
+            ("cookies", _) => "One Set-Cookie field per line",
+            ("plist", "JSON → Plist") => "Typed JSON · each node has type and value",
+            ("plist", _) => "XML property list · standard plist declaration is handled locally",
+            _ => input_label(tool),
+        }
     }
+    pub fn second(&self, tool: &str, text: &str) -> String {
+        match tool {
+            "plist" => self.value("mode").into(),
+            "jsonLines" => match self.value("mode") {
+                "Array → Lines" => "array-to-lines",
+                _ => "lines-to-array",
+            }
+            .into(),
+            "envFile" => match self.value("mode") {
+                "JSON → Env" => "json-to-env",
+                _ => "env-to-json",
+            }
+            .into(),
+            "cookies" => match self.value("mode") {
+                "Cookie" => "cookie",
+                _ => "set-cookie",
+            }
+            .into(),
+            "sqlFormat" => serde_json::json!({
+                "keywords": self.value("keywords"), "dialect": self.value("dialect")
+            })
+            .to_string(),
+            _ => text.into(),
+        }
     }
     pub fn reverse_after_chaining(&mut self, tool: &str) {
-        if tool == "plist" {
-            let reverse = self.value("mode") == "Plist → JSON";
-            self.values.insert(
-                "mode",
-                if reverse {
-                    "JSON → Plist"
-                } else {
-                    "Plist → JSON"
-                }
-                .into(),
-            );
+        if matches!(tool, "plist" | "jsonLines" | "envFile")
+            && let Some(spec) = choices(tool).into_iter().find(|spec| spec.id == "mode")
+        {
+            let next = if self.value("mode") == spec.choices[0] {
+                spec.choices[1]
+            } else {
+                spec.choices[0]
+            };
+            self.values.insert("mode", next.into());
         }
     }
 }
@@ -62,6 +97,21 @@ pub fn choices(tool: &str) -> Vec<ChoiceSpec> {
             id: "mode",
             label: "Convert",
             choices: &["Plist → JSON", "JSON → Plist"],
+        }],
+        "jsonLines" => vec![ChoiceSpec {
+            id: "mode",
+            label: "Convert",
+            choices: &["Lines → Array", "Array → Lines"],
+        }],
+        "envFile" => vec![ChoiceSpec {
+            id: "mode",
+            label: "Convert",
+            choices: &["Env → JSON", "JSON → Env"],
+        }],
+        "cookies" => vec![ChoiceSpec {
+            id: "mode",
+            label: "Header",
+            choices: &["Set-Cookie", "Cookie"],
         }],
         "sqlFormat" => vec![
             ChoiceSpec {
@@ -83,6 +133,9 @@ pub fn input_label(tool: &str) -> &'static str {
         "jsonSchema" => "JSON document",
         "jsonMerge" => "Original JSON",
         "plist" => "XML plist or typed JSON",
+        "jsonLines" => "One complete JSON value per line",
+        "envFile" => "One KEY=value per line · values stay literal",
+        "cookies" => "Cookie header or one Set-Cookie per line",
         "sqlFormat" => "SQL · formats text; does not execute or validate queries",
         "certificate" => "PEM certificate · inspection only, not trust validation",
         "compare" => "First text",

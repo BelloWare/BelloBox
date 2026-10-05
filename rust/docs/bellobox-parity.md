@@ -196,3 +196,35 @@ was found in the Swift source or added. Tests cover color opacity and malformed
 hex, zoom-scaled drag threshold, nontext rejection, transient snapshot isolation
 and a single committed history step. All new native pointer/keyboard behavior
 still awaits desktop verification.
+
+## 2026-10-05 remote recovery baseline and converter controls
+
+The fresh checkout started at verified remote `rust` commit
+`3a91ece646f86d774891e02bc9de321ef8c2efa9`, with a clean working tree.
+The reported recovery object `c05b553ed0f92938c5e80a358c974cc99b854e0d`
+was not present in the fetched repository; no old workspace was overwritten.
+
+Reproduced locally with Rust 1.99.0 and the checked-in lockfile:
+
+- `cargo fmt --all -- --check`: passed before changes.
+- `cargo test --locked -p bellobox-core -p bello-platform -p bello-workbench`:
+  baseline 219 passing tests, four ignored, zero failures.
+- `python3 -m unittest discover -s perf -p 'test_*.py' -v`: four passing tests.
+- Full local GPUI build/desktop interaction remains blocked by missing native
+  development packages. This Linux environment has no macOS SDK; all native
+  macOS, Sparkle, original-app upgrade, and visual acceptance gates remain open.
+
+JSON Lines, Environment File and Cookie Inspector now use the source `Convert`
+and `Header` option menus instead of an option-string text editor. Initial
+JSON-array, JSON-object and Cookie-header selections choose the corresponding
+source mode; JSON Lines and Environment File reverse direction on Use as Input.
+Source input labels are preserved. The engines and layouts otherwise retain
+previously documented limitations.
+
+The new `ui_tool_controls` integration target directly exercises the production
+window's option state and existing utility engine without starting GPUI: four
+new integration tests plus three existing control-state tests pass. It checks
+both converter roundtrips, literal environment values, invalid-menu rejection,
+independent-window state, mode-dependent source labels, and Cookie routing. These are **headless callback/state
+tests, not desktop interaction or visual-parity evidence**. The new menus remain
+implemented but visually unvalidated until a running desktop is inspected.
