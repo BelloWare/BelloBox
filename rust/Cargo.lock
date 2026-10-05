@@ -561,7 +561,6 @@ dependencies = [
 name = "bellobox-app"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "bello-platform",
  "bello-workbench-ui",
  "bellobox-core",
