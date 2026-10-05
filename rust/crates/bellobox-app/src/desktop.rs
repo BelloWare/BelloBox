@@ -1576,7 +1576,18 @@ pub fn run() {
         }
         cx.on_window_closed(|cx| {
             if cx.windows().is_empty() {
-                cx.quit();
+                // Native close/input callbacks still hold the X11 client borrow here.
+                // Queue on the foreground executor, rather than quitting reentrantly
+                // (or merely at the end of this same GPUI effect cycle).
+                cx.spawn(async move |cx| {
+                    let _ = cx.update(|cx| {
+                        // A replacement window may have opened before this task ran.
+                        if cx.windows().is_empty() {
+                            cx.quit();
+                        }
+                    });
+                })
+                .detach();
             }
         })
         .detach();
