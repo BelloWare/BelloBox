@@ -62,7 +62,7 @@ No claim of complete visual or interaction parity is made.
 | `Recording/RecordingEngine.swift`, coordinator/audio/input/privacy | None | Missing: screen recording, audio mixing, cursor/click/key overlays, secure-field redaction, countdown, pause/review. |
 | `Recording/GIF/GIFTranscoder.swift` | None | Missing: movie/GIF conversion, transactional exports, precise frame timing and loop validation. |
 | `Settings/AppSettings.swift`, `KeychainStore.swift` | Separate versioned Rust JSON settings; runtime AI environment | Partial: persisted appearance enum/IDs/provider metadata/zones, atomic private writes, corrupt-file preservation. No Swift migration or Keychain/Secret Service yet. No API key in settings. Source-shaped seven-page Settings now persists appearance, provider/request format/endpoint/model, system Prompt and learned-order reset. All open editors keep content/undo while ink changes. API keys remain runtime-only; inactive-provider drafts currently survive only within the Settings window. Unsupported source toggles remain disabled with explanations. New Settings controls are compile/unit-tested but not runtime-tested while the desktop is down. |
-| `DeveloperTools/SnippetsAndGenerators.swift` | `settings::Snippets`, `snippet_library`, `desktop::snippets` | Partial: source-ordered find/name/library menu and explicit New/Save/Delete/load controls now use an isolated Rust store. Delete asks for confirmation; corrupt data blocks mutations; load/new clear field drafts; saves preserve IDs and reload disk to retain other windows’ saves. Seven state tests pass. Linux native create/update/find/load/New, delete cancel/confirm, persistence and one-item menu focus/dismissal passed the scoped QA recorded below; macOS and full visual parity remain unvalidated. Dynamic per-field editors and source renderer semantics remain incomplete; the existing JSON-values editor remains. Rust retains 500-item/512-byte-name limits and case-folded lexical ordering/filtering rather than source localized natural sorting. No Swift-library migration, shared live-window store notifications, or clipboard database. |
+| `DeveloperTools/SnippetsAndGenerators.swift` | `settings::Snippets`, `snippet_library`, `desktop::snippets` | Partial: source-ordered find/name/library menu and explicit New/Save/Delete/load controls now use an isolated Rust store. Delete asks for confirmation; corrupt data blocks mutations; load/new clear field drafts; saves preserve IDs and reload disk to retain other windows’ saves. Seven state tests pass. Linux native create/update/find/load/New, delete cancel/confirm, persistence and one-item menu focus/dismissal passed the scoped QA recorded below; macOS and full visual parity remain unvalidated. Source custom-field Value rows and one-pass renderer are implemented with a stable per-tool UUID and fresh UTC time; their native QA is pending. Large field sets use an all-reachable virtual viewport instead of mounting all fields. Rust retains 500-item/512-byte-name limits and case-folded lexical ordering/filtering rather than source localized natural sorting. No Swift-library migration, shared live-window store notifications, or clipboard database. |
 | `BelloBoxApp.swift` Sparkle updater | cfg-gated `macos_native::SparkleUpdater`; macOS bundling script | Partial, Apple-target type-checked only. Explicit GPUI update action, bundled-framework validation and main-thread retained controller implemented. No auto-download or update check from preview construction. Rust packaging requires an explicit Rust-specific feed; never defaults to the Swift production appcast. Framework2.8.1 supplied locally. Not signed/notarized/released. |
 | `UI/MainView.swift`, onboarding/settings/menu bar | Source-shaped GPUI Home category sidebar/cards and separate windows | Partial: real native app window, process-local drafts, safe explicit clipboard operations and capability display. Settings category layout and working preference subset restored. Onboarding, menu-bar extra, setup guide, launch-at-login and native shortcuts remain absent. |
 | `UI/Theme.swift`, `WindowMaterials.swift`, accessibility | Source light/dark GPUI tokens, vector badges and shipped icon | Partial: exact RGB tokens, source dimensions/spacing, plain wrapping editors, original Home navigation and separate QR/JSON/Text/AI structures. Native glass, SF Symbol exact rasterization, full original controls for every utility, native window materials, Reduce Motion/Transparency and full accessibility QA remain gaps. New Settings/dropdown/appearance changes still need desktop visual and interaction QA. |
@@ -89,7 +89,7 @@ for many tools still need restoration. Sources below are in
 | `time` | `DeveloperTime.swift` | Seconds/milliseconds/ISO, zones and differences |
 | `cron` | `DeveloperTime.swift` | Five fields, next five UTC runs within366 days; timezone planner absent |
 | `convert` | `DataConversion.swift` | JSON/YAML/CSV directions; YAML aliases/tags rejected |
-| `snippets` | `SnippetsAndGenerators.swift` | Partial: literal template substitution with date/UUID plus source-shaped isolated library save/browser controls; dynamic field editors and complete built-in/placeholder semantics remain incomplete |
+| `snippets` | `SnippetsAndGenerators.swift` | Partial: source placeholder grammar, one-pass missing-field-preserving substitution, selection/date/timestamp/UUID, per-tool UUID stability, dynamic field rows and isolated library controls. Renderer and cache-policy tests pass; large-field virtual viewport differs from Swift outer scrolling; latest field UI/macOS still need QA |
 | `http` | `HTTPRequestTool.swift` | Raw HTTP request inspection only; cURL and sending absent |
 | `generate` | `SnippetsAndGenerators.swift` | UUID/UUID-derived hex/sample records; not a password generator |
 | `calculator` | `MathUtilities.swift` | Bounded arithmetic and functions; radians |
@@ -305,3 +305,80 @@ typing to Find without stealing focus; blank-area dismissal followed by Return /
 Escape does not choose a hidden item. Repeated one-item menus passed. Two-item
 arrow navigation and macOS menu behavior remain untested. App tests (35), strict
 app all-target Clippy, formatting and build passed after the final focus guard.
+
+## Source snippet fields and renderer checkpoint (2026-10-05)
+
+Sources: `SnippetTemplate` in SnippetsAndGenerators.swift and the complete
+UtilityWorkbenchModel.makeOperation call path. The GUI captures its original
+selection and snippetUUID once per independent tool; each recomputation supplies
+fresh UTC date/time. Generic CLI renderer calls generate a fresh UUID. Placeholder
+grammar is exactly `[A-Za-z][A-Za-z0-9_ -]{0,59}` with first-seen unique fields,
+case-sensitive names, built-ins taking precedence, unknown fields kept literally,
+and no second evaluation of inserted text. Untouched missing fields differ from
+explicitly cleared empty values. The old implicit Ada default is removed.
+
+The GUI replaces the raw JSON options editor with “Fill template fields”, 130pt
+labels and Value inputs after Template. Ordinary template edits retain field
+values (including removing/re-adding names); New and loading a saved snippet reset
+them. Values, selected text and UUID are never serialized to the library. The
+source does not show Example on Snippets, so that invented action is removed.
+
+Partial large-template layout: small field sets expand; more than eight rows use
+a bounded virtualized field viewport, preserving access to every field rather
+than silently truncating. Focused or composing rows are pinned visibly during the
+list measurement phase,
+before its viewport is computed, so their real keyboard/IME handlers remain
+mounted. After composition finishes through the platform, click outside a Value
+field to end focus and scroll freely. An outside click while the focused field
+is composing is consumed without clearing its marked range or changing focus;
+this is an explicit large-template interaction constraint, not source parity.
+Outside clicks preserve the focus of any newly clicked input. Measurement callbacks
+never evict editor entities; actual viewport reconciliation synchronizes values
+before eviction. Evicted inactive fields retain their values but not EditorView
+undo stacks; undo across actual eviction remains a source-behavior gap. Small
+field sets and still-visible editors retain their existing entities/undo.
+A generation guard rejects queued events from
+old fields after New/load. Small field sets use flexible, wrapping source rows;
+large-list row heights reserve the measured label wrapping. This differs from the
+source outer-scroll layout for large field sets. Long-label wrapping and offscreen IME behavior still need native
+QA. The existing Rust 4MB rendered-output bound is retained and errors explicitly.
+
+Validated: six deterministic renderer/session tests cover grammar/order/duplicates,
+literal and empty substitution, UTC and pre-epoch timestamp truncation, stable
+UUID/selection, resets, size bounds and 10,000 complete field names. Seven app
+viewport/cache/state tests cover bounded height, 10,000-row traversal with focused/
+composing retention, eviction and remove/re-add/reset value semantics. The
+existing developer integration test now also rejects implicit Ada substitution.
+After the pin/measurement and composition-guard fixes, locked offline workspace
+tests passed 314
+executions (four ignored, including concurrent Home/shared-editor/platform-fixture
+tests); strict workspace/all-target Clippy, formatting and app build passed.
+The core-only checkpoint also passed an independent workspace compile against
+the published UI with no field-UI changes.
+
+Validated on the earlier Linux field candidate dea2fafc: no invented Ada, live name
+substitution, remove/re-add retaining values, stable UUID across edits, built-ins
+not appearing as custom fields, spaced/hyphenated names, load/New resetting values.
+A nine-field test reached and edited the last field and retained the first value
+on return. That candidate is not evidence of the corrected pin/measurement flows;
+the final viewport checks are recorded below; macOS remains untested. Actual
+platform IME commit,
+cancel and candidate-window behavior remains unvalidated; helper tests are not
+evidence of native IME correctness. Shared compact inputs still
+handle Tab as spaces rather than native next-field traversal; no complete native
+TextField keyboard parity is claimed.
+
+Final Linux candidate `8c6929fb86b9ce0d5ccda4eec1c03d355a5d15e889167fe2580518a25830275c`
+passed ordinary native QA: active field stayed visible and accepted continued
+typing under scroll attempts; clicking another field transferred focus without
+misdirected text; label blur allowed reaching the last of twelve fields; returning
+retained earlier values; a new edit after remount could be undone to its retained
+text. This does not establish preservation of undo history across eviction. Exact
+740×560 client-size testing reached the last field and Result after blur. A
+49-character label wrapped over three lines with a usable Value input and live
+result, without overlap; changing to a zero-field template removed all field rows.
+
+Independent source re-review found the measurement/active-row fixes and final
+composition guard correct within their stated constraints. No actual OS IME
+commit, cancellation or candidate-window test was performed. These are scoped
+Linux checks, not full native TextField, macOS or overall feature parity.

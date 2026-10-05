@@ -188,9 +188,18 @@ impl BelloBox {
         self.busy = true;
         self.status = "Working locally…".into();
         cx.notify();
-        let task = cx
-            .background_executor()
-            .spawn(async move { crate::execute(&id, &input, &second) });
+        let snippet = if cfg!(feature = "developer-tools") {
+            self.snippet_snapshot()
+        } else {
+            None
+        };
+        let task = cx.background_executor().spawn(async move {
+            if let Some(session) = snippet {
+                session.render(&input)
+            } else {
+                crate::execute(&id, &input, &second)
+            }
+        });
         cx.spawn(async move |this, cx| {
             let result = task.await;
             let _ = this.update(cx, |this, cx| {
@@ -205,7 +214,9 @@ impl BelloBox {
                         this.error = None;
                         (
                             value,
-                            if this.warning {
+                            if this.selected == "snippets" {
+                                "Template preview · date and timestamp use UTC".into()
+                            } else if this.warning {
                                 "Validation issues · paths use JSON Pointer".into()
                             } else {
                                 "Ready. Input is kept in memory.".into()
@@ -564,10 +575,12 @@ impl BelloBox {
             .text_size(px(12.))
             .child(div().font_weight(gpui::FontWeight::SEMIBOLD).child(label))
             .child(div().flex_1())
-            .child(
-                link("input-example", "Example", p)
-                    .on_click(cx.listener(|this, _, _, cx| this.example(cx))),
-            )
+            .when(self.selected != "snippets", |s| {
+                s.child(
+                    link("input-example", "Example", p)
+                        .on_click(cx.listener(|this, _, _, cx| this.example(cx))),
+                )
+            })
             .child(
                 link("input-paste", "Paste", p).on_click(cx.listener(|this, _, _, cx| {
                     if let Some(text) = cx.read_from_clipboard().and_then(|v| v.text()) {
@@ -899,8 +912,9 @@ impl BelloBox {
             .into_any_element()
     }
     fn render_workbench(
-        &self,
+        &mut self,
         p: crate::theme::Palette,
+        window: &mut Window,
         cx: &mut Context<Self>,
     ) -> gpui::AnyElement {
         let control = match self.selected.as_str() {
@@ -945,6 +959,7 @@ impl BelloBox {
         let has_second = !matches!(
             self.selected.as_str(),
             "json"
+                | "snippets"
                 | "calculator"
                 | "color"
                 | "jwt"
@@ -1074,6 +1089,9 @@ impl BelloBox {
                     .gap(px(14.))
                     .child(control)
                     .child(input)
+                    .when(self.selected == "snippets", |s| {
+                        s.child(self.snippet_fields(p, window, cx))
+                    })
                     .when_some(self.error.clone(), |s, error| {
                         s.child(
                             div()
@@ -1439,6 +1457,7 @@ impl Render for BelloBox {
             }
         }
         self.snippet_appearance(p, cx);
+        self.sync_snippet_fields(window, cx);
         let content = match self.selected.as_str() {
             "qr" => self.render_qr(p, cx),
             "textTools" => self.render_text(p, cx),
@@ -1469,7 +1488,7 @@ impl Render for BelloBox {
                         .on_click(|_, window, _| window.remove_window()),
                 )
                 .into_any_element(),
-            _ => self.render_workbench(p, cx),
+            _ => self.render_workbench(p, window, cx),
         };
         let view = div()
             .size_full()

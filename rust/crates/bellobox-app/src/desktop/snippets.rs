@@ -1,9 +1,11 @@
 //! Library controls follow UtilityWorkbenchView.snippetControls / SnippetLibraryMenu.
+mod fields;
 use super::*;
 use crate::snippet_library::Library;
 
 pub(super) struct SnippetUi {
     library: Library,
+    fields: fields::Fields,
     name: Entity<EditorView>,
     query: Entity<EditorView>,
     notice: Option<String>,
@@ -45,6 +47,7 @@ impl BelloBox {
         let error = library.refresh().err();
         self.snippets = Some(SnippetUi {
             library,
+            fields: fields::Fields::new(self.initial_text.clone()),
             name: fields.remove(0),
             query: fields.remove(0),
             notice: None,
@@ -64,6 +67,7 @@ impl BelloBox {
             return;
         };
         ui.library.new_draft();
+        ui.fields.reset();
         ui.notice = None;
         ui.error = None;
         ui.name.update(cx, |e, cx| e.set_text(String::new(), cx));
@@ -79,6 +83,7 @@ impl BelloBox {
         };
         match ui.library.load(id) {
             Ok(item) => {
+                ui.fields.reset();
                 ui.name.update(cx, |e, cx| e.set_text(item.name, cx));
                 ui.notice = None;
                 ui.error = None;
