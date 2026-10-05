@@ -140,11 +140,6 @@ impl Launcher {
             cx.notify();
             return;
         }
-        if command.id == "qr" {
-            self.qr = bellobox_core::qr::png(&self.input)
-                .ok()
-                .map(|v| Arc::new(Image::from_bytes(ImageFormat::Png, v)));
-        }
         if self.input.is_empty() {
             self.preview.update(cx, |e, cx| {
                 e.set_text(
@@ -152,6 +147,42 @@ impl Launcher {
                     cx,
                 )
             });
+            return;
+        }
+        if command.id == "qr" {
+            if let Err(error) = crate::desktop::qr_jobs::validate(&self.input) {
+                self.preview.update(cx, |e, cx| e.set_text(error, cx));
+                return;
+            }
+            self.preview
+                .update(cx, |e, cx| e.set_text("Generating QR code…".into(), cx));
+            let input = self.input.clone();
+            let cancellation = self.jobs.cancellation();
+            let task = cx.background_executor().spawn(async move {
+                crate::desktop::qr_jobs::generate(&input, true, &cancellation)
+            });
+            cx.spawn(async move |this, cx| {
+                let result = task.await;
+                let _ = this.update(cx, |this, cx| {
+                    if !this.jobs.accepts(revision) {
+                        return;
+                    }
+                    let Some(result) = result else {
+                        return;
+                    };
+                    let text = match result {
+                        Ok(result) => {
+                            this.qr =
+                                Some(Arc::new(Image::from_bytes(ImageFormat::Png, result.png)));
+                            result.terminal.unwrap_or_default()
+                        }
+                        Err(error) => error,
+                    };
+                    this.preview.update(cx, |e, cx| e.set_text(text, cx));
+                    cx.notify();
+                });
+            })
+            .detach();
             return;
         }
         let input = self.input.clone();
@@ -172,7 +203,7 @@ impl Launcher {
         })
         .detach();
     }
-    fn launch(&self, window: &mut Window, cx: &mut Context<Self>) {
+    fn launch(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if let Some(c) = self.commands(cx).get(self.selected) {
             let handoff = if c.id == "worldClock" && self.clock_active {
                 self.clock.as_ref().map(|clock| clock.read(cx).handoff())
@@ -181,6 +212,7 @@ impl Launcher {
             };
             // The source clock transfers a value snapshot. Closing the palette
             // releases its preview; the full window owns independent state.
+            self.jobs.cancel();
             window.remove_window();
             if let Some(handoff) = handoff {
                 crate::desktop::open_clock_handoff(self.input.clone(), handoff, cx);
@@ -302,7 +334,10 @@ impl Render for Launcher {
                     return;
                 }
                 match key {
-                    "escape" => window.remove_window(),
+                    "escape" => {
+                        this.jobs.cancel();
+                        window.remove_window();
+                    }
                     "up" => {
                         this.selected = this.selected.saturating_sub(1);
                         this.refresh_preview(window, cx);

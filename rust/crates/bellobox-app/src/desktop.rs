@@ -1,3 +1,4 @@
+pub(crate) mod qr_jobs;
 mod snippets;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
@@ -30,6 +31,8 @@ struct BelloBox {
     busy: bool,
     jobs: crate::session::SessionJobs,
     qr: Option<Arc<Image>>,
+    qr_saves: crate::session::SessionJobs,
+    qr_save_status: bool,
     _subscriptions: Vec<Subscription>,
     #[cfg(target_os = "macos")]
     updater: Option<bello_platform::macos_native::SparkleUpdater>,
@@ -100,6 +103,8 @@ impl BelloBox {
             busy: false,
             jobs: crate::session::SessionJobs::default(),
             qr: None,
+            qr_saves: crate::session::SessionJobs::default(),
+            qr_save_status: false,
             _subscriptions: vec![subscription, options_subscription],
             #[cfg(target_os = "macos")]
             updater: None,
@@ -149,6 +154,9 @@ impl BelloBox {
     }
     fn run_tool(&mut self, cx: &mut Context<Self>) {
         let revision = self.jobs.begin();
+        self.qr_saves.cancel();
+        self.qr_save_status = false;
+        self.qr = None;
         self.error = None;
         self.warning = false;
         let id = self.selected.clone();
@@ -169,20 +177,42 @@ impl BelloBox {
             return;
         }
         if id == "qr" {
-            self.qr = bellobox_core::qr::png(&input)
-                .ok()
-                .map(|bytes| Arc::new(Image::from_bytes(ImageFormat::Png, bytes)));
-        } else {
-            self.qr = None;
-        }
-        if id == "qr" {
-            self.busy = false;
-            self.status = if self.qr.is_none() {
-                "Unable to encode this text. Check the byte limit.".into()
-            } else {
-                String::new()
-            };
+            if let Err(error) = qr_jobs::validate(&input) {
+                self.busy = false;
+                self.status = error;
+                cx.notify();
+                return;
+            }
+            self.busy = true;
+            self.status = "Generating QR code…".into();
             cx.notify();
+            let cancellation = self.jobs.cancellation();
+            let task = cx
+                .background_executor()
+                .spawn(async move { qr_jobs::generate(&input, false, &cancellation) });
+            cx.spawn(async move |this, cx| {
+                let result = task.await;
+                let _ = this.update(cx, |this, cx| {
+                    if !this.jobs.accepts(revision) {
+                        return;
+                    }
+                    let Some(result) = result else { return };
+                    this.busy = false;
+                    let status = match result {
+                        Ok(result) => {
+                            this.qr =
+                                Some(Arc::new(Image::from_bytes(ImageFormat::Png, result.png)));
+                            String::new()
+                        }
+                        Err(error) => error,
+                    };
+                    if !this.qr_save_status {
+                        this.status = status;
+                    }
+                    cx.notify();
+                });
+            })
+            .detach();
             return;
         }
         self.busy = true;
@@ -433,27 +463,45 @@ impl BelloBox {
         cx.notify();
     }
     fn save_qr(&mut self, cx: &mut Context<Self>) {
-        let bytes = match bellobox_core::qr::png(self.input.read(cx).text()) {
-            Ok(data) => data,
-            Err(e) => {
-                self.status = e;
-                cx.notify();
-                return;
-            }
-        };
+        // The dialog and worker retain exactly the text present at this click.
+        // Editing cancels only publication of the save status, never retargets
+        // an explicit save to different text or silently cancels its disk write.
+        let input = self.input.read(cx).text().to_string();
+        if let Err(error) = qr_jobs::validate(&input) {
+            self.status = error;
+            cx.notify();
+            return;
+        }
+        let revision = self.qr_saves.begin();
+        self.qr_save_status = true;
+        self.status = "Choose where to save the QR image…".into();
+        cx.notify();
         let path = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
         let dialog = cx.prompt_for_new_path(&path, Some("BelloBox QR.png"));
+        let executor = cx.background_executor().clone();
         cx.spawn(async move |this, cx| {
-            let result = dialog.await;
-            let message = match result {
-                Ok(Ok(Some(path))) => match crate::save_new(&path, &bytes) {
-                    Ok(()) => format!("Saved {}", path.display()),
-                    Err(e) => format!("Not saved: {e}. Existing files are never overwritten."),
-                },
+            let message = match dialog.await {
+                Ok(Ok(Some(path))) => {
+                    executor
+                        .spawn(async move {
+                            match bellobox_core::qr::png(&input)
+                                .and_then(|bytes| crate::save_new(&path, &bytes))
+                            {
+                                Ok(()) => format!("Saved {}", path.display()),
+                                Err(e) => {
+                                    format!("Not saved: {e}. Existing files are never overwritten.")
+                                }
+                            }
+                        })
+                        .await
+                }
                 Ok(Ok(None)) => "Save cancelled.".into(),
                 _ => "The system save dialog could not be opened.".into(),
             };
             let _ = this.update(cx, |this, cx| {
+                if !this.qr_saves.accepts(revision) {
+                    return;
+                }
                 this.status = message;
                 cx.notify();
             });
