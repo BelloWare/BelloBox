@@ -266,9 +266,10 @@ mod tests {
         assert!(!entry("inside").is_expandable());
     }
 
-    #[cfg(unix)]
+    // macOS filesystems reject invalid UTF-8 names before directory enumeration.
+    #[cfg(target_os = "linux")]
     #[test]
-    fn non_utf8_names_are_lossless() {
+    fn non_utf8_names_are_lossless_on_disk() {
         use std::os::unix::ffi::OsStringExt;
         let temp = Temp::new();
         let name = OsString::from_vec(vec![b'x', 0xff]);
@@ -279,5 +280,31 @@ mod tests {
             .unwrap();
         assert_eq!(page.entries[0].name, name);
         assert!(!page.truncated);
+    }
+
+    #[test]
+    fn unicode_names_are_lossless_on_disk() {
+        let temp = Temp::new();
+        let name = "日本語.txt";
+        fs::write(temp.0.join(name), "unicode").unwrap();
+        let page = DirectoryTree::new(&temp.0)
+            .unwrap()
+            .read_dir("", 1)
+            .unwrap();
+        assert_eq!(page.entries.len(), 1);
+        assert_eq!(page.entries[0].name, name);
+        assert_eq!(page.entries[0].path, Path::new(name));
+        assert!(!page.truncated);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn non_utf8_relative_paths_normalize_losslessly_without_filesystem_io() {
+        use std::os::unix::ffi::{OsStrExt, OsStringExt};
+        let path = PathBuf::from(OsString::from_vec(b"./nested/./x\xff".to_vec()));
+        let normalized = normalized_relative(&path).unwrap();
+        assert_eq!(normalized.as_os_str().as_bytes(), b"nested/x\xff");
+        assert!(normalized_relative(&Path::new("..").join(&normalized)).is_err());
+        assert!(normalized_relative(&Path::new("/").join(&normalized)).is_err());
     }
 }

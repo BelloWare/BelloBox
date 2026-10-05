@@ -1689,8 +1689,8 @@ mod tests {
     }
     #[cfg(unix)]
     #[test]
-    fn symlinks_cannot_escape_cycle_or_supply_ignore_rules_and_non_utf8_paths_remain_lossless() {
-        use std::os::unix::{ffi::OsStringExt, fs::symlink};
+    fn symlinks_cannot_escape_cycle_or_supply_ignore_rules() {
+        use std::os::unix::fs::symlink;
         let temp = Temp::new();
         let outside = Temp::new();
         outside.write("secret", "secret");
@@ -1704,10 +1704,10 @@ mod tests {
         symlink("gone", temp.0.join("broken")).unwrap();
         outside.write("ignore", "*\n");
         symlink(outside.0.join("ignore"), temp.0.join(".gitignore")).unwrap();
-        let strange = OsString::from_vec(vec![b'a', 0xff, b'.', b'r', b's']);
-        temp.write(&strange, "x");
+        temp.write("日本語.rs", "x");
         let index = temp.build();
         let listed = paths(&index);
+        assert!(listed.contains(&"日本語.rs".into()));
         assert!(listed.contains(&"alias".into()));
         assert!(listed.contains(&"nested/child".into()));
         for forbidden in [
@@ -1720,13 +1720,47 @@ mod tests {
         ] {
             assert!(!listed.contains(&forbidden.into()), "{listed:?}");
         }
+        assert!(!valid_relative(Path::new("../outside")));
+        assert!(!valid_relative(Path::new("/absolute")));
+    }
+
+    // APFS/HFS+ cannot host these names; keep the on-disk fixture on Linux.
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn non_utf8_paths_remain_lossless_on_disk() {
+        use std::os::unix::ffi::OsStringExt;
+        let temp = Temp::new();
+        let strange = OsString::from_vec(vec![b'a', 0xff, b'.', b'r', b's']);
+        temp.write(&strange, "x");
+        let index = temp.build();
         let matched = index
             .search(&FileFinderQuery::new("ars"), 50, &CancellationToken::new())
             .unwrap();
+        assert_eq!(matched.len(), 1);
         assert_eq!(matched[0].path.as_os_str(), strange.as_os_str());
         assert_eq!(fs::read(index.root().join(&matched[0].path)).unwrap(), b"x");
-        assert!(!valid_relative(Path::new("../outside")));
-        assert!(!valid_relative(Path::new("/absolute")));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn non_utf8_paths_parse_and_search_losslessly_without_filesystem_io() {
+        use std::os::unix::ffi::OsStrExt;
+        let raw = b"nested/a\xff.rs";
+        let path = path_from_bytes(raw).unwrap();
+        assert_eq!(path.as_os_str().as_bytes(), raw);
+        assert!(valid_relative(&path));
+        let index = FileFinderIndex {
+            root: PathBuf::from("/fixture"),
+            paths: vec![IndexedPath::new(path)],
+            truncated: false,
+            warnings: Vec::new(),
+        };
+        let matched = index
+            .search(&FileFinderQuery::new("ars"), 50, &CancellationToken::new())
+            .unwrap();
+        assert_eq!(matched.len(), 1);
+        assert_eq!(matched[0].path.as_os_str().as_bytes(), raw);
+        assert_eq!(matched[0].display_path, "nested/a\u{fffd}.rs");
     }
     #[cfg(unix)]
     #[test]

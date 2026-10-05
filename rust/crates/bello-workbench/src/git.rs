@@ -905,8 +905,7 @@ mod tests {
     }
 
     #[test]
-    fn literal_magic_spaces_newlines_and_non_utf8_names() {
-        use std::os::unix::ffi::OsStringExt;
+    fn literal_magic_spaces_newlines_and_unicode_names() {
         let temp = TempRepo::new();
         let names = [
             "with spaces.txt",
@@ -915,21 +914,19 @@ mod tests {
             ":(glob)*.txt",
             "-flag.txt",
             "line\nbreak\t.txt",
+            "日本語.txt",
         ];
-        let raw_name = OsString::from_vec(vec![b'x', 0xff, b'.', b't']);
         for name in &names {
             temp.write(name, "before\n");
         }
-        temp.write(&raw_name, "before\n");
         temp.commit("initial");
         for (i, name) in names.iter().enumerate() {
             temp.write(name, &format!("after {i}\n"));
         }
-        temp.write(&raw_name, "after raw\n");
         let repo = temp.open();
         let options = GitReadOptions::default();
         let status = repo.status(&options).unwrap();
-        assert_eq!(status.entries.len(), names.len() + 1);
+        assert_eq!(status.entries.len(), names.len());
         assert!(status.entries.iter().all(|e| !e.staged() && e.unstaged()));
         for (i, name) in names.iter().enumerate() {
             assert!(status.entries.iter().any(|e| e.path == Path::new(name)));
@@ -951,6 +948,23 @@ mod tests {
                 "{name:?}"
             );
         }
+    }
+
+    // macOS filesystems reject invalid UTF-8 names; exercise real byte names on Linux.
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn non_utf8_names_are_lossless_on_disk() {
+        use std::os::unix::ffi::OsStringExt;
+        let temp = TempRepo::new();
+        let raw_name = OsString::from_vec(vec![b'x', 0xff, b'.', b't']);
+        temp.write(&raw_name, "before\n");
+        temp.commit("initial");
+        temp.write(&raw_name, "after raw\n");
+        let repo = temp.open();
+        let options = GitReadOptions::default();
+        let status = repo.status(&options).unwrap();
+        assert_eq!(status.entries.len(), 1);
+        assert!(!status.entries[0].staged() && status.entries[0].unstaged());
         assert!(
             status
                 .entries
@@ -965,7 +979,44 @@ mod tests {
                 &options,
             )
             .unwrap();
+        assert_eq!(raw_patch.lossy_text().matches("diff --git ").count(), 1);
         assert!(raw_patch.lossy_text().contains("+after raw"));
+    }
+
+    #[test]
+    fn status_parser_preserves_non_utf8_paths_without_filesystem_io() {
+        use std::os::unix::ffi::OsStrExt;
+        let status = parse_status(
+            b"1 .M N... 100644 100644 100644 abc abc ordinary\xff\0\
+              2 R. N... 100644 100644 100644 abc abc R100 renamed\xfe\0original\xff\0\
+              ? untracked\xfd\0",
+        )
+        .unwrap();
+        assert_eq!(status.entries.len(), 3);
+        assert_eq!(
+            status.entries[0].path.as_os_str().as_bytes(),
+            b"ordinary\xff"
+        );
+        assert!(status.entries[0].unstaged());
+        assert_eq!(
+            status.entries[1].path.as_os_str().as_bytes(),
+            b"renamed\xfe"
+        );
+        assert_eq!(
+            status.entries[1]
+                .original_path
+                .as_ref()
+                .unwrap()
+                .as_os_str()
+                .as_bytes(),
+            b"original\xff"
+        );
+        assert!(status.entries[1].staged());
+        assert_eq!(
+            status.entries[2].path.as_os_str().as_bytes(),
+            b"untracked\xfd"
+        );
+        assert!(status.entries[2].untracked);
     }
 
     #[test]
