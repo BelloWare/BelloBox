@@ -38,6 +38,42 @@ Accessibility boundary: GPUI 0.2.2's existing Text/Div implementation exposes no
 
 Fresh Linux captures of corrected binary SHA-256 `680453397fbfd5fa588093ae82d1a4f1cebbbe5110b640880c4fda9142e2b3ff` at 1000×760 were inspected: `box-home-shaped-1000.png` and `box-developer-shaped-1000.png`. Observed truncated card subtitles now end in a visible ellipsis, including Screenshot, World Clock, Ask AI, JSON, Snippets and the visible Developer cards. The card hierarchy and typography are retained. The app's 39 tests and clippy with warnings denied pass. At 900×760, native resize also confirmed Home/Developer change to two columns with readable subtitles; `box-home-shaped-900.png` was inspected. macOS capture verification remains pending; no full UI-parity acceptance is claimed.
 
+## Dedicated World Clock checkpoint: 2026-10-05
+
+Sources: `UI/WorldClockView.swift`, `WorldClockComponents.swift`,
+`WorldClockWindowController.swift` and `WorldClock/WorldClockViewModel.swift`.
+The Rust route is now a dedicated offline planner, not a timestamp output box.
+The header, scrollable planner/location cards and fixed footer follow the source;
+visible invented Set buttons were removed and row reference/removal/day controls
+use reserved 28px outline icons. Temporary date/time fields validate on Enter/blur.
+
+Final color-corrected candidate SHA-256
+`c0f2793fd14e9db5881a58e467b6d53c285df0347bb10e5f2dfe2498454aa79d`
+was captured on Linux/X11 with software Vulkan and synthetic fixtures:
+
+- `clock-c0f-light-source.png` and `clock-c0f-dark-source.png`: 920×740
+- `clock-c0f-light-minimum.png` and `clock-c0f-dark-minimum.png`: 780×640
+
+The inspected captures keep the controls readable/in bounds, with the lower
+location reachable by body scrolling and the footer fixed. Warning and night ink
+now use the exact Swift light/dark semantic tokens; the earlier v8 dark capture
+(`clock-439-dark.png`) is superseded visually. These Linux captures do not establish
+macOS font, native DatePicker, SF Symbol, glass or accessibility equivalence.
+
+Behavioral QA used the preceding immutable v8 binary
+`43945549e8ef03b6bd5d5e6cc2b5e6f405f1f023b4bb7302f015ac618740a3f4`.
+It covered the modal key-down/key-up focus-restoration regression, exact synthetic
+Copy Times bytes, minimum-size scrolling, focused live-minute draft preservation,
+window reuse and fresh-live close/reopen with saved locations/reference. The v9
+delta is only quality colors and their test; fresh v9 launch/add/persistence/close
+smoke passed. Do not relabel v8 interaction captures as v9 evidence.
+
+Source review and final aggregate checks passed for this offline slice. Copilot,
+launcher preview/handoff, native localized editing, saved window placement,
+floating/Spaces and native accessibility remain absent; smaller picker/reference
+menu behaviors remain incomplete. No OS IME runtime or macOS GUI check was run.
+Verdict: **scoped Linux offline-planner restoration verified; full parity not accepted.**
+
 ## Shared visual contract
 
 Sources: `BelloBox/UI/Theme.swift`, `WindowMaterials.swift`, `AppWindowChrome.swift`.

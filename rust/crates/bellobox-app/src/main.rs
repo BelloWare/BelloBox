@@ -9,6 +9,7 @@ mod snippet_library;
 mod theme;
 mod tool_controls;
 mod transport;
+mod world_clock_ui;
 use bellobox_core::{
     clock::Planner,
     settings::{Settings, config_dir},

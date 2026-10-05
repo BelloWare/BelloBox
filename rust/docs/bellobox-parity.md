@@ -51,7 +51,7 @@ No claim of complete visual or interaction parity is made.
 | `Tools/QRCodeGenerator.swift`, `UI/QRCodePopupView.swift` | `bellobox-core::qr`, GPUI image, CLI | Implemented bounded medium-correction QR generation, 4-module quiet zone, integer pixel modules, SVG/PNG export, real GUI preview/copy/save. No scanner-decoder roundtrip or macOS clipboard test yet. Live input recalc is wired. |
 | `AI/AIClient.swift`, `AIConfig.swift`, `QuickAction.swift` | `bellobox-core::ai`, `bellobox-app::transport` | Partial: OpenAI Chat/Responses and Anthropic request builders, eight instructions, JSON-delimited selection, bounded incremental SSE, thinking exclusion, explicit streaming Send. HTTP timeout/no redirects; credentials runtime environment only. Request/SSE unit tests pass. No live-provider tests, model listing, model-scoped temperature/thinking controls, settings connection test, or replace-in-place. Closing a window invalidates its jobs and signals stream cancellation; blocking reads can remain until the next chunk or timeout. |
 | `AI/CodexAppServerClient.swift`, `Tools/CodexCLI.swift` | None | Missing: Codex app-server transport/model discovery. |
-| `WorldClock/WorldClockModels.swift` | `bellobox-core::clock`, CLI and GPUI text summary | Partial: IANA zones, instant parsing, DST-aware calendar-day movement, working-hour quality, zone search; tests cover spring gap and 23-hour day. GUI lacks scrubber, live timer, saved zone controls, reference/location menus and native keyboard interactions. |
+| `WorldClock/WorldClockModels.swift`, `UI/WorldClockView.swift`, `WorldClockComponents.swift`, `WorldClockWindowController.swift` | `bellobox-core::clock`, `world_clock_ui`, dedicated GPUI window | Partial: source-shaped offline planner with live/Now, validated local date/time fields, retained reference-day timeline, continuous scrub, clamped 15-minute slider keys, horizontal-wheel day overflow, location/reference controls, alias search, explicit Copy Times and saved zone/reference preferences. Plain reopen reuses the window; closing starts a new live session next time. Scoped Linux behavior/visual evidence is recorded below. Copilot/handoff, native localized pickers, floating/Spaces, window-frame persistence and native accessibility remain absent. |
 | `WorldClock/WorldClockCopilot.swift`, `WorldClockAIResolver.swift` | None | Missing: copilot plan validation/apply, location mutations and shared ephemeral handoff. |
 | `Screenshot/ScreenCaptureService.swift`, capture resolver/overlay | `bello-platform` subprocess adapter and `screenshot_ui::CaptureChooser` | Partial: explicit full-screen PNG via grim/ImageMagick on Linux or macOS screencapture. Editor capture uses private staging removed before returning in-memory bytes; no raw screenshot is published automatically. Separate source-sized capture chooser, PNG clipboard import and editor are wired. Native capture/clipboard UI has not been exercised. Area/window/scrolling/frozen displays/multi-display selection remain unavailable and labeled. |
 | `Screenshot/AnnotationModel.swift`, `AnnotationRenderer.swift` | `bellobox-core::screenshot`; `screenshot_ui::ScreenshotEditor` | Implemented bounded pure model and raster pipeline with 34 renderer/tile tests and 25 overlay geometry tests: crop, vectors, highlights, explicit-font Unicode text, final opaque solid/stripe/dot masks, per-annotation eraser holes, move/select, 64-step/16 MB history and PNG export. Partial UI: source 1040×760 / min 640×440 layout, nine-tool strip, inline current-label editing/drag handle, committed text move/context-delete, opaque custom color wells, width/eraser sliders, mask swatches/menu, Fit/Fit Width/100%/steps, scrolling, Text Reader and export footer. Native-resolution preview tiles never exceed 1024 px per side; only intersecting tiles are painted, separate from full export. Pixel reconstruction tests include 40,000-pixel-tall captures. Native preview seams, pointer/keyboard behavior and layout are not runtime-verified. Custom colors use portable RGB/hex controls, not the native macOS color panel; its source color wheel/pipette modes remain absent. The Swift source has no committed-label reopen/edit gesture or popup crop-resize handles, and neither was invented. Continuous committed eraser preview, overlay capture editor and complete source interaction parity remain absent. Portable font metrics/pattern rasterization are not AppKit-identical. |
@@ -66,6 +66,63 @@ No claim of complete visual or interaction parity is made.
 | `BelloBoxApp.swift` Sparkle updater | cfg-gated `macos_native::SparkleUpdater`; macOS bundling script | Partial, Apple-target type-checked only. Explicit GPUI update action, bundled-framework validation and main-thread retained controller implemented. No auto-download or update check from preview construction. Rust packaging requires an explicit Rust-specific feed; never defaults to the Swift production appcast. Framework2.8.1 supplied locally. Not signed/notarized/released. |
 | `UI/MainView.swift`, onboarding/settings/menu bar | Source-shaped GPUI Home category sidebar/cards and separate windows | Partial: real native app window, process-local drafts, safe explicit clipboard operations and capability display. Settings category layout and working preference subset restored. Onboarding, menu-bar extra, setup guide, launch-at-login and native shortcuts remain absent. |
 | `UI/Theme.swift`, `WindowMaterials.swift`, accessibility | Source light/dark GPUI tokens, vector badges and shipped icon | Partial: exact RGB tokens, source dimensions/spacing, plain wrapping editors, original Home navigation and separate QR/JSON/Text/AI structures. Native glass, SF Symbol exact rasterization, full original controls for every utility, native window materials, Reduce Motion/Transparency and full accessibility QA remain gaps. New Settings/dropdown/appearance changes still need desktop visual and interaction QA. |
+
+## World Clock offline planner checkpoint — 2026-10-05
+
+The World Clock route now opens its own 920×740 window (minimum 780×640), rather
+than the generic text workbench. The source hierarchy is preserved: header,
+scrollable planner and location cards, then a fixed footer. No new third-party
+dependencies or shared-editor changes were introduced for this UI slice.
+
+- Live refresh does not replace focused/composing fields or unchanged text.
+  Temporary date/time text fields validate on Enter or blur; invalid/partial
+  drafts do not change the instant. Tab/Shift-Tab traverse controls without
+  inserting text, and picker focus stays contained until dismissal.
+- The displayed core `Timeline` survives its next-midnight endpoint. Pointer
+  scrubbing is continuous; slider keys clamp within that day; horizontal wheel
+  steps may roll across days. Reference changes preserve the instant. Dates,
+  transitions, location presentation and copy formatting use the core APIs.
+- The 440px picker focuses its search, excludes existing locations, returns up to
+  ten city/alias matches, wraps Up/Down and supports Enter/Escape/Cancel. At least
+  one location remains. Fresh defaults use the resolved local IANA zone plus UTC;
+  an explicitly saved UTC-only list stays UTC-only.
+- Clock preference mutations save only location IDs/reference through the
+  reload-and-patch helper; corrupt settings stay untouched. Planned instants,
+  date/time drafts and searches are not saved. The existing generic explicit-open
+  metadata save can still normalize unknown nested usage data; arbitrary JSON
+  preservation is not claimed for the entire tool-opening path.
+- Clipboard access is an explicit Copy Times write only. The planner never reads
+  clipboard/selection implicitly and makes no provider request. Existing-window
+  reopen retains the plan; closing releases the session and reopening starts live
+  from saved locations/reference. Preview/handoff adoption remains unported.
+
+Validation is deliberately split by immutable candidate:
+
+- Functional Linux/X11 evidence used binary SHA-256
+  `43945549e8ef03b6bd5d5e6cc2b5e6f405f1f023b4bb7302f015ac618740a3f4`
+  (v8). Native checks covered modal Return/focus restoration without a second
+  button activation, separate button Return acting once, exact 190-byte synthetic
+  Copy Times output, minimum-size scrolling/readability, live minute refresh
+  preserving a focused partial time draft, same-window repeat-open, and
+  close/reopen with saved locations/reference and a fresh live session.
+- The final v9 changed only the warning/purple quality ink to the exact adaptive
+  Swift `Theme.swift` tokens and added an exact-token test. Its binary SHA-256 is
+  `c0f2793fd14e9db5881a58e467b6d53c285df0347bb10e5f2dfe2498454aa79d`.
+  Fresh light/dark captures at 920×740 and 780×640 were inspected; launch,
+  keyboard-add, persistence/relaunch and clean close smoke checks passed.
+  The v8 dark image is superseded as visual evidence, while its separate
+  functional evidence is retained. See `ui-parity-review.md` for capture names.
+- Final-source `scripts/check.sh` passed: 363 Rust tests, four existing ignored
+  tests, formatting, strict all-target Clippy, workspace build and four performance
+  harness tests. These are correctness/harness checks, not FPS or performance parity.
+
+This is **not complete World Clock or macOS parity**. Formatting is deterministic
+English/24-hour; fields are not native localized DatePickers. Copilot is visibly
+unavailable, not redirected to another tool. Launcher preview/handoff, native
+accessibility labels/IME runtime validation, glass, floating/all-Spaces behavior,
+saved native placement, picker clear-search/disabled-empty-Add details and complete
+reference-menu dismissal/scrolling semantics remain gaps. No macOS GUI execution,
+OS IME test, provider call, signing, notarization or release is claimed here.
 
 ## Developer tools
 

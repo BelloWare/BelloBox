@@ -1554,6 +1554,11 @@ pub fn open_tool(id: &str, input: String, cx: &mut App) {
         let _ = settings.save(&config_dir().join("settings.json"));
     }
 
+    if id == "worldClock" {
+        crate::world_clock_ui::open(input, cx);
+        return;
+    }
+
     if id == "screenshot" {
         crate::screenshot_ui::open(cx);
         return;
