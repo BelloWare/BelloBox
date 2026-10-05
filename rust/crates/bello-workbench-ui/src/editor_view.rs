@@ -143,10 +143,9 @@ impl EditorView {
         cx.notify();
     }
     pub fn set_vim(&mut self, enabled: bool, cx: &mut Context<Self>) {
-        self.engine.set_vim(enabled);
-        self.marked = None;
-        self.selection = None;
-        cx.notify();
+        if set_vim_unless_marked(&mut self.engine, &self.marked, &mut self.selection, enabled) {
+            cx.notify();
+        }
     }
     pub fn set_read_only(&mut self, enabled: bool, cx: &mut Context<Self>) {
         self.requested_read_only = enabled;
@@ -493,12 +492,14 @@ impl EntityInputHandler for EditorView {
             return;
         }
         let before = self.engine.revision();
-        let r = r
-            .map(|r| self.byte_range_for_utf16(r))
-            .or(self.marked.take())
-            .unwrap_or_else(|| self.selected());
-        self.engine.replace_range_grouped(r, text);
-        self.selection = None;
+        let r = r.map(|r| self.byte_range_for_utf16(r));
+        replace_input_text(
+            &mut self.engine,
+            &mut self.marked,
+            &mut self.selection,
+            r,
+            text,
+        );
         self.record_input(InputKind::Text, input_started);
         self.changed(before, cx);
     }
@@ -925,10 +926,243 @@ fn replace_selection_with_newline(editor: &mut Editor, selection: Range<usize>) 
     let newline = editor.buffer.newline();
     editor.replace_range_grouped(selection, newline);
 }
+/// Mode changes must not discard a platform-owned composition. The user can
+/// request the toggle again after the input method commits or unmarks it.
+fn set_vim_unless_marked(
+    editor: &mut Editor,
+    marked: &Option<Range<usize>>,
+    selection: &mut Option<Range<usize>>,
+    enabled: bool,
+) -> bool {
+    if marked.is_some() {
+        return false;
+    }
+    editor.set_vim(enabled);
+    *selection = None;
+    true
+}
+/// Byte ranges have already been converted from the platform's UTF-16 ranges.
+/// Keep composition state until the engine accepts the replacement, including
+/// when a size limit or read-only transition rejects a final IME commit.
+fn replace_input_text(
+    editor: &mut Editor,
+    marked: &mut Option<Range<usize>>,
+    selection: &mut Option<Range<usize>>,
+    range: Option<Range<usize>>,
+    text: &str,
+) -> bool {
+    if editor.mode != Mode::Insert {
+        return false;
+    }
+    let range = range
+        .or_else(|| marked.clone())
+        .or_else(|| selection.clone())
+        .or_else(|| editor.selection())
+        .unwrap_or(editor.cursor..editor.cursor);
+    if !editor.replace_range_grouped(range, text) {
+        return false;
+    }
+    *marked = None;
+    *selection = None;
+    true
+}
 #[cfg(test)]
 mod input_tests {
-    use super::{measurement_width, replace_selection_with_newline};
-    use bello_workbench::editor::Editor;
+    use super::{
+        measurement_width, replace_input_text, replace_selection_with_newline,
+        set_vim_unless_marked,
+    };
+    use bello_workbench::editor::{Editor, Key, MAX_EDIT_BYTES, Mode};
+
+    #[test]
+    fn composition_owns_mode_until_commit_or_unmark() {
+        for vim in [false, true] {
+            let mut editor = Editor::new("😀に尾".into());
+            if vim {
+                editor.set_vim(true);
+                editor.key(Key::Char('i'));
+            }
+            editor.set_cursor(7);
+            let mut marked = Some(4..7);
+            let mut selection = Some(7..7);
+            for enabled in [!vim, vim] {
+                assert!(!set_vim_unless_marked(
+                    &mut editor,
+                    &marked,
+                    &mut selection,
+                    enabled
+                ));
+                assert_eq!(editor.vim, vim);
+                assert_eq!(editor.mode, Mode::Insert);
+                assert_eq!(editor.cursor, 7);
+                assert_eq!(marked, Some(4..7));
+                assert_eq!(selection, Some(7..7));
+            }
+            assert!(replace_input_text(
+                &mut editor,
+                &mut marked,
+                &mut selection,
+                None,
+                "日本"
+            ));
+            assert_eq!(editor.text(), "😀日本尾");
+            assert_eq!(editor.cursor, 10);
+            assert_eq!(marked, None);
+            assert_eq!(selection, None);
+            assert!(set_vim_unless_marked(
+                &mut editor,
+                &marked,
+                &mut selection,
+                !vim
+            ));
+            assert_eq!(editor.vim, !vim);
+        }
+        let mut editor = Editor::new("に".into());
+        let mut selection = Some(0..3);
+        // unmark_text clears only the marked range; the next toggle works.
+        assert!(set_vim_unless_marked(
+            &mut editor,
+            &None,
+            &mut selection,
+            true
+        ));
+        assert_eq!(editor.mode, Mode::Normal);
+        assert_eq!(selection, None);
+    }
+
+    #[test]
+    fn rejected_commit_keeps_composition_selection_and_caret_for_retry() {
+        for explicit in [false, true] {
+            let mut editor = Editor::new("😀に尾".into());
+            editor.set_cursor(7);
+            editor.read_only = true;
+            let mut marked = Some(4..7);
+            let mut selection = Some(4..7);
+            let range = explicit.then_some(4..7);
+            let revision = editor.revision();
+            assert!(!replace_input_text(
+                &mut editor,
+                &mut marked,
+                &mut selection,
+                range.clone(),
+                "日本"
+            ));
+            assert_eq!(editor.text(), "😀に尾");
+            assert_eq!(editor.revision(), revision);
+            assert_eq!(editor.cursor, 7);
+            assert_eq!(marked, Some(4..7));
+            assert_eq!(selection, Some(4..7));
+            editor.read_only = false;
+            assert!(replace_input_text(
+                &mut editor,
+                &mut marked,
+                &mut selection,
+                range,
+                "日本"
+            ));
+            assert_eq!(editor.text(), "😀日本尾");
+            assert_eq!(marked, None);
+            assert_eq!(selection, None);
+            editor.undo();
+            assert_eq!(editor.text(), "😀に尾");
+            assert_eq!(editor.cursor, 7);
+            editor.redo();
+            assert_eq!(editor.text(), "😀日本尾");
+        }
+    }
+
+    #[test]
+    fn oversized_commit_preserves_mark_and_retry_replaces_it_once() {
+        let mut editor = Editor::new("に".into());
+        editor.set_cursor(3);
+        let mut marked = Some(0..3);
+        let mut selection = Some(3..3);
+        assert!(!replace_input_text(
+            &mut editor,
+            &mut marked,
+            &mut selection,
+            None,
+            &"x".repeat(MAX_EDIT_BYTES + 1)
+        ));
+        assert_eq!(editor.text(), "に");
+        assert_eq!(editor.cursor, 3);
+        assert_eq!(marked, Some(0..3));
+        assert_eq!(selection, Some(3..3));
+        assert!(replace_input_text(
+            &mut editor,
+            &mut marked,
+            &mut selection,
+            None,
+            "日本"
+        ));
+        assert_eq!(editor.text(), "日本");
+        assert_eq!(marked, None);
+    }
+
+    #[test]
+    fn explicit_platform_range_wins_and_clears_mark_only_on_success() {
+        let mut editor = Editor::new("😀に尾".into());
+        editor.set_cursor(7);
+        let mut marked = Some(4..7);
+        let mut selection = Some(7..7);
+        // UTF-16 3..4 addresses 尾 after the surrogate pair and に.
+        let range = editor.buffer.byte_offset(3)..editor.buffer.byte_offset(4);
+        assert!(replace_input_text(
+            &mut editor,
+            &mut marked,
+            &mut selection,
+            Some(range),
+            "終"
+        ));
+        assert_eq!(editor.text(), "😀に終");
+        assert_eq!(marked, None);
+        assert_eq!(selection, None);
+    }
+
+    #[test]
+    fn rejected_plain_selection_replacement_keeps_selection() {
+        let mut editor = Editor::new("selected".into());
+        editor.set_cursor(8);
+        editor.read_only = true;
+        let mut marked = None;
+        let mut selection = Some(0..8);
+        assert!(!replace_input_text(
+            &mut editor,
+            &mut marked,
+            &mut selection,
+            None,
+            "replacement"
+        ));
+        assert_eq!(editor.cursor, 8);
+        assert_eq!(selection, Some(0..8));
+    }
+
+    #[test]
+    fn empty_commit_removes_only_marked_text_and_unblocks_mode_change() {
+        let mut editor = Editor::new("😀に尾".into());
+        editor.set_cursor(7);
+        let mut marked = Some(4..7);
+        let mut selection = Some(7..7);
+        assert!(replace_input_text(
+            &mut editor,
+            &mut marked,
+            &mut selection,
+            None,
+            ""
+        ));
+        assert_eq!(editor.text(), "😀尾");
+        assert_eq!(editor.cursor, 4);
+        assert_eq!(marked, None);
+        assert_eq!(selection, None);
+        assert!(set_vim_unless_marked(
+            &mut editor,
+            &marked,
+            &mut selection,
+            true
+        ));
+        editor.undo();
+        assert_eq!(editor.text(), "😀に尾");
+    }
     #[test]
     fn painted_width_wins_over_parent_estimate_without_reflow_ping_pong() {
         assert_eq!(measurement_width(500., None), 500.);
