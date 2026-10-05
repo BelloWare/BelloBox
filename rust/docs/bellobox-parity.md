@@ -8,13 +8,16 @@ or modified. This is an incremental, runnable port, **not feature parity**.
 
 - **Implemented** means executable code exists, with the cited checks.
 - **Partial** means a useful subset exists; omitted behavior is listed.
-- **Platform-blocked** means validation requires a platform/session unavailable here.
-- **Not ported** means the Rust application does not implement the feature.
+- **Missing** means the Rust application does not implement the feature.
+- **Validated** always names the specific tests or desktop interactions exercised;
+  it never means whole-feature parity from backend tests alone.
+- **Platform-blocked** is a verification qualifier, not an implementation status;
+  it means validation requires a platform/session unavailable here.
 - A catalog entry is not evidence that a feature works. Unsupported operations return
   explicit errors. The minimal `--no-default-features` build intentionally excludes
   all developer utility engines and labels them unavailable.
 
-The current source-preserving checkpoint passes 140 core unit tests, 3 malformed-input
+The earlier source-preserving checkpoint passed 140 core unit tests, 3 malformed-input
 integration tests, 28 app layout/session/settings/screenshot tests, 16 platform unit tests and
 3 opt-in subprocess tests. Local
 Tesseract OCR was exercised on a synthetic image. The first generic GUI prototype
@@ -47,19 +50,19 @@ No claim of complete visual or interaction parity is made.
 | `Tools/TextTransforms.swift` | `bellobox-core::text` | Partial: nine case conversions, four encodings/manual decoders and auto detect, four hashes, six line operations, counts and heuristic tokens implemented/tests. GUI restores category bar and choice controls; hash/count specialized result cards still differ; Swift pretty auto-detection and per-model persisted token choices absent. Counts label Unicode scalars, not grapheme clusters. |
 | `Tools/QRCodeGenerator.swift`, `UI/QRCodePopupView.swift` | `bellobox-core::qr`, GPUI image, CLI | Implemented bounded medium-correction QR generation, 4-module quiet zone, integer pixel modules, SVG/PNG export, real GUI preview/copy/save. No scanner-decoder roundtrip or macOS clipboard test yet. Live input recalc is wired. |
 | `AI/AIClient.swift`, `AIConfig.swift`, `QuickAction.swift` | `bellobox-core::ai`, `bellobox-app::transport` | Partial: OpenAI Chat/Responses and Anthropic request builders, eight instructions, JSON-delimited selection, bounded incremental SSE, thinking exclusion, explicit streaming Send. HTTP timeout/no redirects; credentials runtime environment only. Request/SSE unit tests pass. No live-provider tests, model listing, model-scoped temperature/thinking controls, settings connection test, or replace-in-place. Closing a window invalidates its jobs and signals stream cancellation; blocking reads can remain until the next chunk or timeout. |
-| `AI/CodexAppServerClient.swift`, `Tools/CodexCLI.swift` | None | Not ported: Codex app-server transport/model discovery. |
+| `AI/CodexAppServerClient.swift`, `Tools/CodexCLI.swift` | None | Missing: Codex app-server transport/model discovery. |
 | `WorldClock/WorldClockModels.swift` | `bellobox-core::clock`, CLI and GPUI text summary | Partial: IANA zones, instant parsing, DST-aware calendar-day movement, working-hour quality, zone search; tests cover spring gap and 23-hour day. GUI lacks scrubber, live timer, saved zone controls, reference/location menus and native keyboard interactions. |
-| `WorldClock/WorldClockCopilot.swift`, `WorldClockAIResolver.swift` | None | Not ported: copilot plan validation/apply, location mutations and shared ephemeral handoff. |
+| `WorldClock/WorldClockCopilot.swift`, `WorldClockAIResolver.swift` | None | Missing: copilot plan validation/apply, location mutations and shared ephemeral handoff. |
 | `Screenshot/ScreenCaptureService.swift`, capture resolver/overlay | `bello-platform` subprocess adapter and `screenshot_ui::CaptureChooser` | Partial: explicit full-screen PNG via grim/ImageMagick on Linux or macOS screencapture. Editor capture uses private staging removed before returning in-memory bytes; no raw screenshot is published automatically. Separate source-sized capture chooser, PNG clipboard import and editor are wired. Native capture/clipboard UI has not been exercised. Area/window/scrolling/frozen displays/multi-display selection remain unavailable and labeled. |
 | `Screenshot/AnnotationModel.swift`, `AnnotationRenderer.swift` | `bellobox-core::screenshot`; `screenshot_ui::ScreenshotEditor` | Implemented bounded pure model and raster pipeline with 34 renderer/tile tests and 25 overlay geometry tests: crop, vectors, highlights, explicit-font Unicode text, final opaque solid/stripe/dot masks, per-annotation eraser holes, move/select, 64-step/16 MB history and PNG export. Partial UI: source 1040×760 / min 640×440 layout, nine-tool strip, inline current-label editing/drag handle, committed text move/context-delete, opaque custom color wells, width/eraser sliders, mask swatches/menu, Fit/Fit Width/100%/steps, scrolling, Text Reader and export footer. Native-resolution preview tiles never exceed 1024 px per side; only intersecting tiles are painted, separate from full export. Pixel reconstruction tests include 40,000-pixel-tall captures. Native preview seams, pointer/keyboard behavior and layout are not runtime-verified. Custom colors use portable RGB/hex controls, not the native macOS color panel; its source color wheel/pipette modes remain absent. The Swift source has no committed-label reopen/edit gesture or popup crop-resize handles, and neither was invented. Continuous committed eraser preview, overlay capture editor and complete source interaction parity remain absent. Portable font metrics/pattern rasterization are not AppKit-identical. |
 | `Screenshot/SelectionResizeGeometry.swift`, `ScreenshotPopupViewModel` overlay adjustment | `screenshot::selection` | Implemented pure eight-handle geometry, move/clamp, nonoverlapping dim bands, Cocoa/display-pixel conversion and explicitly enabled adjustment draft. Repeated updates commit as one undo step; canceled/stale drafts leave the document unchanged. Popup adjustment is disabled. Text-label hit frames and movement clamps preserve crop offsets. Overlay/native capture UI remains unported; this is model/test coverage only. |
-| `Screenshot/ScrollCaptureEngine.swift`, `ImageStitcher.swift` | None | Not ported: manual/auto scrolling, overlap detection, fixed headers, capture notes and stitch UI. |
+| `Screenshot/ScrollCaptureEngine.swift`, `ImageStitcher.swift` | None | Missing: manual/auto scrolling, overlap detection, fixed headers, capture notes and stitch UI. |
 | `Screenshot/OCR/MacVisionOCRService.swift` | `bello-platform` Tesseract on Linux and native Apple Vision on macOS | Partial: local bounded image OCR, signature validation, in-memory image snapshot, no network. Tesseract synthetic runtime test passed. Native Vision is Apple-target type-checked, not runtime-tested; image/dimension/text limits apply. Screenshot Text Reader runs on a crop/mask-aware rendered PNG supplied directly as bytes. Mask/crop/undo cancels old jobs, clears reader content/undo and disables stale-copy payloads; revision/cancellation regression tests reject late OCR. Line boxes, language/settings wiring, Markdown formatting and original structured-region output remain absent. |
 | `Screenshot/OCR/LLMOCRService.swift` and redaction-aware preprocessor | Sanitized image renderer only | Crop/redaction-aware image generation is implemented/tested, excluding all decorative annotations. Consent dialog, immutable provider/model/image approval snapshot, OCR tile segmentation, provider transport and Markdown output are not ported. AI OCR is disabled; no screenshot-to-provider route exists. |
-| `Recording/RecordingEngine.swift`, coordinator/audio/input/privacy | None | Not ported: screen recording, audio mixing, cursor/click/key overlays, secure-field redaction, countdown, pause/review. |
-| `Recording/GIF/GIFTranscoder.swift` | None | Not ported: movie/GIF conversion, transactional exports, precise frame timing and loop validation. |
+| `Recording/RecordingEngine.swift`, coordinator/audio/input/privacy | None | Missing: screen recording, audio mixing, cursor/click/key overlays, secure-field redaction, countdown, pause/review. |
+| `Recording/GIF/GIFTranscoder.swift` | None | Missing: movie/GIF conversion, transactional exports, precise frame timing and loop validation. |
 | `Settings/AppSettings.swift`, `KeychainStore.swift` | Separate versioned Rust JSON settings; runtime AI environment | Partial: persisted appearance enum/IDs/provider metadata/zones, atomic private writes, corrupt-file preservation. No Swift migration or Keychain/Secret Service yet. No API key in settings. Source-shaped seven-page Settings now persists appearance, provider/request format/endpoint/model, system Prompt and learned-order reset. All open editors keep content/undo while ink changes. API keys remain runtime-only; inactive-provider drafts currently survive only within the Settings window. Unsupported source toggles remain disabled with explanations. New Settings controls are compile/unit-tested but not runtime-tested while the desktop is down. |
-| `DeveloperTools/SnippetsAndGenerators.swift` | `settings::Snippets` | Partial: bounded explicit JSON store and literal field rendering core/tests; not wired to a snippet browser/save UI. No automatic migration or clipboard database. |
+| `DeveloperTools/SnippetsAndGenerators.swift` | `settings::Snippets`, `snippet_library`, `desktop::snippets` | Partial: source-ordered find/name/library menu and explicit New/Save/Delete/load controls now use an isolated Rust store. Delete asks for confirmation; corrupt data blocks mutations; load/new clear field drafts; saves preserve IDs and reload disk to retain other windows’ saves. Seven state tests pass. UI interaction/visual QA is not yet run. Dynamic per-field editors and source renderer semantics remain incomplete; the existing JSON-values editor remains. Rust retains 500-item/512-byte-name limits and case-folded lexical ordering/filtering rather than source localized natural sorting. No Swift-library migration, shared live-window store notifications, or clipboard database. |
 | `BelloBoxApp.swift` Sparkle updater | cfg-gated `macos_native::SparkleUpdater`; macOS bundling script | Partial, Apple-target type-checked only. Explicit GPUI update action, bundled-framework validation and main-thread retained controller implemented. No auto-download or update check from preview construction. Rust packaging requires an explicit Rust-specific feed; never defaults to the Swift production appcast. Framework2.8.1 supplied locally. Not signed/notarized/released. |
 | `UI/MainView.swift`, onboarding/settings/menu bar | Source-shaped GPUI Home category sidebar/cards and separate windows | Partial: real native app window, process-local drafts, safe explicit clipboard operations and capability display. Settings category layout and working preference subset restored. Onboarding, menu-bar extra, setup guide, launch-at-login and native shortcuts remain absent. |
 | `UI/Theme.swift`, `WindowMaterials.swift`, accessibility | Source light/dark GPUI tokens, vector badges and shipped icon | Partial: exact RGB tokens, source dimensions/spacing, plain wrapping editors, original Home navigation and separate QR/JSON/Text/AI structures. Native glass, SF Symbol exact rasterization, full original controls for every utility, native window materials, Reduce Motion/Transparency and full accessibility QA remain gaps. New Settings/dropdown/appearance changes still need desktop visual and interaction QA. |
@@ -86,7 +89,7 @@ for many tools still need restoration. Sources below are in
 | `time` | `DeveloperTime.swift` | Seconds/milliseconds/ISO, zones and differences |
 | `cron` | `DeveloperTime.swift` | Five fields, next five UTC runs within366 days; timezone planner absent |
 | `convert` | `DataConversion.swift` | JSON/YAML/CSV directions; YAML aliases/tags rejected |
-| `snippets` | `SnippetsAndGenerators.swift` | Literal template substitution with date/UUID; save/browser UI absent |
+| `snippets` | `SnippetsAndGenerators.swift` | Partial: literal template substitution with date/UUID plus source-shaped isolated library save/browser controls; dynamic field editors and complete built-in/placeholder semantics remain incomplete |
 | `http` | `HTTPRequestTool.swift` | Raw HTTP request inspection only; cURL and sending absent |
 | `generate` | `SnippetsAndGenerators.swift` | UUID/UUID-derived hex/sample records; not a password generator |
 | `calculator` | `MathUtilities.swift` | Bounded arithmetic and functions; radians |
@@ -210,9 +213,16 @@ Reproduced locally with Rust 1.99.0 and the checked-in lockfile:
 - `cargo test --locked -p bellobox-core -p bello-platform -p bello-workbench`:
   baseline 219 passing tests, four ignored, zero failures.
 - `python3 -m unittest discover -s perf -p 'test_*.py' -v`: four passing tests.
-- Full local GPUI build/desktop interaction remains blocked by missing native
-  development packages. This Linux environment has no macOS SDK; all native
-  macOS, Sparkle, original-app upgrade, and visual acceptance gates remain open.
+- Initial full local GPUI linking was blocked by missing unversioned linker
+  aliases for preinstalled XCB/XKB runtime libraries. Workspace-only aliases and
+  `LIBRARY_PATH` resolved it without changing system files. Full workspace tests,
+  strict Clippy and build subsequently passed (270 tests, four ignored), including
+  the concurrent shared CRLF editor regression slice. Three option-state tests
+  are also compiled by the app target, so these are test executions, not a count
+  of distinct behaviors. These are historical checkpoint counts, not totals for
+  every later source slice.
+- This Linux environment has no macOS SDK; all native macOS, Sparkle,
+  original-app upgrade, and visual acceptance gates remain open.
 
 JSON Lines, Environment File and Cookie Inspector now use the source `Convert`
 and `Header` option menus instead of an option-string text editor. Initial
@@ -228,3 +238,37 @@ both converter roundtrips, literal environment values, invalid-menu rejection,
 independent-window state, mode-dependent source labels, and Cookie routing. These are **headless callback/state
 tests, not desktop interaction or visual-parity evidence**. The new menus remain
 implemented but visually unvalidated until a running desktop is inspected.
+
+## Snippet library controls checkpoint (2026-10-05)
+
+Source: `UtilityWorkbenchView.swift` snippetControls/SnippetLibraryMenu,
+`UtilityWorkbenchModel.swift` load/new/save/delete, and
+`DeveloperTools/SnippetsAndGenerators.swift` SnippetStore. The implemented library
+controls retain the two source rows and help text. Data stays under the existing
+Rust config directory; original Swift Snippets.json remains untouched. Only
+explicit Save/Delete actions write the Rust store, atomically and with private
+permissions. Loading and New reset the template-fields draft. Failed writes keep
+the persisted library and selected identity intact. Confirmation captures the
+deleted ID, so a changed selection is not accidentally deleted. Store contents are
+refreshed on menu open/load/mutation; no cross-process locking or live notification
+is claimed. Existing Rust storage limits and locale/sorting differences remain
+explicit in the row above. The source macOS alert is requested through GPUI's
+platform prompt; platform-specific alert appearance is unverified.
+
+Validated scope: seven isolated filesystem/state tests cover write-free mount and
+New, identity-preserving updates, filtering, independent-window reload, corrupt
+file/write-failure preservation, confirmed-ID deletion and Swift-file isolation/
+Unix private permissions. This does not validate native menu/alert/pointer flows.
+Template-field UI and rendering parity are separate incomplete work.
+
+Manual Linux QA of the earlier db67901 source: JSON Lines conversion and reverse
+conversion, malformed-input error, input editing, and close/reopen were exercised
+in a live Linux SwiftShader session. This evidence does not validate the new
+Snippets UI or macOS.
+
+Checkpoint build validation: locked offline workspace tests passed (282 test
+executions, four ignored, including concurrent shared-editor regressions); strict
+workspace/all-target Clippy and full workspace build passed. Formatting and
+diff whitespace checks passed. The seven snippet-library tests also passed with
+no default features. Existing proc-macro-error2 dependency future-compatibility
+warning remains; no macOS runtime test or snippet visual acceptance is implied.

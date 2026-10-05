@@ -1,3 +1,4 @@
+mod snippets;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
     launcher,
@@ -14,6 +15,7 @@ use std::{
 
 struct BelloBox {
     selected: String,
+    snippets: Option<snippets::SnippetUi>,
     input: Entity<EditorView>,
     second: Entity<EditorView>,
     output: Entity<EditorView>,
@@ -83,6 +85,7 @@ impl BelloBox {
         let status = String::new();
         let mut app = Self {
             selected: fixture,
+            snippets: None,
             input,
             second,
             output,
@@ -125,6 +128,7 @@ impl BelloBox {
                 editor.set_appearance(appearance, cx);
             });
         }
+        app.init_snippets(window, cx);
         if app.selected == "ai" {
             app.input.update(cx, |e, cx| e.set_read_only(true, cx));
         }
@@ -900,6 +904,7 @@ impl BelloBox {
         cx: &mut Context<Self>,
     ) -> gpui::AnyElement {
         let control = match self.selected.as_str() {
+            "snippets" => self.snippet_controls(p, cx),
             "json" => self
                 .segmented(
                     &[
@@ -1433,6 +1438,7 @@ impl Render for BelloBox {
                 });
             }
         }
+        self.snippet_appearance(p, cx);
         let content = match self.selected.as_str() {
             "qr" => self.render_qr(p, cx),
             "textTools" => self.render_text(p, cx),
@@ -1471,6 +1477,11 @@ impl Render for BelloBox {
                 let Some(id) = this.open_menu else {
                     return;
                 };
+                if id == "snippets-library" {
+                    this.snippet_menu_key(&event.keystroke.key, cx);
+                    cx.stop_propagation();
+                    return;
+                }
                 if let Some(spec) = crate::tool_controls::choices(&this.selected)
                     .into_iter()
                     .find(|s| s.id == id)

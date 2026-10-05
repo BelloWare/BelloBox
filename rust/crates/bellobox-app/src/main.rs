@@ -5,6 +5,7 @@ mod screenshot_color;
 mod screenshot_ui;
 mod session;
 mod settings_ui;
+mod snippet_library;
 mod theme;
 mod tool_controls;
 mod transport;
