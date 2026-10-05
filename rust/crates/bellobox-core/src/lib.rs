@@ -8,6 +8,7 @@ pub mod launcher;
 pub mod qr;
 pub mod screenshot;
 pub mod settings;
+pub mod snippets;
 pub mod text;
 
 pub const MAX_INPUT_BYTES: usize = 500_000;

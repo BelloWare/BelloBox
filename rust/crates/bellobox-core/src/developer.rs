@@ -2049,41 +2049,26 @@ fn sql_format(input: &str, options: &str) -> R<String> {
 
 fn snippets(s: &str, second: &str) -> R<String> {
     let values = if second.trim().is_empty() {
-        json!({"name":"Ada","selection":""})
+        json!({})
     } else {
         parse_json(second)?
     };
     let values = values
         .as_object()
         .ok_or("Second field needs a JSON object of placeholder values.")?;
-    let re = regex::Regex::new(r"\{\{([A-Za-z_][A-Za-z_0-9]*)\}\}").unwrap();
-    let mut map = values.clone();
-    map.insert(
-        "date".into(),
-        Value::String(Utc::now().format("%Y-%m-%d").to_string()),
-    );
-    map.insert(
-        "uuid".into(),
-        Value::String(uuid::Uuid::new_v4().to_string()),
-    );
-    let mut out = String::new();
-    let mut end = 0;
-    for c in re.captures_iter(s) {
-        let m = c.get(0).unwrap();
-        out.push_str(&s[end..m.start()]);
-        out.push_str(
-            &map.get(&c[1])
-                .map(scalar)
-                .unwrap_or_else(|| m.as_str().into()),
-        );
-        end = m.end();
-        if out.len() > MAX_OUTPUT {
-            return Err("Rendered snippet exceeds 4 MB.".into());
-        }
-    }
-    out.push_str(&s[end..]);
-    Ok(out)
+    let values = values
+        .iter()
+        .map(|(key, value)| (key.clone(), scalar(value)))
+        .collect::<BTreeMap<_, _>>();
+    crate::snippets::render_at(
+        s,
+        values.get("selection").map(String::as_str).unwrap_or(""),
+        &values,
+        Utc::now(),
+        &uuid::Uuid::new_v4().to_string(),
+    )
 }
+
 fn generate(s: &str) -> R<String> {
     let p: Vec<_> = s.split_whitespace().collect();
     let kind = p.first().copied().unwrap_or("uuid");
@@ -3210,6 +3195,7 @@ mod tests {
     }
     #[test]
     fn snippets_substitute_once_and_generators_unique() {
+        assert_eq!(run("snippets", "Hello {{name}}", ""), "Hello {{name}}");
         assert_eq!(
             run(
                 "snippets",
