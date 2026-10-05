@@ -49,6 +49,8 @@ enum Action {
     Day(i64),
     Picker,
     CancelPicker,
+    ClearSearch,
+    AddSelected,
     Add(String),
     Remove(String),
     Reference(String),
@@ -75,6 +77,10 @@ pub struct WorldClock {
     picker_scroll: ScrollHandle,
     reference_menu: bool,
     reference_index: usize,
+    reference_scroll: ScrollHandle,
+    reference_generation: u64,
+    reference_reveal_pending: Rc<Cell<bool>>,
+    reference_button_bounds: Rc<Cell<Bounds<Pixels>>>,
     status: Option<String>,
     error: Option<String>,
     bands: Vec<Quality>,
@@ -145,6 +151,16 @@ impl WorldClock {
                 }
             },
         );
+        let activation = cx.observe_window_activation(window, |this, window, cx| {
+            if !window.is_window_active() && this.reference_menu {
+                this.reference_menu = false;
+                // Restore logical keyboard focus without activating this window.
+                if let Some(focus) = this.action_focus.get(&Action::ReferenceMenu) {
+                    focus.focus(window);
+                }
+                cx.notify();
+            }
+        });
         let focus = cx.focus_handle();
         focus.focus(window);
         let mut result = Self {
@@ -163,6 +179,10 @@ impl WorldClock {
             picker_scroll: ScrollHandle::new(),
             reference_menu: false,
             reference_index: 0,
+            reference_scroll: ScrollHandle::new(),
+            reference_generation: 0,
+            reference_reveal_pending: Rc::new(Cell::new(false)),
+            reference_button_bounds: Rc::new(Cell::new(Bounds::default())),
             status: None,
             error,
             bands: vec![],
@@ -172,7 +192,7 @@ impl WorldClock {
             drag_timeline: None,
             drag_slider: false,
             wheel: WheelAccumulator::default(),
-            _subscriptions: vec![subscription, date_blur, time_blur],
+            _subscriptions: vec![subscription, date_blur, time_blur, activation],
         };
         result.sync_fields(cx);
         result.refresh_bands();
@@ -314,6 +334,9 @@ impl WorldClock {
             Action::ApplyDate => self.planner.select_date(self.date.read(cx).text()),
             Action::ApplyTime => self.planner.select_time(self.time.read(cx).text()),
             Action::Reference(id) => {
+                if self.reference_menu {
+                    self.action_focus[&Action::ReferenceMenu].focus(window);
+                }
                 self.reference_menu = false;
                 save = true;
                 self.planner.set_reference(&id)
@@ -344,6 +367,22 @@ impl WorldClock {
                 self.close_picker(window, cx);
                 return;
             }
+            Action::ClearSearch => {
+                if !self.query.read(cx).text().is_empty() {
+                    self.query.update(cx, |e, cx| e.set_text(String::new(), cx));
+                }
+                self.picker_index = 0;
+                self.picker_scroll.scroll_to_item(0);
+                self.query.read(cx).focus(window);
+                cx.notify();
+                return;
+            }
+            Action::AddSelected => {
+                if let Some(id) = selected_location(&self.results(cx), self.picker_index) {
+                    self.act(Action::Add(id), window, cx);
+                }
+                return;
+            }
             Action::ReferenceMenu => {
                 self.reference_menu = !self.reference_menu;
                 self.reference_index = self
@@ -352,7 +391,13 @@ impl WorldClock {
                     .iter()
                     .position(|z| *z == self.planner.reference)
                     .unwrap_or(0);
-                self.focus.focus(window);
+                if self.reference_menu {
+                    self.reference_generation = self.reference_generation.wrapping_add(1);
+                    self.reference_reveal_pending.set(true);
+                    self.focus.focus(window);
+                } else {
+                    self.action_focus[&Action::ReferenceMenu].focus(window);
+                }
                 cx.notify();
                 return;
             }
@@ -453,8 +498,14 @@ impl WorldClock {
                         .is_some_and(|f| f.is_focused(window))
                     {
                         self.close_picker(window, cx);
-                    } else if let Some(option) = self.results(cx).get(self.picker_index) {
-                        self.act(Action::Add(option.id.clone()), window, cx);
+                    } else if self
+                        .action_focus
+                        .get(&Action::ClearSearch)
+                        .is_some_and(|f| f.is_focused(window))
+                    {
+                        self.act(Action::ClearSearch, window, cx);
+                    } else {
+                        self.act(Action::AddSelected, window, cx);
                     }
                 }
                 _ => return,
@@ -467,13 +518,17 @@ impl WorldClock {
                 cx.stop_propagation();
             }
             match key {
-                "escape" => self.reference_menu = false,
+                "escape" => {
+                    self.reference_menu = false;
+                    self.action_focus[&Action::ReferenceMenu].focus(window);
+                }
                 "up" | "down" => {
                     self.reference_index = moved_index(
                         self.reference_index,
                         if key == "up" { -1 } else { 1 },
                         self.planner.zones.len(),
-                    )
+                    );
+                    self.reference_scroll.scroll_to_item(self.reference_index);
                 }
                 "enter" => {
                     let id = self.planner.zones[self.reference_index].name().to_string();
@@ -577,6 +632,8 @@ impl WorldClock {
             Action::Day(1),
             Action::Picker,
             Action::CancelPicker,
+            Action::ClearSearch,
+            Action::AddSelected,
             Action::Copy,
             Action::Copilot,
         ];
@@ -601,9 +658,12 @@ impl WorldClock {
         };
         if self.picker {
             order.push(self.query.read(cx).focus_handle(cx));
+            if !self.query.read(cx).text().is_empty() {
+                add(&mut order, Action::ClearSearch);
+            }
             add(&mut order, Action::CancelPicker);
-            if let Some(z) = self.results(cx).get(self.picker_index) {
-                add(&mut order, Action::Add(z.id.clone()));
+            if selected_location(&self.results(cx), self.picker_index).is_some() {
+                add(&mut order, Action::AddSelected);
             }
             return order;
         }
@@ -636,7 +696,10 @@ impl WorldClock {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> Stateful<Div> {
-        let enabled = !matches!(&action, Action::Remove(_) if self.planner.zones.len() == 1)
+        let disabled_add = matches!(action, Action::AddSelected)
+            && selected_location(&self.results(cx), self.picker_index).is_none();
+        let enabled = !disabled_add
+            && !matches!(&action, Action::Remove(_) if self.planner.zones.len() == 1)
             && !matches!(&action, Action::Reference(id) if id == self.planner.reference.name());
         let focus = self.action_focus[&action].clone();
         div()
@@ -659,8 +722,11 @@ impl WorldClock {
                 p.primary
             })
             .text_size(px(12.))
-            .cursor_pointer()
-            .hover(move |s| s.bg(if primary { p.brand } else { p.well }))
+            .when(enabled, |s| {
+                s.cursor_pointer()
+                    .hover(move |s| s.bg(if primary { p.brand } else { p.well }))
+            })
+            .when(disabled_add, |s| s.opacity(0.4))
             .child(label.into())
             .when(enabled, |s| {
                 s.on_click(
@@ -832,6 +898,10 @@ impl WorldClock {
     }
     fn planner_card(&self, p: Palette, cx: &mut Context<Self>) -> Div {
         let reference = clock::zone_option(self.planner.reference.name()).name;
+        let anchor_bounds = self.reference_button_bounds.clone();
+        let reveal_pending = self.reference_reveal_pending.clone();
+        let reference_generation = self.reference_generation;
+        let entity = cx.weak_entity();
         div()
             .flex_none()
             .flex()
@@ -856,23 +926,75 @@ impl WorldClock {
                             .child("Meeting planner"),
                     )
                     .child(div().flex_1())
-                    .child(self.button(
-                        "clock-reference",
-                        format!("Reference: {reference} ▾"),
-                        Action::ReferenceMenu,
-                        false,
-                        p,
-                        cx,
-                    ))
+                    .child(
+                        self.button(
+                            "clock-reference",
+                            format!("Reference: {reference} ▾"),
+                            Action::ReferenceMenu,
+                            false,
+                            p,
+                            cx,
+                        )
+                        .relative()
+                        .child(
+                            canvas(
+                                move |bounds, _, _| anchor_bounds.set(bounds),
+                                |_, _, _, _| (),
+                            )
+                            .absolute()
+                            .inset_0(),
+                        ),
+                    )
                     .when(self.reference_menu, |s| {
                         s.child(deferred(
                             div()
+                                .on_children_prepainted(move |_, window, _| {
+                                    if reveal_pending.replace(false) {
+                                        let entity = entity.clone();
+                                        // GPUI initializes ScrollHandle overflow/bounds only
+                                        // during the first prepaint. Reveal in the following
+                                        // frame; a pre-layout FirstVisible request is discarded.
+                                        window.on_next_frame(move |_, cx| {
+                                            let _ = entity.update(cx, |this, cx| {
+                                                if reveal_current_reference(
+                                                    this.reference_menu,
+                                                    this.reference_generation,
+                                                    reference_generation,
+                                                ) {
+                                                    this.reference_scroll
+                                                        .scroll_to_item(this.reference_index);
+                                                    cx.notify();
+                                                }
+                                            });
+                                        });
+                                    }
+                                })
                                 .absolute()
                                 .top(px(34.))
                                 .right_0()
                                 .id("clock-reference-menu")
                                 .max_h(px(260.))
                                 .overflow_y_scroll()
+                                .track_scroll(&self.reference_scroll)
+                                .on_mouse_down_out(cx.listener(
+                                    |this, event: &MouseDownEvent, window, cx| {
+                                        if dismiss_reference_for_pointer(
+                                            this.reference_menu,
+                                            this.reference_button_bounds
+                                                .get()
+                                                .contains(&event.position),
+                                            false,
+                                        ) {
+                                            // Native menus consume the dismissing outside click;
+                                            // it must not also activate Now or another planner control.
+                                            this.reference_menu = false;
+                                            window.prevent_default();
+                                            cx.stop_propagation();
+                                            this.action_focus[&Action::ReferenceMenu].focus(window);
+                                            cx.notify();
+                                        }
+                                    },
+                                ))
                                 .w(px(250.))
                                 .p(px(6.))
                                 .rounded(px(8.))
@@ -1077,9 +1199,28 @@ impl WorldClock {
                 .when(self.planner.zones.len() == 1, |s| s.opacity(0.35)),
             )
     }
+    fn clear_search_control(&self, p: Palette, cx: &mut Context<Self>) -> Stateful<Div> {
+        let focus = self.action_focus[&Action::ClearSearch].clone();
+        div()
+            .id("clock-clear-search")
+            .size(px(20.))
+            .flex_none()
+            .flex()
+            .items_center()
+            .justify_center()
+            .track_focus(&focus)
+            .rounded(px(4.))
+            .border_1()
+            .border_color(transparent_black())
+            .focus(move |s| s.border_color(p.accent))
+            .cursor_pointer()
+            .on_mouse_down(MouseButton::Left, move |_, window, _| focus.focus(window))
+            .child(clear_search_icon(p))
+            .on_click(cx.listener(|this, _, window, cx| this.act(Action::ClearSearch, window, cx)))
+    }
     fn picker_view(&self, p: Palette, cx: &mut Context<Self>) -> Div {
         let results = self.results(cx);
-        let selected = results.get(self.picker_index).map(|o| o.id.clone());
+        let has_query = !self.query.read(cx).text().is_empty();
         div().absolute().inset_0().flex().items_center().justify_center().bg(rgba(0x00000038)).occlude()
             .on_mouse_down(MouseButton::Left,|_,_,cx|cx.stop_propagation())
             .child(div().w(px(PICKER_WIDTH)).flex().flex_col().rounded(px(12.)).bg(p.bg).border_1().border_color(p.border).overflow_hidden()
@@ -1087,8 +1228,10 @@ impl WorldClock {
                     .child(crate::theme::tool_icon("worldClock",32.,p))
                     .child(div().text_size(px(16.)).font_weight(FontWeight::SEMIBOLD).child("Add a location"))
                     .child(div().flex_1()).child(self.button("clock-picker-close","×",Action::CancelPicker,false,p,cx)))
-                .child(div().mx(px(16.)).p(px(12.)).rounded(px(10.)).border_1().border_color(p.separator).bg(p.well)
-                    .child(div().relative().h(px(26.)).child(self.query.clone()).when(self.query.read(cx).text().is_empty(),|s|s.child(div().absolute().left(px(2.)).top(px(3.)).text_size(px(16.)).text_color(p.secondary.opacity(0.6)).child("Search city or time zone…")))))
+                .child(div().mx(px(16.)).p(px(12.)).rounded(px(10.)).border_1().border_color(p.separator).bg(p.well).flex().items_center().gap(px(10.))
+                    .child(crate::theme::tool_icon("search",16.,Palette {accent:p.secondary,..p}))
+                    .child(div().relative().flex_1().min_w_0().h(px(26.)).child(self.query.clone()).when(!has_query,|s|s.child(div().absolute().left(px(2.)).top(px(3.)).text_size(px(16.)).text_color(p.secondary.opacity(0.6)).child("Search city or time zone…"))))
+                    .when(has_query,|s|s.child(self.clear_search_control(p,cx))))
                 .child(div().id("clock-picker-results").h(px(280.)).overflow_y_scroll().track_scroll(&self.picker_scroll).p(px(10.))
                     .when(results.is_empty(),|s|s.child(div().p(px(24.)).flex().flex_col().gap(px(8.)).child("No matching locations").child(div().text_size(px(11.)).text_color(p.secondary).child("Try a nearby city or Asia/Tokyo. Locations already added are hidden."))))
                     .children(results.into_iter().enumerate().map(|(index,option)| {
@@ -1104,7 +1247,7 @@ impl WorldClock {
                 .child(div().p(px(12.)).border_t_1().border_color(p.separator).flex().items_center().gap(px(8.))
                     .child(div().text_size(px(11.)).text_color(p.secondary).child("↑↓ Navigate"))
                     .child(div().flex_1()).child(self.button("clock-picker-cancel","Cancel",Action::CancelPicker,false,p,cx))
-                    .when_some(selected,|s,id|s.child(self.button("clock-picker-add","Add Location",Action::Add(id),true,p,cx)))))
+                    .child(self.button("clock-picker-add","Add Location",Action::AddSelected,true,p,cx))))
     }
 }
 impl Render for WorldClock {
@@ -1319,6 +1462,32 @@ impl Render for WorldClock {
             )
             .when(self.picker, |s| s.child(self.picker_view(p, cx)))
     }
+}
+fn selected_location(results: &[ZoneOption], index: usize) -> Option<String> {
+    results.get(index).map(|z| z.id.clone())
+}
+fn reveal_current_reference(open: bool, current: u64, requested: u64) -> bool {
+    open && current == requested
+}
+fn dismiss_reference_for_pointer(open: bool, inside_anchor: bool, inside_menu: bool) -> bool {
+    open && !inside_anchor && !inside_menu
+}
+fn clear_search_icon(p: Palette) -> impl IntoElement {
+    canvas(
+        |_, _, _| (),
+        move |b, _, window, _| {
+            window.paint_quad(fill(b, p.secondary).corner_radii(px(8.)));
+            for line in [[(5., 5.), (11., 11.)], [(11., 5.), (5., 11.)]] {
+                let mut path = PathBuilder::stroke(px(1.5));
+                path.move_to(b.origin + point(px(line[0].0), px(line[0].1)));
+                path.line_to(b.origin + point(px(line[1].0), px(line[1].1)));
+                if let Ok(path) = path.build() {
+                    window.paint_path(path, p.well);
+                }
+            }
+        },
+    )
+    .size(px(16.))
 }
 fn take_enter_release(pending: &mut bool, key: &str) -> bool {
     key == "enter" && std::mem::take(pending)
@@ -1541,6 +1710,43 @@ mod tests {
     use super::{
         MIN_SIZE, PICKER_WIDTH, WINDOW_SIZE, WheelAccumulator, moved_index, scrub_fraction,
     };
+    #[test]
+    fn empty_or_stale_picker_selection_cannot_add_a_location() {
+        let none: Vec<super::ZoneOption> = vec![];
+        assert_eq!(super::selected_location(&none, 0), None);
+        let results = bellobox_core::clock::search_options("bangalore", &[]);
+        assert_eq!(
+            super::selected_location(&results, 0).as_deref(),
+            Some("Asia/Kolkata")
+        );
+        assert_eq!(super::selected_location(&results, results.len()), None);
+    }
+    #[test]
+    fn delayed_reference_reveal_cannot_reopen_or_scroll_a_newer_menu() {
+        assert!(super::reveal_current_reference(true, 4, 4));
+        assert!(!super::reveal_current_reference(false, 4, 4));
+        assert!(!super::reveal_current_reference(true, 5, 4));
+    }
+    #[test]
+    fn reference_outside_dismissal_excludes_menu_and_toggle_anchor() {
+        assert!(super::dismiss_reference_for_pointer(true, false, false));
+        assert!(!super::dismiss_reference_for_pointer(true, true, false));
+        assert!(!super::dismiss_reference_for_pointer(true, false, true));
+        assert!(!super::dismiss_reference_for_pointer(false, false, false));
+    }
+    #[test]
+    fn wrapped_reference_selection_keeps_scroll_target_in_range() {
+        let count = 18;
+        let mut selection = 0;
+        selection = super::moved_index(selection, -1, count);
+        assert_eq!(selection, 17);
+        selection = super::moved_index(selection, 1, count);
+        assert_eq!(selection, 0);
+        for _ in 0..80 {
+            selection = super::moved_index(selection, 1, count);
+            assert!(selection < count);
+        }
+    }
     #[test]
     fn quality_ink_matches_source_tokens_in_both_appearances() {
         for (dark, warning, purple) in [

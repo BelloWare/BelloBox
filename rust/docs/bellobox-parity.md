@@ -120,9 +120,41 @@ This is **not complete World Clock or macOS parity**. Formatting is deterministi
 English/24-hour; fields are not native localized DatePickers. Copilot is visibly
 unavailable, not redirected to another tool. Launcher preview/handoff, native
 accessibility labels/IME runtime validation, glass, floating/all-Spaces behavior,
-saved native placement, picker clear-search/disabled-empty-Add details and complete
-reference-menu dismissal/scrolling semantics remain gaps. No macOS GUI execution,
+saved native placement and complete native control equivalence remain gaps.
+No macOS GUI execution,
 OS IME test, provider call, signing, notarization or release is claimed here.
+
+### Picker and reference-menu follow-up — 2026-10-05
+
+A bounded follow-up restores the source clear-search control, keeps Add Location
+visible but disabled when no valid result is selected, and completes ordinary
+reference-menu dismissal and selected-item visibility. Clear returns focus to the
+empty query and resets the first result/scroll without adding a location. The
+empty Add state is guarded for pointer and keyboard activation and omitted from
+Tab traversal. The reference menu consumes an outside dismissing click, exempts
+its own toggle, restores logical trigger focus, and dismisses on activation loss.
+Initial selection reveal runs after layout with a generation/weak-entity guard;
+keyboard navigation then reveals the selected row, including wrapped endpoints.
+The existing IME and paired Enter key-up protections remain in place.
+
+The immutable Linux/X11 candidate was
+`6f245fdc71b899a380a6891e99fee90aefb60034a3477b25b2ed77891e08facc`.
+At 1180×812, synthetic fixtures verified: saved last-reference Vancouver visible
+on the first opening of an 18-location menu; Down/Up wrap revealing UTC/Vancouver;
+outside Now click dismissing without changing a planned 11:18 instant; toggle,
+Escape, selection-focus restoration and window-deactivation dismissal; inert empty
+Add; pointer/keyboard Clear restoring Los Angeles as first suggestion and query
+focus without changing the location count; modal Tab/Enter adding London exactly
+once; and clean close. Captures are `clock-picker-6f-first-reveal.png`,
+`clock-picker-6f-disabled-add.png` and `clock-picker-6f-clear.png`.
+These are new ordinary-path checks, not re-labeled evidence from the prior build.
+
+Source review cleared the corrected first-layout behavior. Final aggregate gates
+passed: 367 Rust tests with four existing ignored, formatting, strict all-target
+Clippy, workspace build, four performance-harness tests and eleven Linux UI-harness
+self-tests. No core, shared-editor, dependency or workflow changes were needed.
+No OS IME runtime or macOS interaction/visual verification is claimed; the broader
+native/Copilot/handoff gaps above remain open.
 
 ## Developer tools
 
