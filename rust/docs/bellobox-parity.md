@@ -62,7 +62,7 @@ No claim of complete visual or interaction parity is made.
 | `Recording/RecordingEngine.swift`, coordinator/audio/input/privacy | None | Missing: screen recording, audio mixing, cursor/click/key overlays, secure-field redaction, countdown, pause/review. |
 | `Recording/GIF/GIFTranscoder.swift` | None | Missing: movie/GIF conversion, transactional exports, precise frame timing and loop validation. |
 | `Settings/AppSettings.swift`, `KeychainStore.swift` | Separate versioned Rust JSON settings; runtime AI environment | Partial: persisted appearance enum/IDs/provider metadata/zones, atomic private writes, corrupt-file preservation. No Swift migration or Keychain/Secret Service yet. No API key in settings. Source-shaped seven-page Settings now persists appearance, provider/request format/endpoint/model, system Prompt and learned-order reset. All open editors keep content/undo while ink changes. API keys remain runtime-only; inactive-provider drafts currently survive only within the Settings window. Unsupported source toggles remain disabled with explanations. New Settings controls are compile/unit-tested but not runtime-tested while the desktop is down. |
-| `DeveloperTools/SnippetsAndGenerators.swift` | `settings::Snippets`, `snippet_library`, `desktop::snippets` | Partial: source-ordered find/name/library menu and explicit New/Save/Delete/load controls now use an isolated Rust store. Delete asks for confirmation; corrupt data blocks mutations; load/new clear field drafts; saves preserve IDs and reload disk to retain other windows’ saves. Seven state tests pass. UI interaction/visual QA is not yet run. Dynamic per-field editors and source renderer semantics remain incomplete; the existing JSON-values editor remains. Rust retains 500-item/512-byte-name limits and case-folded lexical ordering/filtering rather than source localized natural sorting. No Swift-library migration, shared live-window store notifications, or clipboard database. |
+| `DeveloperTools/SnippetsAndGenerators.swift` | `settings::Snippets`, `snippet_library`, `desktop::snippets` | Partial: source-ordered find/name/library menu and explicit New/Save/Delete/load controls now use an isolated Rust store. Delete asks for confirmation; corrupt data blocks mutations; load/new clear field drafts; saves preserve IDs and reload disk to retain other windows’ saves. Seven state tests pass. Linux native create/update/find/load/New, delete cancel/confirm, persistence and one-item menu focus/dismissal passed the scoped QA recorded below; macOS and full visual parity remain unvalidated. Dynamic per-field editors and source renderer semantics remain incomplete; the existing JSON-values editor remains. Rust retains 500-item/512-byte-name limits and case-folded lexical ordering/filtering rather than source localized natural sorting. No Swift-library migration, shared live-window store notifications, or clipboard database. |
 | `BelloBoxApp.swift` Sparkle updater | cfg-gated `macos_native::SparkleUpdater`; macOS bundling script | Partial, Apple-target type-checked only. Explicit GPUI update action, bundled-framework validation and main-thread retained controller implemented. No auto-download or update check from preview construction. Rust packaging requires an explicit Rust-specific feed; never defaults to the Swift production appcast. Framework2.8.1 supplied locally. Not signed/notarized/released. |
 | `UI/MainView.swift`, onboarding/settings/menu bar | Source-shaped GPUI Home category sidebar/cards and separate windows | Partial: real native app window, process-local drafts, safe explicit clipboard operations and capability display. Settings category layout and working preference subset restored. Onboarding, menu-bar extra, setup guide, launch-at-login and native shortcuts remain absent. |
 | `UI/Theme.swift`, `WindowMaterials.swift`, accessibility | Source light/dark GPUI tokens, vector badges and shipped icon | Partial: exact RGB tokens, source dimensions/spacing, plain wrapping editors, original Home navigation and separate QR/JSON/Text/AI structures. Native glass, SF Symbol exact rasterization, full original controls for every utility, native window materials, Reduce Motion/Transparency and full accessibility QA remain gaps. New Settings/dropdown/appearance changes still need desktop visual and interaction QA. |
@@ -272,3 +272,36 @@ workspace/all-target Clippy and full workspace build passed. Formatting and
 diff whitespace checks passed. The seven snippet-library tests also passed with
 no default features. Existing proc-macro-error2 dependency future-compatibility
 warning remains; no macOS runtime test or snippet visual acceptance is implied.
+
+## Native Snippets and final-window lifecycle QA (2026-10-05)
+
+Validated on Linux software rendering, Snippets candidate SHA-256
+`51448f9e85a01b88b1a6abcd257396e38ebc03170a278f95bd75b44d3bb0bac6`:
+create/save, New clearing the draft and disabling empty Save, Find/load,
+identity-preserving update with count staying at one, Delete Cancel preserving the
+item, close/reopen loading the saved body, and confirmed Delete resetting count and
+draft. A keyboard defect remains: opening the library menu from an unfocused tool
+window does not route Return; mouse selection works. This is not full UI acceptance.
+
+That candidate reproduced a GPUI X11 RefCell panic when the final window closed.
+The separate lifecycle fix queues quit on the foreground executor, outside the
+native close callback, and rechecks that no replacement window opened. Validated
+candidate SHA-256 `44033f3e2df059938333d86b4b3d72a9b75133b9f5eafaf2ada3b57b3fda6e99`:
+closing Snippets leaves Home responsive; closing the final Home exits cleanly;
+relaunch and close of the sole Home window also exits cleanly. The old candidate
+was reproduced immediately before this comparison. App tests (35), strict app
+all-target Clippy, formatting and app build passed. macOS lifecycle remains untested.
+The original macOS app stays running after its last window closes; Dock reopen and
+menu integration are still missing. This fix addresses the Linux crash only and
+does not establish macOS lifecycle parity.
+
+The follow-up menu-focus fix gives the saved-snippet popup its own tracked focus,
+restores previous focus only while the menu still owns it, and consumes saved
+focus on every dismissal route, including outside clicks. Validated live on Linux
+candidate `265d557110b4f208e61db9c598f7f89d08fc4531e4f031b963050e541bfc3391`:
+unfocused tool reopen → menu → Return loads the item; Escape restores prior name
+input so subsequent typing edits that name; clicking Find outside the menu sends
+typing to Find without stealing focus; blank-area dismissal followed by Return /
+Escape does not choose a hidden item. Repeated one-item menus passed. Two-item
+arrow navigation and macOS menu behavior remain untested. App tests (35), strict
+app all-target Clippy, formatting and build passed after the final focus guard.

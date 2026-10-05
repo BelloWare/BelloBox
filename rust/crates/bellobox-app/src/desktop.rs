@@ -1473,12 +1473,12 @@ impl Render for BelloBox {
         };
         let view = div()
             .size_full()
-            .capture_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, _, cx| {
+            .capture_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, window, cx| {
                 let Some(id) = this.open_menu else {
                     return;
                 };
                 if id == "snippets-library" {
-                    this.snippet_menu_key(&event.keystroke.key, cx);
+                    this.snippet_menu_key(&event.keystroke.key, window, cx);
                     cx.stop_propagation();
                     return;
                 }

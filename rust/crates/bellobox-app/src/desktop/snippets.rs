@@ -9,6 +9,8 @@ pub(super) struct SnippetUi {
     notice: Option<String>,
     error: Option<String>,
     deleting: bool,
+    menu_focus: gpui::FocusHandle,
+    previous_focus: Option<gpui::FocusHandle>,
 }
 impl BelloBox {
     pub(super) fn init_snippets(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -48,6 +50,8 @@ impl BelloBox {
             notice: None,
             error,
             deleting: false,
+            menu_focus: cx.focus_handle(),
+            previous_focus: None,
         });
         if self.input.read(cx).text().is_empty() {
             self.input.update(cx, |e, cx| {
@@ -162,7 +166,27 @@ impl BelloBox {
         .detach();
         cx.notify();
     }
-    pub(super) fn snippet_menu_key(&mut self, key: &str, cx: &mut Context<Self>) {
+    fn close_snippet_menu(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.open_menu = None;
+        if let Some(ui) = self.snippets.as_mut() {
+            let previous_focus = ui.previous_focus.take();
+            // Outside clicks may have already focused another input. Never steal it.
+            if ui.menu_focus.is_focused(window) {
+                if let Some(focus) = previous_focus {
+                    focus.focus(window);
+                } else {
+                    window.blur();
+                }
+            }
+        }
+        cx.notify();
+    }
+    pub(super) fn snippet_menu_key(
+        &mut self,
+        key: &str,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         let Some(ui) = self.snippets.as_ref() else {
             return;
         };
@@ -173,12 +197,13 @@ impl BelloBox {
             .map(|s| s.id.clone())
             .collect();
         match key {
-            "escape" => self.open_menu = None,
+            "escape" => self.close_snippet_menu(window, cx),
             "up" => self.menu_index = self.menu_index.saturating_sub(1),
             "down" => self.menu_index = (self.menu_index + 1).min(ids.len().saturating_sub(1)),
             "enter" => {
                 if let Some(id) = ids.get(self.menu_index) {
                     self.load_snippet(id, cx);
+                    self.close_snippet_menu(window, cx);
                 }
             }
             _ => {}
@@ -211,6 +236,7 @@ impl BelloBox {
         let open = self.open_menu == Some("snippets-library");
         let popup = div()
             .id("snippet-library-popup")
+            .track_focus(&ui.menu_focus)
             .max_h(px(250.))
             .min_w(px(220.))
             .overflow_y_scroll()
@@ -220,9 +246,8 @@ impl BelloBox {
             .border_1()
             .border_color(p.separator)
             .shadow_md()
-            .on_mouse_down_out(cx.listener(|this, _, _, cx| {
-                this.open_menu = None;
-                cx.notify();
+            .on_mouse_down_out(cx.listener(|this, _, window, cx| {
+                this.close_snippet_menu(window, cx);
             }))
             .when(ui.library.items.is_empty(), |s| {
                 s.child(
@@ -250,8 +275,9 @@ impl BelloBox {
                             .when(index == self.menu_index, |s| s.bg(p.accent.opacity(0.1)))
                             .hover(move |s| s.bg(p.accent.opacity(0.12)))
                             .child(item.name.clone())
-                            .on_click(cx.listener(move |this, _, _, cx| {
+                            .on_click(cx.listener(move |this, _, window, cx| {
                                 this.load_snippet(&id, cx);
+                                this.close_snippet_menu(window, cx);
                                 cx.stop_propagation();
                             }))
                     }),
@@ -261,11 +287,16 @@ impl BelloBox {
             .child(div().flex().gap(px(8.)).items_center()
                 .child(div().flex_1().min_w_0().child(field(ui.query.clone(), "Find a saved snippet…", p, cx)))
                 .child(div().relative().child(button("saved-snippets", format!("Saved Snippets ({})  ⌄", ui.library.items.len()), p)
-                    .on_click(cx.listener(move |this, _, _, cx| {
-                        if !open && let Some(ui) = this.snippets.as_mut() {
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        if open { this.close_snippet_menu(window, cx); }
+                        else if let Some(ui) = this.snippets.as_mut() {
                             ui.error = ui.library.refresh().err();
+                            ui.previous_focus = window.focused(cx);
+                            ui.menu_focus.focus(window);
+                            this.open_menu = Some("snippets-library");
+                            this.menu_index = 0;
                         }
-                        this.open_menu = if open { None } else { Some("snippets-library") }; this.menu_index = 0; cx.notify();
+                        cx.notify();
                     })))
                     .when(open, |s| s.child(gpui::deferred(gpui::anchored().position_mode(gpui::AnchoredPositionMode::Local)
                         .offset(gpui::point(px(0.), px(34.))).snap_to_window().child(popup)).with_priority(20)))))
