@@ -55,7 +55,7 @@ impl ToolControls {
     }
     pub fn second(&self, tool: &str, text: &str) -> String {
         match tool {
-            "plist" => self.value("mode").into(),
+            "plist" | "stringEscape" => self.value("mode").into(),
             "jsonLines" => match self.value("mode") {
                 "Array → Lines" => "array-to-lines",
                 _ => "lines-to-array",
@@ -93,6 +93,11 @@ impl ToolControls {
 }
 pub fn choices(tool: &str) -> Vec<ChoiceSpec> {
     match tool {
+        "stringEscape" => vec![ChoiceSpec {
+            id: "mode",
+            label: "Format",
+            choices: &["JSON quote", "JSON unquote", "Swift literal", "Shell quote"],
+        }],
         "listSet" => vec![
             ChoiceSpec {
                 id: "mode",
@@ -173,16 +178,49 @@ pub fn second_label(tool: &str) -> &'static str {
 /// AdditionalUtilityEditor.fullEditorHeight: bounded scalar prefix, UTF-16 wraps,
 /// equal-height paired fields; padding is added by the existing editor card.
 pub fn list_set_editor_height(first: &str, second: &str) -> f32 {
-    fn height(text: &str) -> usize {
-        let sample: String = text.chars().take(8_192).collect();
-        let normalized = sample.replace("\r\n", "\n").replace('\r', "\n");
-        let lines: usize = normalized
-            .split('\n')
-            .map(|line| line.encode_utf16().count().div_ceil(36).max(1))
-            .sum();
-        (lines * 17 + 12).clamp(64, 140)
+    source_editor_height(first, 36).max(source_editor_height(second, 36))
+}
+pub fn string_literal_editor_height(input: &str) -> f32 {
+    source_editor_height(input, 76)
+}
+fn source_editor_height(text: &str, columns: usize) -> f32 {
+    let sample: String = text.chars().take(8_192).collect();
+    let normalized = sample.replace("\r\n", "\n").replace('\r', "\n");
+    let lines: usize = normalized
+        .split('\n')
+        .map(|line| line.encode_utf16().count().div_ceil(columns).max(1))
+        .sum();
+    (lines * 17 + 12).clamp(64, 140) as f32 + 16.
+}
+/// Foundation whitespacesAndNewlines used only for the source UI idle gate.
+/// The actual submitted document remains untouched.
+pub fn string_literal_is_idle(input: &str) -> bool {
+    input.chars().all(|c| {
+        matches!(
+            c,
+            '\t' | '\n'
+                | '\u{b}'
+                | '\u{c}'
+                | '\r'
+                | ' '
+                | '\u{85}'
+                | '\u{a0}'
+                | '\u{1680}'
+                | '\u{2000}'
+                ..='\u{200b}' | '\u{2028}' | '\u{2029}' | '\u{202f}' | '\u{205f}' | '\u{3000}'
+        )
+    })
+}
+/// Only shown after a job completes without an error; empty output can be success.
+pub fn string_literal_empty_message(input: &str, format: &str) -> String {
+    if string_literal_is_idle(input) {
+        "Paste text or use an example to begin.".into()
+    } else {
+        format!("{format} · literal text only")
     }
-    height(first).max(height(second)) as f32 + 16.
+}
+pub fn source_copy_enabled(busy: bool, has_error: bool, output: &str) -> bool {
+    !busy && !has_error && !output.is_empty()
 }
 #[cfg(test)]
 mod tests {

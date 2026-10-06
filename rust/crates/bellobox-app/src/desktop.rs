@@ -166,6 +166,7 @@ impl BelloBox {
             .controls
             .second(&self.selected, self.second.read(cx).text());
         if id == "ai"
+            || (id == "stringEscape" && crate::tool_controls::string_literal_is_idle(&input))
             || input.is_empty()
                 && !["worldClock", "textTools", "generate", "screenshot"].contains(&id.as_str())
                 && !(id == "listSet" && !second.is_empty())
@@ -217,6 +218,10 @@ impl BelloBox {
             .detach();
             return;
         }
+        if id == "stringEscape" {
+            self.output
+                .update(cx, |editor, cx| editor.set_text(String::new(), cx));
+        }
         self.busy = true;
         self.status = "Working locally…".into();
         cx.notify();
@@ -267,6 +272,8 @@ impl BelloBox {
                                     value.split('\n').count()
                                 }
                             )
+                        } else if this.selected == "stringEscape" {
+                            format!("{} · literal text only", this.controls.value("mode"))
                         } else if this.selected == "snippets" {
                             "Template preview · date and timestamp use UTC".into()
                         } else if this.warning {
@@ -1129,8 +1136,11 @@ impl BelloBox {
                 | "envFile"
                 | "cookies"
                 | "certificate"
+                | "stringEscape"
         );
-        let height = if ["time", "cron", "url"].contains(&self.selected.as_str()) {
+        let height = if self.selected == "stringEscape" {
+            crate::tool_controls::string_literal_editor_height(self.input.read(cx).text())
+        } else if ["time", "cron", "url"].contains(&self.selected.as_str()) {
             70.
         } else {
             150.
@@ -1265,7 +1275,14 @@ impl BelloBox {
                                     .justify_center()
                                     .text_color(p.secondary)
                                     .text_size(px(13.))
-                                    .child("Paste text or use an example to begin."),
+                                    .child(if self.selected == "stringEscape" {
+                                        crate::tool_controls::string_literal_empty_message(
+                                            self.input.read(cx).text(),
+                                            self.controls.value("mode"),
+                                        )
+                                    } else {
+                                        "Paste text or use an example to begin.".into()
+                                    }),
                             )
                         },
                     ),
@@ -1302,25 +1319,39 @@ impl BelloBox {
                                 .on_click(cx.listener(|this, _, _, cx| this.check_updates(cx))),
                         )
                     })
-                    .when(self.selected != "listSet", |s| {
-                        s.child(button("use-input", "Use as Input", p).on_click(cx.listener(
-                            |this, _, _, cx| {
-                                let text = this.output.read(cx).text().to_string();
-                                if this.busy || this.error.is_some() || text.is_empty() {
-                                    return;
-                                }
-                                this.controls.reverse_after_chaining(&this.selected);
-                                this.input.update(cx, |e, cx| e.set_text(text, cx));
-                            },
-                        )))
-                    })
+                    .when(
+                        !matches!(self.selected.as_str(), "listSet" | "stringEscape"),
+                        |s| {
+                            s.child(button("use-input", "Use as Input", p).on_click(cx.listener(
+                                |this, _, _, cx| {
+                                    let text = this.output.read(cx).text().to_string();
+                                    if this.busy || this.error.is_some() || text.is_empty() {
+                                        return;
+                                    }
+                                    this.controls.reverse_after_chaining(&this.selected);
+                                    this.input.update(cx, |e, cx| e.set_text(text, cx));
+                                },
+                            )))
+                        },
+                    )
                     .child(
-                        button("copy-result", "Copy Result", p).on_click(cx.listener(
-                            |this, _, _, cx| {
-                                if this.selected == "listSet"
-                                    && (this.busy
-                                        || this.error.is_some()
-                                        || this.output.read(cx).text().is_empty())
+                        button("copy-result", "Copy Result", p)
+                            .when(
+                                self.selected == "stringEscape"
+                                    && !crate::tool_controls::source_copy_enabled(
+                                        self.busy,
+                                        self.error.is_some(),
+                                        self.output.read(cx).text(),
+                                    ),
+                                |s| s.opacity(0.45).cursor_default(),
+                            )
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                if matches!(this.selected.as_str(), "listSet" | "stringEscape")
+                                    && !crate::tool_controls::source_copy_enabled(
+                                        this.busy,
+                                        this.error.is_some(),
+                                        this.output.read(cx).text(),
+                                    )
                                 {
                                     return;
                                 }
@@ -1329,8 +1360,7 @@ impl BelloBox {
                                 ));
                                 this.status = "Result copied.".into();
                                 cx.notify();
-                            },
-                        )),
+                            })),
                     ),
             )
             .into_any_element()

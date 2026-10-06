@@ -22,6 +22,8 @@ pub mod list_set;
 mod plist_engine;
 #[path = "developer/sql_formatter.rs"]
 mod sql_formatter;
+#[path = "developer/string_literal.rs"]
+mod string_literal;
 
 const MAX_INPUT: usize = 500_000;
 const MAX_OUTPUT: usize = 4_000_000;
@@ -62,7 +64,7 @@ pub fn catalog() -> Vec<Tool> {
         ("sqlInsert", "SQL INSERT Builder", r#"[{"id":1,"name":"O'Reilly"},{"id":2,"name":"Ada"}]"#),
         ("xmlJSON", "XML to Ordered JSON", "<note priority=\"high\">Hello <b>Ada</b>!</note>"),
         ("unicode", "Unicode Inspector", "Hello 👩🏽‍💻 café e\u{301}"),
-        ("stringEscape", "String Literal Escaper", "Hello \"BelloBox\"\nA second line"),
+        ("stringEscape", "String Literal Escaper", "Hello \"Bello Box\"\nA second line\twith a tab."),
         ("extract", "Extract Links & Emails", "Visit https://example.com or email hello@example.com."),
         ("listSet", "List Set Operations", "Swift\nRust\nPython"),
         ("semver", "Semantic Versions", "1.0.0\n1.0.0-rc.2\n1.0.0-rc.10\n2.0.0"),
@@ -143,7 +145,7 @@ pub fn execute(id: &str, input: &str, second: &str) -> R<String> {
         "sqlInsert" => sql_insert(input, second),
         "xmlJSON" => xml_json(input),
         "unicode" => unicode(input),
-        "stringEscape" => string_escape(input, second),
+        "stringEscape" => string_literal::run(input, second),
         "extract" => extract(input, second),
         "listSet" => list_set::run(input, second, "Union", "Exact"),
         "semver" => semver_tool(input, second),
@@ -1874,25 +1876,6 @@ fn unicode(s: &str) -> R<String> {
         rows.join("\n")
     ))
 }
-fn string_escape(s: &str, mode: &str) -> R<String> {
-    match mode.trim() {
-        "" | "json" => compact(&Value::String(s.into())),
-        "unescape" => {
-            let v = parse_json(s)?;
-            v.as_str()
-                .map(str::to_owned)
-                .ok_or("Expected a JSON string literal.".into())
-        }
-        "shell" => {
-            if s.contains('\0') {
-                return Err("Shell arguments cannot contain NUL.".into());
-            }
-            Ok(format!("'{}'", s.replace('\'', "'\\''")))
-        }
-        "html" => Ok(html_escape(s)),
-        _ => Err("Supported modes: json, unescape, shell, html. No code is executed.".into()),
-    }
-}
 fn extract(s: &str, mode: &str) -> R<String> {
     let pattern = match mode.trim() {
         "links" => r#"https?://[^\s<>\"']+"#,
@@ -2833,7 +2816,9 @@ pub fn option_hint(id: &str) -> &'static str {
         }
         "xmlJSON" => "Ordered XML tree with attributes/mixed text · DTDs/entities rejected",
         "unicode" => "Code points and UTF-8/UTF-16 encodings · names/normalization unavailable",
-        "stringEscape" => "json | unescape (JSON) | shell | html · no code is executed",
+        "stringEscape" => {
+            "JSON quote | JSON unquote | Swift literal | Shell quote; CLI aliases json/unescape/shell/html retained · nothing executes"
+        }
         "extract" => "all | links | emails · unique matches; heuristic extraction",
         "listSet" => {
             "Second line list · stable-order union by default; blank lines and duplicates removed"

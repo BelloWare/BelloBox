@@ -260,9 +260,9 @@ for many tools still need restoration. Sources below are in
 | `sqlInsert` | `StructuredUtilities.swift` | Quoted PostgreSQL generation only; never executes |
 | `xmlJSON` | `StructuredUtilities.swift` | Ordered XML-to-JSON, attributes/mixed text; reverse conversion absent |
 | `unicode` | `TextUtilities.swift` | Codepoints/UTF8/UTF16; names/normalization absent |
-| `stringEscape` | `TextUtilities.swift` | JSON/shell/HTML literals; never executes |
+| `stringEscape` | `TextUtilities.swift` | Source four-format menu: JSON quote/unquote, Swift literal and Shell quote; legacy CLI aliases including HTML retained; scoped checks below |
 | `extract` | `TextUtilities.swift` | Heuristic unique URLs/emails; other extraction modes absent |
-| `listSet` | `TextUtilities.swift` | Union/intersection/differences over exact lines |
+| `listSet` | `TextUtilities.swift` | Five source operations, Exact/Trim/Trim & ignore case, first-seen order and canonical equality; scoped checks below |
 | `semver` | `SecurityUtilities.swift` | SemVer comparison/sort; full range UI absent |
 | `subnet` | `SecurityUtilities.swift` | IPv4/CIDR including /31,/32; IPv6 absent |
 | `chmod` | `SecurityUtilities.swift` | Octal/rwx inspection; symbolic special-bit input absent |
@@ -660,3 +660,46 @@ independently, calculation with blank A/nonempty B, readable controls/results at
 740×560, and close/reopen resetting empty drafts and Union/Exact defaults. The
 second close completed normally. This is scoped Linux interaction evidence, not
 macOS, native IME, exhaustive clipboard/error-state or overall UI parity.
+
+## String Literal Escaper checkpoint (2026-10-06)
+
+Sources: `DeveloperTools/TextUtilities.swift`, `AdditionalUtility.swift`,
+`DeveloperJSON.swift` and `Launcher/AdditionalUtilityViews.swift`. The Format menu
+now offers JSON quote, JSON unquote, Swift literal and Shell quote, defaulting to
+JSON quote without input autodetection. The single source input and example
+replace the previous raw second-field options editor. Example resets the format;
+mode changes preserve the input. Input height uses the source bounded 8,192-scalar
+sample and 76-UTF-16-unit wrap estimate. No Use as Input action is shown.
+
+The Swift-literal engine escapes quote, backslash, newline, CR and tab; other
+C0/C1 controls and U+2028/U+2029 use lowercase, unpadded scalar escapes. Escaping
+backslashes prevents interpolation-looking input becoming executable interpolation.
+Shell quote uses the source apostrophe sequence and rejects NUL. All outputs are
+literal text; nothing is executed. JSON unquote accepts one JSON string only,
+including paired-surrogate decoding, and rejects malformed/unpaired/trailing input.
+The preexisting CLI aliases `json`, `unescape`, `shell` and the non-source `html`
+extension remain supported; only the four source formats appear in the GUI.
+
+Whitespace-only UI input is idle according to Foundation's whitespace/newline
+sets, without trimming the actual submitted document. Changing input/format clears
+the old result immediately, and generation guards reject stale completion. A
+successful empty-string unquote displays its success status rather than the idle
+prompt. Copy is visibly disabled and refuses busy/error/empty output. No settings,
+network or shared-editor behavior is changed; no dependency was added.
+
+The existing combined 500,000-byte input and 4,000,000-byte output limits remain,
+rather than Swift's 512,000-per-field and 4,096,000-output limits. Existing GPUI
+font/platform/IME and launcher preview-transfer differences remain separate.
+
+Focused checks pass: four engine tests for all formats, exact escape spellings,
+control boundaries, interpolation text, Unicode/JSON roundtrip and rejection,
+NUL, compatibility aliases and bounded expansion; twelve control/height tests
+include three new escaper cases and existing tool regressions. Strict app/core
+all-target Clippy, app build, minimal-feature app check and formatting pass. Independent source review found
+and verified fixes for stale/empty-result presentation. Independent Linux/SwiftShader QA passed on immutable binary SHA-256
+`031418f48100cd1767985ec818b52863d18798b876e8dcc2a3d8308211642d85`:
+all four formats, JSON Copy/Paste roundtrip, invalid-unquote recovery to successful
+empty output, disabled Copy on error/empty, whitespace-only idle state,
+Clear/Example reset, 740×560 readability, and close/reopen restoring empty input
+and JSON quote. Windows closed normally. This is scoped Linux evidence, not
+macOS, native IME, exhaustive clipboard coverage or full UI acceptance.

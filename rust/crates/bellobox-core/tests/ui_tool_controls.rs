@@ -179,3 +179,77 @@ fn paired_list_editor_heights_follow_source_bounded_utf16_measurement() {
         156.
     );
 }
+
+#[test]
+fn string_literal_source_format_menu_routes_without_an_option_document() {
+    let specs = controls::choices("stringEscape");
+    assert_eq!(specs.len(), 1);
+    assert_eq!(specs[0].label, "Format");
+    assert_eq!(
+        specs[0].choices,
+        ["JSON quote", "JSON unquote", "Swift literal", "Shell quote"]
+    );
+    let mut state = ToolControls::new("stringEscape", "\"selected\"");
+    let other = state.clone();
+    assert_eq!(state.value("mode"), "JSON quote");
+    for (mode, input, expected) in [
+        ("JSON quote", "a/b", "\"a/b\""),
+        ("JSON unquote", "\"a/b\"", "a/b"),
+        ("Swift literal", "\0", "\"\\u{0}\""),
+        ("Shell quote", "O'Reilly", "'O'\"'\"'Reilly'"),
+    ] {
+        assert!(state.select("stringEscape", "mode", mode));
+        assert_eq!(
+            execute("stringEscape", input, &state.second("stringEscape", "html")).unwrap(),
+            expected
+        );
+    }
+    assert!(!state.select("stringEscape", "mode", "html"));
+    assert_eq!(state.value("mode"), "Shell quote");
+    assert_eq!(other.value("mode"), "JSON quote");
+    assert_eq!(
+        ToolControls::new("stringEscape", "new document").value("mode"),
+        "JSON quote"
+    );
+}
+
+#[test]
+fn string_literal_source_idle_copy_and_bounded_editor_height() {
+    for value in ["", " \t\r\n", "\u{200b}\u{85}\u{2028}"] {
+        assert!(controls::string_literal_is_idle(value));
+    }
+    for value in [" a ", "\0", "\"\"", "\u{feff}"] {
+        assert!(!controls::string_literal_is_idle(value));
+    }
+    for (busy, error, output, enabled) in [
+        (false, false, "ok", true),
+        (true, false, "old", false),
+        (false, true, "old", false),
+        (false, false, "", false),
+    ] {
+        assert_eq!(controls::source_copy_enabled(busy, error, output), enabled);
+    }
+    assert_eq!(controls::string_literal_editor_height("short"), 80.);
+    assert_eq!(
+        controls::string_literal_editor_height(&"😀".repeat(152)),
+        96.
+    );
+    assert_eq!(controls::string_literal_editor_height("a\r\nb\rc"), 80.);
+    assert_eq!(
+        controls::string_literal_editor_height(&"long\n".repeat(100_000)),
+        156.
+    );
+}
+
+#[test]
+fn string_literal_empty_success_differs_from_idle() {
+    assert_eq!(
+        controls::string_literal_empty_message("\"\"", "JSON unquote"),
+        "JSON unquote · literal text only"
+    );
+    assert_eq!(
+        controls::string_literal_empty_message(" ", "JSON unquote"),
+        "Paste text or use an example to begin."
+    );
+    assert!(!controls::source_copy_enabled(false, false, ""));
+}
