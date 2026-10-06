@@ -18,6 +18,11 @@ use std::{cell::Cell, rc::Rc, sync::Arc};
 
 #[cfg(debug_assertions)]
 mod area_capture;
+#[cfg(any(target_os = "macos", test))]
+mod area_transaction;
+#[cfg(any(target_os = "macos", test))]
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+mod main_area;
 #[cfg(debug_assertions)]
 mod scroll_capture;
 
@@ -157,12 +162,12 @@ fn caught_capture<T>(job: impl FnOnce() -> Result<T, String>) -> Result<T, Strin
         .unwrap_or_else(|_| Err("The native capture worker could not complete.".into()))
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", test))]
 #[derive(Default)]
 struct NativeCaptureVisibility {
     busy: bool,
 }
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", test))]
 impl gpui::Global for NativeCaptureVisibility {}
 
 struct CaptureChooser {
@@ -174,6 +179,16 @@ struct CaptureChooser {
 #[cfg(debug_assertions)]
 pub(crate) fn cancel_pending_area_fixture(cx: &mut App) {
     area_capture::cancel_pending_launch(cx);
+}
+
+/// New tool/launcher navigation retires visible and pending production selectors.
+pub(crate) fn area_navigation_changed(cx: &mut App) {
+    #[cfg(debug_assertions)]
+    cancel_pending_area_fixture(cx);
+    #[cfg(target_os = "macos")]
+    main_area::navigation_changed(cx);
+    #[cfg(not(any(target_os = "macos", debug_assertions)))]
+    let _ = cx;
 }
 
 pub fn open(cx: &mut App) {
@@ -204,15 +219,34 @@ pub fn open(cx: &mut App) {
                 window.focus(&focus);
                 let mut chooser = CaptureChooser {
                     busy: false,
-                    status: String::new(),
+                    status: {
+                        #[cfg(target_os = "macos")]
+                        {
+                            main_area::take_notice(cx).unwrap_or_default()
+                        }
+                        #[cfg(not(target_os = "macos"))]
+                        {
+                            String::new()
+                        }
+                    },
                     jobs: SessionJobs::default(),
                     focus,
                 };
                 let weak = cx.entity().downgrade();
-                window.on_window_should_close(cx, move |_, cx| {
+                window.on_window_should_close(cx, move |_window, cx| {
                     let _ = weak.update(cx, |this: &mut CaptureChooser, _| this.jobs.cancel());
+                    #[cfg(target_os = "macos")]
+                    main_area::requester_closed(_window.window_handle(), cx);
                     true
                 });
+                #[cfg(target_os = "macos")]
+                {
+                    let requester = window.window_handle();
+                    cx.on_release(move |_: &mut CaptureChooser, cx| {
+                        main_area::requester_closed(requester, cx)
+                    })
+                    .detach();
+                }
                 if let Some(path) = std::env::var_os("BELLOBOX_SCREENSHOT_FILE") {
                     chooser.load_fixture(path.into(), window, cx);
                 }
@@ -222,6 +256,20 @@ pub fn open(cx: &mut App) {
     );
 }
 impl CaptureChooser {
+    #[cfg(target_os = "macos")]
+    fn capture_area(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.busy {
+            return;
+        }
+        match main_area::begin(window, cx) {
+            Ok(()) => {
+                self.busy = true;
+                self.status = "Freezing the main display…".into();
+            }
+            Err(error) => self.status = error,
+        }
+        cx.notify();
+    }
     fn capture(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.busy {
             return;
@@ -381,11 +429,24 @@ impl CaptureChooser {
 impl Render for CaptureChooser {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let p = theme::for_window(window);
+        #[cfg(target_os = "macos")]
+        let area_available = main_area::PRODUCTION_AREA_ENABLED
+            && !self.busy
+            && bello_platform::macos_capture_overlay::main_display_overlay_layout().is_ok();
+        #[cfg(not(target_os = "macos"))]
+        let area_available = false;
+        let area = button("area", "Area · main display only", p)
+            .flex_1()
+            .opacity(if area_available { 1. } else { 0.5 });
+        #[cfg(target_os = "macos")]
+        let area = area.when(area_available, |button| {
+            button.on_click(cx.listener(|this, _, window, cx| this.capture_area(window, cx)))
+        });
         div().size_full().p(px(18.)).flex().flex_col().gap(px(16.)).bg(p.bg).text_color(p.primary).font_family(theme::ui_font()).track_focus(&self.focus)
-            .on_key_down(cx.listener(|_,e:&gpui::KeyDownEvent,window,_|{if e.keystroke.key=="escape"{window.remove_window();}}))
+            .on_key_down(cx.listener(|this,e:&gpui::KeyDownEvent,window,_cx|{if e.keystroke.key=="escape"{this.jobs.cancel(); #[cfg(target_os = "macos")] main_area::requester_closed(window.window_handle(), _cx); window.remove_window();}}))
             .child(header("Capture and annotate".into(),p))
-            .child(div().flex().flex_col().gap(px(10.)).child(div().flex().gap(px(10.)).child(button("area","Area · unavailable",p).flex_1().opacity(0.5)).child(button("window","Window · unavailable",p).flex_1().opacity(0.5))).child(div().flex().gap(px(10.)).child(button("screen",if self.busy{"Capturing…"}else{"Screen"},p).flex_1().on_click(cx.listener(Self::capture_click))).child(button("scroll","Scrolling · unavailable",p).flex_1().opacity(0.5))))
-            .child(div().text_size(px(11.)).text_color(p.secondary).child("Screen captures the full virtual screen on Linux and the main display on macOS. Area, window and scrolling selection are not ported yet."))
+            .child(div().flex().flex_col().gap(px(10.)).child(div().flex().gap(px(10.)).child(area).child(button("window","Window · unavailable",p).flex_1().opacity(0.5))).child(div().flex().gap(px(10.)).child(button("screen",if self.busy{"Capturing…"}else{"Screen"},p).flex_1().on_click(cx.listener(Self::capture_click))).child(button("scroll","Scrolling · unavailable",p).flex_1().opacity(0.5))))
+            .child(div().text_size(px(11.)).text_color(p.secondary).child("Screen captures the full virtual screen on Linux and the main display on macOS. Area, window and scrolling selection are not available yet."))
             .child(button("paste-image","Paste Image",p).on_click(cx.listener(|this,_,window,cx|this.paste(window,cx))))
             .child(div().text_size(px(11.)).text_color(p.danger).child(self.status.clone()))
             .child(div().flex_1())
@@ -535,8 +596,16 @@ fn open_presented_session(
     presentation: CapturePresentation,
     cx: &mut App,
 ) {
+    let _ = try_open_presented_session(session, source, presentation, cx);
+}
+fn try_open_presented_session(
+    session: ScreenshotEditSession,
+    source: &'static str,
+    presentation: CapturePresentation,
+    cx: &mut App,
+) -> Result<(), String> {
     let bounds = Bounds::centered(None, size(px(1040.), px(760.)), cx);
-    let _ = cx.open_window(
+    cx.open_window(
         WindowOptions {
             focus: !presentation.open_unfocused,
             window_bounds: Some(WindowBounds::Windowed(bounds)),
@@ -550,7 +619,9 @@ fn open_presented_session(
         move |window, cx| {
             cx.new(|cx| ScreenshotEditor::new(session, source, presentation, window, cx))
         },
-    );
+    )
+    .map(|_| ())
+    .map_err(|e| e.to_string())
 }
 impl ScreenshotEditor {
     fn new(

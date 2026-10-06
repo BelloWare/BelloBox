@@ -570,6 +570,7 @@ dependencies = [
  "bellobox-core",
  "gpui",
  "libc",
+ "raw-window-handle",
  "reqwest",
  "serde_json",
  "tempfile",
