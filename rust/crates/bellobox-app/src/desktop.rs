@@ -1,3 +1,4 @@
+mod ai_updates;
 pub(crate) mod qr_jobs;
 mod snippets;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
@@ -311,38 +312,25 @@ impl BelloBox {
                 cx.background_executor()
                     .timer(std::time::Duration::from_millis(40))
                     .await;
-                let mut done = false;
-                let mut error = None;
-                let mut changed = false;
-                while let Ok(event) = rx.try_recv() {
-                    match event {
-                        Ok(Some(chunk)) => {
-                            text.push_str(&chunk);
-                            changed = true;
-                        }
-                        Ok(None) => done = true,
-                        Err(e) => {
-                            error = Some(e);
-                            done = true;
-                        }
-                    }
-                }
+                let batch = ai_updates::drain(&rx, &mut text);
                 let keep = this
                     .update(cx, |this, cx| {
                         if !this.jobs.accepts(revision) {
                             return false;
                         }
-                        if changed {
+                        if batch.changed {
                             this.output.update(cx, |e, cx| e.set_text(text.clone(), cx));
                         }
-                        if done {
+                        if batch.done {
                             this.busy = false;
-                            this.status = error.unwrap_or_else(|| {
+                            this.status = batch.error.unwrap_or_else(|| {
                                 "AI response complete. Nothing was replaced in another app.".into()
                             });
                         }
-                        cx.notify();
-                        !done
+                        if batch.changed || batch.done {
+                            cx.notify();
+                        }
+                        !batch.done
                     })
                     .unwrap_or(false);
                 if !keep {
