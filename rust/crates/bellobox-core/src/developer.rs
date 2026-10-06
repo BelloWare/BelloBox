@@ -18,6 +18,8 @@ mod certificate;
 mod json_schema;
 #[path = "developer/list_set.rs"]
 pub mod list_set;
+#[path = "developer/permissions.rs"]
+pub mod permissions;
 #[path = "developer/plist.rs"]
 mod plist_engine;
 #[path = "developer/sql_formatter.rs"]
@@ -152,7 +154,7 @@ pub fn execute(id: &str, input: &str, second: &str) -> R<String> {
         "listSet" => list_set::run(input, second, "Union", "Exact"),
         "semver" => semver_tool(input, second),
         "subnet" => subnet::run(input),
-        "chmod" => chmod(input),
+        "chmod" => permissions::run(input),
         "hmac" => {
             if second.is_empty() {
                 return Err("Enter an ephemeral HMAC key in the second field.".into());
@@ -1934,58 +1936,6 @@ fn semver_tool(s: &str, second: &str) -> R<String> {
         .collect::<Vec<_>>()
         .join("\n"))
 }
-fn chmod(s: &str) -> R<String> {
-    let s = s.trim();
-    let n = if s.len() == 9 {
-        let mut n = 0u32;
-        for (i, c) in s.chars().enumerate() {
-            let expected = ['r', 'w', 'x'][i % 3];
-            if c == expected {
-                n |= 1 << (8 - i)
-            } else if c != '-' {
-                return Err("Symbolic mode accepts exactly rwxrwxrwx positions with '-' for absent permissions; special bits use octal.".into());
-            }
-        }
-        n
-    } else {
-        if s.is_empty() || s.len() > 4 || !s.bytes().all(|b| (b'0'..=b'7').contains(&b)) {
-            return Err("Use octal 0000–7777 or nine rwx characters.".into());
-        }
-        u32::from_str_radix(s, 8).map_err(|e| e.to_string())?
-    };
-    let mut p = String::new();
-    for i in 0..9 {
-        p.push(if n & (1 << (8 - i)) != 0 {
-            ['r', 'w', 'x'][i % 3]
-        } else {
-            '-'
-        })
-    }
-    let mut chars: Vec<_> = p.chars().collect();
-    for (bit, i, low, high) in [
-        (0o4000, 2, 's', 'S'),
-        (0o2000, 5, 's', 'S'),
-        (0o1000, 8, 't', 'T'),
-    ] {
-        if n & bit != 0 {
-            chars[i] = if chars[i] == 'x' { low } else { high }
-        }
-    }
-    Ok(format!(
-        "Octal: {n:04o}\nSymbolic: {}\nOwner: {}{}{}\nGroup: {}{}{}\nOther: {}{}{}",
-        chars.iter().collect::<String>(),
-        chars[0],
-        chars[1],
-        chars[2],
-        chars[3],
-        chars[4],
-        chars[5],
-        chars[6],
-        chars[7],
-        chars[8]
-    ))
-}
-
 fn schema_tool(input: &str, schema: &str) -> R<String> {
     json_schema::validate(input, schema)
 }
@@ -2799,7 +2749,7 @@ pub fn option_hint(id: &str) -> &'static str {
         }
         "subnet" => "IPv4/prefix only · /31 point-to-point; /32 single host",
         "chmod" => {
-            "Octal 0000–7777 or nine rwx characters · symbolic special-bit input unavailable"
+            "3–4 octal digits or nine rwx/s/S/t/T characters · optional -, d, l prefix · command preview only"
         }
         "hmac" => "Ephemeral key · HMAC-SHA256 hex output · not stored by this engine",
         "jsonMerge" => "RFC 7396 merge patch JSON · null removes object fields",

@@ -265,7 +265,7 @@ for many tools still need restoration. Sources below are in
 | `listSet` | `TextUtilities.swift` | Five source operations, Exact/Trim/Trim & ignore case, first-seen order and canonical equality; scoped checks below |
 | `semver` | `SecurityUtilities.swift` | SemVer comparison/sort; full range UI absent |
 | `subnet` | `SecurityUtilities.swift` | Source IPv4-only calculator, canonical CIDR validation and nine result rows including /0,/31,/32 semantics; scoped checks below |
-| `chmod` | `SecurityUtilities.swift` | Octal/rwx inspection; symbolic special-bit input absent |
+| `chmod` | `SecurityUtilities.swift` | Source twelve-bit calculator, interactive grid, octal/symbolic preview and copyable placeholder command; never changes files; scoped checks below |
 | `hmac` | `SecurityUtilities.swift` | HMAC-SHA256, ephemeral key; other hashes and masked GUI key absent |
 | `jsonSchema` | `JSONSchemaTool.swift` | Source keyword subset; exact decimal comparisons, code-point counts, local-reference preflight and 50,000-work/64-depth/100-issue limits. Paired document/schema editors restored; current tests cover source fixtures and adversarial references. |
 | `jsonMerge` | `DataWorkshop.swift` | RFC7396 merge patch |
@@ -743,3 +743,66 @@ canonical prefix/octet errors with Example recovery, Clear/Paste, compact field
 readability, exact 740×560 controls/results, and close/reopen returning to empty
 idle state. The app closed normally. These are scoped native Linux checks, not
 macOS/IME, full platform-field behavior or launcher interactive-preview transfer.
+
+## Chmod text calculator checkpoint (2026-10-06)
+
+Sources: `DeveloperTools/SecurityUtilities.swift` and
+`Launcher/AdditionalUtilityViews.swift` permission grid/visual. This tool only
+calculates text. Neither its engine nor grid executes chmod, opens a target path,
+reads target files, or changes any filesystem permission. Normal app preference
+handling is unchanged. Copy uses the fixed placeholder command,
+for example `chmod 755 'path/to/file'`.
+
+The parser accepts three/four ASCII octal digits, nine symbolic permission
+positions, and the source's optional -, d or l prefix. Owner/group s/S and others
+t/T preserve their execute-bit meaning. Ordinary modes format as three octal
+digits; special bits require four. Foundation whitespace is trimmed at the edges.
+All valid forms and ASCII diagnostics match the source. Malformed non-ASCII
+position/length diagnostics count Unicode scalars rather than Swift grapheme
+clusters; such input is rejected, but its exact error wording can differ. The
+existing Rust wrapper size bounds remain unchanged.
+
+The full window has the source single-line input, Owner/Group/Others Read/Write/
+Exec checkboxes, Set UID/Set GID/Sticky controls and source help text. Each toggle
+reads the current draft, changes only its bit, and formats canonical octal;
+invalid input starts at zero as in Swift. Checkbox clicks and Space/Return use
+window-owned focus and current state rather than a captured old checked value.
+A chmod-scoped Tab/Shift-Tab path visits the input and all twelve toggles, with
+visible focus borders, without inserting spaces. Marked input is left to the IME;
+Space/Return uses GPUI’s focused release-click route rather than a second
+key-down toggle.
+The 140-point visual contains a shield, selectable read-only octal/symbolic value
+and help text above the command result. Preview text clears before recalculation
+and old jobs remain generation-guarded. Empty input is idle; no Use as Input is
+shown; Copy refuses busy/error/empty results. No settings or shared-editor code
+changed and no dependency was added.
+
+The `--tool chmod --input …` route remains. Its old inspection report intentionally
+changes to the source command output; formerly accepted one/two-digit octal input
+now receives the source validation error. It does not silently execute the output.
+
+Focused validation: nine pure-engine tests include all 4,096 permission states,
+octal/symbolic/prefixed roundtrips, all twelve toggles on/off preserving other bits,
+invalid masks/drafts, special bits, whitespace, command output and wrapper bounds.
+Fifteen headless control regressions pass, including all twelve unique source
+checkbox labels/masks, invalid-input recovery through the production helper and
+forward/reverse input-to-grid focus traversal.
+Strict app/core all-target Clippy, app build and minimal-feature app check pass.
+Independent source review verified the core and fixed keyboard reachability
+before native checks. An initial native candidate exposed duplicate keyboard
+activation: an explicit key-down toggle plus GPUI’s synthesized release click
+reversed the change. The final code retains only GPUI’s on_click path; temporary
+event tracing was removed.
+
+Independent Linux/SwiftShader retest passed on immutable binary SHA-256
+`6f9dc0cdc5269ecc5f76022d9ac6af7efd63ec843f069d0189e9c845e0666478`:
+000 → Tab → Space produces 400; Return returns to 000. Traversing and activating
+all twelve controls produces 7777, then Tab returns to input and Shift-Tab to
+Sticky. Mouse execute toggles, special-bit casing, invalid 888 → Owner Read → 400,
+text-only Copy/Paste, Clear/Example, 740×560 scrolling/readability and close/reopen
+passed. A requested 1.5-second Space press ended with one toggle; OS repeat-event
+delivery was not logged, so this is not proof of every held-key repeat path.
+No generated command was executed or filesystem permission changed. Failed v2
+and diagnostic v3 evidence are retained separately from the verified v4.
+Full native checkbox accessibility/tab behavior, macOS/IME and compact launcher
+interactive transfer remain separate validation/parity gaps.

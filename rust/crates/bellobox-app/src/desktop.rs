@@ -1,4 +1,5 @@
 mod ai_updates;
+mod permissions;
 pub(crate) mod qr_jobs;
 mod snippets;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
@@ -18,6 +19,7 @@ use std::{
 struct BelloBox {
     selected: String,
     snippets: Option<snippets::SnippetUi>,
+    permissions: Option<permissions::PermissionUi>,
     input: Entity<EditorView>,
     second: Entity<EditorView>,
     output: Entity<EditorView>,
@@ -90,6 +92,7 @@ impl BelloBox {
         let mut app = Self {
             selected: fixture,
             snippets: None,
+            permissions: None,
             input,
             second,
             output,
@@ -116,7 +119,7 @@ impl BelloBox {
             .enumerate()
         {
             editor.update(cx, |editor, cx| {
-                if app.selected == "subnet" && index == 0 {
+                if matches!(app.selected.as_str(), "subnet" | "chmod") && index == 0 {
                     editor.set_compact(true, cx);
                 }
                 let mut appearance = EditorAppearance::plain();
@@ -127,14 +130,14 @@ impl BelloBox {
                         "monospace".into()
                     };
                 appearance.font_size = if ["qr", "textTools", "ai"].contains(&app.selected.as_str())
-                    || (app.selected == "subnet" && index == 0)
+                    || (matches!(app.selected.as_str(), "subnet" | "chmod") && index == 0)
                 {
                     13.
                 } else {
                     12.
                 };
                 appearance.line_height = 18.;
-                if app.selected == "subnet" && index == 0 {
+                if matches!(app.selected.as_str(), "subnet" | "chmod") && index == 0 {
                     // Keep one full text row inside the 38 px compact field.
                     appearance.padding_x = 0.;
                     appearance.padding_y = 0.;
@@ -147,7 +150,8 @@ impl BelloBox {
             });
         }
         app.init_snippets(window, cx);
-        if app.selected == "subnet" {
+        app.init_permissions(window, cx);
+        if matches!(app.selected.as_str(), "subnet" | "chmod") {
             app.input.read(cx).focus(window);
         }
         if app.selected == "ai" {
@@ -170,6 +174,7 @@ impl BelloBox {
     }
     fn run_tool(&mut self, cx: &mut Context<Self>) {
         let revision = self.jobs.begin();
+        self.clear_permission_preview(cx);
         self.qr_saves.cancel();
         self.qr_save_status = false;
         self.qr = None;
@@ -181,7 +186,7 @@ impl BelloBox {
             .controls
             .second(&self.selected, self.second.read(cx).text());
         if id == "ai"
-            || (matches!(id.as_str(), "stringEscape" | "subnet")
+            || (matches!(id.as_str(), "stringEscape" | "subnet" | "chmod")
                 && crate::tool_controls::source_input_is_idle(&input))
             || input.is_empty()
                 && !["worldClock", "textTools", "generate", "screenshot"].contains(&id.as_str())
@@ -234,7 +239,7 @@ impl BelloBox {
             .detach();
             return;
         }
-        if matches!(id.as_str(), "stringEscape" | "subnet") {
+        if matches!(id.as_str(), "stringEscape" | "subnet" | "chmod") {
             self.output
                 .update(cx, |editor, cx| editor.set_text(String::new(), cx));
         }
@@ -288,6 +293,8 @@ impl BelloBox {
                                     value.split('\n').count()
                                 }
                             )
+                        } else if this.selected == "chmod" {
+                            "Permissions preview · no files are changed".into()
                         } else if this.selected == "subnet" {
                             "IPv4 subnet · calculated locally".into()
                         } else if this.selected == "stringEscape" {
@@ -306,6 +313,7 @@ impl BelloBox {
                         (String::new(), "This operation needs attention.".into())
                     }
                 };
+                this.sync_permission_preview(cx);
                 this.output
                     .update(cx, |editor, cx| editor.set_text(output, cx));
                 this.status = status;
@@ -1156,7 +1164,7 @@ impl BelloBox {
                 | "certificate"
                 | "stringEscape"
         );
-        let height = if self.selected == "subnet" {
+        let height = if matches!(self.selected.as_str(), "subnet" | "chmod") {
             38.
         } else if self.selected == "stringEscape" {
             crate::tool_controls::string_literal_editor_height(self.input.read(cx).text())
@@ -1204,7 +1212,7 @@ impl BelloBox {
                 .gap(px(8.))
                 .child(self.input_actions(self.controls.input_label(&self.selected), p, cx))
                 .child(editor_card(self.input.clone(), height, p).when(
-                    self.selected == "subnet",
+                    matches!(self.selected.as_str(), "subnet" | "chmod"),
                     |field| {
                         field
                             .p(px(8.))
@@ -1220,7 +1228,11 @@ impl BelloBox {
                                         .line_height(px(18.))
                                         .font_family("monospace")
                                         .text_color(p.secondary)
-                                        .child("192.168.1.42/24"),
+                                        .child(if self.selected == "chmod" {
+                                            "755"
+                                        } else {
+                                            "192.168.1.42/24"
+                                        }),
                                 )
                             })
                             .on_mouse_down(
@@ -1266,6 +1278,8 @@ impl BelloBox {
                                 "Working…"
                             } else if self.warning {
                                 "Validation issues"
+                            } else if self.selected == "chmod" {
+                                "Permissions preview · no files are changed"
                             } else if self.selected == "subnet" {
                                 "IPv4 subnet · calculated locally"
                             } else if self.selected == "json" {
@@ -1297,6 +1311,16 @@ impl BelloBox {
                     .gap(px(14.))
                     .child(control)
                     .child(input)
+                    .when(self.selected == "chmod", |s| {
+                        s.child(self.permission_grid(p, cx))
+                    })
+                    .when(
+                        self.selected == "chmod"
+                            && !self.busy
+                            && self.error.is_none()
+                            && !self.output.read(cx).text().is_empty(),
+                        |s| s.child(self.permission_preview(p)),
+                    )
                     .when(self.selected == "snippets", |s| {
                         s.child(self.snippet_fields(p, window, cx))
                     })
@@ -1371,7 +1395,7 @@ impl BelloBox {
                     .when(
                         !matches!(
                             self.selected.as_str(),
-                            "listSet" | "stringEscape" | "subnet"
+                            "listSet" | "stringEscape" | "subnet" | "chmod"
                         ),
                         |s| {
                             s.child(button("use-input", "Use as Input", p).on_click(cx.listener(
@@ -1389,18 +1413,20 @@ impl BelloBox {
                     .child(
                         button("copy-result", "Copy Result", p)
                             .when(
-                                matches!(self.selected.as_str(), "stringEscape" | "subnet")
-                                    && !crate::tool_controls::source_copy_enabled(
-                                        self.busy,
-                                        self.error.is_some(),
-                                        self.output.read(cx).text(),
-                                    ),
+                                matches!(
+                                    self.selected.as_str(),
+                                    "stringEscape" | "subnet" | "chmod"
+                                ) && !crate::tool_controls::source_copy_enabled(
+                                    self.busy,
+                                    self.error.is_some(),
+                                    self.output.read(cx).text(),
+                                ),
                                 |s| s.opacity(0.45).cursor_default(),
                             )
                             .on_click(cx.listener(|this, _, _, cx| {
                                 if matches!(
                                     this.selected.as_str(),
-                                    "listSet" | "stringEscape" | "subnet"
+                                    "listSet" | "stringEscape" | "subnet" | "chmod"
                                 ) && !crate::tool_controls::source_copy_enabled(
                                     this.busy,
                                     this.error.is_some(),
@@ -1698,6 +1724,7 @@ impl Render for BelloBox {
             }
         }
         self.snippet_appearance(p, cx);
+        self.permission_appearance(p, cx);
         self.sync_snippet_fields(window, cx);
         let content = match self.selected.as_str() {
             "qr" => self.render_qr(p, cx),
@@ -1734,6 +1761,9 @@ impl Render for BelloBox {
         let view = div()
             .size_full()
             .capture_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, window, cx| {
+                if this.permission_tab(event, window, cx) {
+                    return;
+                }
                 let Some(id) = this.open_menu else {
                     return;
                 };

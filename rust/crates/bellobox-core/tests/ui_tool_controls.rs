@@ -282,3 +282,53 @@ fn subnet_source_label_example_no_options_and_error_recovery() {
     assert!(!controls::source_copy_enabled(true, false, "old result"));
     assert!(!controls::source_copy_enabled(false, true, "old result"));
 }
+
+#[test]
+fn permission_source_grid_has_twelve_distinct_bits_and_no_options() {
+    let state = ToolControls::new("chmod", "755");
+    assert!(controls::choices("chmod").is_empty());
+    assert_eq!(
+        state.input_label("chmod"),
+        "Octal or rwx permissions · e.g. 755 or rwxr-xr-x"
+    );
+    let specs = controls::PERMISSION_TOGGLES;
+    assert_eq!(
+        specs.map(|s| s.mask),
+        [
+            0o400, 0o200, 0o100, 0o40, 0o20, 0o10, 0o4, 0o2, 0o1, 0o4000, 0o2000, 0o1000
+        ]
+    );
+    assert_eq!(
+        specs.map(|s| s.label),
+        [
+            "Read", "Write", "Exec", "Read", "Write", "Exec", "Read", "Write", "Exec", "Set UID",
+            "Set GID", "Sticky"
+        ]
+    );
+    assert!(specs.iter().all(|s| !s.help.is_empty()));
+    let mut input = "invalid".to_owned();
+    for spec in specs {
+        input = bellobox_core::developer::permissions::toggle(&input, spec.mask, true).unwrap();
+    }
+    assert_eq!(input, "7777");
+    assert_eq!(
+        execute("chmod", &input, &state.second("chmod", "")).unwrap(),
+        "chmod 7777 'path/to/file'"
+    );
+}
+
+#[test]
+fn permission_tab_reaches_every_checkbox_and_returns_without_editing_input() {
+    let mut current = 0;
+    for expected in (1..13).chain(std::iter::once(0)) {
+        current = controls::permission_tab_target(Some(current), false);
+        assert_eq!(current, expected);
+    }
+    for expected in (0..13).rev() {
+        current = controls::permission_tab_target(Some(current), true);
+        assert_eq!(current, expected);
+    }
+    assert_eq!(controls::permission_tab_target(None, false), 0);
+    assert_eq!(controls::permission_tab_target(None, true), 12);
+    assert_eq!(controls::permission_tab_target(Some(usize::MAX), true), 12);
+}

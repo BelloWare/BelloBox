@@ -165,6 +165,7 @@ pub fn input_label(tool: &str) -> &'static str {
         "listSet" => "First list · one item per line",
         "snippets" => "Template",
         "subnet" => "IPv4 / prefix · e.g. 192.168.1.42/24",
+        "chmod" => "Octal or rwx permissions · e.g. 755 or rwxr-xr-x",
         _ => "Input",
     }
 }
@@ -256,5 +257,88 @@ mod tests {
         let second = ToolControls::new("sqlFormat", "");
         first.select("sqlFormat", "keywords", "Preserve");
         assert_eq!(second.value("keywords"), "Uppercase");
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct PermissionToggleSpec {
+    pub label: &'static str,
+    pub mask: u16,
+    pub help: &'static str,
+}
+pub const PERMISSION_TOGGLES: [PermissionToggleSpec; 12] = [
+    PermissionToggleSpec {
+        label: "Read",
+        mask: 0o400,
+        help: "Owner Read",
+    },
+    PermissionToggleSpec {
+        label: "Write",
+        mask: 0o200,
+        help: "Owner Write",
+    },
+    PermissionToggleSpec {
+        label: "Exec",
+        mask: 0o100,
+        help: "Owner Exec",
+    },
+    PermissionToggleSpec {
+        label: "Read",
+        mask: 0o040,
+        help: "Group Read",
+    },
+    PermissionToggleSpec {
+        label: "Write",
+        mask: 0o020,
+        help: "Group Write",
+    },
+    PermissionToggleSpec {
+        label: "Exec",
+        mask: 0o010,
+        help: "Group Exec",
+    },
+    PermissionToggleSpec {
+        label: "Read",
+        mask: 0o004,
+        help: "Others Read",
+    },
+    PermissionToggleSpec {
+        label: "Write",
+        mask: 0o002,
+        help: "Others Write",
+    },
+    PermissionToggleSpec {
+        label: "Exec",
+        mask: 0o001,
+        help: "Others Exec",
+    },
+    PermissionToggleSpec {
+        label: "Set UID",
+        mask: 0o4000,
+        help: "Run an executable with its owner's user ID",
+    },
+    PermissionToggleSpec {
+        label: "Set GID",
+        mask: 0o2000,
+        help: "Set group ID on execution; directories pass their group to new files",
+    },
+    PermissionToggleSpec {
+        label: "Sticky",
+        mask: 0o1000,
+        help: "On shared directories, restrict removal to the owner",
+    },
+];
+
+/// Input is index zero; source-order permission checkboxes are one through twelve.
+pub fn permission_tab_target(current: Option<usize>, reverse: bool) -> usize {
+    match current.filter(|index| *index < 13) {
+        Some(index) => (index + if reverse { 12 } else { 1 }) % 13,
+        None => {
+            if reverse {
+                12
+            } else {
+                0
+            }
+        }
     }
 }
