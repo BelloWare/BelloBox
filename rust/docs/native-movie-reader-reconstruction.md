@@ -170,3 +170,23 @@ until native failures are resolved and source/CI results independently reviewed.
 Sources: BelloBox/Recording/GIF/GIFTranscoder.swift and the exact acquired objc2
 0.3.2 framework manifests/generated Rust declarations. The AVAssetReader header
 contract explicitly forbids cancelReading concurrent with copyNextSampleBuffer.
+
+## First native CI execution and fixture corrections
+
+On commit `bf023f87ade57954ba15aeadfca1d90274bd9267`, macOS run
+`37530185860` compiled/linked all native targets and passed all six native movie
+fixtures, including MOV decoding, PTS/orientation/alpha, cancellation and staged
+Rust GIF export. Its overall job failed two portable test expectations because
+macOS resolves `/var` through `/private/var`; the source guard correctly returned
+canonical paths. Expectations now compare canonical paths and include a
+symlinked-parent fixture. The native implementation's deprecated bitmap aliases
+were replaced with their exact typed constant values, without changing bits.
+
+That commit's Linux Rust tests, lints and builds passed. The live smoke failed
+its initial window activation before any UI check. Activation now retries bounded
+requests and verifies the actual active window while checking child liveness;
+this does not establish live recovery until the next CI run succeeds. The wait
+has a 30-second polling deadline plus at most the final two bounded probes.
+
+Fresh local corrections pass 12 movie tests and 14 harness tests. Production
+remains unavailable, and overall CI success is still pending for these fixes.

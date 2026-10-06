@@ -15,6 +15,29 @@ spec.loader.exec_module(smoke)
 
 
 class HarnessTests(unittest.TestCase):
+    def test_activation_waits_for_manager_and_exact_active_window(self):
+        alive = Mock()
+        answers = [(1, "", "not ready"), (0, "", ""), (0, "202\n", ""),
+                   (0, "", ""), (0, "101\n", "")]
+        with patch.object(smoke, "bounded_probe", side_effect=answers) as probe, \
+                patch.object(smoke.time, "sleep"):
+            self.assertEqual(smoke.activate_window("101", alive), "101")
+        self.assertEqual(alive.call_count, 3)
+        self.assertNotIn("--sync", str(probe.call_args_list))
+
+    def test_activation_failure_is_bounded_and_never_claims_success(self):
+        with patch.object(smoke, "bounded_probe", return_value=(1, "", "not ready")), \
+                patch.object(smoke.time, "monotonic", side_effect=[0, 0, 31]), \
+                patch.object(smoke.time, "sleep"):
+            with self.assertRaisesRegex(RuntimeError, "Timed out: window activation"):
+                smoke.activate_window("101", Mock())
+
+    def test_activation_stops_on_app_exit_before_native_probe(self):
+        with patch.object(smoke, "bounded_probe") as probe:
+            with self.assertRaisesRegex(RuntimeError, "app exited"):
+                smoke.activate_window("101", Mock(side_effect=RuntimeError("app exited")))
+        probe.assert_not_called()
+
     def test_poll_returns_actual_value(self):
         self.assertEqual(smoke.wait_for(lambda: "window-id", "window"), "window-id")
 

@@ -29,6 +29,20 @@ def wait_for(predicate, description, seconds=30):
         time.sleep(0.3)
     raise RuntimeError(f"Timed out: {description}")
 
+def activate_window(ident, check_alive, seconds=30):
+    """Wait for EWMH activation readiness and verify the actual active window."""
+    def activated():
+        check_alive()
+        # A visible client can precede Openbox's EWMH readiness. Keep each probe
+        # bounded; --sync can block while the window manager is still starting.
+        code, _, _ = bounded_probe("xdotool", "windowactivate", ident)
+        if code != 0:
+            return None
+        code, output, _ = bounded_probe("xdotool", "getactivewindow")
+        return ident if code == 0 and output.strip() == ident else None
+    return wait_for(activated, "window activation", seconds)
+
+
 MAX_DIAGNOSTIC_BYTES = 128 * 1024
 
 
@@ -214,23 +228,25 @@ def main():
 
             def window(process, title):
                 log = next(log for child, log in processes if child is process)
-                def find():
+                def check_alive():
                     log.read_available()
                     if log.exceeded:
                         kill_fixture_group(process)
                         raise RuntimeError("Application startup log exceeded diagnostic limit")
                     if process.poll() is not None:
                         raise RuntimeError(f"Application exited before capture ({process.returncode})")
+                def find():
+                    check_alive()
                     code, output, _ = bounded_probe(
                         "xdotool", "search", "--all", "--limit", "1", "--onlyvisible",
                         "--pid", str(process.pid), "--name", title)
                     return output.splitlines()[0] if code == 0 and output.splitlines() else None
                 try:
                     ident = wait_for(find, f"visible {title} window")
+                    activate_window(ident, check_alive)
                 except Exception:
                     report["startup_diagnostics"] = startup_diagnostics(process, log, title)
                     raise
-                command("xdotool", "windowactivate", "--sync", ident)
                 return ident
 
             def capture(process, ident, name, expected):

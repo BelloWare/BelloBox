@@ -16,7 +16,7 @@ use objc2_av_foundation::{
 use objc2_core_foundation::{CFData, CGAffineTransform, CGPoint, CGRect, CGSize};
 use objc2_core_graphics::{
     CGBitmapContextCreate, CGBitmapInfo, CGColorRenderingIntent, CGColorSpace, CGContext,
-    CGDataProvider, CGImage, CGImageAlphaInfo, CGInterpolationQuality,
+    CGDataProvider, CGImage, CGImageAlphaInfo, CGImageByteOrderInfo, CGInterpolationQuality,
 };
 use objc2_core_media::{CMTime, CMTimeFlags, CMTimeRange};
 use objc2_core_video::*;
@@ -458,7 +458,7 @@ fn render(
         let provider =
             CGDataProvider::with_cf_data(Some(&data)).ok_or(MovieError::NativeFailure)?;
         let input_info = CGBitmapInfo::from_bits_retain(
-            CGBitmapInfo::ByteOrder32Little.bits() | CGImageAlphaInfo::PremultipliedFirst.0,
+            CGImageByteOrderInfo::Order32Little.0 | CGImageAlphaInfo::PremultipliedFirst.0,
         );
         let image = unsafe {
             CGImage::new(
@@ -484,7 +484,7 @@ fn render(
                 8,
                 geometry.width as usize * 4,
                 Some(&color),
-                CGBitmapInfo::ByteOrder32Big.bits() | CGImageAlphaInfo::PremultipliedLast.0,
+                CGImageByteOrderInfo::Order32Big.0 | CGImageAlphaInfo::PremultipliedLast.0,
             )
         }
         .ok_or(MovieError::NativeFailure)?;

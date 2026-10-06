@@ -163,12 +163,25 @@ mod identity {
         assert!(source_file::SourceFile::open(&p).is_err());
         fs::write(&p, b"synthetic").unwrap();
         let s = source_file::SourceFile::open(&p).unwrap();
-        assert_eq!(s.path(), p);
+        assert_eq!(s.path(), fs::canonicalize(&p).unwrap());
         s.verify().unwrap();
         let replacement = d.0.join("replacement");
         fs::write(&replacement, b"synthetic").unwrap();
         fs::rename(replacement, p).unwrap();
         assert_eq!(s.verify(), Err(MovieError::SourceChanged));
+    }
+    #[test]
+    fn source_guard_canonicalizes_symlinked_parent_directories() {
+        let d = Dir::new();
+        let p = d.0.join("source.mov");
+        fs::write(&p, b"movie").unwrap();
+        let alias = d.0.join("parent-alias");
+        std::os::unix::fs::symlink(&d.0, &alias).unwrap();
+        let input = alias.join("source.mov");
+        let source = source_file::SourceFile::open(&input).unwrap();
+        assert_eq!(source.path(), fs::canonicalize(&p).unwrap());
+        assert_ne!(source.path(), input);
+        source.verify().unwrap();
     }
     #[test]
     fn source_guard_resolves_symlink_and_detects_edits() {
@@ -178,7 +191,7 @@ mod identity {
         fs::write(&p, b"movie").unwrap();
         std::os::unix::fs::symlink(&p, &alias).unwrap();
         let s = source_file::SourceFile::open(&alias).unwrap();
-        assert_eq!(s.path(), p);
+        assert_eq!(s.path(), fs::canonicalize(&p).unwrap());
         fs::write(p, b"different length").unwrap();
         assert_eq!(s.verify(), Err(MovieError::SourceChanged));
     }
