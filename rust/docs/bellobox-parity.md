@@ -618,3 +618,45 @@ all-target Clippy and formatting. The new policy test covers every internal-pane
 read-only and focus combination. Actual host routing and native keyboard behavior
 require separate integration checks; these unit tests do not establish macOS
 interaction or OS IME validation. No dependencies or release files changed.
+
+## List Set Operations checkpoint (2026-10-06)
+
+Sources: `DeveloperTools/AdditionalUtility.swift`, `TextUtilities.swift` and
+`Launcher/AdditionalUtilityViews.swift`. The Rust tool now exposes the source
+Operation menu (Union, Intersection, A − B, B − A, Symmetric difference) and Match
+menu (Exact, Trim, Trim & ignore case). Results are plain lines in first-seen
+order, rather than the previous sorted JSON bundle. Blank lines and duplicate
+matching keys are removed; output retains the first matching item's spelling.
+Canonical-equivalence keys preserve Swift String equality, including Exact mode.
+The already-locked `unicode-normalization` package is now a direct core dependency;
+no new package/version was introduced. Foundation's newline/whitespace sets include
+U+200B for trimming and blank-line removal. Reviewed lowercase cases include
+accented text, contextual Greek final sigma and dotted I; this does not establish
+identical behavior across every OS/Unicode database version.
+
+The two document drafts remain separate from options. Example resets both inputs
+and options; Clear clears both documents. Each side has its own explicit Paste.
+Equal editor heights use the source's bounded scalar-prefix/UTF-16 wrap formula.
+A nonempty second list works when the first is empty. List Set does not offer the
+non-source Use as Input action, and Copy refuses busy/error/empty results. Jobs
+retain the existing window/generation fences. No clipboard read, persistence or
+network action occurs during calculation. Original Swift files are unchanged.
+
+The existing Rust limit remains 500,000 combined input bytes, whereas Swift allows
+512,000 bytes per field. This is a bounded-port difference, not exact size parity.
+Existing GPUI font, native text-field/IME and platform limitations remain; this
+checkpoint does not establish complete source UI or macOS parity.
+
+Focused validation: four engine tests cover all operations, matching, order,
+duplicates, empty inputs, all Foundation line separators, canonical equivalence,
+U+200B and input bounds. Nine headless control/height tests pass, including two new
+List Set cases and seven existing option-state regressions. Strict all-target
+Clippy for core/app, the app build, minimal-feature app check and formatting pass.
+
+Independent Linux/SwiftShader native QA passed on immutable binary SHA-256
+`a1e8cf7bf03d030489fb39242f4eeb06034469afc17212868c35f5c9f2724a8e`:
+all five operation results, all three matching modes, Copy, Clear-both, each Paste
+independently, calculation with blank A/nonempty B, readable controls/results at
+740×560, and close/reopen resetting empty drafts and Union/Exact defaults. The
+second close completed normally. This is scoped Linux interaction evidence, not
+macOS, native IME, exhaustive clipboard/error-state or overall UI parity.

@@ -126,3 +126,56 @@ fn source_labels_follow_mode_changes_and_chaining() {
         "Cookie request header · name=value; name=value"
     );
 }
+
+#[test]
+fn list_set_source_controls_select_each_operation_without_overwriting_second_document() {
+    let mut state = ToolControls::new("listSet", "Swift\nRust\nPython");
+    let independent = state.clone();
+    let second = "Rust\nGo\nSwift";
+    assert_eq!(state.value("mode"), "Union");
+    assert_eq!(state.value("matching"), "Exact");
+    for (mode, expected) in [
+        ("Union", "Swift\nRust\nPython\nGo"),
+        ("Intersection", "Swift\nRust"),
+        ("A − B", "Python"),
+        ("B − A", "Go"),
+        ("Symmetric difference", "Python\nGo"),
+    ] {
+        assert!(state.select("listSet", "mode", mode));
+        assert_eq!(state.second("listSet", second), second);
+        assert_eq!(
+            bellobox_core::developer::list_set::run(
+                "Swift\nRust\nPython",
+                &state.second("listSet", second),
+                state.value("mode"),
+                state.value("matching")
+            )
+            .unwrap(),
+            expected
+        );
+    }
+    assert!(!state.select("listSet", "mode", "invented"));
+    assert!(!state.select("listSet", "matching", "Locale sort"));
+    assert!(state.select("listSet", "matching", "Trim & ignore case"));
+    assert_eq!(independent.value("mode"), "Union");
+    assert_eq!(independent.value("matching"), "Exact");
+    let reopened = ToolControls::new("listSet", "anything");
+    assert_eq!(reopened.value("mode"), "Union");
+    assert_eq!(reopened.value("matching"), "Exact");
+    assert_eq!(execute("listSet", "B\nA\nB", "C\nA").unwrap(), "B\nA\nC");
+}
+
+#[test]
+fn paired_list_editor_heights_follow_source_bounded_utf16_measurement() {
+    assert_eq!(controls::list_set_editor_height("A", "B"), 80.);
+    assert_eq!(
+        controls::list_set_editor_height("A", &"B\n".repeat(20)),
+        156.
+    );
+    assert_eq!(controls::list_set_editor_height(&"😀".repeat(72), "B"), 96.);
+    assert_eq!(controls::list_set_editor_height("A\r\nB\rC", "B"), 80.);
+    assert_eq!(
+        controls::list_set_editor_height("", &"x".repeat(500_000)),
+        156.
+    );
+}

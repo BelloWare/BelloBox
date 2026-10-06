@@ -93,6 +93,24 @@ impl ToolControls {
 }
 pub fn choices(tool: &str) -> Vec<ChoiceSpec> {
     match tool {
+        "listSet" => vec![
+            ChoiceSpec {
+                id: "mode",
+                label: "Operation",
+                choices: &[
+                    "Union",
+                    "Intersection",
+                    "A − B",
+                    "B − A",
+                    "Symmetric difference",
+                ],
+            },
+            ChoiceSpec {
+                id: "matching",
+                label: "Match",
+                choices: &["Exact", "Trim", "Trim & ignore case"],
+            },
+        ],
         "plist" => vec![ChoiceSpec {
             id: "mode",
             label: "Convert",
@@ -148,9 +166,23 @@ pub fn second_label(tool: &str) -> &'static str {
     match tool {
         "jsonSchema" => "Schema · supported keywords only",
         "jsonMerge" => "Merge patch",
-        "listSet" => "Second list · one item per line",
+        "listSet" => "List B · one item per line",
         _ => "Second text",
     }
+}
+/// AdditionalUtilityEditor.fullEditorHeight: bounded scalar prefix, UTF-16 wraps,
+/// equal-height paired fields; padding is added by the existing editor card.
+pub fn list_set_editor_height(first: &str, second: &str) -> f32 {
+    fn height(text: &str) -> usize {
+        let sample: String = text.chars().take(8_192).collect();
+        let normalized = sample.replace("\r\n", "\n").replace('\r', "\n");
+        let lines: usize = normalized
+            .split('\n')
+            .map(|line| line.encode_utf16().count().div_ceil(36).max(1))
+            .sum();
+        (lines * 17 + 12).clamp(64, 140)
+    }
+    height(first).max(height(second)) as f32 + 16.
 }
 #[cfg(test)]
 mod tests {

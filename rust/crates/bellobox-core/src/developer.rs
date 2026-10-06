@@ -16,6 +16,8 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 mod certificate;
 #[path = "developer/json_schema.rs"]
 mod json_schema;
+#[path = "developer/list_set.rs"]
+pub mod list_set;
 #[path = "developer/plist.rs"]
 mod plist_engine;
 #[path = "developer/sql_formatter.rs"]
@@ -143,7 +145,7 @@ pub fn execute(id: &str, input: &str, second: &str) -> R<String> {
         "unicode" => unicode(input),
         "stringEscape" => string_escape(input, second),
         "extract" => extract(input, second),
-        "listSet" => list_set(input, second),
+        "listSet" => list_set::run(input, second, "Union", "Exact"),
         "semver" => semver_tool(input, second),
         "subnet" => subnet(input),
         "chmod" => chmod(input),
@@ -1915,13 +1917,6 @@ fn extract(s: &str, mode: &str) -> R<String> {
     }
     Ok(out.join("\n"))
 }
-fn list_set(a: &str, b: &str) -> R<String> {
-    let a: BTreeSet<_> = a.lines().collect();
-    let b: BTreeSet<_> = b.lines().collect();
-    pretty(
-        &json!({"union":a.union(&b).copied().collect::<Vec<_>>(),"intersection":a.intersection(&b).copied().collect::<Vec<_>>(),"onlyA":a.difference(&b).copied().collect::<Vec<_>>(),"onlyB":b.difference(&a).copied().collect::<Vec<_>>(),"note":"Exact case-sensitive lines; sorted unique results."}),
-    )
-}
 fn semver_tool(s: &str, second: &str) -> R<String> {
     let mut versions = s
         .lines()
@@ -2841,7 +2836,7 @@ pub fn option_hint(id: &str) -> &'static str {
         "stringEscape" => "json | unescape (JSON) | shell | html · no code is executed",
         "extract" => "all | links | emails · unique matches; heuristic extraction",
         "listSet" => {
-            "Second line list · union, intersection, onlyA, onlyB · exact case-sensitive lines"
+            "Second line list · stable-order union by default; blank lines and duplicates removed"
         }
         "semver" => {
             "Optional comparison version · otherwise sorts input lines by SemVer precedence"

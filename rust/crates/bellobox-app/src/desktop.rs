@@ -168,6 +168,7 @@ impl BelloBox {
         if id == "ai"
             || input.is_empty()
                 && !["worldClock", "textTools", "generate", "screenshot"].contains(&id.as_str())
+                && !(id == "listSet" && !second.is_empty())
         {
             self.output
                 .update(cx, |e, cx| e.set_text(String::new(), cx));
@@ -224,7 +225,21 @@ impl BelloBox {
         } else {
             None
         };
+        #[cfg(feature = "developer-tools")]
+        let list_options = (
+            self.controls.value("mode").to_owned(),
+            self.controls.value("matching").to_owned(),
+        );
         let task = cx.background_executor().spawn(async move {
+            #[cfg(feature = "developer-tools")]
+            if id == "listSet" {
+                return bellobox_core::developer::list_set::run(
+                    &input,
+                    &second,
+                    &list_options.0,
+                    &list_options.1,
+                );
+            }
             if let Some(session) = snippet {
                 session.render(&input)
             } else {
@@ -243,16 +258,23 @@ impl BelloBox {
                         this.warning = this.selected == "jsonSchema"
                             && !value.starts_with("Valid against this schema.");
                         this.error = None;
-                        (
-                            value,
-                            if this.selected == "snippets" {
-                                "Template preview · date and timestamp use UTC".into()
-                            } else if this.warning {
-                                "Validation issues · paths use JSON Pointer".into()
-                            } else {
-                                "Ready. Input is kept in memory.".into()
-                            },
-                        )
+                        let status = if this.selected == "listSet" {
+                            format!(
+                                "{} items · stable order · blank lines and duplicates removed",
+                                if value.is_empty() {
+                                    0
+                                } else {
+                                    value.split('\n').count()
+                                }
+                            )
+                        } else if this.selected == "snippets" {
+                            "Template preview · date and timestamp use UTC".into()
+                        } else if this.warning {
+                            "Validation issues · paths use JSON Pointer".into()
+                        } else {
+                            "Ready. Input is kept in memory.".into()
+                        };
+                        (value, status)
                     }
                     Err(error) => {
                         this.error = Some(error);
@@ -633,6 +655,95 @@ impl BelloBox {
                     this.input.update(cx, |e, cx| e.set_text(String::new(), cx))
                 })),
             )
+    }
+    fn list_set_inputs(&self, p: crate::theme::Palette, cx: &mut Context<Self>) -> gpui::Div {
+        let height = crate::tool_controls::list_set_editor_height(
+            self.input.read(cx).text(),
+            self.second.read(cx).text(),
+        );
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(12.))
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(6.))
+                    .child(
+                        div()
+                            .text_size(px(12.))
+                            .text_color(p.secondary)
+                            .child("Two inputs · edit either side"),
+                    )
+                    .child(div().flex_1())
+                    .child(
+                        link("list-example", "Example", p)
+                            .on_click(cx.listener(|this, _, _, cx| this.example(cx))),
+                    )
+                    .child(link("list-clear", "Clear", p).on_click(cx.listener(
+                        |this, _, _, cx| {
+                            this.input.update(cx, |e, cx| e.set_text(String::new(), cx));
+                            this.second
+                                .update(cx, |e, cx| e.set_text(String::new(), cx));
+                        },
+                    ))),
+            )
+            .child(div().flex().gap(px(8.)).children((0usize..2).map(|side| {
+                let label = if side == 0 {
+                    "First list · one item per line"
+                } else {
+                    "List B · one item per line"
+                };
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .flex()
+                    .flex_col()
+                    .gap(px(4.))
+                    .child(
+                        div()
+                            .flex()
+                            .items_center()
+                            .gap(px(2.))
+                            .child(
+                                div()
+                                    .text_size(px(12.))
+                                    .text_color(p.secondary)
+                                    .child(label),
+                            )
+                            .child(div().flex_1())
+                            .child(link(("list-paste", side), "Paste", p).on_click(cx.listener(
+                                move |this, _, _, cx| {
+                                    if let Some(text) =
+                                        cx.read_from_clipboard().and_then(|v| v.text())
+                                    {
+                                        match bellobox_core::validate_input(&text) {
+                                            Ok(()) => {
+                                                let editor = if side == 0 {
+                                                    &this.input
+                                                } else {
+                                                    &this.second
+                                                };
+                                                editor.update(cx, |e, cx| e.set_text(text, cx));
+                                            }
+                                            Err(error) => this.status = error,
+                                        }
+                                        cx.notify();
+                                    }
+                                },
+                            ))),
+                    )
+                    .child(editor_card(
+                        if side == 0 {
+                            self.input.clone()
+                        } else {
+                            self.second.clone()
+                        },
+                        height,
+                        p,
+                    ))
+            })))
     }
     fn header(&self, p: crate::theme::Palette, popup: bool, cx: &mut Context<Self>) -> gpui::Div {
         let title = crate::theme::tool_title(&self.selected);
@@ -1024,7 +1135,9 @@ impl BelloBox {
         } else {
             150.
         };
-        let input = if paired {
+        let input = if self.selected == "listSet" {
+            self.list_set_inputs(p, cx).into_any_element()
+        } else if paired {
             div()
                 .flex()
                 .gap(px(14.))
@@ -1189,19 +1302,28 @@ impl BelloBox {
                                 .on_click(cx.listener(|this, _, _, cx| this.check_updates(cx))),
                         )
                     })
-                    .child(button("use-input", "Use as Input", p).on_click(cx.listener(
-                        |this, _, _, cx| {
-                            let text = this.output.read(cx).text().to_string();
-                            if this.busy || this.error.is_some() || text.is_empty() {
-                                return;
-                            }
-                            this.controls.reverse_after_chaining(&this.selected);
-                            this.input.update(cx, |e, cx| e.set_text(text, cx));
-                        },
-                    )))
+                    .when(self.selected != "listSet", |s| {
+                        s.child(button("use-input", "Use as Input", p).on_click(cx.listener(
+                            |this, _, _, cx| {
+                                let text = this.output.read(cx).text().to_string();
+                                if this.busy || this.error.is_some() || text.is_empty() {
+                                    return;
+                                }
+                                this.controls.reverse_after_chaining(&this.selected);
+                                this.input.update(cx, |e, cx| e.set_text(text, cx));
+                            },
+                        )))
+                    })
                     .child(
                         button("copy-result", "Copy Result", p).on_click(cx.listener(
                             |this, _, _, cx| {
+                                if this.selected == "listSet"
+                                    && (this.busy
+                                        || this.error.is_some()
+                                        || this.output.read(cx).text().is_empty())
+                                {
+                                    return;
+                                }
                                 cx.write_to_clipboard(ClipboardItem::new_string(
                                     this.output.read(cx).text().into(),
                                 ));
