@@ -111,8 +111,14 @@ impl BelloBox {
             updater: None,
         };
         let palette = crate::theme::for_window(window);
-        for editor in [&app.input, &app.second, &app.output] {
+        for (index, editor) in [&app.input, &app.second, &app.output]
+            .into_iter()
+            .enumerate()
+        {
             editor.update(cx, |editor, cx| {
+                if app.selected == "subnet" && index == 0 {
+                    editor.set_compact(true, cx);
+                }
                 let mut appearance = EditorAppearance::plain();
                 appearance.font_family =
                     if ["qr", "textTools", "ai"].contains(&app.selected.as_str()) {
@@ -121,12 +127,18 @@ impl BelloBox {
                         "monospace".into()
                     };
                 appearance.font_size = if ["qr", "textTools", "ai"].contains(&app.selected.as_str())
+                    || (app.selected == "subnet" && index == 0)
                 {
                     13.
                 } else {
                     12.
                 };
                 appearance.line_height = 18.;
+                if app.selected == "subnet" && index == 0 {
+                    // Keep one full text row inside the 38 px compact field.
+                    appearance.padding_x = 0.;
+                    appearance.padding_y = 0.;
+                }
                 appearance.text = palette.primary;
                 appearance.caret = palette.accent;
                 appearance.selection = palette.accent.opacity(0.18);
@@ -135,6 +147,9 @@ impl BelloBox {
             });
         }
         app.init_snippets(window, cx);
+        if app.selected == "subnet" {
+            app.input.read(cx).focus(window);
+        }
         if app.selected == "ai" {
             app.input.update(cx, |e, cx| e.set_read_only(true, cx));
         }
@@ -166,7 +181,8 @@ impl BelloBox {
             .controls
             .second(&self.selected, self.second.read(cx).text());
         if id == "ai"
-            || (id == "stringEscape" && crate::tool_controls::string_literal_is_idle(&input))
+            || (matches!(id.as_str(), "stringEscape" | "subnet")
+                && crate::tool_controls::source_input_is_idle(&input))
             || input.is_empty()
                 && !["worldClock", "textTools", "generate", "screenshot"].contains(&id.as_str())
                 && !(id == "listSet" && !second.is_empty())
@@ -218,7 +234,7 @@ impl BelloBox {
             .detach();
             return;
         }
-        if id == "stringEscape" {
+        if matches!(id.as_str(), "stringEscape" | "subnet") {
             self.output
                 .update(cx, |editor, cx| editor.set_text(String::new(), cx));
         }
@@ -272,6 +288,8 @@ impl BelloBox {
                                     value.split('\n').count()
                                 }
                             )
+                        } else if this.selected == "subnet" {
+                            "IPv4 subnet · calculated locally".into()
                         } else if this.selected == "stringEscape" {
                             format!("{} · literal text only", this.controls.value("mode"))
                         } else if this.selected == "snippets" {
@@ -1138,7 +1156,9 @@ impl BelloBox {
                 | "certificate"
                 | "stringEscape"
         );
-        let height = if self.selected == "stringEscape" {
+        let height = if self.selected == "subnet" {
+            38.
+        } else if self.selected == "stringEscape" {
             crate::tool_controls::string_literal_editor_height(self.input.read(cx).text())
         } else if ["time", "cron", "url"].contains(&self.selected.as_str()) {
             70.
@@ -1183,7 +1203,34 @@ impl BelloBox {
                 .flex_col()
                 .gap(px(8.))
                 .child(self.input_actions(self.controls.input_label(&self.selected), p, cx))
-                .child(editor_card(self.input.clone(), height, p))
+                .child(editor_card(self.input.clone(), height, p).when(
+                    self.selected == "subnet",
+                    |field| {
+                        field
+                            .p(px(8.))
+                            .rounded(px(8.))
+                            .relative()
+                            .when(self.input.read(cx).text().is_empty(), |field| {
+                                field.child(
+                                    div()
+                                        .absolute()
+                                        .left(px(9.))
+                                        .top(px(9.))
+                                        .text_size(px(13.))
+                                        .line_height(px(18.))
+                                        .font_family("monospace")
+                                        .text_color(p.secondary)
+                                        .child("192.168.1.42/24"),
+                                )
+                            })
+                            .on_mouse_down(
+                                gpui::MouseButton::Left,
+                                cx.listener(|this, _, window, cx| {
+                                    this.input.read(cx).focus(window)
+                                }),
+                            )
+                    },
+                ))
                 .when(has_second, |s| {
                     s.child(
                         div()
@@ -1219,6 +1266,8 @@ impl BelloBox {
                                 "Working…"
                             } else if self.warning {
                                 "Validation issues"
+                            } else if self.selected == "subnet" {
+                                "IPv4 subnet · calculated locally"
                             } else if self.selected == "json" {
                                 "Numbers preserved"
                             } else {
@@ -1320,7 +1369,10 @@ impl BelloBox {
                         )
                     })
                     .when(
-                        !matches!(self.selected.as_str(), "listSet" | "stringEscape"),
+                        !matches!(
+                            self.selected.as_str(),
+                            "listSet" | "stringEscape" | "subnet"
+                        ),
                         |s| {
                             s.child(button("use-input", "Use as Input", p).on_click(cx.listener(
                                 |this, _, _, cx| {
@@ -1337,7 +1389,7 @@ impl BelloBox {
                     .child(
                         button("copy-result", "Copy Result", p)
                             .when(
-                                self.selected == "stringEscape"
+                                matches!(self.selected.as_str(), "stringEscape" | "subnet")
                                     && !crate::tool_controls::source_copy_enabled(
                                         self.busy,
                                         self.error.is_some(),
@@ -1346,13 +1398,14 @@ impl BelloBox {
                                 |s| s.opacity(0.45).cursor_default(),
                             )
                             .on_click(cx.listener(|this, _, _, cx| {
-                                if matches!(this.selected.as_str(), "listSet" | "stringEscape")
-                                    && !crate::tool_controls::source_copy_enabled(
-                                        this.busy,
-                                        this.error.is_some(),
-                                        this.output.read(cx).text(),
-                                    )
-                                {
+                                if matches!(
+                                    this.selected.as_str(),
+                                    "listSet" | "stringEscape" | "subnet"
+                                ) && !crate::tool_controls::source_copy_enabled(
+                                    this.busy,
+                                    this.error.is_some(),
+                                    this.output.read(cx).text(),
+                                ) {
                                     return;
                                 }
                                 cx.write_to_clipboard(ClipboardItem::new_string(

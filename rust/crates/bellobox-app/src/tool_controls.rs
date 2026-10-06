@@ -164,6 +164,7 @@ pub fn input_label(tool: &str) -> &'static str {
         "compare" => "First text",
         "listSet" => "First list · one item per line",
         "snippets" => "Template",
+        "subnet" => "IPv4 / prefix · e.g. 192.168.1.42/24",
         _ => "Input",
     }
 }
@@ -194,7 +195,7 @@ fn source_editor_height(text: &str, columns: usize) -> f32 {
 }
 /// Foundation whitespacesAndNewlines used only for the source UI idle gate.
 /// The actual submitted document remains untouched.
-pub fn string_literal_is_idle(input: &str) -> bool {
+pub fn source_input_is_idle(input: &str) -> bool {
     input.chars().all(|c| {
         matches!(
             c,
@@ -213,7 +214,7 @@ pub fn string_literal_is_idle(input: &str) -> bool {
 }
 /// Only shown after a job completes without an error; empty output can be success.
 pub fn string_literal_empty_message(input: &str, format: &str) -> String {
-    if string_literal_is_idle(input) {
+    if source_input_is_idle(input) {
         "Paste text or use an example to begin.".into()
     } else {
         format!("{format} · literal text only")

@@ -264,7 +264,7 @@ for many tools still need restoration. Sources below are in
 | `extract` | `TextUtilities.swift` | Heuristic unique URLs/emails; other extraction modes absent |
 | `listSet` | `TextUtilities.swift` | Five source operations, Exact/Trim/Trim & ignore case, first-seen order and canonical equality; scoped checks below |
 | `semver` | `SecurityUtilities.swift` | SemVer comparison/sort; full range UI absent |
-| `subnet` | `SecurityUtilities.swift` | IPv4/CIDR including /31,/32; IPv6 absent |
+| `subnet` | `SecurityUtilities.swift` | Source IPv4-only calculator, canonical CIDR validation and nine result rows including /0,/31,/32 semantics; scoped checks below |
 | `chmod` | `SecurityUtilities.swift` | Octal/rwx inspection; symbolic special-bit input absent |
 | `hmac` | `SecurityUtilities.swift` | HMAC-SHA256, ephemeral key; other hashes and masked GUI key absent |
 | `jsonSchema` | `JSONSchemaTool.swift` | Source keyword subset; exact decimal comparisons, code-point counts, local-reference preflight and 50,000-work/64-depth/100-issue limits. Paired document/schema editors restored; current tests cover source fixtures and adversarial references. |
@@ -703,3 +703,43 @@ empty output, disabled Copy on error/empty, whitespace-only idle state,
 Clear/Example reset, 740×560 readability, and close/reopen restoring empty input
 and JSON quote. Windows closed normally. This is scoped Linux evidence, not
 macOS, native IME, exhaustive clipboard coverage or full UI acceptance.
+
+## IPv4 Subnet Calculator checkpoint (2026-10-06)
+
+Sources: `DeveloperTools/SecurityUtilities.swift`, `StructuredUtilities.swift`
+(`JSONPointerTool.index`), `AdditionalUtility.swift` and
+`Launcher/AdditionalUtilityViews.swift`. The engine now follows the source
+validation order: Foundation outer-whitespace trimming; 64-byte trimmed input;
+exactly one slash and canonical ASCII decimal prefix 0–32; four decimal octets
+0–255 with no leading zero, sign or internal whitespace. Inputs and errors are
+not silently normalized or truncated. The existing overall 500,000-byte combined
+Rust wrapper limit remains smaller than Swift's per-field 512,000-byte limit.
+
+The nine aligned source output rows include wildcard, last address, total address
+count and usable hosts. /0 arithmetic uses a 64-bit count. /31 and /32 label
+Broadcast as Not applicable, retaining the last address separately, with their
+source-specific notes. Source engine status appears in the result heading/footer.
+The existing `--tool subnet --input …` interface remains; its textual output
+intentionally changes to the source format rather than preserving the previous
+incomplete rows. This is IPv4-only, matching Swift; IPv6 was not added.
+
+The GUI uses one 38-point compact monospaced field with source label and example
+placeholder, initial focus, Example/Paste/Clear, and a read-only result. No options,
+second field or Use as Input is shown. Whitespace-only drafts are idle. Recalculation
+clears stale output immediately; Copy is visibly disabled and refuses
+busy/error/empty output. Existing generation fences still reject old completions.
+No network, persistence, dependencies or shared-editor code was added.
+
+Focused validation: four engine tests cover exact /24,/0,/31,/32 output, odd /31
+normalization and address boundaries, canonical prefix/octet rejection and error
+order, Foundation whitespace, trimmed length and wrapper bounds. Thirteen
+headless control/height regressions pass, including a new subnet label/no-options/
+example/error-recovery case. Strict app/core all-target Clippy, app build and
+formatting and minimal-feature app checks pass. Independent review verified the
+source engine and corrected compact-field padding before native QA. Independent Linux/SwiftShader QA passed on immutable binary SHA-256
+`737713e6af8bbb04bda92d9886c291967aaf045590d46adee5cb1fc576c54c5e`:
+all nine output rows for /24,/0,/31,/32, source notes and full copied report,
+canonical prefix/octet errors with Example recovery, Clear/Paste, compact field
+readability, exact 740×560 controls/results, and close/reopen returning to empty
+idle state. The app closed normally. These are scoped native Linux checks, not
+macOS/IME, full platform-field behavior or launcher interactive-preview transfer.

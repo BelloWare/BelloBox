@@ -216,10 +216,10 @@ fn string_literal_source_format_menu_routes_without_an_option_document() {
 #[test]
 fn string_literal_source_idle_copy_and_bounded_editor_height() {
     for value in ["", " \t\r\n", "\u{200b}\u{85}\u{2028}"] {
-        assert!(controls::string_literal_is_idle(value));
+        assert!(controls::source_input_is_idle(value));
     }
     for value in [" a ", "\0", "\"\"", "\u{feff}"] {
-        assert!(!controls::string_literal_is_idle(value));
+        assert!(!controls::source_input_is_idle(value));
     }
     for (busy, error, output, enabled) in [
         (false, false, "ok", true),
@@ -252,4 +252,33 @@ fn string_literal_empty_success_differs_from_idle() {
         "Paste text or use an example to begin."
     );
     assert!(!controls::source_copy_enabled(false, false, ""));
+}
+
+#[test]
+fn subnet_source_label_example_no_options_and_error_recovery() {
+    let mut state = ToolControls::new("subnet", "192.168.1.42/24");
+    assert!(controls::choices("subnet").is_empty());
+    assert!(!state.select("subnet", "mode", "IPv6"));
+    assert_eq!(
+        state.input_label("subnet"),
+        "IPv4 / prefix · e.g. 192.168.1.42/24"
+    );
+    let example = bellobox_core::developer::catalog()
+        .into_iter()
+        .find(|tool| tool.id == "subnet")
+        .unwrap()
+        .example;
+    assert_eq!(example, "192.168.1.42/24");
+    assert!(execute("subnet", "192.168.1.42/024", &state.second("subnet", "")).is_err());
+    assert!(
+        execute("subnet", example, &state.second("subnet", ""))
+            .unwrap()
+            .contains("Broadcast    192.168.1.255")
+    );
+    for input in ["", " \r\n\t", "\u{200b}\u{2029}"] {
+        assert!(controls::source_input_is_idle(input));
+    }
+    assert!(!controls::source_input_is_idle("0.0.0.0/0"));
+    assert!(!controls::source_copy_enabled(true, false, "old result"));
+    assert!(!controls::source_copy_enabled(false, true, "old result"));
 }

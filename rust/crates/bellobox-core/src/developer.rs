@@ -24,6 +24,8 @@ mod plist_engine;
 mod sql_formatter;
 #[path = "developer/string_literal.rs"]
 mod string_literal;
+#[path = "developer/subnet.rs"]
+mod subnet;
 
 const MAX_INPUT: usize = 500_000;
 const MAX_OUTPUT: usize = 4_000_000;
@@ -149,7 +151,7 @@ pub fn execute(id: &str, input: &str, second: &str) -> R<String> {
         "extract" => extract(input, second),
         "listSet" => list_set::run(input, second, "Union", "Exact"),
         "semver" => semver_tool(input, second),
-        "subnet" => subnet(input),
+        "subnet" => subnet::run(input),
         "chmod" => chmod(input),
         "hmac" => {
             if second.is_empty() {
@@ -1931,37 +1933,6 @@ fn semver_tool(s: &str, second: &str) -> R<String> {
         .map(ToString::to_string)
         .collect::<Vec<_>>()
         .join("\n"))
-}
-fn subnet(s: &str) -> R<String> {
-    let (ip, p) = s
-        .trim()
-        .split_once('/')
-        .ok_or("Use IPv4/prefix, e.g. 192.168.1.42/24.")?;
-    let ip = ip
-        .parse::<std::net::Ipv4Addr>()
-        .map_err(|_| "Invalid IPv4 address.")?;
-    let p = p.parse::<u32>().map_err(|_| "Invalid prefix.")?;
-    if p > 32 {
-        return Err("IPv4 prefix must be 0–32.".into());
-    }
-    let mask = if p == 0 { 0 } else { u32::MAX << (32 - p) };
-    let network = u32::from(ip) & mask;
-    let broadcast = network | !mask;
-    let count = 1u64 << (32 - p);
-    let (first, last, hosts) = if p >= 31 {
-        (network, broadcast, count)
-    } else {
-        (network + 1, broadcast - 1, count - 2)
-    };
-    let fmt = std::net::Ipv4Addr::from;
-    Ok(format!(
-        "Network: {}/{p}\nNetmask: {}\nBroadcast: {}\nRange: {} – {}\nUsable hosts: {hosts}\n/31 follows point-to-point semantics; /32 is one host.",
-        fmt(network),
-        fmt(mask),
-        fmt(broadcast),
-        fmt(first),
-        fmt(last)
-    ))
 }
 fn chmod(s: &str) -> R<String> {
     let s = s.trim();
