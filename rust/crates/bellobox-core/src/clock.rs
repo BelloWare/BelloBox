@@ -4,6 +4,8 @@ use chrono::{
 };
 use chrono_tz::Tz;
 
+pub mod copilot;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Quality {
     Working,
