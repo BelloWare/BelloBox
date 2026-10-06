@@ -2,8 +2,9 @@
 //!
 //! No helper fallback, permission request, clipboard, filesystem, network, or
 //! automatic capture. Call only after an explicit user gesture, on a worker.
-//! The host hides its capture UI/all BelloBox windows before invoking this API
-//! and restores them on completion/cancellation. Region coordinates are LOCAL
+//! For Display/Region the host hides its capture UI/all BelloBox windows first
+//! and restores them on completion/cancellation. This hide transaction does not
+//! apply to the disabled future frozen-overlay Window refresh. Region coordinates are LOCAL
 //! TOP-LEFT DISPLAY POINTS, never desktop pixels or Cocoa bottom-left points.
 //! macOS 13's source SCStream fallback is not implemented by this API.
 #[cfg(any(target_os = "macos", test))]
@@ -359,4 +360,113 @@ pub fn capture(
         let _ = request;
         Err(CaptureError::Unsupported)
     }
+}
+
+/// Window capture remains unavailable in production. Native unit-test builds
+/// compile the candidate without adding an app route or requesting permission.
+pub const NATIVE_WINDOW_CAPTURE_IMPLEMENTED: bool = false;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum WindowCaptureError {
+    Unavailable,
+    Native(CaptureError),
+    Policy(crate::window_capture::WindowPolicyError),
+}
+impl From<CaptureError> for WindowCaptureError {
+    fn from(value: CaptureError) -> Self {
+        Self::Native(value)
+    }
+}
+impl From<crate::window_capture::WindowPolicyError> for WindowCaptureError {
+    fn from(value: crate::window_capture::WindowPolicyError) -> Self {
+        Self::Policy(value)
+    }
+}
+impl fmt::Display for WindowCaptureError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Unavailable => f.write_str("Independent window capture is not enabled."),
+            Self::Native(error) => error.fmt(f),
+            Self::Policy(error) => error.fmt(f),
+        }
+    }
+}
+impl std::error::Error for WindowCaptureError {}
+pub type WindowCaptureResult<T> = Result<T, WindowCaptureError>;
+
+/// Pointer-free, caller-owned live session/generation. The host advances this on
+/// reselection/reopen and cancels its original cancellation flag on dismissal.
+/// No native object, permission or atomic window-incarnation guarantee is stored.
+/// Updating this token, or cancelling a separate selection flag, cannot interrupt
+/// ImageIO already encoding. The PNG sink observes the operation Job's flag and
+/// deadline; generation/selection checks at later boundaries reject stale output.
+/// The host must recheck its document/session/cancellation before publication.
+#[derive(Debug)]
+pub struct WindowCaptureSession(std::sync::Mutex<crate::window_capture::WindowSelectionToken>);
+impl WindowCaptureSession {
+    pub fn new(token: crate::window_capture::WindowSelectionToken) -> WindowCaptureResult<Self> {
+        if token.session == 0 {
+            return Err(crate::window_capture::WindowPolicyError::InvalidMetadata.into());
+        }
+        Ok(Self(std::sync::Mutex::new(token)))
+    }
+    pub fn update(
+        &self,
+        token: crate::window_capture::WindowSelectionToken,
+    ) -> WindowCaptureResult<()> {
+        if token.session == 0 {
+            return Err(crate::window_capture::WindowPolicyError::InvalidMetadata.into());
+        }
+        *self.0.lock().map_err(|_| CaptureError::NativeFailure)? = token;
+        Ok(())
+    }
+    pub fn current(&self) -> WindowCaptureResult<crate::window_capture::WindowSelectionToken> {
+        Ok(*self.0.lock().map_err(|_| CaptureError::NativeFailure)?)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct WindowCaptureDiagnostics {
+    pub window_id: u32,
+    pub owner_process_id: i32,
+    pub output_size: CapturePixelSize,
+    pub includes_cursor: bool,
+    pub backend: &'static str,
+}
+pub struct NativeWindowCaptureSnapshot {
+    pub png: Vec<u8>,
+    pub diagnostics: WindowCaptureDiagnostics,
+}
+impl fmt::Debug for NativeWindowCaptureSnapshot {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("NativeWindowCaptureSnapshot")
+            .field("png_byte_count", &self.png.len())
+            .field("diagnostics", &self.diagnostics)
+            .finish()
+    }
+}
+
+/// Deliberately disabled before any enumeration, native call, permission check,
+/// image acquisition or app side effect. The future frozen-overlay host must
+/// perform its own final document/session/cancellation publication check.
+pub fn capture_window(
+    _selection: crate::window_capture::WindowCaptureSelection,
+    _options: crate::window_capture::WindowCaptureOptions,
+    _session: Arc<WindowCaptureSession>,
+    _cancellation: CaptureCancellation,
+) -> WindowCaptureResult<NativeWindowCaptureSnapshot> {
+    Err(WindowCaptureError::Unavailable)
+}
+
+#[cfg(test)]
+fn validate_external_window_owner(owner_process_id: i32) -> WindowCaptureResult<()> {
+    if owner_process_id <= 0 {
+        return Err(crate::window_capture::WindowPolicyError::InvalidMetadata.into());
+    }
+    // Native trust boundary: never rely solely on the pure policy's injected
+    // own PID. A mistakenly constructed selection cannot authorize self-capture.
+    if u32::try_from(owner_process_id).ok() == Some(std::process::id()) {
+        return Err(crate::window_capture::WindowPolicyError::IneligibleWindow.into());
+    }
+    Ok(())
 }

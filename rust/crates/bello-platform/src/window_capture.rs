@@ -5,11 +5,13 @@
 //! occurs here. This narrower candidate accepts normal-layer windows wholly in
 //! the unrotated main display. There is no visible-frame/display-crop fallback.
 //!
-//! Selected CG metadata, the retained SCWindow's metadata and a fresh CG catalog
-//! are separate inputs. The caller must really retain and use the selected native
-//! object; these values cannot prove native ownership or atomic window incarnation.
-//! A fresh matching row is never authority to replace that native object. A future
-//! adapter must disable audio and preserve Swift's shadow/opacity/clip defaults.
+//! Selected CG metadata, callback-local SCWindow submission evidence and fresh CG
+//! observations are distinct. A plan binds metadata from the exact SCWindow used
+//! to construct the filter in the content callback, then copies only Rust evidence.
+//! Completion checks fresh CG/topology/session/cancellation/image-size inputs;
+//! it does not reread that SCWindow or revalidate its native bundle. These checks
+//! do not prove atomic window incarnation. A future adapter must disable audio
+//! and preserve Swift's shadow/opacity/clip defaults.
 
 use crate::native_capture::{
     CaptureCancellation, CaptureDisplay, CapturePixelSize, CaptureRect, CaptureRequest,
@@ -76,7 +78,8 @@ pub struct WindowIdentity<'a> {
     pub window_id: u32,
     pub owner_process_id: i32,
     /// Active CG catalog data has None. Separately identity-matched native source
-    /// metadata may enrich it. Missing CG data never erases a known source bundle.
+    /// metadata may enrich it at submission. Missing CG data never erases that
+    /// evidence, but it does not independently revalidate the native bundle.
     pub owner_bundle_id: Option<&'a str>,
 }
 impl fmt::Debug for WindowIdentity<'_> {
@@ -96,10 +99,11 @@ pub struct WindowObservation<'a> {
     pub alpha: f64,
     pub on_screen: bool,
 }
-/// Properties of the SAME retained native object at each boundary, not properties
-/// of whichever freshly enumerated object happens to match the selection.
+/// Immutable submission evidence, read from the exact callback-local SCWindow
+/// used to create the content filter. This is not a native object owner and is
+/// never supplied as a purported fresh native-object observation at completion.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct RetainedWindowSource<'a> {
+pub struct SubmittedWindowSource<'a> {
     pub identity: WindowIdentity<'a>,
     pub frame: WindowFrame,
     pub layer: i64,
@@ -195,13 +199,25 @@ pub struct WindowCaptureSelection(Arc<Selection>);
 #[derive(Debug)]
 pub struct WindowCapturePlan {
     selection: WindowCaptureSelection,
-    retained_identity: OwnedIdentity,
+    submitted_identity: OwnedIdentity,
     output_size: CapturePixelSize,
     options: WindowCaptureOptions,
     cancellation: CaptureCancellation,
 }
 
 impl WindowCaptureSelection {
+    /// Identifies which SCWindow the content callback may submit. This accessor
+    /// does not enumerate content or authorize a capture on its own.
+    pub fn selected_identity(&self) -> WindowIdentity<'_> {
+        self.0.identity.borrowed()
+    }
+
+    /// Allows the native entry/continuations to reject a cancelled selection
+    /// before enumeration, even when their operation has a fresh job flag.
+    pub fn is_cancelled(&self) -> bool {
+        self.0.cancellation.is_cancelled()
+    }
+
     pub fn new(
         selected: WindowObservation<'_>,
         topology: WindowTopology<'_>,
@@ -236,11 +252,13 @@ impl WindowCaptureSelection {
         })))
     }
 
-    /// Fresh metadata validates the selected retained native object; it never
-    /// chooses a replacement. Cancellation cannot be reset by passing a new flag.
+    /// Validates the callback-local native source before it is submitted and
+    /// freezes its identity as evidence. The caller must construct the filter
+    /// from that exact source object, not a later lookup. Cancellation cannot be
+    /// reset by passing a fresh flag.
     pub fn plan(
         &self,
-        retained: RetainedWindowSource<'_>,
+        submission: SubmittedWindowSource<'_>,
         fresh: &[WindowObservation<'_>],
         topology: WindowTopology<'_>,
         token: WindowSelectionToken,
@@ -251,13 +269,20 @@ impl WindowCaptureSelection {
         if options.timeout.is_zero() || options.timeout > MAX_CAPTURE_TIMEOUT {
             return Err(WindowPolicyError::InvalidOptions);
         }
-        self.validate_current(retained, fresh, topology, token, cancellation)?;
+        if token != self.0.token {
+            return Err(WindowPolicyError::StaleSelection);
+        }
+        self.validate_submission(submission)?;
+        let observed = self.validate_current(fresh, topology, token, cancellation)?;
+        if !matches_known(observed.identity, submission.identity) {
+            return Err(WindowPolicyError::WindowChanged);
+        }
         let output_size = output_size(self.0.frame, validate_topology(topology)?)?;
-        let retained_identity = OwnedIdentity::copy(retained.identity)?;
+        let submitted_identity = OwnedIdentity::copy(submission.identity)?;
         self.check_cancellation(cancellation)?;
         Ok(WindowCapturePlan {
             selection: self.clone(),
-            retained_identity,
+            submitted_identity,
             output_size,
             options,
             cancellation: cancellation.clone(),
@@ -269,27 +294,30 @@ impl WindowCaptureSelection {
         check_cancel(boundary)
     }
 
-    fn validate_current(
+    fn validate_submission(&self, submission: SubmittedWindowSource<'_>) -> WindowPolicyResult<()> {
+        validate_identity(submission.identity)?;
+        validate_frame(submission.frame)?;
+        if submission.layer != 0 || !submission.on_screen {
+            return Err(WindowPolicyError::IneligibleWindow);
+        }
+        if !matches_known(self.0.identity.borrowed(), submission.identity)
+            || submission.frame != self.0.frame
+        {
+            return Err(WindowPolicyError::WindowChanged);
+        }
+        Ok(())
+    }
+
+    fn validate_current<'a>(
         &self,
-        retained: RetainedWindowSource<'_>,
-        fresh: &[WindowObservation<'_>],
+        fresh: &[WindowObservation<'a>],
         topology: WindowTopology<'_>,
         token: WindowSelectionToken,
         cancellation: &CaptureCancellation,
-    ) -> WindowPolicyResult<()> {
+    ) -> WindowPolicyResult<WindowObservation<'a>> {
         self.check_cancellation(cancellation)?;
         if token != self.0.token {
             return Err(WindowPolicyError::StaleSelection);
-        }
-        validate_identity(retained.identity)?;
-        validate_frame(retained.frame)?;
-        if retained.layer != 0 || !retained.on_screen {
-            return Err(WindowPolicyError::IneligibleWindow);
-        }
-        if !matches_known(self.0.identity.borrowed(), retained.identity)
-            || retained.frame != self.0.frame
-        {
-            return Err(WindowPolicyError::WindowChanged);
         }
         validate_topology(topology)?;
         if topology.main_display_id != self.0.main_display_id
@@ -317,12 +345,13 @@ impl WindowCaptureSelection {
         }
         let observed = found.ok_or(WindowPolicyError::WindowNotFound)?;
         eligible(observed, self.0.own_process_id)?;
-        // Missing fresh CG bundle makes no claim. A supplied fresh bundle must
-        // also exist on, and equal, the retained object's independently read value.
-        if !matches_known(observed.identity, retained.identity) || observed.frame != self.0.frame {
+        if observed.identity.owner_process_id != self.0.identity.owner_process_id
+            || observed.frame != self.0.frame
+        {
             return Err(WindowPolicyError::WindowChanged);
         }
-        self.check_cancellation(cancellation)
+        self.check_cancellation(cancellation)?;
+        Ok(observed)
     }
 }
 impl WindowCapturePlan {
@@ -332,8 +361,9 @@ impl WindowCapturePlan {
     pub fn options(&self) -> WindowCaptureOptions {
         self.options
     }
-    pub fn retained_identity(&self) -> WindowIdentity<'_> {
-        self.retained_identity.borrowed()
+    /// What was bound into the filter at submission, not fresh native metadata.
+    pub fn submitted_identity(&self) -> WindowIdentity<'_> {
+        self.submitted_identity.borrowed()
     }
 
     fn check_cancellation(&self, boundary: &CaptureCancellation) -> WindowPolicyResult<()> {
@@ -341,12 +371,14 @@ impl WindowCapturePlan {
         check_cancel(&self.cancellation)
     }
 
-    /// Recheck after native capture/encoding and before handoff. This function
-    /// does not publish/consume the plan or authenticate the image. The host must
-    /// retain its exactly-once Job and publication-time session/cancellation gate.
+    /// Recheck fresh CG metadata after encoding; there is deliberately no native
+    /// source argument. Missing CG bundle information makes no claim, while any
+    /// supplied bundle must agree with immutable submission evidence. This does
+    /// not reread the SCWindow/native bundle, prove incarnation or authenticate
+    /// the image. The host still owns exactly-once Job acceptance and the final
+    /// publication-time session/cancellation gate.
     pub fn validate_completion(
         &self,
-        retained: RetainedWindowSource<'_>,
         fresh: &[WindowObservation<'_>],
         topology: WindowTopology<'_>,
         token: WindowSelectionToken,
@@ -354,13 +386,12 @@ impl WindowCapturePlan {
         cancellation: &CaptureCancellation,
     ) -> WindowPolicyResult<()> {
         self.check_cancellation(cancellation)?;
-        // Bind presence as well as contents. Enrichment cannot silently disappear,
-        // change, or appear on a supposedly identical retained source at completion.
-        if retained.identity != self.retained_identity.borrowed() {
+        let observed = self
+            .selection
+            .validate_current(fresh, topology, token, cancellation)?;
+        if !matches_known(observed.identity, self.submitted_identity.borrowed()) {
             return Err(WindowPolicyError::WindowChanged);
         }
-        self.selection
-            .validate_current(retained, fresh, topology, token, cancellation)?;
         image_size
             .validate()
             .map_err(|_| WindowPolicyError::OutputTooLarge)?;

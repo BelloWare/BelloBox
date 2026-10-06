@@ -31,20 +31,22 @@ pub(super) enum Stage {
     Image,
     EncodingQueued,
     Encoding,
+    #[cfg(test)]
+    Validating,
     Completed,
     Abandoned,
 }
-struct State<T> {
+struct State<T, E> {
     stage: Stage,
-    result: Option<CaptureResult<T>>,
+    result: Option<Result<T, E>>,
 }
-pub(super) struct Job<T> {
-    state: Mutex<State<T>>,
+pub(super) struct Job<T, E = CaptureError> {
+    state: Mutex<State<T, E>>,
     changed: Condvar,
     cancellation: CaptureCancellation,
     deadline: Instant,
 }
-impl<T> Job<T> {
+impl<T, E: From<CaptureError>> Job<T, E> {
     pub(super) fn new(cancellation: CaptureCancellation, timeout: Duration) -> Arc<Self> {
         Arc::new(Self {
             state: Mutex::new(State {
@@ -81,7 +83,7 @@ impl<T> Job<T> {
         state.stage = to;
         true
     }
-    pub(super) fn complete(&self, value: CaptureResult<T>) -> bool {
+    pub(super) fn complete(&self, value: Result<T, E>) -> bool {
         let mut state = self.state.lock().unwrap_or_else(|p| p.into_inner());
         if self.interruption().is_some()
             || matches!(state.stage, Stage::Completed | Stage::Abandoned)
@@ -93,13 +95,13 @@ impl<T> Job<T> {
         self.changed.notify_all();
         true
     }
-    pub(super) fn wait(&self) -> CaptureResult<T> {
+    pub(super) fn wait(&self) -> Result<T, E> {
         let mut state = self.state.lock().unwrap_or_else(|p| p.into_inner());
         loop {
             if let Some(error) = self.interruption() {
                 state.stage = Stage::Abandoned;
                 state.result = None;
-                return Err(error);
+                return Err(error.into());
             }
             if let Some(result) = state.result.take() {
                 return result;

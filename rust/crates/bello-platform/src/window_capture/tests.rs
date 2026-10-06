@@ -41,8 +41,8 @@ fn topology(displays: &[WindowDisplayGeometry]) -> WindowTopology<'_> {
         displays,
     }
 }
-fn source(value: WindowObservation<'_>) -> RetainedWindowSource<'_> {
-    RetainedWindowSource {
+fn source(value: WindowObservation<'_>) -> SubmittedWindowSource<'_> {
+    SubmittedWindowSource {
         identity: value.identity,
         frame: value.frame,
         layer: value.layer,
@@ -64,7 +64,7 @@ fn select(
 
 struct Fixture {
     selection: WindowCaptureSelection,
-    retained: RetainedWindowSource<'static>,
+    submission: SubmittedWindowSource<'static>,
     fresh: Vec<WindowObservation<'static>>,
     displays: Vec<WindowDisplayGeometry>,
     main_id: u32,
@@ -87,7 +87,7 @@ impl Fixture {
         .unwrap();
         Self {
             selection,
-            retained: source(observed()),
+            submission: source(observed()),
             fresh: vec![observed()],
             displays,
             main_id: 1,
@@ -105,7 +105,7 @@ impl Fixture {
     }
     fn plan(&self) -> WindowPolicyResult<WindowCapturePlan> {
         self.selection.plan(
-            self.retained,
+            self.submission,
             &self.fresh,
             self.topology(),
             self.token,
@@ -124,7 +124,6 @@ impl Fixture {
         // Deliberately a NEW boundary flag: stored selection/job flags must still
         // prevent a cancelled object from being revived by this caller.
         plan.validate_completion(
-            self.retained,
             &self.fresh,
             self.topology(),
             self.token,
@@ -340,32 +339,36 @@ fn debug_never_discloses_native_bundle_text() {
 }
 
 #[test]
-fn raw_cg_bundle_none_and_retained_some_are_compatible_and_bound() {
+fn raw_cg_bundle_none_and_submission_some_are_compatible_and_bound() {
     let mut f = Fixture::new();
-    f.retained.identity.owner_bundle_id = Some("retained.bundle");
+    f.submission.identity.owner_bundle_id = Some("submission.bundle");
     let plan = f.plan().unwrap();
     assert_eq!(
-        plan.retained_identity().owner_bundle_id,
-        Some("retained.bundle")
+        plan.submitted_identity().owner_bundle_id,
+        Some("submission.bundle")
     );
     assert_eq!(f.complete(&plan), Ok(()));
-    for bundle in [None, Some("different.bundle")] {
-        f.retained.identity.owner_bundle_id = bundle;
-        assert_eq!(f.complete(&plan), Err(WindowPolicyError::WindowChanged));
-    }
+    f.fresh[0].identity.owner_bundle_id = Some("different.bundle");
+    assert_eq!(f.complete(&plan), Err(WindowPolicyError::WindowChanged));
+    f.fresh[0].identity.owner_bundle_id = None;
+    assert_eq!(f.complete(&plan), Ok(()));
+    assert_eq!(
+        plan.submitted_identity().owner_bundle_id,
+        Some("submission.bundle")
+    );
 }
 
 #[test]
-fn known_selected_bundle_must_remain_on_the_retained_source() {
+fn known_selected_bundle_must_match_callback_local_submission() {
     let mut value = observed();
     value.identity.owner_bundle_id = Some("selected.bundle");
     let selected = select(value, &[display()]).unwrap();
     for bundle in [None, Some("another.bundle")] {
-        let mut retained = source(value);
-        retained.identity.owner_bundle_id = bundle;
+        let mut submission = source(value);
+        submission.identity.owner_bundle_id = bundle;
         assert!(matches!(
             selected.plan(
-                retained,
+                submission,
                 &[observed()],
                 topology(&[display()]),
                 TOKEN,
@@ -378,23 +381,70 @@ fn known_selected_bundle_must_remain_on_the_retained_source() {
 }
 
 #[test]
-fn fresh_bundle_must_match_retained_evidence_even_when_selection_bundle_is_absent() {
+fn fresh_bundle_must_match_submission_evidence_even_when_selection_bundle_is_absent() {
     let mut f = Fixture::new();
     f.fresh[0].identity.owner_bundle_id = Some("fresh.bundle");
     assert!(matches!(f.plan(), Err(WindowPolicyError::WindowChanged)));
-    f.retained.identity.owner_bundle_id = Some("other.bundle");
+    f.submission.identity.owner_bundle_id = Some("other.bundle");
     assert!(matches!(f.plan(), Err(WindowPolicyError::WindowChanged)));
-    f.retained.identity.owner_bundle_id = Some("fresh.bundle");
+    f.submission.identity.owner_bundle_id = Some("fresh.bundle");
     let plan = f.plan().unwrap();
     f.fresh[0].identity.owner_bundle_id = Some("new.bundle");
     assert_eq!(f.complete(&plan), Err(WindowPolicyError::WindowChanged));
 }
 
 #[test]
-fn completion_rejects_late_retained_bundle_enrichment_as_well_as_changes() {
+fn completion_rejects_fresh_bundle_not_evidenced_at_submission() {
     let mut f = Fixture::new();
     let plan = f.plan().unwrap();
-    f.retained.identity.owner_bundle_id = Some("late.bundle");
+    f.fresh[0].identity.owner_bundle_id = Some("late.bundle");
+    assert_eq!(f.complete(&plan), Err(WindowPolicyError::WindowChanged));
+}
+
+#[test]
+fn completion_uses_owned_submission_evidence_after_callback_local_data_is_gone() {
+    let f = Fixture::new();
+    let plan = {
+        let bundle = String::from("callback.local.bundle");
+        let mut submission = source(observed());
+        submission.identity.owner_bundle_id = Some(&bundle);
+        f.selection
+            .plan(
+                submission,
+                &f.fresh,
+                f.topology(),
+                f.token,
+                f.options,
+                &f.job_cancel,
+            )
+            .unwrap()
+        // The callback-local borrowed metadata is gone after this block. There
+        // is no native-source argument to fake rereading at completion.
+    };
+    assert_eq!(
+        plan.submitted_identity().owner_bundle_id,
+        Some("callback.local.bundle")
+    );
+    assert_eq!(f.complete(&plan), Ok(()));
+}
+
+#[test]
+fn mutable_caller_source_copy_does_not_replace_immutable_submission_evidence() {
+    let mut f = Fixture::new();
+    f.submission.identity.owner_bundle_id = Some("bound.bundle");
+    let plan = f.plan().unwrap();
+    // An unrelated mutable copy is not a native-object reread. Completion only
+    // checks supplied fresh CG observations against the stored submission.
+    f.submission.identity.owner_bundle_id = Some("other.bundle");
+    f.submission.identity.owner_process_id += 1;
+    f.submission.frame.0.size.width += 1.;
+    f.submission.on_screen = false;
+    assert_eq!(
+        plan.submitted_identity().owner_bundle_id,
+        Some("bound.bundle")
+    );
+    assert_eq!(f.complete(&plan), Ok(()));
+    f.fresh[0].identity.owner_process_id += 1;
     assert_eq!(f.complete(&plan), Err(WindowPolicyError::WindowChanged));
 }
 
@@ -410,15 +460,17 @@ fn missing_window_and_same_bounds_other_id_never_choose_a_substitute() {
 }
 
 #[test]
-fn reused_id_different_pid_and_replaced_retained_identity_fail_closed() {
+fn reused_id_different_pid_and_replaced_submission_identity_fail_closed() {
     let mut f = Fixture::new();
+    let plan = f.plan().unwrap();
     f.fresh[0].identity.owner_process_id += 1;
     assert!(matches!(f.plan(), Err(WindowPolicyError::WindowChanged)));
+    assert_eq!(f.complete(&plan), Err(WindowPolicyError::WindowChanged));
     f.fresh[0] = observed();
-    f.retained.identity.owner_process_id += 1;
+    f.submission.identity.owner_process_id += 1;
     assert!(matches!(f.plan(), Err(WindowPolicyError::WindowChanged)));
-    f.retained = source(observed());
-    f.retained.identity.window_id += 1;
+    f.submission = source(observed());
+    f.submission.identity.window_id += 1;
     assert!(matches!(f.plan(), Err(WindowPolicyError::WindowChanged)));
 }
 
@@ -445,25 +497,46 @@ fn move_resize_and_subpoint_changes_require_reselection() {
         assert_eq!(f.complete(&plan), Err(WindowPolicyError::WindowChanged));
     }
     let mut f = Fixture::new();
-    f.retained.frame.0.size.height += 1.;
+    f.submission.frame.0.size.height += 1.;
     assert!(matches!(f.plan(), Err(WindowPolicyError::WindowChanged)));
 }
 
 #[test]
-fn current_cg_eligibility_and_retained_visibility_are_checked_independently() {
-    for field in 0..5 {
+fn fresh_cg_eligibility_is_rechecked_after_submission() {
+    for field in 0..3 {
         let mut f = Fixture::new();
         let plan = f.plan().unwrap();
         match field {
             0 => f.fresh[0].alpha = 0.01,
             1 => f.fresh[0].layer = 3,
-            2 => f.fresh[0].on_screen = false,
-            3 => f.retained.layer = 3,
-            _ => f.retained.on_screen = false,
+            _ => f.fresh[0].on_screen = false,
         }
         assert!(matches!(f.plan(), Err(WindowPolicyError::IneligibleWindow)));
         assert_eq!(f.complete(&plan), Err(WindowPolicyError::IneligibleWindow));
     }
+}
+
+#[test]
+fn submission_layer_and_visibility_are_checked_before_filter_binding() {
+    for hidden in [false, true] {
+        let mut f = Fixture::new();
+        if hidden {
+            f.submission.on_screen = false;
+        } else {
+            f.submission.layer = 3;
+        }
+        assert!(matches!(f.plan(), Err(WindowPolicyError::IneligibleWindow)));
+    }
+}
+
+#[test]
+fn selected_identity_and_cancellation_accessors_only_expose_immutable_policy_state() {
+    let f = Fixture::new();
+    assert_eq!(f.selection.selected_identity(), observed().identity);
+    assert!(!f.selection.is_cancelled());
+    f.selection_cancel.cancel();
+    assert!(f.selection.is_cancelled());
+    assert_eq!(f.selection.selected_identity(), observed().identity);
 }
 
 #[test]
@@ -629,19 +702,12 @@ fn cancellation_wins_at_selection_and_boundary_before_other_errors() {
     let f = Fixture::new();
     assert!(matches!(
         f.selection
-            .plan(f.retained, &[], f.topology(), TOKEN, f.options, &flag),
+            .plan(f.submission, &[], f.topology(), TOKEN, f.options, &flag),
         Err(WindowPolicyError::Cancelled)
     ));
     let plan = f.plan().unwrap();
     assert_eq!(
-        plan.validate_completion(
-            f.retained,
-            &[],
-            f.topology(),
-            TOKEN,
-            plan.output_size(),
-            &flag
-        ),
+        plan.validate_completion(&[], f.topology(), TOKEN, plan.output_size(), &flag),
         Err(WindowPolicyError::Cancelled)
     );
 }

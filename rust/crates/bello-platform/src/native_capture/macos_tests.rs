@@ -83,7 +83,10 @@ fn retained_synthetic_image_encodes_after_original_owner_drops_on_worker() {
         let image = synthetic_image();
         let retained = OwnedCaptureImage::retain(image.0).unwrap();
         drop(image);
-        let job = Job::new(CaptureCancellation::default(), Duration::from_secs(5));
+        let job = Job::<NativeCaptureSnapshot>::new(
+            CaptureCancellation::default(),
+            Duration::from_secs(5),
+        );
         let png = encode_png(retained.0, job).unwrap();
         assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
         assert_eq!(&png[16..20], &2u32.to_be_bytes());
@@ -97,7 +100,8 @@ fn retained_synthetic_image_encodes_after_original_owner_drops_on_worker() {
 fn real_dispatch_handoff_releases_context_and_rejects_duplicate_callback() {
     static SLOT: AtomicBool = AtomicBool::new(false);
     let callback_lease = InflightGuard::acquire(&SLOT).unwrap();
-    let job = Job::new(CaptureCancellation::default(), Duration::from_secs(5));
+    let job =
+        Job::<NativeCaptureSnapshot>::new(CaptureCancellation::default(), Duration::from_secs(5));
     assert!(job.transition(Stage::InitialContent, Stage::Image));
     let (request, resolution) = no_display_request();
     unsafe {
@@ -139,7 +143,7 @@ fn cancelled_callback_skips_retain_and_dispatch_entirely() {
     static SLOT: AtomicBool = AtomicBool::new(false);
     let lease = InflightGuard::acquire(&SLOT).unwrap();
     let cancellation = CaptureCancellation::default();
-    let job = Job::new(cancellation.clone(), Duration::from_secs(5));
+    let job = Job::<NativeCaptureSnapshot>::new(cancellation.clone(), Duration::from_secs(5));
     assert!(job.transition(Stage::InitialContent, Stage::Image));
     cancellation.cancel();
     let (request, resolution) = no_display_request();
@@ -163,7 +167,8 @@ fn cancelled_callback_skips_retain_and_dispatch_entirely() {
 fn callback_error_does_not_allocate_worker_context() {
     static SLOT: AtomicBool = AtomicBool::new(false);
     let lease = InflightGuard::acquire(&SLOT).unwrap();
-    let job = Job::new(CaptureCancellation::default(), Duration::from_secs(5));
+    let job =
+        Job::<NativeCaptureSnapshot>::new(CaptureCancellation::default(), Duration::from_secs(5));
     assert!(job.transition(Stage::InitialContent, Stage::Image));
     let (request, resolution) = no_display_request();
     unsafe {
@@ -190,7 +195,7 @@ fn png_sink_checks_byte_bound_and_cancellation_before_reading_bytes() {
         bytes: Vec::new(),
         failed: false,
     }));
-    let mut sink = PngSink {
+    let mut sink: PngSink = PngSink {
         state: state.clone(),
         job: Job::new(cancellation.clone(), Duration::from_secs(5)),
     };
@@ -200,7 +205,11 @@ fn png_sink_checks_byte_bound_and_cancellation_before_reading_bytes() {
         // Count intentionally exceeds the source buffer: cap check must precede
         // any slice construction/read. No large allocation is needed for this test.
         assert_eq!(
-            put_bytes(info, (&byte as *const u8).cast(), MAX_CAPTURE_PNG_BYTES + 1),
+            put_bytes::<NativeCaptureSnapshot, CaptureError>(
+                info,
+                (&byte as *const u8).cast(),
+                MAX_CAPTURE_PNG_BYTES + 1
+            ),
             0
         );
     }
@@ -209,7 +218,10 @@ fn png_sink_checks_byte_bound_and_cancellation_before_reading_bytes() {
     state.lock().unwrap().failed = false;
     cancellation.cancel();
     unsafe {
-        assert_eq!(put_bytes(info, (&byte as *const u8).cast(), 1), 0);
+        assert_eq!(
+            put_bytes::<NativeCaptureSnapshot, CaptureError>(info, (&byte as *const u8).cast(), 1),
+            0
+        );
     }
     assert!(state.lock().unwrap().bytes.is_empty());
 }

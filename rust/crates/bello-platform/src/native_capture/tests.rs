@@ -171,7 +171,7 @@ impl Drop for Payload {
 #[test]
 fn completion_is_once_and_duplicate_payloads_are_released() {
     let dropped = Arc::new(AtomicUsize::new(0));
-    let job = Job::new(CaptureCancellation::default(), Duration::from_secs(1));
+    let job = Job::<Payload>::new(CaptureCancellation::default(), Duration::from_secs(1));
     assert!(job.complete(Ok(Payload(dropped.clone()))));
     assert!(!job.complete(Ok(Payload(dropped.clone()))));
     assert_eq!(dropped.load(Ordering::Relaxed), 1);
@@ -182,7 +182,7 @@ fn completion_is_once_and_duplicate_payloads_are_released() {
 fn cancellation_wins_even_after_native_success_before_publication() {
     let cancellation = CaptureCancellation::default();
     let dropped = Arc::new(AtomicUsize::new(0));
-    let job = Job::new(cancellation.clone(), Duration::from_secs(1));
+    let job = Job::<Payload>::new(cancellation.clone(), Duration::from_secs(1));
     assert!(job.complete(Ok(Payload(dropped.clone()))));
     cancellation.cancel();
     assert!(matches!(job.wait(), Err(CaptureError::Cancelled)));
@@ -193,7 +193,7 @@ fn cancellation_wins_even_after_native_success_before_publication() {
 #[test]
 fn timeout_abandons_job_without_dangling_callback_state() {
     let dropped = Arc::new(AtomicUsize::new(0));
-    let job = Job::new(CaptureCancellation::default(), Duration::ZERO);
+    let job = Job::<Payload>::new(CaptureCancellation::default(), Duration::ZERO);
     let callback = job.clone();
     assert!(matches!(job.wait(), Err(CaptureError::TimedOut)));
     drop(job);
@@ -220,7 +220,7 @@ fn callback_stage_claims_reject_duplicate_and_out_of_order_callbacks() {
 fn separate_jobs_never_share_cancellation_or_results() {
     let a_cancel = CaptureCancellation::default();
     let a: Arc<Job<u32>> = Job::new(a_cancel.clone(), Duration::from_secs(1));
-    let b = Job::new(CaptureCancellation::default(), Duration::from_secs(1));
+    let b = Job::<u32>::new(CaptureCancellation::default(), Duration::from_secs(1));
     a_cancel.cancel();
     assert!(!a.complete(Ok(1)));
     assert!(b.complete(Ok(2)));
@@ -301,7 +301,7 @@ fn queued_model(
     cancellation: CaptureCancellation,
 ) -> (Arc<InflightGuard>, Box<QueuedEncodeModel>, Arc<AtomicUsize>) {
     let lease = InflightGuard::acquire(slot).unwrap();
-    let job = Job::new(cancellation, Duration::from_secs(5));
+    let job = Job::<Payload>::new(cancellation, Duration::from_secs(5));
     assert!(job.transition(Stage::InitialContent, Stage::Image));
     assert!(job.transition(Stage::Image, Stage::EncodingQueued));
     let dropped = Arc::new(AtomicUsize::new(0));
@@ -341,7 +341,7 @@ fn queued_cancellation_keeps_slot_until_context_drops_after_callback() {
 fn queued_timeout_does_not_reclaim_context_or_let_another_operation_start() {
     static SLOT: AtomicBool = AtomicBool::new(false);
     let lease = InflightGuard::acquire(&SLOT).unwrap();
-    let job = Job::new(CaptureCancellation::default(), Duration::from_millis(10));
+    let job = Job::<Payload>::new(CaptureCancellation::default(), Duration::from_millis(10));
     assert!(job.transition(Stage::InitialContent, Stage::Image));
     assert!(job.transition(Stage::Image, Stage::EncodingQueued));
     let dropped = Arc::new(AtomicUsize::new(0));
@@ -442,4 +442,169 @@ fn cancelled_image_callback_cannot_claim_queue_phase() {
     assert!(job.transition(Stage::InitialContent, Stage::Image));
     cancellation.cancel();
     assert!(!job.transition(Stage::Image, Stage::EncodingQueued));
+}
+
+#[test]
+fn window_errors_use_the_same_job_deadline_and_final_phase_claim() {
+    use crate::window_capture::WindowPolicyError;
+    let job: Arc<Job<u32, WindowCaptureError>> =
+        Job::new(CaptureCancellation::default(), Duration::from_secs(1));
+    assert!(job.transition(Stage::InitialContent, Stage::Image));
+    assert!(job.transition(Stage::Image, Stage::EncodingQueued));
+    assert!(job.transition(Stage::EncodingQueued, Stage::Encoding));
+    assert!(job.transition(Stage::Encoding, Stage::Validating));
+    assert!(!job.transition(Stage::Encoding, Stage::Validating));
+    assert!(job.complete(Err(WindowPolicyError::StaleSelection.into())));
+    assert_eq!(
+        job.wait(),
+        Err(WindowCaptureError::Policy(
+            WindowPolicyError::StaleSelection
+        ))
+    );
+    let expired: Arc<Job<(), WindowCaptureError>> =
+        Job::new(CaptureCancellation::default(), Duration::ZERO);
+    assert_eq!(
+        expired.wait(),
+        Err(WindowCaptureError::Native(CaptureError::TimedOut))
+    );
+}
+
+#[test]
+fn window_final_validation_payload_is_discarded_when_cancelled() {
+    let cancellation = CaptureCancellation::default();
+    let job: Arc<Job<Payload, WindowCaptureError>> =
+        Job::new(cancellation.clone(), Duration::from_secs(1));
+    let dropped = Arc::new(AtomicUsize::new(0));
+    assert!(job.transition(Stage::InitialContent, Stage::Encoding));
+    assert!(job.transition(Stage::Encoding, Stage::Validating));
+    cancellation.cancel();
+    assert!(!job.complete(Ok(Payload(dropped.clone()))));
+    assert_eq!(dropped.load(Ordering::Relaxed), 1);
+    assert!(matches!(
+        job.wait(),
+        Err(WindowCaptureError::Native(CaptureError::Cancelled))
+    ));
+}
+
+#[test]
+fn window_session_is_live_but_contains_no_native_state() {
+    use crate::window_capture::WindowSelectionToken;
+    let first = WindowSelectionToken {
+        session: 1,
+        generation: 0,
+    };
+    let next = WindowSelectionToken {
+        session: 1,
+        generation: 1,
+    };
+    let session = Arc::new(WindowCaptureSession::new(first).unwrap());
+    let worker = session.clone();
+    std::thread::spawn(move || worker.update(next).unwrap())
+        .join()
+        .unwrap();
+    assert_eq!(session.current().unwrap(), next);
+    assert!(session
+        .update(WindowSelectionToken {
+            session: 0,
+            generation: 0
+        })
+        .is_err());
+    assert_eq!(session.current().unwrap(), next);
+}
+
+#[test]
+fn production_window_action_is_disabled_even_with_a_valid_request() {
+    use crate::window_capture::*;
+    let token = WindowSelectionToken {
+        session: 1,
+        generation: 0,
+    };
+    let displays = [WindowDisplayGeometry {
+        display: display(1, 0., 0.),
+        appkit_size_points: CaptureSize {
+            width: 1440.,
+            height: 900.,
+        },
+        backing_scale: 2.,
+        rotation_degrees: 0.,
+    }];
+    let cancellation = CaptureCancellation::default();
+    let selection = WindowCaptureSelection::new(
+        WindowObservation {
+            identity: WindowIdentity {
+                window_id: 10,
+                owner_process_id: 20,
+                owner_bundle_id: None,
+            },
+            frame: WindowFrame(CaptureRect::new(10., 10., 100., 100.)),
+            layer: 0,
+            alpha: 1.,
+            on_screen: true,
+        },
+        WindowTopology {
+            main_display_id: 1,
+            displays: &displays,
+        },
+        30,
+        token,
+        &cancellation,
+    )
+    .unwrap();
+    assert!(!std::hint::black_box(NATIVE_WINDOW_CAPTURE_IMPLEMENTED));
+    assert!(matches!(
+        capture_window(
+            selection,
+            WindowCaptureOptions::default(),
+            Arc::new(WindowCaptureSession::new(token).unwrap()),
+            cancellation
+        ),
+        Err(WindowCaptureError::Unavailable)
+    ));
+}
+
+#[test]
+fn window_final_context_keeps_the_shared_slot_after_encoder_and_callback_drop() {
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    let cancellation = CaptureCancellation::default();
+    let callback = InflightGuard::acquire(&SLOT).unwrap();
+    let encoder = callback.clone();
+    let final_validation = encoder.clone();
+    let job: Arc<Job<u32, WindowCaptureError>> =
+        Job::new(cancellation.clone(), Duration::from_secs(1));
+    assert!(job.transition(Stage::InitialContent, Stage::Encoding));
+    drop(callback);
+    drop(encoder);
+    cancellation.cancel();
+    assert_eq!(
+        job.wait(),
+        Err(WindowCaptureError::Native(CaptureError::Cancelled))
+    );
+    assert!(!job.transition(Stage::Encoding, Stage::Validating));
+    assert!(matches!(
+        InflightGuard::acquire(&SLOT),
+        Err(CaptureError::Busy)
+    ));
+    assert!(!job.complete(Ok(1)));
+    drop(final_validation);
+    assert!(InflightGuard::acquire(&SLOT).is_ok());
+}
+
+#[test]
+fn native_window_owner_guard_uses_the_actual_process_id() {
+    use crate::window_capture::WindowPolicyError;
+    let own = i32::try_from(std::process::id()).unwrap();
+    assert_eq!(
+        validate_external_window_owner(own),
+        Err(WindowPolicyError::IneligibleWindow.into())
+    );
+    assert_eq!(
+        validate_external_window_owner(0),
+        Err(WindowPolicyError::InvalidMetadata.into())
+    );
+    assert_eq!(
+        validate_external_window_owner(-1),
+        Err(WindowPolicyError::InvalidMetadata.into())
+    );
+    let other = if own == i32::MAX { own - 1 } else { own + 1 };
+    assert!(validate_external_window_owner(other).is_ok());
 }
