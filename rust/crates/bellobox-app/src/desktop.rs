@@ -119,7 +119,8 @@ impl BelloBox {
             .enumerate()
         {
             editor.update(cx, |editor, cx| {
-                if matches!(app.selected.as_str(), "subnet" | "chmod") && index == 0 {
+                if matches!(app.selected.as_str(), "subnet" | "chmod" | "numberBase") && index == 0
+                {
                     editor.set_compact(true, cx);
                 }
                 let mut appearance = EditorAppearance::plain();
@@ -130,14 +131,16 @@ impl BelloBox {
                         "monospace".into()
                     };
                 appearance.font_size = if ["qr", "textTools", "ai"].contains(&app.selected.as_str())
-                    || (matches!(app.selected.as_str(), "subnet" | "chmod") && index == 0)
+                    || (matches!(app.selected.as_str(), "subnet" | "chmod" | "numberBase")
+                        && index == 0)
                 {
                     13.
                 } else {
                     12.
                 };
                 appearance.line_height = 18.;
-                if matches!(app.selected.as_str(), "subnet" | "chmod") && index == 0 {
+                if matches!(app.selected.as_str(), "subnet" | "chmod" | "numberBase") && index == 0
+                {
                     // Keep one full text row inside the 38 px compact field.
                     appearance.padding_x = 0.;
                     appearance.padding_y = 0.;
@@ -151,7 +154,7 @@ impl BelloBox {
         }
         app.init_snippets(window, cx);
         app.init_permissions(window, cx);
-        if matches!(app.selected.as_str(), "subnet" | "chmod") {
+        if matches!(app.selected.as_str(), "subnet" | "chmod" | "numberBase") {
             app.input.read(cx).focus(window);
         }
         if app.selected == "ai" {
@@ -186,8 +189,10 @@ impl BelloBox {
             .controls
             .second(&self.selected, self.second.read(cx).text());
         if id == "ai"
-            || (matches!(id.as_str(), "stringEscape" | "subnet" | "chmod")
-                && crate::tool_controls::source_input_is_idle(&input))
+            || (matches!(
+                id.as_str(),
+                "stringEscape" | "subnet" | "chmod" | "numberBase"
+            ) && crate::tool_controls::source_input_is_idle(&input))
             || input.is_empty()
                 && !["worldClock", "textTools", "generate", "screenshot"].contains(&id.as_str())
                 && !(id == "listSet" && !second.is_empty())
@@ -239,7 +244,10 @@ impl BelloBox {
             .detach();
             return;
         }
-        if matches!(id.as_str(), "stringEscape" | "subnet" | "chmod") {
+        if matches!(
+            id.as_str(),
+            "stringEscape" | "subnet" | "chmod" | "numberBase"
+        ) {
             self.output
                 .update(cx, |editor, cx| editor.set_text(String::new(), cx));
         }
@@ -256,7 +264,17 @@ impl BelloBox {
             self.controls.value("mode").to_owned(),
             self.controls.value("matching").to_owned(),
         );
+        #[cfg(feature = "developer-tools")]
+        let number_base_options = self.controls.number_base_options();
         let task = cx.background_executor().spawn(async move {
+            #[cfg(feature = "developer-tools")]
+            if id == "numberBase" {
+                return bellobox_core::developer::number_base::run(
+                    &input,
+                    number_base_options.0,
+                    number_base_options.1,
+                );
+            }
             #[cfg(feature = "developer-tools")]
             if id == "listSet" {
                 return bellobox_core::developer::list_set::run(
@@ -293,6 +311,8 @@ impl BelloBox {
                                     value.split('\n').count()
                                 }
                             )
+                        } else if this.selected == "numberBase" {
+                            this.controls.number_base_status()
                         } else if this.selected == "chmod" {
                             "Permissions preview · no files are changed".into()
                         } else if this.selected == "subnet" {
@@ -1146,6 +1166,7 @@ impl BelloBox {
                 | "unicode"
                 | "subnet"
                 | "chmod"
+                | "numberBase"
                 | "markdown"
                 | "xmlJSON"
                 | "generate"
@@ -1164,7 +1185,7 @@ impl BelloBox {
                 | "certificate"
                 | "stringEscape"
         );
-        let height = if matches!(self.selected.as_str(), "subnet" | "chmod") {
+        let height = if matches!(self.selected.as_str(), "subnet" | "chmod" | "numberBase") {
             38.
         } else if self.selected == "stringEscape" {
             crate::tool_controls::string_literal_editor_height(self.input.read(cx).text())
@@ -1212,7 +1233,7 @@ impl BelloBox {
                 .gap(px(8.))
                 .child(self.input_actions(self.controls.input_label(&self.selected), p, cx))
                 .child(editor_card(self.input.clone(), height, p).when(
-                    matches!(self.selected.as_str(), "subnet" | "chmod"),
+                    matches!(self.selected.as_str(), "subnet" | "chmod" | "numberBase"),
                     |field| {
                         field
                             .p(px(8.))
@@ -1228,10 +1249,10 @@ impl BelloBox {
                                         .line_height(px(18.))
                                         .font_family("monospace")
                                         .text_color(p.secondary)
-                                        .child(if self.selected == "chmod" {
-                                            "755"
-                                        } else {
-                                            "192.168.1.42/24"
+                                        .child(match self.selected.as_str() {
+                                            "chmod" => "755",
+                                            "numberBase" => "9007199254740993",
+                                            _ => "192.168.1.42/24",
                                         }),
                                 )
                             })
@@ -1258,23 +1279,25 @@ impl BelloBox {
                 })
                 .into_any_element()
         };
-        let result =
-            div()
-                .flex()
-                .flex_col()
-                .gap(px(8.))
-                .child(
-                    div()
-                        .flex()
-                        .justify_between()
-                        .text_size(px(12.))
-                        .child(
-                            div()
-                                .font_weight(gpui::FontWeight::SEMIBOLD)
-                                .child("Result"),
-                        )
-                        .child(div().text_size(px(11.)).text_color(p.secondary).child(
-                            if self.busy {
+        let result = div()
+            .flex()
+            .flex_col()
+            .gap(px(8.))
+            .child(
+                div()
+                    .flex()
+                    .justify_between()
+                    .text_size(px(12.))
+                    .child(
+                        div()
+                            .font_weight(gpui::FontWeight::SEMIBOLD)
+                            .child("Result"),
+                    )
+                    .child(div().text_size(px(11.)).text_color(p.secondary).child(
+                        if self.selected == "numberBase" && !self.busy {
+                            self.controls.number_base_status()
+                        } else {
+                            (if self.busy {
                                 "Working…"
                             } else if self.warning {
                                 "Validation issues"
@@ -1286,10 +1309,12 @@ impl BelloBox {
                                 "Numbers preserved"
                             } else {
                                 "Processed locally"
-                            },
-                        )),
-                )
-                .child(editor_card(self.output.clone(), 210., p));
+                            })
+                            .to_owned()
+                        },
+                    )),
+            )
+            .child(editor_card(self.output.clone(), 210., p));
         div()
             .size_full()
             .flex()
@@ -1395,7 +1420,7 @@ impl BelloBox {
                     .when(
                         !matches!(
                             self.selected.as_str(),
-                            "listSet" | "stringEscape" | "subnet" | "chmod"
+                            "listSet" | "stringEscape" | "subnet" | "chmod" | "numberBase"
                         ),
                         |s| {
                             s.child(button("use-input", "Use as Input", p).on_click(cx.listener(
@@ -1415,7 +1440,7 @@ impl BelloBox {
                             .when(
                                 matches!(
                                     self.selected.as_str(),
-                                    "stringEscape" | "subnet" | "chmod"
+                                    "stringEscape" | "subnet" | "chmod" | "numberBase"
                                 ) && !crate::tool_controls::source_copy_enabled(
                                     self.busy,
                                     self.error.is_some(),
@@ -1426,7 +1451,7 @@ impl BelloBox {
                             .on_click(cx.listener(|this, _, _, cx| {
                                 if matches!(
                                     this.selected.as_str(),
-                                    "listSet" | "stringEscape" | "subnet" | "chmod"
+                                    "listSet" | "stringEscape" | "subnet" | "chmod" | "numberBase"
                                 ) && !crate::tool_controls::source_copy_enabled(
                                     this.busy,
                                     this.error.is_some(),

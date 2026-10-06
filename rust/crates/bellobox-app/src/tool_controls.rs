@@ -78,6 +78,27 @@ impl ToolControls {
             _ => text.into(),
         }
     }
+    #[cfg(feature = "developer-tools")]
+    pub fn number_base_options(&self) -> (u32, Option<u32>) {
+        let base = self.value("base").parse().unwrap_or(0);
+        let output = if self.value("outputBase") == "All bases" {
+            None
+        } else {
+            Some(self.value("outputBase").parse().unwrap_or(0))
+        };
+        (base, output)
+    }
+    pub fn number_base_status(&self) -> String {
+        if self.value("outputBase") == "All bases" {
+            "Exact integer · no floating-point rounding".into()
+        } else {
+            format!(
+                "Exact integer · base {} → {}",
+                self.value("base"),
+                self.value("outputBase")
+            )
+        }
+    }
     pub fn reverse_after_chaining(&mut self, tool: &str) {
         if matches!(tool, "plist" | "jsonLines" | "envFile")
             && let Some(spec) = choices(tool).into_iter().find(|spec| spec.id == "mode")
@@ -93,6 +114,18 @@ impl ToolControls {
 }
 pub fn choices(tool: &str) -> Vec<ChoiceSpec> {
     match tool {
+        "numberBase" => vec![
+            ChoiceSpec {
+                id: "base",
+                label: "Input base",
+                choices: &["10", "2", "8", "16"],
+            },
+            ChoiceSpec {
+                id: "outputBase",
+                label: "Output",
+                choices: &["All bases", "10", "16", "2", "8"],
+            },
+        ],
         "stringEscape" => vec![ChoiceSpec {
             id: "mode",
             label: "Format",
@@ -164,6 +197,7 @@ pub fn input_label(tool: &str) -> &'static str {
         "compare" => "First text",
         "listSet" => "First list · one item per line",
         "snippets" => "Template",
+        "numberBase" => "Integer · optional sign and matching 0x / 0b / 0o prefix",
         "subnet" => "IPv4 / prefix · e.g. 192.168.1.42/24",
         "chmod" => "Octal or rwx permissions · e.g. 755 or rwxr-xr-x",
         _ => "Input",
@@ -341,4 +375,11 @@ pub fn permission_tab_target(current: Option<usize>, reverse: bool) -> usize {
             }
         }
     }
+}
+
+/// Keep the read-only launcher preview on the same defaults as the GUI window.
+#[cfg(feature = "developer-tools")]
+pub fn number_base_preview(input: &str) -> Result<String, String> {
+    let options = ToolControls::new("numberBase", input).number_base_options();
+    bellobox_core::developer::number_base::run(input, options.0, options.1)
 }

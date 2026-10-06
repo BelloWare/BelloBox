@@ -18,6 +18,8 @@ mod certificate;
 mod json_schema;
 #[path = "developer/list_set.rs"]
 pub mod list_set;
+#[path = "developer/number_base.rs"]
+pub mod number_base;
 #[path = "developer/permissions.rs"]
 pub mod permissions;
 #[path = "developer/plist.rs"]
@@ -1600,42 +1602,14 @@ fn number_base(s: &str, second: &str) -> R<String> {
     if digits.is_empty() || digits.len() > 256 {
         return Err("Use 1–256 digits.".into());
     }
-    let mut bytes = vec![0u32];
+    let mut value = number_base::ExactInteger::zero();
     for c in digits.chars() {
-        let mut carry = c
+        let digit = c
             .to_digit(base)
             .ok_or("Digit is invalid for the input base.")?;
-        for b in &mut bytes {
-            let n = *b * base + carry;
-            *b = n % 256;
-            carry = n / 256
-        }
-        while carry > 0 {
-            bytes.push(carry % 256);
-            carry /= 256
-        }
+        value.push_digit(base, digit);
     }
-    let render = |radix: u32| {
-        let mut b = bytes.clone();
-        let mut out = vec![];
-        while b.iter().any(|n| *n > 0) {
-            let mut r = 0;
-            for n in b.iter_mut().rev() {
-                let value = r * 256 + *n;
-                *n = value / radix;
-                r = value % radix
-            }
-            out.push(char::from_digit(r, radix).unwrap())
-        }
-        if out.is_empty() {
-            out.push('0')
-        }
-        let mut s: String = out.into_iter().rev().collect();
-        if neg && s != "0" {
-            s.insert(0, '-')
-        }
-        s
-    };
+    let render = |radix| value.render(radix, neg);
     Ok(format!(
         "Decimal: {}\nHex: {}\nOctal: {}\nBinary: {}",
         render(10),

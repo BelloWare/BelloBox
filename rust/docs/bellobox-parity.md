@@ -249,7 +249,7 @@ for many tools still need restoration. Sources below are in
 | `generate` | `SnippetsAndGenerators.swift` | UUID/UUID-derived hex/sample records; not a password generator |
 | `calculator` | `MathUtilities.swift` | Bounded arithmetic and functions; radians |
 | `units` | `MathUtilities.swift` | Documented unit families and temperature conversion |
-| `numberBase` | `MathUtilities.swift` | Exact integer conversion up to 256 digits |
+| `numberBase` | `MathUtilities.swift` | Source input/output menus and exact 256-digit GUI engine; legacy CLI semantics preserved; scoped checks below |
 | `color` | `DesignUtilities.swift` | HEX/RGB/HSL conversions; visual picker absent |
 | `contrast` | `DesignUtilities.swift` | Opaque-color WCAG contrast thresholds; visual sampler absent |
 | `gradient` | `DesignUtilities.swift` | Two-stop 90-degree CSS; multi-stop editor absent |
@@ -806,3 +806,44 @@ No generated command was executed or filesystem permission changed. Failed v2
 and diagnostic v3 evidence are retained separately from the verified v4.
 Full native checkbox accessibility/tab behavior, macOS/IME and compact launcher
 interactive transfer remain separate validation/parity gaps.
+
+## Number Base GUI checkpoint (2026-10-06)
+
+Sources: `MathUtilities.swift` NumberBaseTool, `AdditionalUtility.swift` and
+`UtilityWorkbenchModel.swift`. The GUI now has Input base 10/2/8/16 and Output
+All bases/10/16/2/8, with explicit decimal/all defaults even when selected text
+has a prefix. Example restores both defaults; Clear preserves selected menus.
+The source single-line label, placeholder, status, whitespace-idle handling,
+immediate stale-result clearing and guarded Copy replace the former raw second
+option editor. No Use as Input is shown. The read-only launcher preview uses the
+same GUI defaults rather than contradicting the window it opens; interactive
+preview controls/session transfer remain unported.
+
+A separate source GUI API shares exact byte-array arithmetic with the unchanged
+legacy CLI parser. It strips only the chosen base's matching prefix, permits one
+sign and 1–256 digit bytes, and normalizes negative zero. Thus GUI base 16 accepts
+0b10 as hexadecimal B10 (decimal 2832), while the legacy CLI still rejects that
+explicit-base prefix conflict. GUI default decimal rejects 0xFF; CLI default
+still auto-detects it. All-base GUI output follows source spacing/order and uppercase
+hex; single-base hex is lowercase and unlabeled. Legacy CLI colon labels and
+lowercase hex are preserved. No dependency or shared-editor changes were needed.
+The existing 500,000-byte Rust input bound is retained. Invalid non-ASCII diagnostic
+characters are Unicode scalars rather than Swift grapheme clusters.
+
+Focused validation passes: seven engine regressions cover formats, signs/prefixes,
+negative zero, exact arithmetic beyond 64 bits, 256 hex digits/1,024 binary digits,
+validation order, Foundation trimming and legacy compatibility. Seventeen
+headless control regressions include the actual launcher-preview helper and
+source default/selection boundary. Strict core/app all-target Clippy, app build,
+minimal-feature app check and formatting pass; independent review accepted the
+full window and the corrected launcher route.
+
+Independent Linux/SwiftShader QA passed on immutable binary SHA-256
+`9195101b958d739e969158539048b527da150137151c450b7d8d370ce52067b2`:
+default decimal rejects 0xFF, switching to hexadecimal preserves it and yields the
+source four-row result; 0b10 under hexadecimal yields 2832/B10/5420/101100010000;
+single hex b10 Copy/Clear/Paste, exact 740×560 readability, matching launcher/opened
+window default errors, and clean close/reopen defaults passed. Input bases 2/8 and
+single outputs 10/2/8 have unit coverage but were not separately live-tested.
+These are scoped Linux checks, not macOS/IME, exhaustive menu keyboard acceptance
+or frame-rate/performance proof.

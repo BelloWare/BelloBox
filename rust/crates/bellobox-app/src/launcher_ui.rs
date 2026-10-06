@@ -187,9 +187,13 @@ impl Launcher {
         }
         let input = self.input.clone();
         let id = command.id.to_string();
-        let task = cx
-            .background_executor()
-            .spawn(async move { crate::execute(&id, &input, "") });
+        let task = cx.background_executor().spawn(async move {
+            #[cfg(feature = "developer-tools")]
+            if id == "numberBase" {
+                return crate::tool_controls::number_base_preview(&input);
+            }
+            crate::execute(&id, &input, "")
+        });
         cx.spawn(async move |this, cx| {
             let result = task.await;
             let _ = this.update(cx, |this, cx| {

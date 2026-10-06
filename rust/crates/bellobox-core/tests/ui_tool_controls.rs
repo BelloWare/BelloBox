@@ -332,3 +332,80 @@ fn permission_tab_reaches_every_checkbox_and_returns_without_editing_input() {
     assert_eq!(controls::permission_tab_target(None, true), 12);
     assert_eq!(controls::permission_tab_target(Some(usize::MAX), true), 12);
 }
+
+#[test]
+fn number_base_source_menus_defaults_and_gui_cli_boundary() {
+    let specs = controls::choices("numberBase");
+    assert_eq!(specs.len(), 2);
+    assert_eq!(
+        (specs[0].label, specs[0].choices),
+        ("Input base", &["10", "2", "8", "16"][..])
+    );
+    assert_eq!(
+        (specs[1].label, specs[1].choices),
+        ("Output", &["All bases", "10", "16", "2", "8"][..])
+    );
+    let mut state = ToolControls::new("numberBase", "0xFF");
+    let independent = state.clone();
+    assert_eq!(state.number_base_options(), (10, None));
+    assert_eq!(
+        state.number_base_status(),
+        "Exact integer · no floating-point rounding"
+    );
+    assert_eq!(
+        state.input_label("numberBase"),
+        "Integer · optional sign and matching 0x / 0b / 0o prefix"
+    );
+    assert!(bellobox_core::developer::number_base::run("0xFF", 10, None).is_err());
+    assert!(
+        execute("numberBase", "0xFF", "")
+            .unwrap()
+            .contains("Decimal: 255")
+    );
+    assert!(state.select("numberBase", "base", "16"));
+    for (output, expected) in [
+        ("10", "2832"),
+        ("16", "b10"),
+        ("2", "101100010000"),
+        ("8", "5420"),
+    ] {
+        assert!(state.select("numberBase", "outputBase", output));
+        let (base, target) = state.number_base_options();
+        assert_eq!(
+            bellobox_core::developer::number_base::run("0b10", base, target).unwrap(),
+            expected
+        );
+        assert_eq!(
+            state.number_base_status(),
+            format!("Exact integer · base 16 → {output}")
+        );
+    }
+    assert!(execute("numberBase", "0b10", "16").is_err());
+    assert!(!state.select("numberBase", "base", "Auto"));
+    assert!(!state.select("numberBase", "outputBase", "36"));
+    assert_eq!(independent.number_base_options(), (10, None));
+    assert_eq!(
+        ToolControls::new("numberBase", "9007199254740993").number_base_options(),
+        (10, None)
+    );
+    // Clear does not reconstruct controls, so selecting a format survives an idle draft.
+    assert!(controls::source_input_is_idle(" \u{200b}"));
+    assert_eq!(state.number_base_options(), (16, Some(8)));
+}
+
+#[test]
+fn number_base_launcher_preview_matches_gui_defaults_not_cli_autodetection() {
+    assert_eq!(
+        controls::number_base_preview("255").unwrap(),
+        "Decimal  255\nHex      FF\nOctal    377\nBinary   11111111"
+    );
+    for input in ["0xFF", "0b10", "0o77"] {
+        let (base, output) = ToolControls::new("numberBase", input).number_base_options();
+        assert_eq!(
+            controls::number_base_preview(input),
+            bellobox_core::developer::number_base::run(input, base, output)
+        );
+        assert!(controls::number_base_preview(input).is_err());
+        assert!(execute("numberBase", input, "").is_ok());
+    }
+}
