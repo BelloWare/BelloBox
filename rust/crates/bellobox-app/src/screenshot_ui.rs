@@ -16,6 +16,9 @@ use gpui::{
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};
 
+#[cfg(debug_assertions)]
+mod scroll_capture;
+
 const TOOLS: [(AnnotationTool, &str, &str); 9] = [
     (AnnotationTool::Select, "Select", "cursorarrow"),
     (AnnotationTool::Pen, "Pen", "pencil.tip"),
@@ -148,6 +151,11 @@ struct CaptureChooser {
     focus: FocusHandle,
 }
 pub fn open(cx: &mut App) {
+    #[cfg(debug_assertions)]
+    if std::env::var_os("BELLOBOX_SCROLL_FIXTURE").is_some() {
+        scroll_capture::open_fixture(cx);
+        return;
+    }
     let bounds = Bounds::centered(None, size(px(460.), px(380.)), cx);
     let _ = cx.open_window(
         WindowOptions {
@@ -287,7 +295,11 @@ impl CaptureChooser {
 }
 
 fn prepare(png: Vec<u8>) -> Result<ScreenshotEditSession, String> {
-    let mut session = ScreenshotEditSession::new(ScreenshotDocument::from_png(&png)?);
+    Ok(prepare_document(ScreenshotDocument::from_png(&png)?))
+}
+
+fn prepare_document(document: ScreenshotDocument) -> ScreenshotEditSession {
+    let mut session = ScreenshotEditSession::new(document);
     // Fonts are optional local inputs, never downloaded or embedded without a license.
     #[cfg(target_os = "linux")]
     let paths = ["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"];
@@ -307,7 +319,7 @@ fn prepare(png: Vec<u8>) -> Result<ScreenshotEditSession, String> {
             break;
         }
     }
-    Ok(session)
+    session
 }
 
 #[derive(Clone)]
@@ -328,7 +340,42 @@ enum Menu {
     Image,
     LabelDelete(u64),
 }
+#[derive(Default)]
+struct CapturePresentation {
+    scrolling: bool,
+    frame_count: usize,
+    notes: Vec<String>,
+}
+
+#[cfg(debug_assertions)]
+struct PreparedScrollCapture {
+    session: ScreenshotEditSession,
+    presentation: CapturePresentation,
+}
+
+#[cfg(debug_assertions)]
+fn prepare_scroll_result(
+    result: bellobox_core::screenshot::scroll::ScrollResult,
+) -> PreparedScrollCapture {
+    PreparedScrollCapture {
+        session: prepare_document(result.document),
+        presentation: CapturePresentation {
+            scrolling: true,
+            frame_count: result.frame_count,
+            notes: result.notes.iter().map(ToString::to_string).collect(),
+        },
+    }
+}
+
+#[cfg(debug_assertions)]
+fn open_scroll_result(result: PreparedScrollCapture, cx: &mut App) {
+    open_presented_session(result.session, "Scrolling capture", result.presentation, cx);
+}
+
 struct ScreenshotEditor {
+    capture_presentation: CapturePresentation,
+    shows_capture_notes: bool,
+    shows_all_capture_notes: bool,
     session: ScreenshotEditSession,
     source: &'static str,
     tool: AnnotationTool,
@@ -370,6 +417,15 @@ struct ScreenshotEditor {
     focus: FocusHandle,
 }
 fn open_session(session: ScreenshotEditSession, source: &'static str, cx: &mut App) {
+    open_presented_session(session, source, CapturePresentation::default(), cx);
+}
+
+fn open_presented_session(
+    session: ScreenshotEditSession,
+    source: &'static str,
+    presentation: CapturePresentation,
+    cx: &mut App,
+) {
     let bounds = Bounds::centered(None, size(px(1040.), px(760.)), cx);
     let _ = cx.open_window(
         WindowOptions {
@@ -381,13 +437,16 @@ fn open_session(session: ScreenshotEditSession, source: &'static str, cx: &mut A
             }),
             ..Default::default()
         },
-        move |window, cx| cx.new(|cx| ScreenshotEditor::new(session, source, window, cx)),
+        move |window, cx| {
+            cx.new(|cx| ScreenshotEditor::new(session, source, presentation, window, cx))
+        },
     );
 }
 impl ScreenshotEditor {
     fn new(
         session: ScreenshotEditSession,
         source: &'static str,
+        presentation: CapturePresentation,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
@@ -427,14 +486,22 @@ impl ScreenshotEditor {
                 cx.notify();
             }
         });
+        let initial_zoom = if presentation.scrolling {
+            Zoom::FitWidth
+        } else {
+            Zoom::Fit
+        };
         let mut view = Self {
+            shows_capture_notes: !presentation.notes.is_empty(),
+            shows_all_capture_notes: false,
+            capture_presentation: presentation,
             session,
             source,
             tool: AnnotationTool::Select,
             style: AnnotationStyle::default(),
             mask_style: AnnotationStyle::redaction(),
             eraser_width: 24.,
-            zoom: Zoom::Fit,
+            zoom: initial_zoom,
             scale: 1.,
             preview_tiles: Vec::new(),
             scroll: gpui::ScrollHandle::new(),
@@ -491,6 +558,80 @@ impl ScreenshotEditor {
         });
         view.render_preview(cx);
         view
+    }
+    fn capture_notes(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
+        let notes = &self.capture_presentation.notes;
+        let count = if self.shows_all_capture_notes {
+            notes.len()
+        } else {
+            notes.len().min(2)
+        };
+        let mut list = div().id("capture-notes-list").flex().flex_col().gap(px(5.));
+        for note in notes.iter().take(count) {
+            list = list.child(
+                div()
+                    .text_size(px(12.))
+                    .text_color(p.secondary)
+                    .when(!self.shows_all_capture_notes, |note| {
+                        note.max_h(px(36.)).overflow_hidden()
+                    })
+                    .child(note.clone()),
+            );
+        }
+        if self.shows_all_capture_notes {
+            list = list.max_h(px(132.)).overflow_y_scroll();
+        }
+        div()
+            .flex()
+            .gap(px(10.))
+            .px(px(12.))
+            .py(px(8.))
+            .flex_none()
+            .rounded(px(10.))
+            .bg(p.accent.opacity(0.10))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .flex()
+                    .flex_col()
+                    .gap(px(4.))
+                    .child(
+                        div()
+                            .text_size(px(12.))
+                            .font_weight(gpui::FontWeight::SEMIBOLD)
+                            .child(format!(
+                                "Scrolling capture · {} frames",
+                                self.capture_presentation.frame_count
+                            )),
+                    )
+                    .child(list)
+                    .when(notes.len() > 2, |column| {
+                        column.child(
+                            button(
+                                "capture-notes-toggle",
+                                if self.shows_all_capture_notes {
+                                    "Show fewer".into()
+                                } else {
+                                    format!("Show all {} notes", notes.len())
+                                },
+                                p,
+                            )
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.shows_all_capture_notes = !this.shows_all_capture_notes;
+                                cx.notify();
+                            })),
+                        )
+                    }),
+            )
+            .child(
+                button("dismiss-capture-notes", "Dismiss", p).on_click(cx.listener(
+                    |this, _, _, cx| {
+                        this.shows_capture_notes = false;
+                        cx.notify();
+                    },
+                )),
+            )
     }
     fn changed(&mut self, cx: &mut Context<Self>) {
         self.ocr_jobs.cancel();
@@ -1609,7 +1750,16 @@ impl Render for ScreenshotEditor {
                 header(
                     format!(
                         "{} · {:.0} × {:.0} px",
-                        self.source, visible.width, visible.height
+                        if self.capture_presentation.scrolling {
+                            format!(
+                                "{} · {} frames",
+                                self.source, self.capture_presentation.frame_count
+                            )
+                        } else {
+                            self.source.to_owned()
+                        },
+                        visible.width,
+                        visible.height
                     ),
                     p,
                 )
@@ -1623,6 +1773,9 @@ impl Render for ScreenshotEditor {
                         .on_click(cx.listener(|this, _, window, cx| this.close(window, cx))),
                 ),
             )
+            .when(self.shows_capture_notes, |root| {
+                root.child(self.capture_notes(p, cx))
+            })
             .child(self.toolbar(compact, p, cx))
             .child(body)
             .child(self.footer(compact, p, cx));

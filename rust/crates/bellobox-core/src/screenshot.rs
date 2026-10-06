@@ -6,6 +6,7 @@
 //! Rendering is tiled, bounded, and shared by preview/export/OCR. This module
 //! performs no filesystem or network access and never logs image or OCR data.
 mod render;
+pub mod scroll;
 pub mod selection;
 #[cfg(test)]
 mod tests;
