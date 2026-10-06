@@ -15,6 +15,7 @@ mod capture;
 pub mod macos_capture_overlay;
 #[cfg(target_os = "macos")]
 pub mod macos_native;
+pub mod movie;
 pub mod native_capture;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 mod process;

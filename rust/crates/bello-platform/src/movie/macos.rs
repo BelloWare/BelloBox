@@ -1,0 +1,532 @@
+//! Native objects never leave their creation worker. Only notification-only
+//! Send+Sync block captures and the atomic cancellation token cross threads.
+use super::{source_file::SourceFile, *};
+use block2::RcBlock;
+use objc2::{
+    msg_send,
+    rc::{autoreleasepool, Retained},
+    runtime::AnyObject,
+    AnyThread, Message,
+};
+use objc2_av_foundation::{
+    AVAsset, AVAssetReader, AVAssetReaderStatus, AVAssetReaderTrackOutput,
+    AVAssetReferenceRestrictions, AVAssetTrack, AVAsynchronousKeyValueLoading, AVKeyValueStatus,
+    AVMediaTypeVideo, AVURLAsset, AVURLAssetReferenceRestrictionsKey,
+};
+use objc2_core_foundation::{CFData, CGAffineTransform, CGPoint, CGRect, CGSize};
+use objc2_core_graphics::{
+    CGBitmapContextCreate, CGBitmapInfo, CGColorRenderingIntent, CGColorSpace, CGContext,
+    CGDataProvider, CGImage, CGImageAlphaInfo, CGInterpolationQuality,
+};
+use objc2_core_media::{CMTime, CMTimeFlags, CMTimeRange};
+use objc2_core_video::*;
+use objc2_foundation::{NSArray, NSDictionary, NSError, NSNumber, NSString, NSURL};
+use std::{ptr, time::Instant};
+
+// Keep a lease until the worker owner and copied completion blocks have retired.
+// This bounds our owned readers/callback contexts, not opaque framework work:
+// cancelLoading is cooperative and offers no join proving native loader quiescence.
+// Framework loader work may outlive a timeout return or callback destruction.
+static JOB_ACTIVE: AtomicBool = AtomicBool::new(false);
+struct Lease;
+impl Lease {
+    fn acquire() -> MovieResult<Arc<Self>> {
+        JOB_ACTIVE
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .map_err(|_| MovieError::Busy)?;
+        Ok(Arc::new(Self))
+    }
+}
+impl Drop for Lease {
+    fn drop(&mut self) {
+        JOB_ACTIVE.store(false, Ordering::Release);
+    }
+}
+fn sendable<F: Send + Sync>(_: &F) {}
+
+pub(super) struct Asset {
+    source: SourceFile,
+    asset: Retained<AVURLAsset>,
+    track: Retained<AVAssetTrack>,
+    info: MovieInfo,
+    natural: CGSize,
+    transform: CGAffineTransform,
+    geometry: DisplayGeometry,
+    cancellation: MovieCancellation,
+    _lease: Arc<Lease>,
+}
+impl Asset {
+    pub fn open(path: &Path, cancellation: MovieCancellation) -> MovieResult<Self> {
+        cancellation.check()?;
+        let lease = Lease::acquire()?;
+        let deadline = Instant::now() + METADATA_TIMEOUT;
+        let source = SourceFile::open(path)?;
+        autoreleasepool(|_| {
+            let url = NSURL::from_file_path(source.path()).ok_or(MovieError::InvalidSource)?;
+            let restriction = NSNumber::new_usize(AVAssetReferenceRestrictions::ForbidAll.bits());
+            // Values have the NSString -> NSNumber type required by AVURLAsset.
+            let options: Retained<NSDictionary<NSString, AnyObject>> = NSDictionary::from_slices(
+                &[unsafe { AVURLAssetReferenceRestrictionsKey }],
+                &[&*restriction],
+            );
+            let asset = unsafe {
+                AVURLAsset::initWithURL_options(AVURLAsset::alloc(), &url, Some(&options))
+            };
+            load_keys(
+                &*asset,
+                &asset,
+                &["tracks", "duration", "hasProtectedContent"],
+                deadline,
+                &cancellation,
+                &lease,
+            )?;
+            if unsafe { asset.hasProtectedContent() } {
+                return Err(MovieError::ProtectedContent);
+            }
+            let duration = numeric_seconds(unsafe { asset.duration() })
+                .map_err(|_| MovieError::InvalidMetadata)?;
+            if duration <= 0. {
+                return Err(MovieError::InvalidMetadata);
+            }
+            // The tracks key is already loaded and its status checked. This legacy
+            // synchronous filter now performs no metadata wait on the UI thread.
+            let media_type = unsafe { AVMediaTypeVideo }.ok_or(MovieError::Unavailable)?;
+            #[allow(deprecated)]
+            let tracks = unsafe { asset.tracksWithMediaType(media_type) };
+            let track = tracks.firstObject().ok_or(MovieError::NoVideoTrack)?;
+            load_keys(
+                &*track,
+                &asset,
+                &["naturalSize", "preferredTransform", "nominalFrameRate"],
+                deadline,
+                &cancellation,
+                &lease,
+            )?;
+            let natural = unsafe { track.naturalSize() };
+            let transform = unsafe { track.preferredTransform() };
+            let geometry = display_geometry(
+                natural.width,
+                natural.height,
+                [
+                    transform.a,
+                    transform.b,
+                    transform.c,
+                    transform.d,
+                    transform.tx,
+                    transform.ty,
+                ],
+            )?;
+            let frame_rate = f64::from(unsafe { track.nominalFrameRate() });
+            if !frame_rate.is_finite() || frame_rate < 0. {
+                return Err(MovieError::InvalidMetadata);
+            }
+            source.verify()?;
+            cancellation.check()?;
+            Ok(Self {
+                source,
+                asset,
+                track,
+                info: MovieInfo {
+                    duration,
+                    display_width: geometry.extent_width,
+                    display_height: geometry.extent_height,
+                    nominal_frame_rate: frame_rate,
+                },
+                natural,
+                transform,
+                geometry,
+                cancellation,
+                _lease: lease,
+            })
+        })
+    }
+    pub fn info(&self) -> MovieInfo {
+        self.info
+    }
+    pub fn source_path(&self) -> &Path {
+        self.source.path()
+    }
+    pub fn reader(self, range: MovieReadRange) -> MovieResult<Reader> {
+        self.source.verify()?;
+        self.cancellation.check()?;
+        autoreleasepool(|_| {
+            let reader =
+                unsafe { AVAssetReader::initWithAsset_error(AVAssetReader::alloc(), &self.asset) }
+                    .map_err(|_| MovieError::DecodeFailed)?;
+            let native_range = CMTimeRange {
+                start: unsafe { CMTime::with_seconds(range.start, 600) },
+                duration: unsafe { CMTime::with_seconds(range.decode_duration(), 600) },
+            };
+            numeric_seconds(native_range.start)?;
+            numeric_seconds(native_range.duration)?;
+            unsafe {
+                reader.setTimeRange(native_range);
+            }
+            let format = NSNumber::new_u32(kCVPixelFormatType_32BGRA);
+            // Foundation's audited toll-free bridge avoids hand-casting CFString.
+            let key: &NSString = unsafe { kCVPixelBufferPixelFormatTypeKey }.as_ref();
+            let settings: Retained<NSDictionary<NSString, AnyObject>> =
+                NSDictionary::from_slices(&[key], &[&*format]);
+            let output = unsafe {
+                AVAssetReaderTrackOutput::initWithTrack_outputSettings(
+                    AVAssetReaderTrackOutput::alloc(),
+                    &self.track,
+                    Some(&settings),
+                )
+            };
+            unsafe {
+                output.setAlwaysCopiesSampleData(false);
+                if !reader.canAddOutput(&output) {
+                    return Err(MovieError::DecodeFailed);
+                }
+                reader.addOutput(&output);
+                if !reader.startReading() {
+                    reader.cancelReading();
+                    return Err(MovieError::DecodeFailed);
+                }
+            }
+            Ok(Reader {
+                owner: self,
+                reader,
+                output,
+                samples: 0,
+                previous_pts: None,
+                finished: false,
+            })
+        })
+    }
+}
+
+fn load_keys<T: AVAsynchronousKeyValueLoading + Message>(
+    object: &T,
+    asset: &AVAsset,
+    keys: &[&str],
+    deadline: Instant,
+    cancellation: &MovieCancellation,
+    lease: &Arc<Lease>,
+) -> MovieResult<()> {
+    let strings: Vec<_> = keys.iter().map(|key| NSString::from_str(key)).collect();
+    let array = NSArray::from_retained_slice(&strings);
+    let done = Arc::new(AtomicBool::new(false));
+    let ready = done.clone();
+    let callback_lease = lease.clone();
+    let callback = move || {
+        let _ = &callback_lease;
+        ready.store(true, Ordering::Release);
+    };
+    sendable(&callback);
+    let block = RcBlock::new(callback);
+    // The copied block captures only owned atomic/Rust lease state, never an
+    // Objective-C pointer, stack reference or panic-capable user callback.
+    unsafe {
+        object.loadValuesAsynchronouslyForKeys_completionHandler(&array, Some(&block));
+    }
+    while !done.load(Ordering::Acquire) {
+        if cancellation.is_cancelled() {
+            unsafe {
+                asset.cancelLoading();
+            }
+            return Err(MovieError::Cancelled);
+        }
+        if Instant::now() >= deadline {
+            unsafe {
+                asset.cancelLoading();
+            }
+            return Err(MovieError::TimedOut);
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    cancellation.check()?;
+    for key in strings {
+        // objc2 0.3.2 omits this legacy protocol method. Its SDK signature is
+        // AVKeyValueStatus(NSInteger) statusOfValueForKey:NSString* error:NSError**.
+        // The typed enum implements Encode, and the optional error output is null.
+        // No structure-return ABI or NSError lifetime is guessed here.
+        let status: AVKeyValueStatus = unsafe {
+            msg_send![object,statusOfValueForKey:&*key,error:ptr::null_mut::<*mut NSError>()]
+        };
+        if status != AVKeyValueStatus::Loaded {
+            return Err(if status == AVKeyValueStatus::Cancelled {
+                MovieError::Cancelled
+            } else {
+                MovieError::MetadataFailed
+            });
+        }
+    }
+    Ok(())
+}
+fn numeric_seconds(time: CMTime) -> MovieResult<f64> {
+    let flags = time.flags;
+    if !flags.contains(CMTimeFlags::Valid)
+        || flags.intersects(CMTimeFlags::ImpliedValueFlagsMask)
+        || time.timescale <= 0
+        || time.epoch != 0
+    {
+        return Err(MovieError::InvalidTimestamp);
+    }
+    let seconds = unsafe { time.seconds() };
+    if !seconds.is_finite() || seconds < 0. {
+        return Err(MovieError::InvalidTimestamp);
+    }
+    Ok(seconds)
+}
+
+pub(super) struct Reader {
+    reader: Retained<AVAssetReader>,
+    output: Retained<AVAssetReaderTrackOutput>,
+    samples: usize,
+    previous_pts: Option<f64>,
+    finished: bool,
+    // Fields drop in declaration order after Drop::drop. Release reader/output
+    // first; the owner retains the final admission lease through native teardown.
+    owner: Asset,
+}
+impl Reader {
+    fn cancelled(&self, probe: &impl Fn() -> bool) -> bool {
+        self.owner.cancellation.is_cancelled() || probe()
+    }
+    fn cancel(&mut self) {
+        // All methods and Drop remain on this !Send owner. This never overlaps
+        // copyNextSampleBuffer; external cancellation only flips an atomic flag.
+        if !self.finished {
+            unsafe {
+                self.reader.cancelReading();
+            }
+            self.finished = true;
+        }
+    }
+    pub fn next_frame(&mut self, probe: &impl Fn() -> bool) -> MovieResult<Option<MovieFrame>> {
+        if self.cancelled(probe) {
+            self.cancel();
+            return Err(MovieError::Cancelled);
+        }
+        if self.finished {
+            return Ok(None);
+        }
+        let result = autoreleasepool(|_| self.read_frame(probe));
+        if result.is_err() {
+            self.cancel();
+        }
+        result
+    }
+    fn read_frame(&mut self, probe: &impl Fn() -> bool) -> MovieResult<Option<MovieFrame>> {
+        loop {
+            if self.cancelled(probe) {
+                return Err(MovieError::Cancelled);
+            }
+            if self.samples >= MAX_MOVIE_SAMPLES {
+                return Err(MovieError::LimitExceeded);
+            }
+            self.owner.source.verify()?;
+            let sample = unsafe { self.output.copyNextSampleBuffer() };
+            if self.cancelled(probe) {
+                return Err(MovieError::Cancelled);
+            }
+            self.owner.source.verify()?;
+            let Some(sample) = sample else {
+                classify_end(unsafe { self.reader.status() })?;
+                self.finished = true;
+                return Ok(None);
+            };
+            self.samples += 1;
+            // Even marker samples count toward the limit. Decoded non-marker
+            // samples without pixel storage are errors, never clean EOF.
+            if unsafe { sample.num_samples() } == 0 {
+                continue;
+            }
+            let pts = numeric_seconds(unsafe { sample.presentation_time_stamp() })?;
+            if self.previous_pts.is_some_and(|previous| pts < previous) {
+                return Err(MovieError::InvalidTimestamp);
+            }
+            let pixel = unsafe { sample.image_buffer() }.ok_or(MovieError::InvalidFrame)?;
+            let rgba = render(
+                &pixel,
+                self.owner.natural,
+                self.owner.transform,
+                self.owner.geometry,
+                &|| self.cancelled(probe),
+            )?;
+            self.owner.source.verify()?;
+            self.previous_pts = Some(pts);
+            return MovieFrame::new(
+                pts,
+                self.owner.geometry.width,
+                self.owner.geometry.height,
+                rgba,
+            )
+            .map(Some);
+        }
+    }
+}
+impl Drop for Reader {
+    fn drop(&mut self) {
+        self.cancel();
+    }
+}
+
+// Only a completed read can be represented as clean EOF. Unknown/Reading after
+// a nil sample are failures too, rather than silently shortening an export.
+fn classify_end(status: AVAssetReaderStatus) -> MovieResult<()> {
+    match status {
+        AVAssetReaderStatus::Completed => Ok(()),
+        AVAssetReaderStatus::Cancelled => Err(MovieError::Cancelled),
+        _ => Err(MovieError::DecodeFailed),
+    }
+}
+
+struct PixelLock<'a>(&'a CVPixelBuffer);
+impl<'a> PixelLock<'a> {
+    fn new(pixel: &'a CVPixelBuffer) -> MovieResult<Self> {
+        if unsafe { CVPixelBufferLockBaseAddress(pixel, CVPixelBufferLockFlags::ReadOnly) }
+            != kCVReturnSuccess
+        {
+            return Err(MovieError::InvalidFrame);
+        }
+        Ok(Self(pixel))
+    }
+}
+impl Drop for PixelLock<'_> {
+    fn drop(&mut self) {
+        unsafe {
+            CVPixelBufferUnlockBaseAddress(self.0, CVPixelBufferLockFlags::ReadOnly);
+        }
+    }
+}
+
+fn render(
+    pixel: &CVPixelBuffer,
+    natural: CGSize,
+    transform: CGAffineTransform,
+    geometry: DisplayGeometry,
+    cancelled: &impl Fn() -> bool,
+) -> MovieResult<Vec<u8>> {
+    if cancelled() {
+        return Err(MovieError::Cancelled);
+    }
+    if CVPixelBufferIsPlanar(pixel)
+        || CVPixelBufferGetPixelFormatType(pixel) != kCVPixelFormatType_32BGRA
+    {
+        return Err(MovieError::InvalidFrame);
+    }
+    let width =
+        u32::try_from(CVPixelBufferGetWidth(pixel)).map_err(|_| MovieError::LimitExceeded)?;
+    let height =
+        u32::try_from(CVPixelBufferGetHeight(pixel)).map_err(|_| MovieError::LimitExceeded)?;
+    // Coded pixel dimensions may differ from natural presentation dimensions
+    // (for example clean aperture or pixel aspect ratio). Bound both independently
+    // and draw the decoded image into the natural rect, as the Swift source does.
+    let stride = CVPixelBufferGetBytesPerRow(pixel);
+    let size = CVPixelBufferGetDataSize(pixel);
+    validate_pixel_storage(width, height, stride, size)?;
+    // Copy visible BGRA into owned CFData while the pixel buffer is locked.
+    // A CGDataProvider may outlive the draw through framework image caching, so
+    // it must never borrow a CVPixelBuffer address unlocked on function return.
+    let data = {
+        let _lock = PixelLock::new(pixel)?;
+        let base = CVPixelBufferGetBaseAddress(pixel);
+        if base.is_null() {
+            return Err(MovieError::InvalidFrame);
+        }
+        let bytes = frame_bytes(width, height)?;
+        let row = width as usize * 4;
+        let mut packed = Vec::new();
+        packed
+            .try_reserve_exact(bytes)
+            .map_err(|_| MovieError::LimitExceeded)?;
+        for y in 0..height as usize {
+            if cancelled() {
+                return Err(MovieError::Cancelled);
+            }
+            // Full padded extent was checked above; this reads only row pixels.
+            let source =
+                unsafe { std::slice::from_raw_parts(base.cast::<u8>().add(y * stride), row) };
+            packed.extend_from_slice(source);
+        }
+        // CFDataCreate copies the bytes; neither a native pixel address nor the
+        // temporary Rust packing allocation escapes this scope.
+        unsafe { CFData::new(None, packed.as_ptr(), packed.len() as isize) }
+            .ok_or(MovieError::NativeFailure)?
+    };
+    // The bitmap context borrows rgba and is dropped before that vector moves.
+    let mut rgba = Vec::new();
+    let bytes = frame_bytes(geometry.width, geometry.height)?;
+    rgba.try_reserve_exact(bytes)
+        .map_err(|_| MovieError::LimitExceeded)?;
+    rgba.resize(bytes, 0);
+    {
+        let color = CGColorSpace::new_device_rgb().ok_or(MovieError::NativeFailure)?;
+        let provider =
+            CGDataProvider::with_cf_data(Some(&data)).ok_or(MovieError::NativeFailure)?;
+        let input_info = CGBitmapInfo::from_bits_retain(
+            CGBitmapInfo::ByteOrder32Little.bits() | CGImageAlphaInfo::PremultipliedFirst.0,
+        );
+        let image = unsafe {
+            CGImage::new(
+                width as usize,
+                height as usize,
+                8,
+                32,
+                width as usize * 4,
+                Some(&color),
+                input_info,
+                Some(&provider),
+                ptr::null(),
+                false,
+                CGColorRenderingIntent::RenderingIntentDefault,
+            )
+        }
+        .ok_or(MovieError::NativeFailure)?;
+        let context = unsafe {
+            CGBitmapContextCreate(
+                rgba.as_mut_ptr().cast(),
+                geometry.width as usize,
+                geometry.height as usize,
+                8,
+                geometry.width as usize * 4,
+                Some(&color),
+                CGBitmapInfo::ByteOrder32Big.bits() | CGImageAlphaInfo::PremultipliedLast.0,
+            )
+        }
+        .ok_or(MovieError::NativeFailure)?;
+        let ctx = Some(&*context);
+        CGContext::set_rgb_fill_color(ctx, 0., 0., 0., 1.);
+        CGContext::fill_rect(
+            ctx,
+            CGRect {
+                origin: CGPoint { x: 0., y: 0. },
+                size: CGSize {
+                    width: f64::from(geometry.width),
+                    height: f64::from(geometry.height),
+                },
+            },
+        );
+        CGContext::set_interpolation_quality(ctx, CGInterpolationQuality::Medium);
+        CGContext::translate_ctm(ctx, 0., f64::from(geometry.height));
+        CGContext::scale_ctm(ctx, 1., -1.);
+        CGContext::scale_ctm(
+            ctx,
+            f64::from(geometry.width) / geometry.extent_width,
+            f64::from(geometry.height) / geometry.extent_height,
+        );
+        CGContext::translate_ctm(ctx, -geometry.min_x, -geometry.min_y);
+        CGContext::concat_ctm(ctx, transform);
+        CGContext::translate_ctm(ctx, 0., natural.height);
+        CGContext::scale_ctm(ctx, 1., -1.);
+        CGContext::draw_image(
+            ctx,
+            CGRect {
+                origin: CGPoint { x: 0., y: 0. },
+                size: natural,
+            },
+            Some(&image),
+        );
+        CGContext::flush(ctx);
+    }
+    if cancelled() {
+        return Err(MovieError::Cancelled);
+    }
+    Ok(rgba)
+}
+
+#[cfg(test)]
+mod tests;
