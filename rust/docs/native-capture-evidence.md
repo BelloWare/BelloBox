@@ -3,6 +3,12 @@
 Date: 2026-10-06 UTC. Base: `e4e508fd2aff1b12aa26359776d44623ec715238`.
 Worktree: `BelloBox-capture-native`. Rust-only implementation; no macOS execution.
 
+The image-callback encoding/ownership behavior below is superseded by
+[native-capture-encoding-evidence.md](native-capture-encoding-evidence.md): image
+completion now retains and dispatches a specialized context, while dimension/
+display validation and PNG encoding execute on an explicitly checked worker.
+The original runtime/source-parity gates still apply.
+
 ## Scope and platform boundary
 
 `bello_platform::native_capture` adds an explicit, in-memory macOS 14+
@@ -49,7 +55,8 @@ The parent is separately implementing guarded hide/restore behavior.
 - 64 million pixels, 32,768 pixels/axis, 64 million PNG bytes, ten-second deadline
 - PNG uses a bounded CGDataConsumer; partial/oversized output cannot publish
 - A single native-operation lease remains held until the framework drops its
-  callbacks, preventing repeated timeouts from accumulating native operations
+  callbacks and the queued/running encoder releases its context, preventing
+  repeated timeouts from accumulating native operations
 
 SCScreenshotManager exposes no per-operation cancel API. Cancellation/deadline
 bounds the Rust waiter and rejects late results; it cannot prove the underlying
@@ -69,7 +76,9 @@ Borrowed content/display objects are used within the content callback. The displ
 is explicitly retained while constructing and submitting the request. Filter,
 configuration and display ownership remains local through the SCScreenshotManager
 call and is released on that same callback thread; none is captured in the image
-completion block. The borrowed CGImage is encoded before its callback returns.
+completion block. The current image completion retains the borrowed CGImage and
+enqueues a specialized encoding context. See the linked hardening checkpoint for the
+independent worker lease, dispatch ownership and off-main execution evidence.
 
 This relies on Cocoa's normal callee-retains-stored-arguments convention for the
 documented asynchronous SCScreenshotManager API. The API page does not explicitly
@@ -125,9 +134,10 @@ this change makes no claim about the whole app's upstream dependency graph.
 
 The replacement uses RcBlock::new. block2 0.6.2 documents that its block type
 cannot express thread-safe blocks, so the explicit Send + Sync closure-capture
-check remains required at our unsafe FFI boundary. Every async capture contains
-only owned Rust Send + Sync values; native objects stay on the callback thread
-where they were obtained/created and are released after submitting the native call.
+check remains required at our unsafe FFI boundary. Every copied SCK block captures
+only owned Rust Send + Sync values. Native request objects stay on the content
+callback thread and are released after native submission. The separately documented
+immutable image owner now crosses only the specialized libdispatch FFI boundary.
 
 ## Executed checks
 

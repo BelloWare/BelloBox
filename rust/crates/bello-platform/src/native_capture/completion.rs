@@ -4,6 +4,24 @@ use super::*;
 use std::sync::{Condvar, Mutex};
 use std::time::Instant;
 
+/// Every native callback and queued/running encoder holds the same Arc lease.
+/// Timeout/cancellation only abandons the Job, never this independent ownership.
+pub(super) struct InflightGuard {
+    slot: &'static AtomicBool,
+}
+impl InflightGuard {
+    pub(super) fn acquire(slot: &'static AtomicBool) -> CaptureResult<Arc<Self>> {
+        slot.compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .map_err(|_| CaptureError::Busy)?;
+        Ok(Arc::new(Self { slot }))
+    }
+}
+impl Drop for InflightGuard {
+    fn drop(&mut self) {
+        self.slot.store(false, Ordering::Release);
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Stage {
     InitialContent,
@@ -11,6 +29,7 @@ pub(super) enum Stage {
     RefreshedContent,
     ResolvingRefreshed,
     Image,
+    EncodingQueued,
     Encoding,
     Completed,
     Abandoned,

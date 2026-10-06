@@ -34,6 +34,7 @@ pub enum CaptureError {
     TimedOut,
     Unsupported,
     Busy,
+    WorkerThreadRequired,
     PermissionNotGranted,
     InvalidRequest,
     DisplayNotFound,
@@ -48,6 +49,7 @@ impl fmt::Display for CaptureError {
             Self::Cancelled => "Screen capture was cancelled.",
             Self::TimedOut => "Screen capture timed out. No screenshot was published.",
             Self::Unsupported => "Native one-shot ScreenCaptureKit capture requires macOS 14 or later.",
+            Self::WorkerThreadRequired => "Native capture and PNG encoding must run off the main thread.",
             Self::Busy => "A previous native screen capture is still finishing. Try again when it has stopped.",
             Self::PermissionNotGranted => "Screen Recording permission is not granted. Open System Settings to enable it.",
             Self::InvalidRequest => "The requested display, region, dimensions, or deadline are invalid.",
@@ -332,9 +334,13 @@ pub fn capture_main_display_snapshot(
     if cancellation.is_cancelled() {
         return Err(CaptureError::Cancelled);
     }
+    #[cfg(target_os = "macos")]
+    macos::require_worker_thread()?;
     capture(CaptureRequest::full_display(main_display()?), cancellation)
 }
-/// Synchronous bounded worker action. The host must hide its own windows first.
+/// Synchronous worker action; macOS main-thread calls are rejected.
+/// The waiter/output are bounded, not the native framework's runtime or memory.
+/// The host must hide its own windows first.
 /// No legacy/helper fallback can broaden a region or change a display target.
 pub fn capture(
     request: CaptureRequest,

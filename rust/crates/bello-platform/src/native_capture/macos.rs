@@ -1,10 +1,11 @@
-//! macOS 14+ one-shot bridge. No native object/pointer is sent through a channel.
-//! Content callbacks chain capture; image callbacks encode into bounded owned
-//! Rust bytes before publishing. Copied blocks own only Rust Send+Sync state.
-//! Native request objects remain on their creation callback thread, alive through
-//! the SCScreenshotManager call. No unsafe Send/Sync implementation is used.
+//! macOS 14+ one-shot bridge. Copied blocks capture only Rust Send+Sync state.
+//! The image callback retains one immutable CGImage and transfers a specialized
+//! boxed context to libdispatch; image/display validation and PNG encoding run
+//! off the main thread.
+//! Native request objects remain local through the SCScreenshotManager call.
+//! No unsafe Send/Sync implementation or generic non-Send dispatcher is used.
 use super::{
-    completion::{Job, Stage},
+    completion::{InflightGuard, Job, Stage},
     *,
 };
 use block2::{Block, RcBlock};
@@ -23,21 +24,22 @@ type ObjcBool = i8;
 fn assert_callback_send_sync<F: Send + Sync>(_: &F) {}
 const BACKEND: &str = "ScreenCaptureKit one-shot (macOS 14+)";
 // A timed-out SCScreenshotManager request cannot be forcibly cancelled. Hold this
-// slot until the framework releases every callback, preventing repeated timeouts
-// from accumulating native work/retained contexts without a bound.
+// slot until both the framework's callbacks and the queued/running encode have
+// released their leases. A timed-out waiter never reclaims a submitted context.
 static CAPTURE_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
-struct InflightGuard;
-impl Drop for InflightGuard {
-    fn drop(&mut self) {
-        CAPTURE_IN_FLIGHT.store(false, Ordering::Release);
-    }
-}
 
 #[link(name = "objc")]
 extern "C" {
     fn objc_getClass(name: *const c_char) -> Id;
     fn sel_registerName(name: *const c_char) -> Sel;
     fn objc_msgSend();
+}
+#[link(name = "System")]
+extern "C" {
+    // dispatch/queue.h: intptr_t identifier, uintptr_t flags; dispatch_function_t
+    // is void (*)(void *). The global queue is borrowed and must not be released.
+    fn dispatch_get_global_queue(identifier: isize, flags: usize) -> Id;
+    fn dispatch_async_f(queue: Id, context: *mut c_void, work: unsafe extern "C" fn(*mut c_void));
 }
 #[link(name = "Foundation", kind = "framework")]
 extern "C" {}
@@ -51,6 +53,8 @@ extern "C" {
     fn CGDisplayPixelsWide(id: u32) -> usize;
     fn CGDisplayPixelsHigh(id: u32) -> usize;
     fn CGDisplayIsOnline(id: u32) -> u32;
+    fn CGImageRetain(image: *const c_void) -> Id;
+    fn CGImageRelease(image: *const c_void);
     fn CGImageGetWidth(image: *const c_void) -> usize;
     fn CGImageGetHeight(image: *const c_void) -> usize;
     fn CGDataConsumerCreate(info: *mut c_void, callbacks: *const ConsumerCallbacks) -> Id;
@@ -156,6 +160,16 @@ unsafe fn pool() -> CaptureResult<OwnedObject> {
     OwnedObject::from_owned(send!(class(b"NSAutoreleasePool\0")?, b"new\0", () -> Id))
 }
 
+/// Test the actual Cocoa main thread, not the caller's thread name or queue.
+pub(super) fn require_worker_thread() -> CaptureResult<()> {
+    unsafe {
+        if send!(class(b"NSThread\0")?, b"isMainThread\0", () -> ObjcBool) != 0 {
+            return Err(CaptureError::WorkerThreadRequired);
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn is_available() -> bool {
     unsafe {
         let Ok(manager) = class(b"SCScreenshotManager\0") else {
@@ -192,6 +206,7 @@ pub(super) fn capture(
     request: CaptureRequest,
     cancellation: CaptureCancellation,
 ) -> CaptureResult<NativeCaptureSnapshot> {
+    require_worker_thread()?;
     if !is_available() {
         return Err(CaptureError::Unsupported);
     }
@@ -205,13 +220,7 @@ pub(super) fn capture(
             return Err(CaptureError::DisplayChanged);
         }
     }
-    if CAPTURE_IN_FLIGHT
-        .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
-        .is_err()
-    {
-        return Err(CaptureError::Busy);
-    }
-    let lease = Arc::new(InflightGuard);
+    let lease = InflightGuard::acquire(&CAPTURE_IN_FLIGHT)?;
     let job = Job::new(cancellation, request.timeout);
     unsafe {
         enumerate(request, job.clone(), None, lease)?;
@@ -375,51 +384,24 @@ unsafe fn capture_image(
     let manager = class(b"SCScreenshotManager\0")?;
     let callback_job = job.clone();
     let callback = move |image: Id, error: Id| {
-        // The borrowed CGImage is consumed only during this callback; it never
-        // crosses a channel or survives its callback scope. No native request
-        // objects are captured in this Send+Sync closure.
+        // SCK does not document this callback's queue. Keep it to phase/ownership
+        // work even if delivered on the main thread. This original lease remains
+        // captured until SCK releases the block, independently of the worker lease.
         let _hold_native_slot_until_callback_release = &lease;
-        if !callback_job.transition(Stage::Image, Stage::Encoding) {
-            return;
-        }
         let outcome = catch_unwind(AssertUnwindSafe(|| unsafe {
-            if !error.is_null() || image.is_null() {
-                return Err(CaptureError::NativeFailure);
-            }
-            if display_metadata(resolution.display.id)? != resolution.display {
-                return Err(CaptureError::DisplayChanged);
-            }
-            let size = CapturePixelSize {
-                width: u32::try_from(CGImageGetWidth(image))
-                    .map_err(|_| CaptureError::OutputTooLarge)?,
-                height: u32::try_from(CGImageGetHeight(image))
-                    .map_err(|_| CaptureError::OutputTooLarge)?,
-            };
-            size.validate()?;
-            if size != request.output_size {
-                return Err(CaptureError::InvalidImage);
-            }
-            let png = encode_png(image, callback_job.clone())?;
-            if display_metadata(resolution.display.id)? != resolution.display {
-                return Err(CaptureError::DisplayChanged);
-            }
-            Ok(NativeCaptureSnapshot {
-                png,
-                diagnostics: CaptureDiagnostics {
-                    requested_display_id: request.display.id,
-                    resolved_display_id: resolution.display.id,
-                    resolution_path: resolution.path,
-                    output_size: size,
-                    region: request.region,
-                    includes_cursor: request.include_cursor,
-                    backend: BACKEND,
-                },
-            })
+            enqueue_image(image, error, resolution, &request, &callback_job, &lease)
         }));
-        callback_job.complete(match outcome {
-            Ok(result) => result,
-            Err(_) => Err(CaptureError::NativeFailure),
-        });
+        match outcome {
+            Ok(Ok(())) => {}
+            Ok(Err(error)) => {
+                callback_job.complete(Err(error));
+            }
+            Err(payload) => {
+                // Even a custom panic payload's destructor must not unwind into C.
+                std::mem::forget(payload);
+                callback_job.complete(Err(CaptureError::NativeFailure));
+            }
+        }
     };
     assert_callback_send_sync(&callback);
     let block = RcBlock::new(callback);
@@ -436,6 +418,145 @@ unsafe fn capture_image(
     drop(objects);
     Ok(())
 }
+/// Owns exactly one CGImageRetain; intentionally neither Clone nor Send/Sync.
+/// Only immutable SCK CGImages enter this private owner. Apple's CGImage is
+/// Sendable; immutable Core Foundation references may be retained/read/released
+/// across threads. This does not generalize to arbitrary CoreGraphics objects.
+/// https://developer.apple.com/documentation/coregraphics/cgimage?changes=latest__1
+/// https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/ThreadSafetySummary/ThreadSafetySummary.html
+struct OwnedCaptureImage(Id);
+impl OwnedCaptureImage {
+    unsafe fn retain(image: Id) -> CaptureResult<Self> {
+        if image.is_null() {
+            return Err(CaptureError::InvalidImage);
+        }
+        let image = CGImageRetain(image);
+        if image.is_null() {
+            Err(CaptureError::NativeFailure)
+        } else {
+            Ok(Self(image))
+        }
+    }
+}
+impl Drop for OwnedCaptureImage {
+    fn drop(&mut self) {
+        unsafe { CGImageRelease(self.0) };
+    }
+}
+struct EncodeContext {
+    // Rust drops fields in declaration order: release the retained image before
+    // the last lease can free the native-operation slot, including during unwind.
+    image: OwnedCaptureImage,
+    resolution: DisplayResolution,
+    request: CaptureRequest,
+    job: Arc<Job<NativeCaptureSnapshot>>,
+    _lease: Arc<InflightGuard>,
+}
+unsafe fn enqueue_image(
+    image: Id,
+    error: Id,
+    resolution: DisplayResolution,
+    request: &CaptureRequest,
+    job: &Arc<Job<NativeCaptureSnapshot>>,
+    lease: &Arc<InflightGuard>,
+) -> CaptureResult<()> {
+    if !job.transition(Stage::Image, Stage::EncodingQueued) {
+        return Ok(());
+    }
+    if !error.is_null() || image.is_null() {
+        return Err(CaptureError::NativeFailure);
+    }
+    // Validate before transferring ownership; a local failure releases everything.
+    let queue = dispatch_get_global_queue(0, 0);
+    if queue.is_null() {
+        return Err(CaptureError::NativeFailure);
+    }
+    let context = Box::new(EncodeContext {
+        image: OwnedCaptureImage::retain(image)?,
+        resolution,
+        request: request.clone(),
+        job: job.clone(),
+        _lease: lease.clone(),
+    });
+    // SAFETY: the immutable image has its own +1 reference. All other fields are
+    // owned Rust values. dispatch_async_f invokes encode_on_worker once with this
+    // unchanged context; only that entry point reconstructs/frees this exact Box.
+    // The waiter never owns the pointer, even after cancellation/timeout. No Rust
+    // operation that can fail or panic occurs between into_raw and submission.
+    // No Objective-C request object or borrowed callback/stack address is moved.
+    // https://raw.githubusercontent.com/apple-oss-distributions/libdispatch/main/dispatch/queue.h
+    // https://developer.apple.com/documentation/dispatch/dispatch_function_t
+    let context = Box::into_raw(context).cast();
+    dispatch_async_f(queue, context, encode_on_worker);
+    Ok(())
+}
+unsafe extern "C" fn encode_on_worker(context: *mut c_void) {
+    let outcome = catch_unwind(AssertUnwindSafe(|| {
+        // SAFETY: exclusively paired with enqueue_image's single into_raw above.
+        // libdispatch owns execution, not deallocation, of the supplied context.
+        let context = Box::from_raw(context.cast::<EncodeContext>());
+        let result = catch_unwind(AssertUnwindSafe(|| encode_context(&context)));
+        context.job.complete(match result {
+            Ok(result) => result,
+            Err(payload) => {
+                std::mem::forget(payload);
+                Err(CaptureError::NativeFailure)
+            }
+        });
+        // Drop image before lease, after all ImageIO objects and the pool have
+        // been disposed on this worker. The outer fence also covers context drop.
+        drop(context);
+    }));
+    if let Err(payload) = outcome {
+        std::mem::forget(payload);
+    }
+}
+unsafe fn encode_context(context: &EncodeContext) -> CaptureResult<NativeCaptureSnapshot> {
+    require_worker_thread()?;
+    if !context
+        .job
+        .transition(Stage::EncodingQueued, Stage::Encoding)
+    {
+        return Err(CaptureError::Cancelled);
+    }
+    let _pool = pool()?;
+    let EncodeContext {
+        image,
+        resolution,
+        request,
+        job,
+        ..
+    } = context;
+    if display_metadata(resolution.display.id)? != resolution.display {
+        return Err(CaptureError::DisplayChanged);
+    }
+    let size = CapturePixelSize {
+        width: u32::try_from(CGImageGetWidth(image.0)).map_err(|_| CaptureError::OutputTooLarge)?,
+        height: u32::try_from(CGImageGetHeight(image.0))
+            .map_err(|_| CaptureError::OutputTooLarge)?,
+    };
+    size.validate()?;
+    if size != request.output_size {
+        return Err(CaptureError::InvalidImage);
+    }
+    let png = encode_png(image.0, job.clone())?;
+    if display_metadata(resolution.display.id)? != resolution.display {
+        return Err(CaptureError::DisplayChanged);
+    }
+    Ok(NativeCaptureSnapshot {
+        png,
+        diagnostics: CaptureDiagnostics {
+            requested_display_id: request.display.id,
+            resolved_display_id: resolution.display.id,
+            resolution_path: resolution.path,
+            output_size: size,
+            region: request.region,
+            includes_cursor: request.include_cursor,
+            backend: BACKEND,
+        },
+    })
+}
+
 #[repr(C)]
 struct ConsumerCallbacks {
     put_bytes: unsafe extern "C" fn(*mut c_void, *const c_void, usize) -> usize,
@@ -488,6 +609,7 @@ unsafe extern "C" fn release_sink(info: *mut c_void) {
     }
 }
 unsafe fn encode_png(image: Id, job: Arc<Job<NativeCaptureSnapshot>>) -> CaptureResult<Vec<u8>> {
+    require_worker_thread()?;
     if !job.active() {
         return Err(CaptureError::Cancelled);
     }
@@ -497,7 +619,7 @@ unsafe fn encode_png(image: Id, job: Arc<Job<NativeCaptureSnapshot>>) -> Capture
     }));
     let info = Box::into_raw(Box::new(PngSink {
         state: state.clone(),
-        job,
+        job: job.clone(),
     }))
     .cast();
     let consumer = CGDataConsumerCreate(info, &CONSUMER_CALLBACKS);
@@ -517,7 +639,13 @@ unsafe fn encode_png(image: Id, job: Arc<Job<NativeCaptureSnapshot>>) -> Capture
         1,
         ptr::null(),
     ))?;
+    if !job.active() {
+        return Err(CaptureError::Cancelled);
+    }
     CGImageDestinationAddImage(destination.0, image, ptr::null());
+    if !job.active() {
+        return Err(CaptureError::Cancelled);
+    }
     let valid = CGImageDestinationFinalize(destination.0);
     drop(destination);
     drop(consumer);
@@ -530,3 +658,7 @@ unsafe fn encode_png(image: Id, job: Arc<Job<NativeCaptureSnapshot>>) -> Capture
     }
     Ok(std::mem::take(&mut state.bytes))
 }
+
+#[cfg(test)]
+#[path = "macos_tests.rs"]
+mod tests;

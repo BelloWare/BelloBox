@@ -1,5 +1,5 @@
 use super::{
-    completion::{Job, Stage},
+    completion::{InflightGuard, Job, Stage},
     *,
 };
 use std::sync::atomic::AtomicUsize;
@@ -209,8 +209,10 @@ fn callback_stage_claims_reject_duplicate_and_out_of_order_callbacks() {
     assert!(job.transition(Stage::ResolvingInitial, Stage::RefreshedContent));
     assert!(job.transition(Stage::RefreshedContent, Stage::ResolvingRefreshed));
     assert!(job.transition(Stage::ResolvingRefreshed, Stage::Image));
-    assert!(job.transition(Stage::Image, Stage::Encoding));
-    assert!(!job.transition(Stage::Image, Stage::Encoding));
+    assert!(job.transition(Stage::Image, Stage::EncodingQueued));
+    assert!(!job.transition(Stage::Image, Stage::EncodingQueued));
+    assert!(job.transition(Stage::EncodingQueued, Stage::Encoding));
+    assert!(!job.transition(Stage::EncodingQueued, Stage::Encoding));
     assert!(job.complete(Ok(())));
     assert!(!job.active());
 }
@@ -272,4 +274,172 @@ fn region_sampling_never_includes_cursor_but_display_choice_is_explicit() {
     assert_eq!(request.validate(), Err(CaptureError::InvalidRequest));
     request.include_cursor = false;
     assert!(request.validate().is_ok());
+}
+
+// A portable ownership model uses the production Job/InflightGuard. It does not
+// purport to execute libdispatch or prove CGImage retain/release on Linux.
+struct QueuedImageDrop {
+    slot: &'static AtomicBool,
+    dropped: Arc<AtomicUsize>,
+}
+impl Drop for QueuedImageDrop {
+    fn drop(&mut self) {
+        assert!(
+            self.slot.load(Ordering::Acquire),
+            "image must drop before lease"
+        );
+        self.dropped.fetch_add(1, Ordering::Relaxed);
+    }
+}
+struct QueuedEncodeModel {
+    _image: QueuedImageDrop,
+    job: Arc<Job<Payload>>,
+    _lease: Arc<InflightGuard>,
+}
+fn queued_model(
+    slot: &'static AtomicBool,
+    cancellation: CaptureCancellation,
+) -> (Arc<InflightGuard>, Box<QueuedEncodeModel>, Arc<AtomicUsize>) {
+    let lease = InflightGuard::acquire(slot).unwrap();
+    let job = Job::new(cancellation, Duration::from_secs(5));
+    assert!(job.transition(Stage::InitialContent, Stage::Image));
+    assert!(job.transition(Stage::Image, Stage::EncodingQueued));
+    let dropped = Arc::new(AtomicUsize::new(0));
+    let queued = Box::new(QueuedEncodeModel {
+        _image: QueuedImageDrop {
+            slot,
+            dropped: dropped.clone(),
+        },
+        job,
+        _lease: lease.clone(),
+    });
+    (lease, queued, dropped)
+}
+#[test]
+fn queued_cancellation_keeps_slot_until_context_drops_after_callback() {
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    let cancellation = CaptureCancellation::default();
+    let (callback, queued, dropped) = queued_model(&SLOT, cancellation.clone());
+    let waiter = queued.job.clone();
+    cancellation.cancel();
+    assert!(matches!(waiter.wait(), Err(CaptureError::Cancelled)));
+    drop(waiter);
+    drop(callback);
+    assert!(matches!(
+        InflightGuard::acquire(&SLOT),
+        Err(CaptureError::Busy)
+    ));
+    assert_eq!(dropped.load(Ordering::Relaxed), 0);
+    assert!(!queued
+        .job
+        .transition(Stage::EncodingQueued, Stage::Encoding));
+    drop(queued);
+    assert_eq!(dropped.load(Ordering::Relaxed), 1);
+    assert!(InflightGuard::acquire(&SLOT).is_ok());
+}
+#[test]
+fn queued_timeout_does_not_reclaim_context_or_let_another_operation_start() {
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    let lease = InflightGuard::acquire(&SLOT).unwrap();
+    let job = Job::new(CaptureCancellation::default(), Duration::from_millis(10));
+    assert!(job.transition(Stage::InitialContent, Stage::Image));
+    assert!(job.transition(Stage::Image, Stage::EncodingQueued));
+    let dropped = Arc::new(AtomicUsize::new(0));
+    let queued = Box::new(QueuedEncodeModel {
+        _image: QueuedImageDrop {
+            slot: &SLOT,
+            dropped: dropped.clone(),
+        },
+        job: job.clone(),
+        _lease: lease.clone(),
+    });
+    // Model the exclusively queue-owned Box while the waiter knows only Job.
+    let context = Box::into_raw(queued);
+    assert!(matches!(job.wait(), Err(CaptureError::TimedOut)));
+    drop(job);
+    drop(lease);
+    assert_eq!(dropped.load(Ordering::Relaxed), 0);
+    assert!(matches!(
+        InflightGuard::acquire(&SLOT),
+        Err(CaptureError::Busy)
+    ));
+    // Exactly once, by the simulated worker, never by the timed-out waiter.
+    let queued = unsafe { Box::from_raw(context) };
+    assert!(!queued
+        .job
+        .transition(Stage::EncodingQueued, Stage::Encoding));
+    drop(queued);
+    assert_eq!(dropped.load(Ordering::Relaxed), 1);
+    assert!(InflightGuard::acquire(&SLOT).is_ok());
+}
+#[test]
+fn callback_lease_keeps_slot_after_worker_success_and_image_drop() {
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    let (callback, queued, dropped) = queued_model(&SLOT, CaptureCancellation::default());
+    assert!(queued
+        .job
+        .transition(Stage::EncodingQueued, Stage::Encoding));
+    let payload_drops = Arc::new(AtomicUsize::new(0));
+    assert!(queued.job.complete(Ok(Payload(payload_drops.clone()))));
+    drop(queued.job.wait().unwrap());
+    drop(queued);
+    assert_eq!(dropped.load(Ordering::Relaxed), 1);
+    assert_eq!(payload_drops.load(Ordering::Relaxed), 1);
+    assert!(matches!(
+        InflightGuard::acquire(&SLOT),
+        Err(CaptureError::Busy)
+    ));
+    drop(callback);
+    assert!(InflightGuard::acquire(&SLOT).is_ok());
+}
+#[test]
+fn queued_duplicate_callback_cannot_create_a_second_image_owner() {
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    let (callback, queued, dropped) = queued_model(&SLOT, CaptureCancellation::default());
+    assert!(!queued.job.transition(Stage::Image, Stage::EncodingQueued));
+    assert_eq!(Arc::strong_count(&callback), 2);
+    assert_eq!(dropped.load(Ordering::Relaxed), 0);
+    drop(callback);
+    drop(queued);
+    assert_eq!(dropped.load(Ordering::Relaxed), 1);
+    assert!(InflightGuard::acquire(&SLOT).is_ok());
+}
+#[test]
+fn encode_panic_releases_image_before_last_lease() {
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    let (callback, queued, dropped) = queued_model(&SLOT, CaptureCancellation::default());
+    drop(callback);
+    let result = std::panic::catch_unwind(move || {
+        let _queued = queued;
+        panic!("synthetic encode panic");
+    });
+    assert!(result.is_err());
+    assert_eq!(dropped.load(Ordering::Relaxed), 1);
+    assert!(InflightGuard::acquire(&SLOT).is_ok());
+}
+#[test]
+fn pre_submission_failure_drops_local_image_and_preserves_callback_lease() {
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    let (callback, queued, dropped) = queued_model(&SLOT, CaptureCancellation::default());
+    assert!(queued.job.complete(Err(CaptureError::NativeFailure)));
+    assert!(matches!(
+        queued.job.wait(),
+        Err(CaptureError::NativeFailure)
+    ));
+    drop(queued);
+    assert_eq!(dropped.load(Ordering::Relaxed), 1);
+    assert!(matches!(
+        InflightGuard::acquire(&SLOT),
+        Err(CaptureError::Busy)
+    ));
+    drop(callback);
+    assert!(InflightGuard::acquire(&SLOT).is_ok());
+}
+#[test]
+fn cancelled_image_callback_cannot_claim_queue_phase() {
+    let cancellation = CaptureCancellation::default();
+    let job: Arc<Job<()>> = Job::new(cancellation.clone(), Duration::from_secs(1));
+    assert!(job.transition(Stage::InitialContent, Stage::Image));
+    cancellation.cancel();
+    assert!(!job.transition(Stage::Image, Stage::EncodingQueued));
 }
