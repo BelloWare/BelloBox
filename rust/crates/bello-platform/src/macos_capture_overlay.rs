@@ -1,7 +1,7 @@
 //! Owned-window host for the frozen Area picker and capture visibility transaction.
 //! No capture, permission prompt, window lookup or application activation occurs.
-//! Only explicit restoration can order an existing owned window to the front;
-//! overlay configuration itself never presents a window.
+//! Only explicit restoration and guarded synchronous presentation order owned
+//! windows. Configuration alone never presents a window.
 //!
 //! Native entry points are UI-thread-only and Apple Silicon/macOS 14+ only.
 //! Configuration accepts only a borrowed handle to the exact hidden GPUI 0.2.2
@@ -16,6 +16,9 @@
 //! remain parity gaps. Portable geometry handles negative origins and independent
 //! pixel ratios. Cross-compilation/pure tests do NOT verify AppKit runtime,
 //! Spaces/Stage Manager, input/focus, presentation or Retina capture alignment.
+
+mod deactivation;
+pub use deactivation::{ApplicationDeactivationEvent, ApplicationDeactivationSignal};
 
 use crate::native_capture::{CaptureDisplay, CaptureRect, CaptureRequest, CaptureSize};
 use std::fmt;
@@ -431,6 +434,113 @@ pub fn restore_owned_without_activation(
     }
 }
 
+/// Synchronously show the configured owned picker, then make only it key.
+/// The caller must hold freshly borrowed popup AND requester handles, check its
+/// live transaction/generation, and validate GPUI's refreshed viewport AND scale.
+/// Pass the same cancellation flag used by that transaction; native callbacks can
+/// synchronously reenter application code, so the flag is rechecked around each
+/// presentation step. There is no queued activation or retained window pointer.
+///
+/// The app must stay active/unhidden with no key or the exact requester key until
+/// picker key acquisition. Success requires the visible picker alone to be key.
+/// Failure after showing orders out only the still-verified original picker.
+/// Never invoke GPUI's queued activate_window as a fallback after this API.
+#[cfg(target_os = "macos")]
+pub fn present_configured_owned_overlay(
+    popup: raw_window_handle::WindowHandle<'_>,
+    requester: raw_window_handle::WindowHandle<'_>,
+    expected: MainDisplayOverlayLayout,
+    actual_viewport: CaptureSize,
+    cancellation: &crate::native_capture::CaptureCancellation,
+) -> OverlayResult<()> {
+    #[cfg(target_arch = "aarch64")]
+    {
+        native::present(popup, requester, expected, actual_viewport, cancellation)
+    }
+    #[cfg(not(target_arch = "aarch64"))]
+    {
+        let _ = (popup, requester, expected, actual_viewport, cancellation);
+        Err(OverlayError::Unsupported)
+    }
+}
+
+#[cfg(any(all(target_os = "macos", target_arch = "aarch64"), test))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum PresentationStage {
+    BeforeKey,
+    AfterKey,
+}
+
+#[cfg(any(all(target_os = "macos", target_arch = "aarch64"), test))]
+fn validate_presentation_context(
+    requester: OwnedWindowContext,
+    popup_is_key: bool,
+    cancelled: bool,
+    stage: PresentationStage,
+) -> OverlayResult<()> {
+    let expected_key = match stage {
+        PresentationStage::BeforeKey => {
+            !popup_is_key
+                && matches!(
+                    requester.key_window,
+                    OwnedKeyWindow::NoKeyWindow | OwnedKeyWindow::Requester
+                )
+        }
+        PresentationStage::AfterKey => {
+            popup_is_key && requester.key_window == OwnedKeyWindow::OtherWindow
+        }
+    };
+    if cancelled || !requester.application_active || requester.application_hidden || !expected_key {
+        Err(OverlayError::NavigationChanged)
+    } else {
+        Ok(())
+    }
+}
+
+/// UI-thread RAII subscription. The guard retains only a notification center and
+/// observer token, never NSWindow/GPUI handles or an NSApp pointer. !Send/!Sync
+/// keeps unregister/release on the checked construction thread in safe Rust.
+///
+/// Keep the guard in the live UI-owned transaction through selector/editor handoff.
+/// Drop closes the one-shot before unregistering, releases native ownership, then
+/// wakes an outstanding waiter. A queued late callback cannot cancel after close.
+pub struct ApplicationDeactivationObserver {
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    _native: native::DeactivationObserver,
+    #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
+    _ui_thread: std::marker::PhantomData<std::rc::Rc<()>>,
+}
+
+/// Observe this NSApp's didResignActive notification on NSOperationQueue.mainQueue,
+/// matching CaptureOverlayController.installResignActiveObserver. The callback
+/// only cancels this transaction's shared flag and wakes a bounded Rust one-shot;
+/// it never accesses GPUI/windows, polls, or activates an application.
+///
+/// An App-owned task awaits the pointer-free signal, then checks transaction id
+/// and generation before retiring/restoring live logical windows. ObserverRemoved
+/// only terminates that waiter; it must never cancel a successor. Retain the UI
+/// guard through any pending handoff that must be suppressed after focus loss.
+pub fn observe_application_deactivation(
+    cancellation: crate::native_capture::CaptureCancellation,
+) -> OverlayResult<(
+    ApplicationDeactivationObserver,
+    ApplicationDeactivationSignal,
+)> {
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    {
+        let (observer, signal) = native::observe_deactivation(cancellation)?;
+        Ok((
+            ApplicationDeactivationObserver { _native: observer },
+            signal,
+        ))
+    }
+    #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
+    {
+        let _ = cancellation;
+        Err(OverlayError::Unsupported)
+    }
+}
+
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 mod native {
     use super::*;
@@ -463,7 +573,9 @@ mod native {
         fn method_getReturnType(method: Method, destination: *mut c_char, length: usize);
     }
     #[link(name = "AppKit", kind = "framework")]
-    extern "C" {}
+    extern "C" {
+        static NSApplicationDidResignActiveNotification: Id;
+    }
     #[link(name = "Foundation", kind = "framework")]
     extern "C" {}
     #[link(name = "CoreGraphics", kind = "framework")]
@@ -891,6 +1003,246 @@ mod native {
         }
     }
 
+    pub(super) struct DeactivationObserver {
+        center: Id,
+        token: Id,
+        notifier: deactivation::Notifier,
+        _ui_thread: std::marker::PhantomData<std::rc::Rc<()>>,
+    }
+    impl Drop for DeactivationObserver {
+        fn drop(&mut self) {
+            // Close first: queued callbacks can outlive native unregistration.
+            // Main-thread construction plus !Send/!Sync owns native cleanup here.
+            let wake = self.notifier.close();
+            unsafe {
+                send!(self.center, b"removeObserver:\0", (Id => self.token) -> ());
+                send!(self.token, b"release\0", () -> ());
+                send!(self.center, b"release\0", () -> ());
+            }
+            deactivation::wake_safely(wake);
+        }
+    }
+
+    pub(super) fn observe_deactivation(
+        cancellation: crate::native_capture::CaptureCancellation,
+    ) -> OverlayResult<(DeactivationObserver, ApplicationDeactivationSignal)> {
+        use block2::{Block, RcBlock};
+        use std::panic::{catch_unwind, AssertUnwindSafe};
+        ui_thread()?;
+        unsafe {
+            let _pool = Pool::new()?;
+            let app = application()?;
+            let center = send!(class(b"NSNotificationCenter\0")?, b"defaultCenter\0", () -> Id);
+            let queue = send!(class(b"NSOperationQueue\0")?, b"mainQueue\0", () -> Id);
+            let name = NSApplicationDidResignActiveNotification;
+            if center.is_null() || queue.is_null() || name.is_null() {
+                return Err(OverlayError::NativeConfigurationFailed);
+            }
+            let (notifier, signal) = deactivation::Notifier::pair();
+            let callback_state = notifier.clone();
+            let callback = move |_notification: Id| {
+                // The source uses the main operation queue. Captured Rust state
+                // is independently Send+Sync; no native object escapes or is read.
+                let _ = catch_unwind(AssertUnwindSafe(|| callback_state.resigned(&cancellation)));
+            };
+            fn assert_send_sync<F: Send + Sync>(_: &F) {}
+            assert_send_sync(&callback);
+            let block = RcBlock::new(callback);
+            // SDK: -(id<NSObject>)addObserverForName:(NSNotificationName)name
+            // object:(id)object queue:(NSOperationQueue *)queue
+            // usingBlock:(void (^)(NSNotification *))block;
+            // Foundation strongly holds a copied block until unregistration.
+            // Queued callbacks may still own a copy; the terminal claim makes
+            // them inert after Drop. The block owns no guard/token/center cycle.
+            // https://developer.apple.com/documentation/foundation/notificationcenter/addobserver(forname:object:queue:using:)
+            // https://developer.apple.com/documentation/appkit/nsapplication/didresignactivenotification
+            let token = send!(center, b"addObserverForName:object:queue:usingBlock:\0",
+                (Id => name, Id => app, Id => queue, *const Block<dyn Fn(Id)> => &*block) -> Id);
+            if token.is_null() {
+                deactivation::wake_safely(notifier.close());
+                return Err(OverlayError::NativeConfigurationFailed);
+            }
+            // Returned token is non-owned. Our +1 survives removeObserver until
+            // the explicit release; the center is retained for that same lifetime.
+            send!(token, b"retain\0", () -> Id);
+            send!(center, b"retain\0", () -> Id);
+            Ok((
+                DeactivationObserver {
+                    center,
+                    token,
+                    notifier,
+                    _ui_thread: std::marker::PhantomData,
+                },
+                signal,
+            ))
+            // RcBlock drops locally; Foundation owns its copied registration.
+        }
+    }
+
+    unsafe fn verify_configured(
+        owned: &OwnedView,
+        expected: MainDisplayOverlayLayout,
+        expected_viewport: CaptureSize,
+    ) -> OverlayResult<()> {
+        let window = owned.window;
+        let clear = send!(class(b"NSColor\0")?, b"clearColor\0", () -> Id);
+        let level = CGWindowLevelForKey(SCREEN_SAVER_LEVEL_KEY) as isize;
+        if clear.is_null() || level <= 0 {
+            return Err(OverlayError::NativeConfigurationFailed);
+        }
+        validate_overlay_frames(
+            expected,
+            expected_viewport,
+            read_rect(window, b"frame\0")?,
+            read_rect(owned.content, b"bounds\0")?,
+            read_rect(owned.content, b"frame\0")?,
+            read_rect(owned.view, b"bounds\0")?,
+            read_rect(owned.view, b"frame\0")?,
+        )?;
+        if screen_id(send!(window, b"screen\0", () -> Id))? != expected.display.id {
+            return Err(OverlayError::DisplayChanged);
+        }
+        let background = send!(window, b"backgroundColor\0", () -> Id);
+        if send!(window, b"styleMask\0", () -> usize) != NONACTIVATING_PANEL
+            || send!(window, b"level\0", () -> isize) != level
+            || send!(window, b"collectionBehavior\0", () -> usize) != COLLECTION
+            || send!(window, b"isFloatingPanel\0", () -> ObjcBool) == 0
+            || send!(window, b"isOpaque\0", () -> ObjcBool) != 0
+            || send!(background, b"isEqual:\0", (Id => clear) -> ObjcBool) == 0
+            || send!(window, b"hasShadow\0", () -> ObjcBool) != 0
+            || send!(window, b"hidesOnDeactivate\0", () -> ObjcBool) != 0
+            || send!(window, b"isReleasedWhenClosed\0", () -> ObjcBool) != 0
+            || send!(window, b"ignoresMouseEvents\0", () -> ObjcBool) != 0
+            || send!(window, b"acceptsMouseMovedEvents\0", () -> ObjcBool) == 0
+            || send!(window, b"becomesKeyOnlyIfNeeded\0", () -> ObjcBool) != 0
+            || send!(window, b"canBecomeKeyWindow\0", () -> ObjcBool) == 0
+            || send!(window, b"isMovable\0", () -> ObjcBool) != 0
+            || send!(window, b"animationBehavior\0", () -> isize) != 2
+        {
+            return Err(OverlayError::NativeConfigurationFailed);
+        }
+        expected.revalidate(layout()?)?;
+        Ok(())
+    }
+
+    unsafe fn presentation_context(
+        requester: &OwnedView,
+        popup: &OwnedView,
+        app: Id,
+        cancellation: &crate::native_capture::CaptureCancellation,
+        stage: PresentationStage,
+    ) -> OverlayResult<()> {
+        validate_presentation_context(
+            window_context(requester.window, app),
+            send!(app, b"keyWindow\0", () -> Id) == popup.window,
+            cancellation.is_cancelled(),
+            stage,
+        )
+    }
+
+    pub(super) fn present(
+        popup_handle: WindowHandle<'_>,
+        requester_handle: WindowHandle<'_>,
+        expected: MainDisplayOverlayLayout,
+        actual_viewport: CaptureSize,
+        cancellation: &crate::native_capture::CaptureCancellation,
+    ) -> OverlayResult<()> {
+        ui_thread()?;
+        expected.validate_viewport(actual_viewport)?;
+        unsafe {
+            let _pool = Pool::new()?;
+            let popup = owned_hidden_panel(popup_handle)?;
+            let requester = owned_window(requester_handle)?;
+            if popup.window == requester.window {
+                return Err(OverlayError::InvalidOwnedWindow);
+            }
+            let app = application()?;
+            presentation_context(
+                &requester,
+                &popup,
+                app,
+                cancellation,
+                PresentationStage::BeforeKey,
+            )?;
+            verify_configured(&popup, expected, actual_viewport)?;
+            presentation_context(
+                &requester,
+                &popup,
+                app,
+                cancellation,
+                PresentationStage::BeforeKey,
+            )?;
+            // Swift orderOverlayWindowsFront orders front before key acquisition.
+            // Split makeKeyAndOrderFront into orderFrontRegardless/makeKeyWindow
+            // to recheck cancellation after synchronous native ordering callbacks.
+            // SDK: -(void)makeKeyWindow, no explicit arguments. No NSApp activation.
+            // GPUI 0.2.2 MacWindow::activate instead queues a raw-pointer operation;
+            // the two borrowed live owners here deliberately avoid that lifetime.
+            // https://developer.apple.com/documentation/appkit/nswindow/makekey()
+            let result = (|| -> OverlayResult<()> {
+                ordering_without_animation(popup.window, NativeOrder::Front)?;
+                let current_popup = owned_window(popup_handle)?;
+                let current_requester = owned_window(requester_handle)?;
+                if current_popup.window != popup.window
+                    || current_popup.content != popup.content
+                    || current_requester.window != requester.window
+                    || current_requester.content != requester.content
+                    || send!(current_popup.window, b"isVisible\0", () -> ObjcBool) == 0
+                {
+                    return Err(OverlayError::InvalidOwnedWindow);
+                }
+                presentation_context(
+                    &current_requester,
+                    &current_popup,
+                    app,
+                    cancellation,
+                    PresentationStage::BeforeKey,
+                )?;
+                verify_configured(&current_popup, expected, actual_viewport)?;
+                presentation_context(
+                    &current_requester,
+                    &current_popup,
+                    app,
+                    cancellation,
+                    PresentationStage::BeforeKey,
+                )?;
+                send!(current_popup.window, b"makeKeyWindow\0", () -> ());
+                let final_popup = owned_window(popup_handle)?;
+                let final_requester = owned_window(requester_handle)?;
+                if final_popup.window != popup.window
+                    || final_popup.content != popup.content
+                    || final_requester.window != requester.window
+                    || final_requester.content != requester.content
+                    || send!(final_popup.window, b"isVisible\0", () -> ObjcBool) == 0
+                {
+                    return Err(OverlayError::InvalidOwnedWindow);
+                }
+                verify_configured(&final_popup, expected, actual_viewport)?;
+                presentation_context(
+                    &final_requester,
+                    &final_popup,
+                    app,
+                    cancellation,
+                    PresentationStage::AfterKey,
+                )
+            })();
+            if result.is_err() {
+                // Restore the original hidden state only while exact ownership is
+                // still verified. Never resurrect a closed/reparented view or alter
+                // the requester/new key window to compensate for failed presentation.
+                if let Ok(current) = owned_window(popup_handle) {
+                    if current.window == popup.window && current.content == popup.content {
+                        ordering_without_animation(current.window, NativeOrder::Out)?;
+                        if send!(current.window, b"isVisible\0", () -> ObjcBool) != 0 {
+                            return Err(OverlayError::NativeConfigurationFailed);
+                        }
+                    }
+                }
+            }
+            result
+        }
+    }
+
     pub(super) fn configure(
         handle: WindowHandle<'_>,
         expected: MainDisplayOverlayLayout,
@@ -941,38 +1293,7 @@ mod native {
             {
                 return Err(OverlayError::InvalidOwnedWindow);
             }
-            validate_overlay_frames(
-                expected,
-                expected_viewport,
-                read_rect(window, b"frame\0")?,
-                read_rect(owned.content, b"bounds\0")?,
-                read_rect(owned.content, b"frame\0")?,
-                read_rect(owned.view, b"bounds\0")?,
-                read_rect(owned.view, b"frame\0")?,
-            )?;
-            if screen_id(send!(window, b"screen\0", () -> Id))? != expected.display.id {
-                return Err(OverlayError::DisplayChanged);
-            }
-            let background = send!(window, b"backgroundColor\0", () -> Id);
-            if send!(window, b"styleMask\0", () -> usize) != NONACTIVATING_PANEL
-                || send!(window, b"level\0", () -> isize) != level
-                || send!(window, b"collectionBehavior\0", () -> usize) != COLLECTION
-                || send!(window, b"isFloatingPanel\0", () -> ObjcBool) == 0
-                || send!(window, b"isOpaque\0", () -> ObjcBool) != 0
-                || send!(background, b"isEqual:\0", (Id => clear) -> ObjcBool) == 0
-                || send!(window, b"hasShadow\0", () -> ObjcBool) != 0
-                || send!(window, b"hidesOnDeactivate\0", () -> ObjcBool) != 0
-                || send!(window, b"isReleasedWhenClosed\0", () -> ObjcBool) != 0
-                || send!(window, b"ignoresMouseEvents\0", () -> ObjcBool) != 0
-                || send!(window, b"acceptsMouseMovedEvents\0", () -> ObjcBool) == 0
-                || send!(window, b"becomesKeyOnlyIfNeeded\0", () -> ObjcBool) != 0
-                || send!(window, b"canBecomeKeyWindow\0", () -> ObjcBool) == 0
-                || send!(window, b"isMovable\0", () -> ObjcBool) != 0
-                || send!(window, b"animationBehavior\0", () -> isize) != 2
-            {
-                return Err(OverlayError::NativeConfigurationFailed);
-            }
-            expected.revalidate(layout()?)?;
+            verify_configured(&owned, expected, expected_viewport)?;
             // The caller exclusively controls ordering/presentation after Ok.
             Ok(())
         }
@@ -1306,5 +1627,112 @@ mod tests {
         }
         assert!(validate_restore_level(RestoreOrder::Front, 1000, 0, None).is_ok());
         assert!(validate_restore_level(RestoreOrder::Unchanged, 1000, 0, Some(0)).is_ok());
+    }
+
+    #[test]
+    fn presentation_before_key_requires_active_unhidden_no_key_or_exact_requester() {
+        for key in [OwnedKeyWindow::NoKeyWindow, OwnedKeyWindow::Requester] {
+            assert!(validate_presentation_context(
+                capture_context(key),
+                false,
+                false,
+                PresentationStage::BeforeKey
+            )
+            .is_ok());
+        }
+        assert!(validate_presentation_context(
+            capture_context(OwnedKeyWindow::OtherWindow),
+            false,
+            false,
+            PresentationStage::BeforeKey
+        )
+        .is_err());
+        for context in [
+            OwnedWindowContext {
+                application_active: false,
+                ..capture_context(OwnedKeyWindow::Requester)
+            },
+            OwnedWindowContext {
+                application_hidden: true,
+                ..capture_context(OwnedKeyWindow::Requester)
+            },
+        ] {
+            assert!(validate_presentation_context(
+                context,
+                false,
+                false,
+                PresentationStage::BeforeKey
+            )
+            .is_err());
+        }
+    }
+
+    #[test]
+    fn presentation_cancellation_wins_before_and_after_native_callbacks() {
+        for stage in [PresentationStage::BeforeKey, PresentationStage::AfterKey] {
+            for key in [
+                OwnedKeyWindow::NoKeyWindow,
+                OwnedKeyWindow::Requester,
+                OwnedKeyWindow::OtherWindow,
+            ] {
+                for popup_is_key in [false, true] {
+                    assert_eq!(
+                        validate_presentation_context(
+                            capture_context(key),
+                            popup_is_key,
+                            true,
+                            stage
+                        ),
+                        Err(OverlayError::NavigationChanged)
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn presentation_after_key_requires_only_the_visible_picker_to_be_key() {
+        let context = capture_context(OwnedKeyWindow::OtherWindow);
+        assert!(
+            validate_presentation_context(context, true, false, PresentationStage::AfterKey)
+                .is_ok()
+        );
+        assert!(
+            validate_presentation_context(context, false, false, PresentationStage::AfterKey)
+                .is_err()
+        );
+        assert!(
+            validate_presentation_context(context, true, false, PresentationStage::BeforeKey)
+                .is_err()
+        );
+        for key in [OwnedKeyWindow::NoKeyWindow, OwnedKeyWindow::Requester] {
+            assert!(validate_presentation_context(
+                capture_context(key),
+                false,
+                false,
+                PresentationStage::AfterKey
+            )
+            .is_err());
+        }
+        assert!(validate_presentation_context(
+            OwnedWindowContext {
+                application_active: false,
+                ..context
+            },
+            true,
+            false,
+            PresentationStage::AfterKey
+        )
+        .is_err());
+        assert!(validate_presentation_context(
+            OwnedWindowContext {
+                application_hidden: true,
+                ..context
+            },
+            true,
+            false,
+            PresentationStage::AfterKey
+        )
+        .is_err());
     }
 }
