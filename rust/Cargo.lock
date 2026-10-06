@@ -581,6 +581,7 @@ dependencies = [
  "chrono",
  "chrono-tz",
  "cosmic-text",
+ "gif",
  "hmac",
  "image",
  "md-5",
