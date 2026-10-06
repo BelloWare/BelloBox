@@ -601,3 +601,20 @@ last of twelve fields remained reachable/editable; a long label wrapped over
 three lines with a usable Value field and live result. Test windows closed
 cleanly. These are ordinary Linux-path checks, not actual OS IME, native macOS
 field-editor grouping or complete keyboard/paste parity.
+
+## Shared workbench focused-text query (2026-10-06)
+
+The shared `WorkbenchView::has_focused_editable_text` read-only query lets host
+applications preserve source shortcut ownership without inspecting private editor
+state. It requires the internal Editor panel, the editor's actual focus handle,
+and its real non-read-only engine state. Changes/History panels can retain an old
+editor focus handle; that does not count as visible editable text. Hosts must
+also check their outer pane/tab visibility. The query does not focus an editor,
+commit marked text, change content or enable a new Box command.
+
+Focused shared validation passes: 101 tests across `bello-workbench` and
+`bello-workbench-ui`, one intentionally ignored subprocess fixture, strict
+all-target Clippy and formatting. The new policy test covers every internal-panel,
+read-only and focus combination. Actual host routing and native keyboard behavior
+require separate integration checks; these unit tests do not establish macOS
+interaction or OS IME validation. No dependencies or release files changed.

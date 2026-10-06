@@ -119,6 +119,17 @@ impl WorkbenchView {
     pub fn set_vim(&mut self, enabled: bool, cx: &mut Context<Self>) {
         self.editor.update(cx, |ed, cx| ed.set_vim(enabled, cx));
     }
+    /// Whether this workbench's visible editor owns editable keyboard input.
+    /// Hosts must additionally check that this workbench itself is displayed.
+    /// Inspect only: do not focus, commit composition or change editor state.
+    pub fn has_focused_editable_text(&self, window: &Window, cx: &App) -> bool {
+        let editor = self.editor.read(cx);
+        focused_editable_text(
+            self.tab,
+            editor.engine.read_only,
+            editor.focus_handle(cx).is_focused(window),
+        )
+    }
     pub fn root(&self) -> &std::path::Path {
         &self.root
     }
@@ -976,5 +987,32 @@ impl Render for WorkbenchView {
                         )
                     }),
             )
+    }
+}
+
+fn focused_editable_text(panel: WorkbenchPanel, read_only: bool, focused: bool) -> bool {
+    panel == WorkbenchPanel::Editor && !read_only && focused
+}
+
+#[cfg(test)]
+mod focused_text_tests {
+    use super::{WorkbenchPanel, focused_editable_text};
+
+    #[test]
+    fn only_visible_focused_editable_editor_owns_text_input() {
+        for panel in [
+            WorkbenchPanel::Editor,
+            WorkbenchPanel::Changes,
+            WorkbenchPanel::History,
+        ] {
+            for read_only in [false, true] {
+                for focused in [false, true] {
+                    assert_eq!(
+                        focused_editable_text(panel, read_only, focused),
+                        panel == WorkbenchPanel::Editor && !read_only && focused
+                    );
+                }
+            }
+        }
     }
 }
