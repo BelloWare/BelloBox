@@ -12,6 +12,7 @@
 
 mod backend;
 mod capture;
+pub mod macos_capture_overlay;
 #[cfg(target_os = "macos")]
 pub mod macos_native;
 pub mod native_capture;
