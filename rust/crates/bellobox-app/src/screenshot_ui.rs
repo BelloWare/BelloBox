@@ -17,6 +17,8 @@ use gpui::{
 use std::{cell::Cell, rc::Rc, sync::Arc};
 
 #[cfg(debug_assertions)]
+mod area_capture;
+#[cfg(debug_assertions)]
 mod scroll_capture;
 
 const TOOLS: [(AnnotationTool, &str, &str); 9] = [
@@ -169,7 +171,17 @@ struct CaptureChooser {
     jobs: SessionJobs,
     focus: FocusHandle,
 }
+#[cfg(debug_assertions)]
+pub(crate) fn cancel_pending_area_fixture(cx: &mut App) {
+    area_capture::cancel_pending_launch(cx);
+}
+
 pub fn open(cx: &mut App) {
+    #[cfg(debug_assertions)]
+    if std::env::var_os("BELLOBOX_AREA_FIXTURE").is_some() {
+        area_capture::open_fixture(cx);
+        return;
+    }
     #[cfg(debug_assertions)]
     if std::env::var_os("BELLOBOX_SCROLL_FIXTURE").is_some() {
         scroll_capture::open_fixture(cx);
@@ -391,7 +403,10 @@ fn prepare(png: Vec<u8>) -> Result<ScreenshotEditSession, String> {
 }
 
 fn prepare_document(document: ScreenshotDocument) -> ScreenshotEditSession {
-    let mut session = ScreenshotEditSession::new(document);
+    prepare_session(ScreenshotEditSession::new(document))
+}
+
+fn prepare_session(mut session: ScreenshotEditSession) -> ScreenshotEditSession {
     // Fonts are optional local inputs, never downloaded or embedded without a license.
     #[cfg(target_os = "linux")]
     let paths = ["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"];

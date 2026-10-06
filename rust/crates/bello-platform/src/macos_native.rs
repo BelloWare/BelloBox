@@ -101,6 +101,25 @@ macro_rules! send {
     }};
 }
 
+/// Read AppKit's current application-active state on the UI thread.
+/// Does not unhide, activate, create windows or change the key window.
+pub fn application_is_active() -> Result<bool> {
+    const OP: &str = "Read application focus";
+    unsafe {
+        if send!(class(b"NSThread\0", OP)?, b"isMainThread\0", () -> ObjcBool) == 0 {
+            return Err(error(
+                OP,
+                "Application focus must be read on the UI thread.",
+            ));
+        }
+        let application = send!(class(b"NSApplication\0", OP)?, b"sharedApplication\0", () -> Id);
+        if application.is_null() {
+            return Err(error(OP, "The application is unavailable."));
+        }
+        Ok(send!(application, b"isActive\0", () -> ObjcBool) != 0)
+    }
+}
+
 /// Restore the host application after an explicit capture without stealing focus.
 /// Must run on the AppKit/UI thread. No windows are created and no capture occurs.
 /// Returns whether AppKit reports the application active after nonactivating restore.

@@ -5,6 +5,7 @@
 //! belongs to the annotations present when it was made, never to the image.
 //! Rendering is tiled, bounded, and shared by preview/export/OCR. This module
 //! performs no filesystem or network access and never logs image or OCR data.
+pub mod area;
 mod render;
 pub mod scroll;
 pub mod selection;

@@ -1854,6 +1854,8 @@ fn open_tool_with_clock_context(
     clock_handoff: Option<crate::clock_preview_session::ClockHandoff>,
     cx: &mut App,
 ) {
+    #[cfg(debug_assertions)]
+    crate::screenshot_ui::cancel_pending_area_fixture(cx);
     if id == "settings" {
         crate::settings_ui::open(cx);
         return;
@@ -1901,6 +1903,8 @@ fn open_tool_with_clock_context(
     }
 }
 pub fn open_launcher(input: String, cx: &mut App) {
+    #[cfg(debug_assertions)]
+    crate::screenshot_ui::cancel_pending_area_fixture(cx);
     crate::launcher_ui::open(input, cx);
 }
 pub fn run() {
