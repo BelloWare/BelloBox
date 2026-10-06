@@ -1,0 +1,99 @@
+//! Native callbacks hold Arc<Job<T>>, never pointers into a waiting stack.
+//! A terminal result, cancellation or deadline wins once; later payloads drop.
+use super::*;
+use std::sync::{Condvar, Mutex};
+use std::time::Instant;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum Stage {
+    InitialContent,
+    ResolvingInitial,
+    RefreshedContent,
+    ResolvingRefreshed,
+    Image,
+    Encoding,
+    Completed,
+    Abandoned,
+}
+struct State<T> {
+    stage: Stage,
+    result: Option<CaptureResult<T>>,
+}
+pub(super) struct Job<T> {
+    state: Mutex<State<T>>,
+    changed: Condvar,
+    cancellation: CaptureCancellation,
+    deadline: Instant,
+}
+impl<T> Job<T> {
+    pub(super) fn new(cancellation: CaptureCancellation, timeout: Duration) -> Arc<Self> {
+        Arc::new(Self {
+            state: Mutex::new(State {
+                stage: Stage::InitialContent,
+                result: None,
+            }),
+            changed: Condvar::new(),
+            cancellation,
+            deadline: Instant::now() + timeout,
+        })
+    }
+    fn interruption(&self) -> Option<CaptureError> {
+        if self.cancellation.is_cancelled() {
+            Some(CaptureError::Cancelled)
+        } else if Instant::now() >= self.deadline {
+            Some(CaptureError::TimedOut)
+        } else {
+            None
+        }
+    }
+    pub(super) fn active(&self) -> bool {
+        if self.interruption().is_some() {
+            return false;
+        }
+        let state = self.state.lock().unwrap_or_else(|p| p.into_inner());
+        !matches!(state.stage, Stage::Completed | Stage::Abandoned)
+    }
+    /// Only one callback can claim a phase, even if a native callback misfires twice.
+    pub(super) fn transition(&self, from: Stage, to: Stage) -> bool {
+        let mut state = self.state.lock().unwrap_or_else(|p| p.into_inner());
+        if self.interruption().is_some() || state.stage != from {
+            return false;
+        }
+        state.stage = to;
+        true
+    }
+    pub(super) fn complete(&self, value: CaptureResult<T>) -> bool {
+        let mut state = self.state.lock().unwrap_or_else(|p| p.into_inner());
+        if self.interruption().is_some()
+            || matches!(state.stage, Stage::Completed | Stage::Abandoned)
+        {
+            return false;
+        }
+        state.stage = Stage::Completed;
+        state.result = Some(value);
+        self.changed.notify_all();
+        true
+    }
+    pub(super) fn wait(&self) -> CaptureResult<T> {
+        let mut state = self.state.lock().unwrap_or_else(|p| p.into_inner());
+        loop {
+            if let Some(error) = self.interruption() {
+                state.stage = Stage::Abandoned;
+                state.result = None;
+                return Err(error);
+            }
+            if let Some(result) = state.result.take() {
+                return result;
+            }
+            let wait = self
+                .deadline
+                .saturating_duration_since(Instant::now())
+                .min(Duration::from_millis(5));
+            state = self
+                .changed
+                .wait_timeout(state, wait)
+                .unwrap_or_else(|p| p.into_inner())
+                .0;
+        }
+    }
+}

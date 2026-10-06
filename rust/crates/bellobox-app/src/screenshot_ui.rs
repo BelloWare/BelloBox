@@ -144,6 +144,25 @@ fn header(subtitle: String, p: Palette) -> gpui::Div {
         )
 }
 
+#[cfg(any(target_os = "macos", test))]
+fn native_capture_should_focus(application_active: bool, requester_is_key: bool) -> bool {
+    application_active && requester_is_key
+}
+
+#[cfg(any(target_os = "macos", test))]
+fn caught_capture<T>(job: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(job))
+        .unwrap_or_else(|_| Err("The native capture worker could not complete.".into()))
+}
+
+#[cfg(target_os = "macos")]
+#[derive(Default)]
+struct NativeCaptureVisibility {
+    busy: bool,
+}
+#[cfg(target_os = "macos")]
+impl gpui::Global for NativeCaptureVisibility {}
+
 struct CaptureChooser {
     busy: bool,
     status: String,
@@ -177,6 +196,11 @@ pub fn open(cx: &mut App) {
                     jobs: SessionJobs::default(),
                     focus,
                 };
+                let weak = cx.entity().downgrade();
+                window.on_window_should_close(cx, move |_, cx| {
+                    let _ = weak.update(cx, |this: &mut CaptureChooser, _| this.jobs.cancel());
+                    true
+                });
                 if let Some(path) = std::env::var_os("BELLOBOX_SCREENSHOT_FILE") {
                     chooser.load_fixture(path.into(), window, cx);
                 }
@@ -190,30 +214,98 @@ impl CaptureChooser {
         if self.busy {
             return;
         }
+        #[cfg(target_os = "macos")]
+        {
+            if cx.default_global::<NativeCaptureVisibility>().busy {
+                self.status = "Another screen capture is still finishing.".into();
+                cx.notify();
+                return;
+            }
+            cx.default_global::<NativeCaptureVisibility>().busy = true;
+        }
         self.busy = true;
         self.status = "Capturing locally…".into();
         let token = self.jobs.begin();
+        #[cfg(target_os = "macos")]
+        let cancellation = self.jobs.cancellation();
+        #[cfg(target_os = "macos")]
+        let app_cx = cx.to_async();
+        #[cfg(target_os = "macos")]
+        cx.hide();
+        #[cfg(not(target_os = "macos"))]
         window.minimize_window();
         cx.notify();
         let task = cx.background_executor().spawn(async move {
-            // Give the compositor a short chance to remove this chooser. Other app
-            // windows are not hidden implicitly; the full virtual screen is captured.
-            std::thread::sleep(std::time::Duration::from_millis(250));
-            let capture = bello_platform::Platform::new()
-                .capture_screenshot_snapshot()
-                .map_err(|e| e.to_string())?;
-            prepare(capture.png)
+            #[cfg(target_os = "macos")]
+            {
+                // Restore the hidden application even if a Rust worker panics.
+                caught_capture(|| {
+                    // Source default compositor delay; the whole application is hidden.
+                    std::thread::sleep(std::time::Duration::from_millis(150));
+                    let cancel = bello_platform::native_capture::CaptureCancellation::from_flag(
+                        cancellation,
+                    );
+                    let capture =
+                        bello_platform::native_capture::capture_main_display_snapshot(cancel)
+                            .map_err(|error| error.to_string())?;
+                    prepare(capture.png)
+                })
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                // Preserve the existing portable helper path.
+                std::thread::sleep(std::time::Duration::from_millis(250));
+                let capture = bello_platform::Platform::new()
+                    .capture_screenshot_snapshot()
+                    .map_err(|e| e.to_string())?;
+                prepare(capture.png)
+            }
         });
         cx.spawn_in(window, async move |this, cx| {
             let result = task.await;
+            #[cfg(target_os = "macos")]
+            let (result, application_active) = {
+                // Restore even if the requesting window/entity has been closed.
+                // This never activates the app or steals focus from newer navigation.
+                let restored = app_cx.update(|cx| {
+                    cx.default_global::<NativeCaptureVisibility>().busy = false;
+                    bello_platform::macos_native::unhide_application_without_activation()
+                });
+                match restored {
+                    Ok(Ok(active)) => (result, active),
+                    Ok(Err(error)) => (Err(error.to_string()), false),
+                    Err(_) => return,
+                }
+            };
             let _ = this.update_in(cx, |this, window, cx| {
                 if !this.jobs.accepts(token) {
                     return;
                 }
                 this.busy = false;
+                #[cfg(not(target_os = "macos"))]
                 window.activate_window();
                 match result {
                     Ok(session) => {
+                        #[cfg(target_os = "macos")]
+                        {
+                            // GPUI's macOS active_window is mainWindow, which may
+                            // persist while another application has focus. Require
+                            // actual AppKit activation AND this window's key state.
+                            let focus = native_capture_should_focus(
+                                application_active,
+                                window.is_window_active(),
+                            );
+                            open_presented_session(
+                                session,
+                                "ScreenCaptureKit · macOS 14+",
+                                CapturePresentation {
+                                    open_unfocused: !focus,
+                                    ..Default::default()
+                                },
+                                cx,
+                            );
+                        }
+                        #[cfg(not(target_os = "macos"))]
                         open_session(session, "Screen capture", cx);
                         window.remove_window();
                     }
@@ -342,6 +434,7 @@ enum Menu {
 }
 #[derive(Default)]
 struct CapturePresentation {
+    open_unfocused: bool,
     scrolling: bool,
     frame_count: usize,
     notes: Vec<String>,
@@ -360,6 +453,7 @@ fn prepare_scroll_result(
     PreparedScrollCapture {
         session: prepare_document(result.document),
         presentation: CapturePresentation {
+            open_unfocused: false,
             scrolling: true,
             frame_count: result.frame_count,
             notes: result.notes.iter().map(ToString::to_string).collect(),
@@ -429,6 +523,7 @@ fn open_presented_session(
     let bounds = Bounds::centered(None, size(px(1040.), px(760.)), cx);
     let _ = cx.open_window(
         WindowOptions {
+            focus: !presentation.open_unfocused,
             window_bounds: Some(WindowBounds::Windowed(bounds)),
             window_min_size: Some(size(px(640.), px(440.))),
             titlebar: Some(TitlebarOptions {
@@ -2908,6 +3003,26 @@ fn label_drag_exceeds_threshold(start: Point, current: Point, scale: f32) -> boo
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn native_capture_focus_requires_active_application_and_requester_key_window() {
+        assert!(super::native_capture_should_focus(true, true));
+        assert!(!super::native_capture_should_focus(false, true));
+        assert!(!super::native_capture_should_focus(true, false));
+        assert!(!super::native_capture_should_focus(false, false));
+    }
+
+    #[test]
+    fn native_capture_worker_preserves_results_and_contains_panics() {
+        assert_eq!(super::caught_capture(|| Ok(42)), Ok(42));
+        assert_eq!(
+            super::caught_capture::<()>(|| Err("cancelled".into())),
+            Err("cancelled".into())
+        );
+        assert_eq!(
+            super::caught_capture::<()>(|| panic!("synthetic worker fault")),
+            Err("The native capture worker could not complete.".into())
+        );
+    }
     use super::*;
     #[test]
     fn zoom_matches_source_fit_and_width() {

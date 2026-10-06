@@ -6,3 +6,6 @@ rust-version = "1.80"
 description = "Explicit, bounded platform adapters for the BelloBox Rust port"
 
 [dependencies]
+
+[target.'cfg(target_os = "macos")'.dependencies]
+block2 = "=0.6.2"

@@ -14,6 +14,7 @@ mod backend;
 mod capture;
 #[cfg(target_os = "macos")]
 pub mod macos_native;
+pub mod native_capture;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 mod process;
 mod time_zone;

@@ -37,6 +37,8 @@ extern "C" {
 extern "C" {}
 #[link(name = "Vision", kind = "framework")]
 extern "C" {}
+#[link(name = "AppKit", kind = "framework")]
+extern "C" {}
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -97,6 +99,27 @@ macro_rules! send {
             std::mem::transmute(objc_msgSend as unsafe extern "C" fn());
         function($object, sel_registerName($selector.as_ptr().cast()), $($arg),*)
     }};
+}
+
+/// Restore the host application after an explicit capture without stealing focus.
+/// Must run on the AppKit/UI thread. No windows are created and no capture occurs.
+/// Returns whether AppKit reports the application active after nonactivating restore.
+pub fn unhide_application_without_activation() -> Result<bool> {
+    const OP: &str = "Restore screenshot windows";
+    unsafe {
+        if send!(class(b"NSThread\0", OP)?, b"isMainThread\0", () -> ObjcBool) == 0 {
+            return Err(error(
+                OP,
+                "Application visibility must be restored on the UI thread.",
+            ));
+        }
+        let application = send!(class(b"NSApplication\0", OP)?, b"sharedApplication\0", () -> Id);
+        if application.is_null() {
+            return Err(error(OP, "The application is unavailable."));
+        }
+        send!(application, b"unhideWithoutActivation\0", () -> ());
+        Ok(send!(application, b"isActive\0", () -> ObjcBool) != 0)
+    }
 }
 
 struct OwnedObject {
