@@ -1,0 +1,61 @@
+{
+  "baseline_commit": "8712627de818058badbc4f7378b0822d792feea2",
+  "baseline_tree": "53e58f7290fe2e3946061d7b894d518b4791a032",
+  "count_method": "Nonblank physical Rust lines including comments; existing classification preserved. New tests/raw_oracle.rs is included only from cfg(test) recording::tests. shutdown.rs cfg edit changes no physical line count.",
+  "before_counts": {
+    "production": 52593,
+    "support": 31180,
+    "benchmark": 105
+  },
+  "after_counts": {
+    "production": 52593,
+    "support": 31349,
+    "benchmark": 105
+  },
+  "delta": {
+    "production": 0,
+    "support": 169,
+    "benchmark": 0
+  },
+  "physical_before": 83878,
+  "physical_after": 84047,
+  "files": [
+    {
+      "path": "rust/crates/bello-platform/src/recording/tests.rs",
+      "before_sha256": "69e1cc691a47368acedf6475ebe8dbe022eecbe3edbb4b07fe4d87c979d44883",
+      "after_sha256": "bb6d4c04ff9f105b5f4753eee35b92d22aa9d8037a68279bce3f3e495efb4866",
+      "before_nonblank": 872,
+      "after_nonblank": 878,
+      "delta_scope": "Test-only cfg and oracle; production behavior unchanged.",
+      "changed_spans_classification": "test_support"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs",
+      "before_sha256": null,
+      "after_sha256": "8feba02c41978fb4763d70c4d18d343dd1d507bc908334015be0472d21dc24fc",
+      "before_nonblank": 0,
+      "after_nonblank": 163,
+      "delta_scope": "Test-only cfg and oracle; production behavior unchanged.",
+      "changed_spans_classification": "test_support"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown.rs",
+      "before_sha256": "4600a62a8d07ce56be21f77f7861f2d904bc2997bd515f4ca701bf99499fe2f3",
+      "after_sha256": "95071ba972a48fbd5d6b243f18fdd95e648ef6d550c1e12e56fcac226271b72a",
+      "before_nonblank": 463,
+      "after_nonblank": 463,
+      "delta_scope": "Test-only cfg and oracle; production behavior unchanged.",
+      "changed_spans_classification": "test_support"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/assets/README.md",
+      "before_sha256": "2a65561f92323981a5a54dcaba9747614250f4618a572cfa9f75e30e43de18c2",
+      "after_sha256": "7f431bfc9b73c09dbc56902ff3c5782216ce16f4f62af49392fd8f1cec8331ce",
+      "before_nonblank": 6,
+      "after_nonblank": 14,
+      "delta_scope": "Test-only cfg and oracle; production behavior unchanged.",
+      "changed_spans_classification": "documentation"
+    }
+  ],
+  "unchanged_fixture_sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9"
+}

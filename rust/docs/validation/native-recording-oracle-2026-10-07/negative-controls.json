@@ -1,0 +1,80 @@
+{
+  "controls": [
+    {
+      "control": "permit_rgb_error_two",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_sha256": "9063d52ff8757bee315c446d775b3d59454406677004b5143c9877bf4df72221",
+      "test_summary": [
+        "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.01s"
+      ]
+    },
+    {
+      "control": "permit_alpha_error_one",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_sha256": "0fa6b9d1c2e6578c263feadb5c122cac4d0c81f6af5f3b6484c60fe72d7a8ad3",
+      "test_summary": [
+        "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.01s"
+      ]
+    },
+    {
+      "control": "bypass_pixel_comparison",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_sha256": "a63538782ccf43765df02996dd966743ef938eddf7ebad9508c1e14b885d37a6",
+      "test_summary": [
+        "test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.01s"
+      ]
+    },
+    {
+      "control": "bypass_pts_check",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_sha256": "e33cfe1919f146573a211448832f3ca208e058b40ccf93271c031a8d4b55aca0",
+      "test_summary": [
+        "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.04s"
+      ]
+    },
+    {
+      "control": "bypass_dimensions_check",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_sha256": "822b402b7e52519dcb96df265ca43cc129bdc779a55839f9f5578c5837424b66",
+      "test_summary": [
+        "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.05s"
+      ]
+    },
+    {
+      "control": "bypass_length_check",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_sha256": "d2ebf994e894b0fc6751b203791049f1f9b552ca6aa8a1335de6c41e51062b1c",
+      "test_summary": [
+        "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.05s"
+      ]
+    },
+    {
+      "control": "bypass_raw_payload_check",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_sha256": "3ed22a606cc49f8a9b47645e0f233cf5a3f55dc9c0647456e001bf582ff36f6e",
+      "test_summary": [
+        "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.04s"
+      ]
+    },
+    {
+      "control": "poison_cascades",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_sha256": "e95352580cd3d043dbacc238f5537e973840784fbb81f3016e040dd3e28706fb",
+      "test_summary": [
+        "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.05s"
+      ]
+    }
+  ],
+  "restored_sha256": {
+    "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs": "8feba02c41978fb4763d70c4d18d343dd1d507bc908334015be0472d21dc24fc",
+    "rust/crates/bello-platform/src/recording/tests.rs": "bb6d4c04ff9f105b5f4753eee35b92d22aa9d8037a68279bce3f3e495efb4866"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "fixture_sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9",
+  "fixture_bytes": 221877,
+  "payload_sha256": "285cbdd8695224355a8c24981044668198bfc7762b9fc3108be1cd271fbb701e",
+  "raw_rgb24_payload_bytes": 221184,
+  "payload_matches_recipe_exactly": true,
+  "ffmpeg_decoded_rgba_matches_recipe_exactly": true,
+  "decoded_rgba_bytes": 294912,
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "rawvideo",
+        "codec_tag_string": "raw ",
+        "width": 96,
+        "height": 64,
+        "pix_fmt": "rgb24",
+        "r_frame_rate": "10/1",
+        "nb_frames": "12"
+      }
+    ],
+    "format": {
+      "duration": "1.200000"
+    }
+  },
+  "scope": "Independent installed-FFmpeg validation of generated static fixture bytes; not native Apple reader or writer evidence."
+}

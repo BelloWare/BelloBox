@@ -463,7 +463,7 @@ pub(crate) fn quit_calls(cx: &App) -> usize {
 #[cfg(test)]
 mod tests;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "recording-fixtures"))]
 pub(crate) fn panic_next(cx: &mut App) {
     cx.global_mut::<Shutdown>().panic_next = true;
 }

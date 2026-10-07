@@ -1,0 +1,25 @@
+   Compiling bello-platform v0.1.0 (/workspace/shared/box-native-oracle-stage/rust/crates/bello-platform)
+    Finished `test` profile [unoptimized] target(s) in 1.59s
+     Running unittests src/lib.rs (/workspace/shared/box-native-oracle-target/debug/deps/bello_platform-2f906cb9353e1c44)
+
+running 4 tests
+test recording::tests::raw_oracle::checked_in_raw_payload_is_exact_and_one_byte_mutation_is_detected ... ok
+test recording::tests::raw_oracle::decoded_raw_oracle_accepts_only_one_rgb_code_value_and_exact_alpha ... FAILED
+test recording::tests::raw_oracle::decoded_raw_oracle_rejects_channel_frame_row_length_dimension_and_time_corruption ... ok
+test recording::tests::raw_oracle::serialization_lock_recovery_does_not_hide_the_original_panic ... ok
+
+failures:
+
+---- recording::tests::raw_oracle::decoded_raw_oracle_accepts_only_one_rgb_code_value_and_exact_alpha stdout ----
+
+thread 'recording::tests::raw_oracle::decoded_raw_oracle_accepts_only_one_rgb_code_value_and_exact_alpha' (113) panicked at crates/bello-platform/src/recording/tests/raw_oracle.rs:119:13:
+frame 0, channel 3
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    recording::tests::raw_oracle::decoded_raw_oracle_accepts_only_one_rgb_code_value_and_exact_alpha
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p bello-platform --lib`

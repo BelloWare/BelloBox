@@ -1,0 +1,32 @@
+{
+  "sha": "f61d0e4da194fe0da90c54c034d0e51106a8eacd",
+  "run_id": 37691415517,
+  "job_id": 113032248556,
+  "status": "completed",
+  "conclusion": "failure",
+  "failed_step": "Run pure domain and filesystem tests",
+  "first_failure": "recording::tests::checked_in_raw_movie_native_decode_matches_every_known_pixel_and_timestamp",
+  "location": "crates/bello-platform/src/recording/tests.rs:467:9",
+  "assertion": "frame 0 raw RGB identity",
+  "pixel_stats": {
+    "actual_values": 24576,
+    "expected_values": 24576,
+    "different_values": 11008,
+    "max_absolute_difference": 1,
+    "deltas": {
+      "1": 2688,
+      "-1": 8320
+    },
+    "channels": {
+      "R": 2752,
+      "G": 5440,
+      "B": 2816
+    }
+  },
+  "secondary_failures": "Six SERIAL PoisonError failures",
+  "passed": 195,
+  "failed": 7,
+  "ignored": 3,
+  "recording_fixture_step": "skipped",
+  "full_app_recording_step": "skipped"
+}

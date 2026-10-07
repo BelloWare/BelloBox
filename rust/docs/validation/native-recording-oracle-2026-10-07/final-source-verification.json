@@ -1,0 +1,18 @@
+{
+  "tracked_rust_files": 163,
+  "unchanged_rust_files": 161,
+  "changed_rust_files": [
+    "rust/crates/bello-platform/src/recording/tests.rs",
+    "rust/crates/bellobox-app/src/shutdown.rs"
+  ],
+  "new_rust_files": [
+    "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs"
+  ],
+  "original_checkout_remains_clean": true,
+  "fixture_sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9",
+  "oracle_hashes_match_restored_negative_controls": true,
+  "unchanged_compile_inputs": {
+    "project.yml": "36d05945cb97b1f679a00e64ac6bfd9164356135ee89a0371cc50795b47fe901",
+    "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png": "6805511e9975725ff9fb436d6824b9cda107c13e087ab9ba78b3832d25535a3f"
+  }
+}

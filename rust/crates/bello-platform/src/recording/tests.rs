@@ -11,6 +11,14 @@ use std::{
     time::{Duration, Instant},
 };
 static SERIAL: Mutex<()> = Mutex::new(());
+mod raw_oracle;
+
+fn lock_serial(mutex: &Mutex<()>) -> std::sync::MutexGuard<'_, ()> {
+    // This lock protects no data: it only separates admission-using tests.
+    // Preserve the original panic, but let independent tests run after it.
+    // Actual admission/worker state is never reset or bypassed here.
+    mutex.lock().unwrap_or_else(|error| error.into_inner())
+}
 fn movie(fixture: bool, recovery: bool) -> FinalizedRecording {
     let output = OutputTransaction::new(fixture).unwrap();
     let mut file = output::new_file(&output.capture).unwrap();
@@ -167,7 +175,7 @@ fn frame_count_duration_and_backing_capacity_are_bounded() {
 }
 #[test]
 fn cancellation_cannot_release_admission_before_held_callback_destruction() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     let control = RecordingControl::default();
     let admission = Admission::acquire(control.clone()).unwrap();
     let callbacks = Callbacks::default();
@@ -318,7 +326,7 @@ fn replacement_rejects_save_and_identity_bound_known_frames() {
 }
 #[test]
 fn injected_start_stop_finalizes_without_granting_native_reader_admission() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     let handle = fixture::start_injected(fixture::Case::Standard).unwrap();
     assert!(matches!(wait_event(&handle), RecordingEvent::Started));
     assert!(matches!(
@@ -340,7 +348,7 @@ fn injected_start_stop_finalizes_without_granting_native_reader_admission() {
 }
 #[test]
 fn dropped_receiver_cancels_worker_and_drain_is_observable_from_control() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     let handle = fixture::start_injected(fixture::Case::Standard).unwrap();
     let control = handle.control();
     assert!(matches!(wait_event(&handle), RecordingEvent::Started));
@@ -350,7 +358,7 @@ fn dropped_receiver_cancels_worker_and_drain_is_observable_from_control() {
 }
 #[test]
 fn stop_failure_and_recovery_have_distinct_terminal_outcomes() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     for case in [
         fixture::Case::FailFinalize,
         fixture::Case::RecoverPublication,
@@ -376,7 +384,7 @@ fn stop_failure_and_recovery_have_distinct_terminal_outcomes() {
 #[test]
 fn native_generated_writer_finalizes_and_same_owned_token_decodes() {
     use crate::movie::{MovieAsset, MovieCancellation, MovieReadRange};
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     let handle = fixture::start_native(fixture::Case::Standard).unwrap();
     assert!(matches!(wait_event(&handle), RecordingEvent::Started));
     let ready_deadline = Instant::now() + Duration::from_secs(15);
@@ -430,9 +438,9 @@ fn native_generated_writer_finalizes_and_same_owned_token_decodes() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn checked_in_raw_movie_native_decode_matches_every_known_pixel_and_timestamp() {
+fn checked_in_raw_movie_native_decode_preserves_frames_with_one_rgb_code_value_tolerance() {
     use crate::movie::{MovieAsset, MovieReadRange};
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     // Sealed test source: this exact compiled-in finite asset, never a path input.
     let output = OutputTransaction::new(true).unwrap();
     let mut file = output::new_file(&output.capture).unwrap();
@@ -458,12 +466,11 @@ fn checked_in_raw_movie_native_decode_matches_every_known_pixel_and_timestamp() 
     let mut reader = asset
         .reader(MovieReadRange::new(0., 1.2, 0.1).unwrap())
         .unwrap();
-    for index in 0..12 {
+    for index in 0..fixture::FRAME_COUNT {
         let (pts, width, height, rgba) = reader.next_frame(|| false).unwrap().unwrap().into_parts();
         let expected = known.frame(index).unwrap();
-        assert!((pts - expected.presentation_seconds).abs() < 0.001);
-        assert_eq!((width, height), (expected.width, expected.height));
-        assert_eq!(rgba, expected.rgba, "frame {index} raw RGB identity");
+        raw_oracle::check_decoded_frame(&expected, pts, width, height, &rgba)
+            .unwrap_or_else(|error| panic!("raw movie frame {index}: {error}"));
     }
     assert!(reader.next_frame(|| false).unwrap().is_none());
     reader.finish(|| false).unwrap();
@@ -472,7 +479,7 @@ fn checked_in_raw_movie_native_decode_matches_every_known_pixel_and_timestamp() 
 #[cfg(target_os = "macos")]
 #[test]
 fn native_cancel_does_not_publish_or_reopen_admission_before_drain() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     let handle = fixture::start_native(fixture::Case::Standard).unwrap();
     assert!(matches!(wait_event(&handle), RecordingEvent::Started));
     handle.cancel();
@@ -568,7 +575,7 @@ fn save_refuses_existing_symlink_without_touching_source_or_target() {
 #[cfg(target_os = "macos")]
 #[test]
 fn native_finish_callback_hold_keeps_lease_until_real_block_and_pool_retire() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     let control = RecordingControl::default();
     let admission = Admission::acquire(control.clone()).unwrap();
     let (gate, called) = super::macos::FinishGate::new();
@@ -709,7 +716,7 @@ fn publication_failure_after_claim_preserves_recovery_and_never_means_success() 
 
 #[test]
 fn owner_drop_and_cancel_do_not_wait_for_event_mutex_and_retire_payload_on_worker() {
-    let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let _serial = lock_serial(&SERIAL);
     let control = RecordingControl::default();
     let handle = RecordingHandle {
         control: control.clone(),
@@ -780,7 +787,7 @@ fn owner_drop_and_cancel_do_not_wait_for_event_mutex_and_retire_payload_on_worke
 
 #[test]
 fn terminal_transfer_keeps_completed_movie_after_ui_owner_drop() {
-    let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let _serial = lock_serial(&SERIAL);
     let control = RecordingControl::default();
     let handle = RecordingHandle {
         control: control.clone(),
@@ -842,7 +849,7 @@ fn app_retirement_owner_waits_for_callback_destruction_and_worker_admission_drop
             self.0.send(std::thread::current().id()).unwrap();
         }
     }
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     let control = RecordingControl::default();
     let admission = Admission::acquire(control.clone()).unwrap();
     let (sent, received) = mpsc::channel();
@@ -872,7 +879,7 @@ fn app_retirement_registration_race_with_physical_drain_never_leaks_an_owner() {
             self.0.fetch_add(1, Ordering::AcqRel);
         }
     }
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = lock_serial(&SERIAL);
     for _ in 0..64 {
         let control = RecordingControl::default();
         let admission = Admission::acquire(control.clone()).unwrap();

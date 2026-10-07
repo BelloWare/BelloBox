@@ -1,0 +1,25 @@
+    Checking bello-platform v0.1.0 (/workspace/shared/box-native-oracle-stage/rust/crates/bello-platform)
+    Checking bellobox-app v0.1.0 (/workspace/shared/box-native-oracle-stage/rust/crates/bellobox-app)
+error: couldn't read `crates/bellobox-app/src/../../../../BelloBox/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png`: No such file or directory (os error 2)
+   --> crates/bellobox-app/src/home.rs:182:17
+    |
+182 | /                 include_bytes!(
+183 | |                     "../../../../BelloBox/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png"
+184 | |                 )
+    | |_________________^
+
+error: couldn't read `crates/bellobox-app/src/../../../../project.yml`: No such file or directory (os error 2)
+    --> crates/bellobox-app/src/home.rs:2186:5
+     |
+2186 |     include_str!("../../../../project.yml")
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: couldn't read `crates/bellobox-app/src/../../../../BelloBox/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png`: No such file or directory (os error 2)
+   --> crates/bellobox-app/src/settings_ui.rs:228:17
+    |
+228 | /                 include_bytes!(
+229 | |                     "../../../../BelloBox/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png"
+230 | |                 )
+    | |_________________^
+
+error: could not compile `bellobox-app` (bin "bellobox") due to 3 previous errors
