@@ -1,13 +1,17 @@
-//! DEBUG-only frozen Area selector. All displayed pixels are generated in memory
+//! DEBUG-only frozen Area/Window selector. All displayed pixels are generated in memory
 //! before this window is created. This file has no native capture/overlay adapter,
 //! clipboard, image-file, provider or OS input-injection path.
 use super::{button, theme};
 use crate::session::{JobToken, SessionJobs};
 use bellobox_core::screenshot::{
     Point, PreviewTile, Rect, ScreenshotDocument,
-    area::{AreaDisplayGeometry, AreaPhase, FrozenAreaSession},
+    area::{AreaDisplayGeometry, AreaPhase, AreaSelection, FrozenAreaSession},
     scroll::synthetic_page_frame,
     selection,
+    window::{
+        FrozenWindowCommit, FrozenWindowCommitToken, FrozenWindowPhase, FrozenWindowSession,
+        synthetic_window_fixture,
+    },
 };
 use gpui::{
     App, Bounds, Context, CursorStyle, FocusHandle, Image, ImageFormat, KeyDownEvent, MouseButton,
@@ -37,6 +41,7 @@ fn display() -> AreaDisplayGeometry {
 struct FixtureLaunch {
     jobs: SessionJobs,
     pending: bool,
+    visible: Option<gpui::WindowHandle<FrozenSelector>>,
 }
 impl gpui::Global for FixtureLaunch {}
 impl FixtureLaunch {
@@ -45,36 +50,163 @@ impl FixtureLaunch {
         self.pending = false;
     }
     fn accept_preparation(&mut self, token: JobToken) -> bool {
-        if !self.jobs.accepts(token) {
+        if !self.pending || !self.jobs.accepts(token) {
             return false;
         }
         self.pending = false;
         true
     }
 }
-/// Any newer tool navigation invalidates a still-preparing selector.
+/// Newer navigation invalidates preparation and retires the prior visible fixture.
 pub(super) fn cancel_pending_launch(cx: &mut App) {
     if cx.try_global::<FixtureLaunch>().is_some() {
-        cx.global_mut::<FixtureLaunch>().cancel();
+        let launch = cx.global_mut::<FixtureLaunch>();
+        launch.cancel();
+        if let Some(previous) = launch.visible.take() {
+            // Defer logical retirement to avoid reentering a currently borrowed
+            // selector. Its global cancellation flag already rejects publication.
+            cx.defer(move |cx| {
+                let _ = previous.update(cx, |view, window, _| view.close(window));
+            });
+        }
     }
 }
 struct PreparedFixture {
-    area: FrozenAreaSession,
+    selection: FixtureSelection,
     tiles: Vec<PreviewTile>,
+}
+enum FixtureSelection {
+    Area(FrozenAreaSession),
+    Window(FrozenWindowSession),
+}
+impl FixtureSelection {
+    fn is_window(&self) -> bool {
+        matches!(self, Self::Window(_))
+    }
+    fn cancel(&mut self) {
+        match self {
+            Self::Area(s) => s.cancel(),
+            Self::Window(s) => s.cancel(),
+        }
+    }
+    fn focus_lost(&mut self) {
+        match self {
+            Self::Area(s) => {
+                s.focus_lost();
+            }
+            Self::Window(s) => s.focus_lost(),
+        }
+    }
+    fn preview_rect(&self) -> Option<Rect> {
+        match self {
+            Self::Area(s) => s.preview_rect(),
+            Self::Window(s) => s.preview_rect(),
+        }
+    }
+    fn pressing(&self) -> bool {
+        match self {
+            Self::Area(s) => s.phase() == AreaPhase::Dragging,
+            Self::Window(s) => s.phase() == FrozenWindowPhase::Pressed,
+        }
+    }
+    fn begin(&mut self, point: Point) -> Result<(), String> {
+        match self {
+            Self::Area(s) => s.begin_drag(point, display()).map_err(|e| e.to_string()),
+            Self::Window(s) => s.begin_press(point, display()).map_err(|e| e.to_string()),
+        }
+    }
+    fn movement(&mut self, point: Point) -> Result<(), String> {
+        match self {
+            Self::Area(s) if s.phase() == AreaPhase::Dragging => {
+                s.update_drag(point, display()).map_err(|e| e.to_string())
+            }
+            Self::Area(_) => Ok(()),
+            Self::Window(s) => s.hover(point, display()).map_err(|e| e.to_string()),
+        }
+    }
+    fn end(&mut self, point: Point) -> Result<Option<FixtureCommit>, String> {
+        match self {
+            Self::Area(s) => s
+                .end_drag(point, display())
+                .map(|v| v.map(FixtureCommit::Area))
+                .map_err(|e| e.to_string()),
+            Self::Window(s) => s
+                .end_press(point, display())
+                .map(|v| v.map(FixtureCommit::Window))
+                .map_err(|e| e.to_string()),
+        }
+    }
+    fn accepts(&mut self, token: Option<FrozenWindowCommitToken>) -> bool {
+        match (self, token) {
+            (Self::Area(s), None) => {
+                s.phase() == AreaPhase::Committed && s.validate_topology(display()).is_ok()
+            }
+            (Self::Window(s), Some(token)) => s.accepts_commit(token, display()).unwrap_or(false),
+            _ => false,
+        }
+    }
+}
+enum FixtureCommit {
+    Area(AreaSelection),
+    Window(FrozenWindowCommit),
+}
+impl FixtureCommit {
+    fn token(&self) -> Option<FrozenWindowCommitToken> {
+        match self {
+            Self::Area(_) => None,
+            Self::Window(s) => Some(s.token()),
+        }
+    }
+    fn rect(&self) -> Rect {
+        match self {
+            Self::Area(s) => s.selection_local_points,
+            Self::Window(s) => s.candidate().frame_local_points,
+        }
+    }
+    fn dimensions(&self) -> (u32, u32) {
+        match self {
+            Self::Area(s) => s.editor.document().visible_dimensions(),
+            Self::Window(s) => (s.pixel_crop().width as u32, s.pixel_crop().height as u32),
+        }
+    }
+    fn materialize(
+        self,
+        cancellation: &AtomicBool,
+    ) -> Result<bellobox_core::screenshot::ScreenshotEditSession, String> {
+        match self {
+            Self::Area(s) => Ok(s.editor),
+            Self::Window(s) => s
+                .materialize(cancellation)
+                .map(|s| s.editor)
+                .map_err(|e| e.to_string()),
+        }
+    }
 }
 
 /// A newer open cancels the preceding freeze generation. No selector window is
 /// created before immutable pixels and tiles are ready.
 pub(super) fn open_fixture(cx: &mut App) {
+    open_fixture_mode(false, cx);
+}
+pub(super) fn open_window_fixture(cx: &mut App) {
+    open_fixture_mode(true, cx);
+}
+fn open_fixture_mode(window_mode: bool, cx: &mut App) {
+    cancel_pending_launch(cx);
     let (token, cancellation) = {
         let launch = cx.default_global::<FixtureLaunch>();
         launch.pending = true;
         let token = launch.jobs.begin();
         (token, launch.jobs.cancellation())
     };
-    let task = cx
-        .background_executor()
-        .spawn(async move { prepare_fixture(cancellation) });
+    let worker_cancellation = cancellation.clone();
+    let task = cx.background_executor().spawn(async move {
+        if window_mode {
+            prepare_window_fixture(worker_cancellation)
+        } else {
+            prepare_fixture(worker_cancellation)
+        }
+    });
     cx.spawn(async move |cx| {
         let prepared = task.await;
         let _ = cx.update(|cx| {
@@ -87,7 +219,7 @@ pub(super) fn open_fixture(cx: &mut App) {
                 return;
             }
             match prepared {
-                Ok(prepared) => open_prepared(prepared, cx),
+                Ok(prepared) => open_prepared(prepared, token, cancellation, cx),
                 Err(error) => open_error(error, cx),
             }
         });
@@ -121,23 +253,70 @@ fn prepare_fixture(cancellation: Arc<AtomicBool>) -> Result<PreparedFixture, Str
     {
         return Err("The synthetic freeze was superseded.".into());
     }
-    Ok(PreparedFixture { area, tiles })
+    Ok(PreparedFixture {
+        selection: FixtureSelection::Area(area),
+        tiles,
+    })
 }
-fn open_prepared(prepared: PreparedFixture, cx: &mut App) {
+fn prepare_window_fixture(cancellation: Arc<AtomicBool>) -> Result<PreparedFixture, String> {
+    if cancellation.load(Ordering::Acquire) {
+        return Err("Window fixture preparation was cancelled.".into());
+    }
+    let (geometry, catalog, document) = synthetic_window_fixture().map_err(|e| e.to_string())?;
+    let mut selection =
+        FrozenWindowSession::new(geometry, &catalog, 999).map_err(|e| e.to_string())?;
+    let token = selection
+        .freeze_token()
+        .ok_or("Window fixture is not ready to freeze.")?;
+    let tiles = document.render_preview_tiles()?;
+    if cancellation.load(Ordering::Acquire) {
+        return Err("Window fixture preparation was cancelled.".into());
+    }
+    if !selection
+        .accept_frozen(token, document, geometry)
+        .map_err(|e| e.to_string())?
+    {
+        return Err("Window fixture freeze was superseded.".into());
+    }
+    Ok(PreparedFixture {
+        selection: FixtureSelection::Window(selection),
+        tiles,
+    })
+}
+fn open_prepared(
+    prepared: PreparedFixture,
+    token: JobToken,
+    cancellation: Arc<AtomicBool>,
+    cx: &mut App,
+) {
     let bounds = Bounds::centered(None, size(px(840.), px(680.)), cx);
-    let _ = cx.open_window(
+    let window_mode = prepared.selection.is_window();
+    let opened = cx.open_window(
         WindowOptions {
             window_bounds: Some(WindowBounds::Windowed(bounds)),
             window_min_size: Some(size(px(840.), px(680.))),
             is_resizable: false,
             titlebar: Some(TitlebarOptions {
-                title: Some("Area · Frozen Synthetic Fixture — Bello Box".into()),
+                title: Some(
+                    if window_mode {
+                        "Window · Frozen Synthetic Fixture — Bello Box"
+                    } else {
+                        "Area · Frozen Synthetic Fixture — Bello Box"
+                    }
+                    .into(),
+                ),
                 ..Default::default()
             }),
             ..Default::default()
         },
-        move |window, cx| cx.new(|cx| FrozenSelector::new(prepared, window, cx)),
+        move |window, cx| {
+            cx.new(|cx| FrozenSelector::new(prepared, token, cancellation, window, cx))
+        },
     );
+    match opened {
+        Ok(handle) => cx.default_global::<FixtureLaunch>().visible = Some(handle),
+        Err(error) => open_error(error.to_string(), cx),
+    }
 }
 struct Tile {
     x: u32,
@@ -147,7 +326,9 @@ struct Tile {
     image: Arc<Image>,
 }
 struct FrozenSelector {
-    area: FrozenAreaSession,
+    selection: FixtureSelection,
+    launch_token: JobToken,
+    launch_cancellation: Arc<AtomicBool>,
     tiles: Vec<Tile>,
     viewport: Rc<Cell<Bounds<Pixels>>>,
     focus: FocusHandle,
@@ -160,7 +341,13 @@ struct FrozenSelector {
     _activation: Subscription,
 }
 impl FrozenSelector {
-    fn new(prepared: PreparedFixture, window: &mut Window, cx: &mut Context<Self>) -> Self {
+    fn new(
+        prepared: PreparedFixture,
+        launch_token: JobToken,
+        launch_cancellation: Arc<AtomicBool>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
         let focus = cx.focus_handle();
         window.focus(&focus);
         let weak = cx.entity().downgrade();
@@ -174,13 +361,15 @@ impl FrozenSelector {
             } else if this.has_been_active && !this.transferring {
                 // A preparation handoff has not opened an editor yet, so navigation
                 // cancels that pending handoff too, rather than activating it later.
-                this.area.focus_lost();
+                this.selection.focus_lost();
                 this.cancel_work();
                 window.remove_window();
             }
         });
         Self {
-            area: prepared.area,
+            selection: prepared.selection,
+            launch_token,
+            launch_cancellation,
             tiles: prepared
                 .tiles
                 .into_iter()
@@ -205,12 +394,26 @@ impl FrozenSelector {
     }
     fn cancel_work(&mut self) {
         self.handoff_jobs.cancel();
-        self.area.cancel();
+        self.selection.cancel();
         self.preparing_handoff = false;
     }
     fn close(&mut self, window: &mut Window) {
         self.cancel_work();
         window.remove_window();
+    }
+    fn launch_is_current(&self, cx: &App) -> bool {
+        !self.launch_cancellation.load(Ordering::Acquire)
+            && cx
+                .try_global::<FixtureLaunch>()
+                .is_some_and(|launch| launch.jobs.accepts(self.launch_token))
+    }
+    fn guard_launch(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
+        if self.launch_is_current(cx) {
+            true
+        } else {
+            self.close(window);
+            false
+        }
     }
     fn local(&self, position: gpui::Point<Pixels>) -> Option<Point> {
         let bounds = self.viewport.get();
@@ -225,7 +428,7 @@ impl FrozenSelector {
         ))
     }
     fn mouse_down(&mut self, event: &MouseDownEvent, window: &mut Window, cx: &mut Context<Self>) {
-        if self.preparing_handoff {
+        if self.preparing_handoff || !self.guard_launch(window, cx) {
             return;
         }
         let Some(point) = self.local(event.position) else {
@@ -233,36 +436,41 @@ impl FrozenSelector {
         };
         window.focus(&self.focus);
         self.has_been_active = true;
-        if let Err(error) = self.area.begin_drag(point, display()) {
+        if let Err(error) = self.selection.begin(point) {
             self.status = error.to_string();
         } else {
             self.status.clear();
         }
         cx.notify();
     }
-    fn mouse_move(&mut self, event: &MouseMoveEvent, _: &mut Window, cx: &mut Context<Self>) {
-        if self.preparing_handoff || self.area.phase() != AreaPhase::Dragging {
+    fn mouse_move(&mut self, event: &MouseMoveEvent, window: &mut Window, cx: &mut Context<Self>) {
+        if self.preparing_handoff || !self.guard_launch(window, cx) {
             return;
         }
         let Some(point) = self.local(event.position) else {
             return;
         };
-        if let Err(error) = self.area.update_drag(point, display()) {
+        if let Err(error) = self.selection.movement(point) {
             self.status = error.to_string();
         }
         cx.notify();
     }
     fn mouse_up(&mut self, event: &MouseUpEvent, window: &mut Window, cx: &mut Context<Self>) {
-        if self.preparing_handoff || self.area.phase() != AreaPhase::Dragging {
+        if self.preparing_handoff || !self.guard_launch(window, cx) || !self.selection.pressing() {
             return;
         }
         let Some(point) = self.local(event.position) else {
             return;
         };
-        let selection = match self.area.end_drag(point, display()) {
+        let selection = match self.selection.end(point) {
             Ok(Some(selection)) => selection,
             Ok(None) => {
-                self.status = "Drag an area at least 8 × 8 points.".into();
+                self.status = if self.selection.is_window() {
+                    "Click a highlighted window; dragging does not select an area."
+                } else {
+                    "Drag an area at least 8 × 8 points."
+                }
+                .into();
                 cx.notify();
                 return;
             }
@@ -272,20 +480,22 @@ impl FrozenSelector {
                 return;
             }
         };
-        self.locked_rect = Some(selection.selection_local_points);
+        self.locked_rect = Some(selection.rect());
+        let selection_token = selection.token();
         self.preparing_handoff = true;
-        let size = selection.editor.document().visible_dimensions();
+        let size = selection.dimensions();
         self.status = format!("Preparing {} × {} px in the editor…", size.0, size.1);
         let token = self.handoff_jobs.begin();
         let cancellation = self.handoff_jobs.cancellation();
         let task = cx.background_executor().spawn(async move {
             if cancellation.load(Ordering::Acquire) {
-                return None;
+                return Ok(None);
             }
-            // Only the existing optional local font preparation performs file I/O.
-            // No synthetic pixels are regenerated, imported, captured or reencoded.
-            let session = super::prepare_session(selection.editor);
-            (!cancellation.load(Ordering::Acquire)).then_some(session)
+            // A Window copies only its bound frozen rectangle on this worker.
+            // Area keeps its existing full document and clean crop. Neither captures.
+            let session = selection.materialize(&cancellation)?;
+            let session = super::prepare_session(session);
+            Ok::<_, String>((!cancellation.load(Ordering::Acquire)).then_some(session))
         });
         cx.spawn_in(window, async move |this, cx| {
             let session = task.await;
@@ -293,17 +503,36 @@ impl FrozenSelector {
                 if !this.handoff_jobs.accepts(token) || !this.preparing_handoff {
                     return;
                 }
-                if !requester_is_active(window) {
+                if !this.launch_is_current(cx)
+                    || !requester_is_active(window)
+                    || !this.selection.accepts(selection_token)
+                {
                     this.close(window);
                     return;
                 }
-                let Some(session) = session else {
-                    this.close(window);
-                    return;
+                let session = match session {
+                    Ok(Some(session)) => session,
+                    Ok(None) => {
+                        this.close(window);
+                        return;
+                    }
+                    Err(error) => {
+                        this.close(window);
+                        open_error(error, cx);
+                        return;
+                    }
                 };
                 this.transferring = true;
                 this.preparing_handoff = false;
-                super::open_session(session, "Frozen Area · synthetic fixture", cx);
+                super::open_session(
+                    session,
+                    if this.selection.is_window() {
+                        "Frozen Window · synthetic visible pixels"
+                    } else {
+                        "Frozen Area · synthetic fixture"
+                    },
+                    cx,
+                );
                 window.remove_window();
             });
         })
@@ -349,7 +578,7 @@ impl Render for FrozenSelector {
         let p = theme::for_window(window);
         let (sx, sy) = display().pixels_per_point().expect("fixed valid fixture");
         let (selected, border_width, label) = selection_chrome(
-            self.locked_rect.or_else(|| self.area.preview_rect()),
+            self.locked_rect.or_else(|| self.selection.preview_rect()),
             self.locked_rect.is_some(),
             (sx, sy),
         );
@@ -456,7 +685,11 @@ impl Render for FrozenSelector {
                 div()
                     .text_size(px(16.))
                     .font_weight(gpui::FontWeight::SEMIBOLD)
-                    .child("Area capture · frozen synthetic fixture"),
+                    .child(if self.selection.is_window() {
+                        "Window selection · frozen synthetic fixture"
+                    } else {
+                        "Area capture · frozen synthetic fixture"
+                    }),
             )
             .child(div().text_size(px(11.)).text_color(p.secondary).child(
                 "App-owned pixels only · 800 × 500 points · 1600 × 1000 pixels · Escape cancels",
@@ -472,8 +705,12 @@ impl Render for FrozenSelector {
                             .flex_1()
                             .text_size(px(11.))
                             .child(if self.status.is_empty() {
-                                "Drag on the frozen page to open that area in the editor."
-                                    .to_owned()
+                                if self.selection.is_window() {
+                                    "Click a window. The frozen crop keeps any visible overlap."
+                                } else {
+                                    "Drag on the frozen page to open that area in the editor."
+                                }
+                                .to_owned()
                             } else {
                                 self.status.clone()
                             }),
@@ -506,7 +743,7 @@ impl Render for PreparationError {
                     window.remove_window();
                 }
             }))
-            .child("Could not prepare the synthetic Area fixture.")
+            .child("Could not prepare the synthetic capture fixture.")
             .child(self.text.clone())
             .child(
                 button("area-fixture-error-close", "Close", p)
@@ -588,7 +825,10 @@ mod tests {
     #[test]
     fn prepared_fixture_is_tiled_frozen_and_example_crop_is_clean() {
         let mut fixture = prepare_fixture(Arc::new(AtomicBool::new(false))).unwrap();
-        assert_eq!(fixture.area.phase(), AreaPhase::Selecting);
+        let FixtureSelection::Area(area) = &mut fixture.selection else {
+            panic!("expected Area fixture");
+        };
+        assert_eq!(area.phase(), AreaPhase::Selecting);
         assert!(fixture.tiles.len() >= 2);
         assert!(
             fixture
@@ -596,18 +836,55 @@ mod tests {
                 .iter()
                 .all(|t| t.width <= 1024 && t.height <= 1024)
         );
-        fixture
-            .area
-            .begin_drag(Point::new(100., 80.), display())
-            .unwrap();
-        let selected = fixture
-            .area
+        area.begin_drag(Point::new(100., 80.), display()).unwrap();
+        let selected = area
             .end_drag(Point::new(400., 280.), display())
             .unwrap()
             .unwrap();
         assert_eq!(selected.editor.document().visible_dimensions(), (600, 400));
         assert!(!selected.editor.has_edits());
         assert!(!selected.editor.can_undo());
+    }
+    #[test]
+    fn accepted_visible_launch_is_still_invalidated_by_a_newer_open() {
+        let mut launch = FixtureLaunch::default();
+        let old = launch.jobs.begin();
+        let old_flag = launch.jobs.cancellation();
+        launch.pending = true;
+        assert!(launch.accept_preparation(old));
+        assert!(!launch.accept_preparation(old));
+        assert!(launch.jobs.accepts(old));
+        let newer = launch.jobs.begin();
+        launch.pending = true;
+        assert!(old_flag.load(Ordering::Acquire));
+        assert!(!launch.jobs.accepts(old));
+        assert!(launch.accept_preparation(newer));
+    }
+    #[test]
+    fn prepared_window_fixture_uses_the_same_tiles_and_a_window_sized_clean_commit() {
+        let mut fixture = prepare_window_fixture(Arc::new(AtomicBool::new(false))).unwrap();
+        assert!(fixture.selection.is_window());
+        assert!(fixture.tiles.len() >= 2);
+        fixture.selection.movement(Point::new(150., 200.)).unwrap();
+        assert_eq!(
+            fixture.selection.preview_rect(),
+            Some(Rect::new(100., 170., 420., 230.))
+        );
+        fixture.selection.begin(Point::new(150., 200.)).unwrap();
+        let commit = fixture
+            .selection
+            .end(Point::new(150., 200.))
+            .unwrap()
+            .unwrap();
+        let token = commit.token();
+        let session = commit.materialize(&AtomicBool::new(false)).unwrap();
+        assert_eq!(session.document().dimensions(), (840, 460));
+        assert_eq!(session.document().crop_rect(), None);
+        assert!(!session.can_undo());
+        assert!(fixture.selection.accepts(token));
+        fixture.selection.cancel();
+        assert!(!fixture.selection.accepts(token));
+        assert!(prepare_window_fixture(Arc::new(AtomicBool::new(true))).is_err());
     }
     #[test]
     fn cancelled_fixture_preparation_does_not_make_a_selector() {

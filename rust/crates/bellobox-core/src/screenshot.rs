@@ -12,6 +12,7 @@ pub mod selection;
 #[cfg(test)]
 mod tests;
 mod text;
+pub mod window;
 
 use image::{ImageDecoder, RgbaImage};
 use std::{

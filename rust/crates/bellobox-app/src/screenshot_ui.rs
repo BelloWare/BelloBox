@@ -193,6 +193,11 @@ pub(crate) fn area_navigation_changed(cx: &mut App) {
 
 pub fn open(cx: &mut App) {
     #[cfg(debug_assertions)]
+    if std::env::var_os("BELLOBOX_WINDOW_FIXTURE").is_some() {
+        area_capture::open_window_fixture(cx);
+        return;
+    }
+    #[cfg(debug_assertions)]
     if std::env::var_os("BELLOBOX_AREA_FIXTURE").is_some() {
         area_capture::open_fixture(cx);
         return;
