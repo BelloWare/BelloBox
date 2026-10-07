@@ -1,0 +1,36 @@
+--- a/rust/docs/main-area-caller-reconstruction.md
++++ b/rust/docs/main-area-caller-reconstruction.md
+@@ -28,7 +28,7 @@
+ 
+ The separately reconstructed platform helper supplies guarded synchronous popup
+ presentation and a UI-owned application-deactivation subscription. Its files are
+-published in `4a5dbc9fcd680b7fbde613ab7502bbdb1bc69ac7` and inherited here.
++owned separately, copied into this worktree only for integration verification.
+ No core capture/model or native helper implementation is changed by the app patch.
+ The app adds only the already-locked macOS `raw-window-handle = 0.6.2` edge.
+ 
+@@ -102,14 +102,10 @@
+   focus/topology, busy until worker and selector cleanup, one freeze, tile bounds,
+   clean full-pixel crop, target mismatch, viewport/scale/display identity, explicit
+   gate/delay, and observer event/removal/terminal lifetime.
+-- Eight real pure transaction-module tests passed through an isolated test crate
+-  importing the unchanged application module and actual platform dependency.
+-- Fresh real-GPUI Linux cfg(test) check: blocked locally by missing system build
+-  prerequisites; two setup launches were cancelled before installation.
++- Fresh real-GPUI Linux cfg(test) check: pending shared prerequisites/lane.
+ - Fresh focused app tests and strict Clippy: pending shared prerequisites/lane.
+ - Independent fresh static source review: passed, including chooser/navigation/
+-  editor-open glue and all 18 newly written tests. The eight transaction tests have since passed; the ten GPUI-dependent tests
+-  remain unexecuted locally.
++  editor-open glue and all 18 newly written tests. Tests are still unexecuted.
+ 
+ The cfg(test) build uses the real GPUI caller/selector/async flow; only the five
+ app-local native borrowed-handle edges return Unsupported outside macOS. There is
+@@ -120,7 +116,3 @@
+ Actual native capture pixels/Retina alignment, AppKit delivery and callback
+ teardown, Spaces/Stage Manager, geometry refresh and error-path visibility remain
+ gates. The production constant must not be enabled on the basis of portable checks.
+-
+-This production-disabled source checkpoint is published for existing Linux and
+-macOS CI to compile and test the actual GPUI application. Full app validation is
+-pending at publication; no local full-app or native-runtime success is claimed.

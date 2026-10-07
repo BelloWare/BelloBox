@@ -1,0 +1,10 @@
+--- a/rust/Cargo.lock
++++ b/rust/Cargo.lock
+@@ -578,7 +578,6 @@
+  "bellobox-core",
+  "gpui",
+  "libc",
+- "raw-window-handle",
+  "reqwest",
+  "serde_json",
+  "tempfile",

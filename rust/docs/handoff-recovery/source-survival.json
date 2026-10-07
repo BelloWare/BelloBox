@@ -1,0 +1,864 @@
+{
+  "versions": [
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/Cargo.lock",
+      "state": "working",
+      "blob": "65d8008fdfa8e88542671c63447e1d2b21cf78e9",
+      "bytes": 188964,
+      "published_commit": "bdd91683f51734a1d156388834969eaf73d9301a"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/Cargo.lock",
+      "state": "index",
+      "blob": "65d8008fdfa8e88542671c63447e1d2b21cf78e9",
+      "bytes": 188964,
+      "published_commit": "bdd91683f51734a1d156388834969eaf73d9301a"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bello-platform/src/macos_capture_overlay.rs",
+      "state": "working",
+      "blob": "20bf54a57630f1074774a79916255e3297a0fbda",
+      "bytes": 72366,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bello-platform/src/macos_capture_overlay.rs",
+      "state": "index",
+      "blob": "fd4d7d556ce3c2f857530a59b0cd5e6f3bcbf3f3",
+      "bytes": 54695,
+      "published_commit": "38ea32b727aa6c5c257647057999a9c064ec540f"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bello-platform/src/macos_capture_overlay/deactivation.rs",
+      "state": "working",
+      "blob": "b4c663e2fa49376072076c5f1515fbef7d8034b1",
+      "bytes": 9353,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/Cargo.toml",
+      "state": "working",
+      "blob": "fb77c8cd225fddc709307c7392e922e08edf59b3",
+      "bytes": 783,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/Cargo.toml",
+      "state": "index",
+      "blob": "fb77c8cd225fddc709307c7392e922e08edf59b3",
+      "bytes": 783,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "state": "working",
+      "blob": "a5939bf621d3f59979865e5a40e0d06ecd036599",
+      "bytes": 80171,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "state": "index",
+      "blob": "a5939bf621d3f59979865e5a40e0d06ecd036599",
+      "bytes": 80171,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "state": "working",
+      "blob": "4090f7799b369e79da71b3a9bb4143169b04e265",
+      "bytes": 125195,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-1.patch"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "state": "index",
+      "blob": "4090f7799b369e79da71b3a9bb4143169b04e265",
+      "bytes": 125195,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-1.patch"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_transaction.rs",
+      "state": "working",
+      "blob": "d95c040cf40842561e02d79fd07ddea7b2809a5b",
+      "bytes": 7341,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_transaction.rs",
+      "state": "index",
+      "blob": "d95c040cf40842561e02d79fd07ddea7b2809a5b",
+      "bytes": 7341,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "state": "working",
+      "blob": "fb992047426406fb2ae71997eb5deceb30385cb9",
+      "bytes": 18278,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "state": "index",
+      "blob": "fb992047426406fb2ae71997eb5deceb30385cb9",
+      "bytes": 18278,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/native.rs",
+      "state": "working",
+      "blob": "315549c998964a95753f47a9b48594cbd04157c1",
+      "bytes": 2863,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/native.rs",
+      "state": "index",
+      "blob": "315549c998964a95753f47a9b48594cbd04157c1",
+      "bytes": 2863,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "state": "working",
+      "blob": "9e3d73e1c20ceae944244f6c1ebff08a5b6623e7",
+      "bytes": 19709,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "state": "index",
+      "blob": "9e3d73e1c20ceae944244f6c1ebff08a5b6623e7",
+      "bytes": 19709,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "state": "working",
+      "blob": "e3433cdeb8d2abdde0a4bae564e4e889895cb3b1",
+      "bytes": 7698,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "state": "index",
+      "blob": "e3433cdeb8d2abdde0a4bae564e4e889895cb3b1",
+      "bytes": 7698,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/docs/main-area-caller-reconstruction.md",
+      "state": "working",
+      "blob": "8eaa07d961e6bf0ff0049d61600a723e3dc322e6",
+      "bytes": 7652,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-2.patch"
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/docs/main-area-caller-reconstruction.md",
+      "state": "index",
+      "blob": "8eaa07d961e6bf0ff0049d61600a723e3dc322e6",
+      "bytes": 7652,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-2.patch"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "state": "working",
+      "blob": "08dff2aeaa803839ee14b24cab237058d0b86d14",
+      "bytes": 125290,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "state": "index",
+      "blob": "08dff2aeaa803839ee14b24cab237058d0b86d14",
+      "bytes": 125290,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_capture.rs",
+      "state": "working",
+      "blob": "e527283f07e4c0a38656c05045e8a6ee7abaef43",
+      "bytes": 33192,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_capture.rs",
+      "state": "index",
+      "blob": "e527283f07e4c0a38656c05045e8a6ee7abaef43",
+      "bytes": 33192,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-core/src/screenshot.rs",
+      "state": "working",
+      "blob": "037a613e16aae301e39bdd928871407882e76264",
+      "bytes": 36901,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-3.patch"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-core/src/screenshot.rs",
+      "state": "index",
+      "blob": "037a613e16aae301e39bdd928871407882e76264",
+      "bytes": 36901,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-3.patch"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-core/src/screenshot/window.rs",
+      "state": "working",
+      "blob": "cb445af5f779df62cfe20a10a9b7cf71def8e8b6",
+      "bytes": 18808,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-core/src/screenshot/window.rs",
+      "state": "index",
+      "blob": "cb445af5f779df62cfe20a10a9b7cf71def8e8b6",
+      "bytes": 18808,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-core/src/screenshot/window/tests.rs",
+      "state": "working",
+      "blob": "d1a0d9a528704304b52a80abe6b8a70d1b26d24d",
+      "bytes": 15407,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-core/src/screenshot/window/tests.rs",
+      "state": "index",
+      "blob": "d1a0d9a528704304b52a80abe6b8a70d1b26d24d",
+      "bytes": 15407,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/Cargo.lock",
+      "state": "working",
+      "blob": "c82775e3d4d1432ed1db141462efd18783b0f670",
+      "bytes": 191255,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-4.patch"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/Cargo.lock",
+      "state": "index",
+      "blob": "c82775e3d4d1432ed1db141462efd18783b0f670",
+      "bytes": 191255,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-4.patch"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/Cargo.toml",
+      "state": "working",
+      "blob": "2126b7f327c6e7c9ec945eb37348ae78ab933da8",
+      "bytes": 1776,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/Cargo.toml",
+      "state": "index",
+      "blob": "2126b7f327c6e7c9ec945eb37348ae78ab933da8",
+      "bytes": 1776,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/lib.rs",
+      "state": "working",
+      "blob": "76851b6accfc437498e5d662218d36cc09e167af",
+      "bytes": 15280,
+      "published_commit": "82c879f3fea2443041d458c45926584c900e809f"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/lib.rs",
+      "state": "index",
+      "blob": "76851b6accfc437498e5d662218d36cc09e167af",
+      "bytes": 15280,
+      "published_commit": "82c879f3fea2443041d458c45926584c900e809f"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie.rs",
+      "state": "working",
+      "blob": "68bfc4182bed544670c9f630c9eadda1cf5005b5",
+      "bytes": 13753,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie.rs",
+      "state": "index",
+      "blob": "68bfc4182bed544670c9f630c9eadda1cf5005b5",
+      "bytes": 13753,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie/macos.rs",
+      "state": "working",
+      "blob": "8723e9db8ba7b2c3fe7f544ac0d38a9c03eb490f",
+      "bytes": 19999,
+      "published_commit": "bf023f87ade57954ba15aeadfca1d90274bd9267"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie/macos.rs",
+      "state": "index",
+      "blob": "8723e9db8ba7b2c3fe7f544ac0d38a9c03eb490f",
+      "bytes": 19999,
+      "published_commit": "bf023f87ade57954ba15aeadfca1d90274bd9267"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie/macos/tests.rs",
+      "state": "working",
+      "blob": "a4c3b8af149d117b9f3c9c3883999a5e22802088",
+      "bytes": 18920,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie/macos/tests.rs",
+      "state": "index",
+      "blob": "a4c3b8af149d117b9f3c9c3883999a5e22802088",
+      "bytes": 18920,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie/source_file.rs",
+      "state": "working",
+      "blob": "12bd617fbbc3c111984764b2d3f2b2b6df3bcdb1",
+      "bytes": 1895,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie/source_file.rs",
+      "state": "index",
+      "blob": "12bd617fbbc3c111984764b2d3f2b2b6df3bcdb1",
+      "bytes": 1895,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie/tests.rs",
+      "state": "working",
+      "blob": "1f85fa68b47566053c52f4b72e7c9335ca99fcb0",
+      "bytes": 6237,
+      "published_commit": "bf023f87ade57954ba15aeadfca1d90274bd9267"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/crates/bello-platform/src/movie/tests.rs",
+      "state": "index",
+      "blob": "1f85fa68b47566053c52f4b72e7c9335ca99fcb0",
+      "bytes": 6237,
+      "published_commit": "bf023f87ade57954ba15aeadfca1d90274bd9267"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/docs/native-movie-reader-reconstruction.md",
+      "state": "working",
+      "blob": "78091915baae2b6dca7b1c9c9088188cc49b8ca3",
+      "bytes": 10956,
+      "published_commit": "bf023f87ade57954ba15aeadfca1d90274bd9267"
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/docs/native-movie-reader-reconstruction.md",
+      "state": "index",
+      "blob": "78091915baae2b6dca7b1c9c9088188cc49b8ca3",
+      "bytes": 10956,
+      "published_commit": "bf023f87ade57954ba15aeadfca1d90274bd9267"
+    },
+    {
+      "worktree": "BelloBox-overlay-reconstruction",
+      "path": "rust/crates/bello-platform/src/macos_capture_overlay.rs",
+      "state": "working",
+      "blob": "20bf54a57630f1074774a79916255e3297a0fbda",
+      "bytes": 72366,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-overlay-reconstruction",
+      "path": "rust/crates/bello-platform/src/macos_capture_overlay.rs",
+      "state": "index",
+      "blob": "20bf54a57630f1074774a79916255e3297a0fbda",
+      "bytes": 72366,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-overlay-reconstruction",
+      "path": "rust/crates/bello-platform/src/macos_capture_overlay/deactivation.rs",
+      "state": "working",
+      "blob": "b4c663e2fa49376072076c5f1515fbef7d8034b1",
+      "bytes": 9353,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-overlay-reconstruction",
+      "path": "rust/crates/bello-platform/src/macos_capture_overlay/deactivation.rs",
+      "state": "index",
+      "blob": "b4c663e2fa49376072076c5f1515fbef7d8034b1",
+      "bytes": 9353,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-overlay-reconstruction",
+      "path": "rust/docs/area-presentation-deactivation-evidence.md",
+      "state": "working",
+      "blob": "ae1748a5f96a1f9f4b4dc16fcdc705016778af8f",
+      "bytes": 2394,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-overlay-reconstruction",
+      "path": "rust/docs/area-presentation-deactivation-evidence.md",
+      "state": "index",
+      "blob": "ae1748a5f96a1f9f4b4dc16fcdc705016778af8f",
+      "bytes": 2394,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-pure-window-refresh",
+      "path": "rust/crates/bellobox-core/src/screenshot.rs",
+      "state": "working",
+      "blob": "bc0ad0c9d394f49383cd0872fee0da8e89e78afe",
+      "bytes": 41723,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-pure-window-refresh",
+      "path": "rust/crates/bellobox-core/src/screenshot.rs",
+      "state": "index",
+      "blob": "bc0ad0c9d394f49383cd0872fee0da8e89e78afe",
+      "bytes": 41723,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-pure-window-refresh",
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh.rs",
+      "state": "working",
+      "blob": "d5de18a02923e64d3db721cbfdf148b7e9f2282c",
+      "bytes": 12274,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-pure-window-refresh",
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh.rs",
+      "state": "index",
+      "blob": "d5de18a02923e64d3db721cbfdf148b7e9f2282c",
+      "bytes": 12274,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-pure-window-refresh",
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh/tests.rs",
+      "state": "working",
+      "blob": "d8b9c981d26202072e0a99c03c23b063fef72bec",
+      "bytes": 20293,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-pure-window-refresh",
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh/tests.rs",
+      "state": "index",
+      "blob": "d8b9c981d26202072e0a99c03c23b063fef72bec",
+      "bytes": 20293,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/crates/bello-platform/src/movie/macos.rs",
+      "state": "working",
+      "blob": "3b2c2e2fe0fe5cde3a49a15ac92719ec986136b2",
+      "bytes": 20019,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/crates/bello-platform/src/movie/macos.rs",
+      "state": "index",
+      "blob": "3b2c2e2fe0fe5cde3a49a15ac92719ec986136b2",
+      "bytes": 20019,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/crates/bello-platform/src/movie/tests.rs",
+      "state": "working",
+      "blob": "2a238cd48417608300188692b171c5e698e6746d",
+      "bytes": 6850,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/crates/bello-platform/src/movie/tests.rs",
+      "state": "index",
+      "blob": "2a238cd48417608300188692b171c5e698e6746d",
+      "bytes": 6850,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/docs/native-movie-reader-reconstruction.md",
+      "state": "working",
+      "blob": "65e67205726f85fbdd5088510a82d531ca184222",
+      "bytes": 12178,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/docs/native-movie-reader-reconstruction.md",
+      "state": "index",
+      "blob": "65e67205726f85fbdd5088510a82d531ca184222",
+      "bytes": 12178,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/scripts/linux-ui-smoke.py",
+      "state": "working",
+      "blob": "76ccc335b8a33a761a0375e684b2675711c2abc1",
+      "bytes": 13502,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/scripts/linux-ui-smoke.py",
+      "state": "index",
+      "blob": "76ccc335b8a33a761a0375e684b2675711c2abc1",
+      "bytes": 13502,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/scripts/test_linux_ui_smoke.py",
+      "state": "working",
+      "blob": "cf9ba8ff088d6d06dc8e298ac13eb597750075a1",
+      "bytes": 8398,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-ui-readiness",
+      "path": "rust/scripts/test_linux_ui_smoke.py",
+      "state": "index",
+      "blob": "cf9ba8ff088d6d06dc8e298ac13eb597750075a1",
+      "bytes": 8398,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture.rs",
+      "state": "working",
+      "blob": "ff90e61a50f18ee735b8ad5075f43e3c596e8f75",
+      "bytes": 16836,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture.rs",
+      "state": "index",
+      "blob": "ff90e61a50f18ee735b8ad5075f43e3c596e8f75",
+      "bytes": 16836,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/completion.rs",
+      "state": "working",
+      "blob": "d1cd87472947f9e8fddf1f89a0d0f4ec62e234b2",
+      "bytes": 3917,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/completion.rs",
+      "state": "index",
+      "blob": "d1cd87472947f9e8fddf1f89a0d0f4ec62e234b2",
+      "bytes": 3917,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/macos.rs",
+      "state": "working",
+      "blob": "998025e35922bbe2f5aec5967f861f5cbf6a4fba",
+      "bytes": 26578,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/macos.rs",
+      "state": "index",
+      "blob": "998025e35922bbe2f5aec5967f861f5cbf6a4fba",
+      "bytes": 26578,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window.rs",
+      "state": "working",
+      "blob": "06f19d889e65561cb858ee9632bd00e725bb0a50",
+      "bytes": 25929,
+      "published_commit": "79c55f1bc85c23f6bd48ba647e917b629c77e0b6"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window.rs",
+      "state": "index",
+      "blob": "06f19d889e65561cb858ee9632bd00e725bb0a50",
+      "bytes": 25929,
+      "published_commit": "79c55f1bc85c23f6bd48ba647e917b629c77e0b6"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/tests.rs",
+      "state": "working",
+      "blob": "a1b74ed5dc8fb2e0d93db4b79033ff41317be1d4",
+      "bytes": 10983,
+      "published_commit": "79c55f1bc85c23f6bd48ba647e917b629c77e0b6"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/tests.rs",
+      "state": "index",
+      "blob": "a1b74ed5dc8fb2e0d93db4b79033ff41317be1d4",
+      "bytes": 10983,
+      "published_commit": "79c55f1bc85c23f6bd48ba647e917b629c77e0b6"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/macos_tests.rs",
+      "state": "working",
+      "blob": "dea646aa2bd0773e9f9d4de93839defc5fde32ee",
+      "bytes": 7889,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/macos_tests.rs",
+      "state": "index",
+      "blob": "dea646aa2bd0773e9f9d4de93839defc5fde32ee",
+      "bytes": 7889,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/tests.rs",
+      "state": "working",
+      "blob": "c8452126317841e4c1e048b774588b70b8086e56",
+      "bytes": 21695,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/native_capture/tests.rs",
+      "state": "index",
+      "blob": "c8452126317841e4c1e048b774588b70b8086e56",
+      "bytes": 21695,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "state": "working",
+      "blob": "30f9675d338eb4845d8d9794ee80a84ce0204c98",
+      "bytes": 21116,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "state": "index",
+      "blob": "87d9e4c174b9db7eb120f33424f1cf8e636baeb1",
+      "bytes": 19790,
+      "published_commit": "cef73a4b53b8d2d62cbfc83f9a6674b163e5f3af"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "state": "working",
+      "blob": "7d2fa1d7111fb35d91926aad37874c19b3c28cf7",
+      "bytes": 24543,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-native-callback",
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "state": "index",
+      "blob": "3838bf912a31f04cd4984658af7e5fa970e97c18",
+      "bytes": 22025,
+      "published_commit": "cef73a4b53b8d2d62cbfc83f9a6674b163e5f3af"
+    },
+    {
+      "worktree": "BelloBox-window-policy-reconstruction",
+      "path": "rust/crates/bello-platform/src/lib.rs",
+      "state": "working",
+      "blob": "24befd2080e80e0490ab6878d1c756d8436f87b5",
+      "bytes": 15289,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-5.patch"
+    },
+    {
+      "worktree": "BelloBox-window-policy-reconstruction",
+      "path": "rust/crates/bello-platform/src/lib.rs",
+      "state": "index",
+      "blob": "24befd2080e80e0490ab6878d1c756d8436f87b5",
+      "bytes": 15289,
+      "published_commit": null,
+      "preserved_variant": "historical-variant-5.patch"
+    },
+    {
+      "worktree": "BelloBox-window-policy-reconstruction",
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "state": "working",
+      "blob": "87d9e4c174b9db7eb120f33424f1cf8e636baeb1",
+      "bytes": 19790,
+      "published_commit": "cef73a4b53b8d2d62cbfc83f9a6674b163e5f3af"
+    },
+    {
+      "worktree": "BelloBox-window-policy-reconstruction",
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "state": "index",
+      "blob": "87d9e4c174b9db7eb120f33424f1cf8e636baeb1",
+      "bytes": 19790,
+      "published_commit": "cef73a4b53b8d2d62cbfc83f9a6674b163e5f3af"
+    },
+    {
+      "worktree": "BelloBox-window-policy-reconstruction",
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "state": "working",
+      "blob": "3838bf912a31f04cd4984658af7e5fa970e97c18",
+      "bytes": 22025,
+      "published_commit": "cef73a4b53b8d2d62cbfc83f9a6674b163e5f3af"
+    },
+    {
+      "worktree": "BelloBox-window-policy-reconstruction",
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "state": "index",
+      "blob": "3838bf912a31f04cd4984658af7e5fa970e97c18",
+      "bytes": 22025,
+      "published_commit": "cef73a4b53b8d2d62cbfc83f9a6674b163e5f3af"
+    },
+    {
+      "worktree": "BelloBox-window-submission-policy",
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "state": "working",
+      "blob": "30f9675d338eb4845d8d9794ee80a84ce0204c98",
+      "bytes": 21116,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-submission-policy",
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "state": "index",
+      "blob": "30f9675d338eb4845d8d9794ee80a84ce0204c98",
+      "bytes": 21116,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-submission-policy",
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "state": "working",
+      "blob": "7d2fa1d7111fb35d91926aad37874c19b3c28cf7",
+      "bytes": 24543,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    },
+    {
+      "worktree": "BelloBox-window-submission-policy",
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "state": "index",
+      "blob": "7d2fa1d7111fb35d91926aad37874c19b3c28cf7",
+      "bytes": 24543,
+      "published_commit": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d"
+    }
+  ],
+  "historical_variants": [
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "reference_commit": "bdd91683f51734a1d156388834969eaf73d9301a",
+      "artifact": "historical-variant-1.patch",
+      "sha256": "db9e78beaa373d41a90f96f05fe63be9e53141333590d58563e9330ff64131a3",
+      "status": "Superseded historical variant; DO NOT APPLY to current rust."
+    },
+    {
+      "worktree": "BelloBox-area-caller-reconstruction",
+      "path": "rust/docs/main-area-caller-reconstruction.md",
+      "reference_commit": "bdd91683f51734a1d156388834969eaf73d9301a",
+      "artifact": "historical-variant-2.patch",
+      "sha256": "3d6dc3679d630ef62cdf021a3ed443bf3e7eb42fdd9482135865e8f6ca13c2c2",
+      "status": "Superseded historical variant; DO NOT APPLY to current rust."
+    },
+    {
+      "worktree": "BelloBox-frozen-window-selector",
+      "path": "rust/crates/bellobox-core/src/screenshot.rs",
+      "reference_commit": "da9809a950aa6d93e79e2121911750bb0c7e0261",
+      "artifact": "historical-variant-3.patch",
+      "sha256": "ecd42fa26d7f54917fab0287f303466b8eb158180e5da53cfefac13bb38eb759",
+      "status": "Superseded historical variant; DO NOT APPLY to current rust."
+    },
+    {
+      "worktree": "BelloBox-native-movie-reconstructed",
+      "path": "rust/Cargo.lock",
+      "reference_commit": "bf023f87ade57954ba15aeadfca1d90274bd9267",
+      "artifact": "historical-variant-4.patch",
+      "sha256": "3fe5435edc807a807b2020ef7098e65248c67c95bcedf116d6a8d2d5b113f5fd",
+      "status": "Superseded historical variant; DO NOT APPLY to current rust."
+    },
+    {
+      "worktree": "BelloBox-window-policy-reconstruction",
+      "path": "rust/crates/bello-platform/src/lib.rs",
+      "reference_commit": "57f2bbcdd4db66aa8c68b63b4fffcdab241d4ac1",
+      "artifact": "historical-variant-5.patch",
+      "sha256": "2d0438341912434edfd0470cd7e8a0ac089ba9911ff4a5dba77b93258f873d39",
+      "status": "Superseded historical variant; DO NOT APPLY to current rust."
+    }
+  ]
+}

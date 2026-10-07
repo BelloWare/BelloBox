@@ -1,0 +1,14 @@
+--- a/rust/crates/bellobox-core/src/screenshot.rs
++++ b/rust/crates/bellobox-core/src/screenshot.rs
+@@ -9,10 +9,10 @@
+ mod render;
+ pub mod scroll;
+ pub mod selection;
++pub mod window;
+ #[cfg(test)]
+ mod tests;
+ mod text;
+-pub mod window;
+ 
+ use image::{ImageDecoder, RgbaImage};
+ use std::{

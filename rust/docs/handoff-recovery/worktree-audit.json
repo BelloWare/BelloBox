@@ -1,0 +1,158 @@
+[
+  {
+    "worktree": "BelloBox-recovery",
+    "head": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d",
+    "branch": "refs/heads/rust",
+    "status": [
+      "?? rust/docs/MIGRATION_HANDOFF.md",
+      "?? rust/docs/handoff-recovery/INCOMPLETE-native-alpha-validation.patch",
+      "?? rust/docs/handoff-recovery/README.md",
+      "?? rust/docs/handoff-recovery/historical-variant-1.patch",
+      "?? rust/docs/handoff-recovery/historical-variant-2.patch",
+      "?? rust/docs/handoff-recovery/historical-variant-3.patch",
+      "?? rust/docs/handoff-recovery/historical-variant-4.patch",
+      "?? rust/docs/handoff-recovery/historical-variant-5.patch",
+      "?? rust/docs/handoff-recovery/source-survival.json"
+    ]
+  },
+  {
+    "worktree": "BelloBox-area-caller-reconstruction",
+    "head": "38ea32b727aa6c5c257647057999a9c064ec540f",
+    "branch": "refs/heads/reconstruction/main-area-caller",
+    "status": [
+      "M  rust/Cargo.lock",
+      " M rust/crates/bello-platform/src/macos_capture_overlay.rs",
+      "M  rust/crates/bellobox-app/Cargo.toml",
+      "M  rust/crates/bellobox-app/src/desktop.rs",
+      "M  rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "A  rust/crates/bellobox-app/src/screenshot_ui/area_transaction.rs",
+      "A  rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "A  rust/crates/bellobox-app/src/screenshot_ui/main_area/native.rs",
+      "A  rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "A  rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "A  rust/docs/main-area-caller-reconstruction.md",
+      "?? rust/crates/bello-platform/src/macos_capture_overlay/deactivation.rs"
+    ]
+  },
+  {
+    "worktree": "BelloBox-clock-copilot-plan",
+    "head": "cef73a4b53b8d2d62cbfc83f9a6674b163e5f3af",
+    "branch": "refs/heads/work/clock-copilot-plan",
+    "status": []
+  },
+  {
+    "worktree": "BelloBox-frozen-window-selector",
+    "head": "79c55f1bc85c23f6bd48ba647e917b629c77e0b6",
+    "branch": "refs/heads/work/frozen-window-selector",
+    "status": [
+      "M  rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "M  rust/crates/bellobox-app/src/screenshot_ui/area_capture.rs",
+      "M  rust/crates/bellobox-core/src/screenshot.rs",
+      "A  rust/crates/bellobox-core/src/screenshot/window.rs",
+      "A  rust/crates/bellobox-core/src/screenshot/window/tests.rs"
+    ]
+  },
+  {
+    "worktree": "BelloBox-native-alpha-validation",
+    "head": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d",
+    "branch": "refs/heads/work/native-alpha-validation",
+    "status": [
+      "A  rust/crates/bello-platform/src/native_capture/alpha_mask_tests.rs",
+      "M  rust/crates/bello-platform/src/native_capture/macos.rs"
+    ]
+  },
+  {
+    "worktree": "BelloBox-native-movie-reconstructed",
+    "head": "38ea32b727aa6c5c257647057999a9c064ec540f",
+    "branch": "refs/heads/work/native-movie-reconstructed",
+    "status": [
+      "M  rust/Cargo.lock",
+      "M  rust/crates/bello-platform/Cargo.toml",
+      "M  rust/crates/bello-platform/src/lib.rs",
+      "A  rust/crates/bello-platform/src/movie.rs",
+      "A  rust/crates/bello-platform/src/movie/macos.rs",
+      "A  rust/crates/bello-platform/src/movie/macos/tests.rs",
+      "A  rust/crates/bello-platform/src/movie/source_file.rs",
+      "A  rust/crates/bello-platform/src/movie/tests.rs",
+      "A  rust/docs/native-movie-reader-reconstruction.md",
+      "?? native-movie-evidence/acquisition-command.txt",
+      "?? native-movie-evidence/acquisition-stderr.txt",
+      "?? native-movie-evidence/bellobox-objc2-av-foundation-info.txt",
+      "?? native-movie-evidence/bellobox-objc2-core-foundation-info.txt",
+      "?? native-movie-evidence/bellobox-objc2-core-graphics-info.txt",
+      "?? native-movie-evidence/bellobox-objc2-core-media-info.txt",
+      "?? native-movie-evidence/bellobox-objc2-core-video-info.txt",
+      "?? native-movie-evidence/bellobox-objc2-foundation-info.txt",
+      "?? native-movie-evidence/crate-sha256.txt",
+      "?? native-movie-evidence/production-disabled-native-movie.patch",
+      "?? native-movie-evidence/transitive-attempt.txt"
+    ]
+  },
+  {
+    "worktree": "BelloBox-overlay-reconstruction",
+    "head": "38ea32b727aa6c5c257647057999a9c064ec540f",
+    "branch": "refs/heads/ai/reconstruct-owned-overlay",
+    "status": [
+      "M  rust/crates/bello-platform/src/macos_capture_overlay.rs",
+      "A  rust/crates/bello-platform/src/macos_capture_overlay/deactivation.rs",
+      "A  rust/docs/area-presentation-deactivation-evidence.md"
+    ]
+  },
+  {
+    "worktree": "BelloBox-pure-window-refresh",
+    "head": "da9809a950aa6d93e79e2121911750bb0c7e0261",
+    "branch": "refs/heads/work/pure-window-refresh",
+    "status": [
+      "M  rust/crates/bellobox-core/src/screenshot.rs",
+      "A  rust/crates/bellobox-core/src/screenshot/window_refresh.rs",
+      "A  rust/crates/bellobox-core/src/screenshot/window_refresh/tests.rs"
+    ]
+  },
+  {
+    "worktree": "BelloBox-ui-readiness",
+    "head": "bf023f87ade57954ba15aeadfca1d90274bd9267",
+    "branch": "refs/heads/work/ui-activation-readiness",
+    "status": [
+      "M  rust/crates/bello-platform/src/movie/macos.rs",
+      "M  rust/crates/bello-platform/src/movie/tests.rs",
+      "M  rust/docs/native-movie-reader-reconstruction.md",
+      "M  rust/scripts/linux-ui-smoke.py",
+      "M  rust/scripts/test_linux_ui_smoke.py"
+    ]
+  },
+  {
+    "worktree": "BelloBox-window-native-callback",
+    "head": "cef73a4b53b8d2d62cbfc83f9a6674b163e5f3af",
+    "branch": "refs/heads/work/window-native-callback",
+    "status": [
+      "M  rust/crates/bello-platform/src/native_capture.rs",
+      "M  rust/crates/bello-platform/src/native_capture/completion.rs",
+      "M  rust/crates/bello-platform/src/native_capture/macos.rs",
+      "A  rust/crates/bello-platform/src/native_capture/macos/window.rs",
+      "A  rust/crates/bello-platform/src/native_capture/macos/window/tests.rs",
+      "M  rust/crates/bello-platform/src/native_capture/macos_tests.rs",
+      "M  rust/crates/bello-platform/src/native_capture/tests.rs",
+      " M rust/crates/bello-platform/src/window_capture.rs",
+      " M rust/crates/bello-platform/src/window_capture/tests.rs"
+    ]
+  },
+  {
+    "worktree": "BelloBox-window-policy-reconstruction",
+    "head": "bdd91683f51734a1d156388834969eaf73d9301a",
+    "branch": "refs/heads/codex/window-policy-reconstruction",
+    "status": [
+      "M  rust/crates/bello-platform/src/lib.rs",
+      "A  rust/crates/bello-platform/src/window_capture.rs",
+      "A  rust/crates/bello-platform/src/window_capture/tests.rs"
+    ]
+  },
+  {
+    "worktree": "BelloBox-window-submission-policy",
+    "head": "cef73a4b53b8d2d62cbfc83f9a6674b163e5f3af",
+    "branch": "refs/heads/work/window-submission-policy",
+    "status": [
+      "M  rust/crates/bello-platform/src/window_capture.rs",
+      "M  rust/crates/bello-platform/src/window_capture/tests.rs"
+    ]
+  }
+]

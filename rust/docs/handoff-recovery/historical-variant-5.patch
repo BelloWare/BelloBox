@@ -1,0 +1,16 @@
+--- a/rust/crates/bello-platform/src/lib.rs
++++ b/rust/crates/bello-platform/src/lib.rs
+@@ -15,12 +15,11 @@
+ pub mod macos_capture_overlay;
+ #[cfg(target_os = "macos")]
+ pub mod macos_native;
+-pub mod movie;
+ pub mod native_capture;
++pub mod window_capture;
+ #[cfg(any(target_os = "linux", target_os = "macos"))]
+ mod process;
+ mod time_zone;
+-pub mod window_capture;
+ 
+ use std::fmt;
+ use std::path::Path;

@@ -1,0 +1,12 @@
+{
+  "base": "0b8f44d2cdcd9f5cb6580431ca7ac5cdbd46027d",
+  "staged_tree": "ba12806d8dce788bd9ec1e946c915c36e4759bef",
+  "patch": "INCOMPLETE-native-alpha-validation.patch",
+  "sha256": "4378cce0ea315889dab15745530b6ce6d087bcd844a87d0ed331eb88e1057c03",
+  "status": "Incomplete source only; no formatting, compile, test or final review. Not wired into current branch.",
+  "files": [
+    "rust/crates/bello-platform/src/native_capture/macos.rs",
+    "rust/crates/bello-platform/src/native_capture/alpha_mask_tests.rs"
+  ],
+  "added_lines": 322
+}

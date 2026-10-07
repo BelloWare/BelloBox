@@ -1,0 +1,11 @@
+--- a/rust/crates/bellobox-app/src/screenshot_ui.rs
++++ b/rust/crates/bellobox-app/src/screenshot_ui.rs
+@@ -446,7 +446,7 @@
+             .on_key_down(cx.listener(|this,e:&gpui::KeyDownEvent,window,_cx|{if e.keystroke.key=="escape"{this.jobs.cancel(); #[cfg(target_os = "macos")] main_area::requester_closed(window.window_handle(), _cx); window.remove_window();}}))
+             .child(header("Capture and annotate".into(),p))
+             .child(div().flex().flex_col().gap(px(10.)).child(div().flex().gap(px(10.)).child(area).child(button("window","Window · unavailable",p).flex_1().opacity(0.5))).child(div().flex().gap(px(10.)).child(button("screen",if self.busy{"Capturing…"}else{"Screen"},p).flex_1().on_click(cx.listener(Self::capture_click))).child(button("scroll","Scrolling · unavailable",p).flex_1().opacity(0.5))))
+-            .child(div().text_size(px(11.)).text_color(p.secondary).child("Screen captures the full virtual screen on Linux and the main display on macOS. Area, window and scrolling selection are not available yet."))
++            .child(div().text_size(px(11.)).text_color(p.secondary).child("Screen captures the full virtual screen on Linux and the main display on macOS. Area is review-gated to an unrotated main display on Apple Silicon/macOS 14+. Window and scrolling selection are unavailable."))
+             .child(button("paste-image","Paste Image",p).on_click(cx.listener(|this,_,window,cx|this.paste(window,cx))))
+             .child(div().text_size(px(11.)).text_color(p.danger).child(self.status.clone()))
+             .child(div().flex_1())
