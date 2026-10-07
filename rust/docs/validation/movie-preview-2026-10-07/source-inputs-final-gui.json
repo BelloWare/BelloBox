@@ -12,7 +12,7 @@
     "rust/crates/bellobox-app/src/gif_converter.rs": "5cc2bae95f1fc375c96a9271b2cacaa17720f1e8419e693089e2e3e92b0ff7ef",
     "rust/crates/bellobox-app/src/gif_converter/model.rs": "2e91724d19603d2abeb65e1ccb5e5c4528d64862ad1771cd6c2f379850194674",
     "rust/crates/bellobox-app/src/gif_converter/tests.rs": "2e02f7a9162aec7da3c34bf37d707e048ed8627c5eb981d8d46218a1f4c0cd31",
-    "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs": "df01d91002744823a048aba77d61cbd38d49a8c2fc5126dda82760b93e110536",
+    "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs": "9996dca6ea781cc1147ec87099d42b327c3b8c413a02ba9979ba031760ce2b93",
     "rust/crates/bellobox-app/src/gif_converter/source_preview.rs": "ee47c50c44178ba1ac7e71a5e86348291c735bdd0ab62952ce560257a7ca458d",
     "rust/crates/bellobox-app/src/gif_converter/worker.rs": "b6fdbe234bbe4bdb91770bb36607fae185fe3b7555c14f93e17f1350cf5219a4",
     "rust/crates/bellobox-core/src/recording/gif.rs": "93419c9bb0a3d4ab1a0fc849056313d518948a6e045c503669a71eb024bce08c",

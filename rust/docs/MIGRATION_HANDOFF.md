@@ -856,3 +856,19 @@ lines promoted to production and 3 in reverse, plus 773/73 production lines and
 and literal reclassification pairs were independently checked. The generated-media
 feature constructors/modules remain support; counts are nonblank physical lines
 including comments, not a feature-completion or engineering-effort percentage.
+
+### Post-GUI native test expectation normalization
+
+A final read-only audit caught a macOS-only test expectation issue after the movie
+checkpoint was locally committed: core returns a canonical output path, while a
+macOS temporary directory can be reached through `/var` versus `/private/var`.
+The generated native host test now canonicalizes its private destination parent
+before comparing the returned path. This changes only one cfg(test)/movie-fixtures/
+macOS test line; all 19 other recorded build inputs and the actual GUI binary are
+unchanged. The 44 portable converter tests passed again. Exact native execution
+remains pending CI rather than inferred from that portable rerun.
+
+`source-inputs-final-gui.json` and `native-host-tests-final-gui.rs.txt` retain the
+exact final-GUI source snapshot; `source-inputs.json` records the later test hash.
+The difference is explicit and is not described as an unchanged complete source
+manifest. Reviewed LOC totals remain 48,152 / 24,371 / 105.

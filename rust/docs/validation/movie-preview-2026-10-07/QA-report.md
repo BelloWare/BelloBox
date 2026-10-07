@@ -6,7 +6,9 @@ Its exact `source-inputs-first-candidate.json` hashes and all 20 input files und
 It was stopped after the cancellation caption defect described below was found.
 
 Final repaired candidate: `5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba`.
-`source-inputs.json` pins its inputs. `post-cua-repair.diff` records the exact narrow
+`source-inputs-final-gui.json` pins its exact GUI-run inputs. The current
+`source-inputs.json` additionally records the post-GUI test-only normalization
+noted below. `post-cua-repair.diff` records the exact narrow
 change. Final scoped/remainder interaction is complete; screenshots 21–35 belong to this
 repaired binary and are listed separately in validation.json.
 Both candidates were copied read-only before interaction; no source was changed
@@ -128,3 +130,14 @@ were not treated as application failures or worked around with another automatio
 technology. Original tool screenshot bytes are retained as JPEGs without editing.
 Continuous movie playback/audio, native GUI/IME/accessibility/Spaces, arbitrary
 codecs, ICC/HDR, hostile-filesystem immutability and native performance remain open.
+
+## Post-GUI native-test expectation normalization
+
+After the GUI binary was frozen and tested, a one-line macOS-only host-test fix
+canonicalized its temporary output directory before comparison. Core publication
+already returns canonical paths; macOS can resolve /var through /private/var.
+The old exact test file is retained as `native-host-tests-final-gui.rs.txt`, matching
+`source-inputs-final-gui.json`. All 19 other GUI input hashes and the ordinary runtime
+binary are unchanged. The current manifest records the corrected test hash.
+Formatting and whitespace checks pass. The portable converter suite was rerun:
+44 passed, 0 failed. Exact native execution remains pending.

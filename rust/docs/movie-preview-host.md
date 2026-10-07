@@ -152,3 +152,9 @@ execution. The reviewed delta is +1,414 production/+171 support, yielding 48,152
 24,371 /105 benchmark nonblank Rust lines; 717 preserved support lines become
 production and 3 move in reverse. The scoped verifier and positive ranges are
 retained alongside validation. These counts are not a feature percentage.
+
+A post-GUI, macOS-only test expectation now canonicalizes its private output root
+before comparing the core returned path (/var may resolve to /private/var). The
+exact GUI-run manifest and original test bytes are retained separately; all
+ordinary runtime inputs and the immutable GUI binary are unchanged. This is not
+additional native execution evidence.

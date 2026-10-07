@@ -556,5 +556,21 @@
       "BelloBox-synthetic-292792-1791371160721723195.gif": "b9bb4bd623498b6cf62ead9ead359ed64908ac2782fa7a29754f2147cf1ece57"
     },
     "staged_siblings_remaining": 0
+  },
+  "final_gui_source_manifest": "source-inputs-final-gui.json",
+  "post_gui_test_only_change": {
+    "file": "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs",
+    "change": "Canonicalize the private temporary output root before comparing to core returned paths, since macOS /var can resolve to /private/var.",
+    "scope": "One cfg(test, movie-fixtures, macOS)-only expectation line; no ordinary runtime source changed.",
+    "original_source_copy": "native-host-tests-final-gui.rs.txt",
+    "gui_binary_unchanged": true,
+    "checks": [
+      "rustfmt for owned test file",
+      "cargo fmt --all -- --check",
+      "git diff --check",
+      "All 19 other GUI input hashes verified unchanged",
+      "Portable converter suite rerun after normalization: 44 passed, 0 failed"
+    ],
+    "native_execution": "Still awaits exact Apple CI; normalization is not a claim of Mac execution."
   }
 }
