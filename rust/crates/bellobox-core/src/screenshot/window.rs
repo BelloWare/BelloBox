@@ -512,5 +512,51 @@ pub fn synthetic_window_fixture() -> FrozenWindowResult<(
     ))
 }
 
+/// Independent synthetic counterpart to the frozen selector fixture. It contains
+/// no occluder pixels. Rounded transparent corners and deliberately different
+/// orange RGB let host tests distinguish alpha-only from whole-image replacement.
+/// This is generated input, never a live window capture or native color oracle.
+#[cfg(any(debug_assertions, test))]
+pub fn synthetic_independent_window(
+    window_id: u32,
+    cancellation: &AtomicBool,
+) -> FrozenWindowResult<ScreenshotDocument> {
+    let (width, height) = match window_id {
+        1 => (680_u32, 540_u32),
+        2 => (840, 460),
+        _ => return Err(FrozenWindowError::InvalidCatalog),
+    };
+    let mut bytes = Vec::with_capacity(width as usize * height as usize * 4);
+    for y in 0..height {
+        if cancellation.load(Ordering::Acquire) {
+            return Err(FrozenWindowError::Cancelled);
+        }
+        for x in 0..width {
+            let edge_x = x.min(width - 1 - x);
+            let edge_y = y.min(height - 1 - y);
+            let corner = edge_x < 24
+                && edge_y < 24
+                && (24 - edge_x).pow(2) + (24 - edge_y).pow(2) > 24_u32.pow(2);
+            let pixel = if corner {
+                [0, 0, 0, 0]
+            } else if window_id == 1 {
+                // Masking must retain the frozen orange rather than this purple.
+                [140, 70, 190, 255]
+            } else if y < 64 {
+                [40, 79, 128, 255]
+            } else {
+                [185, 215, 241, 255]
+            };
+            bytes.extend_from_slice(&pixel);
+        }
+    }
+    if cancellation.load(Ordering::Acquire) {
+        return Err(FrozenWindowError::Cancelled);
+    }
+    let image = image::RgbaImage::from_raw(width, height, bytes)
+        .ok_or(FrozenWindowError::InvalidSnapshot)?;
+    ScreenshotDocument::from_rgba(image).map_err(|_| FrozenWindowError::InvalidSnapshot)
+}
+
 #[cfg(test)]
 mod tests;

@@ -1,0 +1,38 @@
+{
+  "base_commit": "780ecd94967651a207c18a58f5ae4e60e7c571b4",
+  "modified_build_inputs": [
+    {
+      "path": "rust/Cargo.lock",
+      "sha256": "5b8bbf0ed046d4765bd6df09fd5d94284b645d87e33c65ec4b16cf322d3572ba"
+    },
+    {
+      "path": "rust/crates/bellobox-app/Cargo.toml",
+      "sha256": "59244a5f09905b8d9e89c57d8cde0c5f64a9e41d3506ab508e00723c62352656"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "sha256": "68a2a0379e0d6d7619739a32c957106c46f189fccd250f94ac6a5b6e7235aca6"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_capture.rs",
+      "sha256": "2be3d50ab1822d3c76f7cec48fec7710da1a60b89da24622bcd08517cac3491f"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs",
+      "sha256": "8b4f573fbea40ae566cc1cd04a1e8f597c0df1c61179784e9031bcd70fafcc3d"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh/tests.rs",
+      "sha256": "526bffb3dd7ea5962726022adcef0b09e1ea66d76c29d424523f9a500383f8c5"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window.rs",
+      "sha256": "3efb47e1ced80421950f04d617535ae2952ece79b520abf40dedc3cea6168a90"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window/tests.rs",
+      "sha256": "e298fff308cd062172f0e1d57216b5b173d5f91a3fa5e395b45b580aab7f07a9"
+    }
+  ],
+  "description": "All other source/build inputs are the exact base commit. These hashes identify compiled host source independently of later evidence/document-only changes."
+}

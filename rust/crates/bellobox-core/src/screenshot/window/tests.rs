@@ -433,3 +433,31 @@ fn display_bottom_edge_is_outside_the_local_viewport() {
     s.hover(Point::new(100., 70.), geometry()).unwrap();
     assert!(s.hovered().is_none());
 }
+
+#[test]
+fn independent_fixture_is_window_sized_shaped_and_has_no_occluder_pixels() {
+    let cancellation = AtomicBool::new(false);
+    for (id, dimensions, color) in [
+        (1, (680, 540), [140, 70, 190, 255]),
+        (2, (840, 460), [185, 215, 241, 255]),
+    ] {
+        let document = synthetic_independent_window(id, &cancellation).unwrap();
+        assert_eq!(document.dimensions(), dimensions);
+        assert!(document.crop_rect().is_none());
+        assert!(document.annotations().is_empty());
+        let pixels = document.render_rgba().unwrap();
+        assert_eq!(pixels.get_pixel(0, 0).0, [0, 0, 0, 0]);
+        assert_eq!(pixels.get_pixel(500, 100).0, color);
+    }
+}
+#[test]
+fn independent_fixture_rejects_unknown_identity_and_cancellation() {
+    assert!(matches!(
+        synthetic_independent_window(3, &AtomicBool::new(false)),
+        Err(FrozenWindowError::InvalidCatalog)
+    ));
+    assert!(matches!(
+        synthetic_independent_window(1, &AtomicBool::new(true)),
+        Err(FrozenWindowError::Cancelled)
+    ));
+}

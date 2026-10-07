@@ -374,3 +374,32 @@ owned-file deltas; it is not a regenerated universal parser or completion metric
 The handoff adds documentation and a noncompiled patch, so active Rust counts stay
 the same. Future counts must handle compound cfg correctly and exclude recovery
 patch text from compiled source counts. Never turn LOC into parity percentages.
+
+
+## Continuation checkpoint: synthetic host and native alpha diagnosis
+
+This section supersedes the older pending fixture/UI statements above. The sole
+incomplete alpha patch was reviewed and integrated (never apply it again). At
+`adb877e`, exact Linux CI passed and native compile/link passed, but native tests
+found a real portable ±1-pixel sampling difference. The expanded diagnostic at
+`780ecd` retained strict assertions and demonstrated scale-dependent center-boundary
+choices on both axes. No guessed tie tolerance or source-fidelity claim was added.
+See [native-alpha-oracle.md](native-alpha-oracle.md) for exact failed-run evidence.
+
+The opt-in DEBUG synthetic Window refresh now reaches the actual ScreenshotEditor:
+front borrows alpha while keeping frozen orange; occluded back replaces with
+independent blue. Success uses changed() to retire OCR and rebuild preview; one-shot
+context/base/navigation/close/interaction guards preserve frozen usability on any
+failure. Seven GPUI tests, 42 app screenshot tests, 163 core screenshot tests,
+strict app all-target Clippy and app build pass. Actual synthetic Linux GUI
+interaction and a final rebuilt-binary scoped check passed; evidence and exact
+source/binary hashes are in [window-refresh-host.md](window-refresh-host.md).
+
+Production capture/permissions/native host gates remain unchanged. The next native
+step is a source-exact Rust/CoreGraphics supplied-image mask adapter with existing
+bindings, retaining common core identity/publication gates. The portable nearest
+sampler remains approximate at ±1 sizes. Do not label current macOS CI green, or
+turn a future normalized-SDR native mask oracle into ICC/HDR/original-capture color
+or macOS UI/Spaces/TCC acceptance. Current source counts are 41,895 production,
+19,161 test/support and 105 benchmark nonblank Rust lines, with reviewed delta and
+hashes retained beside the host evidence. They are not a parity percentage.

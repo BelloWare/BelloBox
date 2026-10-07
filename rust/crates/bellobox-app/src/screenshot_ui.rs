@@ -25,6 +25,8 @@ mod area_transaction;
 mod main_area;
 #[cfg(debug_assertions)]
 mod scroll_capture;
+#[cfg(debug_assertions)]
+mod window_refresh;
 
 const TOOLS: [(AnnotationTool, &str, &str); 9] = [
     (AnnotationTool::Select, "Select", "cursorarrow"),
@@ -515,6 +517,8 @@ enum Menu {
 }
 #[derive(Default)]
 struct CapturePresentation {
+    #[cfg(debug_assertions)]
+    window_refresh: Option<window_refresh::Request>,
     open_unfocused: bool,
     scrolling: bool,
     frame_count: usize,
@@ -534,6 +538,8 @@ fn prepare_scroll_result(
     PreparedScrollCapture {
         session: prepare_document(result.document),
         presentation: CapturePresentation {
+            #[cfg(debug_assertions)]
+            window_refresh: None,
             open_unfocused: false,
             scrolling: true,
             frame_count: result.frame_count,
@@ -548,6 +554,8 @@ fn open_scroll_result(result: PreparedScrollCapture, cx: &mut App) {
 }
 
 struct ScreenshotEditor {
+    #[cfg(debug_assertions)]
+    window_refresh: Option<window_refresh::Host>,
     capture_presentation: CapturePresentation,
     shows_capture_notes: bool,
     shows_all_capture_notes: bool,
@@ -629,6 +637,12 @@ fn try_open_presented_session(
     .map_err(|e| e.to_string())
 }
 impl ScreenshotEditor {
+    fn cancel_window_refresh(&mut self) {
+        #[cfg(debug_assertions)]
+        {
+            self.window_refresh = None;
+        }
+    }
     fn new(
         session: ScreenshotEditSession,
         source: &'static str,
@@ -672,12 +686,18 @@ impl ScreenshotEditor {
                 cx.notify();
             }
         });
+        #[cfg(debug_assertions)]
+        let mut presentation = presentation;
+        #[cfg(debug_assertions)]
+        let window_refresh = presentation.window_refresh.take();
         let initial_zoom = if presentation.scrolling {
             Zoom::FitWidth
         } else {
             Zoom::Fit
         };
         let mut view = Self {
+            #[cfg(debug_assertions)]
+            window_refresh: None,
             shows_capture_notes: !presentation.notes.is_empty(),
             shows_all_capture_notes: false,
             capture_presentation: presentation,
@@ -737,12 +757,17 @@ impl ScreenshotEditor {
                     cx.notify();
                     false
                 } else {
+                    this.cancel_window_refresh();
                     true
                 }
             })
             .unwrap_or(true)
         });
         view.render_preview(cx);
+        #[cfg(debug_assertions)]
+        if let Some(request) = window_refresh {
+            view.start_window_refresh(request, cx);
+        }
         view
     }
     fn capture_notes(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
@@ -1044,6 +1069,7 @@ impl ScreenshotEditor {
             self.show_discard = true;
             cx.notify();
         } else {
+            self.cancel_window_refresh();
             window.remove_window();
         }
     }
@@ -1071,6 +1097,7 @@ impl ScreenshotEditor {
                         this.status = "Copied image.".into();
                         this.error = false;
                         if finish {
+                            this.cancel_window_refresh();
                             window.remove_window();
                         }
                     }
@@ -2030,7 +2057,8 @@ impl Render for ScreenshotEditor {
                                     .child(
                                         button("discard", "Discard", p)
                                             .text_color(p.danger)
-                                            .on_click(cx.listener(|_, _, window, _| {
+                                            .on_click(cx.listener(|this, _, window, _| {
+                                                this.cancel_window_refresh();
                                                 window.remove_window()
                                             })),
                                     ),

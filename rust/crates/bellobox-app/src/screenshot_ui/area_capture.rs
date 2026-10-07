@@ -481,6 +481,24 @@ impl FrozenSelector {
             }
         };
         self.locked_rect = Some(selection.rect());
+        let refresh = match &selection {
+            FixtureCommit::Window(commit)
+                if std::env::var_os("BELLOBOX_WINDOW_REFRESH_FIXTURE").is_some() =>
+            {
+                match super::window_refresh::Request::fixture(
+                    commit,
+                    self.launch_cancellation.clone(),
+                ) {
+                    Ok(request) => Some(request),
+                    Err(error) => {
+                        self.status = error;
+                        cx.notify();
+                        return;
+                    }
+                }
+            }
+            _ => None,
+        };
         let selection_token = selection.token();
         self.preparing_handoff = true;
         let size = selection.dimensions();
@@ -524,12 +542,16 @@ impl FrozenSelector {
                 };
                 this.transferring = true;
                 this.preparing_handoff = false;
-                super::open_session(
+                super::open_presented_session(
                     session,
                     if this.selection.is_window() {
                         "Frozen Window · synthetic visible pixels"
                     } else {
                         "Frozen Area · synthetic fixture"
+                    },
+                    super::CapturePresentation {
+                        window_refresh: refresh,
+                        ..Default::default()
                     },
                     cx,
                 );

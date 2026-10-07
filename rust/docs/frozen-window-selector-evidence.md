@@ -43,3 +43,16 @@ new fixture tests require existing CI; no local GUI run is claimed.
 Native catalog/topology integration, production overlay enablement, source inline
 editing, live image/alpha refresh and actual macOS pointer/focus/Spaces/TCC behavior
 remain separate milestones. Synthetic selection does not validate those workflows.
+
+
+## Continuation: actual Linux interaction and optional synthetic refresh
+
+The 2026-10-07 continuation now has actual scoped Linux selection/gesture/editor
+interaction evidence, with immutable binary/source hashes and app-only screenshots:
+[QA report](validation/window-refresh-2026-10-07/QA-report.md). The original
+frozen-only route still retains visible overlap. An additional opt-in
+`BELLOBOX_WINDOW_REFRESH_FIXTURE=1` connects generated independent images through
+the real editor refresh/preview/OCR path; see [host evidence](window-refresh-host.md).
+This is not live/native capture. The strict native CoreGraphics oracle exposed an
+unresolved ±1-pixel portable resampling difference, separately documented in
+[native-alpha-oracle.md](native-alpha-oracle.md); production gates remain disabled.
