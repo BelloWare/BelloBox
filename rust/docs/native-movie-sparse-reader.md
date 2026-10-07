@@ -44,7 +44,16 @@ A diagnostic reports whether that leading frame repeats the first submitted
 sample or is opaque black; neither classification is assumed before native
 execution. This is leading-gap reader behavior, not first-following coverage.
 The first-following algorithm branch remains source-reviewed without a native
-fixture proven to enter it. Its new exact leading-pixel assertions are pending CI.
+fixture proven to enter it.
+
+Exact published `0041012edc718a53f9f7bdf7e9889507d2a9817f` passed Linux
+`37623218882` and macOS `37623218829`, job `112798400955`. Both generated
+converter-host tests passed. The leading-gap decoded trace was exactly
+`[0, 0.1, 0.2, 0.3]`; bounded/full-range leading RGBA matched exactly. The
+leading frame was opaque black and did not repeat the first coded frame
+(`repeats_first=false`, `opaque_black=true`). Sparse exact-pixel checks passed
+again. Native build and isolated preview packaging also completed successfully.
+This evidence is generated-media decoding, not actual native GUI/capture proof.
 
 Before this later test-only correction, local Apple-target platform all-target Clippy with movie-fixtures passed after refreshing
 only the affected core/platform Apple outputs in the shared warm target. That is

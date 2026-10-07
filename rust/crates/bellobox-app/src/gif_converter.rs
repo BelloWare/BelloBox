@@ -1,5 +1,7 @@
 //! Standalone converter host. Native decoding remains gated; the DEBUG synthetic
 //! route exercises this same lifecycle and real bounded Rust GIF export.
+#[cfg(test)]
+mod disposal_tests;
 mod model;
 #[cfg(all(test, feature = "movie-fixtures", target_os = "macos"))]
 mod native_host_tests;
@@ -74,10 +76,10 @@ impl Converter {
         cx.on_release(|this, cx| {
             this.worker.close();
             if let Some(image) = this.source_preview.image.take() {
-                cx.drop_image(image, None);
+                crate::image_disposal::drop_image(image, cx);
             }
             if let Some(image) = this.preview.image.take() {
-                cx.drop_image(image, None);
+                crate::image_disposal::drop_image(image, cx);
             }
         })
         .detach();
@@ -568,7 +570,10 @@ fn editor(
 }
 fn field(editor: Entity<EditorView>, p: Palette) -> Div {
     div()
-        .w(px(70.))
+        // Leave room for fractional seconds and ordinary movie timestamps with
+        // the caret at the end; the compact editor scrolls narrow fields.
+        .w(px(120.))
+        .flex_shrink_0()
         .h(px(28.))
         .px_1()
         .bg(p.well)

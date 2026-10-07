@@ -21,7 +21,7 @@ impl SourcePreview {
         self.completed_request = None;
         self.pending_request = None;
         if let Some(image) = self.image.take() {
-            cx.drop_image(image, None);
+            crate::image_disposal::drop_image(image, cx);
         }
     }
 }
@@ -118,7 +118,7 @@ impl Converter {
                         match (result, prepared) {
                             (Ok(frame), Some(Ok(image))) => {
                                 if let Some(old) = this.source_preview.image.replace(image) {
-                                    cx.drop_image(old, None);
+                                    crate::image_disposal::drop_image(old, cx);
                                 }
                                 this.source_preview.requested = frame.requested;
                                 this.source_preview.completed_request = Some(frame.requested);

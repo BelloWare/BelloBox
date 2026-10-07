@@ -920,3 +920,37 @@ This adds 25 test/support nonblank Rust lines, with no production/benchmark delt
 rustdoc replaces one line with one line. Exact source hashes/classification are in
 `validation/leading-gap-2026-10-07/manifest.json`. Disposal/trim and OCR work remain
 separately attributed. See `native-movie-sparse-reader.md` for the complete evidence.
+
+
+### Exact native movie characterization green
+
+Published `0041012edc718a53f9f7bdf7e9889507d2a9817f` passed Linux
+`37623218882` and macOS `37623218829` / job `112798400955`. Sparse full-range
+PTS `[0, 130, 130.1]` and request 50 → returned 48 exact original PTS-0 RGBA
+passed again. Leading-gap decoded PTS `[0, 0.1, 0.2, 0.3]` and bounded/full-range
+frame-0 dimensions/RGBA matched exactly. Its leading frame was opaque black,
+not a repeat of the first coded frame. Both generated converter-host tests and
+subsequent native build/packaging completed. First-following branch execution
+remains unproven because this fixture enters the leading-frame path instead.
+No actual user movie, native GUI, screen/microphone permission or production
+admission was used or enabled. These are exact generated-media CI facts.
+
+### Converter image retirement and trim fields
+
+A shared App-deferred image disposal helper is used consistently at six converter
+cleanup call sites. Synchronous callbacks carry the proven risk of missing GPUI's
+currently borrowed window atlas; ordinary async completion was not the proven
+risk path. The helper retains the image independently of entity/window lifetime
+and evicts after windows return.
+This is a source-proven disposal risk and tested dispatch/lifetime correction,
+not measured GPU-byte accounting. Start/End fields reserve 120 logical pixels;
+560×600 GPUI tests verify fractional prefixes and end-caret text unchanged.
+
+Actual Linux CUA on immutable combined binary `4a4cf2f4…3c2c78e53` verified
+full Start `0.642`, real trimmed export, Movie/GIF retention, rechoose reset and
+close/reopen. The resulting GIF is 320×180, 36 frames, 2,360 ms, 32,094 bytes.
+Six original screenshots and the complete 181-input source manifest explicitly
+identify the combined OCR candidate; this is not called a disposal-only build.
+See `preview-image-retirement.md` and `validation/preview-disposal-2026-10-07/`.
+The independent scoped delta is +15 production/+234 support: **48,167 production /
+24,690 support /105 benchmark**, over exact green `0041012`. OCR is excluded.

@@ -2,6 +2,7 @@ mod clock_preview_session;
 mod desktop;
 mod gif_converter;
 mod home;
+mod image_disposal;
 mod launcher_clock_ui;
 mod launcher_ui;
 mod screenshot_color;

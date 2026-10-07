@@ -43,7 +43,7 @@ impl Preview {
         self.reader = None;
         self.result = None;
         if let Some(image) = self.image.take() {
-            cx.drop_image(image, None);
+            crate::image_disposal::drop_image(image, cx);
         }
         self.playing = false;
         self.loading = false;
@@ -77,7 +77,7 @@ impl Converter {
     }
     fn present_preview(&mut self, frame: PreparedFrame, cx: &mut Context<Self>) {
         if let Some(old) = self.preview.image.replace(frame.image) {
-            cx.drop_image(old, None);
+            crate::image_disposal::drop_image(old, cx);
         }
         let now = cx.background_executor().now();
         self.preview.deadline =

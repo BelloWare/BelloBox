@@ -1,0 +1,44 @@
+[
+  {
+    "file": "59-converter-start-prefix-at-end-caret.jpg",
+    "captured_utc": "2026-10-07T13:36:57.433Z",
+    "sha256": "2889015ab54b09baeffe60345683e00bfe3451c7b36c65f5e397c66f292ef160",
+    "bytes": 77345,
+    "binary_sha256": "4a4cf2f4f55ea798292674be4c0cbefc6f57b100024b2e439d7c1da3c2c78e53"
+  },
+  {
+    "file": "60-converter-export-review-after-trim.jpg",
+    "captured_utc": "2026-10-07T13:37:05.951Z",
+    "sha256": "0b679159371b246f3907c5c184ce33ab0cdbb7dc14695570d78d6a4cd0f52271",
+    "bytes": 70727,
+    "binary_sha256": "4a4cf2f4f55ea798292674be4c0cbefc6f57b100024b2e439d7c1da3c2c78e53"
+  },
+  {
+    "file": "61-converter-retained-movie-switch.jpg",
+    "captured_utc": "2026-10-07T13:37:17.845Z",
+    "sha256": "b4cec80a23adb70d6eeccd4414b92369181e656471681dcf1c68efa954ccb609",
+    "bytes": 73177,
+    "binary_sha256": "4a4cf2f4f55ea798292674be4c0cbefc6f57b100024b2e439d7c1da3c2c78e53"
+  },
+  {
+    "file": "62-converter-retained-gif-switch.jpg",
+    "captured_utc": "2026-10-07T13:37:18.164Z",
+    "sha256": "6f8066a2e0166d41812f1d48e6f4abd14dea1a1b200000d7ea7657d2fd7e4450",
+    "bytes": 70796,
+    "binary_sha256": "4a4cf2f4f55ea798292674be4c0cbefc6f57b100024b2e439d7c1da3c2c78e53"
+  },
+  {
+    "file": "63-converter-rechoose-cleared-old-review.jpg",
+    "captured_utc": "2026-10-07T13:37:34.619Z",
+    "sha256": "332c7e98c1354079050f294651bd80af5d5afc56eb1b5ef3ca32bfde0ad23ae7",
+    "bytes": 83296,
+    "binary_sha256": "4a4cf2f4f55ea798292674be4c0cbefc6f57b100024b2e439d7c1da3c2c78e53"
+  },
+  {
+    "file": "64-converter-reopened-no-stale-review.jpg",
+    "captured_utc": "2026-10-07T13:37:48.443Z",
+    "sha256": "d32635648cd787f69c23676c813e630068140988642e13bada780473aaa08432",
+    "bytes": 77052,
+    "binary_sha256": "4a4cf2f4f55ea798292674be4c0cbefc6f57b100024b2e439d7c1da3c2c78e53"
+  }
+]

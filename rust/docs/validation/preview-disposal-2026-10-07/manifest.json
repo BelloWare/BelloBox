@@ -1,0 +1,101 @@
+{
+  "baseline_commit": "0041012edc718a53f9f7bdf7e9889507d2a9817f",
+  "scope": "Six disposal/trim Rust files only. Unchanged existing support spans omitted from both sides. Nonblank physical lines including comments. OCR excluded.",
+  "baseline_counts": {
+    "production": 48152,
+    "support": 24456,
+    "benchmark": 105
+  },
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter.rs",
+      "before_sha256": "5cc2bae95f1fc375c96a9271b2cacaa17720f1e8419e693089e2e3e92b0ff7ef",
+      "after_sha256": "40a3abce734a9f6a96542031bfd0f56b844c73f18e9a11f0c6ee35c767f8a511",
+      "before_nonblank": 578,
+      "after_nonblank": 583,
+      "added_support_ranges_1based": [
+        [
+          3,
+          4
+        ]
+      ],
+      "production_delta": 3,
+      "support_delta": 2
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/preview.rs",
+      "before_sha256": "f8d23e3ef691bfbd9e4efef6bb3ae41667ad5e896fdf5fd70773db7e70638007",
+      "after_sha256": "58a7a53b78a39de8dfa640fc240164bf2f83e8b60f92a2c69302ee2affa90d92",
+      "before_nonblank": 174,
+      "after_nonblank": 174,
+      "added_support_ranges_1based": [],
+      "production_delta": 0,
+      "support_delta": 0
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/source_preview.rs",
+      "before_sha256": "ee47c50c44178ba1ac7e71a5e86348291c735bdd0ab62952ce560257a7ca458d",
+      "after_sha256": "794bf39198ab3c813e65c7657073b1c2bf8b29f8234ff92119a75373b620df27",
+      "before_nonblank": 170,
+      "after_nonblank": 170,
+      "added_support_ranges_1based": [],
+      "production_delta": 0,
+      "support_delta": 0
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "before_sha256": "caf5508153394b9848f30600c736f718677a71f675a07679e55fecf77a457c20",
+      "after_sha256": "92317708bf0cdec1752d3c715195c0f26253d7dd43605906ddb9a0de57c08857",
+      "before_nonblank": 170,
+      "after_nonblank": 171,
+      "added_support_ranges_1based": [],
+      "production_delta": 1,
+      "support_delta": 0
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/image_disposal.rs",
+      "before_sha256": null,
+      "after_sha256": "7943005ca34ca01b75bb60e920fb09ddf9c7735209f0b42bd3ba9f164a32bfc7",
+      "before_nonblank": 0,
+      "after_nonblank": 35,
+      "added_support_ranges_1based": [
+        [
+          10,
+          11
+        ],
+        [
+          16,
+          38
+        ]
+      ],
+      "production_delta": 11,
+      "support_delta": 24
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/disposal_tests.rs",
+      "before_sha256": null,
+      "after_sha256": "9c161b5b88708db59a05a6e2e9b5466a59a453318ac53a9dbe7f41da0baefeca",
+      "before_nonblank": 0,
+      "after_nonblank": 208,
+      "added_support_ranges_1based": [
+        [
+          1,
+          216
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 208
+    }
+  ],
+  "delta": {
+    "production": 15,
+    "support": 234,
+    "benchmark": 0
+  },
+  "counts": {
+    "production": 48167,
+    "support": 24690,
+    "benchmark": 105
+  },
+  "validation": "Six new GPUI disposal/layout tests,50 converter and245 app tests passed before OCR integration. Combined immutable candidate4a4cf2 passed285 app/277 no-debug tests and strict lints plus actual scoped converter CUA. See QA-report.md for explicit combined-source attribution and limits; no GPU-byte accounting."
+}

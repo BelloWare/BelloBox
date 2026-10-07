@@ -70,7 +70,11 @@ The focused [sparse-reader characterization](native-movie-sparse-reader.md) comp
 full-range timestamps and exact pixels: the a950 native run proved sparse held-
 sample clipping/retiming with unchanged RGBA. Its later leading-gap fixture failed
 because decoded output included PTS0 before submitted0.1. That fixture does not
-prove first-following branch execution; leading-gap pixel checks remain pending.
+prove first-following branch execution. Exact0041012 native CI subsequently
+passed the leading-gap timestamp/dimension/full-RGBA checks and showed an opaque
+black leading frame distinct from the first coded frame. Both native host tests,
+native build and packaging passed; actual native interactive playback is still
+unverified.
 Bounds apply to returned reader PTS. The caption shows requested and returned
 sample PTS, not a promise of the original coded-sample timestamp. This deliberately bounded behavior is not exact AVPlayer
 zero-tolerance seeking or continuous playback.
