@@ -848,3 +848,12 @@ window default errors, and clean close/reopen defaults passed. Input bases 2/8 a
 single outputs 10/2/8 have unit coverage but were not separately live-tested.
 These are scoped Linux checks, not macOS/IME, exhaustive menu keyboard acceptance
 or frame-rate/performance proof.
+
+## Native alpha oracle recovery (2026-10-07)
+
+The sole incomplete recovery patch has been source-reviewed and integrated as five
+macOS-only synthetic CoreGraphics tests; see [native-alpha-oracle.md](native-alpha-oracle.md).
+The public refresh plan is compared to the exact Swift ImageAlphaMask drawing
+sequence, with strict alpha/sampling and separately reported low-alpha RGB
+quantization. Native CI is pending for this checkpoint. No real capture or
+production gate changes are included; this is validation work, not UI parity.

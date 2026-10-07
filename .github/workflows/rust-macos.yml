@@ -43,6 +43,8 @@ jobs:
       - name: Run pure domain and filesystem tests
         # No GPUI application launch, permissions, keychain, capture or updater actions.
         run: cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform
+      - name: Characterize synthetic CoreGraphics alpha without capture
+        run: cargo test --locked -p bello-platform native_alpha_ -- --show-output
       - name: Build native applications without launching
         run: cargo build --locked --workspace
       - name: Test isolated preview packaging policy

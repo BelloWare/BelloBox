@@ -731,5 +731,9 @@ unsafe fn encode_png<T: Send, E: From<CaptureError> + Send>(
 #[path = "macos_tests.rs"]
 mod tests;
 
+#[cfg(test)]
+#[path = "alpha_mask_tests.rs"]
+mod alpha_mask_tests;
+
 #[cfg(all(test, target_arch = "aarch64"))]
 mod window;
