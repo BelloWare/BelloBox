@@ -872,3 +872,28 @@ remains pending CI rather than inferred from that portable rerun.
 exact final-GUI source snapshot; `source-inputs.json` records the later test hash.
 The difference is explicit and is not described as an unchanged complete source
 manifest. Reviewed LOC totals remain 48,152 / 24,371 / 105.
+
+### Generated sparse-movie native expectation failure and focused characterization
+
+Exact published movie `5be64e4bc32851e08efdd3c591ac89efe9e6b015` passed Linux
+`37616462056`. Native run `37616462042` passed compile/link, strict platform Clippy,
+175 platform tests (3 existing ignored), 357 core tests, alpha/Window host mask,
+and the generated landscape/portrait/mirror/trim/export/same-source host test.
+The sparse seek test expected no frame at50s, but the real reader returned PTS48
+with a prepared image. Native build/packaging steps after this failure were skipped.
+
+A focused generated-only full-range trace now checks original PTS and exact RGBA
+identity against the bounded reader, without changing production seeking or
+loosening image equality. Original fixture timestamps are0/130/130.1; clipped/
+retimed held-sample identity remains a hypothesis until exact native CI passes.
+Preview actual time means returned reader PTS, not guaranteed original coded PTS.
+See [native-movie-sparse-reader.md](native-movie-sparse-reader.md) and the focused
+source/hash/count ledger. Local Apple-target metadata Clippy passed; native
+execution is pending publication. Disposal/trim UI work and OCR staging are separate.
+
+This focused correction adds 60 nonblank Rust test/support lines and no production
+or benchmark lines: totals **48,152 production / 24,431 support / 105 benchmark**.
+Only the generated-only full-range trace and native host test are counted; the
+pending disposal/trim follow-up and isolated AI OCR staging are excluded. Exact
+source hashes and positive support spans are recorded in
+`validation/sparse-reader-2026-10-07/manifest.json`.

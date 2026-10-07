@@ -6,7 +6,7 @@ use super::{
 };
 use bello_platform::movie::{
     GeneratedOrientation, GeneratedTiming, MovieAsset, MovieError, generated_movie,
-    generated_movie_case,
+    generated_movie_case, generated_movie_trace,
 };
 use bellobox_core::recording::gif::ReplacePolicy;
 
@@ -175,6 +175,23 @@ fn generated_native_host_short_sparse_long_and_first_following_seek_contract() {
         GeneratedTiming::DelayedFirst,
     ] {
         let selected = generated_movie_case(GeneratedOrientation::Landscape, timing).unwrap();
+        let trace_source = selected.clone();
+        let trace = std::thread::spawn(move || generated_movie_trace(trace_source))
+            .join()
+            .unwrap()
+            .unwrap();
+        let original_pts: Vec<_> = trace
+            .iter()
+            .map(|frame| frame.presentation_seconds())
+            .collect();
+        let expected_pts = match timing {
+            GeneratedTiming::Short => vec![0.],
+            GeneratedTiming::SparseLong => vec![0., 130., 130.1],
+            GeneratedTiming::DelayedFirst => vec![0.1, 0.2, 0.3],
+            GeneratedTiming::Regular => unreachable!(),
+        };
+        assert_eq!(original_pts, expected_pts);
+        eprintln!("native generated full-range trace: {timing:?}, PTS={original_pts:?}");
         let mut controller = Controller::default();
         let mut model = Model::default();
         inspect(&mut controller, &mut model, Source::Generated(selected));
@@ -191,12 +208,34 @@ fn generated_native_host_short_sparse_long_and_first_following_seek_contract() {
             }
             GeneratedTiming::SparseLong => {
                 assert!(model.info.unwrap().duration > 120.);
-                assert!(
-                    seek(&mut controller, &model, 50.)
-                        .unwrap_err()
-                        .contains("No source frame")
+                // Real AVAssetReader returned PTS48 at request50 in exact CI.
+                // Prove this is the original held sample clipped/retimed to the
+                // bounded range start, not an arbitrary in-window frame.
+                let held = seek(&mut controller, &model, 50.).unwrap();
+                assert_eq!(held.actual, 48.);
+                let late = seek(&mut controller, &model, 130.1).unwrap();
+                assert_eq!(late.actual, 130.1);
+                for (index, frame) in trace.into_iter().enumerate() {
+                    if index == 1 {
+                        continue;
+                    }
+                    let (_, width, height, rgba) = frame.into_parts();
+                    let actual =
+                        image::load_from_memory(if index == 0 { &held.png } else { &late.png })
+                            .unwrap()
+                            .to_rgba8();
+                    assert_eq!(actual.dimensions(), (width, height));
+                    let mismatches = actual
+                        .as_raw()
+                        .iter()
+                        .zip(&rgba)
+                        .filter(|(actual, original)| actual != original)
+                        .count();
+                    assert_eq!(mismatches, 0, "bounded/full-range frame pixels differ");
+                }
+                eprintln!(
+                    "native sparse bounded seek: request50 returned48 and equals original PTS0 pixels; request130.1 equals original PTS130.1 pixels exactly"
                 );
-                assert!(seek(&mut controller, &model, 130.1).unwrap().actual >= 130.);
             }
             GeneratedTiming::DelayedFirst => {
                 let frame = seek(&mut controller, &model, 0.).unwrap();

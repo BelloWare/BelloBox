@@ -1,0 +1,72 @@
+{
+  "baseline_commit": "5be64e4bc32851e08efdd3c591ac89efe9e6b015",
+  "baseline_counts": {
+    "production": 48152,
+    "support": 24371,
+    "benchmark": 105
+  },
+  "scope": "Only two generated-test support files. Concurrent disposal/trim and isolated OCR WIP excluded. Nonblank physical Rust lines including comments; no feature percentages.",
+  "files": [
+    {
+      "path": "rust/crates/bello-platform/src/movie.rs",
+      "before_sha256": "6bb3b5efb84e8bf932865cf404c02fc3bad64cefebd453298da6b989adfe06e2",
+      "after_sha256": "693b54d6bea725d7e792100c900237478d6241e5baaec3b0f4fd5aebddd5d39a",
+      "before_nonblank": 661,
+      "after_nonblank": 682,
+      "before_support_ranges_1based": [],
+      "after_support_ranges_1based": [
+        [
+          673,
+          693
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 21,
+      "classification": "Generated-only bounded trace helper; unchanged earlier support spans omitted from both sides."
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs",
+      "before_sha256": "df01d91002744823a048aba77d61cbd38d49a8c2fc5126dda82760b93e110536",
+      "after_sha256": "5df837b042364d86e5186c71fc6d936ae845acbd9d55a8052ebdc6fa7fe11315",
+      "before_nonblank": 207,
+      "after_nonblank": 246,
+      "before_support_ranges_1based": [
+        [
+          1,
+          208
+        ]
+      ],
+      "after_support_ranges_1based": [
+        [
+          1,
+          247
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 39,
+      "classification": "Entire native generated-host test module is test support."
+    }
+  ],
+  "delta": {
+    "production": 0,
+    "support": 60,
+    "benchmark": 0
+  },
+  "counts": {
+    "production": 48152,
+    "support": 24431,
+    "benchmark": 105
+  },
+  "checks": [
+    "Forced fresh Apple-target core/platform outputs only; strict platform all-target movie-fixtures metadata Clippy passed from original checkout.",
+    "Exact native full-range/returned-PTS/pixel characterization remains pending publication/CI."
+  ],
+  "native_failure": {
+    "commit": "5be64e4bc32851e08efdd3c591ac89efe9e6b015",
+    "run": 37616462042,
+    "job": 112775863468,
+    "requested": 50.0,
+    "returned_pts": 48.0,
+    "full_pixel_identity": "not yet established"
+  }
+}

@@ -63,10 +63,13 @@ The last sample at or before the requested time wins. If the first in-window sam
 is later, that first following sample is used. End == duration targets the last
 displayed sample rather than demanding a nonexistent EOF frame. Short clips can
 be previewed even when too short for export; long clips can seek beyond 120 seconds.
-Sparse/VFR intervals with no sample in this bounded window show an explicit
-unavailable-frame error. A frame with a long preceding presentation interval but
-PTS outside the window is not silently imported. The caption shows both requested
-and actual source PTS. This deliberately bounded behavior is not exact AVPlayer
+FrameUnavailable means the reader returned no acceptable sample in the bounded
+window; sparse coded timestamps alone do not establish that outcome. Exact native
+CI observed returned PTS48 for request50 in a fixture submitted at0/130/130.1.
+The focused [sparse-reader characterization](native-movie-sparse-reader.md) compares
+full-range timestamps and exact pixels to test clipping/retiming of held samples.
+Bounds apply to returned reader PTS. The caption shows requested and returned
+sample PTS, not a promise of the original coded-sample timestamp. This deliberately bounded behavior is not exact AVPlayer
 zero-tolerance seeking or continuous playback.
 
 The host retains one source RenderImage and at most one preparing replacement,

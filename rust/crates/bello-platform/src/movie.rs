@@ -669,3 +669,25 @@ pub fn generated_movie_case(
     selected._fixture = Some(directory);
     Ok(selected)
 }
+
+#[cfg(all(target_os = "macos", feature = "movie-fixtures"))]
+/// Full-range diagnostic for this module's sealed, self-generated movies only.
+/// It does not accept a pathname or relax ordinary admission/export range limits.
+/// Eight returned frames bound diagnostic storage; normal fixtures contain <=4.
+pub fn generated_movie_trace(selected: SelectedMovie) -> MovieResult<Vec<MovieFrame>> {
+    if !selected.generated || selected._fixture.is_none() {
+        return Err(MovieError::Unavailable);
+    }
+    let asset = MovieAsset::open_selected(selected, MovieCancellation::default())?;
+    let duration = asset.info.duration;
+    let mut reader = asset.native.reader(0., duration)?;
+    let mut frames = Vec::new();
+    while let Some(frame) = reader.next_frame(&|| false)? {
+        if frames.len() == 8 {
+            return Err(MovieError::LimitExceeded);
+        }
+        frames.push(frame);
+    }
+    reader.finish(&|| false)?;
+    Ok(frames)
+}
