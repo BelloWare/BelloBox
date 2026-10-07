@@ -1,5 +1,12 @@
 # Standalone GIF converter host checkpoint
 
+Historical standalone-host checkpoint. The later [paused movie review workflow](movie-preview-host.md)
+adds selected-source identity, bounded source preview/trim seeking, Movie/GIF
+switching and physical worker retirement. Earlier missing-source-preview and
+test-only native backend statements are superseded there; native activation and
+continuous source playback/audio remain unavailable. Evidence below retains its
+original source/binary scope.
+
 Behavioral sources: `BelloBox/UI/GIFExportViews.swift` (`VideoToGIFViewModel`,
 `VideoToGIFContent`, `GIFTrimControls`, `AnimatedGIFNSView`) and
 `BelloBox/Recording/GIF/GIFTranscoder.swift`. This is a Rust migration checkpoint,

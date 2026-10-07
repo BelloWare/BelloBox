@@ -1,0 +1,977 @@
+use super::model::{Model, Source};
+use bellobox_core::recording::gif::{GifError, GifExportResult, ReplacePolicy};
+use std::path::PathBuf;
+
+fn ready() -> Model {
+    let mut model = Model::default();
+    let source = Source::Synthetic;
+    let (generation, cancellation) = model.load(source.clone()).unwrap();
+    model.loaded(generation, source.inspect(cancellation));
+    model
+}
+fn destination() -> PathBuf {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    std::env::temp_dir().join(format!(
+        "bellobox-gif-test-{}-{nonce}.gif",
+        std::process::id()
+    ))
+}
+#[test]
+fn source_change_resets_trim_and_result_but_keeps_format() {
+    let mut model = ready();
+    model.options.frames_per_second = 10;
+    model.options.max_width = 320;
+    model.options.loops = false;
+    model.options.trim_start = 1.;
+    let (generation, _) = model.load(Source::Synthetic).unwrap();
+    assert_eq!(model.options.trim_start, 0.);
+    assert_eq!(model.options.trim_end, None);
+    assert_eq!(model.options.frames_per_second, 10);
+    assert_eq!(model.options.max_width, 320);
+    assert!(!model.options.loops);
+    model.loaded(generation, Source::Synthetic.inspect(Default::default()));
+    assert_eq!(model.options.trim_end, Some(3.));
+}
+#[test]
+fn late_metadata_cannot_replace_new_source_or_closed_state() {
+    let mut model = ready();
+    let old = model.generation;
+    let (new, _) = model.load(Source::Movie("not-opened.mov".into())).unwrap();
+    model.loaded(old, Source::Synthetic.inspect(Default::default()));
+    assert!(model.info.is_none());
+    model.close();
+    model.loaded(new, Source::Synthetic.inspect(Default::default()));
+    assert!(model.info.is_none());
+}
+#[test]
+fn production_adapter_is_truthfully_unavailable_before_path_io() {
+    let source = Source::Movie("/never-read/this-file.mov".into());
+    assert!(
+        source
+            .inspect(Default::default())
+            .unwrap_err()
+            .contains("unavailable")
+    );
+}
+#[test]
+fn busy_rejects_source_replacement_and_duplicate_export() {
+    let mut model = ready();
+    let work = model
+        .begin(destination(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    assert!(model.load(Source::Synthetic).is_none());
+    assert!(
+        model
+            .begin(destination(), ReplacePolicy::RefuseExisting)
+            .is_none()
+    );
+    model.cancel();
+    assert!(
+        model.busy(),
+        "cancel does not admit new work until old worker settles"
+    );
+    let generation = work.generation;
+    model.finished(generation, work.run());
+    assert!(!model.busy());
+    assert_eq!(model.source, Some(Source::Synthetic));
+}
+#[test]
+fn actual_synthetic_export_publishes_then_reports_result() {
+    let mut model = ready();
+    model.options.trim_start = 0.5;
+    model.options.trim_end = Some(0.7);
+    model.options.loops = false;
+    let path = destination();
+    let work = model
+        .begin(path.clone(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    let generation = work.generation;
+    let result = work.run().unwrap();
+    assert_eq!(result.frame_count, 3);
+    assert_eq!(result.size, (320, 180));
+    assert!((result.duration - 0.2).abs() < 1e-6);
+    let bytes = std::fs::read(&path).unwrap();
+    assert!(bytes.starts_with(b"GIF"));
+    assert!(!bytes.windows(11).any(|s| s == b"NETSCAPE2.0"));
+    model.finished(generation, Ok(result));
+    assert_eq!(model.result_revision, 1);
+    assert_eq!(model.source, Some(Source::Synthetic));
+    assert!(model.status.starts_with("Saved"));
+    std::fs::remove_file(path).unwrap();
+}
+#[test]
+fn existing_destination_survives_and_result_is_not_invented() {
+    let mut model = ready();
+    let path = destination();
+    std::fs::write(&path, b"prior GIF").unwrap();
+    let work = model
+        .begin(path.clone(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    let generation = work.generation;
+    let result = work.run();
+    assert!(matches!(result, Err(GifError::DestinationExists)));
+    model.finished(generation, result);
+    assert!(model.error);
+    assert!(model.result.is_none());
+    assert_eq!(std::fs::read(&path).unwrap(), b"prior GIF");
+    std::fs::remove_file(path).unwrap();
+}
+#[test]
+fn cancelled_export_creates_no_file_and_preserves_source() {
+    let mut model = ready();
+    let path = destination();
+    let work = model
+        .begin(path.clone(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    model.cancel();
+    let generation = work.generation;
+    assert!(matches!(work.run(), Err(GifError::Cancelled)));
+    model.finished(generation, Err(GifError::Cancelled));
+    assert!(!path.exists());
+    assert!(!model.error);
+    assert!(model.info.is_some());
+    assert!(model.status.contains("before publication"));
+}
+#[test]
+fn late_completion_is_ignored_after_close() {
+    let mut model = ready();
+    let work = model
+        .begin(destination(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    let generation = work.generation;
+    model.close();
+    model.finished(
+        generation,
+        Ok(GifExportResult {
+            path: "ignored.gif".into(),
+            frame_count: 1,
+            size: (1, 1),
+            duration: 0.1,
+            file_size: 30,
+        }),
+    );
+    assert!(model.result.is_none());
+    assert_eq!(model.result_revision, 0);
+    assert!(matches!(work.run(), Err(GifError::Cancelled)));
+}
+#[test]
+fn cancelled_retry_retains_last_successful_result() {
+    let mut model = ready();
+    let work = model
+        .begin(destination(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    model.finished(
+        work.generation,
+        Ok(GifExportResult {
+            path: "prior.gif".into(),
+            frame_count: 1,
+            size: (1, 1),
+            duration: 0.1,
+            file_size: 30,
+        }),
+    );
+    drop(work);
+    let retry = model
+        .begin(destination(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    model.cancel();
+    model.finished(retry.generation, retry.run());
+    assert_eq!(
+        model.result.as_ref().unwrap().path,
+        PathBuf::from("prior.gif")
+    );
+}
+
+fn view(cx: &mut gpui::TestAppContext) -> gpui::Entity<super::Converter> {
+    let window = cx.add_window(super::Converter::new);
+    let root = window.root(cx).unwrap();
+    root.update(cx, |view, cx| {
+        view.model = ready();
+        view.sync_trim(cx);
+    });
+    root
+}
+#[gpui::test]
+fn trim_fields_apply_to_the_actual_export_plan(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    root.update(cx, |view, cx| {
+        view.start
+            .update(cx, |editor, cx| editor.set_text("0.50".into(), cx));
+        view.end
+            .update(cx, |editor, cx| editor.set_text("1.25".into(), cx));
+        assert!(view.apply_trim(cx));
+        let plan = view.model.plan().unwrap();
+        assert_eq!((plan.start(), plan.end()), (0.5, 1.25));
+    });
+}
+#[gpui::test]
+fn invalid_trim_draft_cannot_silently_change_plan(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    root.update(cx, |view, cx| {
+        let original = view.model.plan().unwrap();
+        for draft in ["NaN", "inf", "-1", "4", ""] {
+            view.start
+                .update(cx, |editor, cx| editor.set_text(draft.into(), cx));
+            assert!(!view.apply_trim(cx));
+            assert_eq!(view.model.plan().unwrap(), original);
+            assert!(view.model.error);
+        }
+    });
+}
+#[gpui::test]
+fn pending_conversion_blocks_trim_and_repeated_export(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    root.update(cx, |view, cx| {
+        let work = view
+            .model
+            .begin(destination(), ReplacePolicy::RefuseExisting)
+            .unwrap();
+        view.start
+            .update(cx, |editor, cx| editor.set_text("0.50".into(), cx));
+        assert!(!view.apply_trim(cx));
+        assert_eq!(view.model.options.trim_start, 0.);
+        view.model.cancel();
+        view.model.finished(work.generation, work.run());
+    });
+}
+#[gpui::test]
+fn invalid_extension_never_starts_worker(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    root.update(cx, |view, cx| {
+        view.convert("must-not-write.mov".into(), cx);
+        assert!(view.model.job.is_none());
+        assert!(view.model.error);
+        assert!(view.model.status.contains(".gif"));
+    });
+}
+#[gpui::test]
+fn stale_completion_cannot_create_result_in_closed_converter(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    root.update(cx, |view, _| {
+        let work = view
+            .model
+            .begin(destination(), ReplacePolicy::RefuseExisting)
+            .unwrap();
+        view.model.close();
+        view.model.finished(work.generation, work.run());
+        assert!(view.model.result.is_none());
+        assert_eq!(view.model.result_revision, 0);
+    });
+}
+
+#[test]
+fn cancellation_after_publication_reports_saved_and_retains_file() {
+    let mut model = ready();
+    model.options.trim_end = Some(0.1);
+    let path = destination();
+    let work = model
+        .begin(path.clone(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    let generation = work.generation;
+    let result = work.run().unwrap();
+    model.cancel();
+    assert!(model.status.contains("already saved"));
+    model.finished(generation, Ok(result));
+    assert!(model.status.starts_with("Saved"));
+    assert!(path.exists());
+    std::fs::remove_file(path).unwrap();
+}
+#[gpui::test]
+fn fractional_source_duration_roundtrips_without_invalid_default(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    root.update(cx, |view, cx| {
+        view.model.info.as_mut().unwrap().duration = 3.456789012;
+        view.model.options.trim_end = Some(3.456789012);
+        view.sync_trim(cx);
+        assert!(view.apply_trim(cx));
+        assert_eq!(view.model.options.trim_end, Some(3.456789012));
+    });
+}
+#[gpui::test]
+fn choosing_movie_retires_synthetic_label_immediately(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    root.update(cx, |view, _| {
+        assert!(view.is_fixture());
+        view.model
+            .load(Source::Movie("not-read.mov".into()))
+            .unwrap();
+        assert!(!view.is_fixture());
+    });
+}
+
+#[gpui::test]
+fn escape_routes_from_initial_converter_focus(cx: &mut gpui::TestAppContext) {
+    let window = cx.add_window(super::Converter::new);
+    cx.run_until_parked();
+    cx.simulate_keystrokes(window.into(), "escape");
+    assert!(window.root(cx).is_err());
+}
+#[gpui::test]
+fn close_before_save_dialog_reply_cannot_start_export(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let path = destination();
+    root.update(cx, |view, cx| view.save(cx));
+    cx.run_until_parked();
+    root.update(cx, |view, _| view.model.close());
+    cx.simulate_new_path_selection(|_| Some(path.clone()));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| assert!(view.model.job.is_none()));
+    assert!(!path.exists());
+}
+#[test]
+fn paired_trim_handles_follow_source_coupling_and_limit() {
+    let mut options = bellobox_core::recording::gif::GifExportOptions {
+        trim_end: Some(120.),
+        ..Default::default()
+    };
+    super::model::move_trim(&mut options, 300., true, 290.);
+    assert_eq!(options.trim_start, 290.);
+    assert_eq!(options.trim_end, Some(300.));
+    super::model::move_trim(&mut options, 300., false, 20.);
+    assert!((options.trim_start - 19.9).abs() < 1e-9);
+    assert_eq!(options.trim_end, Some(20.));
+    super::model::move_trim(&mut options, 300., false, 300.);
+    assert_eq!(options.trim_start, 180.);
+    super::model::move_trim(&mut options, 300., true, -3.);
+    assert_eq!(options.trim_start, 0.);
+    assert_eq!(options.trim_end, Some(120.));
+}
+#[test]
+fn exported_preview_streams_exact_frame_count_and_centisecond_delays() {
+    let mut model = ready();
+    model.options.trim_end = Some(0.2);
+    let path = destination();
+    let work = model
+        .begin(path.clone(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    let result = work.run().unwrap();
+    let mut preview = super::model::open_preview(&result).unwrap();
+    let mut delays = Vec::new();
+    while let Some(frame) = preview.next_frame().unwrap() {
+        assert!(frame.png.starts_with(b"\x89PNG\r\n\x1a\n"));
+        delays.push(frame.delay_centiseconds);
+    }
+    assert_eq!(delays, [7, 6, 7]);
+    std::fs::remove_file(path).unwrap();
+}
+#[test]
+fn preview_rejects_changed_file_and_wrong_expected_frame_count() {
+    let mut model = ready();
+    model.options.trim_end = Some(0.1);
+    let path = destination();
+    let work = model
+        .begin(path.clone(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    let mut result = work.run().unwrap();
+    result.frame_count += 1;
+    let mut preview = super::model::open_preview(&result).unwrap();
+    assert!(preview.next_frame().unwrap().is_some());
+    assert!(preview.next_frame().unwrap().is_some());
+    assert!(preview.next_frame().is_err());
+    let mut preview = super::model::open_preview(&result).unwrap();
+    std::fs::write(&path, b"changed").unwrap();
+    assert!(preview.next_frame().is_err());
+    std::fs::remove_file(path).unwrap();
+}
+#[cfg(unix)]
+#[test]
+fn preview_refuses_symlink_and_fifo_without_following_or_blocking() {
+    use std::os::unix::fs::symlink;
+    let directory = tempfile::tempdir().unwrap();
+    let target = directory.path().join("target");
+    let link = directory.path().join("link.gif");
+    std::fs::write(&target, b"not GIF").unwrap();
+    symlink(&target, &link).unwrap();
+    let mut result = GifExportResult {
+        path: link,
+        frame_count: 1,
+        size: (1, 1),
+        duration: 0.1,
+        file_size: 7,
+    };
+    assert!(super::model::open_preview(&result).is_err());
+    let fifo = directory.path().join("pipe.gif");
+    let name = std::ffi::CString::new(fifo.as_os_str().as_encoded_bytes()).unwrap();
+    // SAFETY: the owned CString is NUL-terminated and alive for this call;
+    // the path is inside this test's private disposable directory.
+    assert_eq!(unsafe { libc::mkfifo(name.as_ptr(), 0o600) }, 0);
+    result.path = fifo;
+    result.file_size = 0;
+    assert!(super::model::open_preview(&result).is_err());
+}
+
+#[gpui::test]
+fn host_worker_export_delivers_paused_preview_then_retires_it_on_rechoose(
+    cx: &mut gpui::TestAppContext,
+) {
+    let root = view(cx);
+    let path = destination();
+    root.update(cx, |view, cx| {
+        view.model.options.trim_end = Some(0.2);
+        view.sync_trim(cx);
+        view.convert(path.clone(), cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.model.result.is_some());
+        assert!(view.preview.image.is_some());
+        assert!(!view.preview.playing);
+        assert!(!view.preview.loading);
+    });
+    root.update(cx, |view, cx| {
+        view.load(Source::Movie("never-read.mov".into()), cx)
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.model.result.is_none());
+        assert!(view.preview.image.is_none());
+        assert!(view.model.error);
+    });
+    std::fs::remove_file(path).unwrap();
+}
+#[gpui::test]
+fn pending_preview_is_fenced_by_rechoose(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let mut model = ready();
+    model.options.trim_end = Some(0.1);
+    let path = destination();
+    let work = model
+        .begin(path.clone(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    let result = work.run().unwrap();
+    root.update(cx, |view, cx| {
+        view.model.result = Some(result);
+        view.preview_result(cx);
+        view.load(Source::Movie("never-read.mov".into()), cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.preview.image.is_none());
+        assert!(!view.preview.loading);
+        assert!(view.model.result.is_none());
+    });
+    std::fs::remove_file(path).unwrap();
+}
+#[gpui::test]
+fn paused_preview_does_not_advance_and_once_playback_stops(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let path = destination();
+    root.update(cx, |view, cx| {
+        view.model.options.trim_end = Some(0.2);
+        view.model.options.loops = false;
+        view.convert(path.clone(), cx);
+    });
+    cx.run_until_parked();
+    let initial = root.read_with(cx, |view, _| view.preview.image.clone().unwrap());
+    cx.executor()
+        .advance_clock(std::time::Duration::from_secs(2));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(std::sync::Arc::ptr_eq(
+            &initial,
+            view.preview.image.as_ref().unwrap()
+        ))
+    });
+    root.update(cx, |view, cx| view.toggle_preview(cx));
+    cx.run_until_parked();
+    for _ in 0..5 {
+        cx.executor()
+            .advance_clock(std::time::Duration::from_millis(100));
+        cx.run_until_parked();
+    }
+    root.read_with(cx, |view, _| {
+        assert!(!view.preview.playing);
+        assert!(view.preview.image.is_some());
+    });
+    std::fs::remove_file(path).unwrap();
+}
+#[gpui::test]
+fn looping_preview_uses_finished_job_options_not_new_draft(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let path = destination();
+    root.update(cx, |view, cx| {
+        view.model.options.trim_end = Some(0.1);
+        view.model.options.loops = true;
+        view.convert(path.clone(), cx);
+    });
+    cx.run_until_parked();
+    root.update(cx, |view, cx| {
+        view.model.options.loops = false;
+        view.toggle_preview(cx);
+    });
+    cx.run_until_parked();
+    for _ in 0..5 {
+        cx.executor()
+            .advance_clock(std::time::Duration::from_millis(100));
+        cx.run_until_parked();
+    }
+    root.read_with(cx, |view, _| assert!(view.preview.playing));
+    root.update(cx, |view, cx| view.toggle_preview(cx));
+    cx.run_until_parked();
+    let paused = root.read_with(cx, |view, _| view.preview.image.clone().unwrap());
+    cx.executor()
+        .advance_clock(std::time::Duration::from_secs(1));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(std::sync::Arc::ptr_eq(
+            &paused,
+            view.preview.image.as_ref().unwrap()
+        ))
+    });
+    std::fs::remove_file(path).unwrap();
+}
+
+#[test]
+fn preview_repeat_pins_opened_file_when_path_is_replaced() {
+    let mut model = ready();
+    model.options.trim_end = Some(0.1);
+    let path = destination();
+    let work = model
+        .begin(path.clone(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    let result = work.run().unwrap();
+    let mut preview = super::model::open_preview(&result).unwrap();
+    let original = preview.next_frame().unwrap().unwrap().png;
+    while preview.next_frame().unwrap().is_some() {}
+    let replacement = destination();
+    let mut bytes = std::fs::read(&path).unwrap();
+    let mut cursor = 13;
+    if bytes[10] & 0x80 != 0 {
+        cursor += 3 * (2usize << (bytes[10] & 7));
+    }
+    // Walk extension sub-blocks to the first full-frame local color table.
+    while bytes[cursor] == 0x21 {
+        cursor += 2;
+        loop {
+            let length = usize::from(bytes[cursor]);
+            cursor += 1;
+            if length == 0 {
+                break;
+            }
+            cursor += length;
+        }
+    }
+    assert_eq!(bytes[cursor], 0x2c);
+    let packed = bytes[cursor + 9];
+    assert_ne!(packed & 0x80, 0);
+    let palette = cursor + 10;
+    for channel in &mut bytes[palette..palette + 3 * (2usize << (packed & 7))] {
+        *channel ^= 0xff;
+    }
+    std::fs::write(&replacement, bytes).unwrap();
+    let mut replacement_result = result.clone();
+    replacement_result.path = replacement.clone();
+    let mut replacement_preview = super::model::open_preview(&replacement_result).unwrap();
+    assert_ne!(
+        replacement_preview.next_frame().unwrap().unwrap().png,
+        original
+    );
+    std::fs::rename(&replacement, &path).unwrap();
+    let mut repeated = preview.rewind().unwrap();
+    assert_eq!(repeated.next_frame().unwrap().unwrap().png, original);
+    std::fs::remove_file(path).unwrap();
+}
+
+#[gpui::test]
+fn prefetched_frame_waits_for_deadline_and_pause_holds_it(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let path = destination();
+    root.update(cx, |view, cx| {
+        view.model.options.trim_end = Some(0.2);
+        view.model.options.loops = false;
+        view.convert(path.clone(), cx);
+    });
+    cx.run_until_parked();
+    root.update(cx, |view, cx| view.toggle_preview(cx));
+    cx.run_until_parked();
+    let current = root.read_with(cx, |view, _| view.preview.image.clone().unwrap());
+    cx.executor()
+        .advance_clock(std::time::Duration::from_millis(59));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(std::sync::Arc::ptr_eq(
+            &current,
+            view.preview.image.as_ref().unwrap()
+        ))
+    });
+    root.update(cx, |view, cx| view.toggle_preview(cx));
+    cx.executor()
+        .advance_clock(std::time::Duration::from_millis(10));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(!view.preview.loading);
+        assert!(std::sync::Arc::ptr_eq(
+            &current,
+            view.preview.image.as_ref().unwrap()
+        ));
+    });
+    root.update(cx, |view, cx| view.toggle_preview(cx));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(!std::sync::Arc::ptr_eq(
+            &current,
+            view.preview.image.as_ref().unwrap()
+        ))
+    });
+    root.update(cx, |view, _| view.model.close());
+    std::fs::remove_file(path).unwrap();
+}
+#[gpui::test]
+fn tab_from_trim_editor_does_not_insert_text(cx: &mut gpui::TestAppContext) {
+    use gpui::Focusable;
+    let window = cx.add_window(super::Converter::new);
+    let root = window.root(cx).unwrap();
+    root.update(cx, |view, cx| {
+        view.model = ready();
+        view.sync_trim(cx);
+    });
+    window
+        .update(cx, |view, window, cx| {
+            view.start.read(cx).focus_handle(cx).focus(window)
+        })
+        .unwrap();
+    cx.run_until_parked();
+    cx.simulate_keystrokes(window.into(), "tab");
+    window
+        .update(cx, |view, window, cx| {
+            assert!(view.end.read(cx).focus_handle(cx).is_focused(window))
+        })
+        .unwrap();
+    cx.simulate_keystrokes(window.into(), "shift-tab");
+    window
+        .update(cx, |view, window, cx| {
+            assert!(view.start.read(cx).focus_handle(cx).is_focused(window))
+        })
+        .unwrap();
+    root.read_with(cx, |view, cx| {
+        assert_eq!(view.start.read(cx).text(), "0");
+        assert_eq!(view.end.read(cx).text(), "3");
+    });
+}
+
+#[gpui::test]
+fn short_movie_slider_minimum_still_clamps_to_actual_source(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    root.update(cx, |view, cx| {
+        view.model.info.as_mut().unwrap().duration = 0.07;
+        view.model.options.trim_end = Some(0.07);
+        super::model::move_trim(&mut view.model.options, 0.07, false, 0.07);
+        view.sync_trim(cx);
+        assert!(view.apply_trim(cx));
+        assert_eq!(view.model.plan().unwrap().end(), 0.07);
+    });
+}
+
+#[gpui::test]
+fn rapid_pause_play_preserves_every_prefetched_frame_exactly_once(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let path = destination();
+    root.update(cx, |view, cx| {
+        view.model.options.trim_end = Some(0.3);
+        view.model.options.loops = false;
+        view.convert(path.clone(), cx);
+    });
+    cx.run_until_parked();
+    let result = root.read_with(cx, |view, _| view.model.result.clone().unwrap());
+    let mut reader = super::model::open_preview(&result).unwrap();
+    let mut expected = Vec::new();
+    while let Some(frame) = reader.next_frame().unwrap() {
+        expected.push(frame);
+    }
+    let expected_pixels: Vec<Vec<u8>> = expected
+        .iter()
+        .map(|frame| {
+            cx.update(|cx| {
+                gpui::Image::from_bytes(gpui::ImageFormat::Png, frame.png.clone())
+                    .to_image_data(cx.svg_renderer())
+                    .unwrap()
+                    .as_bytes(0)
+                    .unwrap()
+                    .to_vec()
+            })
+        })
+        .collect();
+    root.read_with(cx, |view, _| {
+        assert_eq!(
+            view.preview.image.as_ref().unwrap().as_bytes(0).unwrap(),
+            expected_pixels[0]
+        )
+    });
+    root.update(cx, |view, cx| view.toggle_preview(cx));
+    cx.run_until_parked();
+    for (frame, pixels) in expected.iter().zip(expected_pixels.iter()).skip(1) {
+        root.read_with(cx, |view, _| {
+            assert_eq!(
+                view.preview.image.as_ref().unwrap().as_bytes(0).unwrap(),
+                pixels.as_slice()
+            )
+        });
+        // Pending decode/deadline must survive repeated Pause/Play without an
+        // extra decode or a discarded already-read frame.
+        root.update(cx, |view, cx| {
+            for _ in 0..3 {
+                view.toggle_preview(cx);
+                view.toggle_preview(cx);
+            }
+        });
+        cx.run_until_parked();
+        root.read_with(cx, |view, _| {
+            assert_eq!(
+                view.preview.image.as_ref().unwrap().as_bytes(0).unwrap(),
+                pixels.as_slice()
+            )
+        });
+        cx.executor()
+            .advance_clock(std::time::Duration::from_millis(
+                u64::from(frame.delay_centiseconds) * 10,
+            ));
+        cx.run_until_parked();
+    }
+    root.read_with(cx, |view, _| assert!(!view.preview.playing));
+    std::fs::remove_file(path).unwrap();
+}
+#[gpui::test]
+fn prepared_render_image_uses_gpui_bgra_and_opaque_export_alpha(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let path = destination();
+    root.update(cx, |view, cx| {
+        view.model.options.trim_start = 0.5;
+        view.model.options.trim_end = Some(0.6);
+        view.convert(path.clone(), cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        let pixels = view.preview.image.as_ref().unwrap().as_bytes(0).unwrap();
+        // GPUI0.2.2 Image::to_image_data swaps PNG RGBA's R/B exactly once.
+        // The own GIF encoder's opaque output must retain alpha255.
+        assert_eq!(&pixels[0..4], &[180, 130, 230, 255]);
+        assert_eq!(&pixels[200 * 4..200 * 4 + 4], &[180, 130, 40, 255]);
+        let bottom = (100 * 320 + 200) * 4;
+        assert_eq!(&pixels[bottom..bottom + 4], &[180, 60, 40, 255]);
+    });
+    std::fs::remove_file(path).unwrap();
+}
+
+#[gpui::test]
+fn closing_retained_view_releases_prefetch_reader_image_and_timer(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let path = destination();
+    root.update(cx, |view, cx| {
+        view.model.options.trim_end = Some(0.2);
+        view.convert(path.clone(), cx);
+    });
+    cx.run_until_parked();
+    root.update(cx, |view, cx| view.toggle_preview(cx));
+    cx.run_until_parked();
+    root.update(cx, |view, cx| {
+        assert!(view.preview.loading);
+        view.close(cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(!view.preview.loading);
+        assert!(!view.preview.playing);
+        assert!(view.preview.image.is_none());
+    });
+    cx.executor()
+        .advance_clock(std::time::Duration::from_secs(700));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| assert!(view.preview.image.is_none()));
+    std::fs::remove_file(path).unwrap();
+}
+#[test]
+fn malformed_export_delay_is_rejected_before_scheduling() {
+    let mut model = ready();
+    model.options.trim_end = Some(0.1);
+    let path = destination();
+    let work = model
+        .begin(path.clone(), ReplacePolicy::RefuseExisting)
+        .unwrap();
+    let result = work.run().unwrap();
+    let mut bytes = std::fs::read(&path).unwrap();
+    let control = bytes
+        .windows(3)
+        .position(|bytes| bytes == [0x21, 0xf9, 0x04])
+        .unwrap();
+    bytes[control + 4] = 0xff;
+    bytes[control + 5] = 0xff;
+    std::fs::write(&path, bytes).unwrap();
+    let mut preview = super::model::open_preview(&result).unwrap();
+    assert!(preview.next_frame().is_err());
+    std::fs::remove_file(path).unwrap();
+}
+#[gpui::test]
+fn initial_command_o_admission_is_guarded_before_native_chooser(cx: &mut gpui::TestAppContext) {
+    // GPUI TestPlatform::prompt_for_paths is unimplemented; test the exact
+    // admission used by the event route without pretending to open that dialog.
+    let window = cx.add_window(super::Converter::new);
+    let root = window.root(cx).unwrap();
+    let event = gpui::KeyDownEvent {
+        keystroke: gpui::Keystroke::parse("cmd-o").unwrap(),
+        is_held: false,
+    };
+    root.update(cx, |view, _| {
+        assert!(view.accepts_choose_shortcut(&event));
+        view.model.dialog = true;
+        assert!(!view.accepts_choose_shortcut(&event));
+        view.model.dialog = false;
+        view.model.source = Some(Source::Synthetic);
+        assert!(!view.accepts_choose_shortcut(&event));
+    });
+}
+
+#[gpui::test]
+fn actual_source_worker_delivers_initial_start_end_and_latest_coalesced_frame(
+    cx: &mut gpui::TestAppContext,
+) {
+    let window = cx.add_window(super::Converter::new);
+    let root = window.root(cx).unwrap();
+    root.update(cx, |view, cx| view.load(Source::Synthetic, cx));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.source_preview.image.is_some());
+        assert_eq!(view.source_preview.actual, Some(0.));
+        assert!(!view.shows_result);
+        assert!(!view.source_preview.loading);
+    });
+    root.update(cx, |view, cx| {
+        for index in 1..60 {
+            view.seek_source(index as f64 / 20., cx);
+        }
+        view.seek_source(3., cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert_eq!(view.source_preview.requested, 3.);
+        assert_eq!(view.source_preview.actual, Some(2.95));
+        assert!(!view.source_preview.loading);
+    });
+    root.update(cx, |view, cx| view.seek_source(0.5, cx));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert_eq!(view.source_preview.actual, Some(0.5))
+    });
+}
+
+#[gpui::test]
+fn movie_gif_switch_keeps_source_owner_and_cancelled_retry_result(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let output = destination();
+    let retry = destination();
+    root.update(cx, |view, cx| {
+        view.seek_source(0.5, cx);
+        view.model.options.trim_end = Some(0.2);
+        view.convert(output.clone(), cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.shows_result);
+        assert!(view.preview.image.is_some());
+        assert!(view.model.selected.is_some());
+    });
+    root.update(cx, |view, cx| view.show_movie(cx));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(!view.shows_result);
+        assert!(view.source_preview.image.is_some());
+    });
+    root.update(cx, |view, cx| {
+        view.show_gif(cx);
+        view.convert(retry.clone(), cx);
+        view.model.cancel();
+        view.model.cancel();
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert_eq!(view.model.result.as_ref().unwrap().path, output);
+        assert!(view.preview.image.is_some());
+        assert!(!view.preview.loading);
+    });
+    assert!(!retry.exists());
+    std::fs::remove_file(output).unwrap();
+}
+
+#[gpui::test]
+fn rechoose_and_retained_close_fence_pending_source_preview_without_resurrection(
+    cx: &mut gpui::TestAppContext,
+) {
+    let root = view(cx);
+    root.update(cx, |view, cx| {
+        view.seek_source(2., cx);
+        view.load(Source::Synthetic, cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert_eq!(view.source_preview.actual, Some(0.))
+    });
+    root.update(cx, |view, cx| {
+        view.seek_source(1., cx);
+        view.close(cx);
+    });
+    let fresh = cx.add_window(super::Converter::new).root(cx).unwrap();
+    fresh.update(cx, |view, cx| view.load(Source::Synthetic, cx));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.source_preview.image.is_none());
+        assert!(!view.source_preview.loading);
+        assert!(view.model.selected.is_none());
+        assert!(view.model.source.is_none());
+    });
+    fresh.read_with(cx, |view, _| {
+        assert_eq!(view.source_preview.actual, Some(0.))
+    });
+}
+
+#[gpui::test]
+fn cancelling_export_while_initial_preview_retires_restores_source_review(
+    cx: &mut gpui::TestAppContext,
+) {
+    let root = view(cx);
+    let output = destination();
+    root.update(cx, |view, cx| {
+        view.seek_source(0., cx);
+        view.convert(output.clone(), cx);
+        view.model.cancel();
+        view.model.cancel();
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.model.result.is_none());
+        assert!(view.source_preview.image.is_some());
+        assert_eq!(view.source_preview.actual, Some(0.));
+        assert!(!view.source_preview.loading);
+        assert!(!view.model.busy());
+        assert!(view.model.status.contains("cancelled before publication"));
+    });
+    assert!(!output.exists());
+}
+
+#[gpui::test]
+fn trim_seek_preserves_explicit_gif_selection_and_playback(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let output = destination();
+    root.update(cx, |view, cx| {
+        view.model.options.trim_end = Some(0.2);
+        view.convert(output.clone(), cx);
+    });
+    cx.run_until_parked();
+    root.update(cx, |view, cx| {
+        view.toggle_preview(cx);
+        view.seek_source(0.5, cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.shows_result);
+        assert!(view.preview.playing);
+        assert_eq!(view.source_preview.actual, Some(0.5));
+    });
+    root.update(cx, |view, cx| view.show_movie(cx));
+    root.read_with(cx, |view, _| {
+        assert!(!view.shows_result);
+        assert!(!view.preview.playing);
+    });
+    std::fs::remove_file(output).unwrap();
+}

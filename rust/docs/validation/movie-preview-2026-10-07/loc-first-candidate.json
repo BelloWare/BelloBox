@@ -1,0 +1,1109 @@
+{
+  "baseline_commit": "3f370a45b9baca8101b82b2c6b8c924b1096a1b7",
+  "baseline_tree": "74f24a80a549f22d1db413d5a339388393db6111",
+  "baseline_counts": {
+    "production": 46738,
+    "support": 24200,
+    "benchmark": 105
+  },
+  "counting_rule": "Reviewed nonblank physical Rust lines including comments. Positive cfg test/DEBUG spans begin at attributes; preceding comments remain in their containing class. Whole generated-only feature modules and sealed generated fixture constructors are support, despite being optionally compiled for cross-crate CI. Native macOS body, source identity and ordinary cfg(any(target_os,test)) helpers are now production. No feature percentage.",
+  "reclassification_rule": "Per-file SequenceMatcher(autojunk=False) of stripped nonblank lines records literal preserved lines crossing categories. Reworked/reordered/cross-file moves count as removal/addition. Every category equation is checked.",
+  "files": [
+    {
+      "path": "rust/crates/bello-platform/src/movie.rs",
+      "before_sha256": "d77a7d3c4d030ab6b441412731a1b95adc976b17a96384b7702b04bcafcc28c3",
+      "after_sha256": "6bb3b5efb84e8bf932865cf404c02fc3bad64cefebd453298da6b989adfe06e2",
+      "before_nonblank": 409,
+      "after_nonblank": 661,
+      "before_reviewed_support_ranges_1based": [
+        [
+          9,
+          14
+        ],
+        [
+          49,
+          56
+        ],
+        [
+          128,
+          143
+        ],
+        [
+          156,
+          157
+        ],
+        [
+          168,
+          179
+        ],
+        [
+          196,
+          210
+        ],
+        [
+          219,
+          220
+        ],
+        [
+          243,
+          246
+        ],
+        [
+          303,
+          418
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          15,
+          16
+        ],
+        [
+          164,
+          167
+        ],
+        [
+          191,
+          194
+        ],
+        [
+          201,
+          204
+        ],
+        [
+          583,
+          671
+        ]
+      ],
+      "production_delta": 330,
+      "support_delta": -78,
+      "added_production": 186,
+      "removed_production": 17,
+      "added_support": 101,
+      "removed_support": 18,
+      "support_to_production": 161,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            10,
+            10
+          ],
+          "after": [
+            10,
+            10
+          ]
+        },
+        {
+          "before": [
+            12,
+            12
+          ],
+          "after": [
+            14,
+            14
+          ]
+        },
+        {
+          "before": [
+            51,
+            56
+          ],
+          "after": [
+            52,
+            57
+          ]
+        },
+        {
+          "before": [
+            129,
+            143
+          ],
+          "after": [
+            130,
+            144
+          ]
+        },
+        {
+          "before": [
+            157,
+            157
+          ],
+          "after": [
+            248,
+            248
+          ]
+        },
+        {
+          "before": [
+            169,
+            170
+          ],
+          "after": [
+            278,
+            279
+          ]
+        },
+        {
+          "before": [
+            172,
+            173
+          ],
+          "after": [
+            282,
+            283
+          ]
+        },
+        {
+          "before": [
+            175,
+            179
+          ],
+          "after": [
+            285,
+            289
+          ]
+        },
+        {
+          "before": [
+            197,
+            201
+          ],
+          "after": [
+            310,
+            314
+          ]
+        },
+        {
+          "before": [
+            203,
+            205
+          ],
+          "after": [
+            316,
+            318
+          ]
+        },
+        {
+          "before": [
+            207,
+            210
+          ],
+          "after": [
+            320,
+            323
+          ]
+        },
+        {
+          "before": [
+            220,
+            220
+          ],
+          "after": [
+            367,
+            367
+          ]
+        },
+        {
+          "before": [
+            244,
+            246
+          ],
+          "after": [
+            389,
+            391
+          ]
+        },
+        {
+          "before": [
+            304,
+            318
+          ],
+          "after": [
+            465,
+            479
+          ]
+        },
+        {
+          "before": [
+            320,
+            328
+          ],
+          "after": [
+            481,
+            489
+          ]
+        },
+        {
+          "before": [
+            330,
+            395
+          ],
+          "after": [
+            491,
+            556
+          ]
+        },
+        {
+          "before": [
+            397,
+            418
+          ],
+          "after": [
+            558,
+            579
+          ]
+        }
+      ],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/macos.rs",
+      "before_sha256": "2067f6cbc06ace247cc0367bfc9f29da25bbc217df9f51c3d4ef72bb75f969e3",
+      "after_sha256": "a80f925d690da68a10e9b8cfcd986e32524d292f1390a41ef77a2afdf027d970",
+      "before_nonblank": 524,
+      "after_nonblank": 585,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          532
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          591,
+          594
+        ]
+      ],
+      "production_delta": 581,
+      "support_delta": -520,
+      "added_production": 79,
+      "removed_production": 0,
+      "added_support": 2,
+      "removed_support": 20,
+      "support_to_production": 502,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            1,
+            24
+          ],
+          "after": [
+            1,
+            24
+          ]
+        },
+        {
+          "before": [
+            26,
+            30
+          ],
+          "after": [
+            26,
+            30
+          ]
+        },
+        {
+          "before": [
+            32,
+            32
+          ],
+          "after": [
+            34,
+            34
+          ]
+        },
+        {
+          "before": [
+            35,
+            35
+          ],
+          "after": [
+            42,
+            42
+          ]
+        },
+        {
+          "before": [
+            38,
+            45
+          ],
+          "after": [
+            55,
+            62
+          ]
+        },
+        {
+          "before": [
+            47,
+            47
+          ],
+          "after": [
+            64,
+            64
+          ]
+        },
+        {
+          "before": [
+            49,
+            58
+          ],
+          "after": [
+            66,
+            75
+          ]
+        },
+        {
+          "before": [
+            60,
+            60
+          ],
+          "after": [
+            77,
+            77
+          ]
+        },
+        {
+          "before": [
+            62,
+            62
+          ],
+          "after": [
+            78,
+            78
+          ]
+        },
+        {
+          "before": [
+            65,
+            137
+          ],
+          "after": [
+            83,
+            155
+          ]
+        },
+        {
+          "before": [
+            140,
+            140
+          ],
+          "after": [
+            158,
+            158
+          ]
+        },
+        {
+          "before": [
+            142,
+            145
+          ],
+          "after": [
+            161,
+            164
+          ]
+        },
+        {
+          "before": [
+            150,
+            156
+          ],
+          "after": [
+            166,
+            172
+          ]
+        },
+        {
+          "before": [
+            159,
+            194
+          ],
+          "after": [
+            175,
+            210
+          ]
+        },
+        {
+          "before": [
+            195,
+            197
+          ],
+          "after": [
+            212,
+            214
+          ]
+        },
+        {
+          "before": [
+            198,
+            198
+          ],
+          "after": [
+            235,
+            235
+          ]
+        },
+        {
+          "before": [
+            200,
+            212
+          ],
+          "after": [
+            237,
+            249
+          ]
+        },
+        {
+          "before": [
+            213,
+            213
+          ],
+          "after": [
+            251,
+            251
+          ]
+        },
+        {
+          "before": [
+            215,
+            272
+          ],
+          "after": [
+            253,
+            310
+          ]
+        },
+        {
+          "before": [
+            274,
+            279
+          ],
+          "after": [
+            312,
+            317
+          ]
+        },
+        {
+          "before": [
+            280,
+            310
+          ],
+          "after": [
+            319,
+            349
+          ]
+        },
+        {
+          "before": [
+            311,
+            365
+          ],
+          "after": [
+            371,
+            425
+          ]
+        },
+        {
+          "before": [
+            367,
+            375
+          ],
+          "after": [
+            427,
+            435
+          ]
+        },
+        {
+          "before": [
+            377,
+            394
+          ],
+          "after": [
+            437,
+            454
+          ]
+        },
+        {
+          "before": [
+            396,
+            529
+          ],
+          "after": [
+            456,
+            589
+          ]
+        }
+      ],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/source_file.rs",
+      "before_sha256": "5c5a0b468c017d7e7220a78157ef7859319e45f2e4e7b7dfe5abec85f4ae04de",
+      "after_sha256": "03b3ba756108f59a2a3847e598efb7e019ae139ded55a6b000205190ac2d5d7a",
+      "before_nonblank": 56,
+      "after_nonblank": 67,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          57
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [],
+      "production_delta": 67,
+      "support_delta": -56,
+      "added_production": 13,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 2,
+      "support_to_production": 54,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            1,
+            2
+          ],
+          "after": [
+            1,
+            2
+          ]
+        },
+        {
+          "before": [
+            4,
+            6
+          ],
+          "after": [
+            4,
+            6
+          ]
+        },
+        {
+          "before": [
+            8,
+            9
+          ],
+          "after": [
+            8,
+            9
+          ]
+        },
+        {
+          "before": [
+            10,
+            14
+          ],
+          "after": [
+            11,
+            15
+          ]
+        },
+        {
+          "before": [
+            15,
+            22
+          ],
+          "after": [
+            17,
+            24
+          ]
+        },
+        {
+          "before": [
+            24,
+            32
+          ],
+          "after": [
+            32,
+            40
+          ]
+        },
+        {
+          "before": [
+            33,
+            38
+          ],
+          "after": [
+            42,
+            47
+          ]
+        },
+        {
+          "before": [
+            39,
+            47
+          ],
+          "after": [
+            49,
+            57
+          ]
+        },
+        {
+          "before": [
+            48,
+            57
+          ],
+          "after": [
+            59,
+            68
+          ]
+        }
+      ],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/tests.rs",
+      "before_sha256": "d9c967cbe4ee34682ab904ae6378c182b58c03d170a88d69d60cd0d92fce3275",
+      "after_sha256": "bb4be3d8d41880a3309f832ab41e1a9c7b8a20f3ccc3d08a4534fbefbba6efc7",
+      "before_nonblank": 197,
+      "after_nonblank": 208,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          198
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          211
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 11,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 43,
+      "removed_support": 32,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/macos/tests.rs",
+      "before_sha256": "aa480769284b7755e798111e74151af9ced6595a232cd2d9e52c688652d740a6",
+      "after_sha256": "dd9159cf0ee21b4e47fdcb3e7192a7feebc3d8754f2def4408c3771b9945c4d4",
+      "before_nonblank": 556,
+      "after_nonblank": 512,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          560
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          519
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": -44,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 136,
+      "removed_support": 180,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/macos/fixtures.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "e70bea9aa7d8ad421361afb88ed189254d39f8d2ac511041b1683d478066d95c",
+      "before_nonblank": 0,
+      "after_nonblank": 186,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          187
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 186,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 186,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/retirement.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "8d2824c9a9c08b75399ddae508093043cc73bfe8a2614df83d2134829c19da36",
+      "before_nonblank": 0,
+      "after_nonblank": 49,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          26,
+          49
+        ]
+      ],
+      "production_delta": 25,
+      "support_delta": 24,
+      "added_production": 25,
+      "removed_production": 0,
+      "added_support": 24,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter.rs",
+      "before_sha256": "0635a0e3b66a3c016d2111e43f780cd9ecb8eabef2f462637bb4004e35abd15e",
+      "after_sha256": "d639323ea581953da66dd0ed36ed950d377c47f8835190137042f0ef2de67f63",
+      "before_nonblank": 560,
+      "after_nonblank": 577,
+      "before_reviewed_support_ranges_1based": [
+        [
+          5,
+          6
+        ],
+        [
+          60,
+          63
+        ],
+        [
+          74,
+          77
+        ],
+        [
+          294,
+          308
+        ],
+        [
+          507,
+          508
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          4,
+          5
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          70,
+          73
+        ],
+        [
+          88,
+          91
+        ],
+        [
+          297,
+          311
+        ],
+        [
+          522,
+          524
+        ]
+      ],
+      "production_delta": 14,
+      "support_delta": 3,
+      "added_production": 49,
+      "removed_production": 35,
+      "added_support": 4,
+      "removed_support": 1,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/model.rs",
+      "before_sha256": "5464da8edfada14672c5f11d20bde2d9bb0d248e5a4d88aaa79584e339635278",
+      "after_sha256": "2e91724d19603d2abeb65e1ccb5e5c4528d64862ad1771cd6c2f379850194674",
+      "before_nonblank": 356,
+      "after_nonblank": 484,
+      "before_reviewed_support_ranges_1based": [
+        [
+          21,
+          22
+        ],
+        [
+          32,
+          33
+        ],
+        [
+          41,
+          47
+        ],
+        [
+          241,
+          250
+        ],
+        [
+          277,
+          304
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          21,
+          24
+        ],
+        [
+          34,
+          37
+        ],
+        [
+          44,
+          55
+        ],
+        [
+          76,
+          77
+        ],
+        [
+          107,
+          113
+        ],
+        [
+          138,
+          159
+        ],
+        [
+          352,
+          364
+        ],
+        [
+          396,
+          433
+        ]
+      ],
+      "production_delta": 75,
+      "support_delta": 53,
+      "added_production": 99,
+      "removed_production": 21,
+      "added_support": 58,
+      "removed_support": 8,
+      "support_to_production": 0,
+      "production_to_support": 3,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [
+        {
+          "before": [
+            48,
+            49
+          ],
+          "after": [
+            145,
+            146
+          ]
+        },
+        {
+          "before": [
+            50,
+            50
+          ],
+          "after": [
+            159,
+            159
+          ]
+        }
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/tests.rs",
+      "before_sha256": "146bfc4b1ab6732477352f13d6d5df961965b1704e1dabb37e3bb3d1c77b3e87",
+      "after_sha256": "3b27c4efc3d751cbb5edac75e102ab5cd5ef8d8935795aa84002184de01c60c2",
+      "before_nonblank": 814,
+      "after_nonblank": 962,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          824
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          977
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 148,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 148,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "9996dca6ea781cc1147ec87099d42b327c3b8c413a02ba9979ba031760ce2b93",
+      "before_nonblank": 0,
+      "after_nonblank": 207,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          208
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 207,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 207,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/source_preview.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "41e218fa39e8f36c22cc504a858c63e4cb33de5b1765ebcacd0b8b75ac3faff4",
+      "before_nonblank": 0,
+      "after_nonblank": 154,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [],
+      "production_delta": 154,
+      "support_delta": 0,
+      "added_production": 154,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/worker.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "b6fdbe234bbe4bdb91770bb36607fae185fe3b7555c14f93e17f1350cf5219a4",
+      "before_nonblank": 0,
+      "after_nonblank": 197,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          142,
+          199
+        ]
+      ],
+      "production_delta": 139,
+      "support_delta": 58,
+      "added_production": 139,
+      "removed_production": 0,
+      "added_support": 58,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif.rs",
+      "before_sha256": "e7e46e45bc6ab855ebecd2e08845d32b5ded40e9b5c482e28c80a60ffc2e5c64",
+      "after_sha256": "93419c9bb0a3d4ab1a0fc849056313d518948a6e045c503669a71eb024bce08c",
+      "before_nonblank": 355,
+      "after_nonblank": 365,
+      "before_reviewed_support_ranges_1based": [
+        [
+          10,
+          11
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          10,
+          11
+        ]
+      ],
+      "production_delta": 10,
+      "support_delta": 0,
+      "added_production": 10,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_encode.rs",
+      "before_sha256": "a21e3d38e57fad1672c2645e7d38c9190de42b31876e61bce7e772626f14ddd7",
+      "after_sha256": "ed1b26ef3f58c89de3bd60463733d9a12ac334491e3d3a48ca28f30dfadd3360",
+      "before_nonblank": 242,
+      "after_nonblank": 244,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [],
+      "production_delta": 2,
+      "support_delta": 0,
+      "added_production": 2,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_tests.rs",
+      "before_sha256": "4b9d17b1bfac7a3bec0fde12f9fbd7e51cadd568cb258ca4dcb286ea376bbe3c",
+      "after_sha256": "10e86ceae5bbd4d1f0cc82e199f5a161eea2bc4ee280dfc941eabf559b4cad24",
+      "before_nonblank": 942,
+      "after_nonblank": 1065,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          950
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          1075
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 123,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 123,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": []
+    }
+  ],
+  "totals": {
+    "production_delta": 1397,
+    "support_delta": 115,
+    "added_production": 756,
+    "removed_production": 73,
+    "added_support": 1090,
+    "removed_support": 261,
+    "support_to_production": 717,
+    "production_to_support": 3
+  },
+  "result_counts": {
+    "production": 48135,
+    "support": 24315,
+    "benchmark": 105
+  }
+}

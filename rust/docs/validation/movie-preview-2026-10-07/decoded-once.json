@@ -1,0 +1,25 @@
+{
+  "file": "once.gif",
+  "sha256": "08b822fe2b83702dafde95c55cf7fb76ae6c045f9599cb30d9d6c4e5d2d2d5de",
+  "bytes": 10407,
+  "mode": "0o600",
+  "size": [
+    320,
+    180
+  ],
+  "frames": 10,
+  "duration_ms": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": null,
+  "magenta_sentinel_pixels": 0
+}

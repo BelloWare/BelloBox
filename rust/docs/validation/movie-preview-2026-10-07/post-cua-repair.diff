@@ -1,0 +1,145 @@
+--- first-candidate/rust/crates/bellobox-app/src/gif_converter.rs
++++ post-cua-fix/rust/crates/bellobox-app/src/gif_converter.rs
+@@ -267,7 +267,8 @@
+             return;
+         };
+         self.preview.playing = false;
+-        self.source_preview.loading = false;
++        // A preempted source seek remains visibly pending until its intended
++        // time can be restored after this export physically retires.
+         let generation = work.generation;
+         self.worker.submit(worker::Request::Export(work));
+         self.drive_worker(cx);
+@@ -500,7 +501,7 @@
+                     .when_some(if self.shows_result { self.preview.image.clone() } else { self.source_preview.image.clone() }, |el, image| el.child(img(image).h(px(140.)).object_fit(ObjectFit::Contain)))
+                     .child(div().text_xs().text_color(p.secondary).child(if self.shows_result { "Exported GIF preview · starts paused".to_string() }
+                         else if self.source_preview.loading { format!("Seeking source to {:.3} s…", self.source_preview.requested) }
+-                        else if let Some(actual) = self.source_preview.actual { format!("Movie · paused · requested {:.3} s · frame {:.3} s", self.source_preview.requested, actual) }
++                        else if let Some(actual) = self.source_preview.actual { format!("Movie · paused · requested {:.3} s · frame {:.3} s", self.source_preview.completed_request.unwrap_or(self.source_preview.requested), actual) }
+                         else if self.model.loading { "Reading movie metadata…".into() }
+                         else { "Native movie decoding remains unavailable. Continuous movie playback and audio are not implemented.".into() })))
+                 .when(self.model.result.is_some(), |el| el.child(div().flex().gap_2()
+--- first-candidate/rust/crates/bellobox-app/src/gif_converter/tests.rs
++++ post-cua-fix/rust/crates/bellobox-app/src/gif_converter/tests.rs
+@@ -975,3 +975,60 @@
+     });
+     std::fs::remove_file(output).unwrap();
+ }
++
++#[gpui::test]
++fn preempted_seek_restores_latest_request_after_export_with_an_older_frame_and_prior_gif(
++    cx: &mut gpui::TestAppContext,
++) {
++    for (cancel, prior_gif) in [(true, false), (false, false), (true, true)] {
++        let root = view(cx);
++        let prior = destination();
++        let output = destination();
++        if prior_gif {
++            root.update(cx, |view, cx| {
++                view.model.options.trim_end = Some(0.2);
++                view.convert(prior.clone(), cx);
++            });
++            cx.run_until_parked();
++        }
++        root.update(cx, |view, cx| view.seek_source(3., cx));
++        cx.run_until_parked();
++        root.read_with(cx, |view, _| {
++            assert_eq!(view.source_preview.actual, Some(2.95));
++            assert_eq!(view.source_preview.completed_request, Some(3.));
++            assert!(view.source_preview.pending_request.is_none());
++        });
++        root.update(cx, |view, cx| {
++            view.model.options.trim_start = 0.642;
++            view.model.options.trim_end = Some(0.842);
++            view.seek_source(0.642, cx);
++            view.convert(output.clone(), cx);
++            if cancel {
++                view.model.cancel();
++            }
++            assert!(
++                view.source_preview.loading,
++                "an older image is not a completed new seek"
++            );
++            assert_eq!(view.source_preview.pending_request, Some(0.642));
++            assert_eq!(view.source_preview.completed_request, Some(3.));
++        });
++        cx.run_until_parked();
++        root.read_with(cx, |view, _| {
++            assert!(!view.source_preview.loading);
++            assert_eq!(view.source_preview.completed_request, Some(0.642));
++            assert_eq!(view.source_preview.actual, Some(0.6));
++            assert!(view.source_preview.pending_request.is_none());
++            assert_eq!(view.shows_result, !cancel || prior_gif);
++            if prior_gif {
++                assert_eq!(view.model.result.as_ref().unwrap().path, prior);
++            }
++        });
++        assert_eq!(output.exists(), !cancel);
++        for path in [prior, output] {
++            if path.exists() {
++                std::fs::remove_file(path).unwrap();
++            }
++        }
++    }
++}
+--- first-candidate/rust/crates/bellobox-app/src/gif_converter/source_preview.rs
++++ post-cua-fix/rust/crates/bellobox-app/src/gif_converter/source_preview.rs
+@@ -8,6 +8,8 @@
+     pub loading: bool,
+     pub requested: f64,
+     pub actual: Option<f64>,
++    pub completed_request: Option<f64>,
++    pub pending_request: Option<f64>,
+     revision: u64,
+ }
+ impl SourcePreview {
+@@ -16,6 +18,8 @@
+         self.loading = false;
+         self.requested = 0.;
+         self.actual = None;
++        self.completed_request = None;
++        self.pending_request = None;
+         if let Some(image) = self.image.take() {
+             cx.drop_image(image, None);
+         }
+@@ -31,6 +35,7 @@
+         };
+         self.source_preview.revision += 1;
+         self.source_preview.requested = seconds;
++        self.source_preview.pending_request = Some(seconds);
+         self.source_preview.loading = true;
+         // Swift trim seeking updates the movie without changing the explicit
+         // Movie/GIF choice or the independent exported GIF's playback state.
+@@ -116,6 +121,8 @@
+                                     cx.drop_image(old, None);
+                                 }
+                                 this.source_preview.requested = frame.requested;
++                                this.source_preview.completed_request = Some(frame.requested);
++                                this.source_preview.pending_request = None;
+                                 this.source_preview.actual = Some(frame.actual);
+                             }
+                             (Err(error), _) | (_, Some(Err(error))) => {
+@@ -138,10 +145,19 @@
+                         // restarts its paused reader, never a stale loading task.
+                         if this.model.result.is_some() {
+                             this.preview_result(cx);
+-                        } else if this.source_preview.image.is_none() {
+-                            // Convert may have retired the initial source seek.
+-                            // Cancellation/failure must leave usable movie review.
+-                            this.seek_source(this.model.options.trim_start, cx);
++                        }
++                        // Export may preempt a seek while retaining an older
++                        // image. Keep that image under a loading caption, then
++                        // restore the latest intended request after physical
++                        // export retirement, independently of GIF review.
++                        let seek = this.source_preview.pending_request.or_else(|| {
++                            this.source_preview
++                                .image
++                                .is_none()
++                                .then_some(this.model.options.trim_start)
++                        });
++                        if let Some(seconds) = seek {
++                            this.seek_source(seconds, cx);
+                         }
+                     }
+                     _ => {}

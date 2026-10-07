@@ -1,0 +1,560 @@
+{
+  "snapshot_utc": "2026-10-07T11:16:00Z",
+  "baseline_commit": "3f370a45b9baca8101b82b2c6b8c924b1096a1b7",
+  "baseline_tree": "74f24a80a549f22d1db413d5a339388393db6111",
+  "candidate_binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+  "source_manifest": "source-inputs.json",
+  "checks": [
+    {
+      "command": "cargo test --locked -p bellobox-app gif_converter:: -- --test-threads=1",
+      "result": "44 passed on final reviewed source"
+    },
+    {
+      "command": "cargo test --locked -p bellobox-core recording::gif::",
+      "result": "32 passed; finalization seam independently reviewed"
+    },
+    {
+      "command": "cargo test --locked -p bello-platform",
+      "result": "137 passed, 3 pre-existing ignored subprocess tests"
+    },
+    {
+      "command": "cargo clippy --locked -p bellobox-app -p bello-platform --all-targets --features movie-fixtures -- -D warnings",
+      "result": "passed; ordinary app all-target strict Clippy rerun after metadata-only SourceFrame Debug and final source-seek recovery/selection fixes"
+    },
+    {
+      "command": "cargo clippy --locked -p bello-platform --target aarch64-apple-darwin --all-targets --features movie-fixtures --no-deps -- -D warnings",
+      "result": "passed metadata checking only; no Apple SDK/runtime claim"
+    },
+    {
+      "command": "cargo check --locked -p bellobox-app --no-default-features",
+      "result": "passed"
+    },
+    {
+      "command": "cargo rustc --locked -p bellobox-app --bin bellobox -- -C debug-assertions=no --emit=metadata",
+      "result": "passed warning-free app metadata, existing transitive future-incompatibility notice only"
+    },
+    {
+      "command": "cargo rustc --locked -p bellobox-app --bin bellobox --tests --profile test --message-format=json -- -C debug-assertions=no --emit=link; run exact returned artifact gif_converter:: --test-threads=1",
+      "result": "44 passed on final reviewed source; app-only nonDEBUG test artifact, not whole-workspace optimized release"
+    },
+    {
+      "command": "cargo build --locked -p bellobox-app",
+      "result": "passed; copied immutable reviewed binary before GUI QA"
+    },
+    {
+      "command": "cargo fmt --all -- --check; git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "python3 rust/scripts/verify-movie-preview-loc.py --repo .",
+      "result": "all16 source files/hashes/ranges/equations pass, independently checked by parent"
+    }
+  ],
+  "gui_status": "Completed: broad first-candidate matrix retained separately; final immutable candidate passed repaired source-preemption race, repeated coalescing, Save cancel/reopen, decoded saved GIF, Movie/GIF switch, pending-preview rechoose/close, held-export previous-result retention/retry/close and clean reopen.",
+  "native_execution": "Pending exact published Apple CI. Two generated native host tests and explicit workflow step added; normal movie gate stays closed.",
+  "limits": [
+    "Linux generated-pixel fixture does not decode a movie",
+    "No native capture, recording, permissions, audio, continuous movie playback or macOS GUI acceptance",
+    "Rust full-frame then bilinear export differs from Swift output-sized CoreGraphics Medium render; no tolerance invented",
+    "URL/source snapshot is ordinary change detection, not frozen bytes or atomic filesystem identity",
+    "Physical callback drain can remain held if the framework never releases its block"
+  ],
+  "evidence": [
+    {
+      "file": "01-initial-source.jpg",
+      "sha256": "de2ccb81c6648be3014ac7c22f35240db565e88f5476f2b230736627946a1ac3",
+      "bytes": 76800,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "02-end-seek.jpg",
+      "sha256": "afde5dcfc7df5388098e95c02b5813820b85d51ea720d4308cb8143d7cc010ff",
+      "bytes": 78054,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "03-exact-trim.jpg",
+      "sha256": "f165bd4ae9257ff6d0ab0c4ee6ea7f6029de8baf0110e5447e93204efda2c3e2",
+      "bytes": 81597,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "04-save-dialog.jpg",
+      "sha256": "1123cf82a7c1e686596d2e3d5a0e2541058d250b28b043dad33a810641f000c6",
+      "bytes": 55143,
+      "size": [
+        1096,
+        822
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "05-encoding.jpg",
+      "sha256": "1c91a068df4b2cf54a82500e85b32ebdeb0fb1b23542b20ab25847c6295b02ee",
+      "bytes": 78705,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "06-once-result.jpg",
+      "sha256": "49b9eb8bf16533b76f4ed2c8469b26566af04244672962dbfd13063b72451ebf",
+      "bytes": 71480,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "07-once-ended.jpg",
+      "sha256": "08bfc3f59c8ae5922a33237ecfe6b8783481deb808ae63a135d912791dca01c5",
+      "bytes": 76075,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "08-movie-switch.jpg",
+      "sha256": "8c06ceed15e8c2392f4de692a64558ff9c92f80b8da781da32456854ff4de93e",
+      "bytes": 72892,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "09-loop-result.jpg",
+      "sha256": "e4409576b57590f08b4b4f40c842b1227be601719b0718e74e7e4d95ede4a6e6",
+      "bytes": 71364,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "10-trim-preserves-gif-playback.jpg",
+      "sha256": "c92f6f95eac4be6bf6c72f40b9157dd7d2b5e286e38a3974382ae14206e2f572",
+      "bytes": 71045,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "11-open-dialog.jpg",
+      "sha256": "867419137f96df8f1f5e54a6043ffce1dd9736f3fcfdb46d95cb73d0b3174dd9",
+      "bytes": 50778,
+      "size": [
+        1096,
+        845
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "12-native-gate.jpg",
+      "sha256": "9e6c56519871095984b4fdb4d3cffb58ff632fc37bbb06c66f43d01c7f3540ff",
+      "bytes": 78282,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "13-inspection-pending.jpg",
+      "sha256": "f169e9b429dbb78e793dd5daaf107cc6b4aa3829d7d5fcacceb5be7eb9ca66e8",
+      "bytes": 81890,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "14-inspection-rechoose-pending.jpg",
+      "sha256": "f169e9b429dbb78e793dd5daaf107cc6b4aa3829d7d5fcacceb5be7eb9ca66e8",
+      "bytes": 81890,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "15-inspection-cancel-recovered.jpg",
+      "sha256": "e8f7f402d0c987cd4ef8f7a494014639b6295601f1c89f123e7e6107ef39b04a",
+      "bytes": 82027,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "16-latest-seek-pending.jpg",
+      "sha256": "dcf422d109fe7fd9a31edd4c384ef09fccda09801ae07ecaea7ec9a5d1967abd",
+      "bytes": 76038,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "17-latest-end-seek.jpg",
+      "sha256": "7d866c60cebc62af29efc37963adc5319c5a1d6e32bfe68cc0257995ba4d3160",
+      "bytes": 77341,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "18-cancel-while-seek-retires.jpg",
+      "sha256": "03ab035fdd8b74c504154d3c7cf04b014e2866cc67420014863a5fc28d098a43",
+      "bytes": 83644,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "discovered caption defect"
+    },
+    {
+      "file": "19-cancel-settled.jpg",
+      "sha256": "16d304fa61faabf437c2b8a641477af1571145d823ed2c76fd58d95ff3eeaf6e",
+      "bytes": 85903,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "discovered caption defect"
+    },
+    {
+      "file": "20-retry-first-candidate.jpg",
+      "sha256": "047ac113ae99bdfb1bc2e76989b5a8a7de8952358b2e8ee678b9c6dc0692f3c4",
+      "bytes": 70680,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+      "status": "scoped first-candidate observation"
+    },
+    {
+      "file": "21-final-initial-source.jpg",
+      "sha256": "de2ccb81c6648be3014ac7c22f35240db565e88f5476f2b230736627946a1ac3",
+      "bytes": 76800,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "22-final-coalesced-pending.jpg",
+      "sha256": "5e1340ac207af8277badbab319f292a72974fd3cee6006d55e1369871f3274b4",
+      "bytes": 75609,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "23-final-end-frame.jpg",
+      "sha256": "fc350417087f93e1d09ced40d3753641e06e61bff7a65b6e1eb0ec109d1bb8d2",
+      "bytes": 77041,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "24-final-cancel-pending.jpg",
+      "sha256": "9b2cf79393a8bf125da55cd5bfba1c6c04d7672ce064a45edf685b3988a5b754",
+      "bytes": 77160,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "25-final-intended-seek-restored.jpg",
+      "sha256": "a4d053bc5db6aaf6bebf9827a5486e080793ed6bf65589fc746478f5f76de9cd",
+      "bytes": 79493,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "26-final-saved-gif.jpg",
+      "sha256": "49b9eb8bf16533b76f4ed2c8469b26566af04244672962dbfd13063b72451ebf",
+      "bytes": 71480,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "27-final-movie-switch.jpg",
+      "sha256": "8c06ceed15e8c2392f4de692a64558ff9c92f80b8da781da32456854ff4de93e",
+      "bytes": 72892,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "28-final-rechoose-pending-preview.jpg",
+      "sha256": "4e14949a0d928a2dc016b5c97a873e020797f53bac653091a42c4e1e4a4bdf34",
+      "bytes": 82068,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "29-final-rechoose-recovered.jpg",
+      "sha256": "fff2172d0aaa196b207953e1dfe855ae9090c0c48f084982933f49ed25f2c533",
+      "bytes": 82790,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "30-final-close-pending-preview.jpg",
+      "sha256": "0964cad5a885e62f3b6ad09a81dec6dc95b942f0f36910fe630f8072757d56c1",
+      "bytes": 76193,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "31-final-held-retry-cancel.jpg",
+      "sha256": "36bfd5c61e66255fe08b7e8dcd97ffc7d6c626c070c249ddc3cb37de9825f63c",
+      "bytes": 96944,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "32-final-prior-gif-retained.jpg",
+      "sha256": "5c672fa45664a088fde96f0956dfeba885188010c3d6b80ad84908e57fcb5d17",
+      "bytes": 88507,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "33-final-held-retry-saved.jpg",
+      "sha256": "98c2c052ff74b272370aca7b2ef76fa3fbbdcbdf17dbc2ecbc438f3e75f31d78",
+      "bytes": 89383,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "34-final-close-pending-export.jpg",
+      "sha256": "4c268deeb3ea05bf84d61fe1216d69be3add162b60afc7480a56b4fd500ed106",
+      "bytes": 90929,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    },
+    {
+      "file": "35-final-clean-reopen.jpg",
+      "sha256": "de2ccb81c6648be3014ac7c22f35240db565e88f5476f2b230736627946a1ac3",
+      "bytes": 76800,
+      "size": [
+        1180,
+        812
+      ],
+      "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+      "status": "final scoped acceptance"
+    }
+  ],
+  "chosen_movie_gate_fixture": {
+    "source": "../cloud-dialogs-2026-10-07/synthetic-orange.mp4",
+    "sha256": "692428a76a5797a64756e5adabefbf08d79be88d73322fe33177b262da01127d",
+    "purpose": "Actual Open dialog selects this previously generated valid H.264 source; native gate must stay unavailable."
+  },
+  "coverage_distinctions": {
+    "core_finish": "Injects a terminal decoder error through SequentialFrameSource::finish and proves no publication; cancellation/source mutation/panic cleanup too.",
+    "native_finish": "Generated tests exercise actual Reading/success, cancellation and source mutation; no actual AVAssetReader failed state is induced after the final sampled frame. Existing classify_end tests separately cover Failed/Unknown. Native execution awaits exact Apple CI.",
+    "gui": "Generated pixels via same Request/Controller/Model; no native movie decoder activation."
+  },
+  "gui_checkpoints": [
+    {
+      "utc": "2026-10-07T10:26:10.924Z",
+      "event": "Closed while eight-second generated inspection visibly pending"
+    },
+    {
+      "utc": "2026-10-07T10:28:07.690Z",
+      "event": "Three source choices while inspection held; chooser cancel after completion recovered initial source"
+    },
+    {
+      "utc": "2026-10-07T10:31:26.134Z",
+      "event": "Six rapid seek requests began during eight-second worker hold"
+    },
+    {
+      "utc": "2026-10-07T10:31:27.553Z",
+      "event": "Latest requested End3.000 visible pending"
+    },
+    {
+      "utc": "2026-10-07T10:32:35.365Z",
+      "event": "Observed latest End3.000 actual2.950 paused frame; observation interval is not measured latency"
+    },
+    {
+      "utc": "2026-10-07T10:33:14.966Z",
+      "event": "Convert while seek retired; repeatedCancel and rechoose attempt preserve busy ownership"
+    },
+    {
+      "utc": "2026-10-07T10:34:20.451Z",
+      "event": "First-candidate caption defect observed after cancelled export: old prepared frame2.950 paired with requested0.642. No output/stage was published. This prompted repair."
+    }
+  ],
+  "first_candidate": {
+    "binary_sha256": "cd5e9337da64da0575737607ece52ab66f4bf7a966d7505c7e7982f822b8a876",
+    "source_manifest": "source-inputs-first-candidate.json",
+    "exact_source_snapshot": "pre-fix-source/manifest.json",
+    "screenshots": "01 through20",
+    "bug": "Cancel/export preempted a newer source seek while retaining an older image; idle caption paired latest requested time with the older frame. This is a discovered bug, not accepted completion of that seek.",
+    "repair_diff": "post-cua-repair.diff"
+  },
+  "first_candidate_retry": {
+    "file": "saved-retry-first-candidate.gif",
+    "sha256": "46b6aec53f948c7b30273507a47d2769f6a8f2e7a891cc401b5047d4702953f6",
+    "frames": 36,
+    "size": [
+      320,
+      180
+    ],
+    "duration_ms": 2360,
+    "loop": 0,
+    "first_frame_not_all_magenta": true,
+    "note": "Retry succeeded from selected source despite older displayed all-magenta preview. Caption defect still required repair."
+  },
+  "final_checkpoint_events": [
+    {
+      "utc": "2026-10-07T10:57:35.542Z",
+      "event": "Old actual2.950 retained under truthful Seeking0.642 caption during preempted export/repeatedCancel"
+    },
+    {
+      "utc": "2026-10-07T10:58:21.006Z",
+      "event": "Intended0.642 restored to actual0.600 after cancellation; no new output/stage"
+    },
+    {
+      "utc": "2026-10-07T11:02:04.388Z",
+      "event": "Rechoose during held preview clears previous result/trim and eventually restores source0.000 with format retained"
+    },
+    {
+      "utc": "2026-10-07T11:03:38.035Z",
+      "event": "Closed during held preview, no late window on fresh delayed-export reopen"
+    },
+    {
+      "utc": "2026-10-07T11:08:52.161Z",
+      "event": "Held export retry cancelled repeatedly; rechoose blocked; prior GIF retained byte-for-byte"
+    },
+    {
+      "utc": "2026-10-07T11:11:23.311Z",
+      "event": "Retry after held export cancellation succeeded; added exactly one valid GIF, byte-identical to retained prior full-source output"
+    },
+    {
+      "utc": "2026-10-07T11:12:13.241Z",
+      "event": "Closed while next pre-encoding export task held; no new output or stage; subsequent normal reopen clean and closed"
+    }
+  ],
+  "held_export_scope": "DEBUG EXPORT delay is before core export_gif and stage creation. GUI proves owned pending-task cancel/close/retention/retry behavior, not interruption during actual frame writing. Core tests separately prove staged cancellation/error/panic cleanup.",
+  "final_output_decoding": "decoded-final.json",
+  "post_gui_source_freeze_verified": true,
+  "cleanup": "Final converter and dialogs closed normally; terminal37748739 focused and desktop explicitly released. Private portal children are scoped by retained launch script; no global configuration/service was installed.",
+  "held_export_output_proof": {
+    "before_cancel": {
+      "BelloBox-synthetic-276077-1791369345563548559.gif": "46b6aec53f948c7b30273507a47d2769f6a8f2e7a891cc401b5047d4702953f6",
+      "BelloBox-synthetic-292792-1791371160721723195.gif": "b9bb4bd623498b6cf62ead9ead359ed64908ac2782fa7a29754f2147cf1ece57"
+    },
+    "after_cancel": {
+      "BelloBox-synthetic-276077-1791369345563548559.gif": "46b6aec53f948c7b30273507a47d2769f6a8f2e7a891cc401b5047d4702953f6",
+      "BelloBox-synthetic-292792-1791371160721723195.gif": "b9bb4bd623498b6cf62ead9ead359ed64908ac2782fa7a29754f2147cf1ece57"
+    },
+    "after_retry_and_close": {
+      "BelloBox-synthetic-276077-1791369345563548559.gif": "46b6aec53f948c7b30273507a47d2769f6a8f2e7a891cc401b5047d4702953f6",
+      "BelloBox-synthetic-292792-1791371483054485682.gif": "b9bb4bd623498b6cf62ead9ead359ed64908ac2782fa7a29754f2147cf1ece57",
+      "BelloBox-synthetic-292792-1791371160721723195.gif": "b9bb4bd623498b6cf62ead9ead359ed64908ac2782fa7a29754f2147cf1ece57"
+    },
+    "staged_siblings_remaining": 0
+  }
+}

@@ -1,5 +1,11 @@
 # Native movie reader: reconstructed, production-disabled CI checkpoint
 
+Historical reconstruction checkpoint. The later [movie preview host](movie-preview-host.md)
+promotes this implementation to normal native compilation behind an explicit
+closed admission gate, carries one selected source through preview/export and
+adds same-host generated-media tests. The earlier cfg(test)-only descriptions
+below retain historical scope; exact native results are recorded per checkpoint.
+
 ## Status and provenance
 
 The previous workspace, uncommitted candidate and temporary patches were lost.

@@ -1,9 +1,13 @@
 //! Standalone converter host. Native decoding remains gated; the DEBUG synthetic
 //! route exercises this same lifecycle and real bounded Rust GIF export.
 mod model;
+#[cfg(all(test, feature = "movie-fixtures", target_os = "macos"))]
+mod native_host_tests;
 mod preview;
+mod source_preview;
 #[cfg(test)]
 mod tests;
+mod worker;
 use crate::theme::{self, Palette};
 use bello_workbench_ui::{EditorAppearance, EditorView};
 use bellobox_core::recording::gif::{GifExportOptions, ReplacePolicy};
@@ -34,6 +38,9 @@ struct Converter {
     end: Entity<EditorView>,
     focus: FocusHandle,
     preview: preview::Preview,
+    source_preview: source_preview::SourcePreview,
+    worker: worker::Controller,
+    shows_result: bool,
     fields_locked: bool,
     trim_bounds: [std::rc::Rc<std::cell::Cell<Bounds<Pixels>>>; 2],
 }
@@ -54,6 +61,9 @@ impl Converter {
             end,
             focus: cx.focus_handle(),
             preview: preview::Preview::new(cx),
+            source_preview: Default::default(),
+            worker: Default::default(),
+            shows_result: false,
             fields_locked: false,
             trim_bounds: Default::default(),
         };
@@ -62,6 +72,10 @@ impl Converter {
             this.load(Source::Synthetic, cx);
         }
         cx.on_release(|this, cx| {
+            this.worker.close();
+            if let Some(image) = this.source_preview.image.take() {
+                cx.drop_image(image, None);
+            }
             if let Some(image) = this.preview.image.take() {
                 cx.drop_image(image, None);
             }
@@ -82,7 +96,9 @@ impl Converter {
     }
     fn close(&mut self, cx: &mut Context<Self>) {
         self.model.close();
+        self.worker.close();
         self.preview.reset(cx);
+        self.source_preview.reset(cx);
     }
     fn sync_trim(&mut self, cx: &mut Context<Self>) {
         self.start.update(cx, |editor, cx| {
@@ -118,6 +134,7 @@ impl Converter {
                 self.model.options.trim_end = Some(end);
                 self.model.status = "Trim applied.".into();
                 self.model.error = false;
+                self.seek_source(start, cx);
                 cx.notify();
                 true
             }
@@ -136,21 +153,15 @@ impl Converter {
             return;
         };
         self.preview.reset(cx);
+        self.source_preview.reset(cx);
+        self.shows_result = false;
         self.sync_trim(cx);
-        cx.spawn(async move |this, cx| {
-            let result = cx
-                .background_executor()
-                .spawn(async move { source.inspect(cancellation) })
-                .await;
-            let _ = this.update(cx, |this, cx| {
-                if this.model.generation == generation {
-                    this.model.loaded(generation, result);
-                    this.sync_trim(cx);
-                }
-                cx.notify();
-            });
-        })
-        .detach();
+        self.worker.submit(worker::Request::Inspect {
+            generation,
+            source,
+            cancel: cancellation,
+        });
+        self.drive_worker(cx);
         cx.notify();
     }
     fn accepts_choose_shortcut(&self, event: &KeyDownEvent) -> bool {
@@ -189,6 +200,12 @@ impl Converter {
                         this.model.status = "Could not open the movie chooser.".into();
                         this.model.error = true;
                     }
+                }
+                if this.model.selected.is_some()
+                    && this.source_preview.image.is_none()
+                    && !this.source_preview.loading
+                {
+                    this.seek_source(this.model.options.trim_start, cx);
                 }
                 cx.notify();
             });
@@ -249,25 +266,12 @@ impl Converter {
         let Some(work) = self.model.begin(path, ReplacePolicy::RefuseExisting) else {
             return;
         };
-        self.preview.reset(cx);
+        self.preview.playing = false;
+        // A preempted source seek remains visibly pending until its intended
+        // time can be restored after this export physically retires.
         let generation = work.generation;
-        cx.spawn(async move |this, cx| {
-            let result = cx
-                .background_executor()
-                .spawn(async move { work.run() })
-                .await;
-            let _ = this.update(cx, |this, cx| {
-                if this.model.generation != generation {
-                    return;
-                }
-                this.model.finished(generation, result);
-                if this.model.result.is_some() {
-                    this.preview_result(cx);
-                }
-                cx.notify();
-            });
-        })
-        .detach();
+        self.worker.submit(worker::Request::Export(work));
+        self.drive_worker(cx);
         cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor()
@@ -326,6 +330,12 @@ impl Converter {
             f64::from(fraction) * info.duration,
         );
         self.sync_trim(cx);
+        let time = if start {
+            self.model.options.trim_start
+        } else {
+            self.model.options.trim_end.unwrap_or(info.duration)
+        };
+        self.seek_source(time.min(info.duration), cx);
         cx.notify();
     }
     fn trim_slider(&self, start: bool, p: Palette, cx: &mut Context<Self>) -> Div {
@@ -488,10 +498,16 @@ impl Render for Converter {
                 .child(div().text_xl().child("Video to GIF"))
                 .child(div().text_color(p.secondary).child(source))
                 .child(div().min_h(px(120.)).max_h(px(180.)).p_2().rounded_lg().bg(p.well).flex().flex_col().justify_center().gap_2()
-                    .when_some(self.preview.image.clone(), |el, image| el.child(img(image).h(px(140.)).object_fit(ObjectFit::Contain)))
-                    .when(self.preview.image.is_none(), |el| el.child(if fixture { "Synthetic color movie · 320 × 180 · 3 seconds" } else { "Native movie decoding is unavailable in this Rust preview." }))
-                    .child(div().text_xs().text_color(p.secondary).child(if self.preview.image.is_some() { "Exported GIF preview · starts paused" } else { "Native movie playback and scrubbing are not implemented." })))
-                .when(self.preview.image.is_some(), |el| el.child(button("preview-play", if self.preview.playing { "Pause GIF" } else { "Play GIF" }, p).when(!busy, |el| el.on_click(cx.listener(|this, _, _, cx| this.toggle_preview(cx))))))
+                    .when_some(if self.shows_result { self.preview.image.clone() } else { self.source_preview.image.clone() }, |el, image| el.child(img(image).h(px(140.)).object_fit(ObjectFit::Contain)))
+                    .child(div().text_xs().text_color(p.secondary).child(if self.shows_result { "Exported GIF preview · starts paused".to_string() }
+                        else if self.source_preview.loading { format!("Seeking source to {:.3} s…", self.source_preview.requested) }
+                        else if let Some(actual) = self.source_preview.actual { format!("Movie · paused · requested {:.3} s · frame {:.3} s", self.source_preview.completed_request.unwrap_or(self.source_preview.requested), actual) }
+                        else if self.model.loading { "Reading movie metadata…".into() }
+                        else { "Native movie decoding remains unavailable. Continuous movie playback and audio are not implemented.".into() })))
+                .when(self.model.result.is_some(), |el| el.child(div().flex().gap_2()
+                    .child(button("show-movie", "Movie", p).when(!self.shows_result, |el| el.bg(p.accent_fill).text_color(rgb(0xffffff))).on_click(cx.listener(|this, _, _, cx| this.show_movie(cx))))
+                    .child(button("show-gif", "GIF", p).when(self.shows_result, |el| el.bg(p.accent_fill).text_color(rgb(0xffffff))).on_click(cx.listener(|this, _, _, cx| this.show_gif(cx))))))
+                .when(self.shows_result && self.preview.image.is_some(), |el| el.child(button("preview-play", if self.preview.playing { "Pause GIF" } else { "Play GIF" }, p).when(!busy, |el| el.on_click(cx.listener(|this, _, _, cx| this.toggle_preview(cx))))))
                 .child(button("choose", if self.model.source.is_some() { "Choose Another…" } else { "Choose Movie…" }, p).when(!busy, |el| el.on_click(cx.listener(|this, _, _, cx| this.choose(cx)))))
                 .child(controls)
                 .child(button("loop", if self.model.options.loops { "Loop: On" } else { "Loop: Once" }, p).when(!busy, |el| el.on_click(cx.listener(|this, _, _, cx| { this.model.options.loops = !this.model.options.loops; cx.notify(); }))))
@@ -505,11 +521,13 @@ impl Render for Converter {
                     .when_some(self.model.job.as_ref(), |el, job| el.child(format!("Encoding {}%", job.progress.load(Ordering::Acquire) * 100 / job.planned.max(1)))))
                 .when(fixture, |el| {
                     #[cfg(debug_assertions)]
-                    let el = el.child(button("fixture-export", "Export synthetic GIF to temporary folder", p).when(!busy && plan.is_some(), |el| el.on_click(cx.listener(|this, _, _, cx| this.fixture_export(cx)))));
+                    let el = el.child(button("fixture-reload", "Reload generated source", p).when(!busy, |el| el.on_click(cx.listener(|this, _, _, cx| this.load(Source::Synthetic, cx)))))
+                        .child(button("fixture-export", "Export synthetic GIF to temporary folder", p).when(!busy && plan.is_some(), |el| el.on_click(cx.listener(|this, _, _, cx| this.fixture_export(cx)))));
                     el
                 })
                 .when_some(self.model.result.as_ref(), |el, result| el.child(div().flex().flex_col().gap_2().child(format!("Saved: {} frames · {} × {} · {} bytes", result.frame_count, result.size.0, result.size.1, result.file_size)).child(button("reveal", "Show GIF in folder", p).on_click(cx.listener(|this, _, _, cx| { if let Some(result) = &this.model.result { cx.reveal_path(&result.path); } }))).child(button("copy-path", "Copy GIF path", p).on_click(cx.listener(|this, _, _, cx| { if let Some(result) = &this.model.result { cx.write_to_clipboard(ClipboardItem::new_string(result.path.to_string_lossy().into_owned())); this.model.status = "Copied GIF path (file clipboard is not supported).".into(); cx.notify(); } })))))
                 .child(div().text_color(if self.model.error { p.danger } else { p.secondary }).child(self.model.status.clone()))
+                .child(div().text_xs().text_color(p.secondary).child("Movie review uses paused frames only; continuous playback and audio are not implemented."))
                 .child(div().text_xs().text_color(p.secondary).child("Converted locally. Nothing is uploaded. Existing destination files are kept.")))
     }
 }

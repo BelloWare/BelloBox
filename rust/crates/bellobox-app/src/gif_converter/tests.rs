@@ -822,3 +822,213 @@ fn initial_command_o_admission_is_guarded_before_native_chooser(cx: &mut gpui::T
         assert!(!view.accepts_choose_shortcut(&event));
     });
 }
+
+#[gpui::test]
+fn actual_source_worker_delivers_initial_start_end_and_latest_coalesced_frame(
+    cx: &mut gpui::TestAppContext,
+) {
+    let window = cx.add_window(super::Converter::new);
+    let root = window.root(cx).unwrap();
+    root.update(cx, |view, cx| view.load(Source::Synthetic, cx));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.source_preview.image.is_some());
+        assert_eq!(view.source_preview.actual, Some(0.));
+        assert!(!view.shows_result);
+        assert!(!view.source_preview.loading);
+    });
+    root.update(cx, |view, cx| {
+        for index in 1..60 {
+            view.seek_source(index as f64 / 20., cx);
+        }
+        view.seek_source(3., cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert_eq!(view.source_preview.requested, 3.);
+        assert_eq!(view.source_preview.actual, Some(2.95));
+        assert!(!view.source_preview.loading);
+    });
+    root.update(cx, |view, cx| view.seek_source(0.5, cx));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert_eq!(view.source_preview.actual, Some(0.5))
+    });
+}
+
+#[gpui::test]
+fn movie_gif_switch_keeps_source_owner_and_cancelled_retry_result(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let output = destination();
+    let retry = destination();
+    root.update(cx, |view, cx| {
+        view.seek_source(0.5, cx);
+        view.model.options.trim_end = Some(0.2);
+        view.convert(output.clone(), cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.shows_result);
+        assert!(view.preview.image.is_some());
+        assert!(view.model.selected.is_some());
+    });
+    root.update(cx, |view, cx| view.show_movie(cx));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(!view.shows_result);
+        assert!(view.source_preview.image.is_some());
+    });
+    root.update(cx, |view, cx| {
+        view.show_gif(cx);
+        view.convert(retry.clone(), cx);
+        view.model.cancel();
+        view.model.cancel();
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert_eq!(view.model.result.as_ref().unwrap().path, output);
+        assert!(view.preview.image.is_some());
+        assert!(!view.preview.loading);
+    });
+    assert!(!retry.exists());
+    std::fs::remove_file(output).unwrap();
+}
+
+#[gpui::test]
+fn rechoose_and_retained_close_fence_pending_source_preview_without_resurrection(
+    cx: &mut gpui::TestAppContext,
+) {
+    let root = view(cx);
+    root.update(cx, |view, cx| {
+        view.seek_source(2., cx);
+        view.load(Source::Synthetic, cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert_eq!(view.source_preview.actual, Some(0.))
+    });
+    root.update(cx, |view, cx| {
+        view.seek_source(1., cx);
+        view.close(cx);
+    });
+    let fresh = cx.add_window(super::Converter::new).root(cx).unwrap();
+    fresh.update(cx, |view, cx| view.load(Source::Synthetic, cx));
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.source_preview.image.is_none());
+        assert!(!view.source_preview.loading);
+        assert!(view.model.selected.is_none());
+        assert!(view.model.source.is_none());
+    });
+    fresh.read_with(cx, |view, _| {
+        assert_eq!(view.source_preview.actual, Some(0.))
+    });
+}
+
+#[gpui::test]
+fn cancelling_export_while_initial_preview_retires_restores_source_review(
+    cx: &mut gpui::TestAppContext,
+) {
+    let root = view(cx);
+    let output = destination();
+    root.update(cx, |view, cx| {
+        view.seek_source(0., cx);
+        view.convert(output.clone(), cx);
+        view.model.cancel();
+        view.model.cancel();
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.model.result.is_none());
+        assert!(view.source_preview.image.is_some());
+        assert_eq!(view.source_preview.actual, Some(0.));
+        assert!(!view.source_preview.loading);
+        assert!(!view.model.busy());
+        assert!(view.model.status.contains("cancelled before publication"));
+    });
+    assert!(!output.exists());
+}
+
+#[gpui::test]
+fn trim_seek_preserves_explicit_gif_selection_and_playback(cx: &mut gpui::TestAppContext) {
+    let root = view(cx);
+    let output = destination();
+    root.update(cx, |view, cx| {
+        view.model.options.trim_end = Some(0.2);
+        view.convert(output.clone(), cx);
+    });
+    cx.run_until_parked();
+    root.update(cx, |view, cx| {
+        view.toggle_preview(cx);
+        view.seek_source(0.5, cx);
+    });
+    cx.run_until_parked();
+    root.read_with(cx, |view, _| {
+        assert!(view.shows_result);
+        assert!(view.preview.playing);
+        assert_eq!(view.source_preview.actual, Some(0.5));
+    });
+    root.update(cx, |view, cx| view.show_movie(cx));
+    root.read_with(cx, |view, _| {
+        assert!(!view.shows_result);
+        assert!(!view.preview.playing);
+    });
+    std::fs::remove_file(output).unwrap();
+}
+
+#[gpui::test]
+fn preempted_seek_restores_latest_request_after_export_with_an_older_frame_and_prior_gif(
+    cx: &mut gpui::TestAppContext,
+) {
+    for (cancel, prior_gif) in [(true, false), (false, false), (true, true)] {
+        let root = view(cx);
+        let prior = destination();
+        let output = destination();
+        if prior_gif {
+            root.update(cx, |view, cx| {
+                view.model.options.trim_end = Some(0.2);
+                view.convert(prior.clone(), cx);
+            });
+            cx.run_until_parked();
+        }
+        root.update(cx, |view, cx| view.seek_source(3., cx));
+        cx.run_until_parked();
+        root.read_with(cx, |view, _| {
+            assert_eq!(view.source_preview.actual, Some(2.95));
+            assert_eq!(view.source_preview.completed_request, Some(3.));
+            assert!(view.source_preview.pending_request.is_none());
+        });
+        root.update(cx, |view, cx| {
+            view.model.options.trim_start = 0.642;
+            view.model.options.trim_end = Some(0.842);
+            view.seek_source(0.642, cx);
+            view.convert(output.clone(), cx);
+            if cancel {
+                view.model.cancel();
+            }
+            assert!(
+                view.source_preview.loading,
+                "an older image is not a completed new seek"
+            );
+            assert_eq!(view.source_preview.pending_request, Some(0.642));
+            assert_eq!(view.source_preview.completed_request, Some(3.));
+        });
+        cx.run_until_parked();
+        root.read_with(cx, |view, _| {
+            assert!(!view.source_preview.loading);
+            assert_eq!(view.source_preview.completed_request, Some(0.642));
+            assert_eq!(view.source_preview.actual, Some(0.6));
+            assert!(view.source_preview.pending_request.is_none());
+            assert_eq!(view.shows_result, !cancel || prior_gif);
+            if prior_gif {
+                assert_eq!(view.model.result.as_ref().unwrap().path, prior);
+            }
+        });
+        assert_eq!(output.exists(), !cancel);
+        for path in [prior, output] {
+            if path.exists() {
+                std::fs::remove_file(path).unwrap();
+            }
+        }
+    }
+}

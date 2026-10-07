@@ -759,3 +759,100 @@ and 22 in reverse, plus 813/64 production lines added/removed and 1,088/64 suppo
 lines added/removed. Nineteen source hashes, positive support ranges and literal
 reclassification pairs were independently verified. No feature-completion or
 engineering-effort percentage follows from these counts.
+
+### Exact owned Window catalog checkpoint verified
+
+Published `3f370a45b9baca8101b82b2c6b8c924b1096a1b7`, tree
+`74f24a80a549f22d1db413d5a339388393db6111`, passed Linux run `37600789001`
+and macOS run `37600789048`. Native job `112724366359` passed every step,
+including compile/link, strict platform all-target Clippy, all eight constructed
+catalog CF/fake-dispatch tests, physical-drain and post-drain regressions, closed
+zero-action gates, 168 platform tests (3 existing ignored), 355 core tests,
+9 alpha/lifecycle tests, the supplied host-mask worker, native application build
+and offline development packaging. These exact results supersede pending-CI
+statements only for the published catalog source. No live native enumeration,
+permission, capture or interactive macOS acceptance occurred.
+
+## Continuation checkpoint: bounded paused movie preview and converter ownership
+
+The existing movie → GIF host now carries one selected source through inspection,
+paused source review, Start/End seeking, export and Movie/GIF switching. The typed
+AVFoundation implementation compiles normally, but a real false admission check
+precedes ordinary filesystem/native work. The nondefault movie-fixtures feature
+creates only its own fixed generated MOV from finite enum choices and returns a
+sealed selection; no pathname or global switch can enable arbitrary native input.
+Ordinary opens remain Unavailable even in that fixture-feature test binary.
+
+The selected token retains the original File owner, canonical path and filesystem
+identity/timestamps. Preview/export reuse that selection instead of comparing only
+four movie metadata values after choosing a new path. This detects ordinary source
+replacement/mutation, including identical bytes in another inode; it is not frozen
+bytes, a hostile-filesystem boundary or atomic change-and-revert detection. Native
+URL reading and final GIF publication are not one atomic filesystem transaction.
+
+The controller retains one active physical request and one latest pending request.
+Cancellation/generation replacement cannot admit a new request before old work and
+prepared-image work return. Native callback ownership drains independently from
+logical cancellation. A newly opened converter cooperatively waits for the global
+native lease under its own absolute deadline rather than inheriting transient Busy
+from a closing view. Metadata rechecks source/cancel/deadline after callback drain.
+A framework callback that never releases can retain its worker; no hard native
+wall-clock cancellation or whole-process resource guarantee follows.
+
+Source preview is paused and capped at 720 pixels on its longest edge without
+upscaling. It requests a bounded two-second predecessor/250-ms following window,
+checks actual PTS, and reports requested and shown timestamps. Short and long clips
+can be previewed independently of GIF export duration bounds; an empty sparse/VFR
+window is explicitly unavailable. This is not exact AVPlayer seeking, continuous
+source playback or audio. Export/result preview retain prior cancellation behavior.
+
+The core SequentialFrameSource::finish hook runs after encoded staging has synced
+and passed readback, immediately before publication and outside its mutex. Native
+adapters validate terminal decoder state, original source and cancellation on the
+same owner thread, then intentionally retire a still-Reading trimmed decoder.
+Failure, cancellation and panic preserve prior output and clean staging. The two
+new core regressions passed with all 32 GIF tests and strict core test Clippy;
+independent review checked the publication/cancellation ordering.
+
+Final local evidence: 44 converter tests in ordinary and exact app-only no-DEBUG
+harnesses, 137 platform tests (3 existing ignored), strict app/platform all-target
+Clippy including movie-fixtures, minimal-feature/non-DEBUG metadata checks and
+normal build pass. Apple-target platform all-target fixture Clippy is metadata/type
+checking only. Two generated native converter-host tests and an explicit Apple CI
+step cover the actual shared controller/model, orientation/time-marker fixtures,
+trim/Once/Loop/partial timing, decoded GIF sentinel exclusion, source replacement
+and short/sparse/following-frame seeks; exact native execution is pending publication.
+
+The immutable normal Linux binary is SHA256
+`5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba`.
+Broad actual CUA on the first candidate found a defect after Convert preempted a
+source seek: cancellation could pair a new requested timestamp with an older
+retained frame under an idle caption. The repair tracks pending and completed
+requests separately from actual PTS, keeps loading truthful and restores pending
+intent after physical export retirement without changing Movie/GIF choice. The
+new regression covers cancellation, successful export and retained prior GIF;
+independent root execution passed it. Twenty pre-fix screenshots and all 20 exact
+pre-fix source inputs are retained as diagnostic evidence, not final acceptance.
+Post-fix actual CUA passed the truthful pending caption and completed0.642/actual
+0.600 recovery, source preview/trim, Save cancel/reopen/success, Movie/GIF switch,
+rechoose and close during held preview, prior-result retention on held export-task
+cancel, successful retry, held-export close and clean reopen. Final screenshots
+21–35 belong to the final binary; earlier01–20 remain pre-fix evidence. Saved Once
+and Loop GIFs were independently decoded for dimensions, frame counts/delays,
+loop metadata and trimmed sentinel exclusion. Export delay is a pre-encoding task
+hold; core tests separately prove staged cleanup. Final source hashes, observations
+and outputs are in `validation/movie-preview-2026-10-07/`.
+See [movie-preview-host.md](movie-preview-host.md) for scope and source anchors.
+All native movie/capture gates remain closed. Rust full-frame transform plus core
+bilinear export still differs from Swift's output-sized CoreGraphics Medium render;
+no sampling/color equivalence, native GUI, recording or continuous playback/audio
+parity is claimed.
+
+The independently verified net Rust delta is +1,414 production / +171 support /
++0 benchmark, yielding **48,152 production / 24,371 support / 105 benchmark**.
+The positive-range/source-hash ledger separately records 717 preserved support
+lines promoted to production and 3 in reverse, plus 773/73 production lines and
+1,146/261 support lines added/removed. All 16 changed Rust hashes, category equations
+and literal reclassification pairs were independently checked. The generated-media
+feature constructors/modules remain support; counts are nonblank physical lines
+including comments, not a feature-completion or engineering-effort percentage.

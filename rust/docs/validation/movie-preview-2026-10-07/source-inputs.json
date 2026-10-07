@@ -1,0 +1,26 @@
+{
+  "baseline_commit": "3f370a45b9baca8101b82b2c6b8c924b1096a1b7",
+  "binary_sha256": "5d9a996ced75be919acf97474fe59ba224df268afb935746e38a4e1f20b9edba",
+  "files": {
+    "rust/crates/bello-platform/src/movie.rs": "6bb3b5efb84e8bf932865cf404c02fc3bad64cefebd453298da6b989adfe06e2",
+    "rust/crates/bello-platform/src/movie/macos.rs": "a80f925d690da68a10e9b8cfcd986e32524d292f1390a41ef77a2afdf027d970",
+    "rust/crates/bello-platform/src/movie/source_file.rs": "03b3ba756108f59a2a3847e598efb7e019ae139ded55a6b000205190ac2d5d7a",
+    "rust/crates/bello-platform/src/movie/tests.rs": "bb4be3d8d41880a3309f832ab41e1a9c7b8a20f3ccc3d08a4534fbefbba6efc7",
+    "rust/crates/bello-platform/src/movie/macos/tests.rs": "dd9159cf0ee21b4e47fdcb3e7192a7feebc3d8754f2def4408c3771b9945c4d4",
+    "rust/crates/bello-platform/src/movie/macos/fixtures.rs": "e70bea9aa7d8ad421361afb88ed189254d39f8d2ac511041b1683d478066d95c",
+    "rust/crates/bello-platform/src/movie/retirement.rs": "8d2824c9a9c08b75399ddae508093043cc73bfe8a2614df83d2134829c19da36",
+    "rust/crates/bellobox-app/src/gif_converter.rs": "5cc2bae95f1fc375c96a9271b2cacaa17720f1e8419e693089e2e3e92b0ff7ef",
+    "rust/crates/bellobox-app/src/gif_converter/model.rs": "2e91724d19603d2abeb65e1ccb5e5c4528d64862ad1771cd6c2f379850194674",
+    "rust/crates/bellobox-app/src/gif_converter/tests.rs": "2e02f7a9162aec7da3c34bf37d707e048ed8627c5eb981d8d46218a1f4c0cd31",
+    "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs": "9996dca6ea781cc1147ec87099d42b327c3b8c413a02ba9979ba031760ce2b93",
+    "rust/crates/bellobox-app/src/gif_converter/source_preview.rs": "ee47c50c44178ba1ac7e71a5e86348291c735bdd0ab62952ce560257a7ca458d",
+    "rust/crates/bellobox-app/src/gif_converter/worker.rs": "b6fdbe234bbe4bdb91770bb36607fae185fe3b7555c14f93e17f1350cf5219a4",
+    "rust/crates/bellobox-core/src/recording/gif.rs": "93419c9bb0a3d4ab1a0fc849056313d518948a6e045c503669a71eb024bce08c",
+    "rust/crates/bellobox-core/src/recording/gif/gif_encode.rs": "ed1b26ef3f58c89de3bd60463733d9a12ac334491e3d3a48ca28f30dfadd3360",
+    "rust/crates/bellobox-core/src/recording/gif/gif_tests.rs": "10e86ceae5bbd4d1f0cc82e199f5a161eea2bc4ee280dfc941eabf559b4cad24",
+    "rust/Cargo.lock": "1046872485f54f351951c3c44b6c8fe58db8c86f9809942615cbc16045ba057c",
+    "rust/crates/bello-platform/Cargo.toml": "2f86e48010dc904e86bf7660a608f51b978c126ec06bf2d1865e631254d8e78f",
+    "rust/crates/bellobox-app/Cargo.toml": "c5e0f89a2410e3694afc16a7a391083ddc989c03b7976908e0fd12a47da01f24",
+    ".github/workflows/rust-macos.yml": "aa978566d9c3ce7d4107df6194e465ec3cd3e9c61e6917fcbf498c5dc46e3a0a"
+  }
+}
