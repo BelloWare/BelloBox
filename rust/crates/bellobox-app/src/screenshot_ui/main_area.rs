@@ -20,7 +20,7 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
 };
 
-// No fixture/environment bypass. Native compilation/runtime review must approve
+// No production fixture/environment bypass. Native compilation/runtime review must approve
 // production enablement separately, including callback and visibility behavior.
 pub(super) const PRODUCTION_AREA_ENABLED: bool = false;
 const SNAPSHOT_DELAY: std::time::Duration = std::time::Duration::from_millis(60);
@@ -33,7 +33,19 @@ struct Coordinator {
     cleanup_notice: Option<String>,
 }
 impl gpui::Global for Coordinator {}
+#[derive(Clone, Copy, Default)]
+enum HostSource {
+    #[default]
+    Native,
+    #[cfg(any(debug_assertions, test))]
+    SuppliedPixels {
+        application_active: bool,
+        topology_valid: bool,
+    },
+}
 struct ActiveCapture<H = AnyWindowHandle, O = host::ApplicationDeactivationObserver> {
+    source: HostSource,
+    selection_locked: bool,
     transaction: AreaTransaction<H>,
     layout: host::MainDisplayOverlayLayout,
     // UI-owned !Send/!Sync native guard. Only the pointer-free signal is awaited.
@@ -44,8 +56,8 @@ impl<H: Copy + Eq, O> ActiveCapture<H, O> {
         self.transaction.cancel();
         self.deactivation.take()
     }
-    fn finish(&mut self) -> Option<O> {
-        self.transaction.finish();
+    fn lock_selection(&mut self) -> Option<O> {
+        self.selection_locked = true;
         self.deactivation.take()
     }
     fn accepts_deactivation(
@@ -58,6 +70,7 @@ impl<H: Copy + Eq, O> ActiveCapture<H, O> {
         // The notification has ALREADY cancelled the flag before waking us.
         // Do not require !cancelled/transaction.allows() here.
         event == host::ApplicationDeactivationEvent::ResignedActive
+            && !self.selection_locked
             && self.deactivation.is_some()
             && self.transaction.id == id
             && self.transaction.generation == generation
@@ -162,6 +175,8 @@ pub(super) fn begin(window: &mut Window, cx: &mut App) -> Result<(), String> {
     let id = coordinator.next_id;
     // All prior-visible handles are recorded before the first native mutation.
     coordinator.active = Some(ActiveCapture {
+        source: HostSource::Native,
+        selection_locked: false,
         transaction: AreaTransaction::new(
             id,
             coordinator.generation,
@@ -258,25 +273,55 @@ fn prepare_area_with(
     active()?;
     Ok(PreparedArea { area, tiles })
 }
-fn current(id: u64, owner: &Window, cx: &App) -> bool {
+pub(super) fn current(id: u64, owner: &Window, cx: &App) -> bool {
     let Some(state) = cx.try_global::<Coordinator>() else {
         return false;
     };
     let Some(run) = state.active.as_ref().filter(|run| run.transaction.id == id) else {
         return false;
     };
-    let Ok(context) = native::context(owner) else {
-        return false;
+    let (context, topology) = match run.source {
+        HostSource::Native => {
+            let context = if run.selection_locked {
+                None
+            } else {
+                native::context(owner).ok()
+            };
+            (
+                context,
+                host::main_display_overlay_layout()
+                    .and_then(|now| run.layout.revalidate(now))
+                    .is_ok(),
+            )
+        }
+        #[cfg(any(debug_assertions, test))]
+        HostSource::SuppliedPixels {
+            application_active,
+            topology_valid,
+        } => (
+            Some(host::OwnedWindowContext {
+                application_active,
+                application_hidden: false,
+                requester_visible: true,
+                key_window: host::OwnedKeyWindow::Requester,
+            }),
+            topology_valid,
+        ),
     };
-    let topology = host::main_display_overlay_layout()
-        .and_then(|now| run.layout.revalidate(now))
-        .is_ok();
-    run.transaction.allows(
-        state.generation,
-        cx.windows().contains(&run.transaction.requester),
-        context,
-        topology,
-    )
+    let live = cx.windows().contains(&run.transaction.requester);
+    if run.selection_locked {
+        // Lock is the source lifecycle boundary. An inactive app must not retire
+        // its editor or force activation when asynchronous font preparation ends.
+        !run.transaction.cancelled()
+            && live
+            && topology
+            && run.transaction.generation == state.generation
+    } else {
+        context.is_some_and(|context| {
+            run.transaction
+                .allows(state.generation, live, context, topology)
+        })
+    }
 }
 fn current_requester(id: u64, cx: &mut App) -> bool {
     let Some(requester) = active_mut(id, cx).map(|run| run.transaction.requester) else {
@@ -290,8 +335,8 @@ fn mark_cancelled(id: u64, cx: &mut App) {
     let guard = active_mut(id, cx).and_then(ActiveCapture::cancel);
     unregister(guard);
 }
-fn mark_finished(id: u64, cx: &mut App) {
-    let guard = active_mut(id, cx).and_then(ActiveCapture::finish);
+fn lock_selection(id: u64, cx: &mut App) {
+    let guard = active_mut(id, cx).and_then(ActiveCapture::lock_selection);
     unregister(guard);
 }
 #[cfg_attr(
@@ -304,6 +349,9 @@ fn unregister(guard: Option<host::ApplicationDeactivationObserver>) {
     drop(guard);
 }
 fn observe_deactivation(id: u64, cx: &mut App) -> Result<(), String> {
+    if is_supplied(id, cx) {
+        return Ok(());
+    }
     let (generation, cancellation) = active_mut(id, cx)
         .filter(|run| !run.transaction.cancelled() && run.deactivation.is_none())
         .map(|run| {
@@ -449,7 +497,7 @@ fn cleanup_notice(id: u64, notice: String, cx: &mut App) {
     cx.default_global::<Coordinator>().cleanup_notice = Some(notice.clone());
     report(id, notice, cx);
 }
-fn cancel(id: u64, cx: &mut App) {
+pub(super) fn cancel(id: u64, cx: &mut App) {
     mark_cancelled(id, cx);
     // Avoid reentering the requester or selector from its current callback.
     cx.defer(move |cx| {
@@ -463,7 +511,7 @@ fn cancel(id: u64, cx: &mut App) {
         finish_if_ready(id, cx);
     });
 }
-fn discard<T: Send + 'static>(id: u64, value: T, cx: &mut App) {
+pub(super) fn discard<T: Send + 'static>(id: u64, value: T, cx: &mut App) {
     if let Some(run) = active_mut(id, cx) {
         run.transaction.start_worker();
     }
@@ -505,8 +553,145 @@ fn finish_if_ready(id: u64, cx: &mut App) {
         if let Some(handle) = requester.downcast::<CaptureChooser>() {
             let _ = handle.update(cx, |chooser, _, cx| {
                 chooser.busy = false;
+                if matches!(
+                    chooser.status.as_str(),
+                    "Freezing the main display…" | "Selecting from supplied synthetic pixels…"
+                ) {
+                    chooser.status.clear();
+                }
                 cx.notify();
             });
         }
     });
+}
+
+fn is_supplied(id: u64, cx: &App) -> bool {
+    #[cfg(any(debug_assertions, test))]
+    {
+        cx.try_global::<Coordinator>()
+            .and_then(|state| state.active.as_ref())
+            .is_some_and(|run| {
+                run.transaction.id == id && matches!(run.source, HostSource::SuppliedPixels { .. })
+            })
+    }
+    #[cfg(not(any(debug_assertions, test)))]
+    {
+        let _ = (id, cx);
+        false
+    }
+}
+/// Explicit supplied pixels enter the same freeze completion, selector, editor
+/// and retirement path. This never calls begin(), changes its gate, or invokes
+/// native capture, permissions, owned-window hiding or native observations.
+#[cfg(debug_assertions)]
+pub(super) fn begin_fixture(window: &mut Window, cx: &mut App) -> Result<(), String> {
+    let display = cx
+        .displays()
+        .into_iter()
+        .next()
+        .ok_or("No fixture display.")?;
+    let layout = host::MainDisplayOverlayLayout {
+        display: capture::CaptureDisplay {
+            // X11 may expose GPUI display ID 0, which is not a valid CG ID.
+            // This supplied-pixel identity never reaches a native API.
+            id: u32::from(display.id()).max(1),
+            bounds: capture::CaptureRect::new(0., 0., 1000., 640.),
+            pixels: capture::CapturePixelSize {
+                width: 2000,
+                height: 1280,
+            },
+        },
+        cocoa_frame: capture::CaptureRect::new(0., 0., 1000., 640.),
+        rotation_degrees: 0,
+        backing_scale: 2.,
+    };
+    begin_supplied(window.window_handle(), layout, cx, move |request, _| {
+        let png = bellobox_core::screenshot::scroll::synthetic_page_frame(
+            0,
+            request.output_size.width,
+            request.output_size.height,
+            2500,
+        )
+        .map_err(|_| capture::CaptureError::InvalidImage)?
+        .png()
+        .map_err(|_| capture::CaptureError::InvalidImage)?;
+        Ok(capture::NativeCaptureSnapshot {
+            png,
+            diagnostics: capture::CaptureDiagnostics {
+                requested_display_id: request.display.id,
+                resolved_display_id: request.display.id,
+                resolution_path: capture::DisplayResolutionPath::InitialId,
+                output_size: request.output_size,
+                region: None,
+                includes_cursor: false,
+                backend: "supplied synthetic pixels",
+            },
+        })
+    })
+}
+#[cfg(any(debug_assertions, test))]
+fn begin_supplied(
+    requester: AnyWindowHandle,
+    layout: host::MainDisplayOverlayLayout,
+    cx: &mut App,
+    pixels: impl FnOnce(
+        capture::CaptureRequest,
+        capture::CaptureCancellation,
+    ) -> capture::CaptureResult<capture::NativeCaptureSnapshot>
+    + Send
+    + 'static,
+) -> Result<(), String> {
+    layout.validate().map_err(|e| e.to_string())?;
+    if cx.default_global::<NativeCaptureVisibility>().busy {
+        return Err("Another capture is still finishing.".into());
+    }
+    let state = cx.default_global::<Coordinator>();
+    state.next_id = state.next_id.wrapping_add(1);
+    let id = state.next_id;
+    let mut transaction = AreaTransaction::new(id, state.generation, requester, vec![]);
+    transaction.start_worker();
+    let cancellation = transaction.cancellation.clone();
+    state.active = Some(ActiveCapture {
+        transaction,
+        layout,
+        deactivation: None,
+        selection_locked: false,
+        source: HostSource::SuppliedPixels {
+            application_active: true,
+            topology_valid: true,
+        },
+    });
+    cx.default_global::<NativeCaptureVisibility>().busy = true;
+    let task = cx.background_executor().spawn(async move {
+        super::caught_capture(|| prepare_area_with(layout, cancellation, pixels))
+    });
+    cx.spawn(async move |cx| {
+        let result = task.await;
+        let _ = cx.update(|cx| freeze_completed(id, result, cx));
+    })
+    .detach();
+    Ok(())
+}
+
+/// Every inline preview/OCR/export future is counted through physical completion,
+/// independently of the selector's entity lifetime.
+pub(super) fn begin_editor_work(id: u64, cx: &mut App) -> Option<u64> {
+    let run = active_mut(id, cx).filter(|run| !run.transaction.cancelled())?;
+    run.transaction.start_worker();
+    Some(id)
+}
+pub(super) fn finish_editor_work(id: Option<u64>, cx: &mut App) {
+    if let Some(id) = id {
+        if let Some(run) = active_mut(id, cx) {
+            run.transaction.finish_worker();
+        }
+        finish_if_ready(id, cx);
+    }
+}
+pub(super) fn editor_current(id: u64, cx: &mut App) -> bool {
+    current_requester(id, cx)
+}
+
+pub(super) fn editor_cancellation(id: u64, cx: &mut App) -> Option<Arc<AtomicBool>> {
+    active_mut(id, cx).map(|run| run.transaction.cancellation.clone())
 }

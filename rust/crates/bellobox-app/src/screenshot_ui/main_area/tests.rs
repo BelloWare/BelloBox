@@ -146,6 +146,8 @@ fn observed_run() -> (ActiveCapture<u64, DropProbe>, Rc<Cell<usize>>) {
     let drops = Rc::new(Cell::new(0));
     (
         ActiveCapture {
+            source: HostSource::Native,
+            selection_locked: false,
             transaction: AreaTransaction::new(17, 5, 10, vec![10]),
             layout: layout(),
             deactivation: Some(DropProbe(drops.clone())),
@@ -216,12 +218,13 @@ fn cancel_unregisters_once_while_slow_worker_still_holds_busy() {
     assert!(run.transaction.can_release());
 }
 #[test]
-fn pending_editor_handoff_is_observed_until_accepted_terminal_transfer() {
+fn selection_lock_unregisters_without_releasing_inline_ownership() {
     let (mut run, drops) = observed_run();
     run.transaction.start_worker();
     assert!(run.accepts_deactivation(17, 5, 5, host::ApplicationDeactivationEvent::ResignedActive));
     assert_eq!(drops.get(), 0);
-    drop(run.finish());
+    run.transaction.selector = Some(99);
+    drop(run.lock_selection());
     assert_eq!(drops.get(), 1);
     assert!(!run.transaction.cancelled());
     assert!(!run.accepts_deactivation(
@@ -233,6 +236,9 @@ fn pending_editor_handoff_is_observed_until_accepted_terminal_transfer() {
     run.transaction.restore.clear();
     assert!(!run.transaction.can_release());
     run.transaction.finish_worker();
+    assert!(!run.transaction.can_release());
+    run.transaction.cancel();
+    run.transaction.selector = None;
     assert!(run.transaction.can_release());
 }
 #[test]

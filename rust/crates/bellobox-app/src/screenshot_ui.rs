@@ -18,9 +18,8 @@ use std::{cell::Cell, rc::Rc, sync::Arc};
 
 #[cfg(debug_assertions)]
 mod area_capture;
-#[cfg(any(target_os = "macos", test))]
 mod area_transaction;
-#[cfg(any(target_os = "macos", test))]
+mod inline_area;
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 mod main_area;
 #[cfg(debug_assertions)]
@@ -158,18 +157,15 @@ fn native_capture_should_focus(application_active: bool, requester_is_key: bool)
     application_active && requester_is_key
 }
 
-#[cfg(any(target_os = "macos", test))]
 fn caught_capture<T>(job: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(job))
         .unwrap_or_else(|_| Err("The native capture worker could not complete.".into()))
 }
 
-#[cfg(any(target_os = "macos", test))]
 #[derive(Default)]
 struct NativeCaptureVisibility {
     busy: bool,
 }
-#[cfg(any(target_os = "macos", test))]
 impl gpui::Global for NativeCaptureVisibility {}
 
 struct CaptureChooser {
@@ -187,7 +183,6 @@ pub(crate) fn cancel_pending_area_fixture(cx: &mut App) {
 pub(crate) fn area_navigation_changed(cx: &mut App) {
     #[cfg(debug_assertions)]
     cancel_pending_area_fixture(cx);
-    #[cfg(target_os = "macos")]
     main_area::navigation_changed(cx);
     #[cfg(not(any(target_os = "macos", debug_assertions)))]
     let _ = cx;
@@ -242,17 +237,34 @@ pub fn open(cx: &mut App) {
                 let weak = cx.entity().downgrade();
                 window.on_window_should_close(cx, move |_window, cx| {
                     let _ = weak.update(cx, |this: &mut CaptureChooser, _| this.jobs.cancel());
-                    #[cfg(target_os = "macos")]
                     main_area::requester_closed(_window.window_handle(), cx);
                     true
                 });
-                #[cfg(target_os = "macos")]
                 {
                     let requester = window.window_handle();
                     cx.on_release(move |_: &mut CaptureChooser, cx| {
                         main_area::requester_closed(requester, cx)
                     })
                     .detach();
+                }
+                #[cfg(debug_assertions)]
+                if std::env::var_os("BELLOBOX_INLINE_AREA_FIXTURE").is_some() {
+                    chooser.busy = true;
+                    chooser.status = "Selecting from supplied synthetic pixels…".into();
+                    let requester = window.window_handle();
+                    cx.defer(move |cx| {
+                        let _ = requester.update(cx, |root, window, cx| {
+                            if let Err(error) = main_area::begin_fixture(window, cx)
+                                && let Ok(chooser) = root.downcast::<CaptureChooser>()
+                            {
+                                chooser.update(cx, |chooser, cx| {
+                                    chooser.busy = false;
+                                    chooser.status = error;
+                                    cx.notify();
+                                });
+                            }
+                        });
+                    });
                 }
                 if let Some(path) = std::env::var_os("BELLOBOX_SCREENSHOT_FILE") {
                     chooser.load_fixture(path.into(), window, cx);
@@ -450,7 +462,7 @@ impl Render for CaptureChooser {
             button.on_click(cx.listener(|this, _, window, cx| this.capture_area(window, cx)))
         });
         div().size_full().p(px(18.)).flex().flex_col().gap(px(16.)).bg(p.bg).text_color(p.primary).font_family(theme::ui_font()).track_focus(&self.focus)
-            .on_key_down(cx.listener(|this,e:&gpui::KeyDownEvent,window,_cx|{if e.keystroke.key=="escape"{this.jobs.cancel(); #[cfg(target_os = "macos")] main_area::requester_closed(window.window_handle(), _cx); window.remove_window();}}))
+            .on_key_down(cx.listener(|this,e:&gpui::KeyDownEvent,window,_cx|{if e.keystroke.key=="escape"{this.jobs.cancel(); main_area::requester_closed(window.window_handle(), _cx); window.remove_window();}}))
             .child(header("Capture and annotate".into(),p))
             .child(div().flex().flex_col().gap(px(10.)).child(div().flex().gap(px(10.)).child(area).child(button("window","Window · unavailable",p).flex_1().opacity(0.5))).child(div().flex().gap(px(10.)).child(button("screen",if self.busy{"Capturing…"}else{"Screen"},p).flex_1().on_click(cx.listener(Self::capture_click))).child(button("scroll","Scrolling · unavailable",p).flex_1().opacity(0.5))))
             .child(div().text_size(px(11.)).text_color(p.secondary).child("Screen captures the full virtual screen on Linux and the main display on macOS. Area, window and scrolling selection are not available yet."))
@@ -554,6 +566,7 @@ fn open_scroll_result(result: PreparedScrollCapture, cx: &mut App) {
 }
 
 struct ScreenshotEditor {
+    inline: Option<inline_area::InlineArea>,
     #[cfg(debug_assertions)]
     window_refresh: Option<window_refresh::Host>,
     capture_presentation: CapturePresentation,
@@ -650,7 +663,19 @@ impl ScreenshotEditor {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
+        Self::new_with_inline(session, source, presentation, None, window, cx)
+    }
+    fn new_with_inline(
+        session: ScreenshotEditSession,
+        source: &'static str,
+        presentation: CapturePresentation,
+        inline: Option<inline_area::InlineArea>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
         let focus = cx.focus_handle();
+        // GPUI logical focus does not activate a native window. Preserve the
+        // keyboard route when font preparation finishes while the app is inactive.
         window.focus(&focus);
         let ocr = cx.new(|cx| {
             let mut e = EditorView::new(String::new(), window, cx);
@@ -696,6 +721,7 @@ impl ScreenshotEditor {
             Zoom::Fit
         };
         let mut view = Self {
+            inline,
             #[cfg(debug_assertions)]
             window_refresh: None,
             shows_capture_notes: !presentation.notes.is_empty(),
@@ -742,27 +768,29 @@ impl ScreenshotEditor {
             focus,
         };
         let weak = cx.entity().downgrade();
-        window.on_window_should_close(cx, move |window, cx| {
-            weak.update(cx, |this, cx| {
-                if this.export_busy {
-                    return false;
-                }
-                if this.text_origin.is_some() {
-                    this.cancel_active_text(window, cx);
-                    return false;
-                }
-                this.finish_label_drag(cx);
-                if this.session.has_edits() {
-                    this.show_discard = true;
-                    cx.notify();
-                    false
-                } else {
-                    this.cancel_window_refresh();
-                    true
-                }
-            })
-            .unwrap_or(true)
-        });
+        if view.inline.is_none() {
+            window.on_window_should_close(cx, move |window, cx| {
+                weak.update(cx, |this, cx| {
+                    if this.export_busy {
+                        return false;
+                    }
+                    if this.text_origin.is_some() {
+                        this.cancel_active_text(window, cx);
+                        return false;
+                    }
+                    this.finish_label_drag(cx);
+                    if this.session.has_edits() {
+                        this.show_discard = true;
+                        cx.notify();
+                        false
+                    } else {
+                        this.cancel_window_refresh();
+                        true
+                    }
+                })
+                .unwrap_or(true)
+            });
+        }
         view.render_preview(cx);
         #[cfg(debug_assertions)]
         if let Some(request) = window_refresh {
@@ -866,60 +894,101 @@ impl ScreenshotEditor {
             }
         }
     }
+    fn begin_inline_work(&self, cx: &mut App) -> Option<u64> {
+        self.inline
+            .as_ref()
+            .and_then(|inline| main_area::begin_editor_work(inline.id, cx))
+    }
+    fn inline_current(&self, cx: &mut App) -> bool {
+        self.inline
+            .as_ref()
+            .is_none_or(|inline| main_area::editor_current(inline.id, cx))
+    }
     fn render_preview(&mut self, cx: &mut Context<Self>) {
+        if !self.inline_current(cx) {
+            self.cancel_inline_owner(cx);
+            return;
+        }
         if self.rendering {
             return;
         }
         self.rendering = true;
         let token = self.jobs.begin();
         let revision = self.preview_revision;
-        let snapshot = self.label_preview_snapshot();
+        let snapshot = self.label_preview_snapshot().and_then(|snapshot| {
+            if self.inline.is_some() {
+                // Inline tiles stay in full-display coordinates, so a live crop
+                // draft can reveal pixels without rerendering or moving annotations.
+                let mut full = ScreenshotEditSession::new(snapshot);
+                full.set_crop(None)?;
+                Ok(full.render_snapshot())
+            } else {
+                Ok(snapshot)
+            }
+        });
         let task = cx
             .background_executor()
             .spawn(async move { snapshot?.render_preview_tiles() });
+        let inline_work = self.begin_inline_work(cx);
         cx.spawn(async move |this, cx| {
-            let result = task.await;
-            let _ = this.update(cx, |this, cx| {
-                if !this.jobs.accepts(token) {
-                    return;
-                }
-                this.rendering = false;
-                if this.preview_revision != revision {
-                    this.render_preview(cx);
-                    return;
-                }
-                match result {
-                    Ok(tiles) => {
-                        this.preview_tiles = tiles
-                            .into_iter()
-                            .map(|tile| PreviewTile {
-                                x: tile.x,
-                                y: tile.y,
-                                width: tile.width,
-                                height: tile.height,
-                                image: Arc::new(Image::from_bytes(ImageFormat::Png, tile.png)),
-                            })
-                            .collect();
+            async {
+                let result = task.await;
+                let _ = this.update(cx, |this, cx| {
+                    if !this.inline_current(cx) {
+                        this.cancel_inline_owner(cx);
+                        return;
                     }
-                    Err(e) => {
-                        this.preview_tiles.clear();
-                        this.status = e;
-                        this.error = true;
+                    if !this.jobs.accepts(token) {
+                        return;
                     }
-                }
-                cx.notify();
-            });
+                    this.rendering = false;
+                    if this.preview_revision != revision {
+                        this.render_preview(cx);
+                        return;
+                    }
+                    match result {
+                        Ok(tiles) => {
+                            this.preview_tiles = tiles
+                                .into_iter()
+                                .map(|tile| PreviewTile {
+                                    x: tile.x,
+                                    y: tile.y,
+                                    width: tile.width,
+                                    height: tile.height,
+                                    image: Arc::new(Image::from_bytes(ImageFormat::Png, tile.png)),
+                                })
+                                .collect();
+                        }
+                        Err(e) => {
+                            this.preview_tiles.clear();
+                            this.status = e;
+                            this.error = true;
+                        }
+                    }
+                    cx.notify();
+                });
+            }
+            .await;
+            let _ = cx.update(|cx| main_area::finish_editor_work(inline_work, cx));
         })
         .detach();
     }
     fn document_point(&self, position: ViewPoint<Pixels>) -> Point {
         let b = self.image_bounds.get();
-        let visible = self.session.document().visible_rect();
+        let visible = self.inline_visible_rect();
+        let offset = (
+            f32::from(position.x - b.origin.x),
+            f32::from(position.y - b.origin.y),
+        );
+        let (x, y) = if let Some(inline) = self.inline.as_ref() {
+            let (sx, sy) = inline.pixels_per_point();
+            (offset.0 * sx, offset.1 * sy)
+        } else {
+            (offset.0 / self.scale, offset.1 / self.scale)
+        };
         Point {
-            x: ((f32::from(position.x - b.origin.x) / self.scale).clamp(0., visible.width))
-                + visible.x,
-            y: ((f32::from(position.y - b.origin.y) / self.scale).clamp(0., visible.height))
-                + visible.y,
+            x: x.clamp(0., visible.width) + visible.x,
+            y: y.clamp(0., visible.height) + visible.y,
         }
     }
     fn mouse_down(
@@ -928,6 +997,10 @@ impl ScreenshotEditor {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        if !self.inline_current(cx) {
+            self.cancel_inline_owner(cx);
+            return;
+        }
         if self.show_discard || self.export_busy {
             return;
         }
@@ -955,6 +1028,9 @@ impl ScreenshotEditor {
         }
         self.selected = None;
         if self.tool == AnnotationTool::Select {
+            if self.inline.is_some() {
+                self.begin_selection_adjustment(None, e.position, cx);
+            }
             cx.notify();
             return;
         }
@@ -966,6 +1042,13 @@ impl ScreenshotEditor {
         cx.notify();
     }
     fn mouse_move(&mut self, e: &gpui::MouseMoveEvent, _: &mut Window, cx: &mut Context<Self>) {
+        if !self.inline_current(cx) {
+            self.cancel_inline_owner(cx);
+            return;
+        }
+        if self.update_selection_adjustment(e.position, false, cx) {
+            return;
+        }
         let point = self.document_point(e.position);
         if self.label_drag.is_some() {
             self.update_label_drag(point, cx);
@@ -992,6 +1075,13 @@ impl ScreenshotEditor {
         }
     }
     fn mouse_up(&mut self, e: &gpui::MouseUpEvent, _: &mut Window, cx: &mut Context<Self>) {
+        if !self.inline_current(cx) {
+            self.cancel_inline_owner(cx);
+            return;
+        }
+        if self.update_selection_adjustment(e.position, true, cx) {
+            return;
+        }
         let endpoint = self.document_point(e.position);
         if self.label_drag.is_some() {
             self.update_label_drag(endpoint, cx);
@@ -1060,6 +1150,10 @@ impl ScreenshotEditor {
         self.report(result, cx);
     }
     fn close(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if let Some(inline) = self.inline.as_ref() {
+            main_area::cancel(inline.id, cx);
+            return;
+        }
         if self.text_origin.is_some() {
             self.cancel_active_text(window, cx);
             return;
@@ -1073,52 +1167,95 @@ impl ScreenshotEditor {
             window.remove_window();
         }
     }
-    fn copy(&mut self, finish: bool, window: &mut Window, cx: &mut Context<Self>) {
+    fn prepare_output_snapshot(
+        &mut self,
+        cx: &mut Context<Self>,
+    ) -> Option<bellobox_core::screenshot::RenderSnapshot> {
+        if !self.inline_current(cx) {
+            self.cancel_inline_owner(cx);
+            return None;
+        }
+        if self.gesture.is_some() {
+            // Crop, masks, pen and eraser are still visual drafts. Never export
+            // older wider/unredacted pixels behind the active pointer gesture.
+            self.status =
+                "Release the pointer to finish the edit before exporting or reading text.".into();
+            self.error = false;
+            cx.notify();
+            return None;
+        }
+        if !self.commit_selection_adjustment(cx) {
+            return None;
+        }
         self.finish_label_drag(cx);
-        if self.export_busy || !self.commit_text(cx) {
+        self.commit_text(cx).then(|| self.session.render_snapshot())
+    }
+    fn copy(&mut self, finish: bool, window: &mut Window, cx: &mut Context<Self>) {
+        if self.export_busy {
             return;
         }
+        let Some(snapshot) = self.prepare_output_snapshot(cx) else {
+            return;
+        };
         self.export_busy = true;
         cx.notify();
-        let snapshot = self.session.render_snapshot();
         let task = cx
             .background_executor()
             .spawn(async move { snapshot.render_png() });
+        let inline_work = self.begin_inline_work(cx);
+        let app = cx.to_async();
         cx.spawn_in(window, async move |this, cx| {
-            let result = task.await;
-            let _ = this.update_in(cx, |this, window, cx| {
-                this.export_busy = false;
-                match result {
-                    Ok(png) => {
-                        cx.write_to_clipboard(ClipboardItem::new_image(&Image::from_bytes(
-                            ImageFormat::Png,
-                            png,
-                        )));
-                        this.status = "Copied image.".into();
-                        this.error = false;
-                        if finish {
-                            this.cancel_window_refresh();
-                            window.remove_window();
+            async {
+                let result = task.await;
+                let _ = this.update_in(cx, |this, window, cx| {
+                    if !this.inline_current(cx) {
+                        this.cancel_inline_owner(cx);
+                        return;
+                    }
+                    this.export_busy = false;
+                    match result {
+                        Ok(png) => {
+                            cx.write_to_clipboard(ClipboardItem::new_image(&Image::from_bytes(
+                                ImageFormat::Png,
+                                png,
+                            )));
+                            this.status = "Copied image.".into();
+                            this.error = false;
+                            if finish {
+                                this.cancel_window_refresh();
+                                if this.inline.is_some() {
+                                    this.cancel_inline_owner(cx);
+                                } else {
+                                    window.remove_window();
+                                }
+                            }
+                        }
+                        Err(error) => {
+                            this.status = error;
+                            this.error = true;
                         }
                     }
-                    Err(error) => {
-                        this.status = error;
-                        this.error = true;
-                    }
-                }
-                cx.notify();
-            });
+                    cx.notify();
+                });
+            }
+            .await;
+            let _ = app.update(|cx| main_area::finish_editor_work(inline_work, cx));
         })
         .detach();
     }
     fn save(&mut self, cx: &mut Context<Self>) {
-        self.finish_label_drag(cx);
-        if self.export_busy || !self.commit_text(cx) {
+        if self.export_busy {
             return;
         }
+        let Some(snapshot) = self.prepare_output_snapshot(cx) else {
+            return;
+        };
         self.export_busy = true;
         cx.notify();
-        let snapshot = self.session.render_snapshot();
+        let cancellation = self
+            .inline
+            .as_ref()
+            .and_then(|inline| main_area::editor_cancellation(inline.id, cx));
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
@@ -1128,69 +1265,98 @@ impl ScreenshotEditor {
             &std::env::current_dir().unwrap_or_else(|_| ".".into()),
             Some(&name),
         );
+        let inline_work = self.begin_inline_work(cx);
         cx.spawn(async move |this, cx| {
-            let path = match dialog.await {
-                Ok(Ok(Some(path))) => path,
-                Ok(Ok(None)) => {
-                    let _ = this.update(cx, |this, cx| {
-                        this.export_busy = false;
-                        cx.notify();
-                    });
-                    return;
-                }
-                _ => {
-                    let _ = this.update(cx, |this, cx| {
-                        this.export_busy = false;
-                        this.status = "Could not open the save dialog.".into();
-                        this.error = true;
-                        cx.notify();
-                    });
-                    return;
-                }
-            };
-            if this.update(cx, |_, _| ()).is_err() {
-                return;
-            }
-            let task = cx.background_executor().spawn(async move {
-                if !path
-                    .extension()
-                    .is_some_and(|s| s.eq_ignore_ascii_case("png"))
+            async {
+                let path = match dialog.await {
+                    Ok(Ok(Some(path))) => path,
+                    Ok(Ok(None)) => {
+                        let _ = this.update(cx, |this, cx| {
+                            if !this.inline_current(cx) {
+                                this.cancel_inline_owner(cx);
+                                return;
+                            }
+                            this.export_busy = false;
+                            cx.notify();
+                        });
+                        return;
+                    }
+                    _ => {
+                        let _ = this.update(cx, |this, cx| {
+                            if !this.inline_current(cx) {
+                                this.cancel_inline_owner(cx);
+                                return;
+                            }
+                            this.export_busy = false;
+                            this.status = "Could not open the save dialog.".into();
+                            this.error = true;
+                            cx.notify();
+                        });
+                        return;
+                    }
+                };
+                if !this
+                    .update(cx, |this, cx| {
+                        let current = this.inline_current(cx);
+                        if !current {
+                            this.cancel_inline_owner(cx);
+                        }
+                        current
+                    })
+                    .unwrap_or(false)
                 {
-                    return Err("Choose a PNG filename.".into());
+                    return;
                 }
-                let png = snapshot.render_png()?;
-                bello_platform::Platform::new()
-                    .save_png_bytes(&path, &png)
-                    .map_err(|e| e.to_string())?;
-                Ok::<_, String>(())
-            });
-            let result = task.await;
-            let _ = this.update(cx, |this, cx| {
-                this.export_busy = false;
-                match result {
-                    Ok(()) => {
-                        this.status = "Saved PNG.".into();
-                        this.error = false;
+                let task = cx.background_executor().spawn(async move {
+                    if !path
+                        .extension()
+                        .is_some_and(|s| s.eq_ignore_ascii_case("png"))
+                    {
+                        return Err("Choose a PNG filename.".into());
                     }
-                    Err(e) => {
-                        this.status = e;
-                        this.error = true;
+                    let png = snapshot.render_png()?;
+                    if cancellation
+                        .is_some_and(|flag| flag.load(std::sync::atomic::Ordering::Acquire))
+                    {
+                        return Err("Screenshot export was cancelled.".into());
                     }
-                }
-                cx.notify();
-            });
+                    bello_platform::Platform::new()
+                        .save_png_bytes(&path, &png)
+                        .map_err(|e| e.to_string())?;
+                    Ok::<_, String>(())
+                });
+                let result = task.await;
+                let _ = this.update(cx, |this, cx| {
+                    if !this.inline_current(cx) {
+                        this.cancel_inline_owner(cx);
+                        return;
+                    }
+                    this.export_busy = false;
+                    match result {
+                        Ok(()) => {
+                            this.status = "Saved PNG.".into();
+                            this.error = false;
+                        }
+                        Err(e) => {
+                            this.status = e;
+                            this.error = true;
+                        }
+                    }
+                    cx.notify();
+                });
+            }
+            .await;
+            let _ = cx.update(|cx| main_area::finish_editor_work(inline_work, cx));
         })
         .detach();
     }
     fn read_text(&mut self, cx: &mut Context<Self>) {
-        self.finish_label_drag(cx);
-        if !self.commit_text(cx) {
-            return;
-        }
         if self.ocr_busy {
             return;
         }
-        let snapshot = self.session.render_snapshot();
+        let Some(snapshot) = self.prepare_output_snapshot(cx) else {
+            return;
+        };
         let revision = self.session.revision();
         let token = OcrTicket {
             job: self.ocr_jobs.begin(),
@@ -1206,29 +1372,38 @@ impl ScreenshotEditor {
                 .recognize_image_bytes(&image, None)
                 .map_err(|e| e.to_string())
         });
+        let inline_work = self.begin_inline_work(cx);
         cx.spawn(async move |this, cx| {
-            let result = task.await;
-            let _ = this.update(cx, |this, cx| {
-                if !token.accepts(&this.ocr_jobs, this.session.revision()) {
-                    return;
-                }
-                this.ocr_busy = false;
-                match result {
-                    Ok(text) => {
-                        this.ocr_content = RevisionText {
-                            revision: Some(revision),
-                            text: text.clone(),
-                        };
-                        this.ocr.update(cx, |e, cx| e.set_text(text, cx));
-                        this.status = "Local OCR complete. Nothing was uploaded.".into();
+            async {
+                let result = task.await;
+                let _ = this.update(cx, |this, cx| {
+                    if !this.inline_current(cx) {
+                        this.cancel_inline_owner(cx);
+                        return;
                     }
-                    Err(e) => {
-                        this.status = e;
-                        this.error = true;
+                    if !token.accepts(&this.ocr_jobs, this.session.revision()) {
+                        return;
                     }
-                }
-                cx.notify();
-            });
+                    this.ocr_busy = false;
+                    match result {
+                        Ok(text) => {
+                            this.ocr_content = RevisionText {
+                                revision: Some(revision),
+                                text: text.clone(),
+                            };
+                            this.ocr.update(cx, |e, cx| e.set_text(text, cx));
+                            this.status = "Local OCR complete. Nothing was uploaded.".into();
+                        }
+                        Err(e) => {
+                            this.status = e;
+                            this.error = true;
+                        }
+                    }
+                    cx.notify();
+                });
+            }
+            .await;
+            let _ = cx.update(|cx| main_area::finish_editor_work(inline_work, cx));
         })
         .detach();
     }
@@ -1260,6 +1435,16 @@ impl ScreenshotEditor {
         }
 
         let primary = e.keystroke.modifiers.platform || e.keystroke.modifiers.control;
+        if self.inline.is_some() && key == "enter" && self.text_origin.is_none() {
+            self.copy(true, window, cx);
+            cx.stop_propagation();
+            return;
+        }
+        if self.inline.is_some() && key == "escape" {
+            self.close(window, cx);
+            cx.stop_propagation();
+            return;
+        }
         if key == "escape" {
             if let Some(drag) = self.label_drag.take() {
                 if drag.id.is_none() {
@@ -1300,7 +1485,7 @@ impl ScreenshotEditor {
             self.zoom_step(false, cx);
         } else if primary && (key == "=" || key == "+") {
             self.zoom_step(true, cx);
-        } else if primary && e.keystroke.modifiers.alt && key == "o" {
+        } else if self.inline.is_none() && primary && e.keystroke.modifiers.alt && key == "o" {
             self.shows_ocr = !self.shows_ocr;
             cx.notify();
         } else if primary
@@ -1371,8 +1556,12 @@ impl ScreenshotEditor {
                     })),
             );
         let controls = self.style_controls(p, cx);
-        let options = icon_button("image-options", "ellipsis", false, p)
-            .on_click(cx.listener(|this, _, _, cx| this.toggle_menu(Menu::Image, cx)));
+        let options = icon_button("image-options", "ellipsis", false, p).on_click(cx.listener(
+            |this, event: &gpui::ClickEvent, _, cx| {
+                this.record_inline_menu_anchor(event.position());
+                this.toggle_menu(Menu::Image, cx);
+            },
+        ));
         if compact {
             div()
                 .flex_none()
@@ -1454,9 +1643,10 @@ impl ScreenshotEditor {
                 row = row.child(
                     icon_button("mask-pattern", symbol, false, p)
                         .size(px(24.))
-                        .on_click(
-                            cx.listener(|this, _, _, cx| this.toggle_menu(Menu::MaskPattern, cx)),
-                        ),
+                        .on_click(cx.listener(|this, event: &gpui::ClickEvent, _, cx| {
+                            this.record_inline_menu_anchor(event.position());
+                            this.toggle_menu(Menu::MaskPattern, cx);
+                        })),
                 );
             }
             AnnotationTool::Pen
@@ -1532,46 +1722,7 @@ impl ScreenshotEditor {
         let visible = self.session.document().visible_rect();
         self.scale = self.zoom.scale((visible.width, visible.height), available);
         let scale = self.scale;
-        if self.text_origin.is_some() {
-            let style = self.style;
-            self.text_draft.update(cx, |editor, cx| {
-                let mut appearance = editor.appearance().clone();
-                let color = p.primary;
-                let font_size = (style.font_size * scale).clamp(6., 256.);
-                if appearance.font_size != font_size || appearance.text != color {
-                    appearance.font_size = font_size;
-                    appearance.line_height = font_size * 1.4;
-                    appearance.text = color;
-                    editor.set_appearance(appearance, cx);
-                    editor.set_compact(true, cx);
-                }
-            });
-        }
         let (width, height) = (visible.width * scale, visible.height * scale);
-        let bounds_cell = self.image_bounds.clone();
-        let gesture = self.gesture.clone();
-        let style = self.style;
-        let eraser = self.eraser_width;
-        let overlay = canvas(
-            move |bounds, _, _| {
-                bounds_cell.set(bounds);
-            },
-            move |bounds, _, window, _| {
-                if let Some(g) = &gesture {
-                    paint_gesture(
-                        g,
-                        visible,
-                        scale,
-                        bounds,
-                        (style.line_width, eraser),
-                        p,
-                        window,
-                    );
-                }
-            },
-        )
-        .absolute()
-        .size_full();
         let viewport_size = self.viewport_size.clone();
         let weak = cx.entity().downgrade();
         let measure = canvas(
@@ -1613,109 +1764,159 @@ impl ScreenshotEditor {
                     .flex()
                     .items_center()
                     .justify_center()
-                    .child(
-                        div()
-                            .id("annotation-canvas")
-                            .relative()
-                            .flex_none()
-                            .w(px(width))
-                            .h(px(height))
-                            .children(
-                                self.preview_tiles
-                                    .iter()
-                                    .filter(|tile| {
-                                        tile_is_visible(
-                                            tile,
-                                            scale,
-                                            (
-                                                width.max(available.0) - width,
-                                                height.max(available.1) - height,
-                                            ),
-                                            self.scroll.offset(),
-                                            available,
-                                        )
-                                    })
-                                    .map(|tile| {
-                                        div()
-                                            .absolute()
-                                            .left(px(tile.x as f32 * scale))
-                                            .top(px(tile.y as f32 * scale))
-                                            .w(px(tile.width as f32 * scale))
-                                            .h(px(tile.height as f32 * scale))
-                                            .child(img(tile.image.clone()).size_full())
-                                    }),
-                            )
-                            .child(overlay)
-                            .children(self.label_overlays(visible, scale, p, cx))
-                            .when_some(self.text_origin, |d, origin| {
-                                d.child(
-                                    div()
-                                        .id("inline-annotation-text")
-                                        .absolute()
-                                        .left(px((origin.x - visible.x) * scale))
-                                        .top(px((origin.y - visible.y) * scale))
-                                        .w(px((260. * scale).max(120.)))
-                                        .h(px(((self.style.font_size + 16.).max(34.) * scale)
-                                            .max(30.)))
-                                        .bg(p.surface)
-                                        .border_1()
-                                        .border_color(p.accent)
-                                        .rounded(px(4.))
-                                        .on_mouse_down(MouseButton::Left, |_, _, cx| {
-                                            cx.stop_propagation()
-                                        })
-                                        .capture_key_down(cx.listener(
-                                            |this, e: &gpui::KeyDownEvent, window, cx| {
-                                                if this.text_draft.read(cx).has_marked_text() {
-                                                    return;
-                                                }
-                                                if e.keystroke.key == "enter" {
-                                                    this.commit_text(cx);
-                                                    window.focus(&this.focus);
-                                                    cx.stop_propagation();
-                                                } else if e.keystroke.key == "escape" {
-                                                    this.cancel_active_text(window, cx);
-                                                    cx.stop_propagation();
-                                                }
-                                            },
-                                        ))
-                                        .child(self.text_draft.clone())
-                                        .child(
-                                            div()
-                                                .id("active-label-drag-handle")
-                                                .absolute()
-                                                .left(px(-10.))
-                                                .top(px(-10.))
-                                                .size(px(22.))
-                                                .rounded_full()
-                                                .bg(p.accent_fill)
-                                                .border_1()
-                                                .border_color(gpui::white().opacity(0.45))
-                                                .flex()
-                                                .items_center()
-                                                .justify_center()
-                                                .cursor_move()
-                                                .child(annotation_icon("move", p))
-                                                .on_mouse_down(
-                                                    MouseButton::Left,
-                                                    cx.listener(
-                                                        |this, e: &gpui::MouseDownEvent, _, cx| {
-                                                            this.begin_label_drag(
-                                                                None, e.position, cx,
-                                                            );
-                                                            cx.stop_propagation();
-                                                        },
-                                                    ),
-                                                ),
-                                        ),
-                                )
-                            })
-                            .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
-                            .on_mouse_move(cx.listener(Self::mouse_move))
-                            .on_mouse_up(MouseButton::Left, cx.listener(Self::mouse_up))
-                            .on_mouse_up_out(MouseButton::Left, cx.listener(Self::mouse_up)),
-                    ),
+                    .child(self.annotation_surface(visible, (scale, scale), available, p, cx)),
             )
+    }
+    fn annotation_surface(
+        &mut self,
+        visible: Rect,
+        scales: (f32, f32),
+        available: (f32, f32),
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        let (scale, scale_y) = scales;
+        let tile_origin = if self.inline.is_some() {
+            Point::new(visible.x, visible.y)
+        } else {
+            Point::default()
+        };
+        if self.text_origin.is_some() {
+            let style = self.style;
+            self.text_draft.update(cx, |editor, cx| {
+                let mut appearance = editor.appearance().clone();
+                let color = p.primary;
+                let font_size = (style.font_size * scale).clamp(6., 256.);
+                if appearance.font_size != font_size || appearance.text != color {
+                    appearance.font_size = font_size;
+                    appearance.line_height = font_size * 1.4;
+                    appearance.text = color;
+                    editor.set_appearance(appearance, cx);
+                    editor.set_compact(true, cx);
+                }
+            });
+        }
+        let (width, height) = (visible.width * scale, visible.height * scale_y);
+        let bounds_cell = self.image_bounds.clone();
+        let gesture = self.gesture.clone();
+        let style = self.style;
+        let eraser = self.eraser_width;
+        let overlay = canvas(
+            move |bounds, _, _| {
+                bounds_cell.set(bounds);
+            },
+            move |bounds, _, window, _| {
+                if let Some(g) = &gesture {
+                    paint_gesture(
+                        g,
+                        visible,
+                        (scale, scale_y),
+                        bounds,
+                        (style.line_width, eraser),
+                        p,
+                        window,
+                    );
+                }
+            },
+        )
+        .absolute()
+        .size_full();
+        div()
+            .id("annotation-canvas")
+            .relative()
+            .flex_none()
+            .w(px(width))
+            .h(px(height))
+            .children(
+                self.preview_tiles
+                    .iter()
+                    .filter(|tile| {
+                        self.inline.is_some()
+                            || tile_is_visible(
+                                tile,
+                                scale,
+                                (
+                                    width.max(available.0) - width,
+                                    height.max(available.1) - height,
+                                ),
+                                self.scroll.offset(),
+                                available,
+                            )
+                    })
+                    .map(|tile| {
+                        div()
+                            .absolute()
+                            .left(px((tile.x as f32 - tile_origin.x) * scale))
+                            .top(px((tile.y as f32 - tile_origin.y) * scale_y))
+                            .w(px(tile.width as f32 * scale))
+                            .h(px(tile.height as f32 * scale_y))
+                            .child(img(tile.image.clone()).size_full())
+                    }),
+            )
+            .child(overlay)
+            .children(self.label_overlays(visible, (scale, scale_y), p, cx))
+            .when_some(self.text_origin, |d, origin| {
+                d.child(
+                    div()
+                        .id("inline-annotation-text")
+                        .absolute()
+                        .left(px((origin.x - visible.x) * scale))
+                        .top(px((origin.y - visible.y) * scale_y))
+                        .w(px((260. * scale).max(120.)))
+                        .h(px(
+                            ((self.style.font_size + 16.).max(34.) * scale_y).max(30.)
+                        ))
+                        .bg(p.surface)
+                        .border_1()
+                        .border_color(p.accent)
+                        .rounded(px(4.))
+                        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                        .capture_key_down(cx.listener(
+                            |this, e: &gpui::KeyDownEvent, window, cx| {
+                                if this.text_draft.read(cx).has_marked_text() {
+                                    return;
+                                }
+                                if e.keystroke.key == "enter" {
+                                    this.commit_text(cx);
+                                    window.focus(&this.focus);
+                                    cx.stop_propagation();
+                                } else if e.keystroke.key == "escape" {
+                                    this.cancel_active_text(window, cx);
+                                    cx.stop_propagation();
+                                }
+                            },
+                        ))
+                        .child(self.text_draft.clone())
+                        .child(
+                            div()
+                                .id("active-label-drag-handle")
+                                .absolute()
+                                .left(px(-10.))
+                                .top(px(-10.))
+                                .size(px(22.))
+                                .rounded_full()
+                                .bg(p.accent_fill)
+                                .border_1()
+                                .border_color(gpui::white().opacity(0.45))
+                                .flex()
+                                .items_center()
+                                .justify_center()
+                                .cursor_move()
+                                .child(annotation_icon("move", p))
+                                .on_mouse_down(
+                                    MouseButton::Left,
+                                    cx.listener(|this, e: &gpui::MouseDownEvent, _, cx| {
+                                        this.begin_label_drag(None, e.position, cx);
+                                        cx.stop_propagation();
+                                    }),
+                                ),
+                        ),
+                )
+            })
+            .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
+            .on_mouse_move(cx.listener(Self::mouse_move))
+            .on_mouse_up(MouseButton::Left, cx.listener(Self::mouse_up))
+            .on_mouse_up_out(MouseButton::Left, cx.listener(Self::mouse_up))
     }
     fn reader(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
         let current = self.ocr_content.current(self.session.revision()).is_some();
@@ -1893,6 +2094,9 @@ impl ScreenshotEditor {
 }
 impl Render for ScreenshotEditor {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if self.inline.is_some() {
+            return self.render_inline(window, cx).into_any_element();
+        }
         let render_started = std::time::Instant::now();
         let p = theme::for_window(window);
         let viewport = window.viewport_size();
@@ -2067,23 +2271,24 @@ impl Render for ScreenshotEditor {
             );
         }
         crate::desktop::perf("render_cpu", render_started.elapsed().as_micros());
-        root
+        root.into_any_element()
     }
 }
 
 fn paint_gesture(
     g: &Gesture,
     visible: Rect,
-    scale: f32,
+    scales: (f32, f32),
     bounds: Bounds<Pixels>,
     brushes: (f32, f32),
     p: Palette,
     window: &mut Window,
 ) {
+    let (scale, scale_y) = scales;
     let transform = |v: Point| {
         point(
             bounds.origin.x + px((v.x - visible.x) * scale),
-            bounds.origin.y + px((v.y - visible.y) * scale),
+            bounds.origin.y + px((v.y - visible.y) * scale_y),
         )
     };
     let mut path = gpui::PathBuilder::stroke(px(if g.tool == AnnotationTool::Eraser {
@@ -2256,6 +2461,16 @@ fn annotation_icon(symbol: &'static str, p: Palette) -> gpui::AnyElement {
                     vec![(11., 11.), (12., 11.), (12., 13.), (11., 13.), (11., 11.)],
                     vec![(18., 11.), (19., 11.), (19., 13.), (18., 13.), (18., 11.)],
                 ],
+                "doc.on.doc" => vec![
+                    vec![(8., 7.), (21., 7.), (21., 22.), (8., 22.), (8., 7.)],
+                    vec![(16., 7.), (16., 2.), (3., 2.), (3., 17.), (8., 17.)],
+                ],
+                "square.and.arrow.down" => vec![
+                    vec![(4., 13.), (4., 21.), (20., 21.), (20., 13.)],
+                    vec![(12., 2.), (12., 16.)],
+                    vec![(7., 11.), (12., 16.), (17., 11.)],
+                ],
+                "checkmark" => vec![vec![(3., 12.), (9., 19.), (21., 4.)]],
                 "minus" => vec![vec![(5., 12.), (19., 12.)]],
                 _ => vec![vec![(6., 6.), (18., 18.)], vec![(6., 18.), (18., 6.)]],
             };
@@ -2336,10 +2551,17 @@ impl ScreenshotEditor {
     }
     fn menu(&self, p: Palette, compact: bool, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
         let menu = self.open_menu.unwrap();
+        let inline_origin = self.inline_panel_origin(
+            180.,
+            self.menu_labels().len() as f32 * 30. + 10.,
+            matches!(menu, Menu::LabelDelete(_)),
+        );
         let card = div()
             .id("screenshot-menu")
             .absolute()
-            .left(px(if matches!(menu, Menu::LabelDelete(_)) {
+            .left(px(if let Some(origin) = inline_origin {
+                origin.x
+            } else if matches!(menu, Menu::LabelDelete(_)) {
                 f32::from(self.label_menu_position.x)
             } else if menu == Menu::Zoom {
                 130.
@@ -2348,11 +2570,13 @@ impl ScreenshotEditor {
             } else {
                 470.
             }))
-            .when(menu == Menu::Zoom, |d| {
+            .when(menu == Menu::Zoom && inline_origin.is_none(), |d| {
                 d.bottom(px(if compact { 78. } else { 46. }))
             })
-            .when(menu != Menu::Zoom, |d| {
-                d.top(px(if matches!(menu, Menu::LabelDelete(_)) {
+            .when(menu != Menu::Zoom || inline_origin.is_some(), |d| {
+                d.top(px(if let Some(origin) = inline_origin {
+                    origin.y
+                } else if matches!(menu, Menu::LabelDelete(_)) {
                     f32::from(self.label_menu_position.y)
                 } else if compact {
                     126.
@@ -2688,7 +2912,12 @@ impl ScreenshotEditor {
                 b: color.blue,
                 a: 1.,
             }))
-            .on_click(cx.listener(move |this, _, window, cx| this.open_color(target, window, cx)))
+            .on_click(
+                cx.listener(move |this, event: &gpui::ClickEvent, window, cx| {
+                    this.record_inline_menu_anchor(event.position());
+                    this.open_color(target, window, cx);
+                }),
+            )
     }
     fn update_color_slider(&mut self, index: usize, x: Pixels, cx: &mut Context<Self>) {
         let Some(target) = self.color_target else {
@@ -2709,6 +2938,7 @@ impl ScreenshotEditor {
     fn color_panel(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
         let color = self.picked_color(self.color_target.unwrap());
         let channels = color.rgba8();
+        let inline_origin = self.inline_panel_origin(300., 260., false);
         let rows = (0..3).map(|index| {
             let bounds = self.color_bounds.clone();
             let value = channels[index];
@@ -2801,8 +3031,8 @@ impl ScreenshotEditor {
                 div()
                     .id("screenshot-color-panel")
                     .absolute()
-                    .left(px(40.))
-                    .top(px(90.))
+                    .left(px(inline_origin.map_or(40., |origin| origin.x)))
+                    .top(px(inline_origin.map_or(90., |origin| origin.y)))
                     .w(px(300.))
                     .p(px(14.))
                     .rounded(px(12.))
@@ -2986,10 +3216,11 @@ impl ScreenshotEditor {
     fn label_overlays(
         &self,
         visible: Rect,
-        scale: f32,
+        scales: (f32, f32),
         p: Palette,
         cx: &mut Context<Self>,
     ) -> Vec<gpui::Stateful<gpui::Div>> {
+        let (scale, scale_y) = scales;
         if !matches!(self.tool, AnnotationTool::Select | AnnotationTool::Text) {
             return Vec::new();
         }
@@ -3022,10 +3253,10 @@ impl ScreenshotEditor {
                         .absolute()
                         .left(px((frame.x + frame.width / 2.) * scale
                             - (frame.width * scale).max(44.) / 2.))
-                        .top(px((frame.y + frame.height / 2.) * scale
-                            - (frame.height * scale).max(30.) / 2.))
+                        .top(px((frame.y + frame.height / 2.) * scale_y
+                            - (frame.height * scale_y).max(30.) / 2.))
                         .w(px((frame.width * scale).max(44.)))
-                        .h(px((frame.height * scale).max(30.)))
+                        .h(px((frame.height * scale_y).max(30.)))
                         .border_1()
                         .border_color(p.accent.opacity(
                             if self.label_drag.is_some_and(|d| d.id == Some(id)) {
@@ -3101,6 +3332,16 @@ impl ScreenshotEditor {
         cx.notify();
     }
     fn apply_history(&mut self, redo: bool, cx: &mut Context<Self>) {
+        if self
+            .inline
+            .as_mut()
+            .is_some_and(|inline| inline.adjustment.take().is_some())
+        {
+            // The draft has not entered history yet. Undo cancels that visible
+            // gesture before touching the previous committed annotation/edit.
+            cx.notify();
+            return;
+        }
         self.finish_label_drag(cx);
         if !self.commit_text(cx) {
             return;

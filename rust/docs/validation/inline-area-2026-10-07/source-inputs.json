@@ -1,0 +1,45 @@
+{
+  "base_commit": "c960d6e1a80ad915e7868133d8c1e95b538d076b",
+  "binary_sha256": "6ca48fee5f603788d5968916ef7a6fc76320d7b7bad7e1347552fc010d544afb",
+  "source_files": [
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "sha256": "a8655937264a4389e88645a36467073514c4682a6571744e126b8c79d3c657e1",
+      "nonblank_lines": 3579
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/inline_area.rs",
+      "sha256": "2768243a885c5f5bca9819a0a287b98601179d320d355e3077222cbb92defea6",
+      "nonblank_lines": 502
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_transaction.rs",
+      "sha256": "5bda0f0d31dc6f6b1570be55f15699a56e959cf18d17c1721fb23b791dd0fac4",
+      "nonblank_lines": 212
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "sha256": "f9599a35bb7ccf64b2c6a0ccecdeb3321698b9111cd8cd6ccf91f80e160c08bb",
+      "nonblank_lines": 691
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "sha256": "f838caef177b8cf318efeae3d494e814730cbb267d62f719ed8d44a81092de24",
+      "nonblank_lines": 567
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/tests.rs",
+      "sha256": "f13280f836746ff4f4be380704797ea0a818b0c0057cdbb1b27752872ce6b23b",
+      "nonblank_lines": 831
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "sha256": "6159d9bcfc9909f3109c0f6cd317ad50ad6928a77bfdade2b98e4b6958871e5b",
+      "nonblank_lines": 247
+    }
+  ],
+  "scope": "Final source over published converter baseline; final binary changes only known Area progress-text cleanup from broad QA binary. Native capture and macOS runtime remain disabled/unvalidated. Final test-only assertions additionally verify preserved error status and gate the DEBUG fixture-entry test; they do not enter the normal executable.",
+  "previous_failed_binary_sha256": "7e6f50a903fd1abf75b12ba258322abeaa0fc28c6eeb7e043fd0328dc14b32a6",
+  "previous_failure": "Supplied DEBUG entry used zero-based X11 ID as CG-shaped display identity; corrected before successful UI QA.",
+  "broad_qa_binary_sha256": "acbe844fb701382fbe66ebc5e9d6a4144f0d090903c1694a958ea1ebeca49d51"
+}

@@ -1,0 +1,44 @@
+{
+  "base_commit": "603b4d3549f362aa69ad2f2dfd8470f8a569827b",
+  "binary_sha256": "acbe844fb701382fbe66ebc5e9d6a4144f0d090903c1694a958ea1ebeca49d51",
+  "source_files": [
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "sha256": "a8655937264a4389e88645a36467073514c4682a6571744e126b8c79d3c657e1",
+      "nonblank_lines": 3579
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/inline_area.rs",
+      "sha256": "2768243a885c5f5bca9819a0a287b98601179d320d355e3077222cbb92defea6",
+      "nonblank_lines": 502
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_transaction.rs",
+      "sha256": "5bda0f0d31dc6f6b1570be55f15699a56e959cf18d17c1721fb23b791dd0fac4",
+      "nonblank_lines": 212
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "sha256": "cf0a1596ece512efbc1eb8b80dab55c44626c4b0b6d3b79faf82e763ae3ea4b0",
+      "nonblank_lines": 685
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "sha256": "f838caef177b8cf318efeae3d494e814730cbb267d62f719ed8d44a81092de24",
+      "nonblank_lines": 567
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/tests.rs",
+      "sha256": "449d1e5a248f2e20fe67c3e31695839c4777f44fcb17c54532d6e64f4fd8ac9d",
+      "nonblank_lines": 821
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "sha256": "6159d9bcfc9909f3109c0f6cd317ad50ad6928a77bfdade2b98e4b6958871e5b",
+      "nonblank_lines": 247
+    }
+  ],
+  "scope": "Shared working tree also contains the concurrent converter workflow. This manifest identifies inline source inputs; no native capture or macOS runtime acceptance is implied.",
+  "previous_failed_binary_sha256": "7e6f50a903fd1abf75b12ba258322abeaa0fc28c6eeb7e043fd0328dc14b32a6",
+  "previous_failure": "Supplied DEBUG entry used zero-based X11 ID as CG-shaped display identity; corrected before successful UI QA."
+}

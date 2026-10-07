@@ -1,0 +1,120 @@
+{
+  "baseline_commit": "c960d6e1a80ad915e7868133d8c1e95b538d076b",
+  "baseline_counts": {
+    "production": 43445,
+    "test_support": 20692,
+    "benchmark": 105
+  },
+  "counting_rule": "Source-reviewed scoped delta in nonblank physical Rust lines, including comments. Tests modules and positive DEBUG/test-only spans are support; production code that supplies the shared coordinator and editor is production even while the native gate remains disabled. Attributes begin the support span; preceding comments keep their prior category. Existing unaffected support bodies cancel in deltas. Not a general AST classifier, performance result, or parity percentage.",
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "before_nonblank": 3338,
+      "after_nonblank": 3579,
+      "delta": 241,
+      "production_delta": 222,
+      "test_support_delta": 19,
+      "new_support_ranges_1based": [
+        [
+          250,
+          268
+        ]
+      ],
+      "classification": "Unchanged existing cfg(test)/DEBUG bodies cancel in delta; new positive support ranges are listed.",
+      "sha256": "a8655937264a4389e88645a36467073514c4682a6571744e126b8c79d3c657e1"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_transaction.rs",
+      "before_nonblank": 212,
+      "after_nonblank": 212,
+      "delta": 0,
+      "production_delta": 0,
+      "test_support_delta": 0,
+      "new_support_ranges_1based": [],
+      "classification": "Unchanged existing cfg(test)/DEBUG bodies cancel in delta; new positive support ranges are listed.",
+      "sha256": "5bda0f0d31dc6f6b1570be55f15699a56e959cf18d17c1721fb23b791dd0fac4"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/inline_area.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 502,
+      "delta": 502,
+      "production_delta": 502,
+      "test_support_delta": 0,
+      "new_support_ranges_1based": [],
+      "classification": "Unchanged existing cfg(test)/DEBUG bodies cancel in delta; new positive support ranges are listed.",
+      "sha256": "2768243a885c5f5bca9819a0a287b98601179d320d355e3077222cbb92defea6"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "before_nonblank": 509,
+      "after_nonblank": 691,
+      "delta": 182,
+      "production_delta": 67,
+      "test_support_delta": 115,
+      "new_support_ranges_1based": [
+        [
+          40,
+          44
+        ],
+        [
+          297,
+          309
+        ],
+        [
+          569,
+          576
+        ],
+        [
+          586,
+          674
+        ]
+      ],
+      "classification": "Unchanged existing cfg(test)/DEBUG bodies cancel in delta; new positive support ranges are listed.",
+      "sha256": "f9599a35bb7ccf64b2c6a0ccecdeb3321698b9111cd8cd6ccf91f80e160c08bb"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "before_nonblank": 528,
+      "after_nonblank": 567,
+      "delta": 39,
+      "production_delta": 37,
+      "test_support_delta": 2,
+      "new_support_ranges_1based": [],
+      "classification": "Unchanged existing cfg(test)/DEBUG bodies cancel in delta; new positive support ranges are listed.",
+      "sha256": "f838caef177b8cf318efeae3d494e814730cbb267d62f719ed8d44a81092de24"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "before_nonblank": 241,
+      "after_nonblank": 247,
+      "delta": 6,
+      "production_delta": 0,
+      "test_support_delta": 6,
+      "new_support_ranges_1based": [],
+      "classification": "Whole module compiled only under cfg(test).",
+      "sha256": "6159d9bcfc9909f3109c0f6cd317ad50ad6928a77bfdade2b98e4b6958871e5b"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/tests.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 831,
+      "delta": 831,
+      "production_delta": 0,
+      "test_support_delta": 831,
+      "new_support_ranges_1based": [],
+      "classification": "Whole module compiled only under cfg(test).",
+      "sha256": "f13280f836746ff4f4be380704797ea0a818b0c0057cdbb1b27752872ce6b23b"
+    }
+  ],
+  "delta": {
+    "production": 828,
+    "test_support": 973,
+    "benchmark": 0
+  },
+  "resulting_counts": {
+    "production": 44273,
+    "test_support": 21665,
+    "benchmark": 105
+  }
+}

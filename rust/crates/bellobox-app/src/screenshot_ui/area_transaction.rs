@@ -54,7 +54,7 @@ impl<H: Copy + Eq> AreaTransaction<H> {
     }
     pub fn cancel(&mut self) {
         self.cancellation.store(true, Ordering::Release);
-        self.finishing = true;
+        self.finish();
     }
     pub fn finish(&mut self) {
         self.finishing = true;

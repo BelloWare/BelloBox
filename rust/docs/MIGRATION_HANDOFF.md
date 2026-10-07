@@ -466,3 +466,61 @@ The reviewed converter delta is 1,178 production and 890 test/support nonblank
 Rust lines: cumulative totals 43,445 / 20,692 / 105 benchmark. Concurrent inline
 Area work is not part of this checkpoint or those totals. No completion percentage
 or whole-project performance claim follows from these counts.
+
+### Exact converter checkpoint verified
+
+Published `c960d6e1a80ad915e7868133d8c1e95b538d076b`, tree
+`e0f71c7c1a4293930afeacf28ac3648cd8373215`, passed Linux run
+`37579346250` and macOS run `37579346240`. Native compile/link, pure
+regressions, the strict normalized mask oracle and actual host mask worker,
+application builds and offline development packaging all passed. These are the
+exact converter checkpoint's CI results; its scoped interactive Linux evidence
+and native movie/system-dialog limitations remain as recorded above.
+
+## Continuation checkpoint: inline Area editor and owned retirement
+
+The gated main-display Area coordinator now retains its existing overlay window
+from selection through a real `ScreenshotEditor`, instead of opening a separate
+popup. Shared annotation/history/export machinery runs over the immutable full
+display with independent pixel ratios, eight resize handles, Select-move,
+one-step crop Undo and a 44-point source-shaped toolbar. Window's existing
+separate debug workflow and the popup's no-resize-handle policy are unchanged.
+
+Selection lock ends deactivation cancellation before font preparation; later
+focus loss preserves editing without requesting activation. Requester close,
+navigation, topology and cancellation still fence publication. Preview/export/OCR
+and actual session/tile disposal remain coordinator-counted through physical
+worker completion after the overlay/editor is gone. Copy & Finish drains this
+ownership before releasing capture busy. Known progress text clears on retirement
+without erasing failure messages.
+
+Visible resize drafts commit before Copy, Save or the common OCR snapshot;
+active Crop/Mask/other annotation gestures refuse output until pointer release.
+Tests cover the actual keyboard path, draft preservation and one Undo, preventing
+stale wider or unredacted image export. Actual supplied-pixel Linux interaction
+verified same-window selection/editing, annotation, resize/Undo, move, color-panel
+hit shielding, focus-away persistence, Copy & Finish and clipboard image reimport.
+See [inline-area-editor-host.md](inline-area-editor-host.md) and its linked
+validation evidence for exact candidate hashes, tested scope and limitations.
+
+`PRODUCTION_AREA_ENABLED` remains false. The DEBUG supplied-pixel route enters
+the same coordinator without invoking native capture or permission APIs. Native
+AppKit/TCC/Spaces, hotplug/multi-display, Retina alignment, system Save-dialog
+acceptance and source live Scrolling Capture remain open. Xfwm skips the overlay
+in Alt-Tab, so actual keyboard-only return is not claimed; logical focus has GPUI
+regression coverage. These checks do not establish native usable capture parity.
+
+The independently reviewed scoped delta is 828 production and 973 test/support
+nonblank Rust lines, including comments; no benchmark lines were added. From the
+published converter baseline this yields 44,273 production / 21,665 test-support /
+105 benchmark lines. Exact per-file hashes, positive test/DEBUG-only spans and
+counting rules are retained in `validation/inline-area-2026-10-07/loc-delta.json`.
+
+All 61 affected screenshot app tests passed, including 18 new coordinator/inline
+GPUI tests. The expanded error-retention fixture test, strict app all-target
+Clippy, normal build, minimal-feature check, app-only debug-assertions-disabled
+metadata check and formatting passed. The final GUI binary is
+`6ca48fee5f603788d5968916ef7a6fc76320d7b7bad7e1347552fc010d544afb`;
+its broader and final scoped interactions are distinguished in
+[the QA report](validation/inline-area-2026-10-07/QA-report.md).
+Exact Linux/macOS CI for this new source checkpoint is pending publication.

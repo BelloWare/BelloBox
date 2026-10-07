@@ -1,5 +1,5 @@
 //! Frozen full-display selector. Dragging changes only chrome; immutable tiled
-//! pixels are reused through a clean crop and the existing separate-editor handoff.
+//! pixels and the coordinator remain owned throughout the inline editing phase.
 use super::*;
 use bellobox_core::screenshot::{Point, ScreenshotEditSession, area::AreaPhase, selection};
 use gpui::{
@@ -28,8 +28,8 @@ pub(super) struct MainAreaSelector {
     focus: FocusHandle,
     presented: bool,
     retired: bool,
-    preparing_handoff: bool,
-    transferring: bool,
+    preparing_editor: bool,
+    editor: Option<gpui::Entity<super::super::ScreenshotEditor>>,
     locked: Option<Rect>,
     _activation: Subscription,
 }
@@ -42,10 +42,15 @@ pub(super) fn open(
     prepared: PreparedArea,
     cx: &mut App,
 ) -> Result<(), String> {
-    let display = cx
-        .displays()
-        .into_iter()
-        .find(|d| u32::from(d.id()) == layout.display.id);
+    // Supplied image identities are not native/GPUI display identifiers.
+    // Production still requires the exact validated primary display.
+    let display = if is_supplied(id, cx) {
+        cx.displays().into_iter().next()
+    } else {
+        cx.displays()
+            .into_iter()
+            .find(|d| u32::from(d.id()) == layout.display.id)
+    };
     let Some(display) = display else {
         mark_cancelled(id, cx);
         discard(id, prepared, cx);
@@ -59,8 +64,8 @@ pub(super) fn open(
         .open_window(
             WindowOptions {
                 kind: WindowKind::PopUp,
-                show: false,
-                focus: false,
+                show: is_supplied(id, cx),
+                focus: is_supplied(id, cx),
                 titlebar: None,
                 tabbing_identifier: None,
                 display_id: Some(display.id()),
@@ -99,7 +104,10 @@ pub(super) fn open(
         run.transaction.selector = Some(handle.into());
     }
     let result = handle
-        .update(cx, |_, window, _| {
+        .update(cx, |_, window, cx| {
+            if is_supplied(id, cx) {
+                return Ok(());
+            }
             native::configure(
                 window,
                 layout,
@@ -149,16 +157,16 @@ impl MainAreaSelector {
         });
         let activation = cx.observe_window_activation(window, |view: &mut Self, window, cx| {
             if view.presented
-                && !view.transferring
-                && (!owns_key(window) || !current(view.id, window, cx))
+                && view.locked.is_none()
+                && ((!is_supplied(view.id, cx) && !owns_key(window))
+                    || !window.is_window_active()
+                    || !current(view.id, window, cx))
             {
                 view.retire(window, cx);
             }
         });
         cx.on_release(|view: &mut Self, cx| {
-            if !view.transferring {
-                mark_cancelled(view.id, cx);
-            }
+            mark_cancelled(view.id, cx);
             view.release_pixels(cx);
         })
         .detach();
@@ -181,13 +189,21 @@ impl MainAreaSelector {
             focus,
             presented: false,
             retired: false,
-            preparing_handoff: false,
-            transferring: false,
+            preparing_editor: false,
+            editor: None,
             locked: None,
             _activation: activation,
         }
     }
     fn present(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Result<(), String> {
+        if is_supplied(self.id, cx) {
+            if !current_requester(self.id, cx) {
+                return Err(host::OverlayError::NavigationChanged.to_string());
+            }
+            self.presented = true;
+            cx.notify();
+            return Ok(());
+        }
         let size = window.viewport_size();
         let viewport = capture::CaptureSize {
             width: f32::from(size.width) as f64,
@@ -229,6 +245,9 @@ impl MainAreaSelector {
         Ok(())
     }
     fn release_pixels(&mut self, cx: &mut App) {
+        if let Some(editor) = self.editor.take() {
+            editor.update(cx, |editor, cx| editor.retire_inline(cx));
+        }
         if let Some(run) = active_mut(self.id, cx) {
             run.transaction.selector = None;
         }
@@ -247,12 +266,12 @@ impl MainAreaSelector {
             return;
         }
         self.retired = true;
-        if !self.transferring {
-            mark_cancelled(self.id, cx);
-        }
+        mark_cancelled(self.id, cx);
         // GPUI remove_window queues native close. Source cancel orders screen-
         // level panels out immediately, before releasing their image/view state.
-        if let Err(error) = native::hide(window) {
+        if !is_supplied(self.id, cx)
+            && let Err(error) = native::hide(window)
+        {
             cleanup_notice(
                 self.id,
                 format!(
@@ -266,7 +285,10 @@ impl MainAreaSelector {
         window.remove_window();
     }
     fn guard(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
-        if self.presented && owns_key(window) && current(self.id, window, cx) {
+        if self.presented
+            && (self.locked.is_some() || is_supplied(self.id, cx) || owns_key(window))
+            && current(self.id, window, cx)
+        {
             true
         } else {
             self.retire(window, cx);
@@ -284,7 +306,7 @@ impl MainAreaSelector {
         ))
     }
     fn mouse_down(&mut self, event: &MouseDownEvent, window: &mut Window, cx: &mut Context<Self>) {
-        if self.preparing_handoff || !self.guard(window, cx) {
+        if self.locked.is_some() || !self.guard(window, cx) {
             return;
         }
         let Some(point) = self.local(event.position) else {
@@ -302,7 +324,7 @@ impl MainAreaSelector {
         cx.notify();
     }
     fn mouse_move(&mut self, event: &MouseMoveEvent, window: &mut Window, cx: &mut Context<Self>) {
-        if self.preparing_handoff || !self.guard(window, cx) {
+        if self.locked.is_some() || !self.guard(window, cx) {
             return;
         }
         let Some(point) = self.local(event.position) else {
@@ -320,7 +342,7 @@ impl MainAreaSelector {
         cx.notify();
     }
     fn mouse_up(&mut self, event: &MouseUpEvent, window: &mut Window, cx: &mut Context<Self>) {
-        if self.preparing_handoff || !self.guard(window, cx) {
+        if self.locked.is_some() || !self.guard(window, cx) {
             return;
         }
         let Some(point) = self.local(event.position) else {
@@ -344,7 +366,8 @@ impl MainAreaSelector {
             }
         };
         self.locked = Some(selection.selection_local_points);
-        self.preparing_handoff = true;
+        lock_selection(self.id, cx);
+        self.preparing_editor = true;
         let id = self.id;
         let selector = window.window_handle();
         let Some(run) = active_mut(id, cx) else {
@@ -367,13 +390,13 @@ impl MainAreaSelector {
         let app: &mut App = cx;
         app.spawn(async move |cx| {
             let result = task.await;
-            let _ = cx.update(|cx| handoff_completed(id, selector, result, cx));
+            let _ = cx.update(|cx| editor_prepared(id, selector, result, cx));
         })
         .detach();
         cx.notify();
     }
 }
-fn handoff_completed(
+fn editor_prepared(
     id: u64,
     selector: AnyWindowHandle,
     result: Result<Option<ScreenshotEditSession>, String>,
@@ -386,26 +409,27 @@ fn handoff_completed(
     let updated = selector.downcast::<MainAreaSelector>().and_then(|handle| {
         handle
             .update(cx, |view, window, cx| {
-                if !view.preparing_handoff || !view.guard(window, cx) {
+                if !view.preparing_editor || !view.guard(window, cx) {
                     return;
                 }
-                match result.take().expect("one prepared handoff") {
+                match result.take().expect("one prepared inline editor") {
                     Ok(Some(session)) => {
-                        // Deliberate documented deviation: existing separate screenshot
-                        // editor, not the Swift inline overlay editor. The observer stays
-                        // alive through pending preparation and ends at accepted transfer.
-                        view.transferring = true;
-                        mark_finished(id, cx);
-                        if let Err(error) = super::super::try_open_presented_session(
-                            session,
-                            "Area · main display · ScreenCaptureKit",
-                            Default::default(),
-                            cx,
-                        ) {
-                            view.transferring = false;
-                            report(id, error, cx);
-                        }
-                        view.retire(window, cx);
+                        // Keep the same overlay and transaction. Preparation may
+                        // complete after app deactivation; never reactivate it.
+                        let inline = super::super::inline_area::InlineArea::new(id, view.layout);
+                        view.editor = Some(cx.new(|cx| {
+                            super::super::ScreenshotEditor::new_with_inline(
+                                session,
+                                "Area · full-display pixels",
+                                Default::default(),
+                                Some(inline),
+                                window,
+                                cx,
+                            )
+                        }));
+                        view.area = None;
+                        view.preparing_editor = false;
+                        cx.notify();
                     }
                     Ok(None) => view.retire(window, cx),
                     Err(error) => {
@@ -436,8 +460,18 @@ impl Render for MainAreaSelector {
             .locked
             .or_else(|| self.area.as_ref().and_then(|a| a.preview_rect()))
             .filter(|r| r.width > 0. && r.height > 0.);
-        let border: f32 = if self.locked.is_some() { 2.5 } else { 2. };
-        let bands = selection::dim_bands(geometry.local_bounds(), selected).unwrap_or_default();
+        let border: f32 = if self.editor.is_some() {
+            0.
+        } else if self.locked.is_some() {
+            2.5
+        } else {
+            2.
+        };
+        let bands = if self.editor.is_some() {
+            [Rect::default(); 4]
+        } else {
+            selection::dim_bands(geometry.local_bounds(), selected).unwrap_or_default()
+        };
         let viewport = self.viewport.clone();
         let width = geometry.cocoa_frame.width;
         let height = geometry.cocoa_frame.height;
@@ -472,7 +506,7 @@ impl Render for MainAreaSelector {
                                 window.paint_quad(fill(at(band), gpui::black().opacity(0.34)));
                             }
                         }
-                        if let Some(rect) = selected {
+                        if let Some(rect) = selected.filter(|_| border > 0.) {
                             for edge in [
                                 Rect::new(rect.x, rect.y, rect.width, border.min(rect.height)),
                                 Rect::new(
@@ -517,13 +551,19 @@ impl Render for MainAreaSelector {
                 )
             })
             .on_key_down(cx.listener(|view, event: &KeyDownEvent, window, cx| {
-                if event.keystroke.key == "escape" {
+                if view.editor.is_none() && event.keystroke.key == "escape" {
                     view.retire(window, cx);
                 }
             }))
+            .when_some(self.editor.clone(), |root, editor| {
+                root.child(div().absolute().inset_0().child(editor))
+            })
             .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
             .on_mouse_move(cx.listener(Self::mouse_move))
             .on_mouse_up(MouseButton::Left, cx.listener(Self::mouse_up))
             .on_mouse_up_out(MouseButton::Left, cx.listener(Self::mouse_up))
     }
 }
+
+#[cfg(test)]
+mod tests;
