@@ -1,0 +1,266 @@
+{
+  "baseline_commit": "0a73d42458b081e4d49c946acfeb1c0245dad011",
+  "baseline_counts": {
+    "production": 44273,
+    "test_support": 21665,
+    "benchmark": 105
+  },
+  "counting_rule": "Scoped reviewed delta of nonblank physical Rust lines including comments. Positive cfg(test)/DEBUG-only modules and changed spans are support; shared coordinator, fixed-frame presentation and core ownership code remain production even while native capture is gated. Attribute lines begin listed support spans; preceding comments retain the existing physical-line convention. Unchanged support bodies cancel. No generic AST classifier, benchmarks or parity percentage.",
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "before_nonblank": 3579,
+      "after_nonblank": 3611,
+      "delta": 32,
+      "production_delta": 22,
+      "test_support_delta": 10,
+      "changed_support_ranges_before_1based": [
+        [
+          250,
+          268
+        ]
+      ],
+      "changed_support_ranges_after_1based": [
+        [
+          29,
+          30
+        ],
+        [
+          252,
+          278
+        ]
+      ],
+      "classification": "Only listed changed DEBUG/test spans are support; unchanged support bodies cancel in the delta. Remaining shared coordinator/editor/core lines are production.",
+      "sha256": "b3e9820c3cc9b9d6cffccd440a9dc104d6cf6391dfb501adf120d87d25e7f01f"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/inline_area.rs",
+      "before_nonblank": 502,
+      "after_nonblank": 563,
+      "delta": 61,
+      "production_delta": 61,
+      "test_support_delta": 0,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Only listed changed DEBUG/test spans are support; unchanged support bodies cancel in the delta. Remaining shared coordinator/editor/core lines are production.",
+      "sha256": "78c7eeb4570ad29b25108c3032006b225c8dc76e4defcfb98d89d0af67037410"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "before_nonblank": 691,
+      "after_nonblank": 753,
+      "delta": 62,
+      "production_delta": 5,
+      "test_support_delta": 57,
+      "changed_support_ranges_before_1based": [
+        [
+          586,
+          674
+        ]
+      ],
+      "changed_support_ranges_after_1based": [
+        [
+          589,
+          688
+        ],
+        [
+          715,
+          760
+        ]
+      ],
+      "classification": "Only listed changed DEBUG/test spans are support; unchanged support bodies cancel in the delta. Remaining shared coordinator/editor/core lines are production.",
+      "sha256": "57e6e3ffe10894a8662caad53d91011fb0e29618b40101f0d81b1cbe8fafb280"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "before_nonblank": 567,
+      "after_nonblank": 729,
+      "delta": 162,
+      "production_delta": 87,
+      "test_support_delta": 75,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [
+        [
+          4,
+          7
+        ],
+        [
+          26,
+          30
+        ],
+        [
+          36,
+          37
+        ],
+        [
+          43,
+          46
+        ],
+        [
+          55,
+          56
+        ],
+        [
+          70,
+          74
+        ],
+        [
+          75,
+          76
+        ],
+        [
+          85,
+          88
+        ],
+        [
+          94,
+          98
+        ],
+        [
+          103,
+          106
+        ],
+        [
+          112,
+          113
+        ],
+        [
+          122,
+          125
+        ],
+        [
+          127,
+          152
+        ],
+        [
+          573,
+          576
+        ],
+        [
+          732,
+          733
+        ]
+      ],
+      "classification": "Only listed changed DEBUG/test spans are support; unchanged support bodies cancel in the delta. Remaining shared coordinator/editor/core lines are production.",
+      "sha256": "1595ffd097aff0c25996446fa9d6bd95cf75cfe80a3d83f4b6274dea62937601"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/tests.rs",
+      "before_nonblank": 831,
+      "after_nonblank": 856,
+      "delta": 25,
+      "production_delta": 0,
+      "test_support_delta": 25,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Whole module is compiled only under positive cfg(test) or parent cfg(debug_assertions), including comments.",
+      "sha256": "acbeca45afb0013ff77b44064feda49c5e4eddb0d6978a47f4aad030a8f7ad37"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 451,
+      "delta": 451,
+      "production_delta": 0,
+      "test_support_delta": 451,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Whole module is compiled only under positive cfg(test) or parent cfg(debug_assertions), including comments.",
+      "sha256": "4b4bc8b68f6f4214cca9b5d9161297167a3eff83f15ad6ef5d52a89fac81533a"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "before_nonblank": 247,
+      "after_nonblank": 246,
+      "delta": -1,
+      "production_delta": 0,
+      "test_support_delta": -1,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Whole module is compiled only under positive cfg(test) or parent cfg(debug_assertions), including comments.",
+      "sha256": "1ce3ada816d89ea1a9fb8d85221447efb089bb8fa68af38a8dea524a3fd19756"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs",
+      "before_nonblank": 221,
+      "after_nonblank": 336,
+      "delta": 115,
+      "production_delta": 0,
+      "test_support_delta": 115,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Whole module is compiled only under positive cfg(test) or parent cfg(debug_assertions), including comments.",
+      "sha256": "1527eb9b904103990b19084f9cee07c01897df428c7c1af0a066abfcf1bf308a"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh/tests.rs",
+      "before_nonblank": 324,
+      "after_nonblank": 325,
+      "delta": 1,
+      "production_delta": 0,
+      "test_support_delta": 1,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Whole module is compiled only under positive cfg(test) or parent cfg(debug_assertions), including comments.",
+      "sha256": "d392c45be0474ba52205f6adb7469320dd575b986569d6c449c5e5b723caeb00"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 662,
+      "delta": 662,
+      "production_delta": 0,
+      "test_support_delta": 662,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Whole module is compiled only under positive cfg(test) or parent cfg(debug_assertions), including comments.",
+      "sha256": "286d192e52dfa9b6e912709a2164c9ca47e2d44f37c8dd609f1e60ddca376a5b"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/tests.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 605,
+      "delta": 605,
+      "production_delta": 0,
+      "test_support_delta": 605,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Whole module is compiled only under positive cfg(test) or parent cfg(debug_assertions), including comments.",
+      "sha256": "96aaaffe4f9b868065e347fadfccd3e7ff0c9d1ecb6028d4808d0ef9a128e0cd"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh.rs",
+      "before_nonblank": 391,
+      "after_nonblank": 394,
+      "delta": 3,
+      "production_delta": 3,
+      "test_support_delta": 0,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Only listed changed DEBUG/test spans are support; unchanged support bodies cancel in the delta. Remaining shared coordinator/editor/core lines are production.",
+      "sha256": "2ba9e77f84ebb73147937fc8cc1d8441397db6a90fca2985c91a94f8e120462d"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh/tests.rs",
+      "before_nonblank": 716,
+      "after_nonblank": 756,
+      "delta": 40,
+      "production_delta": 0,
+      "test_support_delta": 40,
+      "changed_support_ranges_before_1based": [],
+      "changed_support_ranges_after_1based": [],
+      "classification": "Whole module is compiled only under positive cfg(test) or parent cfg(debug_assertions), including comments.",
+      "sha256": "4b1eeb2420ca9e18e5f808e00f0f37a4a149fae87bbf63117a82003db4f4536f"
+    }
+  ],
+  "delta": {
+    "production": 178,
+    "test_support": 2040,
+    "benchmark": 0
+  },
+  "resulting_counts": {
+    "production": 44451,
+    "test_support": 23705,
+    "benchmark": 105
+  }
+}

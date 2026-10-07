@@ -848,3 +848,29 @@ fn debug_fixture_composes_zero_based_gpui_displays_without_native_capture(cx: &m
         cx.read(|cx| assert_eq!(requester.read(cx).unwrap().status, expected));
     }
 }
+
+#[gpui::test]
+fn anisotropic_area_crop_pointer_keeps_direct_ratio_without_reciprocal_rounding(
+    cx: &mut TestAppContext,
+) {
+    let (_, selector) = open(cx);
+    lock(selector, Rect::new(0., 0., 600., 400.), cx);
+    let editor = editor(selector, cx);
+    selector
+        .update(cx, |_, window, cx| {
+            editor.update(cx, |view, cx| {
+                view.image_bounds
+                    .set(Bounds::new(point(px(0.), px(0.)), size(px(600.), px(400.))));
+                assert_eq!(
+                    view.document_point(point(px(330.), px(330.))),
+                    Point::new(660., 825.)
+                );
+                view.tool = AnnotationTool::Crop;
+                view.mouse_down(&down(0., 0.), window, cx);
+                view.mouse_up(&up(330., 330.), window, cx);
+                assert_eq!(view.session.document().visible_dimensions(), (660, 825));
+            })
+        })
+        .unwrap();
+    close(selector, cx);
+}

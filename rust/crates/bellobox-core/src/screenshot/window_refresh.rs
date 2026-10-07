@@ -315,6 +315,9 @@ impl WindowRefreshPlan {
     }
 }
 
+/// Cloning retains immutable pixel ownership for counted off-thread disposal.
+/// It does not permit retry: the original base epoch can publish only once.
+#[derive(Clone)]
 pub struct PreparedWindowRefresh {
     context: WindowRefreshContext,
     base: BaseCaptureToken,

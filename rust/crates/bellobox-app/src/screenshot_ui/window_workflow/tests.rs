@@ -1,0 +1,622 @@
+use super::*;
+use bellobox_core::screenshot::{
+    AnnotationKind, AnnotationStyle, Point, ScreenshotEditSession, window::FrozenWindowSession,
+};
+use std::{
+    sync::{atomic::AtomicUsize, mpsc},
+    time::Duration,
+};
+
+fn flag() -> Arc<AtomicBool> {
+    Arc::new(AtomicBool::new(false))
+}
+fn select(fixture: &Fixture, id: u32) -> (FrozenWindowSession, FrozenWindowCommit) {
+    let display = geometry(fixture.layout);
+    let mut selector = FrozenWindowSession::new(
+        display,
+        &fixture.source.candidates().unwrap(),
+        fixture.source.own_pid(),
+    )
+    .unwrap();
+    selector
+        .accept_frozen(
+            selector.freeze_token().unwrap(),
+            fixture.document.clone(),
+            display,
+        )
+        .unwrap();
+    let point = if id == 1 {
+        Point::new(400., 120.)
+    } else {
+        Point::new(150., 200.)
+    };
+    selector.begin_press(point, display).unwrap();
+    let commit = selector.end_press(point, display).unwrap().unwrap();
+    (selector, commit)
+}
+fn evidence(source: &Source) -> Evidence {
+    source.current.lock().unwrap().clone()
+}
+fn rebuild(
+    fixture: &Fixture,
+    evidence: Evidence,
+    submissions: Vec<Submission>,
+) -> Result<Arc<Source>, String> {
+    Source::new(
+        fixture.layout,
+        fixture.source.own_pid(),
+        evidence,
+        submissions,
+        fixture.source.layers,
+        |submission, _, cancellation| {
+            synthetic_independent_window(submission.window_id, cancellation)
+                .map_err(|error| error.to_string())
+        },
+    )
+}
+fn added_window(id: u32, pid: i32, layer: i64) -> Observation {
+    Observation {
+        window_id: id,
+        owner_process_id: pid,
+        owner_bundle_id: None,
+        frame: CaptureRect::new(300., 80., 100., 100.),
+        layer,
+        alpha: 1.,
+        on_screen: true,
+    }
+}
+fn row(observation: &Observation) -> OcclusionRow {
+    OcclusionRow {
+        window_id: Some(observation.window_id),
+        owner_process_id: Some(observation.owner_process_id),
+        layer: Some(observation.layer),
+        alpha: Some(observation.alpha),
+        frame: Some(ui_rect(observation.frame)),
+    }
+}
+
+#[test]
+fn fixture_connects_exact_policy_to_both_independent_image_decisions() {
+    fn require_send<T: Send>() {}
+    require_send::<Acquisition>();
+    require_send::<Publication>();
+    let fixture = fixture().unwrap();
+    assert_eq!(fixture.layout, fixture_layout());
+    assert_eq!(fixture.document.dimensions(), (1600, 1000));
+    assert_eq!(
+        fixture
+            .source
+            .candidates()
+            .unwrap()
+            .iter()
+            .map(|item| item.window_id)
+            .collect::<Vec<_>>(),
+        [1, 2]
+    );
+    for id in [1, 2] {
+        let (_selector, commit) = select(&fixture, id);
+        let (context, decision, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+        assert_eq!(context.selection, commit.token());
+        assert_eq!(context.window_id, id);
+        assert_eq!(
+            decision,
+            if id == 1 {
+                WindowRefreshDecision::MaskFrozenAlpha
+            } else {
+                WindowRefreshDecision::ReplaceWithIndependent
+            }
+        );
+        let (image, publication) = acquisition.run(flag()).unwrap();
+        assert_eq!(
+            image.dimensions(),
+            if id == 1 { (680, 540) } else { (840, 460) }
+        );
+        assert!(publication.is_current());
+        let pixel = image.render_rgba().unwrap().get_pixel(100, 100).0;
+        // Independent front pixels deliberately differ from the frozen orange.
+        if id == 1 {
+            assert_ne!(pixel, [255, 224, 186, 255]);
+        } else {
+            assert_eq!(pixel, [185, 215, 241, 255]);
+        }
+    }
+}
+
+#[test]
+fn selector_filters_exact_scope_but_raw_occlusion_retains_own_regular_windows() {
+    let mut fixture = fixture().unwrap();
+    let mut supplied = evidence(&fixture.source);
+    let own = added_window(3, fixture.source.own_pid(), 0);
+    supplied.observations.insert(0, own.clone());
+    supplied.observations.push(added_window(4, 104, 3));
+    let mut outside = added_window(5, 105, 0);
+    outside.frame.origin.x = -0.000_001;
+    supplied.observations.push(outside);
+    let mut hidden = added_window(6, 106, 0);
+    hidden.on_screen = false;
+    supplied.observations.push(hidden);
+    let mut transparent = added_window(7, 107, 0);
+    transparent.alpha = 0.01;
+    supplied.observations.push(transparent);
+    let mut tiny = added_window(8, 108, 0);
+    tiny.frame.size.width = 7.999_999;
+    assert_eq!(tiny.frame.size.width as f32, 7.999_999_f32);
+    supplied.observations.push(tiny);
+    supplied
+        .occlusion_rows
+        .as_mut()
+        .unwrap()
+        .insert(0, row(&own));
+    fixture.source = rebuild(&fixture, supplied, fixture.source.submissions.clone()).unwrap();
+    assert_eq!(
+        fixture
+            .source
+            .candidates()
+            .unwrap()
+            .iter()
+            .map(|item| item.window_id)
+            .collect::<Vec<_>>(),
+        [1, 2]
+    );
+    let (_selector, commit) = select(&fixture, 1);
+    let (_, decision, _) = fixture.source.request(&commit, flag()).unwrap();
+    assert_eq!(decision, WindowRefreshDecision::ReplaceWithIndependent);
+    // Move the same own row behind the target: no sorting or selector filtering.
+    fixture.source.update_current(|current| {
+        let rows = current.occlusion_rows.as_mut().unwrap();
+        let own = rows.remove(0);
+        rows.push(own);
+    });
+    let (_, decision, _) = fixture.source.request(&commit, flag()).unwrap();
+    assert_eq!(decision, WindowRefreshDecision::MaskFrozenAlpha);
+}
+
+#[test]
+fn raw_rows_preserve_missing_fields_visible_layers_and_overlay_exclusion() {
+    let fixture = fixture().unwrap();
+    let (_selector, commit) = select(&fixture, 1);
+    for (layer, pid, expected) in [
+        (3, 300, WindowRefreshDecision::ReplaceWithIndependent),
+        (1000, 999, WindowRefreshDecision::MaskFrozenAlpha),
+        (0, 999, WindowRefreshDecision::ReplaceWithIndependent),
+    ] {
+        fixture.source.update_current(|current| {
+            current.occlusion_rows = Some(vec![
+                OcclusionRow {
+                    window_id: None,
+                    owner_process_id: None,
+                    layer: None,
+                    alpha: None,
+                    frame: None,
+                },
+                row(&added_window(55, pid, layer)),
+                // Target stops the source scan even if the other fields are absent.
+                OcclusionRow {
+                    window_id: Some(1),
+                    owner_process_id: None,
+                    layer: None,
+                    alpha: None,
+                    frame: None,
+                },
+                row(&added_window(56, 400, 0)),
+            ]);
+        });
+        assert_eq!(fixture.source.request(&commit, flag()).unwrap().1, expected);
+    }
+    fixture
+        .source
+        .update_current(|current| current.occlusion_rows = None);
+    assert_eq!(
+        fixture.source.request(&commit, flag()).unwrap().1,
+        WindowRefreshDecision::MaskFrozenAlpha
+    );
+}
+
+#[test]
+fn selection_catalog_keeps_supplied_front_to_back_order() {
+    let mut fixture = fixture().unwrap();
+    let mut supplied = evidence(&fixture.source);
+    supplied.observations.reverse();
+    fixture.source = rebuild(&fixture, supplied, fixture.source.submissions.clone()).unwrap();
+    assert_eq!(
+        fixture
+            .source
+            .candidates()
+            .unwrap()
+            .iter()
+            .map(|item| item.window_id)
+            .collect::<Vec<_>>(),
+        [2, 1]
+    );
+    let display = geometry(fixture.layout);
+    let mut selector =
+        FrozenWindowSession::new(display, &fixture.source.candidates().unwrap(), 999).unwrap();
+    selector
+        .accept_frozen(selector.freeze_token().unwrap(), fixture.document, display)
+        .unwrap();
+    selector.hover(Point::new(400., 200.), display).unwrap();
+    assert_eq!(selector.hovered().unwrap().window_id, 2);
+}
+
+#[test]
+fn malformed_catalog_identity_and_topology_fail_before_selection() {
+    let fixture = fixture().unwrap();
+    for case in 0..18 {
+        let mut supplied = evidence(&fixture.source);
+        match case {
+            0 => supplied.observations[0].window_id = 0,
+            1 => supplied.observations[0].owner_process_id = 0,
+            2 => supplied.observations[0].owner_bundle_id = Some(String::new()),
+            3 => supplied.observations[0].owner_bundle_id = Some("bad\0bundle".into()),
+            4 => {
+                supplied.observations[0].owner_bundle_id =
+                    Some("x".repeat(MAX_WINDOW_IDENTITY_BYTES + 1))
+            }
+            5 => supplied.observations[0].frame.origin.x = f64::NAN,
+            6 => supplied.observations[0].frame.size.width = 0.,
+            7 => supplied.observations[0].frame.origin.x = 1_000_001.,
+            8 => supplied.observations[0].alpha = f64::NAN,
+            9 => supplied.observations[0].alpha = 1.1,
+            10 => supplied.observations.push(supplied.observations[0].clone()),
+            11 => {
+                supplied.observations =
+                    vec![supplied.observations[0].clone(); MAX_WINDOW_CANDIDATES + 1]
+            }
+            12 => {
+                supplied.occlusion_rows =
+                    Some(vec![row(&supplied.observations[0]); MAX_OCCLUSION_ROWS + 1])
+            }
+            13 => supplied
+                .topology
+                .displays
+                .push(supplied.topology.displays[0]),
+            14 => supplied.topology.main_display_id = 999,
+            15 => supplied.topology.displays[0].rotation_degrees = 90.,
+            16 => supplied.topology.displays[0].backing_scale = f64::NAN,
+            _ => supplied.topology.displays[0].appkit_size_points.width += 0.000_001,
+        }
+        assert!(
+            rebuild(&fixture, supplied, fixture.source.submissions.clone()).is_err(),
+            "case {case}"
+        );
+    }
+}
+
+#[test]
+fn unsupported_and_oversized_supplied_sources_fail_closed() {
+    let fixture = fixture().unwrap();
+    let mut supplied = evidence(&fixture.source);
+    let mut layout = fixture.layout;
+    layout.backing_scale = 16.;
+    supplied.topology.displays[0].backing_scale = 16.;
+    supplied.observations[0].frame = layout.display.bounds;
+    assert!(
+        Source::new(
+            layout,
+            999,
+            supplied,
+            fixture.source.submissions.clone(),
+            fixture.source.layers,
+            |_, _, _| unreachable!("invalid source cannot acquire")
+        )
+        .is_err()
+    );
+    let mut supplied = evidence(&fixture.source);
+    supplied.observations[0].frame.origin.x = 799.;
+    let source = rebuild(&fixture, supplied, fixture.source.submissions.clone()).unwrap();
+    assert_eq!(
+        source
+            .candidates()
+            .unwrap()
+            .iter()
+            .map(|item| item.window_id)
+            .collect::<Vec<_>>(),
+        [2]
+    );
+    let mut submissions = fixture.source.submissions.clone();
+    submissions.push(submissions[0].clone());
+    assert!(rebuild(&fixture, evidence(&fixture.source), submissions).is_err());
+}
+
+#[test]
+fn exact_subpixel_change_is_not_hidden_by_selector_f32_conversion() {
+    let mut fixture = fixture().unwrap();
+    let mut supplied = evidence(&fixture.source);
+    supplied.observations[0].frame.origin.x += 0.000_001;
+    let mut submissions = fixture.source.submissions.clone();
+    submissions[0].frame = supplied.observations[0].frame;
+    fixture.source = rebuild(&fixture, supplied, submissions).unwrap();
+    let (_selector, commit) = select(&fixture, 1);
+    assert_eq!(commit.candidate().frame_local_points.x, 300.);
+    let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    let (_, publication) = acquisition
+        .with_generator(|submission, size, cancellation| {
+            assert_eq!(submission.frame.origin.x, 300.000_001);
+            assert_eq!(
+                size,
+                CapturePixelSize {
+                    width: 680,
+                    height: 540
+                }
+            );
+            synthetic_independent_window(1, cancellation).map_err(|error| error.to_string())
+        })
+        .run(flag())
+        .unwrap();
+    fixture
+        .source
+        .update_current(|current| current.observations[0].frame.origin.x += 0.000_001);
+    assert_eq!(
+        fixture.source.current.lock().unwrap().observations[0].candidate(),
+        commit.candidate()
+    );
+    assert!(!publication.is_current());
+}
+
+#[test]
+fn changed_or_missing_fresh_source_never_reaches_the_generator() {
+    for case in 0..8 {
+        let fixture = fixture().unwrap();
+        let (_selector, commit) = select(&fixture, 1);
+        let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+        fixture.source.update_current(|current| match case {
+            0 => current.observations[0].frame.origin.x += 0.000_001,
+            1 => current.observations[0].owner_process_id = 201,
+            2 => {
+                current.observations.remove(0);
+            }
+            3 => current.observations.push(current.observations[0].clone()),
+            4 => current.observations[0].layer = 3,
+            5 => current.observations[0].on_screen = false,
+            6 => current.observations[0].alpha = 0.01,
+            _ => current.observations[0].owner_bundle_id = Some("conflicting.bundle".into()),
+        });
+        let calls = Arc::new(AtomicUsize::new(0));
+        let counter = calls.clone();
+        let result = acquisition
+            .with_generator(move |_, _, _| {
+                counter.fetch_add(1, Ordering::Relaxed);
+                Err("must not run".into())
+            })
+            .run(flag());
+        assert!(result.is_err(), "case {case}");
+        assert_eq!(calls.load(Ordering::Relaxed), 0, "case {case}");
+    }
+}
+
+#[test]
+fn exact_submitted_source_is_checked_before_generator() {
+    let original = fixture().unwrap();
+    for case in 0..5 {
+        let mut submissions = original.source.submissions.clone();
+        match case {
+            0 => submissions[0].owner_process_id = 201,
+            1 => submissions[0].frame.origin.x += 0.000_001,
+            2 => submissions[0].layer = 3,
+            3 => submissions[0].on_screen = false,
+            _ => submissions[0].owner_bundle_id = Some("conflicting.bundle".into()),
+        }
+        let mut supplied = evidence(&original.source);
+        supplied.observations[0].owner_bundle_id = Some("example.synthetic.window1".into());
+        let fixture = Fixture {
+            layout: original.layout,
+            document: original.document.clone(),
+            source: rebuild(&original, supplied, submissions).unwrap(),
+        };
+        let (_selector, commit) = select(&fixture, 1);
+        let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+        assert!(
+            acquisition
+                .with_generator(|_, _, _| panic!("invalid submission reached generator"))
+                .run(flag())
+                .is_err()
+        );
+    }
+}
+
+#[test]
+fn fresh_completion_rejects_changes_while_generator_is_blocked() {
+    for case in 0..5 {
+        let fixture = fixture().unwrap();
+        let (_selector, commit) = select(&fixture, 1);
+        let boundary = flag();
+        let job = flag();
+        let (_, _, acquisition) = fixture.source.request(&commit, boundary.clone()).unwrap();
+        let (started_tx, started_rx) = mpsc::sync_channel(1);
+        let (resume_tx, resume_rx) = mpsc::sync_channel(1);
+        let resume_rx = Mutex::new(resume_rx);
+        let acquisition = acquisition.with_generator(move |submission, _, cancellation| {
+            started_tx.send(()).map_err(|error| error.to_string())?;
+            resume_rx
+                .lock()
+                .unwrap()
+                .recv_timeout(Duration::from_secs(5))
+                .map_err(|error| error.to_string())?;
+            synthetic_independent_window(submission.window_id, cancellation)
+                .map_err(|error| error.to_string())
+        });
+        let worker_job = job.clone();
+        let worker = std::thread::spawn(move || acquisition.run(worker_job));
+        started_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        match case {
+            0 => fixture
+                .source
+                .update_current(|current| current.observations[0].owner_process_id = 201),
+            1 => fixture
+                .source
+                .update_current(|current| current.topology.displays[0].backing_scale = 2.1),
+            2 => fixture.source.advance_generation(),
+            3 => boundary.store(true, Ordering::Release),
+            _ => job.store(true, Ordering::Release),
+        }
+        resume_tx.send(()).unwrap();
+        assert!(worker.join().unwrap().is_err(), "case {case}");
+    }
+}
+
+#[test]
+fn publication_rechecks_fresh_evidence_session_and_both_original_flags() {
+    for case in 0..6 {
+        let fixture = fixture().unwrap();
+        let (_selector, commit) = select(&fixture, 1);
+        let boundary = flag();
+        let job = flag();
+        let (_, _, acquisition) = fixture.source.request(&commit, boundary.clone()).unwrap();
+        let (_, publication) = acquisition.run(job.clone()).unwrap();
+        assert!(publication.is_current());
+        match case {
+            0 => fixture
+                .source
+                .update_current(|current| current.observations[0].frame.size.width += 0.000_001),
+            1 => fixture.source.update_current(|current| {
+                current.observations[0].owner_bundle_id = Some("other.bundle".into())
+            }),
+            2 => fixture.source.advance_generation(),
+            3 => boundary.store(true, Ordering::Release),
+            4 => job.store(true, Ordering::Release),
+            _ => fixture
+                .source
+                .update_current(|current| current.topology.displays[0].display.pixels.width += 1),
+        }
+        assert!(!publication.is_current(), "case {case}");
+    }
+}
+
+#[test]
+fn all_displays_participate_and_topology_order_is_not_identity() {
+    let mut fixture = fixture().unwrap();
+    let mut supplied = evidence(&fixture.source);
+    let mut secondary = supplied.topology.displays[0];
+    secondary.display.id = 2;
+    secondary.display.bounds.origin.x = -800.;
+    supplied.topology.displays.push(secondary);
+    fixture.source = rebuild(&fixture, supplied, fixture.source.submissions.clone()).unwrap();
+    let (_selector, commit) = select(&fixture, 1);
+    let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    let (_, publication) = acquisition.run(flag()).unwrap();
+    fixture
+        .source
+        .update_current(|current| current.topology.displays.reverse());
+    assert!(publication.is_current());
+    fixture.source.update_current(|current| {
+        current.topology.displays[0].display.bounds.origin.x -= 0.000_001
+    });
+    assert!(!publication.is_current());
+}
+
+#[test]
+fn cancellation_cannot_be_reset_with_a_fresh_operation_flag() {
+    let fixture = fixture().unwrap();
+    let (_selector, commit) = select(&fixture, 1);
+    let boundary = flag();
+    let (_, _, acquisition) = fixture.source.request(&commit, boundary.clone()).unwrap();
+    boundary.store(true, Ordering::Release);
+    assert!(
+        acquisition
+            .with_generator(|_, _, _| panic!("cancelled source reached generator"))
+            .run(flag())
+            .is_err()
+    );
+    assert!(fixture.source.request(&commit, boundary).is_err());
+    let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    let job = Arc::new(AtomicBool::new(true));
+    assert!(
+        acquisition
+            .with_generator(|_, _, _| panic!("cancelled operation reached generator"))
+            .run(job)
+            .is_err()
+    );
+}
+
+#[test]
+fn generator_failure_wrong_size_and_nonbase_document_are_rejected() {
+    let fixture = fixture().unwrap();
+    let (_selector, commit) = select(&fixture, 1);
+    let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    assert!(
+        acquisition
+            .with_generator(|_, _, _| Err("supplied acquisition failure".into()))
+            .run(flag())
+            .is_err()
+    );
+    let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    assert!(
+        acquisition
+            .with_generator(
+                |_, _, cancellation| synthetic_independent_window(2, cancellation)
+                    .map_err(|error| error.to_string())
+            )
+            .run(flag())
+            .is_err()
+    );
+    for crop in [false, true] {
+        let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+        assert!(
+            acquisition
+                .with_generator(move |_, _, cancellation| {
+                    let image = synthetic_independent_window(1, cancellation)
+                        .map_err(|error| error.to_string())?;
+                    let mut session = ScreenshotEditSession::new(image);
+                    if crop {
+                        session.set_crop(Some(Rect::new(1., 1., 20., 20.)))?;
+                    } else {
+                        session.add_annotation(
+                            AnnotationKind::Rectangle(Rect::new(1., 1., 20., 20.)),
+                            AnnotationStyle::default(),
+                        )?;
+                    }
+                    Ok(session.render_snapshot())
+                })
+                .run(flag())
+                .is_err()
+        );
+    }
+}
+
+#[test]
+fn fixture_source_generator_can_be_configured_before_coordinator_handoff() {
+    let mut fixture = fixture().unwrap();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let counter = calls.clone();
+    fixture.source = fixture.source.with_generator(move |_, _, _| {
+        counter.fetch_add(1, Ordering::Relaxed);
+        Err("controlled fixture failure".into())
+    });
+    let (_selector, commit) = select(&fixture, 1);
+    let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    assert!(acquisition.run(flag()).is_err());
+    assert_eq!(calls.load(Ordering::Relaxed), 1);
+}
+
+#[test]
+fn request_rejects_foreign_commit_metadata_and_display_geometry() {
+    let fixture = fixture().unwrap();
+    for change_display in [false, true] {
+        let mut display = geometry(fixture.layout);
+        let mut candidates = fixture.source.candidates().unwrap();
+        if change_display {
+            display.cocoa_frame.width += 1.;
+        } else {
+            candidates[0].owner_process_id = 777;
+        }
+        let mut selector = FrozenWindowSession::new(display, &candidates, 999).unwrap();
+        selector
+            .accept_frozen(
+                selector.freeze_token().unwrap(),
+                fixture.document.clone(),
+                display,
+            )
+            .unwrap();
+        let point = Point::new(400., 120.);
+        selector.begin_press(point, display).unwrap();
+        let commit = selector.end_press(point, display).unwrap().unwrap();
+        assert!(fixture.source.request(&commit, flag()).is_err());
+    }
+    let other = rebuild(
+        &fixture,
+        evidence(&fixture.source),
+        fixture.source.submissions.clone(),
+    )
+    .unwrap();
+    assert_ne!(fixture.source.token.session, other.token.session);
+}

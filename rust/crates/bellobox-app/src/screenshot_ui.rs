@@ -26,6 +26,8 @@ mod main_area;
 mod scroll_capture;
 #[cfg(debug_assertions)]
 mod window_refresh;
+#[cfg(debug_assertions)]
+mod window_workflow;
 
 const TOOLS: [(AnnotationTool, &str, &str); 9] = [
     (AnnotationTool::Select, "Select", "cursorarrow"),
@@ -248,13 +250,21 @@ pub fn open(cx: &mut App) {
                     .detach();
                 }
                 #[cfg(debug_assertions)]
-                if std::env::var_os("BELLOBOX_INLINE_AREA_FIXTURE").is_some() {
+                if std::env::var_os("BELLOBOX_INLINE_AREA_FIXTURE").is_some()
+                    || std::env::var_os("BELLOBOX_INLINE_WINDOW_FIXTURE").is_some()
+                {
                     chooser.busy = true;
                     chooser.status = "Selecting from supplied synthetic pixels…".into();
                     let requester = window.window_handle();
                     cx.defer(move |cx| {
                         let _ = requester.update(cx, |root, window, cx| {
-                            if let Err(error) = main_area::begin_fixture(window, cx)
+                            let result =
+                                if std::env::var_os("BELLOBOX_INLINE_WINDOW_FIXTURE").is_some() {
+                                    main_area::begin_window_fixture(window, cx)
+                                } else {
+                                    main_area::begin_fixture(window, cx)
+                                };
+                            if let Err(error) = result
                                 && let Ok(chooser) = root.downcast::<CaptureChooser>()
                             {
                                 chooser.update(cx, |chooser, cx| {
@@ -981,8 +991,15 @@ impl ScreenshotEditor {
             f32::from(position.y - b.origin.y),
         );
         let (x, y) = if let Some(inline) = self.inline.as_ref() {
-            let (sx, sy) = inline.pixels_per_point();
-            (offset.0 * sx, offset.1 * sy)
+            if inline.adjustable() {
+                // Preserve source direct multiplication; a rounded reciprocal
+                // can produce an extra outward-rounded crop pixel on Area.
+                let (sx, sy) = inline.pixels_per_point();
+                (offset.0 * sx, offset.1 * sy)
+            } else {
+                let (sx, sy) = inline.canvas_scales(visible);
+                (offset.0 / sx, offset.1 / sy)
+            }
         } else {
             (offset.0 / self.scale, offset.1 / self.scale)
         };
@@ -1028,7 +1045,11 @@ impl ScreenshotEditor {
         }
         self.selected = None;
         if self.tool == AnnotationTool::Select {
-            if self.inline.is_some() {
+            if self
+                .inline
+                .as_ref()
+                .is_some_and(|inline| inline.adjustable())
+            {
                 self.begin_selection_adjustment(None, e.position, cx);
             }
             cx.notify();
@@ -1776,6 +1797,10 @@ impl ScreenshotEditor {
         cx: &mut Context<Self>,
     ) -> gpui::Stateful<gpui::Div> {
         let (scale, scale_y) = scales;
+        let handles_pointer = self
+            .inline
+            .as_ref()
+            .is_none_or(|inline| inline.adjustable());
         let tile_origin = if self.inline.is_some() {
             Point::new(visible.x, visible.y)
         } else {
@@ -1827,31 +1852,35 @@ impl ScreenshotEditor {
             .flex_none()
             .w(px(width))
             .h(px(height))
-            .children(
-                self.preview_tiles
-                    .iter()
-                    .filter(|tile| {
-                        self.inline.is_some()
-                            || tile_is_visible(
-                                tile,
-                                scale,
-                                (
-                                    width.max(available.0) - width,
-                                    height.max(available.1) - height,
-                                ),
-                                self.scroll.offset(),
-                                available,
-                            )
-                    })
-                    .map(|tile| {
-                        div()
-                            .absolute()
-                            .left(px((tile.x as f32 - tile_origin.x) * scale))
-                            .top(px((tile.y as f32 - tile_origin.y) * scale_y))
-                            .w(px(tile.width as f32 * scale))
-                            .h(px(tile.height as f32 * scale_y))
-                            .child(img(tile.image.clone()).size_full())
-                    }),
+            // Clip full-base preview tiles at the fitted image, not its text
+            // controls: source inline text/drag handles may extend into padding.
+            .child(
+                div().absolute().size_full().overflow_hidden().children(
+                    self.preview_tiles
+                        .iter()
+                        .filter(|tile| {
+                            self.inline.is_some()
+                                || tile_is_visible(
+                                    tile,
+                                    scale,
+                                    (
+                                        width.max(available.0) - width,
+                                        height.max(available.1) - height,
+                                    ),
+                                    self.scroll.offset(),
+                                    available,
+                                )
+                        })
+                        .map(|tile| {
+                            div()
+                                .absolute()
+                                .left(px((tile.x as f32 - tile_origin.x) * scale))
+                                .top(px((tile.y as f32 - tile_origin.y) * scale_y))
+                                .w(px(tile.width as f32 * scale))
+                                .h(px(tile.height as f32 * scale_y))
+                                .child(img(tile.image.clone()).size_full())
+                        }),
+                ),
             )
             .child(overlay)
             .children(self.label_overlays(visible, (scale, scale_y), p, cx))
@@ -1913,10 +1942,13 @@ impl ScreenshotEditor {
                         ),
                 )
             })
-            .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
-            .on_mouse_move(cx.listener(Self::mouse_move))
-            .on_mouse_up(MouseButton::Left, cx.listener(Self::mouse_up))
-            .on_mouse_up_out(MouseButton::Left, cx.listener(Self::mouse_up))
+            .when(handles_pointer, |surface| {
+                surface
+                    .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
+                    .on_mouse_move(cx.listener(Self::mouse_move))
+                    .on_mouse_up(MouseButton::Left, cx.listener(Self::mouse_up))
+                    .on_mouse_up_out(MouseButton::Left, cx.listener(Self::mouse_up))
+            })
     }
     fn reader(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
         let current = self.ocr_content.current(self.session.revision()).is_some();

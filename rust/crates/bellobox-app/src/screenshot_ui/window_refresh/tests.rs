@@ -55,6 +55,7 @@ fn pending(
         decision: request.decision,
         boundary: request.boundary,
         jobs: SessionJobs::default(),
+        publication: None,
     };
     let token = host.jobs.begin();
     let plan = WindowRefreshPlan::new(

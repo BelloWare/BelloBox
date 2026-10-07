@@ -9,6 +9,7 @@ pub(super) struct InlineArea {
     pub id: u64,
     pub layout: MainDisplayOverlayLayout,
     pub adjustment: Option<Adjustment>,
+    fixed_frame: Option<Rect>,
     menu_anchor: Option<ViewPoint<Pixels>>,
 }
 pub(super) struct Adjustment {
@@ -19,12 +20,44 @@ pub(super) struct Adjustment {
 }
 impl InlineArea {
     pub fn new(id: u64, layout: MainDisplayOverlayLayout) -> Self {
+        Self::with_frame(id, layout, None)
+    }
+    pub fn with_frame(
+        id: u64,
+        layout: MainDisplayOverlayLayout,
+        fixed_frame: Option<Rect>,
+    ) -> Self {
         Self {
             id,
             layout,
+            fixed_frame,
             adjustment: None,
             menu_anchor: None,
         }
+    }
+    pub fn adjustable(&self) -> bool {
+        self.fixed_frame.is_none()
+    }
+    /// Swift's Window canvas fits the current crop into its fixed selected frame.
+    /// Area continues mapping independent display axes without letterboxing.
+    pub fn canvas_scales(&self, visible: Rect) -> (f32, f32) {
+        if let Some(frame) = self.fixed_frame {
+            let scale = (frame.width / visible.width).min(frame.height / visible.height);
+            (scale, scale)
+        } else {
+            self.scales()
+        }
+    }
+    pub fn canvas_frame(&self, visible: Rect) -> Rect {
+        let selected = self.local_rect(visible);
+        let (sx, sy) = self.canvas_scales(visible);
+        let (width, height) = (visible.width * sx, visible.height * sy);
+        Rect::new(
+            selected.x + (selected.width - width) / 2.,
+            selected.y + (selected.height - height) / 2.,
+            width,
+            height,
+        )
     }
     fn bounds(&self) -> Rect {
         Rect::new(
@@ -45,6 +78,9 @@ impl InlineArea {
         (1. / x, 1. / y)
     }
     fn local_rect(&self, pixels: Rect) -> Rect {
+        if let Some(frame) = self.fixed_frame {
+            return frame;
+        }
         let (x, y) = self.pixels_per_point();
         Rect::new(
             pixels.x / x,
@@ -133,7 +169,10 @@ impl ScreenshotEditor {
             || self.show_discard
             || self.open_menu.is_some()
             || self.color_target.is_some()
-            || self.inline.as_ref().is_none_or(|i| i.adjustment.is_some())
+            || self
+                .inline
+                .as_ref()
+                .is_none_or(|i| !i.adjustable() || i.adjustment.is_some())
         {
             return;
         }
@@ -275,10 +314,12 @@ impl ScreenshotEditor {
         let p = theme::for_window(window);
         let inline = self.inline.as_ref().expect("inline host");
         let bounds = inline.bounds();
-        let scales = inline.scales();
+        let visible = self.inline_visible_rect();
+        let scales = inline.canvas_scales(visible);
+        let canvas_frame = inline.canvas_frame(visible);
+        let adjustable = inline.adjustable();
         self.scale = scales.0;
         let selected = self.inline_selection();
-        let visible = self.inline_visible_rect();
         let toolbar = toolbar_frame(selected, bounds);
         let bands = selection::dim_bands(bounds, Some(selected)).unwrap_or_default();
         let mut root = div()
@@ -353,13 +394,29 @@ impl ScreenshotEditor {
                     .w(px(selected.width))
                     .h(px(selected.height))
                     .overflow_hidden()
-                    .child(self.annotation_surface(
-                        visible,
-                        scales,
-                        (selected.width, selected.height),
-                        p,
-                        cx,
-                    )),
+                    .bg(p.well)
+                    .when(!adjustable, |surface| {
+                        surface
+                            .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
+                            .on_mouse_move(cx.listener(Self::mouse_move))
+                            .on_mouse_up(MouseButton::Left, cx.listener(Self::mouse_up))
+                            .on_mouse_up_out(MouseButton::Left, cx.listener(Self::mouse_up))
+                    })
+                    .child(
+                        div()
+                            .absolute()
+                            .left(px(canvas_frame.x - selected.x))
+                            .top(px(canvas_frame.y - selected.y))
+                            .w(px(canvas_frame.width))
+                            .h(px(canvas_frame.height))
+                            .child(self.annotation_surface(
+                                visible,
+                                scales,
+                                (selected.width, selected.height),
+                                p,
+                                cx,
+                            )),
+                    ),
             )
             .child(
                 div()
@@ -435,7 +492,11 @@ impl ScreenshotEditor {
         }
         // Source order is deliberate: handles must win hit testing even where
         // a tall selection forces its toolbar inside the selection rectangle.
-        for (index, handle) in SelectionHandle::ALL.into_iter().enumerate() {
+        for (index, handle) in SelectionHandle::ALL
+            .into_iter()
+            .enumerate()
+            .filter(|_| adjustable)
+        {
             let at = handle.position(selected).expect("valid crop");
             let active = self
                 .inline

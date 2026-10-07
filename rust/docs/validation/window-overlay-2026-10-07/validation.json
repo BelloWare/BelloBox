@@ -1,0 +1,19 @@
+{
+  "baseline_commit": "0a73d42458b081e4d49c946acfeb1c0245dad011",
+  "source_manifest": "source-inputs.json",
+  "normal_binary_sha256": "f002f201725dbd9a08bb2270948a073a7095b2642d7a35ce9a9df4c5f140c970",
+  "checks": {
+    "screenshot_app_tests": 86,
+    "core_screenshot_tests": 168,
+    "debug_assertions_disabled_app_screenshot_tests": 46,
+    "application_strict_all_target_clippy": "passed",
+    "core_strict_test_clippy": "passed",
+    "normal_build": "passed",
+    "minimal_feature_check": "passed",
+    "formatting": "passed",
+    "actual_supplied_pixel_linux_gui": "passed_scoped_matrix"
+  },
+  "native_acquisition": "not_performed",
+  "new_exact_commit_native_ci": "pending_publication",
+  "production_gates": "unchanged"
+}

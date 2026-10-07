@@ -78,7 +78,7 @@ impl<H: Copy + Eq, O> ActiveCapture<H, O> {
     }
 }
 struct PreparedArea {
-    area: FrozenAreaSession,
+    selection: selector::Selection,
     tiles: Vec<PreviewTile>,
 }
 fn geometry(layout: host::MainDisplayOverlayLayout) -> AreaDisplayGeometry {
@@ -271,7 +271,10 @@ fn prepare_area_with(
         return Err("Area freeze was superseded.".into());
     }
     active()?;
-    Ok(PreparedArea { area, tiles })
+    Ok(PreparedArea {
+        selection: selector::Selection::Area(area),
+        tiles,
+    })
 }
 pub(super) fn current(id: u64, owner: &Window, cx: &App) -> bool {
     let Some(state) = cx.try_global::<Coordinator>() else {
@@ -641,6 +644,17 @@ fn begin_supplied(
     + Send
     + 'static,
 ) -> Result<(), String> {
+    begin_supplied_prepared(requester, layout, cx, move |cancellation| {
+        prepare_area_with(layout, cancellation, pixels)
+    })
+}
+#[cfg(any(debug_assertions, test))]
+fn begin_supplied_prepared(
+    requester: AnyWindowHandle,
+    layout: host::MainDisplayOverlayLayout,
+    cx: &mut App,
+    prepare: impl FnOnce(Arc<AtomicBool>) -> Result<PreparedArea, String> + Send + 'static,
+) -> Result<(), String> {
     layout.validate().map_err(|e| e.to_string())?;
     if cx.default_global::<NativeCaptureVisibility>().busy {
         return Err("Another capture is still finishing.".into());
@@ -662,9 +676,9 @@ fn begin_supplied(
         },
     });
     cx.default_global::<NativeCaptureVisibility>().busy = true;
-    let task = cx.background_executor().spawn(async move {
-        super::caught_capture(|| prepare_area_with(layout, cancellation, pixels))
-    });
+    let task = cx
+        .background_executor()
+        .spawn(async move { super::caught_capture(|| prepare(cancellation)) });
     cx.spawn(async move |cx| {
         let result = task.await;
         let _ = cx.update(|cx| freeze_completed(id, result, cx));
@@ -694,4 +708,53 @@ pub(super) fn editor_current(id: u64, cx: &mut App) -> bool {
 
 pub(super) fn editor_cancellation(id: u64, cx: &mut App) -> Option<Arc<AtomicBool>> {
     active_mut(id, cx).map(|run| run.transaction.cancellation.clone())
+}
+
+/// This supplied-record Window route uses the same coordinator and owned overlay.
+/// It never invokes native catalog enumeration or the disabled capture_window API.
+#[cfg(debug_assertions)]
+pub(super) fn begin_window_fixture(window: &mut Window, cx: &mut App) -> Result<(), String> {
+    let layout = super::window_workflow::fixture_layout();
+    begin_supplied_prepared(window.window_handle(), layout, cx, move |cancellation| {
+        prepare_window_supplied(super::window_workflow::fixture()?, cancellation)
+    })
+}
+#[cfg(all(debug_assertions, test))]
+fn begin_window_supplied(
+    requester: AnyWindowHandle,
+    fixture: super::window_workflow::Fixture,
+    cx: &mut App,
+) -> Result<(), String> {
+    begin_supplied_prepared(requester, fixture.layout, cx, move |cancellation| {
+        prepare_window_supplied(fixture, cancellation)
+    })
+}
+#[cfg(debug_assertions)]
+fn prepare_window_supplied(
+    fixture: super::window_workflow::Fixture,
+    cancellation: Arc<AtomicBool>,
+) -> Result<PreparedArea, String> {
+    use bellobox_core::screenshot::window::FrozenWindowSession;
+    if cancellation.load(Ordering::Acquire) {
+        return Err("Window selection was cancelled.".into());
+    }
+    let display = geometry(fixture.layout);
+    let candidates = fixture.source.candidates()?;
+    let mut selection = FrozenWindowSession::new(display, &candidates, fixture.source.own_pid())
+        .map_err(|error| error.to_string())?;
+    let token = selection
+        .freeze_token()
+        .ok_or("Window freeze was consumed.")?;
+    let tiles = fixture.document.render_preview_tiles()?;
+    if cancellation.load(Ordering::Acquire)
+        || !selection
+            .accept_frozen(token, fixture.document, display)
+            .map_err(|error| error.to_string())?
+    {
+        return Err("Window freeze was superseded.".into());
+    }
+    Ok(PreparedArea {
+        selection: selector::Selection::Window(selection, fixture.source),
+        tiles,
+    })
 }

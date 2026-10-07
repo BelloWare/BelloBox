@@ -719,3 +719,44 @@ fn mask_backend_never_sees_trailing_image_storage() {
         });
     assert!(result.unwrap().is_some());
 }
+
+#[test]
+fn retained_refresh_clone_cannot_republish_after_success_or_clean_undo() {
+    let mut session = ScreenshotEditSession::new(image(8, 8, [1, 2, 3, 255]));
+    let context = context();
+    let epoch = session.base_capture_token();
+    let prepared = plan(
+        &session,
+        context,
+        WindowRefreshDecision::ReplaceWithIndependent,
+    )
+    .prepare(image(10, 6, [4, 5, 6, 255]))
+    .unwrap()
+    .unwrap();
+    let retained = prepared.clone();
+    let replacement = Arc::downgrade(&retained.replacement.base_image);
+    assert!(
+        prepared
+            .apply(&mut session, context, &AtomicBool::new(false))
+            .unwrap()
+    );
+    assert_ne!(session.base_capture_token(), epoch);
+    add_mark(&mut session);
+    assert!(session.undo());
+    assert!(session.document().annotations().is_empty());
+    let revision = session.revision();
+    assert!(
+        !retained
+            .clone()
+            .apply(&mut session, context, &AtomicBool::new(false))
+            .unwrap()
+    );
+    assert_eq!(session.revision(), revision);
+    drop(session);
+    assert!(
+        replacement.upgrade().is_some(),
+        "completion owns pixels until disposal"
+    );
+    std::thread::spawn(move || drop(retained)).join().unwrap();
+    assert!(replacement.upgrade().is_none());
+}

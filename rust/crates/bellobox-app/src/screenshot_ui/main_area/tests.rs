@@ -48,14 +48,13 @@ fn single_freeze_prepares_tiles_then_mouse_up_reuses_clean_full_pixels() {
     use bellobox_core::screenshot::Point;
     let count = Cell::new(0);
     let display = layout();
-    let mut prepared =
-        prepare_area_with(display, Arc::new(AtomicBool::new(false)), |request, _| {
-            count.set(count.get() + 1);
-            assert_eq!(request.display, display.display);
-            assert!(request.region.is_none());
-            Ok(snapshot(request))
-        })
-        .unwrap();
+    let prepared = prepare_area_with(display, Arc::new(AtomicBool::new(false)), |request, _| {
+        count.set(count.get() + 1);
+        assert_eq!(request.display, display.display);
+        assert!(request.region.is_none());
+        Ok(snapshot(request))
+    })
+    .unwrap();
     assert_eq!(count.get(), 1);
     assert!(prepared.tiles.len() >= 2);
     assert!(
@@ -64,17 +63,17 @@ fn single_freeze_prepares_tiles_then_mouse_up_reuses_clean_full_pixels() {
             .iter()
             .all(|t| t.width <= 1024 && t.height <= 1024)
     );
-    assert!(prepared.area.freeze_token().is_none());
-    prepared
-        .area
-        .begin_drag(Point::new(10., 20.), geometry(display))
+    let mut area = match prepared.selection {
+        selector::Selection::Area(area) => area,
+        #[cfg(debug_assertions)]
+        _ => panic!("Area preparation"),
+    };
+    assert!(area.freeze_token().is_none());
+    area.begin_drag(Point::new(10., 20.), geometry(display))
         .unwrap();
-    prepared
-        .area
-        .update_drag(Point::new(130., 140.), geometry(display))
+    area.update_drag(Point::new(130., 140.), geometry(display))
         .unwrap();
-    let selected = prepared
-        .area
+    let selected = area
         .end_drag(Point::new(110., 120.), geometry(display))
         .unwrap()
         .unwrap();

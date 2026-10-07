@@ -1,0 +1,56 @@
+{
+  "normal_binary_sha256": "f002f201725dbd9a08bb2270948a073a7095b2642d7a35ce9a9df4c5f140c970",
+  "release_cfg_test_binary_sha256": "4b6b705d150e318aeef0d0dbd3c533b76bccf863ceb3f3efa36e5716350217e5",
+  "screenshots": [
+    {
+      "path": "back-independent.jpg",
+      "sha256": "9a40ef96cd4589651cd564b6a3ec189e7fca32df3d20ef717c1927ebc0cbc939",
+      "bytes": 25512,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ]
+    },
+    {
+      "path": "crop-letterbox.jpg",
+      "sha256": "a5814828e33473af167e1076cfc35af6641c1106f9caef5497f4f85d7ae254a6",
+      "bytes": 27257,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ]
+    },
+    {
+      "path": "cropped-clipboard.jpg",
+      "sha256": "3ec81334fff13e1154ec2e2bf14c6a8c28fea074731e127a6cb0cb5f0f047b16",
+      "bytes": 47529,
+      "format": "JPEG",
+      "dimensions": [
+        1180,
+        812
+      ]
+    },
+    {
+      "path": "edge-label.jpg",
+      "sha256": "c66b51ff5ce0e076041568743c27e5dfaf298512ab7e6196b66a6939e70175b7",
+      "bytes": 29412,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ]
+    },
+    {
+      "path": "front-alpha.jpg",
+      "sha256": "5e52fe4ca660a7d5265111e6c1a9ae795265e05ac0de39e39adb6a40655fc7ef",
+      "bytes": 25589,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ]
+    }
+  ]
+}

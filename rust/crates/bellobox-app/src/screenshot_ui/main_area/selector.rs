@@ -1,7 +1,15 @@
 //! Frozen full-display selector. Dragging changes only chrome; immutable tiled
 //! pixels and the coordinator remain owned throughout the inline editing phase.
 use super::*;
-use bellobox_core::screenshot::{Point, ScreenshotEditSession, area::AreaPhase, selection};
+#[cfg(debug_assertions)]
+use bellobox_core::screenshot::window::{
+    FrozenWindowCommit, FrozenWindowCommitToken, FrozenWindowPhase, FrozenWindowSession,
+};
+use bellobox_core::screenshot::{
+    Point, ScreenshotEditSession,
+    area::{AreaPhase, AreaSelection},
+    selection,
+};
 use gpui::{
     Bounds, Context, CursorStyle, FocusHandle, Image, ImageFormat, KeyDownEvent, MouseButton,
     MouseDownEvent, MouseMoveEvent, MouseUpEvent, Pixels, Subscription, WindowBounds, WindowKind,
@@ -11,6 +19,140 @@ use std::{
     cell::{Cell, RefCell},
     rc::Rc,
 };
+
+/// The shared selector keeps one frozen image owner for either selection policy.
+pub(super) enum Selection {
+    Area(FrozenAreaSession),
+    #[cfg(debug_assertions)]
+    Window(
+        FrozenWindowSession,
+        Arc<super::super::window_workflow::Source>,
+    ),
+}
+impl Selection {
+    fn preview_rect(&self) -> Option<Rect> {
+        match self {
+            Self::Area(area) => area.preview_rect(),
+            #[cfg(debug_assertions)]
+            Self::Window(window, _) => window.preview_rect(),
+        }
+    }
+    fn begin(&mut self, point: Point, display: AreaDisplayGeometry) -> Result<(), String> {
+        match self {
+            Self::Area(area) => area.begin_drag(point, display).map_err(|e| e.to_string()),
+            #[cfg(debug_assertions)]
+            Self::Window(window, _) => window
+                .begin_press(point, display)
+                .map_err(|e| e.to_string()),
+        }
+    }
+    fn movement(&mut self, point: Point, display: AreaDisplayGeometry) -> Result<(), String> {
+        match self {
+            Self::Area(area) if area.phase() == AreaPhase::Dragging => {
+                area.update_drag(point, display).map_err(|e| e.to_string())
+            }
+            Self::Area(_) => Ok(()),
+            #[cfg(debug_assertions)]
+            Self::Window(window, _) => window.hover(point, display).map_err(|e| e.to_string()),
+        }
+    }
+    fn end(
+        &mut self,
+        point: Point,
+        display: AreaDisplayGeometry,
+    ) -> Result<Option<Commit>, String> {
+        match self {
+            Self::Area(area) if area.phase() == AreaPhase::Dragging => area
+                .end_drag(point, display)
+                .map(|c| c.map(Commit::Area))
+                .map_err(|e| e.to_string()),
+            Self::Area(_) => Ok(None),
+            #[cfg(debug_assertions)]
+            Self::Window(window, source) if window.phase() == FrozenWindowPhase::Pressed => window
+                .end_press(point, display)
+                .map(|c| c.map(|c| Commit::Window(c, source.clone())))
+                .map_err(|e| e.to_string()),
+            #[cfg(debug_assertions)]
+            Self::Window(_, _) => Ok(None),
+        }
+    }
+    fn accepts(&mut self, editor: &PreparedEditor, display: AreaDisplayGeometry) -> bool {
+        match self {
+            Self::Area(area) => {
+                let _ = editor;
+                area.phase() == AreaPhase::Committed && area.validate_topology(display).is_ok()
+            }
+            #[cfg(debug_assertions)]
+            Self::Window(window, _) => editor
+                .token
+                .is_some_and(|token| window.accepts_commit(token, display).unwrap_or(false)),
+        }
+    }
+}
+enum Commit {
+    Area(AreaSelection),
+    #[cfg(debug_assertions)]
+    Window(
+        FrozenWindowCommit,
+        Arc<super::super::window_workflow::Source>,
+    ),
+}
+struct PreparedEditor {
+    session: ScreenshotEditSession,
+    fixed_frame: Option<Rect>,
+    #[cfg(debug_assertions)]
+    token: Option<FrozenWindowCommitToken>,
+    #[cfg(debug_assertions)]
+    refresh: Option<super::super::window_refresh::Request>,
+}
+impl Commit {
+    fn rect(&self) -> Rect {
+        match self {
+            Self::Area(area) => area.selection_local_points,
+            #[cfg(debug_assertions)]
+            Self::Window(window, _) => window.candidate().frame_local_points,
+        }
+    }
+    fn prepare(self, cancellation: Arc<AtomicBool>) -> Result<PreparedEditor, String> {
+        let _ = &cancellation;
+        match self {
+            Self::Area(area) => Ok(PreparedEditor {
+                session: super::super::prepare_session(area.editor),
+                fixed_frame: None,
+                #[cfg(debug_assertions)]
+                token: None,
+                #[cfg(debug_assertions)]
+                refresh: None,
+            }),
+            #[cfg(debug_assertions)]
+            Self::Window(commit, source) => {
+                let fixed_frame = commit.candidate().frame_local_points;
+                let token = commit.token();
+                // Fidelity refresh is optional. Failure preserves the exact frozen crop.
+                let refresh = source.request(&commit, cancellation.clone()).ok().map(
+                    |(context, decision, acquisition)| {
+                        super::super::window_refresh::Request::supplied(
+                            context,
+                            decision,
+                            cancellation.clone(),
+                            acquisition,
+                        )
+                    },
+                );
+                let session = commit
+                    .materialize(&cancellation)
+                    .map_err(|e| e.to_string())?
+                    .editor;
+                Ok(PreparedEditor {
+                    session: super::super::prepare_session(session),
+                    fixed_frame: Some(fixed_frame),
+                    token: Some(token),
+                    refresh,
+                })
+            }
+        }
+    }
+}
 
 struct Tile {
     x: u32,
@@ -22,7 +164,7 @@ struct Tile {
 pub(super) struct MainAreaSelector {
     id: u64,
     layout: host::MainDisplayOverlayLayout,
-    area: Option<FrozenAreaSession>,
+    selection: Option<Selection>,
     tiles: Vec<Tile>,
     viewport: Rc<Cell<Bounds<Pixels>>>,
     focus: FocusHandle,
@@ -173,7 +315,7 @@ impl MainAreaSelector {
         Self {
             id,
             layout,
-            area: Some(prepared.area),
+            selection: Some(prepared.selection),
             tiles: prepared
                 .tiles
                 .into_iter()
@@ -251,10 +393,10 @@ impl MainAreaSelector {
         if let Some(run) = active_mut(self.id, cx) {
             run.transaction.selector = None;
         }
-        if self.area.is_some() || !self.tiles.is_empty() {
+        if self.selection.is_some() || !self.tiles.is_empty() {
             discard(
                 self.id,
-                (self.area.take(), std::mem::take(&mut self.tiles)),
+                (self.selection.take(), std::mem::take(&mut self.tiles)),
                 cx,
             );
         } else {
@@ -314,9 +456,9 @@ impl MainAreaSelector {
         };
         window.focus(&self.focus);
         if self
-            .area
+            .selection
             .as_mut()
-            .is_none_or(|area| area.begin_drag(point, geometry(self.layout)).is_err())
+            .is_none_or(|selection| selection.begin(point, geometry(self.layout)).is_err())
         {
             self.retire(window, cx);
             return;
@@ -330,14 +472,11 @@ impl MainAreaSelector {
         let Some(point) = self.local(event.position) else {
             return;
         };
-        if let Some(area) = self.area.as_mut() {
-            if area.phase() != AreaPhase::Dragging {
-                return;
-            }
-            if area.update_drag(point, geometry(self.layout)).is_err() {
-                self.retire(window, cx);
-                return;
-            }
+        if let Some(selection) = self.selection.as_mut()
+            && selection.movement(point, geometry(self.layout)).is_err()
+        {
+            self.retire(window, cx);
+            return;
         }
         cx.notify();
     }
@@ -348,13 +487,10 @@ impl MainAreaSelector {
         let Some(point) = self.local(event.position) else {
             return;
         };
-        let Some(area) = self.area.as_mut() else {
+        let Some(selection) = self.selection.as_mut() else {
             return;
         };
-        if area.phase() != AreaPhase::Dragging {
-            return;
-        }
-        let selection = match area.end_drag(point, geometry(self.layout)) {
+        let selection = match selection.end(point, geometry(self.layout)) {
             Ok(Some(selection)) => selection,
             Ok(None) => {
                 cx.notify();
@@ -365,7 +501,7 @@ impl MainAreaSelector {
                 return;
             }
         };
-        self.locked = Some(selection.selection_local_points);
+        self.locked = Some(selection.rect());
         lock_selection(self.id, cx);
         self.preparing_editor = true;
         let id = self.id;
@@ -381,10 +517,10 @@ impl MainAreaSelector {
                 if cancellation.load(Ordering::Acquire) {
                     return Ok(None);
                 }
-                // Same immutable full image and clean crop. Font preparation is
-                // off-thread; no recapture or image reencoding occurs on mouse-up.
-                let session = super::super::prepare_session(selection.editor);
-                Ok((!cancellation.load(Ordering::Acquire)).then_some(session))
+                // Area retains its full image; Window physically copies only the
+                // bound rectangle. Font/image preparation stays on this worker.
+                let editor = selection.prepare(cancellation.clone())?;
+                Ok((!cancellation.load(Ordering::Acquire)).then_some(editor))
             })
         });
         let app: &mut App = cx;
@@ -399,7 +535,7 @@ impl MainAreaSelector {
 fn editor_prepared(
     id: u64,
     selector: AnyWindowHandle,
-    result: Result<Option<ScreenshotEditSession>, String>,
+    result: Result<Option<PreparedEditor>, String>,
     cx: &mut App,
 ) {
     if let Some(run) = active_mut(id, cx) {
@@ -413,21 +549,46 @@ fn editor_prepared(
                     return;
                 }
                 match result.take().expect("one prepared inline editor") {
-                    Ok(Some(session)) => {
+                    Ok(Some(prepared)) => {
+                        if !view.selection.as_mut().is_some_and(|selection| {
+                            selection.accepts(&prepared, geometry(view.layout))
+                        }) {
+                            discard(id, prepared, cx);
+                            view.retire(window, cx);
+                            return;
+                        }
                         // Keep the same overlay and transaction. Preparation may
                         // complete after app deactivation; never reactivate it.
-                        let inline = super::super::inline_area::InlineArea::new(id, view.layout);
+                        let inline = if prepared.fixed_frame.is_some() {
+                            super::super::inline_area::InlineArea::with_frame(
+                                id,
+                                view.layout,
+                                prepared.fixed_frame,
+                            )
+                        } else {
+                            super::super::inline_area::InlineArea::new(id, view.layout)
+                        };
+                        #[allow(unused_mut)]
+                        let mut presentation = super::super::CapturePresentation::default();
+                        #[cfg(debug_assertions)]
+                        {
+                            presentation.window_refresh = prepared.refresh;
+                        }
                         view.editor = Some(cx.new(|cx| {
                             super::super::ScreenshotEditor::new_with_inline(
-                                session,
-                                "Area · full-display pixels",
-                                Default::default(),
+                                prepared.session,
+                                if prepared.fixed_frame.is_some() {
+                                    "Window · frozen supplied pixels"
+                                } else {
+                                    "Area · full-display pixels"
+                                },
+                                presentation,
                                 Some(inline),
                                 window,
                                 cx,
                             )
                         }));
-                        view.area = None;
+                        discard(id, view.selection.take(), cx);
                         view.preparing_editor = false;
                         cx.notify();
                     }
@@ -458,7 +619,7 @@ impl Render for MainAreaSelector {
             .expect("validated Area geometry");
         let selected = self
             .locked
-            .or_else(|| self.area.as_ref().and_then(|a| a.preview_rect()))
+            .or_else(|| self.selection.as_ref().and_then(|a| a.preview_rect()))
             .filter(|r| r.width > 0. && r.height > 0.);
         let border: f32 = if self.editor.is_some() {
             0.
@@ -567,3 +728,6 @@ impl Render for MainAreaSelector {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(all(test, debug_assertions))]
+mod window_tests;

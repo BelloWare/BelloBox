@@ -524,3 +524,79 @@ metadata check and formatting passed. The final GUI binary is
 its broader and final scoped interactions are distinguished in
 [the QA report](validation/inline-area-2026-10-07/QA-report.md).
 Exact Linux/macOS CI for this new source checkpoint is pending publication.
+
+### Exact inline Area checkpoint verified
+
+Published `0a73d42458b081e4d49c946acfeb1c0245dad011`, tree
+`ebe64f7fc8734e90bbf51954df8c19ed7580c8cd`, passed Linux run
+`37581683197` and macOS run `37581683028`. Every job step passed: native
+compile/link, pure regressions, strict normalized alpha/lifecycle tests, supplied
+host-mask worker, application build and offline packaging. This supersedes the
+pending CI statement for the inline Area code. Native interactive capture,
+permissions, AppKit/Spaces and the other recorded runtime gates remain open.
+
+## Continuation checkpoint: shared Window overlay with supplied evidence
+
+The Window host now uses the same owned capture coordinator and overlay as Area.
+Its explicit DEBUG route is `BELLOBOX_INLINE_WINDOW_FIXTURE=1` with the existing
+screenshot startup route. Ordered supplied records feed the existing Window-only
+pointer policy and physically cropped `FrozenWindowCommit`; the editor never
+owns the full display as its Window base. Ordinary Window capture remains
+unavailable and the production Area gate is unchanged.
+
+Exact f64 identity/frame/topology and submission evidence remain separate from
+f32 selection chrome. Selectable normal-layer, non-own, wholly contained main-
+display rows are distinct from the broader occlusion catalog, which can include
+our own regular windows. Existing submission/completion policy checks and current
+session evidence guard generated independent pixels. These are supplied records,
+not native object retention or atomic incarnation guarantees. Front windows borrow
+independent alpha; occluded windows replace frozen pixels through the same native
+normalized-mask seam on macOS and documented portable approximation elsewhere.
+
+Window's selected frame and toolbar remain fixed after Crop. Its visible image
+uniformly aspect-fits with well-colored letterboxes, no Area resize handles or
+Select-move. Pixel tiles alone clip at the fitted image, keeping cropped pixels
+out of letterboxes while preserving text controls. The whole fixed frame owns
+clamped annotation gestures. Area retains direct independent-axis multiplication,
+including the regression that 330 points becomes exactly 825 pixels at 2.5×.
+
+Acquisition, masking, publication and final rejected-result disposal retain one
+coordinator worker count until physical completion, even after close. UI apply
+rechecks the coordinator, session/evidence, document base, cancellation and clean
+interaction state; accepted refresh calls the real OCR/preview invalidation path.
+A narrow shared-backing `PreparedWindowRefresh` clone lets the completion retain
+large immutable pixels for off-thread disposal. First acceptance advances the
+base epoch, so clones cannot republish even after clean Undo. Controlled tests
+hold disposal pending after cancellation, reject new admission and keep capture
+busy until that disposal actually drains.
+
+
+The exact supplied-pixel Linux GUI candidate is
+`f002f201725dbd9a08bb2270948a073a7095b2642d7a35ce9a9df4c5f140c970`.
+Scoped interaction passed front alpha preservation, blank/long-drag rejection,
+fixed-frame Crop/Undo/Redo, contrasting clean letterboxes, edge-label editing,
+Copy & Finish and 401×161 body-only clipboard reimport, independent blue back
+Window with frozen orange overlap removed, and clean close. Five original
+app-only JPEGs, binary/source hashes and exact limitations are retained in
+[window-overlay-host.md](window-overlay-host.md) and its validation directory.
+
+All 86 affected screenshot app tests and 168 core screenshot tests passed, as did
+strict app all-target Clippy, core test-target Clippy, normal app build and
+minimal-feature check.
+The exact debug-assertions-disabled app test artifact also passed its 46 screenshot
+tests. Native mask behavior remains covered by its existing worker-only exact CI
+path; new exact-commit Linux/macOS results are pending publication for this source.
+
+The reviewed scoped Rust delta is 178 production and 2,040 test/support nonblank
+physical lines including comments, with no benchmark additions. New totals are
+44,451 production / 23,705 support / 105 benchmark. DEBUG-only supplied evidence,
+refresh host and fixture arms are support; shared editor/coordinator/core ownership
+changes are production. Exact spans and hashes are in the scoped LOC manifest.
+
+This remains normal-layer, wholly contained, unrotated-main-display supplied
+acceptance. Native catalog ownership/acquisition, spanning/system-surface policy,
+AppKit/Retina/Spaces/TCC and original-capture color/ICC/HDR remain open. Current
+DEBUG evidence revalidation performs a bounded quadratic duplicate scan over at
+most 512 observations under its mutex; pixel generation runs without that lock.
+No measured latency/FPS or native responsiveness claim follows, and this cost
+should be revisited before integrating a native catalog.

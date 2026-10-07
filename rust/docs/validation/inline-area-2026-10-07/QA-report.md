@@ -104,3 +104,14 @@ Preview rendering remains asynchronous; these observations are not latency/FPS
 measurements. New exact-commit Linux/macOS CI must still be read separately.
 Production Area/Window gates remain disabled; this is an integrated supplied-pixel
 host checkpoint, not capture enablement or full application parity.
+
+## Exact published CI follow-up
+
+Commit `0a73d42458b081e4d49c946acfeb1c0245dad011` (tree
+`ebe64f7fc8734e90bbf51954df8c19ed7580c8cd`) subsequently passed
+[Linux run 37581683197](https://github.com/BelloWare/BelloBox/actions/runs/37581683197)
+and [macOS run 37581683028](https://github.com/BelloWare/BelloBox/actions/runs/37581683028).
+All steps completed successfully, including native compilation, the strict
+normalized CoreGraphics oracle, worker-only mask test and offline packaging.
+These checks supplement the scoped Linux interaction above; they do not exercise
+native capture, macOS interactive overlay behavior or permission flows.

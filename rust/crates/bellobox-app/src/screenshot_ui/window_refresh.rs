@@ -19,8 +19,31 @@ pub(super) struct Request {
     pub context: WindowRefreshContext,
     pub decision: WindowRefreshDecision,
     pub boundary: Arc<AtomicBool>,
+    input: Input,
+    #[cfg(test)]
+    pub(super) disposal_gate: Option<DisposalGate>,
+}
+enum Input {
+    Fixture(u32),
+    Supplied(super::window_workflow::Acquisition),
 }
 impl Request {
+    pub fn supplied(
+        context: WindowRefreshContext,
+        decision: WindowRefreshDecision,
+        boundary: Arc<AtomicBool>,
+        acquisition: super::window_workflow::Acquisition,
+    ) -> Self {
+        Self {
+            context,
+            decision,
+            boundary,
+            input: Input::Supplied(acquisition),
+            #[cfg(test)]
+            disposal_gate: None,
+        }
+    }
+
     pub fn fixture(commit: &FrozenWindowCommit, boundary: Arc<AtomicBool>) -> Result<Self, String> {
         let candidate = commit.candidate();
         // This is an explicitly synthetic occluder catalog, separate from selector
@@ -70,6 +93,9 @@ impl Request {
             },
             decision,
             boundary,
+            input: Input::Fixture(candidate.window_id),
+            #[cfg(test)]
+            disposal_gate: None,
         })
     }
 }
@@ -79,6 +105,7 @@ pub(super) struct Host {
     decision: WindowRefreshDecision,
     boundary: Arc<AtomicBool>,
     jobs: SessionJobs,
+    publication: Option<super::window_workflow::Publication>,
 }
 impl ScreenshotEditor {
     pub(super) fn start_window_refresh(&mut self, request: Request, cx: &mut Context<Self>) {
@@ -90,10 +117,11 @@ impl ScreenshotEditor {
             decision: request.decision,
             boundary: request.boundary,
             jobs: SessionJobs::default(),
+            publication: None,
         };
         let token = host.jobs.begin();
         let cancellation = host.jobs.cancellation();
-        if host.boundary.load(Ordering::Acquire) {
+        if host.boundary.load(Ordering::Acquire) || !self.inline_current(cx) {
             return;
         }
         let Ok(plan) = WindowRefreshPlan::new(
@@ -105,25 +133,68 @@ impl ScreenshotEditor {
             return;
         };
         let boundary = host.boundary.clone();
-        let window_id = host.context.window_id;
-        self.window_refresh = Some(host); // Replacing a prior host cancels its work.
+        // Count physical acquisition, mask work and completion disposal even when
+        // the selector/editor are closed or the logical job is superseded.
+        let inline_work = self.begin_inline_work(cx);
+        if self.inline.is_some() && inline_work.is_none() {
+            return;
+        }
+        self.window_refresh = Some(host);
+        let input = request.input;
+        #[cfg(test)]
+        let disposal_gate = request.disposal_gate;
         let task = cx.background_executor().spawn(async move {
-            if boundary.load(Ordering::Acquire) || cancellation.load(Ordering::Acquire) {
-                return None;
-            }
-            let independent = synthetic_independent_window(window_id, &cancellation).ok()?;
-            if boundary.load(Ordering::Acquire) {
-                return None;
-            }
-            prepare_refresh(plan, independent, cancellation)
-                .ok()
-                .flatten()
+            super::caught_capture(|| {
+                if boundary.load(Ordering::Acquire) || cancellation.load(Ordering::Acquire) {
+                    return Ok((None, None));
+                }
+                let (independent, publication) = match input {
+                    Input::Fixture(window_id) => (
+                        synthetic_independent_window(window_id, &cancellation)
+                            .map_err(|e| e.to_string())?,
+                        None,
+                    ),
+                    Input::Supplied(acquisition) => {
+                        let (image, publication) = acquisition.run(cancellation.clone())?;
+                        (image, Some(publication))
+                    }
+                };
+                if boundary.load(Ordering::Acquire) {
+                    return Ok((None, None));
+                }
+                Ok((
+                    prepare_refresh(plan, independent, cancellation).map_err(|e| e.to_string())?,
+                    publication,
+                ))
+            })
         });
         cx.spawn(async move |this, cx| {
-            let prepared = task.await;
+            let (prepared, publication) = task.await.unwrap_or((None, None));
+            let mut original = None;
+            let retained = prepared.clone();
             let _ = this.update(cx, |this, cx| {
+                original = Some(this.session.render_snapshot());
+                if let Some(host) = this
+                    .window_refresh
+                    .as_mut()
+                    .filter(|host| host.jobs.accepts(token))
+                {
+                    host.publication = publication;
+                }
                 this.accept_window_refresh(token, prepared, cx);
             });
+            // The retained immutable pixels prevent final heavy destruction in
+            // apply(), rejection or a dead-entity delivery on the UI executor.
+            cx.background_executor()
+                .spawn(async move {
+                    #[cfg(test)]
+                    if let Some(gate) = disposal_gate {
+                        gate.wait().await;
+                    }
+                    drop((retained, original));
+                })
+                .await;
+            let _ = cx.update(|cx| super::main_area::finish_editor_work(inline_work, cx));
         })
         .detach();
     }
@@ -134,6 +205,10 @@ impl ScreenshotEditor {
         prepared: Option<PreparedWindowRefresh>,
         cx: &mut Context<Self>,
     ) -> bool {
+        if !self.inline_current(cx) {
+            self.cancel_inline_owner(cx);
+            return false;
+        }
         let Some(host) = self.window_refresh.as_mut() else {
             return false;
         };
@@ -149,6 +224,10 @@ impl ScreenshotEditor {
             && !self.export_busy
             && !self.show_discard;
         let accepted = idle
+            && host
+                .publication
+                .as_ref()
+                .is_none_or(|publication| publication.is_current())
             && prepared.is_some_and(|prepared| {
                 prepared
                     .apply(&mut self.session, host.context, &host.boundary)
@@ -224,3 +303,41 @@ fn prepare_refresh(
 
 #[cfg(test)]
 mod tests;
+
+/// Deterministic test suspension inside the real background-disposal future.
+/// No production delay, polling timer or native resource is introduced.
+#[cfg(test)]
+#[derive(Clone, Default)]
+pub(super) struct DisposalGate(Arc<DisposalState>);
+#[cfg(test)]
+#[derive(Default)]
+struct DisposalState {
+    arrived: AtomicBool,
+    released: AtomicBool,
+    waker: std::sync::Mutex<Option<std::task::Waker>>,
+}
+#[cfg(test)]
+impl DisposalGate {
+    pub fn arrived(&self) -> bool {
+        self.0.arrived.load(Ordering::Acquire)
+    }
+    pub fn release(&self) {
+        self.0.released.store(true, Ordering::Release);
+        if let Some(waker) = self.0.waker.lock().unwrap().take() {
+            waker.wake();
+        }
+    }
+    async fn wait(self) {
+        std::future::poll_fn(|cx| {
+            let mut waker = self.0.waker.lock().unwrap();
+            self.0.arrived.store(true, Ordering::Release);
+            if self.0.released.load(Ordering::Acquire) {
+                std::task::Poll::Ready(())
+            } else {
+                *waker = Some(cx.waker().clone());
+                std::task::Poll::Pending
+            }
+        })
+        .await
+    }
+}
