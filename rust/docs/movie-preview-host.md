@@ -67,7 +67,10 @@ FrameUnavailable means the reader returned no acceptable sample in the bounded
 window; sparse coded timestamps alone do not establish that outcome. Exact native
 CI observed returned PTS48 for request50 in a fixture submitted at0/130/130.1.
 The focused [sparse-reader characterization](native-movie-sparse-reader.md) compares
-full-range timestamps and exact pixels to test clipping/retiming of held samples.
+full-range timestamps and exact pixels: the a950 native run proved sparse held-
+sample clipping/retiming with unchanged RGBA. Its later leading-gap fixture failed
+because decoded output included PTS0 before submitted0.1. That fixture does not
+prove first-following branch execution; leading-gap pixel checks remain pending.
 Bounds apply to returned reader PTS. The caption shows requested and returned
 sample PTS, not a promise of the original coded-sample timestamp. This deliberately bounded behavior is not exact AVPlayer
 zero-tolerance seeking or continuous playback.

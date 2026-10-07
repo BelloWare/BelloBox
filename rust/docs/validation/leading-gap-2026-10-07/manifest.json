@@ -1,0 +1,64 @@
+{
+  "baseline_commit": "a95056a125b1d5fe17449f04ba0f03e69259da4d",
+  "baseline_counts": {
+    "production": 48152,
+    "support": 24431,
+    "benchmark": 105
+  },
+  "files": [
+    {
+      "path": "rust/crates/bello-platform/src/movie.rs",
+      "before_sha256": "693b54d6bea725d7e792100c900237478d6241e5baaec3b0f4fd5aebddd5d39a",
+      "after_sha256": "3ae90cdd42607749f52797bc1c5903c7a0d00a933862ad61ce45d7399dbf98b5",
+      "before_nonblank": 682,
+      "after_nonblank": 682,
+      "production_delta": 0,
+      "support_delta": 0,
+      "classification": "One existing production rustdoc line replaced; no count delta.",
+      "after_support_ranges_1based": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs",
+      "before_sha256": "5df837b042364d86e5186c71fc6d936ae845acbd9d55a8052ebdc6fa7fe11315",
+      "after_sha256": "642d000ad3cbf7526625e0c4f4b6bb3bcec60e6eaba4bcff1bdb294a0d78dd3a",
+      "before_nonblank": 246,
+      "after_nonblank": 271,
+      "production_delta": 0,
+      "support_delta": 25,
+      "classification": "Entire cfg(test), movie-fixtures, macOS host module is support.",
+      "after_support_ranges_1based": [
+        [
+          1,
+          272
+        ]
+      ]
+    }
+  ],
+  "delta": {
+    "production": 0,
+    "support": 25,
+    "benchmark": 0
+  },
+  "counts": {
+    "production": 48152,
+    "support": 24456,
+    "benchmark": 105
+  },
+  "scope": "Focused generated native leading-gap test/rustdoc correction only. Disposal/trim and OCR excluded. Nonblank physical Rust lines including comments.",
+  "evidence": {
+    "run": 37620785861,
+    "job": 112790231021,
+    "sparse_trace_and_exact_pixels": "passed",
+    "delayed_decoded_trace": [
+      0,
+      0.1,
+      0.2,
+      0.3
+    ],
+    "leading_bounded_pixels": "pending exact native CI",
+    "first_following_branch": "source-reviewed; execution gap remains"
+  },
+  "checks": [
+    "Workspace cargo fmt --all -- --check and git diff --check passed; no native execution available locally. Previous exact a950 native compile/link and all preceding platform/core/alpha/mask tests passed before later leading-gap assertion failure."
+  ]
+}

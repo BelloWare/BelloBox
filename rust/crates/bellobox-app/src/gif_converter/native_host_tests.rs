@@ -168,7 +168,7 @@ fn generated_native_host_inspect_seek_trim_export_switch_identity_and_timing() {
     }
 }
 #[test]
-fn generated_native_host_short_sparse_long_and_first_following_seek_contract() {
+fn generated_native_host_short_sparse_long_and_leading_gap_seek_contract() {
     for timing in [
         GeneratedTiming::Short,
         GeneratedTiming::SparseLong,
@@ -187,7 +187,7 @@ fn generated_native_host_short_sparse_long_and_first_following_seek_contract() {
         let expected_pts = match timing {
             GeneratedTiming::Short => vec![0.],
             GeneratedTiming::SparseLong => vec![0., 130., 130.1],
-            GeneratedTiming::DelayedFirst => vec![0.1, 0.2, 0.3],
+            GeneratedTiming::DelayedFirst => vec![0., 0.1, 0.2, 0.3],
             GeneratedTiming::Regular => unreachable!(),
         };
         assert_eq!(original_pts, expected_pts);
@@ -238,8 +238,33 @@ fn generated_native_host_short_sparse_long_and_first_following_seek_contract() {
                 );
             }
             GeneratedTiming::DelayedFirst => {
+                // Writer session starts at0 and first submitted frame is0.1.
+                // Exact native CI returns an additional leading decoded PTS0;
+                // this fixture therefore does not exercise first-following.
                 let frame = seek(&mut controller, &model, 0.).unwrap();
-                assert!(frame.actual >= 0.099 && frame.actual <= 0.101);
+                assert_eq!(frame.actual, 0.);
+                let decoded = image::load_from_memory(&frame.png).unwrap().to_rgba8();
+                let mut frames = trace.into_iter();
+                let (_, width, height, leading) = frames.next().unwrap().into_parts();
+                let (_, first_width, first_height, first) = frames.next().unwrap().into_parts();
+                assert_eq!(decoded.dimensions(), (width, height));
+                assert_eq!((first_width, first_height), (width, height));
+                let mismatches = decoded
+                    .as_raw()
+                    .iter()
+                    .zip(&leading)
+                    .filter(|(actual, original)| actual != original)
+                    .count();
+                assert_eq!(mismatches, 0, "leading bounded/full-range pixels differ");
+                let repeats_first = leading == first;
+                let opaque_black = leading
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .all(|p| *p == [0, 0, 0, 255]);
+                eprintln!(
+                    "native leading-gap seek: writer begins0.1, reader begins0; bounded/full-range exact RGBA; leading repeats first={repeats_first}, opaque black={opaque_black}"
+                );
             }
             GeneratedTiming::Regular => unreachable!(),
         }

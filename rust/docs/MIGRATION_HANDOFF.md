@@ -897,3 +897,26 @@ Only the generated-only full-range trace and native host test are counted; the
 pending disposal/trim follow-up and isolated AI OCR staging are excluded. Exact
 source hashes and positive support spans are recorded in
 `validation/sparse-reader-2026-10-07/manifest.json`.
+
+### Proven sparse identity and leading-gap reader correction
+
+Exact `a95056a125b1d5fe17449f04ba0f03e69259da4d` passed Linux `37620785940`.
+Native `37620785861` / job `112790231021` now proves the sparse submitted
+0/130/130.1 trace and full RGBA equality: request 50 returns 48 with original PTS 0
+pixels; request 130.1 returns the original last frame exactly. The subsequent
+leading-gap assertion failed: a writer starting its session at 0 and submitting
+0.1/0.2/0.3 decodes an additional PTS 0 sample. Native build/packaging stayed skipped.
+
+The focused follow-up requires the observed exact decoded 0/0.1/0.2/0.3 trace and
+compares bounded seek 0 against full-range frame 0 timestamp, dimensions and every
+RGBA byte. Whether its leading pixels repeat the first coded sample or are opaque
+black is diagnostic only until observed. The misleading first-following test name
+and sparse-unavailability rustdoc are corrected. Actual first-following algorithm
+branch execution remains an explicit coverage gap; production decoding is unchanged.
+New leading-pixel proof remains pending exact native CI.
+
+This adds 25 test/support nonblank Rust lines, with no production/benchmark delta:
+**48,152 production / 24,456 support / 105 benchmark**. The existing production
+rustdoc replaces one line with one line. Exact source hashes/classification are in
+`validation/leading-gap-2026-10-07/manifest.json`. Disposal/trim and OCR work remain
+separately attributed. See `native-movie-sparse-reader.md` for the complete evidence.

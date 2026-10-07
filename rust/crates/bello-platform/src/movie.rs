@@ -220,7 +220,7 @@ impl PartialEq for SelectedMovie {
 }
 /// Paused source-frame request, independent of export's fps/0.05–120s limits.
 /// Reads at most two seconds before the requested time and 250ms after it.
-/// Sparse streams outside that bounded window explicitly return FrameUnavailable.
+/// FrameUnavailable means no acceptable reader sample; coded gaps may be filled.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MovieSeek {
     seconds: f64,
