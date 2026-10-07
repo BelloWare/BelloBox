@@ -2,8 +2,8 @@ use super::*;
 use std::{
     collections::VecDeque,
     sync::{
-        Condvar, Mutex,
         atomic::{AtomicBool, AtomicU8, Ordering},
+        Condvar, Mutex,
     },
     time::Duration,
 };
@@ -247,7 +247,7 @@ pub(super) struct Callbacks(Arc<(Mutex<usize>, Condvar)>);
 pub(super) struct CallbackTicket(Callbacks);
 impl Callbacks {
     pub fn ticket(&self) -> CallbackTicket {
-        *self.0.0.lock().unwrap_or_else(|e| e.into_inner()) += 1;
+        *self.0 .0.lock().unwrap_or_else(|e| e.into_inner()) += 1;
         CallbackTicket(self.clone())
     }
     pub fn wait(&self) {
@@ -260,7 +260,7 @@ impl Callbacks {
 }
 impl Drop for CallbackTicket {
     fn drop(&mut self) {
-        *self.0.0.0.lock().unwrap_or_else(|e| e.into_inner()) -= 1;
-        self.0.0.1.notify_all();
+        *self.0 .0 .0.lock().unwrap_or_else(|e| e.into_inner()) -= 1;
+        self.0 .0 .1.notify_all();
     }
 }

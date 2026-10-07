@@ -24,7 +24,7 @@ pub use output::SaveControl;
 use std::{
     fmt,
     path::{Path, PathBuf},
-    sync::{Arc, atomic::AtomicBool},
+    sync::{atomic::AtomicBool, Arc},
 };
 
 pub const NATIVE_RECORDING_IMPLEMENTED: bool = false;

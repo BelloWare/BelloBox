@@ -7,7 +7,7 @@ use super::{
 use std::{
     fs,
     io::Write,
-    sync::{Mutex, atomic::Ordering, mpsc},
+    sync::{atomic::Ordering, mpsc, Mutex},
     time::{Duration, Instant},
 };
 static SERIAL: Mutex<()> = Mutex::new(());
@@ -422,10 +422,9 @@ fn native_generated_writer_finalizes_and_same_owned_token_decodes() {
         assert!((frame.presentation_seconds() - index as f64 / 10.).abs() < 0.002);
     }
     let (_, _, _, last) = frames.pop().unwrap().into_parts();
-    assert!(
-        last.chunks_exact(4)
-            .all(|pixel| pixel[0] > 220 && pixel[1] < 35 && pixel[2] > 220 && pixel[3] == 255)
-    );
+    assert!(last
+        .chunks_exact(4)
+        .all(|pixel| pixel[0] > 220 && pixel[1] < 35 && pixel[2] > 220 && pixel[3] == 255));
     drained(&handle.control());
 }
 
@@ -560,12 +559,10 @@ fn save_refuses_existing_symlink_without_touching_source_or_target() {
         Err(RecordingError::AlreadyExists)
     );
     movie.verify().unwrap();
-    assert!(
-        fs::symlink_metadata(&alias)
-            .unwrap()
-            .file_type()
-            .is_symlink()
-    );
+    assert!(fs::symlink_metadata(&alias)
+        .unwrap()
+        .file_type()
+        .is_symlink());
 }
 
 #[cfg(target_os = "macos")]

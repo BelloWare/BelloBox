@@ -6,15 +6,15 @@ use super::{
     *,
 };
 use block2::RcBlock;
-use objc2::{AnyThread, rc::Retained, runtime::AnyObject};
+use objc2::{rc::Retained, runtime::AnyObject, AnyThread};
 use objc2_av_foundation::{
     AVAssetWriter, AVAssetWriterInput, AVAssetWriterStatus, AVFileTypeQuickTimeMovie,
     AVMediaTypeVideo, AVVideoCodecKey, AVVideoCodecTypeH264, AVVideoHeightKey, AVVideoWidthKey,
 };
 use objc2_core_foundation::CFRetained;
 use objc2_core_media::{
-    CMSampleBuffer, CMSampleTimingInfo, CMTime, CMVideoFormatDescription,
-    CMVideoFormatDescriptionCreateForImageBuffer, kCMTimeInvalid,
+    kCMTimeInvalid, CMSampleBuffer, CMSampleTimingInfo, CMTime, CMVideoFormatDescription,
+    CMVideoFormatDescriptionCreateForImageBuffer,
 };
 use objc2_core_video::*;
 use objc2_foundation::{NSDictionary, NSNumber, NSString, NSURL};
@@ -23,8 +23,8 @@ use std::{
     ptr::{self, NonNull},
     rc::Rc,
     sync::{
-        Arc,
         atomic::{AtomicBool, Ordering},
+        Arc,
     },
     time::{Duration, Instant},
 };
