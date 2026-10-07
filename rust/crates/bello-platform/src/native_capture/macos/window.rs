@@ -42,18 +42,18 @@ extern "C" {
 }
 #[link(name = "CoreFoundation", kind = "framework")]
 extern "C" {
-    fn CFGetTypeID(value: Id) -> usize;
+    fn CFGetTypeID(value: *const c_void) -> usize;
     fn CFArrayGetTypeID() -> usize;
     fn CFDictionaryGetTypeID() -> usize;
     fn CFNumberGetTypeID() -> usize;
     fn CFStringGetTypeID() -> usize;
     fn CFArrayGetCount(array: Id) -> isize;
     fn CFArrayGetValueAtIndex(array: Id, index: isize) -> Id;
-    fn CFDictionaryGetValue(dictionary: Id, key: Id) -> Id;
-    fn CFNumberGetValue(number: Id, kind: isize, value: *mut c_void) -> u8;
-    fn CFStringGetLength(string: Id) -> isize;
+    fn CFDictionaryGetValue(dictionary: *const c_void, key: *const c_void) -> Id;
+    fn CFNumberGetValue(number: *const c_void, kind: isize, value: *mut c_void) -> u8;
+    fn CFStringGetLength(string: *const c_void) -> isize;
     fn CFStringGetBytes(
-        string: Id,
+        string: *const c_void,
         range: CfRange,
         encoding: u32,
         loss_byte: u8,

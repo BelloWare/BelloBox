@@ -60,11 +60,16 @@ Full local Apple Cargo checking is blocked by the existing offline source-cache
 limit. A separate metadata-only rustc/Clippy check compiled the actual native and
 policy modules/tests against cached Apple-target dependencies, without fake SDK
 or framework shims. This is not Cargo/SDK linking or native execution evidence.
-Six new native fixtures cover bounded metadata, CGRect ABI, Rust-only state,
-PNG ownership and stale finalization; they have only been type-checked locally.
-The existing GitHub macOS workflow will compile/link and execute those synthetic
-tests, including the unchanged retained-image/dispatch tests. None invokes SCK
-capture or requests permission.
+The first exact-commit macOS run for `79c55f1` compiled and linked all native test
+targets. Five of six new Window fixtures passed, along with all six existing movie
+fixtures and the retained-image/dispatch tests. One final-validation fixture used
+owner PID 4 as a replacement, accidentally matching its own-process exclusion; it
+correctly received IneligibleWindow instead of the fixture's expected WindowChanged.
+The repair distinguishes foreign-PID replacement, own-PID exclusion and stale
+generation. It also matches the existing const-input Core Foundation declarations,
+removing duplicate-declaration warnings. The repaired actual modules pass the
+Apple-target metadata-only strict Clippy check; native rerun remains pending.
+None of these fixtures invokes SCK capture or requests permission.
 
 Actual SCK lifetime, main-loop delivery, TCC, pixels/cursor/shadow/alpha, display
 changes, minimize/close/resize races and protected-content behavior remain runtime

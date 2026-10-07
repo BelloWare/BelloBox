@@ -288,7 +288,11 @@ fn final_window_validation_moves_png_once_and_binds_source_diagnostics() {
 }
 #[test]
 fn final_window_validation_rejects_live_generation_and_fresh_window_changes() {
-    for changed_generation in [false, true] {
+    for (changed_generation, fresh_owner, expected) in [
+        (false, 5, WindowPolicyError::WindowChanged),
+        (false, 4, WindowPolicyError::IneligibleWindow),
+        (true, 3, WindowPolicyError::StaleSelection),
+    ] {
         let (target, topology, mut fresh) = fixture();
         let job = WindowJob::new(target.request.cancellation.clone(), Duration::from_secs(1));
         assert!(job.transition(Stage::InitialContent, Stage::Validating));
@@ -302,7 +306,7 @@ fn final_window_validation_rejects_live_generation_and_fresh_window_changes() {
                 })
                 .unwrap();
         } else {
-            fresh[0].identity.owner_process_id += 1;
+            fresh[0].identity.owner_process_id = fresh_owner;
         }
         let mut png = vec![1, 2, 3];
         let error = complete_validated(
@@ -314,14 +318,7 @@ fn final_window_validation_rejects_live_generation_and_fresh_window_changes() {
             &job,
         )
         .unwrap_err();
-        assert_eq!(
-            error,
-            WindowCaptureError::Policy(if changed_generation {
-                WindowPolicyError::StaleSelection
-            } else {
-                WindowPolicyError::WindowChanged
-            })
-        );
+        assert_eq!(error, WindowCaptureError::Policy(expected));
         assert_eq!(png, vec![1, 2, 3]);
         assert!(job.complete(Err(error)));
         assert!(job.wait().is_err());
