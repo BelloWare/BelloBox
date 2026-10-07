@@ -32,3 +32,19 @@ for this checkpoint. Exact CI results must be recorded before claiming the corpu
 passes. Linux compilation excludes the module and cannot validate these bindings.
 Even a passing corpus does not establish ICC/HDR, capture fidelity, native UI,
 TCC/Spaces/focus behavior or production Window enablement. All capture gates remain.
+
+## First native result
+
+At `adb877e58dd65370a8fdcfd1617cdcc68a041aa1`, Linux CI
+[37571312929](https://github.com/BelloWare/BelloBox/actions/runs/37571312929) passed.
+Native macOS [37571312948](https://github.com/BelloWare/BelloBox/actions/runs/37571312948)
+compiled and linked all test targets, then exposed a genuine strict resampling
+mismatch: frozen 2×3, shape 1×2, pixel (0,1), CoreGraphics alpha 17 versus portable
+60. Same-size exhaustive alpha, palette, RGB-alpha and incompatible-size tests
+passed; the successful-RGB diagnostic step was skipped after that failure.
+
+The resize oracle now collects all bounded corpus mismatches before its final
+strict assertion, to determine the native axis/tie pattern before changing the
+portable sampler. This neither introduces a tolerance nor ignores a failing case.
+Production enablement remains blocked. No general alpha/sampling equivalence claim
+is made while this mismatch remains unresolved.

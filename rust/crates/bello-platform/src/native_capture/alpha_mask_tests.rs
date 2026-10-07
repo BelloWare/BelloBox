@@ -281,7 +281,18 @@ fn native_alpha_all_65536_same_size_alpha_pairs_match_exactly() {
 #[test]
 fn native_alpha_one_pixel_resize_matches_exact_sampling_on_both_axes() {
     worker(|| {
-        for (width, height) in [(1_u32, 2_u32), (2, 3), (3, 2), (4, 5), (5, 4), (8, 7)] {
+        let mut mismatches = Vec::new();
+        for (width, height) in [
+            (1_u32, 2_u32),
+            (2, 1),
+            (1, 3),
+            (3, 1),
+            (2, 3),
+            (3, 2),
+            (4, 5),
+            (5, 4),
+            (8, 7),
+        ] {
             let context = context(width, height);
             for sw in width.saturating_sub(1).max(1)..=width + 1 {
                 for sh in height.saturating_sub(1).max(1)..=height + 1 {
@@ -299,13 +310,29 @@ fn native_alpha_one_pixel_resize_matches_exact_sampling_on_both_axes() {
                     let reference =
                         decode_native(&swift_mask(&frozen.image, &shape.image).unwrap());
                     let actual = portable_mask(frozen.document(), shape.document(), context);
-                    compare_alpha(
-                        &format!("frozen={width}x{height}, shape={sw}x{sh}, shape alpha=(17+29*x+43*y)%256"),
-                        &reference, &actual,
-                    );
+                    assert_eq!(actual.dimensions(), reference.dimensions());
+                    let expected = reference.render_rgba().unwrap();
+                    let actual = actual.render_rgba().unwrap();
+                    let differences: Vec<_> = expected
+                        .enumerate_pixels()
+                        .filter_map(|(x, y, native)| {
+                            let portable = actual.get_pixel(x, y);
+                            (native[3] != portable[3]).then_some((x, y, native[3], portable[3]))
+                        })
+                        .collect();
+                    if !differences.is_empty() {
+                        mismatches.push(format!("frozen={width}x{height}, shape={sw}x{sh}, (x,y,native,portable)={differences:?}"));
+                    }
                 }
             }
         }
+        // Evaluate the whole bounded corpus before failing. This preserves exact
+        // assertions and exposes axis/tie behavior instead of just the first pixel.
+        assert!(
+            mismatches.is_empty(),
+            "exact native sampling mismatches (shape alpha=(17+29*x+43*y)%256):\n{}",
+            mismatches.join("\n")
+        );
     });
 }
 
