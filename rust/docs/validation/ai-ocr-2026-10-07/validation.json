@@ -1,0 +1,47 @@
+{
+  "verified_utc": "2026-10-07T14:29:34.892611+00:00",
+  "candidate_1": {
+    "binary_sha256": "4a4cf2f4f55ea798292674be4c0cbefc6f57b100024b2e439d7c1da3c2c78e53",
+    "original_screenshots": 64,
+    "scope": "Broad popup/Area/fixed-generated Window/transport recovery and converter checks; three UI findings documented."
+  },
+  "candidate_2": {
+    "binary_sha256": "136076adc9c0d3f21ca967102efc2f20e49ef5cfab02b66c12c1f0a0b8346af5",
+    "binary_size": 142435240,
+    "source_input_count": 181,
+    "original_screenshots": 19,
+    "scope": "Affected Save caption/lifecycle, inline warnings/status, same-process delayed HTTP close/drain, actual minimum640\u00d7440 focus/scroll/cancel and fresh reopen.",
+    "compiled_source_unchanged_through_gui": true
+  },
+  "original_image_validation": "All83 original JPEG byte lengths and SHA256 verified; no image edits. Screenshot70 is an unchanged-size attempt, not minimum-size proof.",
+  "empty_scoped_runtime_logs": {
+    "app-popup.log": 0,
+    "app-area.log": 0,
+    "app-window.log": 0,
+    "candidate2-app-popup.log": 0,
+    "candidate2-app-window.log": 0
+  },
+  "ocr_staging_files_remaining": 0,
+  "local_checks": "candidate2-local-checks.json",
+  "candidate_reports": [
+    "candidate-1-report.md",
+    "QA-report.md"
+  ],
+  "published_ocr_ci": "Pending parent publication. Local green checks and actual CUA do not establish exact published CI.",
+  "limits": [
+    "Ordinary uploads, real credentials, native capture and Area/Window production gates remain false.",
+    "Generated fixed Window frame does not exercise native catalog, extraction, capture or refresh.",
+    "No paid-provider OCR quality, live credential disconnect, native macOS runtime or GPU-byte measurement claim."
+  ],
+  "retained_here_screenshots": 53,
+  "previously_published_converter_screenshots": 6,
+  "local_only_transient_screenshots": 24,
+  "capture_chronology": "all-captures-index.json",
+  "post_gui_fixture_delta": "post-gui-fixture-normalization/source-delta.json",
+  "publication_source_inputs": "source-inputs-publication.json",
+  "post_gui_checks": {
+    "transport_tests": 12,
+    "strict_app_clippy": "passed",
+    "workspace_format": "passed"
+  }
+}

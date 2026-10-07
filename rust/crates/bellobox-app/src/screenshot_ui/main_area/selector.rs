@@ -2,6 +2,9 @@
 //! pixels and the coordinator remain owned throughout the inline editing phase.
 use super::*;
 
+#[cfg(any(debug_assertions, test))]
+pub(super) mod ai_fixture;
+
 use bellobox_core::screenshot::window::{
     FrozenWindowCommit, FrozenWindowCommitToken, FrozenWindowPhase, FrozenWindowSession,
 };
@@ -24,6 +27,9 @@ use std::{
 pub(super) enum Selection {
     Area(FrozenAreaSession),
 
+    #[cfg(any(debug_assertions, test))]
+    AiFixture(ai_fixture::Selection),
+
     Window(
         FrozenWindowSession,
         Arc<super::super::window_workflow::Source>,
@@ -33,6 +39,8 @@ impl Selection {
     fn preview_rect(&self) -> Option<Rect> {
         match self {
             Self::Area(area) => area.preview_rect(),
+            #[cfg(any(debug_assertions, test))]
+            Self::AiFixture(fixture) => fixture.preview_rect(),
 
             Self::Window(window, _) => window.preview_rect(),
         }
@@ -40,6 +48,8 @@ impl Selection {
     fn begin(&mut self, point: Point, display: AreaDisplayGeometry) -> Result<(), String> {
         match self {
             Self::Area(area) => area.begin_drag(point, display).map_err(|e| e.to_string()),
+            #[cfg(any(debug_assertions, test))]
+            Self::AiFixture(fixture) => fixture.begin(point, display),
 
             Self::Window(window, _) => window
                 .begin_press(point, display)
@@ -52,6 +62,8 @@ impl Selection {
                 area.update_drag(point, display).map_err(|e| e.to_string())
             }
             Self::Area(_) => Ok(()),
+            #[cfg(any(debug_assertions, test))]
+            Self::AiFixture(fixture) => fixture.movement(point, display),
 
             Self::Window(window, _) => window.hover(point, display).map_err(|e| e.to_string()),
         }
@@ -67,6 +79,8 @@ impl Selection {
                 .map(|c| c.map(Commit::Area))
                 .map_err(|e| e.to_string()),
             Self::Area(_) => Ok(None),
+            #[cfg(any(debug_assertions, test))]
+            Self::AiFixture(fixture) => fixture.end(point, display),
 
             Self::Window(window, source) if window.phase() == FrozenWindowPhase::Pressed => window
                 .end_press(point, display)
@@ -82,6 +96,8 @@ impl Selection {
                 let _ = editor;
                 area.phase() == AreaPhase::Committed && area.validate_topology(display).is_ok()
             }
+            #[cfg(any(debug_assertions, test))]
+            Self::AiFixture(fixture) => fixture.accepts(editor, display),
 
             Self::Window(window, _) => editor
                 .token
@@ -92,6 +108,9 @@ impl Selection {
 enum Commit {
     Area(AreaSelection),
 
+    #[cfg(any(debug_assertions, test))]
+    AiFixture(ai_fixture::Commit),
+
     Window(
         FrozenWindowCommit,
         Arc<super::super::window_workflow::Source>,
@@ -101,6 +120,9 @@ struct PreparedEditor {
     session: ScreenshotEditSession,
     fixed_frame: Option<Rect>,
 
+    #[cfg(any(debug_assertions, test))]
+    fixture: Option<ai_fixture::Authority>,
+
     token: Option<FrozenWindowCommitToken>,
 
     refresh: Option<super::super::window_refresh::Request>,
@@ -109,6 +131,8 @@ impl Commit {
     fn rect(&self) -> Rect {
         match self {
             Self::Area(area) => area.selection_local_points,
+            #[cfg(any(debug_assertions, test))]
+            Self::AiFixture(fixture) => fixture.rect(),
 
             Self::Window(window, _) => window.candidate().frame_local_points,
         }
@@ -120,10 +144,16 @@ impl Commit {
                 session: super::super::prepare_session(area.editor),
                 fixed_frame: None,
 
+                #[cfg(any(debug_assertions, test))]
+                fixture: None,
+
                 token: None,
 
                 refresh: None,
             }),
+
+            #[cfg(any(debug_assertions, test))]
+            Self::AiFixture(fixture) => fixture.prepare(),
 
             Self::Window(commit, source) => {
                 let fixed_frame = commit.candidate().frame_local_points;
@@ -146,6 +176,8 @@ impl Commit {
                 Ok(PreparedEditor {
                     session: super::super::prepare_session(session),
                     fixed_frame: Some(fixed_frame),
+                    #[cfg(any(debug_assertions, test))]
+                    fixture: None,
                     token: Some(token),
                     refresh,
                 })
@@ -343,6 +375,12 @@ impl MainAreaSelector {
                 return Err(host::OverlayError::NavigationChanged.to_string());
             }
             self.presented = true;
+            #[cfg(any(debug_assertions, test))]
+            if let Some(Selection::AiFixture(fixture)) = self.selection.as_mut()
+                && let Some(commit) = fixture.fixed_window_commit()
+            {
+                self.prepare_editor(commit, window, cx);
+            }
             cx.notify();
             return Ok(());
         }
@@ -501,6 +539,9 @@ impl MainAreaSelector {
                 return;
             }
         };
+        self.prepare_editor(selection, window, cx);
+    }
+    fn prepare_editor(&mut self, selection: Commit, window: &mut Window, cx: &mut Context<Self>) {
         self.locked = Some(selection.rect());
         lock_selection(self.id, cx);
         self.preparing_editor = true;
@@ -573,7 +614,8 @@ fn editor_prepared(
                             ..Default::default()
                         };
                         view.editor = Some(cx.new(|cx| {
-                            super::super::ScreenshotEditor::new_with_inline(
+                            #[allow(unused_mut)]
+                            let mut editor = super::super::ScreenshotEditor::new_with_inline(
                                 prepared.session,
                                 if prepared.fixed_frame.is_some() {
                                     "Window · frozen pixels"
@@ -584,7 +626,19 @@ fn editor_prepared(
                                 Some(inline),
                                 window,
                                 cx,
-                            )
+                            );
+                            #[cfg(any(debug_assertions, test))]
+                            if let Some(fixture) = prepared.fixture {
+                                editor
+                                    .install_ai_fixture(fixture.authority, fixture.permit)
+                                    .expect("validated generated-image authority");
+                                editor.source = if prepared.fixed_frame.is_some() {
+                                    "Window · supplied generated frame"
+                                } else {
+                                    "Area · supplied generated pixels"
+                                };
+                            }
+                            editor
                         }));
                         discard(id, view.selection.take(), cx);
                         view.preparing_editor = false;

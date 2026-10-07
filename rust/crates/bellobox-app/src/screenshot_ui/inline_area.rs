@@ -104,6 +104,28 @@ pub(super) fn toolbar_frame(selection: Rect, bounds: Rect) -> Rect {
     y = y.max(bounds.y + 12.).min(bounds.bottom() - height - 12.);
     Rect::new(x, y, width, height)
 }
+/// Status is editor chrome, never part of selection/canvas geometry. Keep its
+/// bounded, scrollable viewport on the free side of the fixed toolbar.
+pub(super) fn status_frame(toolbar: Rect, bounds: Rect, reader_visible: bool) -> Rect {
+    let height = 32.;
+    let below = toolbar.bottom() + 8.;
+    let y = if below + height <= bounds.bottom() - 12. {
+        below
+    } else {
+        toolbar.y - height - 8.
+    };
+    let right = if reader_visible {
+        bounds.right() - 305.
+    } else {
+        bounds.right() - 12.
+    };
+    Rect::new(
+        toolbar.x,
+        y.max(bounds.y + 12.),
+        toolbar.width.min((right - toolbar.x).max(80.)),
+        height,
+    )
+}
 impl ScreenshotEditor {
     pub(super) fn inline_visible_rect(&self) -> Rect {
         self.inline
@@ -166,6 +188,7 @@ impl ScreenshotEditor {
             return;
         }
         if self.export_busy
+            || self.ai_ocr.modal()
             || self.show_discard
             || self.open_menu.is_some()
             || self.color_target.is_some()
@@ -196,11 +219,8 @@ impl ScreenshotEditor {
             handle,
         });
         self.gesture = None;
-        // Pending OCR is no longer valid once the user starts changing its crop.
-        self.ocr_jobs.cancel();
-        self.ocr_busy = false;
-        self.ocr_content.invalidate();
-        self.ocr.update(cx, |e, cx| e.set_text(String::new(), cx));
+        // Pointer-down invalidates even when the draft is canceled without a revision.
+        self.invalidate_ocr_interaction(cx);
         cx.notify();
     }
     pub(super) fn update_selection_adjustment(
@@ -283,6 +303,7 @@ impl ScreenshotEditor {
         }
     }
     pub(super) fn retire_inline(&mut self, cx: &mut App) {
+        self.retire_ai_owner(cx);
         self.jobs.cancel();
         self.ocr_jobs.cancel();
         self.cancel_window_refresh();
@@ -331,12 +352,17 @@ impl ScreenshotEditor {
             .track_focus(&self.focus)
             .cursor(gpui::CursorStyle::Arrow)
             .capture_any_mouse_down(cx.listener(|this, _, window, cx| {
+                this.check_ai_result_authority(cx);
                 if !main_area::current(this.inline.as_ref().unwrap().id, window, cx) {
                     main_area::cancel(this.inline.as_ref().unwrap().id, cx);
                     cx.stop_propagation();
                 }
             }))
             .capture_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, window, cx| {
+                this.check_ai_result_authority(cx);
+                if this.ai_modal_key(event, window, cx) {
+                    return;
+                }
                 if !main_area::current(this.inline.as_ref().unwrap().id, window, cx) {
                     main_area::cancel(this.inline.as_ref().unwrap().id, cx);
                     cx.stop_propagation();
@@ -455,6 +481,14 @@ impl ScreenshotEditor {
                             .child(self.toolbar(false, p, cx).min_w(px(650.))),
                     )
                     .child(
+                        button("inline-reader", "Text Reader", p).on_click(cx.listener(
+                            |this, _, _, cx| {
+                                this.shows_ocr = !this.shows_ocr;
+                                cx.notify();
+                            },
+                        )),
+                    )
+                    .child(
                         icon_button("inline-copy", "doc.on.doc", false, p).on_click(
                             cx.listener(|this, _, window, cx| this.copy(false, window, cx)),
                         ),
@@ -476,12 +510,17 @@ impl ScreenshotEditor {
                     ),
             );
         if !self.status.is_empty() {
+            let status = status_frame(toolbar, bounds, self.shows_ocr);
             root = root.child(
                 div()
                     .absolute()
-                    .left(px(toolbar.x))
-                    .top(px((toolbar.bottom() + 8.).min(bounds.bottom() - 40.)))
-                    .w(px(toolbar.width))
+                    .id("inline-status")
+                    .debug_selector(|| "inline-status".into())
+                    .left(px(status.x))
+                    .top(px(status.y))
+                    .w(px(status.width))
+                    .h(px(status.height))
+                    .overflow_y_scroll()
                     .p(px(6.))
                     .rounded(px(5.))
                     .bg(p.surface)
@@ -545,6 +584,19 @@ impl ScreenshotEditor {
         if self.color_target.is_some() {
             root = root.child(self.color_panel(p, cx));
         }
+        if self.shows_ocr {
+            root = root.child(
+                div()
+                    .id("inline-text-reader")
+                    .absolute()
+                    .right(px(12.))
+                    .top(px(62.))
+                    .bottom(px(56.))
+                    .occlude()
+                    .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                    .child(self.reader(p, cx).h_full()),
+            );
+        }
         if self.export_busy {
             root = root.child(
                 div()
@@ -555,9 +607,12 @@ impl ScreenshotEditor {
                     .flex()
                     .items_center()
                     .justify_center()
-                    .child("Exporting the current screenshot…")
+                    .child(self.export_caption())
                     .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation()),
             );
+        }
+        if self.ai_ocr.modal() {
+            root = root.child(self.ai_confirmation(window, p, cx));
         }
         root
     }

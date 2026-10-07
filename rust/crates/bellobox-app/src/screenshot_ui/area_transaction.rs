@@ -3,7 +3,7 @@
 use bello_platform::macos_capture_overlay::OwnedWindowContext;
 use std::sync::{
     Arc,
-    atomic::{AtomicBool, Ordering},
+    atomic::{AtomicBool, AtomicUsize, Ordering},
 };
 
 /// Finish preflight before returning any mutation/restore plan. A hidden or
@@ -23,6 +23,15 @@ pub(super) fn preflight<H: Copy, E>(
         .collect())
 }
 
+/// A physical worker's count survives destruction of its caller. Drop only
+/// after the work and the last heavy owner have actually retired.
+pub(super) struct OwnedWorker(Arc<AtomicUsize>);
+impl Drop for OwnedWorker {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::AcqRel);
+    }
+}
+
 pub(super) struct AreaTransaction<H> {
     pub id: u64,
     pub generation: u64,
@@ -32,6 +41,7 @@ pub(super) struct AreaTransaction<H> {
     pub selector: Option<H>,
     pub cancellation: Arc<AtomicBool>,
     workers: usize,
+    owned_workers: Arc<AtomicUsize>,
     finishing: bool,
     frozen: bool,
 }
@@ -45,6 +55,7 @@ impl<H: Copy + Eq> AreaTransaction<H> {
             selector: None,
             cancellation: Arc::new(AtomicBool::new(false)),
             workers: 0,
+            owned_workers: Arc::new(AtomicUsize::new(0)),
             finishing: false,
             frozen: false,
         }
@@ -58,6 +69,14 @@ impl<H: Copy + Eq> AreaTransaction<H> {
     }
     pub fn finish(&mut self) {
         self.finishing = true;
+    }
+    #[cfg(test)]
+    pub fn owned_worker_count(&self) -> usize {
+        self.owned_workers.load(Ordering::Acquire)
+    }
+    pub fn owned_worker(&self) -> OwnedWorker {
+        self.owned_workers.fetch_add(1, Ordering::AcqRel);
+        OwnedWorker(self.owned_workers.clone())
     }
     pub fn start_worker(&mut self) {
         self.workers += 1;
@@ -95,7 +114,11 @@ impl<H: Copy + Eq> AreaTransaction<H> {
     /// Restoring promptly on cancel does not release the global capture lock
     /// while a worker or a retiring selector still owns heavy image resources.
     pub fn can_release(&self) -> bool {
-        self.finishing && self.workers == 0 && self.selector.is_none() && self.restore.is_empty()
+        self.finishing
+            && self.workers == 0
+            && self.owned_workers.load(Ordering::Acquire) == 0
+            && self.selector.is_none()
+            && self.restore.is_empty()
     }
 }
 
@@ -211,5 +234,27 @@ mod tests {
         assert!(!transaction.can_release());
         transaction.restore.clear();
         assert!(transaction.can_release());
+    }
+    #[test]
+    fn detached_physical_owner_prevents_release_until_its_actual_drop() {
+        let mut transaction = tx();
+        transaction.restore.clear();
+        let worker = transaction.owned_worker();
+        transaction.cancel();
+        let (release, wait) = std::sync::mpsc::channel();
+        let (finished, completion) = std::sync::mpsc::channel();
+        // Dropping the caller's JoinHandle does not retire the physical owner.
+        drop(std::thread::spawn(move || {
+            wait.recv().unwrap();
+            drop(worker);
+            finished.send(()).unwrap();
+        }));
+        assert!(!transaction.can_release());
+        release.send(()).unwrap();
+        completion.recv().unwrap();
+        assert!(
+            transaction.can_release(),
+            "no UI completion callback is required to retire the physical count"
+        );
     }
 }

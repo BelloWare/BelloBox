@@ -1,3 +1,5 @@
+pub mod image_ocr;
+
 use bellobox_core::ai::{Config, Provider, Request, SseDecoder, StreamEvent};
 use std::io::Read;
 

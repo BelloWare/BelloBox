@@ -799,6 +799,36 @@ fn begin_supplied_prepared(
     Ok(())
 }
 
+/// Physical AI ownership is RAII-counted independently of a live editor or UI
+/// callback. Completion only asks the coordinator to reevaluate its release.
+pub(super) struct OwnedEditorWork {
+    id: u64,
+    worker: super::area_transaction::OwnedWorker,
+}
+impl OwnedEditorWork {
+    pub fn id(&self) -> u64 {
+        self.id
+    }
+    pub fn finish(self) {
+        drop(self.worker);
+    }
+}
+pub(super) fn begin_owned_editor_work(id: u64, cx: &mut App) -> Option<OwnedEditorWork> {
+    // Logical admission is checked by the caller. Native cancellation can flip
+    // between that check and acquisition, so an admitted owner's retirement
+    // must still attach to its matching active transaction after cancellation.
+    let run = active_mut(id, cx)?;
+    Some(OwnedEditorWork {
+        id,
+        worker: run.transaction.owned_worker(),
+    })
+}
+pub(super) fn owned_editor_work_drained(id: Option<u64>, cx: &mut App) {
+    if let Some(id) = id {
+        finish_if_ready(id, cx);
+    }
+}
+
 /// Every inline preview/OCR/export future is counted through physical completion,
 /// independently of the selector's entity lifetime.
 pub(super) fn begin_editor_work(id: u64, cx: &mut App) -> Option<u64> {
@@ -868,4 +898,14 @@ fn prepare_window_supplied(
             })
         },
     )
+}
+
+/// Private generated-image OCR review, using the same owned inline host.
+#[cfg(debug_assertions)]
+pub(super) fn begin_ai_fixture(
+    window: &mut Window,
+    cx: &mut App,
+    fixed_window: bool,
+) -> Result<(), String> {
+    selector::ai_fixture::begin(window.window_handle(), cx, fixed_window)
 }

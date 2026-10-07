@@ -1,0 +1,65 @@
+{
+  "candidate_binary_sha256": "136076adc9c0d3f21ca967102efc2f20e49ef5cfab02b66c12c1f0a0b8346af5",
+  "captured_utc": "2026-10-07T13:52:51.306955+00:00",
+  "checks": [
+    {
+      "name": "focused",
+      "command": "cargo test --locked -j1 -p bellobox-app screenshot_ui::ai_ocr -- --test-threads=1",
+      "status": "passed",
+      "log_sha256": "8bad422d3e8a65c9eb94ffa1d642386991e3d449f5d04b3abe3559c9e8cc9d33",
+      "result": [
+        "    Finished `test` profile [unoptimized] target(s) in 13.91s",
+        "test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 269 filtered out; finished in 9.18s"
+      ]
+    },
+    {
+      "name": "tests",
+      "command": "cargo test --locked -j1 -p bellobox-app -- --test-threads=1",
+      "status": "passed",
+      "log_sha256": "b1b43aee4ba90c00fae2c34dd3179892a0c2c7a0a5f5fa13c52ff35b562c9400",
+      "result": [
+        "    Finished `test` profile [unoptimized] target(s) in 46.60s",
+        "test result: ok. 287 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 149.72s"
+      ]
+    },
+    {
+      "name": "clippy",
+      "command": "cargo clippy --locked -j1 -p bellobox-app -p bello-platform --all-targets --features bello-platform/movie-fixtures -- -D warnings",
+      "status": "passed",
+      "log_sha256": "373c67e2370b1c6f2683247276534339b456b872037c90584e88b7f82447a833",
+      "result": [
+        "    Finished `dev` profile [unoptimized] target(s) in 6.82s"
+      ]
+    },
+    {
+      "name": "minimal",
+      "command": "cargo check --locked -j1 -p bellobox-app --no-default-features",
+      "status": "passed",
+      "log_sha256": "16b873a2151d5e33a3c0c8c415944fc5cebd816c3ace0d3083f791e41647c829",
+      "result": [
+        "    Finished `dev` profile [unoptimized] target(s) in 2.48s"
+      ]
+    },
+    {
+      "name": "build",
+      "command": "cargo build --locked -j1 -p bellobox-app --bin bellobox",
+      "status": "passed",
+      "log_sha256": "7ce9f17e6d4f880b69339a8801c1daac48efd572caa9635e3c594171249941f1",
+      "result": [
+        "    Finished `dev` profile [unoptimized] target(s) in 9.86s"
+      ]
+    },
+    {
+      "name": "app-only-no-debug-assertions",
+      "command": "cargo rustc --locked -j1 -p bellobox-app --bin bellobox --tests --profile test --message-format=json -- -C debug-assertions=no --emit=link; exact returned artifact --test-threads=1",
+      "status": "passed",
+      "log_sha256": "6d3a0405b826792edae08d39f467bcb1e3e01eb037245a5e65cf9520dd204a62",
+      "artifact_sha256": "eaba6307ad0ad8072a053832e9205136ba2a9fadb62ead45f0dbb3a2b8be0799",
+      "result": [
+        "test result: ok. 279 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 133.22s"
+      ]
+    }
+  ],
+  "app_only_no_debug_assertions": "passed 279 tests; only app rustc overrides debug assertions, ordinary dependencies retain standard profile",
+  "published_ci": "pending parent publication"
+}

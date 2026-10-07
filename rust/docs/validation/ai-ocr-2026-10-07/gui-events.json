@@ -1,0 +1,17 @@
+[
+  {
+    "event": "popup-close-submitted",
+    "utc": "2026-10-07T13:17:44.532Z",
+    "binary_sha256": "4a4cf2f4f55ea798292674be4c0cbefc6f57b100024b2e439d7c1da3c2c78e53"
+  },
+  {
+    "event": "inline-area-close",
+    "utc": "2026-10-07T13:30:52.321Z",
+    "binary_sha256": "4a4cf2f4f55ea798292674be4c0cbefc6f57b100024b2e439d7c1da3c2c78e53"
+  },
+  {
+    "event": "candidate2-window-close",
+    "utc": "2026-10-07T14:27:02.307Z",
+    "binary_sha256": "136076adc9c0d3f21ca967102efc2f20e49ef5cfab02b66c12c1f0a0b8346af5"
+  }
+]

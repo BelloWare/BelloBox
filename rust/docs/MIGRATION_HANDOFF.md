@@ -954,3 +954,49 @@ identify the combined OCR candidate; this is not called a disposal-only build.
 See `preview-image-retirement.md` and `validation/preview-disposal-2026-10-07/`.
 The independent scoped delta is +15 production/+234 support: **48,167 production /
 24,690 support /105 benchmark**, over exact green `0041012`. OCR is excluded.
+
+### Immutable image OCR consent and editor workflow
+
+Normal-build core/controller/transport now retain one crop/mask-aware PNG, flatten
+transparent hidden RGB onto white before resize, and show those exact bytes before
+a single-use destination/model/options-bound approval. Ordinary settings edits
+preserve the approved old snapshot; explicit authority revocation blocks dispatch
+and adoption. Production upload admission still fails before configuration/key
+access, client construction or network. Local hints/hybrid regions remain visibly
+unavailable; existing environment credentials have no live revocation feed.
+
+The generated-only route binds exact image and authority owners to numeric
+loopback. It uses real provider-format builders/parser/HTTP with no proxy, redirect
+or retry, bounded sizes/deadlines and literal Text/Markdown. Explicit Copy/Save
+are the only output side effects; Save writes a private0600 stage and refuses
+overwrite. Gesture-start invalidation, Undo, replaced base, Cancel, window close
+and app shutdown cannot revive stale output. Closure-owned RAII capture counts
+survive dropped editors and Save awaiters through actual physical disposal.
+
+Candidate2 binary `136076adc9c0d3f21ca967102efc2f20e49ef5cfab02b66c12c1f0a0b8346af5`
+passed287 app tests,279 exact app-only no-debug tests, strict lints/minimal build
+and actual popup/Area/fixed-generated Window interaction. Three real desktop
+findings were repaired and rechecked: OCR Save caption, warning visibility and
+Window status overlap. Actual HTTP-in-flight edit/Undo and close/drain held the
+coordinator and suppressed late results. Actual640×440 modal navigation remained
+contained. Saved literal Markdown was43 bytes/mode0600 with exact verified hash.
+
+A final portability audit normalized nonblocking accepted fixture sockets before
+the existing bounded synchronous timeouts. This later support-only DEBUG/test
+delta is explicitly separate from candidate2 GUI inputs; source snapshots are
+retained. All12 transport tests, strict original app Clippy and format passed after
+that correction. Published OCR CI remains pending; prior native movie CI is not
+substituted for it. No capture, real-provider or credential gate was enabled.
+
+`validation/ai-ocr-2026-10-07/` retains53 meaningful unedited original screenshots;
+six converter originals are already in the disposal checkpoint. The complete
+83-capture index labels24 transient/redundant local-only frames, with no acceptance
+claim relying on omitted images. Both181-input GUI manifests, four pre-repair
+source snapshots, two post-GUI fixture snapshots, exact file proofs and scoped
+checks are preserved. Recording staging is separate and excluded.
+
+The19-file OCR Rust delta is **+1,886 production /+3,698 test-support /0 benchmark**,
+with no preserved-line category reclassification. Over exact green `26dd6ed`,
+totals are **50,053 production /28,388 support /105 benchmark**. Nonblank physical
+lines include comments; positive support ranges and every before/after source
+hash are in the LOC ledger. This is not a feature-completion percentage.

@@ -1,0 +1,32 @@
+{
+  "scope": "Post-GUI fixture-only accepted-socket normalization and deterministic Unix flags test. Production transport is unchanged; Linux accept already yields blocking descriptors. GUI candidate2 remains tied to its prior complete181-input manifest.",
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr/fixture.rs",
+      "candidate_2_sha256": "b12672ce63d73406a0f95cf037a48b81fb49a9406932568ebe8cf2c6ee1c37d0",
+      "snapshot": "fixture.rs.txt",
+      "after_sha256": "129efbdaa7f2e2cf4923dfd325aee1ec4c1d7116c63390d7b52d74e347f91c50"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr/tests.rs",
+      "candidate_2_sha256": "6dfbd23ab176a0a41a6cb6ab9c04f56e73e9d4f4611030af649fb6d8e83da8f0",
+      "snapshot": "tests.rs.txt",
+      "after_sha256": "ea3094337d8c6643adaf6a77e6ba339a23ab63ed19f8fd3159e73471904c0d2b"
+    }
+  ],
+  "checks": "12 focused image-transport tests, strict original app all-target Clippy and workspace format passed after correction. Initial timeout getter equality failed because kernel reports52ms for requested50ms; final test compares the configured kernel-canonical values without invented tolerance.",
+  "logs": [
+    {
+      "path": "/tmp/ocr-final-socket-tests.log",
+      "sha256": "88f6755ee3683778083df425014d5e9db102017f9c85482d783e116f89d4a518"
+    },
+    {
+      "path": "/tmp/ocr-final-original-clippy.log",
+      "sha256": "35bfc570bc89db7ec4f2f65c996be27159083cfa78aa74b6791801b2693296b2"
+    },
+    {
+      "path": "/tmp/ocr-final-original-format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

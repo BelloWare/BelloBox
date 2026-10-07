@@ -1,5 +1,5 @@
-//! Source-shaped Screenshot popup. All pixels remain local; AI OCR is deliberately
-//! unavailable until the original image-specific confirmation flow is ported.
+//! Source-shaped Screenshot popup with local OCR and image-specific AI consent.
+//! Ordinary provider upload remains gated before configuration or credential I/O.
 use crate::{
     session::SessionJobs,
     theme::{self, Palette},
@@ -16,6 +16,7 @@ use gpui::{
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};
 
+mod ai_ocr;
 #[cfg(debug_assertions)]
 mod area_capture;
 mod area_transaction;
@@ -190,6 +191,11 @@ pub(crate) fn area_navigation_changed(cx: &mut App) {
 
 pub fn open(cx: &mut App) {
     #[cfg(debug_assertions)]
+    if std::env::var("BELLOBOX_AI_OCR_FIXTURE").as_deref() == Ok("1") {
+        ai_ocr::open_fixture(cx);
+        return;
+    }
+    #[cfg(debug_assertions)]
     if std::env::var_os("BELLOBOX_WINDOW_FIXTURE").is_some() {
         area_capture::open_window_fixture(cx);
         return;
@@ -250,18 +256,31 @@ pub fn open(cx: &mut App) {
                 #[cfg(debug_assertions)]
                 if std::env::var_os("BELLOBOX_INLINE_AREA_FIXTURE").is_some()
                     || std::env::var_os("BELLOBOX_INLINE_WINDOW_FIXTURE").is_some()
+                    || matches!(
+                        std::env::var("BELLOBOX_AI_OCR_FIXTURE").as_deref(),
+                        Ok("area" | "window")
+                    )
                 {
                     chooser.busy = true;
                     chooser.status = "Selecting from supplied synthetic pixels…".into();
                     let requester = window.window_handle();
                     cx.defer(move |cx| {
                         let _ = requester.update(cx, |root, window, cx| {
-                            let result =
-                                if std::env::var_os("BELLOBOX_INLINE_WINDOW_FIXTURE").is_some() {
-                                    main_area::begin_window_fixture(window, cx)
-                                } else {
-                                    main_area::begin_fixture(window, cx)
-                                };
+                            let result = if matches!(
+                                std::env::var("BELLOBOX_AI_OCR_FIXTURE").as_deref(),
+                                Ok("area" | "window")
+                            ) {
+                                main_area::begin_ai_fixture(
+                                    window,
+                                    cx,
+                                    std::env::var("BELLOBOX_AI_OCR_FIXTURE").as_deref()
+                                        == Ok("window"),
+                                )
+                            } else if std::env::var_os("BELLOBOX_INLINE_WINDOW_FIXTURE").is_some() {
+                                main_area::begin_window_fixture(window, cx)
+                            } else {
+                                main_area::begin_fixture(window, cx)
+                            };
                             if let Err(error) = result
                                 && let Ok(chooser) = root.downcast::<CaptureChooser>()
                             {
@@ -629,6 +648,7 @@ struct ScreenshotEditor {
     rendering: bool,
     jobs: SessionJobs,
     ocr_jobs: SessionJobs,
+    ai_ocr: ai_ocr::Host,
     shows_ocr: bool,
     ocr_busy: bool,
     ocr_content: RevisionText,
@@ -778,6 +798,7 @@ impl ScreenshotEditor {
             rendering: false,
             jobs: SessionJobs::default(),
             ocr_jobs: SessionJobs::default(),
+            ai_ocr: ai_ocr::Host::new(cx),
             shows_ocr: false,
             ocr_busy: false,
             ocr_content: RevisionText::default(),
@@ -794,10 +815,13 @@ impl ScreenshotEditor {
             menu_index: 0,
             focus,
         };
+        view.watch_ai_owner(window, cx);
+        cx.on_release(|this, cx| this.ai_ocr.retire(cx)).detach();
         let weak = cx.entity().downgrade();
         if view.inline.is_none() {
             window.on_window_should_close(cx, move |window, cx| {
                 weak.update(cx, |this, cx| {
+                    this.ai_ocr.retire(cx);
                     if this.export_busy {
                         return false;
                     }
@@ -899,8 +923,7 @@ impl ScreenshotEditor {
             )
     }
     fn changed(&mut self, cx: &mut Context<Self>) {
-        self.ocr_jobs.cancel();
-        self.ocr_busy = false;
+        self.invalidate_ocr_interaction(cx);
         self.preview_revision = self.preview_revision.wrapping_add(1);
         self.preview_tiles.clear();
         self.ocr_content.invalidate();
@@ -1034,7 +1057,7 @@ impl ScreenshotEditor {
             self.cancel_inline_owner(cx);
             return;
         }
-        if self.show_discard || self.export_busy {
+        if self.show_discard || self.export_busy || self.ai_ocr.modal() {
             return;
         }
         if self.text_origin.is_some() {
@@ -1051,6 +1074,7 @@ impl ScreenshotEditor {
                 cx.notify();
                 return;
             }
+            self.invalidate_ocr_interaction(cx);
             self.text_origin = Some(point);
             self.text_draft.update(cx, |e, cx| {
                 e.set_text(String::new(), cx);
@@ -1071,6 +1095,7 @@ impl ScreenshotEditor {
             cx.notify();
             return;
         }
+        self.invalidate_ocr_interaction(cx);
         self.gesture = Some(Gesture {
             tool: self.tool,
             points: vec![point],
@@ -1187,6 +1212,7 @@ impl ScreenshotEditor {
         self.report(result, cx);
     }
     fn close(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.ai_ocr.retire(cx);
         if let Some(inline) = self.inline.as_ref() {
             main_area::cancel(inline.id, cx);
             return;
@@ -1388,7 +1414,7 @@ impl ScreenshotEditor {
         .detach();
     }
     fn read_text(&mut self, cx: &mut Context<Self>) {
-        if self.ocr_busy {
+        if self.ocr_busy || self.ai_ocr_busy() || self.ai_ocr.modal() {
             return;
         }
         let Some(snapshot) = self.prepare_output_snapshot(cx) else {
@@ -1424,6 +1450,7 @@ impl ScreenshotEditor {
                     this.ocr_busy = false;
                     match result {
                         Ok(text) => {
+                            this.clear_ai_result();
                             this.ocr_content = RevisionText {
                                 revision: Some(revision),
                                 text: text.clone(),
@@ -1445,6 +1472,9 @@ impl ScreenshotEditor {
         .detach();
     }
     fn key_down(&mut self, e: &gpui::KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        if self.ai_modal_key(e, window, cx) {
+            return;
+        }
         let key = e.keystroke.key.as_str();
         if self.export_busy {
             cx.stop_propagation();
@@ -1966,95 +1996,37 @@ impl ScreenshotEditor {
                     .on_mouse_up_out(MouseButton::Left, cx.listener(Self::mouse_up))
             })
     }
-    fn reader(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
-        let current = self.ocr_content.current(self.session.revision()).is_some();
-        div()
-            .w(px(285.))
-            .flex_none()
-            .flex()
-            .flex_col()
-            .gap(px(10.))
-            .p(px(10.))
-            .bg(p.surface)
-            .rounded(px(10.))
-            .border_1()
-            .border_color(p.separator)
-            .child(
-                div()
-                    .text_size(px(14.))
-                    .font_weight(gpui::FontWeight::SEMIBOLD)
-                    .child("Text Reader"),
-            )
-            .child(
-                div()
-                    .flex()
-                    .gap(px(8.))
-                    .child(
-                        button(
-                            "read-local",
-                            if self.ocr_busy {
-                                "Cancel"
-                            } else if cfg!(target_os = "macos") {
-                                "Read on Mac"
-                            } else {
-                                "Read Locally"
-                            },
-                            p,
-                        )
-                        .on_click(cx.listener(|this, _, _, cx| {
-                            if this.ocr_busy {
-                                this.ocr_jobs.cancel();
-                                this.ocr_busy = false;
-                                this.status =
-                                    "Local OCR canceled; its late result will be ignored.".into();
-                                cx.notify();
-                            } else {
-                                this.read_text(cx);
-                            }
-                        })),
-                    )
-                    .child(button("ai-ocr", "AI OCR…", p).opacity(0.4)),
-            )
-            .child(
-                div()
-                    .text_size(px(10.))
-                    .text_color(p.secondary)
-                    .child("AI OCR is not ported. No image is sent to a provider."),
-            )
-            .when(self.ocr_content.revision.is_some() && !current, |d| {
-                d.child(
-                    div()
-                        .text_size(px(11.))
-                        .text_color(p.danger)
-                        .child("The image changed. Read again before copying text."),
-                )
-            })
-            .child(
-                div()
-                    .flex_1()
-                    .min_h(px(130.))
-                    .rounded(px(8.))
-                    .bg(p.well)
-                    .p(px(8.))
-                    .child(self.ocr.clone()),
-            )
-            .child(
-                div()
-                    .flex()
-                    .gap(px(6.))
-                    .child(
-                        button("copy-ocr", "Copy Text", p)
-                            .opacity(if current { 1. } else { 0.4 })
-                            .on_click(cx.listener(|this, _, _, cx| {
-                                if let Some(text) =
-                                    this.ocr_content.current(this.session.revision())
-                                {
-                                    cx.write_to_clipboard(ClipboardItem::new_string(text.into()));
-                                }
-                            })),
-                    )
-                    .child(button("copy-markdown", "Markdown", p).opacity(0.4)),
-            )
+    fn reader(&self, p: Palette, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
+        let current = self.reader_text(false).is_some();
+        let markdown = self.reader_text(true).is_some();
+        div().id("ocr-reader-panel").min_h_0().overflow_y_scroll().w(px(285.)).flex_none().flex().flex_col().gap(px(8.)).p(px(10.))
+            .bg(p.surface).rounded(px(10.)).border_1().border_color(p.separator)
+            .child(div().text_size(px(14.)).font_weight(gpui::FontWeight::SEMIBOLD).child("Text Reader"))
+            .child(div().flex().gap(px(6.))
+                .child(button("read-local", if self.ocr_busy { "Cancel" } else if cfg!(target_os = "macos") { "Read on Mac" } else { "Read Locally" }, p)
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        if this.ocr_busy { this.ocr_jobs.cancel(); this.ocr_busy = false; this.status = "Local OCR canceled; its late result will be ignored.".into(); cx.notify(); }
+                        else { this.read_text(cx); }
+                    })))
+                .child(button("ai-ocr", if self.ai_ocr_busy() { "Cancel AI OCR" } else { "AI OCR…" }, p)
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        if this.ai_ocr_busy() { this.cancel_ai_ocr(window, cx); } else { this.request_ai_ocr(window, cx); }
+                    }))))
+            .child(self.fixture_controls(p, cx))
+            .child(div().text_size(px(10.)).text_color(p.secondary)
+                .child("AI upload requires a preview and explicit approval. Local hints and structured regions are unavailable."))
+            .when(markdown, |d| d.child(div().flex().gap(px(6.))
+                .child(button("ocr-show-text", "Text", p).on_click(cx.listener(|this, _, _, cx| this.refresh_reader_mode(false, cx))))
+                .child(button("ocr-show-markdown", "Markdown (literal)", p).on_click(cx.listener(|this, _, _, cx| this.refresh_reader_mode(true, cx))))))
+            .when(!self.reader_warnings().is_empty(), |d| d.child(div().id("ocr-result-warnings").debug_selector(|| "ocr-result-warnings".into()).flex_none().max_h(px(60.)).overflow_y_scroll().text_size(px(10.)).text_color(p.secondary).child(self.reader_warnings())))
+            .child(div().flex_1().min_h(px(100.)).rounded(px(8.)).bg(p.well).p(px(8.)).child(self.ocr.clone()))
+            .child(div().flex().flex_wrap().gap(px(6.))
+                .child(button("copy-ocr", "Copy Text", p).opacity(if current { 1. } else { 0.4 })
+                    .on_click(cx.listener(|this, _, _, cx| this.copy_reader(false, cx))))
+                .child(button("copy-markdown", "Copy Markdown", p).opacity(if markdown { 1. } else { 0.4 })
+                    .on_click(cx.listener(|this, _, _, cx| this.copy_reader(true, cx))))
+                .child(button("save-ocr", "Save…", p).opacity(if current { 1. } else { 0.4 })
+                    .on_click(cx.listener(|this, _, _, cx| this.save_reader(cx)))))
     }
     fn footer(&self, compact: bool, p: Palette, cx: &mut Context<Self>) -> gpui::Div {
         let navigation = div()
@@ -2142,6 +2114,7 @@ impl ScreenshotEditor {
 }
 impl Render for ScreenshotEditor {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        self.check_ai_result_authority(cx);
         if self.inline.is_some() {
             return self.render_inline(window, cx).into_any_element();
         }
@@ -2183,7 +2156,14 @@ impl Render for ScreenshotEditor {
             .text_color(p.primary)
             .font_family(theme::ui_font())
             .track_focus(&self.focus)
+            .capture_any_mouse_down(
+                cx.listener(|this, _, _, cx| this.check_ai_result_authority(cx)),
+            )
             .capture_key_down(cx.listener(|this, e: &gpui::KeyDownEvent, window, cx| {
+                this.check_ai_result_authority(cx);
+                if this.ai_modal_key(e, window, cx) {
+                    return;
+                }
                 if this.color_target.is_some()
                     && !this.color_input.read(cx).has_marked_text()
                     && matches!(e.keystroke.key.as_str(), "escape" | "enter")
@@ -2263,7 +2243,7 @@ impl Render for ScreenshotEditor {
                     .items_center()
                     .justify_center()
                     .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
-                    .child("Exporting the current screenshot…"),
+                    .child(self.export_caption()),
             );
         }
         if self.show_discard {
@@ -2317,6 +2297,9 @@ impl Render for ScreenshotEditor {
                             ),
                     ),
             );
+        }
+        if self.ai_ocr.modal() {
+            root = root.child(self.ai_confirmation(window, p, cx));
         }
         crate::desktop::perf("render_cpu", render_started.elapsed().as_micros());
         root.into_any_element()
@@ -3159,7 +3142,7 @@ impl ScreenshotEditor {
         position: ViewPoint<Pixels>,
         cx: &mut Context<Self>,
     ) {
-        if self.export_busy || self.show_discard {
+        if self.export_busy || self.show_discard || self.ai_ocr.modal() {
             return;
         }
         if id.is_some() && !self.commit_text(cx) {
@@ -3188,6 +3171,7 @@ impl ScreenshotEditor {
             };
             (origin, 260., self.style.font_size)
         };
+        self.invalidate_ocr_interaction(cx);
         self.gesture = None;
         self.selected = id;
         self.label_drag = Some(LabelDrag {

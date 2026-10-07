@@ -1,0 +1,25 @@
+{
+  "scope": "Three CUA-found UI repairs; capture geometry/transport unchanged",
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "candidate1_sha256": "d913abf8c2b5f9b7f8d27daa4141c9383f8bb200805e48291c9776d3461afca3",
+      "candidate2_sha256": "308d9fa0e39167fabba0cff06b18b87038eb7884c501690077822dae8a8d6e80"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/inline_area.rs",
+      "candidate1_sha256": "1c6e76fe9a7ec3e651f8ac2215584085859506853261b50a4ec8d005000a1abe",
+      "candidate2_sha256": "d5edd8b43539647678603ed91f7b7929e4b2d4f239cc29b63ff4c498558c23e0"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr.rs",
+      "candidate1_sha256": "cbe0d46496e26c284f7e6ab61447aa35d743842e44948e9467c81b693e48a7ae",
+      "candidate2_sha256": "ff918e3aabd83162bccc0915f8e2c7ced759c2cfae7bdb5f307d986e45d7ca98"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/tests.rs",
+      "candidate1_sha256": "1f5681b61e857140b0948776304bbf3cfddd9913e8d4b428d5b11996e475e847",
+      "candidate2_sha256": "b0c997f03e7ae2329ec8a50d0bd68cb1164d0ee864ee5e428186be7492fa2083"
+    }
+  ]
+}

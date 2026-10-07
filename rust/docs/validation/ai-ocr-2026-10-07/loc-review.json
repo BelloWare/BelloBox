@@ -1,0 +1,1034 @@
+{
+  "scope": "OCR-only core, bounded HTTP transport, image consent controller and supplied inline Area/Window host integration. Source-read-only review; no publication or feature-completion percentage.",
+  "baseline_count_checkpoint_commit": "26dd6ed9f0bbdc8a4107ea177cbce3003b77def7",
+  "baseline_count_checkpoint_mapping_status": "Exact published baseline verified against every before blob.",
+  "baseline_commit": "26dd6ed9f0bbdc8a4107ea177cbce3003b77def7",
+  "baseline_tree": "f0a78bd5f6cdc6e5a59bc50e7a6403f9371f79d8",
+  "baseline_counts": {
+    "production": 48167,
+    "support": 24690,
+    "benchmark": 105
+  },
+  "baseline_count_adjustment": "Published26dd6ed includes native corrections and disposal; no provisional counts.",
+  "counting_rule": "Reviewed nonblank physical Rust lines including comments. Positive cfg(test), cfg(debug_assertions), cfg(any(test,debug_assertions)) and test-constrained all(...) spans begin at attributes; preceding comments remain in their containing class. Whole inherited test/DEBUG modules and explicitly sealed generated-only support are support. Ordinary platform cfg, negative test/DEBUG alternatives, no-op production stubs and mixed production/support physical lines remain production. Benchmark/example scope is separate; no benchmark files changed.",
+  "reclassification_rule": "Per-file SequenceMatcher(autojunk=False) over stripped nonblank lines records literal preserved lines that cross categories. Reworked/reordered/cross-file moves count as addition/removal. Source hashes and positive1-based inclusive ranges permit independent verification; this is a scoped delta, not a universal cfg parser or whole-tree recount.",
+  "excluded_checkpoint_rust_paths": [
+    "rust/crates/bello-platform/src/movie.rs",
+    "rust/crates/bellobox-app/src/gif_converter.rs",
+    "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs",
+    "rust/crates/bellobox-app/src/gif_converter/preview.rs",
+    "rust/crates/bellobox-app/src/gif_converter/source_preview.rs",
+    "rust/crates/bellobox-app/src/gif_converter/disposal_tests.rs",
+    "rust/crates/bellobox-app/src/image_disposal.rs",
+    "rust/crates/bellobox-app/src/main.rs"
+  ],
+  "excluded_non_rust_changes": "Cargo.toml, Cargo.lock, documentation and evidence are outside Rust physical LOC. The Tokio edge changes no package version and is not counted.",
+  "review_status": "Final19-file OCR ledger includes reviewed UI repairs and post-GUI fixture-only blocking normalization with deterministic flags/canonical-timeout test. Production unchanged by this last correction.",
+  "benchmark_scope": {
+    "before": 105,
+    "delta": 0,
+    "after": 105,
+    "changed_files": []
+  },
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "before_sha256": "ac967e08e5c5856110b290d01453d0e965d18690b5f235f5115d59ac3e058c0a",
+      "after_sha256": "308d9fa0e39167fabba0cff06b18b87038eb7884c501690077822dae8a8d6e80",
+      "before_nonblank": 3627,
+      "after_nonblank": 3611,
+      "before_counts": {
+        "production": 3305,
+        "support": 322
+      },
+      "after_counts": {
+        "production": 3271,
+        "support": 340
+      },
+      "before_reviewed_support_ranges_1based": [
+        [
+          19,
+          20
+        ],
+        [
+          25,
+          26
+        ],
+        [
+          177,
+          180
+        ],
+        [
+          184,
+          185
+        ],
+        [
+          192,
+          206
+        ],
+        [
+          250,
+          276
+        ],
+        [
+          575,
+          579
+        ],
+        [
+          581,
+          595
+        ],
+        [
+          597,
+          600
+        ],
+        [
+          3412,
+          3661
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          20,
+          21
+        ],
+        [
+          26,
+          27
+        ],
+        [
+          178,
+          181
+        ],
+        [
+          185,
+          186
+        ],
+        [
+          193,
+          212
+        ],
+        [
+          256,
+          295
+        ],
+        [
+          594,
+          598
+        ],
+        [
+          600,
+          614
+        ],
+        [
+          616,
+          619
+        ],
+        [
+          3396,
+          3645
+        ]
+      ],
+      "production_delta": -34,
+      "support_delta": 18,
+      "added_production": 62,
+      "removed_production": 96,
+      "added_support": 20,
+      "removed_support": 2,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "ff918e3aabd83162bccc0915f8e2c7ced759c2cfae7bdb5f307d986e45d7ca98",
+      "before_nonblank": 0,
+      "after_nonblank": 1012,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 830,
+        "support": 182
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          5,
+          6
+        ],
+        [
+          13,
+          18
+        ],
+        [
+          24,
+          25
+        ],
+        [
+          38,
+          39
+        ],
+        [
+          72,
+          75
+        ],
+        [
+          107,
+          108
+        ],
+        [
+          120,
+          123
+        ],
+        [
+          141,
+          147
+        ],
+        [
+          163,
+          174
+        ],
+        [
+          191,
+          202
+        ],
+        [
+          224,
+          236
+        ],
+        [
+          253,
+          256
+        ],
+        [
+          281,
+          284
+        ],
+        [
+          310,
+          328
+        ],
+        [
+          332,
+          349
+        ],
+        [
+          426,
+          427
+        ],
+        [
+          451,
+          454
+        ],
+        [
+          587,
+          590
+        ],
+        [
+          595,
+          598
+        ],
+        [
+          611,
+          612
+        ],
+        [
+          648,
+          651
+        ],
+        [
+          750,
+          751
+        ],
+        [
+          762,
+          765
+        ],
+        [
+          897,
+          932
+        ],
+        [
+          971,
+          979
+        ]
+      ],
+      "production_delta": 830,
+      "support_delta": 182,
+      "added_production": 830,
+      "removed_production": 0,
+      "added_support": 182,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/test_support.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "01e162c83ca94e12d9afbb4c560716e949d4136445d9944beab6f96ff505ac37",
+      "before_nonblank": 0,
+      "after_nonblank": 133,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 0,
+        "support": 133
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          136
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 133,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 133,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": [
+        "Whole test/support module: inherited test/DEBUG or sealed generated-only entry; every nonblank physical line including comments is support."
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "b0c997f03e7ae2329ec8a50d0bd68cb1164d0ee864ee5e428186be7492fa2083",
+      "before_nonblank": 0,
+      "after_nonblank": 735,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 0,
+        "support": 735
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          754
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 735,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 735,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": [
+        "Whole test/support module: inherited test/DEBUG or sealed generated-only entry; every nonblank physical line including comments is support."
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_transaction.rs",
+      "before_sha256": "5bda0f0d31dc6f6b1570be55f15699a56e959cf18d17c1721fb23b791dd0fac4",
+      "after_sha256": "cb476c815c18152a48b0125dfb6a78b0ccfdd4be33e02111fb1bd0c0349bbd4e",
+      "before_nonblank": 212,
+      "after_nonblank": 256,
+      "before_counts": {
+        "production": 98,
+        "support": 114
+      },
+      "after_counts": {
+        "production": 116,
+        "support": 140
+      },
+      "before_reviewed_support_ranges_1based": [
+        [
+          102,
+          215
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          73,
+          76
+        ],
+        [
+          125,
+          260
+        ]
+      ],
+      "production_delta": 18,
+      "support_delta": 26,
+      "added_production": 20,
+      "removed_production": 2,
+      "added_support": 26,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/inline_area.rs",
+      "before_sha256": "78c7eeb4570ad29b25108c3032006b225c8dc76e4defcfb98d89d0af67037410",
+      "after_sha256": "d5edd8b43539647678603ed91f7b7929e4b2d4f239cc29b63ff4c498558c23e0",
+      "before_nonblank": 563,
+      "after_nonblank": 618,
+      "before_counts": {
+        "production": 563,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 618,
+        "support": 0
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [],
+      "production_delta": 55,
+      "support_delta": 0,
+      "added_production": 64,
+      "removed_production": 9,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "before_sha256": "a5684db684d1479c8e6389d0b4a052a73e93988b30f2c4fe7a63267bd620aaa6",
+      "after_sha256": "ef533bfefdfec28c8323294702cc805b36cc44a5015c0d9594b0b65105ac7aa3",
+      "before_nonblank": 862,
+      "after_nonblank": 900,
+      "before_counts": {
+        "production": 686,
+        "support": 176
+      },
+      "after_counts": {
+        "production": 716,
+        "support": 184
+      },
+      "before_reviewed_support_ranges_1based": [
+        [
+          6,
+          7
+        ],
+        [
+          67,
+          71
+        ],
+        [
+          301,
+          311
+        ],
+        [
+          412,
+          416
+        ],
+        [
+          684,
+          691
+        ],
+        [
+          701,
+          800
+        ],
+        [
+          827,
+          871
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          6,
+          7
+        ],
+        [
+          67,
+          71
+        ],
+        [
+          301,
+          311
+        ],
+        [
+          412,
+          416
+        ],
+        [
+          684,
+          691
+        ],
+        [
+          701,
+          800
+        ],
+        [
+          857,
+          901
+        ],
+        [
+          904,
+          911
+        ]
+      ],
+      "production_delta": 30,
+      "support_delta": 8,
+      "added_production": 30,
+      "removed_production": 0,
+      "added_support": 8,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "before_sha256": "ba944f22a8a2ec6d5c0693268f63ad3d78a06f76c9a2bc2f036065d13ee84e50",
+      "after_sha256": "0296eede7df55c9f19edc6fe6538ae5b3b4ee9abf7f433bfd7f865db32f681ac",
+      "before_nonblank": 712,
+      "after_nonblank": 760,
+      "before_counts": {
+        "production": 708,
+        "support": 4
+      },
+      "after_counts": {
+        "production": 713,
+        "support": 47
+      },
+      "before_reviewed_support_ranges_1based": [
+        [
+          727,
+          728
+        ],
+        [
+          730,
+          731
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          5,
+          6
+        ],
+        [
+          30,
+          31
+        ],
+        [
+          42,
+          43
+        ],
+        [
+          51,
+          52
+        ],
+        [
+          65,
+          66
+        ],
+        [
+          82,
+          83
+        ],
+        [
+          99,
+          100
+        ],
+        [
+          111,
+          112
+        ],
+        [
+          123,
+          124
+        ],
+        [
+          134,
+          135
+        ],
+        [
+          147,
+          148
+        ],
+        [
+          155,
+          156
+        ],
+        [
+          179,
+          180
+        ],
+        [
+          378,
+          383
+        ],
+        [
+          630,
+          640
+        ],
+        [
+          781,
+          782
+        ],
+        [
+          784,
+          785
+        ]
+      ],
+      "production_delta": 5,
+      "support_delta": 43,
+      "added_production": 7,
+      "removed_production": 2,
+      "added_support": 43,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/ai_fixture.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "be74479ab2ecf84c05d0295066b3e53bc60a8714a77b3f443065409220d8a060",
+      "before_nonblank": 0,
+      "after_nonblank": 186,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 0,
+        "support": 186
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          189
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 186,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 186,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": [
+        "Whole test/support module: inherited test/DEBUG or sealed generated-only entry; every nonblank physical line including comments is support."
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/ai_fixture/tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "db328ee217c1b00c81bbbee9854a7aa62571d08f5b01b7744b97116041169178",
+      "before_nonblank": 0,
+      "after_nonblank": 745,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 0,
+        "support": 745
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          758
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 745,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 745,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": [
+        "Whole test/support module: inherited test/DEBUG or sealed generated-only entry; every nonblank physical line including comments is support."
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport.rs",
+      "before_sha256": "798220cfe904125baa68dc64c50eb558bc39ff8220f6d2ecba3c8025e983b495",
+      "after_sha256": "0e5d8d4c709926f30fadac4a6f851ab62c3df902e172af81cdaa3f5d1ff584ae",
+      "before_nonblank": 155,
+      "after_nonblank": 156,
+      "before_counts": {
+        "production": 155,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 156,
+        "support": 0
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [],
+      "production_delta": 1,
+      "support_delta": 0,
+      "added_production": 1,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "944c1383a001c30ac215c6be4a1c0e8085b1610ac47187aadec97d14b5211966",
+      "before_nonblank": 0,
+      "after_nonblank": 202,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 175,
+        "support": 27
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          4,
+          7
+        ],
+        [
+          42,
+          56
+        ],
+        [
+          62,
+          63
+        ],
+        [
+          71,
+          72
+        ],
+        [
+          186,
+          189
+        ]
+      ],
+      "production_delta": 175,
+      "support_delta": 27,
+      "added_production": 175,
+      "removed_production": 0,
+      "added_support": 27,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr/fixture.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "129efbdaa7f2e2cf4923dfd325aee1ec4c1d7116c63390d7b52d74e347f91c50",
+      "before_nonblank": 0,
+      "after_nonblank": 532,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 0,
+        "support": 532
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          533
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 532,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 532,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": [
+        "Whole test/support module: inherited test/DEBUG or sealed generated-only entry; every nonblank physical line including comments is support."
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr/tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "ea3094337d8c6643adaf6a77e6ba339a23ab63ed19f8fd3159e73471904c0d2b",
+      "before_nonblank": 0,
+      "after_nonblank": 504,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 0,
+        "support": 504
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          508
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 504,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 504,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": [
+        "Whole test/support module: inherited test/DEBUG or sealed generated-only entry; every nonblank physical line including comments is support."
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot.rs",
+      "before_sha256": "c35ca06b5658c134f2c879ae9b7bc7768f89ebf616b32696e76a6d5f3aad1256",
+      "after_sha256": "56068e6077016a71e996b0fe17ab2b180cc8ddade88ae857103ab1c8e69f1cd8",
+      "before_nonblank": 1213,
+      "after_nonblank": 1214,
+      "before_counts": {
+        "production": 1211,
+        "support": 2
+      },
+      "after_counts": {
+        "production": 1212,
+        "support": 2
+      },
+      "before_reviewed_support_ranges_1based": [
+        [
+          12,
+          13
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          13,
+          14
+        ]
+      ],
+      "production_delta": 1,
+      "support_delta": 0,
+      "added_production": 1,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "5ea3f7ee7238652e29000882523f9552216f44518d52efdd6b19ac5a3f1bf55d",
+      "before_nonblank": 0,
+      "after_nonblank": 208,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 186,
+        "support": 22
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          6,
+          7
+        ],
+        [
+          67,
+          84
+        ],
+        [
+          93,
+          93
+        ],
+        [
+          138,
+          138
+        ]
+      ],
+      "production_delta": 186,
+      "support_delta": 22,
+      "added_production": 186,
+      "removed_production": 0,
+      "added_support": 22,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": [
+        "Explicit semantic support: lines67\u201384 DocumentBinding and source identity field/initializer at93/138 exist solely to seal generated-image fixture authority. Shared Arc/Weak import line stays production because it serves production Arc ownership too."
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr/request.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "f7ebd4b7eb613f2cfef25db9c780a013bc603cb50e1be5c7832a7e4ad45ee038",
+      "before_nonblank": 0,
+      "after_nonblank": 387,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 387,
+        "support": 0
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [],
+      "production_delta": 387,
+      "support_delta": 0,
+      "added_production": 387,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr/response.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "09d07ee7f78e96448a29ff43cdf9a095ece287e09d09fb4ea8a5970fcfa99997",
+      "before_nonblank": 0,
+      "after_nonblank": 232,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 232,
+        "support": 0
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [],
+      "production_delta": 232,
+      "support_delta": 0,
+      "added_production": 232,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": []
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr/tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "3e3061244a02b4445429bf6a6501f40e4969090c1989e613e06bc66cdf6cc2ae",
+      "before_nonblank": 0,
+      "after_nonblank": 537,
+      "before_counts": {
+        "production": 0,
+        "support": 0
+      },
+      "after_counts": {
+        "production": 0,
+        "support": 537
+      },
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          540
+        ]
+      ],
+      "production_delta": 0,
+      "support_delta": 537,
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 537,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "production_to_support": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support_preserved_ranges": [],
+      "classification_notes": [
+        "Whole test/support module: inherited test/DEBUG or sealed generated-only entry; every nonblank physical line including comments is support."
+      ]
+    }
+  ],
+  "totals": {
+    "production_delta": 1886,
+    "support_delta": 3698,
+    "added_production": 1995,
+    "removed_production": 109,
+    "added_support": 3700,
+    "removed_support": 2,
+    "support_to_production": 0,
+    "production_to_support": 0
+  },
+  "result_counts": {
+    "production": 50053,
+    "support": 28388,
+    "benchmark": 105
+  },
+  "equations": {
+    "production": "48167 + 1995 - 109 + 0 - 0 = 50053",
+    "support": "24690 + 3700 - 2 - 0 + 0 = 28388",
+    "benchmark": "105 + 0 = 105"
+  },
+  "verification": {
+    "source_hashes_verified": true,
+    "range_bounds_verified": true,
+    "category_equations_verified": true,
+    "scope_changed_rs_union_exclusions_verified": true,
+    "current_editor_source_freeze_confirmation": "Candidate2 actual GUI accepted;12 post-GUI transport tests, final original strict app Clippy and workspace format passed after fixture-only correction.",
+    "source_hashes_rechecked_after_range_review": true
+  },
+  "excluded_checkpoint_scope_notes": {
+    "all": "Already published26dd6ed; old local7a staging index reports copied native/disposal paths, excluded from OCR delta."
+  }
+}
