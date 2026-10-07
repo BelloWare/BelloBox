@@ -87,3 +87,14 @@ count; DEBUG-only host/fixture code and native test modules are support. See the
 per-file hashes and classification in
 [loc-delta.json](validation/window-refresh-2026-10-07/loc-delta.json).
 These source counts measure neither feature completion nor performance.
+
+
+## Native mask seam continuation
+
+The macOS host now uses the exact supplied-image CoreGraphics adapter through the
+common core publication guards, while Linux retains the deterministic portable
+sampler. The earlier native mismatch is preserved as explicit portable
+characterization; see [native-alpha-oracle.md](native-alpha-oracle.md). This is
+in-memory image processing, not capture enablement. The retained GUI screenshots
+above remain evidence for their exact host checkpoint; new native mask execution
+is separately gated by exact macOS CI and does not establish native GUI behavior.

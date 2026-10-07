@@ -403,3 +403,19 @@ turn a future normalized-SDR native mask oracle into ICC/HDR/original-capture co
 or macOS UI/Spaces/TCC acceptance. Current source counts are 41,895 production,
 19,161 test/support and 105 benchmark nonblank Rust lines, with reviewed delta and
 hashes retained beside the host evidence. They are not a parity percentage.
+
+### Supplied-image native masking continuation
+
+The next source checkpoint now contains the exact Rust/CoreGraphics local-image
+adapter and its common core callback/publication seam. See
+[native-alpha-oracle.md](native-alpha-oracle.md). It does not enable capture or
+permissions. The portable nearest sampler is intentionally unchanged/approximate;
+strict new tests compare the actual macOS adapter with an independent oracle on
+identically normalized SDR inputs. The original native failures and portable
+17-versus60 characterization remain recorded, rather than being called fixed
+portable equivalence. 25 core refresh,129 platform and43 screenshot app tests plus
+strict component Clippy pass locally; exact native CI is still pending at source
+preparation. Updated scoped source counts are42,267 production,19,802 test/support,
+105 benchmark lines, excluding concurrent converter work; reviewed hashes/delta
+are stored with native-alpha evidence. Always inspect the exact published SHA's
+native results before accepting the adapter or repeating these pending statements.

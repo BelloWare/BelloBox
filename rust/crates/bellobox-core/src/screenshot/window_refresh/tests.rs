@@ -234,7 +234,12 @@ fn mask_keeps_frozen_rgb_multiplies_alpha_and_clears_fully_transparent_rgb() {
         Rgba([250, 1, 2, [0, 128, 255][x as usize]])
     }))
     .unwrap();
-    let masked = mask_frozen_alpha(&frozen, &shape, &AtomicBool::new(false)).unwrap();
+    let masked = mask_frozen_alpha(
+        WindowAlphaPixels::from_document(&frozen),
+        WindowAlphaPixels::from_document(&shape),
+        &AtomicBool::new(false),
+    )
+    .unwrap();
     assert_eq!(masked.base_image.get_pixel(0, 0).0, [0, 0, 0, 0]);
     assert_eq!(masked.base_image.get_pixel(1, 0).0, [30, 60, 90, 64]);
     assert_eq!(masked.base_image.get_pixel(2, 0).0, [30, 60, 90, 128]);
@@ -247,7 +252,12 @@ fn mask_preserves_frozen_size_and_uses_explicit_nearest_centres_for_one_pixel_de
         Rgba([9, 9, 9, if x == 0 { 0 } else { 255 }])
     }))
     .unwrap();
-    let masked = mask_frozen_alpha(&frozen, &shape, &AtomicBool::new(false)).unwrap();
+    let masked = mask_frozen_alpha(
+        WindowAlphaPixels::from_document(&frozen),
+        WindowAlphaPixels::from_document(&shape),
+        &AtomicBool::new(false),
+    )
+    .unwrap();
     assert_eq!(masked.dimensions(), (3, 2));
     for y in 0..2 {
         assert_eq!(masked.base_image.get_pixel(0, y)[3], 0);
@@ -255,7 +265,11 @@ fn mask_preserves_frozen_size_and_uses_explicit_nearest_centres_for_one_pixel_de
         assert_eq!(masked.base_image.get_pixel(2, y).0, [1, 2, 3, 255]);
     }
     assert!(matches!(
-        mask_frozen_alpha(&frozen, &image(5, 2, [0; 4]), &AtomicBool::new(false)),
+        mask_frozen_alpha(
+            WindowAlphaPixels::from_document(&frozen),
+            WindowAlphaPixels::from_document(&image(5, 2, [0; 4])),
+            &AtomicBool::new(false)
+        ),
         Err(WindowRefreshError::IncompatibleImages)
     ));
 }
@@ -561,4 +575,147 @@ fn redo_restores_old_base_with_its_crop_after_a_different_size_refresh() {
     assert_eq!(session.document().dimensions(), (8, 6));
     assert_eq!(session.document().crop_rect(), None);
     assert!(session.revision() > after_redo);
+}
+
+#[test]
+fn mask_backend_receives_only_base_pixels_despite_annotation_crop_and_undo() {
+    let mut session = ScreenshotEditSession::new(image(8, 8, [40, 80, 120, 255]));
+    add_mark(&mut session);
+    session.set_crop(Some(Rect::new(1., 1., 4., 4.))).unwrap();
+    let ctx = context();
+    let request = plan(&session, ctx, WindowRefreshDecision::MaskFrozenAlpha);
+    let mut shape = ScreenshotEditSession::new(image(8, 8, [10, 20, 30, 128]));
+    add_mark(&mut shape);
+    shape.set_crop(Some(Rect::new(0., 0., 2., 2.))).unwrap();
+    let prepared = request
+        .prepare_with_alpha_mask(shape.render_snapshot(), |frozen, shape, _| {
+            assert_eq!(frozen.dimensions(), (8, 8));
+            assert_eq!(shape.dimensions(), (8, 8));
+            assert_eq!(frozen.rgba().len(), 8 * 8 * 4);
+            assert!(
+                frozen
+                    .rgba()
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .all(|p| *p == [40, 80, 120, 255])
+            );
+            assert!(
+                shape
+                    .rgba()
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .all(|p| *p == [10, 20, 30, 128])
+            );
+            Ok(image(8, 8, [40, 80, 120, 128]))
+        })
+        .unwrap()
+        .unwrap();
+    assert!(session.undo());
+    assert!(session.undo());
+    assert!(
+        prepared
+            .apply(&mut session, ctx, &AtomicBool::new(false))
+            .unwrap()
+    );
+    assert!(session.document().annotations().is_empty());
+    assert!(session.document().crop_rect().is_none());
+    assert_eq!(
+        session.document().render_rgba().unwrap().get_pixel(2, 2).0,
+        [40, 80, 120, 128]
+    );
+}
+
+#[test]
+fn mask_backend_is_skipped_for_keep_replace_incompatible_and_cancelled_requests() {
+    let session = ScreenshotEditSession::new(image(8, 8, [1; 4]));
+    let ctx = context();
+    for decision in [
+        WindowRefreshDecision::KeepFrozen,
+        WindowRefreshDecision::ReplaceWithIndependent,
+    ] {
+        plan(&session, ctx, decision)
+            .prepare_with_alpha_mask(image(8, 8, [2; 4]), |_, _, _| {
+                panic!("mask callback must not run")
+            })
+            .unwrap();
+    }
+    assert!(matches!(
+        plan(&session, ctx, WindowRefreshDecision::MaskFrozenAlpha)
+            .prepare_with_alpha_mask(image(10, 8, [2; 4]), |_, _, _| panic!(
+                "invalid size callback"
+            )),
+        Err(WindowRefreshError::IncompatibleImages)
+    ));
+    let cancellation = Arc::new(AtomicBool::new(false));
+    let request = WindowRefreshPlan::new(
+        &session,
+        ctx,
+        WindowRefreshDecision::MaskFrozenAlpha,
+        cancellation.clone(),
+    )
+    .unwrap();
+    cancellation.store(true, Ordering::Release);
+    assert!(matches!(
+        request
+            .prepare_with_alpha_mask(image(8, 8, [2; 4]), |_, _, _| panic!("cancelled callback")),
+        Err(WindowRefreshError::Cancelled)
+    ));
+}
+
+#[test]
+fn mask_backend_rejects_wrong_size_annotations_crop_errors_and_late_cancellation() {
+    for case in 0..5 {
+        let session = ScreenshotEditSession::new(image(8, 8, [1; 4]));
+        let ctx = context();
+        let cancellation = Arc::new(AtomicBool::new(false));
+        let request = WindowRefreshPlan::new(
+            &session,
+            ctx,
+            WindowRefreshDecision::MaskFrozenAlpha,
+            cancellation.clone(),
+        )
+        .unwrap();
+        let result = request.prepare_with_alpha_mask(image(8, 8, [2; 4]), |_, _, flag| {
+            let mut output =
+                ScreenshotEditSession::new(image(if case == 0 { 9 } else { 8 }, 8, [2; 4]));
+            match case {
+                1 => {
+                    add_mark(&mut output);
+                }
+                2 => {
+                    output.set_crop(Some(Rect::new(0., 0., 4., 4.))).unwrap();
+                }
+                3 => return Err(WindowRefreshError::MaskFailed),
+                4 => flag.store(true, Ordering::Release),
+                _ => {}
+            }
+            Ok(output.render_snapshot())
+        });
+        let expected = match case {
+            0..=2 => WindowRefreshError::InvalidMaskOutput,
+            3 => WindowRefreshError::MaskFailed,
+            _ => WindowRefreshError::Cancelled,
+        };
+        assert!(matches!(result, Err(error) if error == expected));
+        assert_eq!(session.revision(), 0);
+        assert_eq!(session.document().dimensions(), (8, 8));
+        assert!(session.document().annotations().is_empty());
+    }
+}
+
+#[test]
+fn mask_backend_never_sees_trailing_image_storage() {
+    let mut bytes = vec![1_u8; 16];
+    bytes.extend_from_slice(&[222, 223, 224, 225]);
+    let raster = RgbaImage::from_raw(2, 2, bytes).unwrap();
+    assert_eq!(raster.as_raw().len(), 20);
+    let session = ScreenshotEditSession::new(ScreenshotDocument::from_rgba(raster).unwrap());
+    let result = plan(&session, context(), WindowRefreshDecision::MaskFrozenAlpha)
+        .prepare_with_alpha_mask(image(2, 2, [2; 4]), |frozen, _, _| {
+            assert_eq!(frozen.rgba(), &[1; 16]);
+            Ok(image(2, 2, [3; 4]))
+        });
+    assert!(result.unwrap().is_some());
 }

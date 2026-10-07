@@ -869,3 +869,20 @@ cancelled/failing results preserve the frozen capture. Seven actual GPUI tests, 
 remain absent; desktop acceptance is tracked separately in
 [window-refresh-host.md](window-refresh-host.md). The native oracle's ±1-pixel
 sampling mismatch remains a separate explicit blocker.
+
+## Source-exact supplied-image native mask seam (2026-10-07)
+
+The normalized-SDR macOS path now uses the original CoreGraphics masking operation
+through the public core refresh plan and actual host worker seam. Core callbacks
+receive only tightly bounded base RGBA pixels, excluding edit/crop state and trailing
+backing storage; output dimensions and clean metadata are checked before common
+session/base/context/cancellation publication. Input-pair64MiB, separate one-mask
+admission and10-second late-publication limits are explicit. This is local supplied
+image processing, not capture enablement. Linux's portable resampling remains an
+approximation; the original17-versus60 mismatch is retained as characterization.
+
+25 focused core,129 platform and43 app screenshot tests pass locally, as does strict
+core/platform/app Clippy. New exact full-RGBA native oracle, lifecycle and no-GPUI
+host-mask tests still require the checkpoint's Apple CI. See
+[native-alpha-oracle.md](native-alpha-oracle.md) for bounds, failed historical
+checks, normalized-input scope, and remaining native/ICC/HDR/capture gates.

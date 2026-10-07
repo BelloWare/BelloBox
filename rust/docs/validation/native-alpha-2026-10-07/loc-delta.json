@@ -1,0 +1,102 @@
+{
+  "baseline_commit": "ebaa29d71b3de89f11e64e4aaa1d02011e4d5c1f",
+  "baseline_counts": {
+    "production": 41895,
+    "test_support": 19161,
+    "benchmark": 105
+  },
+  "counting_rule": "Reviewed nonblank physical Rust lines including comments. Native local-image API/backend are production except cfg(test) modules and the documented test-only serial-lock block. Native oracle and DEBUG app host/tests are support; core seam is production and its separate tests support. No converter WIP, recovery patch, manifest, docs or image lines included. This is a scoped delta, not a general source classifier or parity/performance measure.",
+  "files": [
+    {
+      "path": "rust/crates/bello-platform/src/native_capture.rs",
+      "before_nonblank": 461,
+      "after_nonblank": 468,
+      "delta": 7,
+      "production_delta": 7,
+      "test_support_delta": 0,
+      "sha256": "50b80670064bc6dbce2f81a681d65559bac583ea55361f42108f59ed5230a500"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/alpha_mask.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 311,
+      "delta": 311,
+      "production_delta": 150,
+      "test_support_delta": 161,
+      "sha256": "43ae6341e033d441641f8829f58660451ac027f98ef21a4baed725cb11fabbd9"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/alpha_mask_macos.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 270,
+      "delta": 270,
+      "production_delta": 151,
+      "test_support_delta": 119,
+      "sha256": "dceacfd7d809737b40be95ee75ffea95e72f9b12562aee4731ab2aafdd2d5390"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/alpha_mask_tests.rs",
+      "before_nonblank": 409,
+      "after_nonblank": 536,
+      "delta": 127,
+      "production_delta": 0,
+      "test_support_delta": 127,
+      "sha256": "561c8a1b7bae60be46bb45f0cffc4ab047fd019df5f4462f3ba8e03cb7e976b5"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos.rs",
+      "before_nonblank": 731,
+      "after_nonblank": 733,
+      "delta": 2,
+      "production_delta": 2,
+      "test_support_delta": 0,
+      "sha256": "09a26b2997732509e6af3fdbbfe51444b024ac9e3dcd50e301c3d1bfe346116d"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs",
+      "before_nonblank": 173,
+      "after_nonblank": 221,
+      "delta": 48,
+      "production_delta": 0,
+      "test_support_delta": 48,
+      "sha256": "9f522fcc7c8afabc23187ba52fe56bfbae85b50ad79357d52e305204cbf31283"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh/tests.rs",
+      "before_nonblank": 291,
+      "after_nonblank": 324,
+      "delta": 33,
+      "production_delta": 0,
+      "test_support_delta": 33,
+      "sha256": "49e8d1a62ea47d482d916acc8d013bddf1e43f2eaf71724c43d8efcb051317a3"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh.rs",
+      "before_nonblank": 329,
+      "after_nonblank": 391,
+      "delta": 62,
+      "production_delta": 62,
+      "test_support_delta": 0,
+      "sha256": "94e8074419088151f914cecc7e13e8a34879d756d20b67429cbb769779f3dd6e"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh/tests.rs",
+      "before_nonblank": 563,
+      "after_nonblank": 716,
+      "delta": 153,
+      "production_delta": 0,
+      "test_support_delta": 153,
+      "sha256": "ec77dc2f52ce09f84517a48c03e16e9ff365447635421b1b0e10bf241722da2c"
+    }
+  ],
+  "delta": {
+    "production": 372,
+    "test_support": 641,
+    "benchmark": 0
+  },
+  "checkpoint_counts": {
+    "production": 42267,
+    "test_support": 19802,
+    "benchmark": 105
+  }
+}

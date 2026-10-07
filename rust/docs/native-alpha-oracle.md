@@ -1,50 +1,118 @@
-# Synthetic native Window alpha oracle
+# Supplied-image native alpha mask and synthetic oracle
+
+## Why the macOS path uses CoreGraphics
 
 The recovery patch was reviewed against `ImageAlphaMask.swift` before integration.
-Its active successor is `bello-platform/src/native_capture/alpha_mask_tests.rs`.
-The recovery file remains unchanged historical evidence, not a patch to reapply.
+Its active successor is `native_capture/alpha_mask_tests.rs`; the original recovery
+patch remains unchanged historical evidence and must not be reapplied.
 
-Five macOS-only tests exercise the public WindowRefreshPlan path against a typed
-CoreGraphics implementation of the exact Swift drawing sequence: DeviceRGB,
-premultiplied-last, allocated bitmap storage with automatic stride, interpolation
-None, frozen-image draw followed by DestinationIn shape, immutable image snapshot.
-Inputs use explicit premultiplied RGBA byte order and copied CFData storage. All
-native objects are created, retained and dropped on one worker thread. Existing
-native PNG encoding and core decoding normalize both native input and output;
-input alpha and the opaque palette are independently checked.
+The first oracle compared the portable integer nearest sampler strictly against
+CoreGraphics. At `adb877e58dd65370a8fdcfd1617cdcc68a041aa1`, Linux CI
+[37571312929](https://github.com/BelloWare/BelloBox/actions/runs/37571312929) passed.
+Native macOS [37571312948](https://github.com/BelloWare/BelloBox/actions/runs/37571312948)
+compiled/linked all test targets, then found a real mismatch: frozen2×3, shape1×2,
+pixel(0,1), CoreGraphics alpha17 versus portable60. Same-size exhaustive alpha,
+palette, RGB-alpha and incompatible-size tests passed; successful RGB diagnostics
+were skipped after the failure.
 
-Coverage includes all 65,536 input alpha pairs, an asymmetric palette/shape,
-nearest sampling with each axis equal or one pixel larger/smaller, rejected size
-differences leaving the original document untouched, and 144 low-alpha RGB cases.
-Alpha and sampling comparisons are exact. RGB quantization is reported without a
-tolerance or a claim of universal straight-RGB equivalence. Tests do not enumerate
-windows, query displays, capture, request permissions, access files or contact a
-provider. The selection context uses a selectable 16-point surface with each
-corpus's pixel dimensions, so the public identity path and actual raster agree.
+The expanded diagnostic at `780ecd94967651a207c18a58f5ae4e60e7c571b4`, macOS
+[37571908312](https://github.com/BelloWare/BelloBox/actions/runs/37571908312), collected
+the complete bounded corpus before failing its exact assertion. Center-boundary
+choices differed on both axes and depended on scale: output3/source2 or4 chose
+lower; output5/source4 chose lower but source6 upper; output7/source8 chose lower
+but source6 upper. No guessed tie rule or tolerance was added.
+
+The source application itself uses CoreGraphics. The macOS Rust host now delegates
+supplied-image masking to the same drawing operation through existing typed Apple
+bindings. Linux's portable sampler remains deterministic and explicitly approximate
+for ±1-pixel resampling. The retained characterization test still asserts the
+original17-versus60 difference. Changing the native backend is not proof that the
+portable algorithm became equivalent.
+
+## Native adapter and common publication seam
+
+`bello_platform::native_capture::mask_image_alpha` receives two borrowed, tightly
+packed, normalized SDR straight-RGBA8 image inputs. It does not acquire images,
+enumerate windows/displays, check/request permissions, capture, access files, or
+contact a provider. Non-macOS is explicitly unsupported for this local native API.
+All existing production Area/Window/movie capture gates remain unchanged.
+
+The core `WindowRefreshPlan::prepare_with_alpha_mask` callback sees immutable BASE
+pixels only. Annotations, crop, font and rendered overlays cannot be baked into
+an eventual clean-after-Undo replacement. Size and cancellation are checked before
+the callback; its result must match the frozen dimensions exactly and have no
+annotations/crop. Common edit-session/base/context/cancellation publication guards
+remain unchanged. Errors never mutate the editor. The actual macOS editor host
+calls this seam on its worker; Linux uses the existing portable backend.
+
+Native inputs use explicit RGBA byte order and straight alpha, copied fallible
+CFData storage and retained data/provider/color/image owners. The output exactly
+matches the source configuration: DeviceRGB, PremultipliedLast without an extra
+byte-order flag, CoreGraphics-allocated bitmap storage/automatic stride,
+interpolation None, frozen draw then DestinationIn shape, immutable snapshot.
+Existing bounded PNG encoding runs synchronously on the same worker. No native
+owner or raw image pointer crosses threads.
+
+Validation rejects zero/oversized dimensions, overflow, missing/trailing/padded
+bytes, and shape differences exceeding one pixel on either axis. The combined
+tight input RGBA byte limit is64MiB, smaller than the general screenshot limit;
+a larger pair leaves the frozen screenshot usable. Precisely, every dimension is
+1..=32,768, each axis differs by at most1, each slice is exactly width×height×4
+bytes, and4×(frozen_width×frozen_height + shape_width×shape_height)≤67,108,864.
+For equal-size images this is at most8,388,608 pixels per image:3840×2160 fits,
+4096×2048 is exactly the byte boundary,4096×2160 and5120×2880 do not fit. A±1 shape
+must also satisfy the combined inequality, so the equal-size boundary can reject
+a slightly larger shape. This adapter does not support every general screenshot
+size. Native copied input data,
+bitmap/snapshot and encoded PNG are additional allocations. The PNG encoder has
+its existing64,000,000-byte cap. These are visible buffer bounds, not a claim about
+opaque CoreGraphics/ImageIO peak memory or total process memory.
+
+One independent mask lease prevents overlapping native mask jobs. It remains held
+through synchronous native operations, encoding, cleanup and final deadline
+resolution. Cancellation and the fixed10-second deadline reject late publication;
+they cannot forcibly interrupt an opaque framework call or release its lease early.
+Capture admission is separate and no capture lifecycle is enabled by this adapter.
+
+## Strict tests and retained limitations
+
+Six macOS oracle tests exercise the public core plan plus actual native adapter
+against an independently constructed Swift-shaped oracle on identical normalized
+inputs. Full RGBA equality is strict, without tolerance. Coverage includes all
+65,536 alpha pairs, asymmetric palette/shape, equal and±1 dimensions on both axes,
+1×N/N×1 and larger127/128/254/255 matrices, incompatible-size rejection, and144
+low-alpha RGB samples. The normalization boundary is native PNG→core decode→
+straight RGBA; this deliberately does not claim original ICC/HDR capture fidelity.
+
+The portable same-size alpha corpus remains checked. Its low-alpha RGB differences
+are reported separately with straight-RGB and diagnostic premultiplied-projection
+counts; no threshold or broad RGB-equivalence claim is inferred. Original failed
+native evidence above remains part of the record.
 
 Run on actual macOS:
 
     cargo test --locked -p bello-platform native_alpha_ -- --show-output
+    cargo test --locked -p bellobox-app screenshot_ui::window_refresh::tests::supplied_image_host_mask_prepares_on_worker -- --show-output
 
-The macOS workflow includes this command to retain successful RGB diagnostics.
-Source review and formatting are complete; native compile/execution are pending
-for this checkpoint. Exact CI results must be recorded before claiming the corpus
-passes. Linux compilation excludes the module and cannot validate these bindings.
-Even a passing corpus does not establish ICC/HDR, capture fidelity, native UI,
-TCC/Spaces/focus behavior or production Window enablement. All capture gates remain.
+The second command is a plain worker test of the actual host mask wiring. It does
+not create a GPUI application/window or perform native capture. The macOS workflow
+runs both commands; additional native step/lease regressions run with platform tests.
 
-## First native result
+At source preparation: 25 core refresh/seam tests pass locally; 129 platform tests
+pass (3 existing ignored), including 8 portable mask input-contract tests; 43 app screenshot tests pass; strict
+core/platform/app all-target Clippy passes. Independent source review fixed three outdated
+helper call sites and added direct host-wiring coverage. Native compilation,
+strict oracle execution and successful RGB diagnostic output are pending for this
+checkpoint. Passing this corpus will establish only its normalized-SDR cases,
+not actual capture, AppKit focus/Spaces/TCC, ICC/HDR, every framework implementation,
+or whole-application parity. A native mask oracle is not native GUI acceptance.
 
-At `adb877e58dd65370a8fdcfd1617cdcc68a041aa1`, Linux CI
-[37571312929](https://github.com/BelloWare/BelloBox/actions/runs/37571312929) passed.
-Native macOS [37571312948](https://github.com/BelloWare/BelloBox/actions/runs/37571312948)
-compiled and linked all test targets, then exposed a genuine strict resampling
-mismatch: frozen 2×3, shape 1×2, pixel (0,1), CoreGraphics alpha 17 versus portable
-60. Same-size exhaustive alpha, palette, RGB-alpha and incompatible-size tests
-passed; the successful-RGB diagnostic step was skipped after that failure.
 
-The resize oracle now collects all bounded corpus mismatches before its final
-strict assertion, to determine the native axis/tie pattern before changing the
-portable sampler. This neither introduces a tolerance nor ignores a failing case.
-Production enablement remains blocked. No general alpha/sampling equivalence claim
-is made while this mismatch remains unresolved.
+## Reviewed source delta
+
+Relative to the published synthetic host `ebaa29d`, this native-mask checkpoint
+adds 372 production and 641 test/support nonblank Rust lines. Totals are
+42,267 production, 19,802 test/support and 105 benchmark lines.
+The scoped per-file hashes/classification are retained in
+[loc-delta.json](validation/native-alpha-2026-10-07/loc-delta.json); concurrent
+converter work is excluded. These are source counts, not parity or performance.

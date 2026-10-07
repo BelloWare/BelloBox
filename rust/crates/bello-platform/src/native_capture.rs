@@ -7,6 +7,13 @@
 //! apply to the disabled future frozen-overlay Window refresh. Region coordinates are LOCAL
 //! TOP-LEFT DISPLAY POINTS, never desktop pixels or Cocoa bottom-left points.
 //! macOS 13's source SCStream fallback is not implemented by this API.
+//! The separate [`mask_image_alpha`] API only transforms already supplied image
+//! bytes; it does not depend on ScreenCaptureKit availability or permission.
+mod alpha_mask;
+pub use alpha_mask::{
+    mask_image_alpha, AlphaMaskError, AlphaMaskInput, MAX_ALPHA_MASK_INPUT_BYTES,
+    MAX_ALPHA_MASK_TIMEOUT,
+};
 #[cfg(any(target_os = "macos", test))]
 mod completion;
 #[cfg(target_os = "macos")]

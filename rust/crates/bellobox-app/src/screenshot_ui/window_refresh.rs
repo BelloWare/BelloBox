@@ -115,7 +115,9 @@ impl ScreenshotEditor {
             if boundary.load(Ordering::Acquire) {
                 return None;
             }
-            plan.prepare(independent).ok().flatten()
+            prepare_refresh(plan, independent, cancellation)
+                .ok()
+                .flatten()
         });
         cx.spawn(async move |this, cx| {
             let prepared = task.await;
@@ -170,6 +172,53 @@ impl ScreenshotEditor {
         }
         // Failure leaves the usable frozen screenshot and its edits undisturbed.
         accepted
+    }
+}
+
+/// macOS uses the same CoreGraphics operation as the Swift source. Linux keeps
+/// the explicitly approximate deterministic portable sampler for synthetic QA.
+fn prepare_refresh(
+    plan: WindowRefreshPlan,
+    independent: bellobox_core::screenshot::ScreenshotDocument,
+    cancellation: Arc<AtomicBool>,
+) -> bellobox_core::screenshot::window_refresh::WindowRefreshResult<Option<PreparedWindowRefresh>> {
+    #[cfg(target_os = "macos")]
+    {
+        use bello_platform::native_capture::{
+            AlphaMaskError, AlphaMaskInput, CaptureCancellation, mask_image_alpha,
+        };
+        use bellobox_core::screenshot::{ScreenshotDocument, window_refresh::WindowRefreshError};
+        plan.prepare_with_alpha_mask(independent, |frozen, shape, _| {
+            let (width, height) = frozen.dimensions();
+            let (sw, sh) = shape.dimensions();
+            let png = mask_image_alpha(
+                AlphaMaskInput {
+                    width,
+                    height,
+                    rgba: frozen.rgba(),
+                },
+                AlphaMaskInput {
+                    width: sw,
+                    height: sh,
+                    rgba: shape.rgba(),
+                },
+                CaptureCancellation::from_flag(cancellation.clone()),
+            )
+            .map_err(|error| match error {
+                AlphaMaskError::Cancelled => WindowRefreshError::Cancelled,
+                AlphaMaskError::InputTooLarge | AlphaMaskError::OutputTooLarge => {
+                    WindowRefreshError::OutputTooLarge
+                }
+                AlphaMaskError::IncompatibleImages => WindowRefreshError::IncompatibleImages,
+                _ => WindowRefreshError::MaskFailed,
+            })?;
+            ScreenshotDocument::from_png(&png).map_err(|_| WindowRefreshError::MaskFailed)
+        })
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = cancellation;
+        plan.prepare(independent)
     }
 }
 

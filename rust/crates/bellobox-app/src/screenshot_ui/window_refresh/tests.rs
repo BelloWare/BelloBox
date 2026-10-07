@@ -297,3 +297,37 @@ fn already_cancelled_new_request_still_retires_the_old_host(cx: &mut TestAppCont
         assert_eq!(view.session.revision(), 0);
     });
 }
+
+#[test]
+fn supplied_image_host_mask_prepares_on_worker_and_preserves_frozen_rgb() {
+    // Native CI executes this plain worker test separately; it creates no GPUI
+    // app/window and never enumerates/captures a native display or asks permission.
+    std::thread::spawn(|| {
+        let (mut session, request) = selection(1);
+        let cancellation = Arc::new(AtomicBool::new(false));
+        let plan = WindowRefreshPlan::new(
+            &session,
+            request.context,
+            request.decision,
+            cancellation.clone(),
+        )
+        .unwrap();
+        let independent = synthetic_independent_window(1, &cancellation).unwrap();
+        let prepared = super::prepare_refresh(plan, independent, cancellation)
+            .unwrap()
+            .unwrap();
+        assert!(
+            prepared
+                .apply(&mut session, request.context, &request.boundary)
+                .unwrap()
+        );
+        assert_eq!(session.revision(), 1);
+        assert!(!session.can_undo());
+        let pixels = session.document().render_rgba().unwrap();
+        assert_eq!(pixels.dimensions(), (680, 540));
+        assert_eq!(pixels.get_pixel(0, 0).0, [0, 0, 0, 0]);
+        assert_eq!(pixels.get_pixel(100, 100).0, [255, 224, 186, 255]);
+    })
+    .join()
+    .unwrap();
+}

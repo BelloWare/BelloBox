@@ -67,6 +67,8 @@ pub enum WindowRefreshError {
     InvalidCatalog,
     StaleContext,
     IncompatibleImages,
+    InvalidMaskOutput,
+    MaskFailed,
     OutputTooLarge,
 }
 impl fmt::Display for WindowRefreshError {
@@ -77,6 +79,8 @@ impl fmt::Display for WindowRefreshError {
             Self::InvalidCatalog => "Window occlusion evidence exceeds its bounded limit.",
             Self::StaleContext => "Window selection or display changed before image refresh.",
             Self::IncompatibleImages => "Window image sizes cannot be alpha-masked together.",
+            Self::InvalidMaskOutput => "Window alpha mask returned an invalid replacement image.",
+            Self::MaskFailed => "Window alpha mask could not be prepared.",
             Self::OutputTooLarge => "Window image refresh exceeds the bounded image size.",
         })
     }
@@ -193,6 +197,34 @@ impl WindowRefreshContext {
         }
     }
 }
+/// Borrowed, tightly packed straight RGBA BASE pixels supplied to a mask backend.
+/// No rendered annotations, crop or font state is exposed, so edit/Undo races
+/// cannot bake transient edits into a replacement. The borrow ends with the
+/// synchronous callback; a native backend must retain/copy its own image inputs.
+#[derive(Clone, Copy)]
+pub struct WindowAlphaPixels<'a> {
+    dimensions: (u32, u32),
+    rgba: &'a [u8],
+}
+impl<'a> WindowAlphaPixels<'a> {
+    fn from_document(document: &'a ScreenshotDocument) -> Self {
+        let dimensions = document.dimensions();
+        // RgbaImage permits a backing Vec longer than its raster. Expose only
+        // actual pixels, never trailing storage unrelated to the selected image.
+        let length = dimensions.0 as usize * dimensions.1 as usize * 4;
+        Self {
+            dimensions,
+            rgba: &document.base_image.as_raw()[..length],
+        }
+    }
+    pub fn dimensions(self) -> (u32, u32) {
+        self.dimensions
+    }
+    pub fn rgba(self) -> &'a [u8] {
+        self.rgba
+    }
+}
+
 /// An immutable request tied to one edit session/base epoch and frozen selection.
 /// Font preparation or an edit followed by Undo on the same base is permitted;
 /// the CURRENT document must still be annotation-free and uncropped at acceptance.
@@ -225,12 +257,27 @@ impl WindowRefreshPlan {
     pub fn decision(&self) -> WindowRefreshDecision {
         self.decision
     }
-    /// Worker-only image preparation in a future host. KeepFrozen returns None;
-    /// failures/cancellation return no replacement and leave the original intact.
-    /// The supplied image is already acquired: this method never captures.
+    /// Portable deterministic preparation. Its ±1-pixel nearest sampler is an
+    /// approximation, not a CoreGraphics tie/color-equivalence claim. Native
+    /// hosts use prepare_with_alpha_mask with the source-exact platform backend.
     pub fn prepare(
         self,
         independent: ScreenshotDocument,
+    ) -> WindowRefreshResult<Option<PreparedWindowRefresh>> {
+        self.prepare_with_alpha_mask(independent, mask_frozen_alpha)
+    }
+    /// Common worker preparation and publication guards for a supplied mask
+    /// backend. The callback runs only for MaskFrozenAlpha, on immutable BASE
+    /// pixels, after size/cancellation validation. It never acquires images.
+    /// A result must have the exact frozen size and no annotations or crop.
+    pub fn prepare_with_alpha_mask(
+        self,
+        independent: ScreenshotDocument,
+        mask: impl FnOnce(
+            WindowAlphaPixels<'_>,
+            WindowAlphaPixels<'_>,
+            &AtomicBool,
+        ) -> WindowRefreshResult<ScreenshotDocument>,
     ) -> WindowRefreshResult<Option<PreparedWindowRefresh>> {
         if self.cancellation.load(Ordering::Acquire) {
             return Err(WindowRefreshError::Cancelled);
@@ -239,7 +286,21 @@ impl WindowRefreshPlan {
             WindowRefreshDecision::KeepFrozen => return Ok(None),
             WindowRefreshDecision::ReplaceWithIndependent => independent,
             WindowRefreshDecision::MaskFrozenAlpha => {
-                mask_frozen_alpha(&self.frozen, &independent, &self.cancellation)?
+                let frozen = WindowAlphaPixels::from_document(&self.frozen);
+                let shape = WindowAlphaPixels::from_document(&independent);
+                if frozen.dimensions.0.abs_diff(shape.dimensions.0) > 1
+                    || frozen.dimensions.1.abs_diff(shape.dimensions.1) > 1
+                {
+                    return Err(WindowRefreshError::IncompatibleImages);
+                }
+                let output = mask(frozen, shape, &self.cancellation)?;
+                if output.dimensions() != frozen.dimensions
+                    || !output.annotations().is_empty()
+                    || output.crop_rect().is_some()
+                {
+                    return Err(WindowRefreshError::InvalidMaskOutput);
+                }
+                output
             }
         };
         if self.cancellation.load(Ordering::Acquire) {
@@ -253,6 +314,7 @@ impl WindowRefreshPlan {
         }))
     }
 }
+
 pub struct PreparedWindowRefresh {
     context: WindowRefreshContext,
     base: BaseCaptureToken,
@@ -286,11 +348,13 @@ impl PreparedWindowRefresh {
 /// frozen RGB remains unchanged for nonzero output alpha; fully transparent
 /// output is normalized to transparent black instead of retaining hidden RGB.
 /// Source allows +/-1 pixel per axis and stretches with interpolation disabled.
-/// Sampling below is explicit nearest-centre; exact CoreGraphics resampling,
-/// rounding and color-space equivalence still need native synthetic comparison.
+/// Sampling below is explicit integer nearest-centre. Native synthetic tests
+/// demonstrated scale-dependent CoreGraphics center ties; this portable fallback
+/// deliberately stays deterministic rather than guessing an undocumented rule.
+/// Native hosts use the source-exact supplied-image platform mask backend.
 fn mask_frozen_alpha(
-    frozen: &ScreenshotDocument,
-    shape: &ScreenshotDocument,
+    frozen: WindowAlphaPixels<'_>,
+    shape: WindowAlphaPixels<'_>,
     cancellation: &AtomicBool,
 ) -> WindowRefreshResult<ScreenshotDocument> {
     let (width, height) = frozen.dimensions();
@@ -314,10 +378,10 @@ fn mask_frozen_alpha(
         for x in 0..width {
             let sx = (((2 * u64::from(x) + 1) * u64::from(sw)) / (2 * u64::from(width)))
                 .min(u64::from(sw - 1)) as u32;
-            let old = frozen.base_image.get_pixel(x, y).0;
-            let alpha = ((u16::from(old[3]) * u16::from(shape.base_image.get_pixel(sx, sy)[3])
-                + 127)
-                / 255) as u8;
+            let offset = (y as usize * width as usize + x as usize) * 4;
+            let old = &frozen.rgba[offset..offset + 4];
+            let shape_alpha = shape.rgba[(sy as usize * sw as usize + sx as usize) * 4 + 3];
+            let alpha = ((u16::from(old[3]) * u16::from(shape_alpha) + 127) / 255) as u8;
             let output = if alpha == 0 {
                 [0, 0, 0, 0]
             } else {

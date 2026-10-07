@@ -28,6 +28,9 @@ const BACKEND: &str = "ScreenCaptureKit one-shot (macOS 14+)";
 // released their leases. A timed-out waiter never reclaims a submitted context.
 static CAPTURE_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
 
+#[path = "alpha_mask_macos.rs"]
+pub(super) mod alpha_mask;
+
 #[link(name = "objc")]
 extern "C" {
     fn objc_getClass(name: *const c_char) -> Id;
