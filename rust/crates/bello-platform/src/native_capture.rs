@@ -10,9 +10,14 @@
 //! The separate [`mask_image_alpha`] API only transforms already supplied image
 //! bytes; it does not depend on ScreenCaptureKit availability or permission.
 mod alpha_mask;
+mod window_catalog;
 pub use alpha_mask::{
     mask_image_alpha, AlphaMaskError, AlphaMaskInput, MAX_ALPHA_MASK_INPUT_BYTES,
     MAX_ALPHA_MASK_TIMEOUT,
+};
+pub use window_catalog::{
+    check_window_available, observe_windows, window_identity_and_layers, OwnedWindowObservation,
+    RawWindowOcclusionRow, WindowCatalogLayers, WindowCatalogSnapshot, WindowObservationRequest,
 };
 #[cfg(any(target_os = "macos", test))]
 mod completion;
@@ -373,6 +378,28 @@ pub fn capture(
 /// compile the candidate without adding an app route or requesting permission.
 pub const NATIVE_WINDOW_CAPTURE_IMPLEMENTED: bool = false;
 
+/// Window's initial full-display dependency waits for the existing shared native
+/// capture lease to drain before catalog admission. Ordinary Display/Area keep
+/// their existing logical-return behavior. The separate Window gate is first.
+pub fn capture_window_freeze(
+    request: CaptureRequest,
+    cancellation: CaptureCancellation,
+) -> CaptureResult<NativeCaptureSnapshot> {
+    check_window_available().map_err(|_| CaptureError::Unsupported)?;
+    request.validate()?;
+    if cancellation.is_cancelled() {
+        return Err(CaptureError::Cancelled);
+    }
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    {
+        macos::capture_window_freeze(request, cancellation)
+    }
+    #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
+    {
+        Err(CaptureError::Unsupported)
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum WindowCaptureError {
     Unavailable,
@@ -462,15 +489,41 @@ impl fmt::Debug for NativeWindowCaptureSnapshot {
 /// image acquisition or app side effect. The future frozen-overlay host must
 /// perform its own final document/session/cancellation publication check.
 pub fn capture_window(
-    _selection: crate::window_capture::WindowCaptureSelection,
-    _options: crate::window_capture::WindowCaptureOptions,
-    _session: Arc<WindowCaptureSession>,
-    _cancellation: CaptureCancellation,
+    selection: crate::window_capture::WindowCaptureSelection,
+    options: crate::window_capture::WindowCaptureOptions,
+    session: Arc<WindowCaptureSession>,
+    cancellation: CaptureCancellation,
 ) -> WindowCaptureResult<NativeWindowCaptureSnapshot> {
-    Err(WindowCaptureError::Unavailable)
+    window_catalog::admit_capture(|| {
+        let deadline = std::time::Instant::now()
+            .checked_add(options.timeout)
+            .ok_or(crate::window_capture::WindowPolicyError::InvalidOptions)?;
+        capture_window_until(selection, options, session, cancellation, deadline)
+    })
 }
 
-#[cfg(test)]
+/// Same closed native admission, using a host's existing absolute deadline.
+pub fn capture_window_until(
+    selection: crate::window_capture::WindowCaptureSelection,
+    options: crate::window_capture::WindowCaptureOptions,
+    session: Arc<WindowCaptureSession>,
+    cancellation: CaptureCancellation,
+    deadline: std::time::Instant,
+) -> WindowCaptureResult<NativeWindowCaptureSnapshot> {
+    window_catalog::admit_capture(|| {
+        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+        {
+            macos::window::capture(selection, options, session, cancellation, deadline)
+        }
+        #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
+        {
+            let _ = (selection, options, session, cancellation, deadline);
+            Err(WindowCaptureError::Unavailable)
+        }
+    })
+}
+
+#[cfg(any(test, all(target_os = "macos", target_arch = "aarch64")))]
 fn validate_external_window_owner(owner_process_id: i32) -> WindowCaptureResult<()> {
     if owner_process_id <= 0 {
         return Err(crate::window_capture::WindowPolicyError::InvalidMetadata.into());

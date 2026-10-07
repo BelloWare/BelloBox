@@ -686,3 +686,76 @@ production and 3 in reverse, plus 266/13 production lines added/removed and
 nonblank physical-line accounting including comments, not feature completion or
 engineering-effort measurement; see the before/after ranges and source hashes in
 `validation/window-backend-2026-10-07/loc-delta.json`.
+
+### Exact backend/dialog checkpoint verified
+
+Published `505e8f193de858163474e2af269d2e3ca51e475a`, tree
+`8477ad4e3b0a7da76db42de83530faccc5cb6f6a`, passed Linux run
+`37591717754` and macOS run `37591717776`, with every step successful. Native
+logs include the exact returned-plan ownership regression, 155 platform tests
+with 3 existing ignored, 9 filtered alpha/lifecycle tests, the worker-only mask
+integration test and 354 core tests. Native app build and offline development
+packaging also passed. This supersedes the preceding pending-CI statement only
+for that immutable source; new catalog changes need their own exact verification.
+Actual SCK capture, permissions, callback runtime and native GUI remain unvalidated.
+
+## Continuation checkpoint: owned asynchronous native Window bridge
+
+The Apple Silicon Window catalog and independent acquisition now compile in normal
+platform builds behind the still-false platform Window admission gate. App Area and
+Window gates remain false. Exact f64 selector/topology data and source-shaped raw
+partial occlusion rows are separate owned transports; actual platform window levels
+are preserved. No native callback submission is fabricated from catalog rows. The
+retained callback-local SCWindow still creates the exact returned selection-bound
+plan before its independent filter requests pixels.
+
+Optional decision observation now starts on the counted refresh worker after the
+frozen editor mounts. Final observation follows masking; foreground publication
+consumes one owned proof and checks deadline/cancellation/session/generation/base/
+liveness/clean-state guards without native observation. This is freshness at the
+completed observation, not an atomic live-window guarantee. Native revision zero
+means no OS revision feed; supplied mutation tests use an explicit revision fence.
+
+Independent lifetime review found two integration gaps and both were corrected:
+Window's initial full-display freeze now waits for physical Display callback and
+encoder drain before catalog admission, preventing a transient Busy handoff. The
+ordinary Display/Area return timing is unchanged. All Window drained paths recheck
+late cancellation/deadline, with selection/session checks for independent capture.
+A regression handshake proves success was consumed before cancellation/expiration
+while the final lease remained held. Logical timeout never releases physical
+admission early; a framework callback that never releases can retain the worker.
+
+Local final checks pass 103 screenshot app tests, 95 in the exact app-only
+no-debug-assertions test artifact, 135 portable platform tests (3 existing ignored),
+169 core screenshot tests, strict Linux app/platform all-target Clippy, minimal
+check, normal build, app-only non-debug metadata check and Apple-target platform
+all-target metadata Clippy. The macOS workflow now also runs strict platform Clippy.
+Metadata checks do not establish SDK linking or native execution; exact new-commit
+Linux/macOS CI remains pending publication. Native CI uses constructed CF rows,
+scalar topology and fake dispatch contexts only, without live enumeration/capture.
+
+The immutable Linux candidate binary SHA256 is
+`d328600a3a4c11a0532ea16ab3c545a96290d61b1ec04cf14c826b02974a414d`.
+Actual supplied-pixel CUA acceptance passed front/back refresh, fixed Crop/Undo/
+Redo/letterboxes, system Save cancel/reopen, verified 401×161 cropped PNG and
+Copy & Finish/reimport, delayed observation with editing and one-shot Undo,
+controlled failure, close before observation return with no late resurrection,
+and shared Area resize/Undo/Select move/Copy & Finish. Twelve original JPEGs and
+the saved PNG are retained. The edit and close occurred during an explicit
+eight-second supplied stall; their timestamps establish overlap only, not a native
+latency measurement. See exact source/binary and interaction evidence in
+`validation/native-window-catalog-2026-10-07/QA-report.md` and `validation.json`.
+See [the native bridge contract](native-window-catalog.md) for source anchors,
+transport/parser bounds and ownership details. Catalog collection still runs two
+CG queries and four topology passes on main; asynchronous ownership does not prove
+native responsiveness. TCC, AppKit/Spaces, callback runtime, original capture color,
+ICC/HDR, Retina/hotplug and actual independent pixels remain native activation gates.
+
+The independently checked Rust delta is +1,386 production / +387 support / +0
+benchmark, yielding **46,738 production / 24,200 support / 105 benchmark** nonblank
+physical lines including comments. The ledger explicitly separates 659 preserved
+support lines promoted to production (647 native window, 11 owner guard, 1 phase)
+and 22 in reverse, plus 813/64 production lines added/removed and 1,088/64 support
+lines added/removed. Nineteen source hashes, positive support ranges and literal
+reclassification pairs were independently verified. No feature-completion or
+engineering-effort percentage follows from these counts.

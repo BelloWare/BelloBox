@@ -254,6 +254,12 @@ impl WindowRefreshPlan {
             cancellation,
         })
     }
+    /// Resolve a deferred worker-side catalog decision without replacing the
+    /// original document/base/context/cancellation snapshot.
+    pub fn with_decision(mut self, decision: WindowRefreshDecision) -> Self {
+        self.decision = decision;
+        self
+    }
     pub fn decision(&self) -> WindowRefreshDecision {
         self.decision
     }

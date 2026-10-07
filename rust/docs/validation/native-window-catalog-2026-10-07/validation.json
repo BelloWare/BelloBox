@@ -1,0 +1,279 @@
+{
+  "date_utc": "2026-10-07",
+  "baseline_commit": "505e8f193de858163474e2af269d2e3ca51e475a",
+  "baseline_tree": "8477ad4e3b0a7da76db42de83530faccc5cb6f6a",
+  "branch": "rust",
+  "binary_sha256": "d328600a3a4c11a0532ea16ab3c545a96290d61b1ec04cf14c826b02974a414d",
+  "binary_bytes": 140967944,
+  "source_manifest": "source-inputs.json",
+  "loc_manifest": "loc-delta.json",
+  "gates": {
+    "app_area": false,
+    "app_window": false,
+    "platform_window": false,
+    "native_movie": "Unavailable"
+  },
+  "automated_checks": [
+    {
+      "command": "cargo test --locked -p bellobox-app --bin bellobox screenshot_ui:: -- --test-threads=2",
+      "result": "passed",
+      "passed": 103
+    },
+    {
+      "command": "cargo test --locked -p bello-platform",
+      "result": "passed",
+      "passed": 135,
+      "ignored_existing": 3
+    },
+    {
+      "command": "cargo test --locked -p bellobox-core --lib screenshot:: -- --test-threads=2",
+      "result": "passed",
+      "passed": 169
+    },
+    {
+      "command": "cargo clippy --locked -p bellobox-app -p bello-platform --all-targets -- -D warnings",
+      "result": "passed"
+    },
+    {
+      "command": "cargo check --locked -p bellobox-app --no-default-features",
+      "result": "passed"
+    },
+    {
+      "command": "cargo rustc --locked -p bellobox-app --bin bellobox -- -C debug-assertions=no --emit=metadata",
+      "result": "passed",
+      "scope": "app-only metadata; dependencies retain ordinary debug settings"
+    },
+    {
+      "command": "cargo build --locked -p bellobox-app",
+      "result": "passed"
+    },
+    {
+      "command": "cargo clippy --locked --offline -p bello-platform --all-targets --no-deps --target aarch64-apple-darwin -- -D warnings",
+      "result": "passed",
+      "scope": "Apple-target metadata/type/lint only on Linux; no SDK linking or native execution"
+    },
+    {
+      "command": "cargo rustc --locked -p bellobox-app --bin bellobox --tests --profile test -- -C debug-assertions=no --emit=link; execute emitted artifact screenshot_ui:: --test-threads=2",
+      "result": "passed",
+      "scope": "app-only no-debug assertions; dependencies retain ordinary debug settings",
+      "passed": 95,
+      "artifact_sha256": "ebb9a588dbf7543e56097f51551d0e1a8b928780de8ef117e13012b56374e1af"
+    }
+  ],
+  "review_findings_corrected": [
+    "Closed gate must precede Instant + untrusted timeout; Duration::MAX now returns Unavailable without panic.",
+    "Initial Window full-display dependency must physically drain before catalog admission; ordinary Display/Area return behavior preserved.",
+    "Successful Job result must be cancellation/deadline checked after PhysicalDrain; deterministic successful-result-consumed handshake covers the post-drain guard."
+  ],
+  "earlier_test_corrections": [
+    "Native capability literal changed to the platform closed-gate error; zero-action assertion retained.",
+    "Two new materialization tests now retain selector ownership instead of dropping it and correctly cancelling the commit.",
+    "Final frozen-editor revision assertion accounts for its initial font preparation; no refresh revision accepted."
+  ],
+  "gui": {
+    "status": "passed scoped supplied-pixel Linux matrix",
+    "binary_sha256": "d328600a3a4c11a0532ea16ab3c545a96290d61b1ec04cf14c826b02974a414d",
+    "report": "QA-report.md",
+    "outer_launch": "dbus-run-session -- bash <workspace>/native-window-qa/launch.sh <mode>",
+    "inner_launch_recipe": "launch-recipe.sh",
+    "modes": [
+      "window",
+      "observation-delayed",
+      "failure",
+      "area"
+    ],
+    "portal_version": 4,
+    "portal_prerequisite_document": "../../cloud-dialog-acceptance.md",
+    "checks": {
+      "front_alpha_and_frozen_rgb": true,
+      "blank_and_long_drag_reject": true,
+      "fixed_crop_undo_redo_letterbox": true,
+      "actual_save_cancel_reopen": true,
+      "physical_body_only_png": true,
+      "copy_finish_clipboard_reimport": true,
+      "back_independent_replacement": true,
+      "editor_usable_during_observation": true,
+      "one_shot_after_undo": true,
+      "failure_retains_pixels_and_edits": true,
+      "close_before_return_no_late_editor": true,
+      "area_resize_single_undo_move_copy_finish": true,
+      "all_app_windows_closed_after_matrix": true
+    },
+    "controlled_delay_evidence_ms": {
+      "observation_delay": 8000,
+      "observation_edit_completed": 908,
+      "observation_edit_preserved_check": 21533,
+      "failure_edit_completed": 942,
+      "failure_preserved_check": 23531,
+      "early_close": 465,
+      "no_late_return_check": 23503
+    },
+    "timing_scope": "Only establishes overlap with the explicit supplied delay; not a native performance claim."
+  },
+  "native_runtime": "Not performed. No window/display enumeration, TCC/AX/SCK acquisition, macOS desktop access or permissions. Native CI uses constructed CF/scalar/dispatch data only and is pending exact-commit publication.",
+  "freshness_contract": "Fresh at completion of the final worker observation. UI checks only owned deadline/cancellation/session/revision/coordinator/base/clean guards. Native has no OS revision feed and no atomic/live incarnation claim.",
+  "main_queue_caveat": "Two CG queries and four topology passes plus bounded parsing remain on main. Native responsiveness and callback delivery are unmeasured activation gates.",
+  "loc_independent_review": "All 19 Rust hashes, before/after support intervals, literal-preserved classification pairs and category equations independently verified.",
+  "artifacts": [
+    {
+      "path": "01-front-window.jpg",
+      "sha256": "5e52fe4ca660a7d5265111e6c1a9ae795265e05ac0de39e39adb6a40655fc7ef",
+      "bytes": 25589,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "02-fixed-crop-redo.jpg",
+      "sha256": "a5814828e33473af167e1076cfc35af6641c1106f9caef5497f4f85d7ae254a6",
+      "bytes": 27257,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "03-save-dialog.jpg",
+      "sha256": "9e113b476d92117e50c07bb8bce1e4b3db2b4b0a934733d80775321a6036fc10",
+      "bytes": 54364,
+      "format": "JPEG",
+      "dimensions": [
+        1096,
+        822
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "04-cropped-save.jpg",
+      "sha256": "766d418106acff4ec72fe8e26b015629bdc8a237b8e6f76ce2df46074f457ed5",
+      "bytes": 28515,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "05-clipboard-reimport.jpg",
+      "sha256": "3ec81334fff13e1154ec2e2bf14c6a8c28fea074731e127a6cb0cb5f0f047b16",
+      "bytes": 47529,
+      "format": "JPEG",
+      "dimensions": [
+        1180,
+        812
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "06-back-window.jpg",
+      "sha256": "9a40ef96cd4589651cd564b6a3ec189e7fca32df3d20ef717c1927ebc0cbc939",
+      "bytes": 25512,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "07-observation-pending-edit.jpg",
+      "sha256": "bcfd87ee17b60c5fa6a1e70888fe851b9ac6714a4a8ed352becbe6f4ffdd81de",
+      "bytes": 27330,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "08-observation-edit-preserved.jpg",
+      "sha256": "bcfd87ee17b60c5fa6a1e70888fe851b9ac6714a4a8ed352becbe6f4ffdd81de",
+      "bytes": 27330,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "09-one-shot-undo.jpg",
+      "sha256": "bc4462a18e46b665c3e0145ab18fa31b5214933a08bff928bff74f5b64dee783",
+      "bytes": 25635,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "10-failure-edit-preserved.jpg",
+      "sha256": "513aaddffac5209e1e42c027efd57f08b606fe886e5b6b323917ee43fd2a2cea",
+      "bytes": 27705,
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "11-close-no-late-return.jpg",
+      "sha256": "08aa8f8e69a4748d0a4646d6f3fff4a7b2e462fa62d81ee3ea59dcbee89be898",
+      "bytes": 43821,
+      "format": "JPEG",
+      "dimensions": [
+        1180,
+        812
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "12-area-resize-undo-move.jpg",
+      "sha256": "2fac844eec067efa32d882039d050b37d7a754ed288c465a774270598dba2ffe",
+      "bytes": 82443,
+      "format": "JPEG",
+      "dimensions": [
+        1000,
+        640
+      ],
+      "mode": "RGB"
+    },
+    {
+      "path": "saved-cropped-window.png",
+      "sha256": "b5e50a707a59d5226817801687e8d08d7d074d6312d1b3b25975b7019f83bd56",
+      "bytes": 1972,
+      "format": "PNG",
+      "dimensions": [
+        401,
+        161
+      ],
+      "mode": "RGBA",
+      "unique_colors": [
+        [
+          64561,
+          [
+            255,
+            224,
+            186,
+            255
+          ]
+        ]
+      ]
+    }
+  ],
+  "final_verification": {
+    "source_hashes_unchanged": true,
+    "binary_hash_unchanged": true,
+    "diff_whitespace": "passed",
+    "cancelled_save_default_file_absent": true
+  }
+}

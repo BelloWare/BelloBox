@@ -1,0 +1,1285 @@
+{
+  "baseline_commit": "505e8f193de858163474e2af269d2e3ca51e475a",
+  "baseline_counts": {
+    "production": 45352,
+    "support": 23813,
+    "benchmark": 105
+  },
+  "counting_rule": "Source-reviewed delta of nonblank physical Rust lines, including comments. Explicit positive cfg test/DEBUG support ranges begin at the attribute; preceding comments stay in their containing classification. Entire external DEBUG/test modules are support. In partial mixed-file entries, unchanged support spans omitted from both sides cancel; only the listed changed/reclassified spans affect the delta. No generic cfg parser or feature percentage.",
+  "reclassification_rule": "Separately enumerate literal preserved nonblank lines switching category under the explicit ranges. Correspondence is deterministic per-file SequenceMatcher(autojunk=False) on stripped lines: indentation-only edits preserve physical lines. Reworked/reordered replacements and cross-file moves count as remove/add, not an estimated semantic reclassification. Every category equation is checked. Exact preserved before/after line ranges are included, so this conservative textual decomposition is auditable.",
+  "files": [
+    {
+      "path": "rust/crates/bello-platform/src/native_capture.rs",
+      "before_nonblank": 473,
+      "after_nonblank": 524,
+      "total_delta": 51,
+      "production_delta": 63,
+      "support_delta": -12,
+      "before_reviewed_support_ranges_1based": [
+        [
+          21,
+          22
+        ],
+        [
+          473,
+          484
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          26,
+          27
+        ]
+      ],
+      "classification": "External owner guard is now normal Apple-Silicon production; native gate and Window freeze/deadline entries are production.",
+      "before_sha256": "2ce9d07b531598255bd90aab594f158bbf3cdb1eeaa262111e60a415b978a8df",
+      "after_sha256": "c7e657b5eb521242e81ba3d4fe1fd23aa8dcbd776ad5220dc4b7489258b0a7b5",
+      "added_production": 56,
+      "removed_production": 4,
+      "added_support": 0,
+      "removed_support": 1,
+      "support_to_production": 11,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            474,
+            484
+          ],
+          "after": [
+            527,
+            537
+          ]
+        }
+      ],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/completion.rs",
+      "before_nonblank": 118,
+      "after_nonblank": 178,
+      "total_delta": 60,
+      "production_delta": 45,
+      "support_delta": 15,
+      "before_reviewed_support_ranges_1based": [
+        [
+          34,
+          35
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          27,
+          28
+        ],
+        [
+          32,
+          42
+        ],
+        [
+          56,
+          57
+        ],
+        [
+          150,
+          151
+        ]
+      ],
+      "classification": "Validating phase is promoted to normal native compilation. Physical drain/absolute Job deadline are production; result-consumed test notice is support.",
+      "before_sha256": "29de1d0dbf0cc2c44015caac4ca7ef2c2e6504e8d0ac9df5d13b84b4bf0f908b",
+      "after_sha256": "859cd2b7bf378f1783d91e95ee73d7155d784cc34c7c468f81bcce6ce37fa9f7",
+      "added_production": 46,
+      "removed_production": 2,
+      "added_support": 17,
+      "removed_support": 1,
+      "support_to_production": 1,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            35,
+            35
+          ],
+          "after": [
+            80,
+            80
+          ]
+        }
+      ],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos.rs",
+      "before_nonblank": 733,
+      "after_nonblank": 751,
+      "total_delta": 18,
+      "production_delta": 20,
+      "support_delta": -2,
+      "before_reviewed_support_ranges_1based": [
+        [
+          733,
+          735
+        ],
+        [
+          737,
+          739
+        ],
+        [
+          741,
+          742
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          751,
+          753
+        ],
+        [
+          755,
+          757
+        ]
+      ],
+      "classification": "Window module admission compiles normally. Window-only initial Display physical retirement is production; pre-existing external test modules remain support.",
+      "before_sha256": "09a26b2997732509e6af3fdbbfe51444b024ac9e3dcd50e301c3d1bfe346116d",
+      "after_sha256": "58326915ef2f4631bd1b224c65135e797836bb3b2fdcf535ad6944d37af59842",
+      "added_production": 21,
+      "removed_production": 1,
+      "added_support": 0,
+      "removed_support": 2,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window.rs",
+      "before_nonblank": 681,
+      "after_nonblank": 792,
+      "total_delta": 111,
+      "production_delta": 762,
+      "support_delta": -651,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          688
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          189,
+          192
+        ],
+        [
+          437,
+          443
+        ],
+        [
+          457,
+          460
+        ],
+        [
+          469,
+          481
+        ],
+        [
+          799,
+          800
+        ]
+      ],
+      "classification": "Previously whole cfg(test) candidate is now normal production under a false platform gate. Only constructed-observation wrapper, fake MainContext variant/arms and tests declaration remain support.",
+      "before_sha256": "9e64d152b5c62dd1859b8d94a7fb83542c625c5d9260a9e6a5d4617dd618bac1",
+      "after_sha256": "a1a5ec9a4699960be1d9504bdf54add776da2fd87dfe0ac87af6ca5288b23679",
+      "added_production": 115,
+      "removed_production": 0,
+      "added_support": 27,
+      "removed_support": 31,
+      "support_to_production": 647,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            2,
+            10
+          ],
+          "after": [
+            2,
+            10
+          ]
+        },
+        {
+          "before": [
+            12,
+            14
+          ],
+          "after": [
+            15,
+            17
+          ]
+        },
+        {
+          "before": [
+            16,
+            36
+          ],
+          "after": [
+            19,
+            39
+          ]
+        },
+        {
+          "before": [
+            37,
+            65
+          ],
+          "after": [
+            41,
+            69
+          ]
+        },
+        {
+          "before": [
+            67,
+            71
+          ],
+          "after": [
+            71,
+            75
+          ]
+        },
+        {
+          "before": [
+            73,
+            184
+          ],
+          "after": [
+            77,
+            188
+          ]
+        },
+        {
+          "before": [
+            186,
+            194
+          ],
+          "after": [
+            198,
+            206
+          ]
+        },
+        {
+          "before": [
+            195,
+            220
+          ],
+          "after": [
+            208,
+            233
+          ]
+        },
+        {
+          "before": [
+            221,
+            234
+          ],
+          "after": [
+            245,
+            258
+          ]
+        },
+        {
+          "before": [
+            235,
+            236
+          ],
+          "after": [
+            260,
+            261
+          ]
+        },
+        {
+          "before": [
+            238,
+            239
+          ],
+          "after": [
+            266,
+            267
+          ]
+        },
+        {
+          "before": [
+            241,
+            241
+          ],
+          "after": [
+            270,
+            270
+          ]
+        },
+        {
+          "before": [
+            243,
+            258
+          ],
+          "after": [
+            275,
+            290
+          ]
+        },
+        {
+          "before": [
+            259,
+            277
+          ],
+          "after": [
+            292,
+            310
+          ]
+        },
+        {
+          "before": [
+            278,
+            282
+          ],
+          "after": [
+            312,
+            316
+          ]
+        },
+        {
+          "before": [
+            286,
+            293
+          ],
+          "after": [
+            324,
+            331
+          ]
+        },
+        {
+          "before": [
+            295,
+            304
+          ],
+          "after": [
+            333,
+            342
+          ]
+        },
+        {
+          "before": [
+            306,
+            315
+          ],
+          "after": [
+            351,
+            360
+          ]
+        },
+        {
+          "before": [
+            317,
+            320
+          ],
+          "after": [
+            362,
+            365
+          ]
+        },
+        {
+          "before": [
+            321,
+            329
+          ],
+          "after": [
+            367,
+            375
+          ]
+        },
+        {
+          "before": [
+            330,
+            336
+          ],
+          "after": [
+            381,
+            387
+          ]
+        },
+        {
+          "before": [
+            338,
+            345
+          ],
+          "after": [
+            389,
+            396
+          ]
+        },
+        {
+          "before": [
+            346,
+            346
+          ],
+          "after": [
+            398,
+            398
+          ]
+        },
+        {
+          "before": [
+            348,
+            348
+          ],
+          "after": [
+            400,
+            400
+          ]
+        },
+        {
+          "before": [
+            350,
+            350
+          ],
+          "after": [
+            405,
+            405
+          ]
+        },
+        {
+          "before": [
+            352,
+            359
+          ],
+          "after": [
+            407,
+            414
+          ]
+        },
+        {
+          "before": [
+            361,
+            369
+          ],
+          "after": [
+            416,
+            424
+          ]
+        },
+        {
+          "before": [
+            374,
+            377
+          ],
+          "after": [
+            425,
+            428
+          ]
+        },
+        {
+          "before": [
+            379,
+            381
+          ],
+          "after": [
+            430,
+            432
+          ]
+        },
+        {
+          "before": [
+            385,
+            385
+          ],
+          "after": [
+            434,
+            434
+          ]
+        },
+        {
+          "before": [
+            386,
+            389
+          ],
+          "after": [
+            500,
+            503
+          ]
+        },
+        {
+          "before": [
+            391,
+            393
+          ],
+          "after": [
+            505,
+            507
+          ]
+        },
+        {
+          "before": [
+            395,
+            397
+          ],
+          "after": [
+            509,
+            511
+          ]
+        },
+        {
+          "before": [
+            401,
+            408
+          ],
+          "after": [
+            513,
+            520
+          ]
+        },
+        {
+          "before": [
+            410,
+            423
+          ],
+          "after": [
+            522,
+            535
+          ]
+        },
+        {
+          "before": [
+            425,
+            441
+          ],
+          "after": [
+            537,
+            553
+          ]
+        },
+        {
+          "before": [
+            444,
+            552
+          ],
+          "after": [
+            556,
+            664
+          ]
+        },
+        {
+          "before": [
+            554,
+            685
+          ],
+          "after": [
+            666,
+            797
+          ]
+        }
+      ],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/tests.rs",
+      "before_nonblank": 389,
+      "after_nonblank": 390,
+      "total_delta": 1,
+      "production_delta": 0,
+      "support_delta": 1,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          392
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          393
+        ]
+      ],
+      "classification": "Constructed native metadata/plan ownership and ABI tests; no capture invocation.",
+      "before_sha256": "b43ac47f3149bfec5b83717a679b9ec21155768092fec2e2280730d212472061",
+      "after_sha256": "1602ed68adc9aedf7c2b3b777970469be6d7ab73de7083a3f3c60337d48885a6",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 5,
+      "removed_support": 4,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/catalog.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 155,
+      "total_delta": 155,
+      "production_delta": 153,
+      "support_delta": 2,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          159,
+          160
+        ]
+      ],
+      "classification": "New worker/main-context strict and raw catalog implementation is production; external synthetic test declaration is support.",
+      "before_sha256": null,
+      "after_sha256": "12bfee5c646f442eea0df9c79c1996dbfa2bc7ecee4bb1764a38e304407ab48e",
+      "added_production": 153,
+      "removed_production": 0,
+      "added_support": 2,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/catalog/tests.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 314,
+      "total_delta": 314,
+      "production_delta": 0,
+      "support_delta": 314,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          321
+        ]
+      ],
+      "classification": "New constructed CF dictionaries/topologies and fake dispatch/lease tests; no native enumeration.",
+      "before_sha256": null,
+      "after_sha256": "5f23539ccf08b01176f9a1428a4afe9382151efdd46e42e5ee691946b03347bf",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 314,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/window_catalog.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 192,
+      "total_delta": 192,
+      "production_delta": 159,
+      "support_delta": 33,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          169,
+          201
+        ]
+      ],
+      "classification": "New owned platform transport, absolute deadline/cancellation and closed gate APIs are production. Local gate/deadline tests are support.",
+      "before_sha256": null,
+      "after_sha256": "81ecbc1cc10204c556224b706cc2f240722767b6fe2575a64afbd619ca009556",
+      "added_production": 159,
+      "removed_production": 0,
+      "added_support": 33,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/tests.rs",
+      "before_nonblank": 602,
+      "after_nonblank": 688,
+      "total_delta": 86,
+      "production_delta": 0,
+      "support_delta": 86,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          610
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          699
+        ]
+      ],
+      "classification": "Portable gate, held-lease, post-drain timeout/cancellation and initial freeze dependency regressions.",
+      "before_sha256": "2d988c2a3161ae450d2bb18df82ef416bac81dde625f2ffa304ccd58a87174a3",
+      "after_sha256": "d9ffd9ad90b0368a8a36a2e2674513400b042abefce0a9fecfdef61032c23361",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 89,
+      "removed_support": 3,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "before_nonblank": 846,
+      "after_nonblank": 862,
+      "total_delta": 16,
+      "production_delta": 16,
+      "support_delta": 0,
+      "before_reviewed_support_ranges_1based": [
+        [
+          285,
+          295
+        ],
+        [
+          811,
+          855
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          301,
+          311
+        ],
+        [
+          827,
+          871
+        ]
+      ],
+      "classification": "Window preparation cancellation and Window-only physical-drain freeze selection are production; changed supplied fixture spans are support. Other unchanged support cancels.",
+      "before_sha256": "2d96de53bc395815fc3ad5bfff4a0b02ccce9320dbba2a746e8f31550afe48da",
+      "after_sha256": "a5684db684d1479c8e6389d0b4a052a73e93988b30f2c4fe7a63267bd620aaa6",
+      "added_production": 21,
+      "removed_production": 5,
+      "added_support": 1,
+      "removed_support": 1,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "before_nonblank": 712,
+      "after_nonblank": 712,
+      "total_delta": 0,
+      "production_delta": 0,
+      "support_delta": 0,
+      "before_reviewed_support_ranges_1based": [
+        [
+          727,
+          728
+        ],
+        [
+          730,
+          731
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          727,
+          728
+        ],
+        [
+          730,
+          731
+        ]
+      ],
+      "classification": "Deferring optional observation until after mounting is production; test declarations remain support.",
+      "before_sha256": "ca8319ea32da23688a219f2fd0116c36d41e28b24877a6d4ea255cf3ca7b24ea",
+      "after_sha256": "ba944f22a8a2ec6d5c0693268f63ad3d78a06f76c9a2bc2f036065d13ee84e50",
+      "added_production": 6,
+      "removed_production": 6,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs",
+      "before_nonblank": 600,
+      "after_nonblank": 732,
+      "total_delta": 132,
+      "production_delta": 0,
+      "support_delta": 132,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          613
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          747
+        ]
+      ],
+      "classification": "Actual coordinator/worker deferred observation, timeout, editing, close/drain/reopen and one-shot Undo regressions.",
+      "before_sha256": "368bbc1fe4d6c85f372800164a914f37ca556d9f13d58d6a193a2814dfed551a",
+      "after_sha256": "5b439e528e3c5605275719732cd4037185a6afc8b6a91e6660b5ee8283b4370b",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 132,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "before_nonblank": 340,
+      "after_nonblank": 340,
+      "total_delta": 0,
+      "production_delta": 0,
+      "support_delta": 0,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          345
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          345
+        ]
+      ],
+      "classification": "Existing zero-action capability preflight expectation follows platform gate error.",
+      "before_sha256": "9d290822468b71a97aaa7285c31ae62f9581ba40b6ddd7d25b1f2b06d1d3fb2f",
+      "after_sha256": "5d7ba294fdaf090515e3fe8b76f8f790415bd0cba5a624e200993960a9bdb891",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 1,
+      "removed_support": 1,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs",
+      "before_nonblank": 336,
+      "after_nonblank": 386,
+      "total_delta": 50,
+      "production_delta": 11,
+      "support_delta": 39,
+      "before_reviewed_support_ranges_1based": [
+        [
+          8,
+          12
+        ],
+        [
+          24,
+          25
+        ],
+        [
+          28,
+          29
+        ],
+        [
+          44,
+          45
+        ],
+        [
+          49,
+          103
+        ],
+        [
+          147,
+          148
+        ],
+        [
+          155,
+          160
+        ],
+        [
+          194,
+          197
+        ],
+        [
+          304,
+          305
+        ],
+        [
+          309,
+          343
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          8,
+          12
+        ],
+        [
+          24,
+          27
+        ],
+        [
+          30,
+          33
+        ],
+        [
+          37,
+          54
+        ],
+        [
+          61,
+          62
+        ],
+        [
+          68,
+          71
+        ],
+        [
+          75,
+          131
+        ],
+        [
+          176,
+          179
+        ],
+        [
+          181,
+          184
+        ],
+        [
+          191,
+          201
+        ],
+        [
+          245,
+          248
+        ],
+        [
+          355,
+          356
+        ],
+        [
+          360,
+          394
+        ]
+      ],
+      "classification": "Deferred decision, after-mask observation and cheap one-shot publication are production. Eager supplied helper now test-only; generated fixture and queued/disposal test gates remain support.",
+      "before_sha256": "1a10ee151f134271163f356b05e1b7d653fd12e2c4051ce29bc405af56b2c16f",
+      "after_sha256": "38fa834803a0403a7e1119cb7c0e689ef9371cff64c6ccfe14a44122a5626239",
+      "added_production": 32,
+      "removed_production": 8,
+      "added_support": 26,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 13,
+      "production_to_support_preserved_ranges": [
+        {
+          "before": [
+            30,
+            30
+          ],
+          "after": [
+            33,
+            33
+          ]
+        },
+        {
+          "before": [
+            33,
+            43
+          ],
+          "after": [
+            38,
+            48
+          ]
+        },
+        {
+          "before": [
+            161,
+            161
+          ],
+          "after": [
+            198,
+            198
+          ]
+        }
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow.rs",
+      "before_nonblank": 581,
+      "after_nonblank": 767,
+      "total_delta": 186,
+      "production_delta": 151,
+      "support_delta": 35,
+      "before_reviewed_support_ranges_1based": [
+        [
+          75,
+          101
+        ],
+        [
+          169,
+          172
+        ],
+        [
+          183,
+          211
+        ],
+        [
+          242,
+          243
+        ],
+        [
+          311,
+          312
+        ],
+        [
+          374,
+          375
+        ],
+        [
+          384,
+          385
+        ],
+        [
+          402,
+          405
+        ],
+        [
+          407,
+          416
+        ],
+        [
+          584,
+          597
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          76,
+          102
+        ],
+        [
+          253,
+          256
+        ],
+        [
+          267,
+          295
+        ],
+        [
+          329,
+          334
+        ],
+        [
+          337,
+          347
+        ],
+        [
+          416,
+          421
+        ],
+        [
+          435,
+          445
+        ],
+        [
+          483,
+          487
+        ],
+        [
+          493,
+          494
+        ],
+        [
+          506,
+          507
+        ],
+        [
+          560,
+          563
+        ],
+        [
+          565,
+          574
+        ],
+        [
+          772,
+          785
+        ]
+      ],
+      "classification": "Native transport adaptation, absolute observation/acquisition deadlines and snapshot-delivery evidence are production. Default supplied constructor/eager request now support; supplied callback/test generator/gate helpers remain support.",
+      "before_sha256": "c1e7feeff0779888a8e1736277b33ab82722c1023655fce0b7f18737c636de16",
+      "after_sha256": "52849c319c8dfd502117a9980c52c58c07019a5bc27cf7cd9e4b957511a0d327",
+      "added_production": 198,
+      "removed_production": 38,
+      "added_support": 26,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 9,
+      "production_to_support_preserved_ranges": [
+        {
+          "before": [
+            246,
+            249
+          ],
+          "after": [
+            338,
+            341
+          ]
+        },
+        {
+          "before": [
+            326,
+            330
+          ],
+          "after": [
+            436,
+            440
+          ]
+        }
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/fixtures.rs",
+      "before_nonblank": 423,
+      "after_nonblank": 519,
+      "total_delta": 96,
+      "production_delta": 0,
+      "support_delta": 96,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          427
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          524
+        ]
+      ],
+      "classification": "External DEBUG/test-only supplied records, observers, revision updates, pixel generators, delays and cancellation fixtures.",
+      "before_sha256": "c31550bc3497da312b64a608faad7c3b67fd090aa591851813cfade095935843",
+      "after_sha256": "1e3fcaa5fdc7045a1bb70c779f95b31adfdf8b9f512e783629d09f574867851e",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 112,
+      "removed_support": 16,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/tests.rs",
+      "before_nonblank": 837,
+      "after_nonblank": 1088,
+      "total_delta": 251,
+      "production_delta": 0,
+      "support_delta": 251,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          858
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          1114
+        ]
+      ],
+      "classification": "Exact policy/raw transport/level forwarding and observation-stage deadline/cancellation regressions.",
+      "before_sha256": "62f86d451bffd81001549de03e3590d0be8ae80baa9d25a219e2943231f36da9",
+      "after_sha256": "24c24b83c12b1004e610ff9dc958b26f433ec74edbefc7e13791086ea5f2871e",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 255,
+      "removed_support": 4,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh.rs",
+      "before_nonblank": 394,
+      "after_nonblank": 400,
+      "total_delta": 6,
+      "production_delta": 6,
+      "support_delta": 0,
+      "before_reviewed_support_ranges_1based": [
+        [
+          401,
+          402
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          407,
+          408
+        ]
+      ],
+      "classification": "Consuming with_decision preserves original plan ownership; production code only. Test declaration stays support.",
+      "before_sha256": "2ba9e77f84ebb73147937fc8cc1d8441397db6a90fca2985c91a94f8e120462d",
+      "after_sha256": "f1caf0ac27bb3eb1b3c4f1ebb80b939e5b3583a1c5ca020d570d4b6ad366b14a",
+      "added_production": 6,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh/tests.rs",
+      "before_nonblank": 756,
+      "after_nonblank": 804,
+      "total_delta": 48,
+      "production_delta": 0,
+      "support_delta": 48,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          762
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          811
+        ]
+      ],
+      "classification": "Deferred-decision base/context/Arc invariance and rejection regressions.",
+      "before_sha256": "4b1eeb2420ca9e18e5f808e00f0f37a4a149fae87bbf63117a82003db4f4536f",
+      "after_sha256": "a598207bf06f1e60f1371556da1613d57d853f1516a2563cc9ed18b4e8821048",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 48,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    }
+  ],
+  "delta": {
+    "production_delta": 1386,
+    "support_delta": 387,
+    "total_delta": 1773,
+    "support_to_production": 659,
+    "production_to_support": 22,
+    "added_production": 813,
+    "removed_production": 64,
+    "added_support": 1088,
+    "removed_support": 64
+  },
+  "counts": {
+    "production": 46738,
+    "support": 24200,
+    "benchmark": 105
+  }
+}

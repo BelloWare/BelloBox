@@ -44,9 +44,11 @@ impl CaptureIntent {
         work()
     }
 }
+type WindowPreparation =
+    dyn FnOnce(Arc<AtomicBool>) -> Result<Arc<super::window_workflow::Source>, String> + Send;
 enum Preparation {
     Area,
-    Window(Box<dyn FnOnce() -> Result<Arc<super::window_workflow::Source>, String> + Send>),
+    Window(Box<WindowPreparation>),
 }
 const SNAPSHOT_DELAY: std::time::Duration = std::time::Duration::from_millis(60);
 
@@ -185,8 +187,15 @@ fn begin_window_with(
     CaptureIntent::Window.admitted(|| {
         with_window_capability(backend, |backend| {
             begin_native(window, cx, |layout| {
-                Ok(Preparation::Window(Box::new(move || {
-                    super::window_workflow::Source::from_backend(layout, backend)
+                Ok(Preparation::Window(Box::new(move |cancellation| {
+                    super::window_workflow::Source::from_backend_with_request(
+                        layout,
+                        backend,
+                        capture::WindowObservationRequest::new(
+                            capture::CaptureCancellation::from_flag(cancellation),
+                            std::time::Instant::now() + capture::MAX_CAPTURE_TIMEOUT,
+                        ),
+                    )
                 })))
             })
         })
@@ -271,7 +280,14 @@ fn begin_native(
     };
     let task = cx.background_executor().spawn(async move {
         super::caught_capture(|| {
-            prepare_capture_with(layout, cancellation, preparation, capture::capture)
+            // Window's subsequent catalog shares native admission with Display.
+            // Its frozen dependency must physically drain before catalog entry.
+            let freeze = if matches!(&preparation, Preparation::Window(_)) {
+                capture::capture_window_freeze
+            } else {
+                capture::capture
+            };
+            prepare_capture_with(layout, cancellation, preparation, freeze)
         })
     });
     // App-owned cleanup is independent of requester/window/entity liveness.
@@ -352,7 +368,7 @@ fn prepare_capture_with(
             use bellobox_core::screenshot::window::FrozenWindowSession;
             // Source catalogs the windows only after the full-display freeze,
             // before an overlay exists. The exact native catalog stays gated.
-            let source = source()?;
+            let source = source(cancellation.clone())?;
             let mut window =
                 FrozenWindowSession::new(display, &source.candidates()?, source.own_pid())
                     .map_err(|error| error.to_string())?;
@@ -833,7 +849,7 @@ fn prepare_window_supplied(
     prepare_capture_with(
         fixture.layout,
         cancellation,
-        Preparation::Window(Box::new(move || Ok(fixture.source))),
+        Preparation::Window(Box::new(move |_| Ok(fixture.source))),
         move |request, _| {
             Ok(capture::NativeCaptureSnapshot {
                 png: fixture

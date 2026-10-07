@@ -1,5 +1,11 @@
 # Callback-local Window adapter: production disabled
 
+Historical adapter checkpoint: the test-only compilation and missing host/catalog
+statements below are superseded by [the owned native Window bridge](native-window-catalog.md).
+That later implementation compiles in normal Apple Silicon builds, adds the gated
+catalog and counted asynchronous host integration, and preserves the closed native
+activation boundary. Earlier test results remain tied to their recorded source.
+
 The Window backend is compiled for Apple Silicon/macOS tests only. Public
 `capture_window` returns Unavailable before enumeration, native permission checks
 or image acquisition on every platform. No chooser, frozen-overlay UI integration,

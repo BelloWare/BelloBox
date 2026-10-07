@@ -760,3 +760,52 @@ fn retained_refresh_clone_cannot_republish_after_success_or_clean_undo() {
     std::thread::spawn(move || drop(retained)).join().unwrap();
     assert!(replacement.upgrade().is_none());
 }
+
+#[test]
+fn deferred_decision_preserves_original_base_context_and_cancellation_guards() {
+    for case in 0..4 {
+        let mut session = ScreenshotEditSession::new(image(8, 8, [1, 2, 3, 255]));
+        let context = context();
+        let cancellation = Arc::new(AtomicBool::new(false));
+        let pending = WindowRefreshPlan::new(
+            &session,
+            context,
+            WindowRefreshDecision::KeepFrozen,
+            cancellation.clone(),
+        )
+        .unwrap();
+        let base = pending.base;
+        let frozen = pending.frozen.base_image.clone();
+        let resolved = pending.with_decision(WindowRefreshDecision::ReplaceWithIndependent);
+        assert_eq!(resolved.base, base);
+        assert_eq!(resolved.context, context);
+        assert!(Arc::ptr_eq(&resolved.cancellation, &cancellation));
+        assert!(Arc::ptr_eq(&resolved.frozen.base_image, &frozen));
+        let prepared = resolved
+            .prepare(image(8, 8, [4, 5, 6, 255]))
+            .unwrap()
+            .unwrap();
+        let mut current = context;
+        match case {
+            0 => {
+                add_mark(&mut session);
+            }
+            1 => cancellation.store(true, Ordering::Release),
+            2 => current.window_id += 1,
+            _ => {
+                assert!(
+                    session.replace_base_capture(session.base_capture_token(), image(8, 8, [7; 4]))
+                );
+            }
+        }
+        assert!(
+            !prepared
+                .apply(&mut session, current, &AtomicBool::new(false))
+                .unwrap_or(false)
+        );
+        assert_ne!(
+            session.document().base_image.get_pixel(0, 0).0,
+            [4, 5, 6, 255]
+        );
+    }
+}

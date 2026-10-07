@@ -611,3 +611,137 @@ fn returned_plan_for_other_equal_sized_window_or_options_keeps_frozen_pixels(
         close(selector, cx);
     }
 }
+
+#[gpui::test]
+fn delayed_observation_mounts_usable_editor_and_keeps_busy_through_queued_drain(
+    cx: &mut TestAppContext,
+) {
+    for retire in [false, true] {
+        let gate = window_refresh::DisposalGate::default();
+        let mut fixture = window_workflow::fixture().unwrap();
+        let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let worker_calls = calls.clone();
+        let executor = cx.background_executor.clone();
+        fixture.source = fixture
+            .source
+            .with_observer(move |_| {
+                assert!(
+                    !executor.is_main_thread(),
+                    "observe must never run in foreground apply"
+                );
+                worker_calls.fetch_add(1, Ordering::Relaxed);
+                Ok(())
+            })
+            .with_observation_gate(gate.clone());
+        let (_, selector) = open_fixture(fixture, cx);
+        let editor = choose(selector, 1, cx);
+        assert!(
+            gate.arrived(),
+            "same counted refresh worker is waiting for fake main dispatch"
+        );
+        assert_eq!(
+            calls.load(Ordering::Relaxed),
+            0,
+            "editor mounted before decision observation"
+        );
+        editor.update(cx, |view, cx| {
+            assert_eq!(view.source, "Window · frozen pixels");
+            view.session
+                .add_annotation(
+                    AnnotationKind::Rectangle(Rect::new(10., 10., 30., 30.)),
+                    AnnotationStyle::default(),
+                )
+                .unwrap();
+            view.changed(cx);
+        });
+        if retire {
+            selector
+                .update(cx, |view, window, cx| view.retire(window, cx))
+                .unwrap();
+            drop(editor);
+            cx.run_until_parked();
+            cx.update(|cx| {
+                assert!(cx.global::<NativeCaptureVisibility>().busy);
+                assert!(
+                    begin_window_supplied(selector.into(), window_workflow::fixture().unwrap(), cx)
+                        .is_err()
+                );
+            });
+        }
+        gate.release();
+        cx.run_until_parked();
+        if retire {
+            assert_eq!(
+                calls.load(Ordering::Relaxed),
+                0,
+                "cancelled queued observation performs no source action"
+            );
+            cx.read(|cx| {
+                assert!(cx.global::<Coordinator>().active.is_none());
+                assert!(!cx.global::<NativeCaptureVisibility>().busy);
+            });
+        } else {
+            let editor = cx.read(|cx| selector.read(cx).unwrap().editor.clone().unwrap());
+            editor.update(cx, |view, cx| {
+                assert_eq!(view.source, "Window · frozen pixels");
+                assert_eq!(view.session.document().annotations().len(), 1);
+                view.apply_history(false, cx);
+                assert!(view.session.document().annotations().is_empty());
+                assert_eq!(
+                    view.source, "Window · frozen pixels",
+                    "one-shot rejection cannot revive after Undo"
+                );
+            });
+            close(selector, cx);
+        }
+        // A successor is admitted only after the original queued work drained.
+        let (_, next) = open_fixture(window_workflow::fixture().unwrap(), cx);
+        close(next, cx);
+    }
+}
+
+#[gpui::test]
+fn final_observation_success_after_deadline_preserves_frozen_pixels(cx: &mut TestAppContext) {
+    let mut fixture = window_workflow::fixture().unwrap();
+    let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let worker_calls = calls.clone();
+    fixture.source = fixture
+        .source
+        .with_observer(move |request| {
+            if worker_calls.fetch_add(1, Ordering::Relaxed) == 3 {
+                // Decision, callback binding, acquisition validation, then final
+                // post-mask observation. Opaque work returns success too late.
+                std::thread::sleep(
+                    request
+                        .deadline()
+                        .saturating_duration_since(std::time::Instant::now())
+                        + std::time::Duration::from_millis(2),
+                );
+            }
+            Ok(())
+        })
+        .with_refresh_timeout(std::time::Duration::from_secs(2));
+    let (_, selector) = open_fixture(fixture, cx);
+    let editor = choose(selector, 1, cx);
+    assert_eq!(calls.load(Ordering::Relaxed), 4);
+    cx.read(|cx| {
+        let view = editor.read(cx);
+        assert_eq!(view.source, "Window · frozen pixels");
+        assert_eq!(
+            view.session.revision(),
+            1,
+            "only initial prepared font revision, no refresh"
+        );
+        assert!(!view.session.can_undo());
+        assert_eq!(
+            view.session
+                .document()
+                .render_rgba()
+                .unwrap()
+                .get_pixel(0, 0)
+                .0[3],
+            255
+        );
+    });
+    close(selector, cx);
+}

@@ -551,15 +551,24 @@ fn production_window_action_is_disabled_even_with_a_valid_request() {
     )
     .unwrap();
     assert!(!std::hint::black_box(NATIVE_WINDOW_CAPTURE_IMPLEMENTED));
-    assert!(matches!(
-        capture_window(
-            selection,
-            WindowCaptureOptions::default(),
-            Arc::new(WindowCaptureSession::new(token).unwrap()),
-            cancellation
-        ),
-        Err(WindowCaptureError::Unavailable)
-    ));
+    for timeout in [
+        WindowCaptureOptions::default().timeout,
+        Duration::ZERO,
+        Duration::MAX,
+    ] {
+        assert!(matches!(
+            capture_window(
+                selection.clone(),
+                WindowCaptureOptions {
+                    timeout,
+                    ..WindowCaptureOptions::default()
+                },
+                Arc::new(WindowCaptureSession::new(token).unwrap()),
+                cancellation.clone()
+            ),
+            Err(WindowCaptureError::Unavailable)
+        ));
+    }
 }
 
 #[test]
@@ -607,4 +616,84 @@ fn native_window_owner_guard_uses_the_actual_process_id() {
     );
     let other = if own == i32::MAX { own - 1 } else { own + 1 };
     assert!(validate_external_window_owner(other).is_ok());
+}
+
+#[test]
+fn physical_drain_waiter_does_not_retain_or_reacquire_capture_lease() {
+    use std::{sync::mpsc, time::Duration};
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    let lease = completion::InflightGuard::acquire(&SLOT).unwrap();
+    let queued = lease.clone();
+    let drain = lease.drain();
+    drop(lease);
+    let (tx, rx) = mpsc::channel();
+    let waiter = std::thread::spawn(move || {
+        drain.wait();
+        tx.send(()).unwrap();
+    });
+    assert!(rx.recv_timeout(Duration::from_millis(20)).is_err());
+    assert!(completion::InflightGuard::acquire(&SLOT).is_err());
+    drop(queued);
+    rx.recv_timeout(Duration::from_secs(1)).unwrap();
+    waiter.join().unwrap();
+    assert!(!SLOT.load(Ordering::Acquire));
+    assert!(completion::InflightGuard::acquire(&SLOT).is_ok());
+}
+
+#[test]
+fn window_freeze_dependency_drains_before_following_catalog_admission() {
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    let lease = InflightGuard::acquire(&SLOT).unwrap();
+    let drain = lease.drain();
+    let job = Job::<u32>::new(CaptureCancellation::default(), Duration::from_secs(1));
+    assert!(job.complete(Ok(42)));
+    let (tx, rx) = std::sync::mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        let image = job.wait_drained(drain).unwrap();
+        let catalog = InflightGuard::acquire(&SLOT).unwrap();
+        tx.send(image).unwrap();
+        drop(catalog);
+    });
+    assert!(rx.recv_timeout(Duration::from_millis(20)).is_err());
+    drop(lease);
+    assert_eq!(rx.recv_timeout(Duration::from_secs(1)).unwrap(), 42);
+    worker.join().unwrap();
+}
+
+#[test]
+fn physical_drain_rechecks_completed_success_after_late_cancellation_or_deadline() {
+    static SLOT: AtomicBool = AtomicBool::new(false);
+    for cancel in [false, true] {
+        let lease = InflightGuard::acquire(&SLOT).unwrap();
+        let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+        let drain = lease.drain().with_result_notice(entered_tx);
+        let cancellation = CaptureCancellation::default();
+        let job = Job::<u32>::new(cancellation.clone(), Duration::from_secs(1));
+        assert!(job.complete(Ok(42)));
+        let (tx, rx) = std::sync::mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            tx.send(job.wait_drained(drain)).unwrap();
+        });
+        assert!(
+            entered_rx.recv_timeout(Duration::from_secs(1)).unwrap(),
+            "worker consumed success before entering physical drain"
+        );
+        assert!(rx.try_recv().is_err());
+        if cancel {
+            cancellation.cancel();
+        } else {
+            std::thread::sleep(Duration::from_millis(1010));
+        }
+        assert!(SLOT.load(Ordering::Acquire));
+        drop(lease);
+        assert_eq!(
+            rx.recv_timeout(Duration::from_secs(1)).unwrap(),
+            Err(if cancel {
+                CaptureError::Cancelled
+            } else {
+                CaptureError::TimedOut
+            })
+        );
+        worker.join().unwrap();
+    }
 }

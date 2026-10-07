@@ -1,0 +1,30 @@
+{
+  "baseline_commit": "505e8f193de858163474e2af269d2e3ca51e475a",
+  "description": "Baseline plus these changed Rust source hashes and unchanged build-manifest hashes identifies the tested source. GUI uses the separately frozen binary. Test/support paths are intentionally retained for automated evidence.",
+  "sha256": {
+    "rust/crates/bello-platform/src/native_capture.rs": "c7e657b5eb521242e81ba3d4fe1fd23aa8dcbd776ad5220dc4b7489258b0a7b5",
+    "rust/crates/bello-platform/src/native_capture/completion.rs": "859cd2b7bf378f1783d91e95ee73d7155d784cc34c7c468f81bcce6ce37fa9f7",
+    "rust/crates/bello-platform/src/native_capture/macos.rs": "58326915ef2f4631bd1b224c65135e797836bb3b2fdcf535ad6944d37af59842",
+    "rust/crates/bello-platform/src/native_capture/macos/window.rs": "a1a5ec9a4699960be1d9504bdf54add776da2fd87dfe0ac87af6ca5288b23679",
+    "rust/crates/bello-platform/src/native_capture/macos/window/tests.rs": "1602ed68adc9aedf7c2b3b777970469be6d7ab73de7083a3f3c60337d48885a6",
+    "rust/crates/bello-platform/src/native_capture/macos/window/catalog.rs": "12bfee5c646f442eea0df9c79c1996dbfa2bc7ecee4bb1764a38e304407ab48e",
+    "rust/crates/bello-platform/src/native_capture/macos/window/catalog/tests.rs": "5f23539ccf08b01176f9a1428a4afe9382151efdd46e42e5ee691946b03347bf",
+    "rust/crates/bello-platform/src/native_capture/window_catalog.rs": "81ecbc1cc10204c556224b706cc2f240722767b6fe2575a64afbd619ca009556",
+    "rust/crates/bello-platform/src/native_capture/tests.rs": "d9ffd9ad90b0368a8a36a2e2674513400b042abefce0a9fecfdef61032c23361",
+    "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs": "a5684db684d1479c8e6389d0b4a052a73e93988b30f2c4fe7a63267bd620aaa6",
+    "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs": "ba944f22a8a2ec6d5c0693268f63ad3d78a06f76c9a2bc2f036065d13ee84e50",
+    "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs": "5b439e528e3c5605275719732cd4037185a6afc8b6a91e6660b5ee8283b4370b",
+    "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs": "5d7ba294fdaf090515e3fe8b76f8f790415bd0cba5a624e200993960a9bdb891",
+    "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs": "38fa834803a0403a7e1119cb7c0e689ef9371cff64c6ccfe14a44122a5626239",
+    "rust/crates/bellobox-app/src/screenshot_ui/window_workflow.rs": "52849c319c8dfd502117a9980c52c58c07019a5bc27cf7cd9e4b957511a0d327",
+    "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/fixtures.rs": "1e3fcaa5fdc7045a1bb70c779f95b31adfdf8b9f512e783629d09f574867851e",
+    "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/tests.rs": "24c24b83c12b1004e610ff9dc958b26f433ec74edbefc7e13791086ea5f2871e",
+    "rust/crates/bellobox-core/src/screenshot/window_refresh.rs": "f1caf0ac27bb3eb1b3c4f1ebb80b939e5b3583a1c5ca020d570d4b6ad366b14a",
+    "rust/crates/bellobox-core/src/screenshot/window_refresh/tests.rs": "a598207bf06f1e60f1371556da1613d57d853f1516a2563cc9ed18b4e8821048",
+    ".github/workflows/rust-macos.yml": "9406cbab2d0b176ee20cbe9aa8f64340ae1fb109f954d7b5c2102bbc9fe68348",
+    "rust/Cargo.toml": "ef7a02f1a62f27c77e5790548c003e2f8ef6770105b87b9db75dca5ff77d497e",
+    "rust/Cargo.lock": "5b8bbf0ed046d4765bd6df09fd5d94284b645d87e33c65ec4b16cf322d3572ba",
+    "rust/crates/bello-platform/Cargo.toml": "63d46138bce6d36f3bc76e95e5353d1ae2384311a0373220db5afc866d9361ce",
+    "rust/crates/bellobox-app/Cargo.toml": "59244a5f09905b8d9e89c57d8cde0c5f64a9e41d3506ab508e00723c62352656"
+  }
+}

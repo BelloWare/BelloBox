@@ -129,16 +129,16 @@ impl Commit {
                 let fixed_frame = commit.candidate().frame_local_points;
                 let token = commit.token();
                 // Fidelity refresh is optional. Failure preserves the exact frozen crop.
-                let refresh = source.request(&commit, cancellation.clone()).ok().map(
-                    |(context, decision, acquisition)| {
-                        super::super::window_refresh::Request::supplied(
+                let refresh = source
+                    .pending_request(&commit, cancellation.clone())
+                    .ok()
+                    .map(|(context, acquisition)| {
+                        super::super::window_refresh::Request::pending(
                             context,
-                            decision,
                             cancellation.clone(),
                             acquisition,
                         )
-                    },
-                );
+                    });
                 let session = commit
                     .materialize(&cancellation)
                     .map_err(|e| e.to_string())?

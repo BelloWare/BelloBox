@@ -23,13 +23,18 @@ pub(super) struct Request {
     input: Input,
     #[cfg(test)]
     pub(super) disposal_gate: Option<DisposalGate>,
+    #[cfg(test)]
+    observation_gate: Option<DisposalGate>,
 }
 enum Input {
     #[cfg(any(debug_assertions, test))]
     Fixture(u32),
+    #[cfg(test)]
     Supplied(super::window_workflow::Acquisition),
+    Pending(super::window_workflow::Acquisition),
 }
 impl Request {
+    #[cfg(test)]
     pub fn supplied(
         context: WindowRefreshContext,
         decision: WindowRefreshDecision,
@@ -43,6 +48,27 @@ impl Request {
             input: Input::Supplied(acquisition),
             #[cfg(test)]
             disposal_gate: None,
+            #[cfg(test)]
+            observation_gate: None,
+        }
+    }
+
+    pub fn pending(
+        context: WindowRefreshContext,
+        boundary: Arc<AtomicBool>,
+        acquisition: super::window_workflow::Acquisition,
+    ) -> Self {
+        #[cfg(test)]
+        let observation_gate = acquisition.observation_gate();
+        Self {
+            context,
+            decision: WindowRefreshDecision::KeepFrozen,
+            boundary,
+            input: Input::Pending(acquisition),
+            #[cfg(test)]
+            disposal_gate: None,
+            #[cfg(test)]
+            observation_gate,
         }
     }
 
@@ -99,6 +125,8 @@ impl Request {
             input: Input::Fixture(candidate.window_id),
             #[cfg(test)]
             disposal_gate: None,
+            #[cfg(test)]
+            observation_gate: None,
         })
     }
 }
@@ -144,13 +172,21 @@ impl ScreenshotEditor {
         }
         self.window_refresh = Some(host);
         let input = request.input;
+        let mut decision = request.decision;
         #[cfg(test)]
         let disposal_gate = request.disposal_gate;
+        #[cfg(test)]
+        let observation_gate = request.observation_gate;
         let task = cx.background_executor().spawn(async move {
+            #[cfg(test)]
+            if let Some(gate) = observation_gate {
+                gate.wait().await;
+            }
             super::caught_capture(|| {
                 if boundary.load(Ordering::Acquire) || cancellation.load(Ordering::Acquire) {
-                    return Ok((None, None));
+                    return Ok((None, None, decision));
                 }
+                let mut plan = plan;
                 let (independent, publication) = match input {
                     #[cfg(any(debug_assertions, test))]
                     Input::Fixture(window_id) => (
@@ -158,22 +194,36 @@ impl ScreenshotEditor {
                             .map_err(|e| e.to_string())?,
                         None,
                     ),
+                    #[cfg(test)]
                     Input::Supplied(acquisition) => {
+                        let (image, publication) = acquisition.run(cancellation.clone())?;
+                        (image, Some(publication))
+                    }
+                    Input::Pending(acquisition) => {
+                        decision = acquisition.decision(cancellation.clone())?;
+                        plan = plan.with_decision(decision);
                         let (image, publication) = acquisition.run(cancellation.clone())?;
                         (image, Some(publication))
                     }
                 };
                 if boundary.load(Ordering::Acquire) {
-                    return Ok((None, None));
+                    return Ok((None, None, decision));
                 }
-                Ok((
-                    prepare_refresh(plan, independent, cancellation).map_err(|e| e.to_string())?,
-                    publication,
-                ))
+                let prepared =
+                    prepare_refresh(plan, independent, cancellation).map_err(|e| e.to_string())?;
+                let publication = publication
+                    .map(|proof| proof.observe_after_mask())
+                    .transpose()?;
+                if boundary.load(Ordering::Acquire) {
+                    return Ok((None, None, decision));
+                }
+                Ok((prepared, publication, decision))
             })
         });
         cx.spawn(async move |this, cx| {
-            let (prepared, publication) = task.await.unwrap_or((None, None));
+            let (prepared, publication, decision) =
+                task.await
+                    .unwrap_or((None, None, WindowRefreshDecision::KeepFrozen));
             let mut original = None;
             let retained = prepared.clone();
             let _ = this.update(cx, |this, cx| {
@@ -184,6 +234,7 @@ impl ScreenshotEditor {
                     .filter(|host| host.jobs.accepts(token))
                 {
                     host.publication = publication;
+                    host.decision = decision;
                 }
                 this.accept_window_refresh(token, prepared, cx);
             });
@@ -230,7 +281,7 @@ impl ScreenshotEditor {
         let accepted = idle
             && host
                 .publication
-                .as_ref()
+                .take()
                 .is_none_or(|publication| publication.is_current())
             && prepared.is_some_and(|prepared| {
                 prepared

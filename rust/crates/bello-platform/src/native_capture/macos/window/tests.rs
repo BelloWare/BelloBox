@@ -18,21 +18,21 @@ extern "C" {
     ) -> ObjcBool;
     fn objc_disposeClassPair(class: Id);
 }
-unsafe fn string(value: &str) -> OwnedObject {
+pub(super) unsafe fn string(value: &str) -> OwnedObject {
     let allocation = send!(class(b"NSString\0").unwrap(), b"alloc\0", () -> Id);
     OwnedObject::from_owned(send!(allocation, b"initWithBytes:length:encoding:\0",
         (*const u8 => value.as_ptr(), usize => value.len(), usize => 4) -> Id))
     .unwrap()
 }
-unsafe fn integer(value: i64) -> Id {
+pub(super) unsafe fn integer(value: i64) -> Id {
     send!(class(b"NSNumber\0").unwrap(), b"numberWithLongLong:\0", (i64 => value) -> Id)
 }
-unsafe fn dictionary(keys: &[Id], values: &[Id]) -> Id {
+pub(super) unsafe fn dictionary(keys: &[Id], values: &[Id]) -> Id {
     assert_eq!(keys.len(), values.len());
     send!(class(b"NSDictionary\0").unwrap(), b"dictionaryWithObjects:forKeys:count:\0",
         (*const Id => values.as_ptr(), *const Id => keys.as_ptr(), usize => keys.len()) -> Id)
 }
-unsafe fn array(values: &[Id]) -> Id {
+pub(super) unsafe fn array(values: &[Id]) -> Id {
     send!(class(b"NSArray\0").unwrap(), b"arrayWithObjects:count:\0",
         (*const Id => values.as_ptr(), usize => values.len()) -> Id)
 }
@@ -167,6 +167,7 @@ fn candidate_entry_and_source_transport_are_type_checked_without_invocation() {
         WindowCaptureOptions,
         Arc<WindowCaptureSession>,
         CaptureCancellation,
+        std::time::Instant,
     ) -> WindowCaptureResult<NativeWindowCaptureSnapshot> = capture;
     fn assert_traits<T: Send + Sync>() {}
     assert_traits::<WindowEncodeTarget>();

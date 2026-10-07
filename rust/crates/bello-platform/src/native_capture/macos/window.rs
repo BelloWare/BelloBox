@@ -1,4 +1,4 @@
-//! Test-compiled macOS 14+/Apple Silicon independent-window candidate.
+//! Production-compiled, admission-disabled macOS 14+/Apple Silicon Window bridge.
 //! SCWindow/filter/configuration stay local to the shareable-content callback.
 //! Only submission evidence, jobs and leases cross queues, apart from the shared
 //! specialized immutable CGImage transport. No native-object Send assertion.
@@ -8,6 +8,9 @@ use crate::window_capture::{
     WindowDisplayGeometry, WindowFrame, WindowIdentity, WindowObservation, WindowPolicyError,
     WindowSelectionToken, WindowTopology, MAX_WINDOW_CANDIDATES, MAX_WINDOW_IDENTITY_BYTES,
 };
+
+mod catalog;
+pub(in crate::native_capture) use catalog::{identity_and_layers, observe};
 
 type WindowJob = Job<NativeWindowCaptureSnapshot, WindowCaptureError>;
 type Method = *mut c_void;
@@ -34,6 +37,7 @@ extern "C" {
     fn CGWindowListCopyWindowInfo(options: u32, relative_to: u32) -> Id;
     fn CGRectMakeWithDictionaryRepresentation(dictionary: Id, rect: *mut CaptureRect) -> bool;
     fn CGDisplayRotation(display: u32) -> f64;
+    fn CGWindowLevelForKey(key: i32) -> i32;
     static kCGWindowNumber: Id;
     static kCGWindowOwnerPID: Id;
     static kCGWindowLayer: Id;
@@ -182,7 +186,15 @@ unsafe fn integer(dictionary: Id, key: Id) -> WindowCaptureResult<i64> {
     }
     Ok(result)
 }
+#[cfg(test)]
 unsafe fn observations(array: Id) -> WindowCaptureResult<Vec<WindowObservation<'static>>> {
+    observations_checked(array, || Ok(()))
+}
+unsafe fn observations_checked(
+    array: Id,
+    check: impl Fn() -> WindowCaptureResult<()>,
+) -> WindowCaptureResult<Vec<WindowObservation<'static>>> {
+    check()?;
     if array.is_null() || CFGetTypeID(array) != CFArrayGetTypeID() {
         return Err(WindowPolicyError::InvalidMetadata.into());
     }
@@ -192,6 +204,7 @@ unsafe fn observations(array: Id) -> WindowCaptureResult<Vec<WindowObservation<'
     }
     let mut result = Vec::with_capacity(count as usize);
     for index in 0..count {
+        check()?;
         let row = CFArrayGetValueAtIndex(array, index);
         if row.is_null() || CFGetTypeID(row) != CFDictionaryGetTypeID() {
             return Err(WindowPolicyError::InvalidMetadata.into());
@@ -218,6 +231,17 @@ unsafe fn observations(array: Id) -> WindowCaptureResult<Vec<WindowObservation<'
         if !CGRectMakeWithDictionaryRepresentation(bounds, &mut frame) {
             return Err(WindowPolicyError::InvalidGeometry.into());
         }
+        if window_id == 0
+            || owner_process_id <= 0
+            || !frame.valid()
+            || !alpha.is_finite()
+            || !(0.0..=1.0).contains(&alpha)
+            || result
+                .iter()
+                .any(|old: &WindowObservation<'_>| old.identity.window_id == window_id)
+        {
+            return Err(WindowPolicyError::InvalidMetadata.into());
+        }
         // This parser is used only with optionOnScreenOnly. Membership is the
         // CG visibility observation; CG bundle identifiers are deliberately absent.
         result.push(WindowObservation {
@@ -232,14 +256,22 @@ unsafe fn observations(array: Id) -> WindowCaptureResult<Vec<WindowObservation<'
             on_screen: true,
         });
     }
+    check()?;
     Ok(result)
 }
-unsafe fn current_observations() -> WindowCaptureResult<Vec<WindowObservation<'static>>> {
+unsafe fn current_observations(
+    check: impl Fn() -> WindowCaptureResult<()>,
+) -> WindowCaptureResult<Vec<WindowObservation<'static>>> {
+    check()?;
     // SDK optionOnScreenOnly (1) | excludeDesktopElements (16), null window ID.
     let catalog = OwnedCf::new(CGWindowListCopyWindowInfo(1 | 16, 0))?;
-    observations(catalog.0)
+    check()?;
+    observations_checked(catalog.0, check)
 }
-unsafe fn topology_once() -> WindowCaptureResult<TopologySnapshot> {
+unsafe fn topology_once(
+    check: &impl Fn() -> WindowCaptureResult<()>,
+) -> WindowCaptureResult<TopologySnapshot> {
+    check()?;
     require_main_thread()?;
     let main_display_id = CGMainDisplayID();
     let screens = send!(class(b"NSScreen\0")?, b"screens\0", () -> Id);
@@ -256,6 +288,7 @@ unsafe fn topology_once() -> WindowCaptureResult<TopologySnapshot> {
     }
     let mut displays = Vec::with_capacity(count);
     for index in 0..count {
+        check()?;
         let screen = send!(screens, b"objectAtIndex:\0", (usize => index) -> Id);
         if screen.is_null() {
             return Err(WindowPolicyError::InvalidGeometry.into());
@@ -275,14 +308,19 @@ unsafe fn topology_once() -> WindowCaptureResult<TopologySnapshot> {
             rotation_degrees: CGDisplayRotation(id),
         });
     }
+    check()?;
     Ok(TopologySnapshot {
         main_display_id,
         displays,
     })
 }
-unsafe fn current_topology() -> WindowCaptureResult<TopologySnapshot> {
-    let first = topology_once()?;
-    let second = topology_once()?;
+unsafe fn current_topology(
+    check: impl Fn() -> WindowCaptureResult<()>,
+) -> WindowCaptureResult<TopologySnapshot> {
+    let first = topology_once(&check)?;
+    check()?;
+    let second = topology_once(&check)?;
+    check()?;
     if first.main_display_id != second.main_display_id
         || first.displays.len() != second.displays.len()
         || first.displays.iter().any(|d| !second.displays.contains(d))
@@ -302,7 +340,14 @@ struct WindowRequest {
 }
 impl WindowRequest {
     fn check(&self, job: &WindowJob) -> WindowCaptureResult<()> {
-        if self.selection.is_cancelled() || self.cancellation.is_cancelled() || !job.active() {
+        self.check_current()?;
+        if !job.active() {
+            return Err(CaptureError::Cancelled.into());
+        }
+        Ok(())
+    }
+    fn check_current(&self) -> WindowCaptureResult<()> {
+        if self.selection.is_cancelled() || self.cancellation.is_cancelled() {
             return Err(CaptureError::Cancelled.into());
         }
         if self.session.current()? != self.expected_token {
@@ -313,11 +358,12 @@ impl WindowRequest {
 }
 // This private entry is deliberately not called by automated tests. It compiles
 // the real action path; synthetic tests never enumerate SCK or acquire pixels.
-fn capture(
+pub(in crate::native_capture) fn capture(
     selection: WindowCaptureSelection,
     options: WindowCaptureOptions,
     session: Arc<WindowCaptureSession>,
     cancellation: CaptureCancellation,
+    deadline: std::time::Instant,
 ) -> WindowCaptureResult<NativeWindowCaptureSnapshot> {
     require_worker_thread()?;
     if selection.is_cancelled() || cancellation.is_cancelled() {
@@ -327,6 +373,11 @@ fn capture(
     if options.timeout.is_zero() || options.timeout > MAX_CAPTURE_TIMEOUT {
         return Err(WindowPolicyError::InvalidOptions.into());
     }
+    let bounded_deadline = std::time::Instant::now()
+        .checked_add(options.timeout)
+        .ok_or(WindowPolicyError::InvalidOptions)?;
+    let deadline = deadline.min(bounded_deadline);
+    WindowObservationRequest::new(cancellation.clone(), deadline).check()?;
     if !is_available() {
         return Err(CaptureError::Unsupported.into());
     }
@@ -334,7 +385,7 @@ fn capture(
         return Err(CaptureError::PermissionNotGranted.into());
     }
     let lease = InflightGuard::acquire(&CAPTURE_IN_FLIGHT)?;
-    let job = WindowJob::new(cancellation.clone(), options.timeout);
+    let job = WindowJob::with_deadline(cancellation.clone(), deadline);
     let expected_token = session.current()?;
     let request = WindowRequest {
         selection,
@@ -343,10 +394,14 @@ fn capture(
         cancellation,
         expected_token,
     };
+    let drain = lease.drain();
     unsafe {
-        enqueue_main(MainAction::Begin(request), job.clone(), lease)?;
+        enqueue_main(MainAction::Begin(request.clone()), job.clone(), lease)?;
     }
-    job.wait()
+    // Logical completion never retires coordinator/admission ownership early.
+    let result = job.wait_drained(drain);
+    request.check_current()?;
+    result
 }
 
 enum MainAction {
@@ -357,7 +412,7 @@ enum MainAction {
         size: CapturePixelSize,
     },
 }
-struct MainContext {
+struct CaptureMainContext {
     action: MainAction,
     job: Arc<WindowJob>,
     _lease: Arc<InflightGuard>,
@@ -367,37 +422,94 @@ unsafe fn enqueue_main(
     job: Arc<WindowJob>,
     lease: Arc<InflightGuard>,
 ) -> WindowCaptureResult<()> {
-    let queue = ptr::addr_of!(_dispatch_main_q).cast_mut();
-    if queue.is_null() {
-        return Err(CaptureError::NativeFailure.into());
-    }
     // Only owned Rust data enters this context. Native objects are queried and
     // released inside the main invocation, never sent from another thread.
     fn assert_send<T: Send>() {}
     assert_send::<MainContext>();
-    let context = Box::into_raw(Box::new(MainContext {
+    enqueue_context(MainContext::Capture(CaptureMainContext {
         action,
         job,
         _lease: lease,
-    }))
-    .cast();
-    dispatch_async_f(queue, context, on_main);
+    }));
     Ok(())
+}
+enum MainContext {
+    #[cfg(test)]
+    SuppliedCatalog {
+        request: WindowObservationRequest,
+        snapshot: Option<WindowCatalogSnapshot>,
+        job: Arc<catalog::CatalogJob>,
+        _lease: Arc<InflightGuard>,
+    },
+    Capture(CaptureMainContext),
+    Catalog {
+        request: WindowObservationRequest,
+        job: Arc<catalog::CatalogJob>,
+        _lease: Arc<InflightGuard>,
+    },
+}
+impl MainContext {
+    fn fail(&self, error: WindowCaptureError) {
+        match self {
+            Self::Capture(context) => {
+                context.job.complete(Err(error));
+            }
+            #[cfg(test)]
+            Self::SuppliedCatalog { job, .. } => {
+                job.complete(Err(error));
+            }
+            Self::Catalog { job, .. } => {
+                job.complete(Err(error));
+            }
+        }
+    }
+    unsafe fn run(&mut self) -> WindowCaptureResult<()> {
+        match self {
+            Self::Capture(context) => run_main(context),
+            #[cfg(test)]
+            Self::SuppliedCatalog {
+                request,
+                snapshot,
+                job,
+                ..
+            } => {
+                request.check()?;
+                if job.transition(Stage::InitialContent, Stage::Validating) {
+                    job.complete(Ok(snapshot.take().expect("one supplied catalog")));
+                }
+                Ok(())
+            }
+            Self::Catalog { request, job, .. } => {
+                request.check()?;
+                if !job.transition(Stage::InitialContent, Stage::Validating) {
+                    return Ok(());
+                }
+                let snapshot = catalog::collect(request)?;
+                request.check()?;
+                job.complete(Ok(snapshot));
+                Ok(())
+            }
+        }
+    }
+}
+unsafe fn enqueue_context(context: MainContext) {
+    fn assert_send<T: Send>() {}
+    assert_send::<MainContext>();
+    let queue = ptr::addr_of!(_dispatch_main_q).cast_mut();
+    dispatch_async_f(queue, Box::into_raw(Box::new(context)).cast(), on_main);
 }
 unsafe extern "C" fn on_main(context: *mut c_void) {
     let outcome = catch_unwind(AssertUnwindSafe(|| {
         let mut context = Box::from_raw(context.cast::<MainContext>());
-        let result = catch_unwind(AssertUnwindSafe(|| run_main(&mut context)));
+        let result = catch_unwind(AssertUnwindSafe(|| context.run()));
         match result {
             Ok(Ok(())) => {}
             Ok(Err(error)) => {
-                context.job.complete(Err(error));
+                context.fail(error);
             }
             Err(payload) => {
                 std::mem::forget(payload);
-                context
-                    .job
-                    .complete(Err(CaptureError::NativeFailure.into()));
+                context.fail(CaptureError::NativeFailure.into());
             }
         }
         drop(context);
@@ -406,7 +518,7 @@ unsafe extern "C" fn on_main(context: *mut c_void) {
         std::mem::forget(payload);
     }
 }
-unsafe fn run_main(context: &mut MainContext) -> WindowCaptureResult<()> {
+unsafe fn run_main(context: &mut CaptureMainContext) -> WindowCaptureResult<()> {
     require_main_thread()?;
     if !context.job.active() {
         return Ok(());
@@ -421,7 +533,7 @@ unsafe fn run_main(context: &mut MainContext) -> WindowCaptureResult<()> {
                 return Ok(());
             }
             request.check(&context.job)?;
-            let topology = current_topology()?;
+            let topology = current_topology(|| request.check(&context.job))?;
             if context
                 .job
                 .transition(Stage::ResolvingInitial, Stage::RefreshedContent)
@@ -439,8 +551,8 @@ unsafe fn run_main(context: &mut MainContext) -> WindowCaptureResult<()> {
                 return Ok(());
             }
             target.request.check(&context.job)?;
-            let topology = current_topology()?;
-            let fresh = current_observations()?;
+            let topology = current_topology(|| target.request.check(&context.job))?;
+            let fresh = current_observations(|| target.request.check(&context.job))?;
             complete_validated(
                 target,
                 png,
@@ -550,7 +662,7 @@ unsafe fn enumerate_window(
                 on_screen: send!(selected.ptr, b"isOnScreen\0", () -> ObjcBool) != 0,
             };
             validate_external_window_owner(source.identity.owner_process_id)?;
-            let fresh = current_observations()?;
+            let fresh = current_observations(|| request.check(&callback_job))?;
             let plan = request.selection.plan(
                 source,
                 &fresh,

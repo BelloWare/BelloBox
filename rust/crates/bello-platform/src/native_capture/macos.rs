@@ -209,6 +209,20 @@ pub(super) fn capture(
     request: CaptureRequest,
     cancellation: CaptureCancellation,
 ) -> CaptureResult<NativeCaptureSnapshot> {
+    capture_retiring(request, cancellation, false)
+}
+#[cfg(target_arch = "aarch64")]
+pub(super) fn capture_window_freeze(
+    request: CaptureRequest,
+    cancellation: CaptureCancellation,
+) -> CaptureResult<NativeCaptureSnapshot> {
+    capture_retiring(request, cancellation, true)
+}
+fn capture_retiring(
+    request: CaptureRequest,
+    cancellation: CaptureCancellation,
+    wait_for_drain: bool,
+) -> CaptureResult<NativeCaptureSnapshot> {
     require_worker_thread()?;
     if !is_available() {
         return Err(CaptureError::Unsupported);
@@ -224,11 +238,15 @@ pub(super) fn capture(
         }
     }
     let lease = InflightGuard::acquire(&CAPTURE_IN_FLIGHT)?;
+    let drain = wait_for_drain.then(|| lease.drain());
     let job = Job::new(cancellation, request.timeout);
     unsafe {
         enumerate(request, job.clone(), None, lease)?;
     }
-    job.wait()
+    match drain {
+        Some(drain) => job.wait_drained(drain),
+        None => job.wait(),
+    }
 }
 unsafe fn enumerate(
     request: CaptureRequest,
@@ -738,5 +756,5 @@ mod tests;
 #[path = "alpha_mask_tests.rs"]
 mod alpha_mask_tests;
 
-#[cfg(all(test, target_arch = "aarch64"))]
-mod window;
+#[cfg(target_arch = "aarch64")]
+pub(super) mod window;

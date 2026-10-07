@@ -7,7 +7,10 @@ use std::sync::Mutex;
 pub(super) type Generator = dyn Fn(&Submission, CapturePixelSize, &AtomicBool) -> Result<ScreenshotDocument, String>
     + Send
     + Sync;
+pub(super) type Observer = dyn Fn(&WindowObservationRequest) -> Result<(), String> + Send + Sync;
 pub(super) struct SuppliedBackend {
+    pub revision: AtomicU64,
+    observer: Option<Arc<Observer>>,
     own_pid: i32,
     layers: OcclusionLayers,
     pub current: Mutex<Evidence>,
@@ -21,7 +24,15 @@ impl Backend for SuppliedBackend {
     fn identity_and_layers(&self) -> Result<(i32, OcclusionLayers), String> {
         Ok((self.own_pid, self.layers))
     }
-    fn observe(&self) -> Result<Evidence, String> {
+    fn revision(&self) -> u64 {
+        self.revision.load(Ordering::Acquire)
+    }
+    fn observe(&self, request: &WindowObservationRequest) -> Result<Evidence, String> {
+        request.check().map_err(|e| e.to_string())?;
+        if let Some(observer) = &self.observer {
+            observer(request)?;
+        }
+        request.check().map_err(|e| e.to_string())?;
         self.current
             .lock()
             .map(|evidence| evidence.clone())
@@ -53,7 +64,8 @@ impl SuppliedBackend {
         }
         // This is a supplied callback source, distinct from the initial CG-style
         // catalog. Validate BEFORE any generator runs, exactly like native SCK.
-        let plan = request.bind_submission(submission, &self.observe()?)?;
+        let (current, _) = observe_backend(self, &request.observation)?;
+        let plan = request.bind_submission(submission, &current)?;
         let document = generator(submission, plan.output_size(), &request.cancellation_flag)?;
         Ok(Acquired { document, plan })
     }
@@ -88,6 +100,8 @@ impl Source {
             }
         }
         let supplied = Arc::new(SuppliedBackend {
+            revision: AtomicU64::new(0),
+            observer: None,
             own_pid,
             layers,
             current: Mutex::new(evidence),
@@ -97,6 +111,20 @@ impl Source {
         let mut source = Self::from_backend(layout, supplied.clone())?;
         Arc::get_mut(&mut source).unwrap().supplied = Some(supplied);
         Ok(source)
+    }
+    #[cfg(test)]
+    pub fn with_observation_gate(
+        mut self: Arc<Self>,
+        gate: super::super::window_refresh::DisposalGate,
+    ) -> Arc<Self> {
+        Arc::get_mut(&mut self).unwrap().observation_gate = Some(gate);
+        self
+    }
+    #[cfg(test)]
+    pub fn with_refresh_timeout(mut self: Arc<Self>, timeout: std::time::Duration) -> Arc<Self> {
+        assert!(!timeout.is_zero() && timeout <= WindowCaptureOptions::default().timeout);
+        Arc::get_mut(&mut self).unwrap().refresh_timeout = timeout;
+        self
     }
     pub fn with_generator(
         mut self: Arc<Self>,
@@ -113,9 +141,11 @@ impl Source {
             .expect("configure supplied generator before sharing its source");
         let old = this.supplied.as_ref().unwrap();
         let supplied = Arc::new(SuppliedBackend {
+            revision: AtomicU64::new(old.revision()),
+            observer: old.observer.clone(),
             own_pid: old.own_pid,
             layers: old.layers,
-            current: Mutex::new(old.observe().unwrap()),
+            current: Mutex::new(old.current.lock().unwrap().clone()),
             submissions: old.submissions.clone(),
             generator: Arc::new(generator),
         });
@@ -133,9 +163,11 @@ impl Source {
         let mut submissions = old.submissions.clone();
         update(&mut submissions);
         let supplied = Arc::new(SuppliedBackend {
+            revision: AtomicU64::new(old.revision()),
+            observer: old.observer.clone(),
             own_pid: old.own_pid,
             layers: old.layers,
-            current: Mutex::new(old.observe().unwrap()),
+            current: Mutex::new(old.current.lock().unwrap().clone()),
             submissions,
             generator: old.generator.clone(),
         });
@@ -145,15 +177,15 @@ impl Source {
     }
     #[cfg(test)]
     pub fn update_current(&self, update: impl FnOnce(&mut Evidence)) {
-        update(
-            &mut self
-                .supplied
-                .as_ref()
-                .unwrap()
-                .current
-                .lock()
-                .expect("supplied evidence mutex"),
-        );
+        let supplied = self.supplied.as_ref().unwrap();
+        let mut current = supplied.current.lock().expect("supplied evidence mutex");
+        let before = current.clone();
+        update(&mut current);
+        // Topology vector order is not identity; preserve that existing negative
+        // control while fencing every meaningful explicit fixture mutation.
+        if !equivalent_evidence(&before, &current) {
+            supplied.revision.fetch_add(1, Ordering::Release);
+        }
     }
     #[cfg(test)]
     pub fn advance_generation(&self) {
@@ -163,7 +195,56 @@ impl Source {
     }
 }
 #[cfg(test)]
+fn equivalent_evidence(a: &Evidence, b: &Evidence) -> bool {
+    a.observations == b.observations
+        && a.topology.main_display_id == b.topology.main_display_id
+        && a.topology.displays.len() == b.topology.displays.len()
+        && a.topology
+            .displays
+            .iter()
+            .all(|item| b.topology.displays.contains(item))
+        && match (&a.occlusion_rows, &b.occlusion_rows) {
+            (None, None) => true,
+            (Some(a), Some(b)) => {
+                a.len() == b.len()
+                    && a.iter().zip(b).all(|(a, b)| {
+                        a.window_id == b.window_id
+                            && a.owner_process_id == b.owner_process_id
+                            && a.layer == b.layer
+                            && a.alpha == b.alpha
+                            && a.frame == b.frame
+                    })
+            }
+            _ => false,
+        }
+}
+impl Source {
+    pub fn with_observer(
+        mut self: Arc<Self>,
+        observer: impl Fn(&WindowObservationRequest) -> Result<(), String> + Send + Sync + 'static,
+    ) -> Arc<Self> {
+        let this = Arc::get_mut(&mut self).expect("configure observer before sharing source");
+        let old = this.supplied.as_ref().unwrap();
+        let supplied = Arc::new(SuppliedBackend {
+            revision: AtomicU64::new(old.revision()),
+            observer: Some(Arc::new(observer)),
+            own_pid: old.own_pid,
+            layers: old.layers,
+            current: Mutex::new(old.current.lock().unwrap().clone()),
+            submissions: old.submissions.clone(),
+            generator: old.generator.clone(),
+        });
+        this.backend = supplied.clone();
+        this.supplied = Some(supplied);
+        self
+    }
+}
+
+#[cfg(test)]
 impl Acquisition {
+    pub fn observation_gate(&self) -> Option<super::super::window_refresh::DisposalGate> {
+        self.source.observation_gate.clone()
+    }
     pub fn with_generator(
         mut self,
         generator: impl Fn(
@@ -291,6 +372,19 @@ pub fn fixture() -> Result<Fixture, String> {
 pub fn fixture_for_ui() -> Result<Fixture, String> {
     let fixture = fixture()?;
     let mode = std::env::var("BELLOBOX_INLINE_WINDOW_REFRESH").unwrap_or_default();
+    if mode == "observation-delayed" {
+        let first = AtomicBool::new(true);
+        let source = fixture.source.with_observer(move |request| {
+            if first.swap(false, Ordering::AcqRel) {
+                for _ in 0..80 {
+                    request.check().map_err(|e| e.to_string())?;
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                }
+            }
+            Ok(())
+        });
+        return Ok(Fixture { source, ..fixture });
+    }
     if !matches!(mode.as_str(), "delayed" | "failure") {
         return Ok(fixture);
     }
@@ -333,12 +427,15 @@ impl Backend for WrongCompletionBackend {
     fn identity_and_layers(&self) -> Result<(i32, OcclusionLayers), String> {
         self.supplied.identity_and_layers()
     }
-    fn observe(&self) -> Result<Evidence, String> {
-        self.supplied.observe()
+    fn observe(&self, request: &WindowObservationRequest) -> Result<Evidence, String> {
+        self.supplied.observe(request)
+    }
+    fn revision(&self) -> u64 {
+        self.supplied.revision()
     }
     fn acquire(&self, request: &AcquisitionRequest) -> Result<Acquired, String> {
         let mut acquired = self.supplied.acquire(request)?;
-        let mut current = self.observe()?;
+        let mut current = self.observe(&request.observation)?;
         let mut observed = current
             .observations
             .iter()

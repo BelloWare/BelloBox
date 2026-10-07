@@ -35,11 +35,13 @@ jobs:
           xcrun --find metal
       - name: Install pinned Rust toolchain
         run: |
-          rustup toolchain install 1.99.0 --profile minimal
+          rustup toolchain install 1.99.0 --profile minimal --component clippy
           rustup override set 1.99.0
           rustc --version
       - name: Compile and link all native test targets
         run: cargo test --locked --workspace --no-run
+      - name: Lint normal and synthetic native platform paths
+        run: cargo clippy --locked -p bello-platform --all-targets --no-deps -- -D warnings
       - name: Run pure domain and filesystem tests
         # No GPUI application launch, permissions, keychain, capture or updater actions.
         run: cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform

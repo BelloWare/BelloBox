@@ -1,5 +1,13 @@
 # Backend-injected production Window composition
 
+This report records the backend-composition checkpoint `505e8f1`. Its historical
+foreground re-observation and test-only native acquisition descriptions below are
+superseded by [the owned native catalog bridge](native-window-catalog.md): native
+code now compiles in ordinary Apple Silicon builds behind closed activation gates,
+and final observation runs on the counted refresh worker after masking. UI delivery
+uses owned deadline/session/generation/base/liveness/clean-state checks; it does not
+perform native observation or establish atomic live-window freshness.
+
 The main-display Window workflow is now compiled in ordinary application builds,
 including builds with application debug assertions disabled. It shares Area's
 owned coordinator, freeze worker, selector window, real inline ScreenshotEditor,
@@ -115,10 +123,14 @@ separately identifies 651 preserved support lines reclassified to production and
 conservative literal-line decomposition, not a feature-completion measure. See
 [the explicit ranges and hashes](validation/window-backend-2026-10-07/loc-delta.json).
 
-Do not transfer earlier native CI to this source. New exact-commit Apple compile,
-synthetic completion-ownership and normalized mask/host-worker oracle results
-remain publication gates. No actual screen capture, permission or Mac access was
-performed. Native Area, Window and movie activation remains closed.
+Exact published backend source `505e8f193de858163474e2af269d2e3ca51e475a`, tree
+`8477ad4e3b0a7da76db42de83530faccc5cb6f6a`, passed Linux run `37591717754`
+and macOS run `37591717776`. All steps passed, including native compile/link,
+constructed completion ownership, strict normalized mask/host-worker tests, app
+build and offline development packaging. These results apply to that checkpoint;
+the subsequent native catalog source requires its own exact CI. No actual screen
+capture, permission or Mac access was performed. Native Area, Window and movie
+activation remains closed.
 
 Existing normalized-SDR mask oracle scope is unchanged. Linux's portable sampling
 is still approximate for ±1-pixel sizes. No original-capture ICC/HDR, AppKit/Spaces,

@@ -8,17 +8,62 @@ use std::time::Instant;
 /// Timeout/cancellation only abandons the Job, never this independent ownership.
 pub(super) struct InflightGuard {
     slot: &'static AtomicBool,
+    drained: Arc<(Mutex<bool>, Condvar)>,
 }
 impl InflightGuard {
     pub(super) fn acquire(slot: &'static AtomicBool) -> CaptureResult<Arc<Self>> {
         slot.compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
             .map_err(|_| CaptureError::Busy)?;
-        Ok(Arc::new(Self { slot }))
+        Ok(Arc::new(Self {
+            slot,
+            drained: Arc::new((Mutex::new(false), Condvar::new())),
+        }))
+    }
+}
+/// Separate waiter ownership never retains the admission lease itself.
+#[cfg(any(test, target_os = "macos"))]
+pub(super) struct PhysicalDrain {
+    state: Arc<(Mutex<bool>, Condvar)>,
+    #[cfg(test)]
+    result_notice: Option<std::sync::mpsc::Sender<bool>>,
+}
+#[cfg(any(test, target_os = "macos"))]
+impl PhysicalDrain {
+    #[cfg(test)]
+    pub(super) fn with_result_notice(mut self, notice: std::sync::mpsc::Sender<bool>) -> Self {
+        self.result_notice = Some(notice);
+        self
+    }
+    #[cfg(test)]
+    fn note_wait_result(&self, succeeded: bool) {
+        if let Some(notice) = &self.result_notice {
+            let _ = notice.send(succeeded);
+        }
+    }
+    pub(super) fn wait(self) {
+        let (lock, changed) = &*self.state;
+        let mut drained = lock.lock().unwrap_or_else(|p| p.into_inner());
+        while !*drained {
+            drained = changed.wait(drained).unwrap_or_else(|p| p.into_inner());
+        }
+    }
+}
+#[cfg(any(test, target_os = "macos"))]
+impl InflightGuard {
+    pub(super) fn drain(&self) -> PhysicalDrain {
+        PhysicalDrain {
+            state: self.drained.clone(),
+            #[cfg(test)]
+            result_notice: None,
+        }
     }
 }
 impl Drop for InflightGuard {
     fn drop(&mut self) {
         self.slot.store(false, Ordering::Release);
+        let (lock, changed) = &*self.drained;
+        *lock.lock().unwrap_or_else(|p| p.into_inner()) = true;
+        changed.notify_all();
     }
 }
 
@@ -31,7 +76,7 @@ pub(super) enum Stage {
     Image,
     EncodingQueued,
     Encoding,
-    #[cfg(test)]
+    #[cfg(any(test, target_arch = "aarch64"))]
     Validating,
     Completed,
     Abandoned,
@@ -48,6 +93,9 @@ pub(super) struct Job<T, E = CaptureError> {
 }
 impl<T, E: From<CaptureError>> Job<T, E> {
     pub(super) fn new(cancellation: CaptureCancellation, timeout: Duration) -> Arc<Self> {
+        Self::with_deadline(cancellation, Instant::now() + timeout)
+    }
+    pub(super) fn with_deadline(cancellation: CaptureCancellation, deadline: Instant) -> Arc<Self> {
         Arc::new(Self {
             state: Mutex::new(State {
                 stage: Stage::InitialContent,
@@ -55,7 +103,7 @@ impl<T, E: From<CaptureError>> Job<T, E> {
             }),
             changed: Condvar::new(),
             cancellation,
-            deadline: Instant::now() + timeout,
+            deadline,
         })
     }
     fn interruption(&self) -> Option<CaptureError> {
@@ -94,6 +142,18 @@ impl<T, E: From<CaptureError>> Job<T, E> {
         state.result = Some(value);
         self.changed.notify_all();
         true
+    }
+    /// The result is only logically complete until all native owners release.
+    /// Recheck after physical drain, dropping expired success on this worker.
+    pub(super) fn wait_drained(&self, drain: PhysicalDrain) -> Result<T, E> {
+        let result = self.wait();
+        #[cfg(test)]
+        drain.note_wait_result(result.is_ok());
+        drain.wait();
+        if let Some(error) = self.interruption() {
+            return Err(error.into());
+        }
+        result
     }
     pub(super) fn wait(&self) -> Result<T, E> {
         let mut state = self.state.lock().unwrap_or_else(|p| p.into_inner());

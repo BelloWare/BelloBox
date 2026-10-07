@@ -9,6 +9,7 @@ use bello_platform::{
     macos_capture_overlay::MainDisplayOverlayLayout,
     native_capture::{
         CaptureCancellation, CapturePixelSize, CaptureRect, CaptureRequest, WindowCaptureSession,
+        WindowCatalogSnapshot, WindowObservationRequest,
     },
     window_capture::{
         MAX_WINDOW_CANDIDATES, MAX_WINDOW_IDENTITY_BYTES, WindowCaptureOptions, WindowCapturePlan,
@@ -36,7 +37,7 @@ use std::{
 static NEXT_SESSION: AtomicU64 = AtomicU64::new(1);
 
 /// Complete owned CG-style evidence. Mutable titles are intentionally absent.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Observation {
     pub window_id: u32,
     pub owner_process_id: i32,
@@ -129,7 +130,10 @@ pub trait Backend: Send + Sync {
     /// Side-effect-free capability check; never enumerates, requests permission or acquires pixels.
     fn check_available(&self) -> Result<(), String>;
     fn identity_and_layers(&self) -> Result<(i32, OcclusionLayers), String>;
-    fn observe(&self) -> Result<Evidence, String>;
+    fn observe(&self, request: &WindowObservationRequest) -> Result<Evidence, String>;
+    /// Cheap owned invalidation only. Native zero means no OS revision feed,
+    /// not proof that an observed window is still live at delivery.
+    fn revision(&self) -> u64;
     fn acquire(&self, request: &AcquisitionRequest) -> Result<Acquired, String>;
 }
 
@@ -139,24 +143,103 @@ pub trait Backend: Send + Sync {
 pub struct NativeBackend;
 impl Backend for NativeBackend {
     fn check_available(&self) -> Result<(), String> {
-        Err("Native Window catalog is awaiting native review.".into())
+        bello_platform::native_capture::check_window_available().map_err(|e| e.to_string())
     }
     fn identity_and_layers(&self) -> Result<(i32, OcclusionLayers), String> {
-        Err("Native Window catalog is awaiting native review.".into())
+        let (pid, levels) = bello_platform::native_capture::window_identity_and_layers()
+            .map_err(|e| e.to_string())?;
+        Ok((pid, layers_from_native(levels)))
     }
-    fn observe(&self) -> Result<Evidence, String> {
-        Err("Native Window catalog is awaiting native review.".into())
+
+    fn observe(&self, request: &WindowObservationRequest) -> Result<Evidence, String> {
+        bello_platform::native_capture::observe_windows(request.clone())
+            .map(evidence_from_native)
+            .map_err(|e| e.to_string())
+    }
+    fn revision(&self) -> u64 {
+        0
     }
     fn acquire(&self, request: &AcquisitionRequest) -> Result<Acquired, String> {
-        let snapshot = bello_platform::native_capture::capture_window(
+        let snapshot = bello_platform::native_capture::capture_window_until(
             request.selection.clone(),
             request.options,
             request.session.clone(),
             request.cancellation.clone(),
+            request.observation.deadline(),
         )
         .map_err(|error| error.to_string())?;
         Acquired::from_native(snapshot, request)
     }
+}
+
+fn layers_from_native(
+    levels: bello_platform::native_capture::WindowCatalogLayers,
+) -> OcclusionLayers {
+    OcclusionLayers {
+        normal: levels.normal,
+        floating: levels.floating,
+        modal_panel: levels.modal_panel,
+        main_menu: levels.main_menu,
+        status: levels.status,
+        popup_menu: levels.popup_menu,
+        screen_saver: levels.screen_saver,
+    }
+}
+fn evidence_from_native(snapshot: WindowCatalogSnapshot) -> Evidence {
+    Evidence {
+        observations: snapshot
+            .observations
+            .into_iter()
+            .map(|row| Observation {
+                window_id: row.window_id,
+                owner_process_id: row.owner_process_id,
+                owner_bundle_id: row.owner_bundle_id,
+                frame: row.frame,
+                layer: row.layer,
+                alpha: row.alpha,
+                on_screen: row.on_screen,
+            })
+            .collect(),
+        topology: Topology {
+            main_display_id: snapshot.main_display_id,
+            displays: snapshot.displays,
+        },
+        occlusion_rows: snapshot.occlusion_rows.map(|rows| {
+            rows.into_iter()
+                .map(|row| OcclusionRow {
+                    window_id: row.window_id,
+                    owner_process_id: row.owner_process_id,
+                    layer: row.layer,
+                    alpha: row.alpha,
+                    frame: row.frame.map(ui_rect),
+                })
+                .collect()
+        }),
+    }
+}
+fn observe_backend(
+    backend: &dyn Backend,
+    request: &WindowObservationRequest,
+) -> Result<(Evidence, u64), String> {
+    request.check().map_err(|e| e.to_string())?;
+    let revision = backend.revision();
+    let evidence = backend.observe(request)?;
+    // Native calls cannot be forcibly interrupted. A successful late return is
+    // still expired; never let it publish merely because its precheck passed.
+    request.check().map_err(|e| e.to_string())?;
+    if backend.revision() != revision {
+        return Err("Window evidence changed during observation.".into());
+    }
+    Ok((evidence, revision))
+}
+fn observation_request(
+    cancellation: CaptureCancellation,
+    started: Instant,
+) -> WindowObservationRequest {
+    WindowObservationRequest::new(
+        cancellation,
+        started + WindowCaptureOptions::default().timeout,
+    )
 }
 
 /// A request carries immutable selection and live cancellation/session ownership.
@@ -166,6 +249,7 @@ pub struct AcquisitionRequest {
     options: WindowCaptureOptions,
     session: Arc<WindowCaptureSession>,
     cancellation: CaptureCancellation,
+    observation: WindowObservationRequest,
     #[cfg(any(debug_assertions, test))]
     cancellation_flag: Arc<AtomicBool>,
     #[cfg(any(debug_assertions, test))]
@@ -223,8 +307,11 @@ impl Acquired {
         request: &AcquisitionRequest,
     ) -> Result<Self, String> {
         request.validate_completion_plan(&snapshot.completion)?;
+        request.observation.check().map_err(|e| e.to_string())?;
+        let document = ScreenshotDocument::from_png(&snapshot.png)?;
+        request.observation.check().map_err(|e| e.to_string())?;
         Ok(Self {
-            document: ScreenshotDocument::from_png(&snapshot.png)?,
+            document,
             plan: snapshot.completion,
         })
     }
@@ -239,17 +326,34 @@ pub struct Source {
     token: WindowSelectionToken,
     session: Arc<WindowCaptureSession>,
     backend: Arc<dyn Backend>,
+    #[cfg(test)]
+    observation_gate: Option<super::window_refresh::DisposalGate>,
+    #[cfg(test)]
+    refresh_timeout: std::time::Duration,
     #[cfg(any(debug_assertions, test))]
     supplied: Option<Arc<fixtures::SuppliedBackend>>,
 }
 impl Source {
+    #[cfg(any(debug_assertions, test))]
     pub fn from_backend(
         layout: MainDisplayOverlayLayout,
         backend: Arc<dyn Backend>,
     ) -> Result<Arc<Self>, String> {
+        Self::from_backend_with_request(
+            layout,
+            backend,
+            observation_request(CaptureCancellation::default(), Instant::now()),
+        )
+    }
+    pub fn from_backend_with_request(
+        layout: MainDisplayOverlayLayout,
+        backend: Arc<dyn Backend>,
+        request: WindowObservationRequest,
+    ) -> Result<Arc<Self>, String> {
+        request.check().map_err(|e| e.to_string())?;
         backend.check_available()?;
         let (own_pid, layers) = backend.identity_and_layers()?;
-        let evidence = backend.observe()?;
+        let (evidence, _) = observe_backend(&*backend, &request)?;
         validate_evidence(&evidence, layout)?;
         if own_pid <= 0 || layers.normal != 0 {
             return Err("Invalid Window source.".into());
@@ -299,6 +403,7 @@ impl Source {
                 Err(error) => return Err(error.to_string()),
             }
         }
+        request.check().map_err(|e| e.to_string())?;
         Ok(Arc::new(Self {
             layout,
             own_pid,
@@ -308,6 +413,10 @@ impl Source {
             token,
             session: Arc::new(WindowCaptureSession::new(token).map_err(|error| error.to_string())?),
             backend,
+            #[cfg(test)]
+            observation_gate: None,
+            #[cfg(test)]
+            refresh_timeout: WindowCaptureOptions::default().timeout,
             #[cfg(any(debug_assertions, test))]
             supplied: None,
         }))
@@ -323,11 +432,24 @@ impl Source {
         result.extend(self.selected.iter().map(Observation::candidate));
         Ok(result)
     }
+    #[cfg(test)]
     pub fn request(
         self: &Arc<Self>,
         commit: &FrozenWindowCommit,
         boundary: Arc<AtomicBool>,
     ) -> Result<(WindowRefreshContext, WindowRefreshDecision, Acquisition), String> {
+        let (context, acquisition) = self.pending_request(commit, boundary)?;
+        let decision = acquisition
+            .resolve_decision(&acquisition.observation(CaptureCancellation::default()))?;
+        Ok((context, decision, acquisition))
+    }
+    /// Bind only owned selection data. Never observe here: the frozen crop must
+    /// mount before optional refresh work, even when native main dispatch stalls.
+    pub fn pending_request(
+        self: &Arc<Self>,
+        commit: &FrozenWindowCommit,
+        boundary: Arc<AtomicBool>,
+    ) -> Result<(WindowRefreshContext, Acquisition), String> {
         let candidate = commit.candidate();
         if commit.geometry() != geometry(self.layout) {
             return Err("The frozen Window display does not match its source.".into());
@@ -346,31 +468,28 @@ impl Source {
             &cancellation,
         )
         .map_err(|error| error.to_string())?;
-        let current = self.backend.observe()?;
-        validate_evidence(&current, self.layout)?;
-        let decision = decide_window_refresh(
-            WindowRefreshSource {
-                independent_window: true,
-                scrolling_active: false,
-                cut_from_frozen: true,
-                window_id: candidate.window_id,
-                frame: Some(candidate.frame_local_points),
-            },
-            current.occlusion_rows.as_deref(),
-            self.own_pid,
-            self.layers,
-        )
-        .map_err(|error| error.to_string())?;
         Ok((
             WindowRefreshContext {
                 selection: commit.token(),
                 window_id: candidate.window_id,
                 display: commit.geometry(),
             },
-            decision,
             Acquisition {
                 source: self.clone(),
                 selection,
+                boundary: cancellation,
+                target_frame: candidate.frame_local_points,
+                started: {
+                    #[cfg(test)]
+                    {
+                        Instant::now()
+                            - (WindowCaptureOptions::default().timeout - self.refresh_timeout)
+                    }
+                    #[cfg(not(test))]
+                    {
+                        Instant::now()
+                    }
+                },
                 #[cfg(test)]
                 generator: None,
             },
@@ -381,24 +500,63 @@ impl Source {
 pub struct Acquisition {
     source: Arc<Source>,
     selection: WindowCaptureSelection,
+    target_frame: Rect,
+    boundary: CaptureCancellation,
+    started: Instant,
     #[cfg(test)]
     generator: Option<Arc<fixtures::Generator>>,
 }
 impl Acquisition {
+    fn observation(&self, cancellation: CaptureCancellation) -> WindowObservationRequest {
+        observation_request(cancellation, self.started).with_boundary(self.boundary.clone())
+    }
+    pub fn resolve_decision(
+        &self,
+        request: &WindowObservationRequest,
+    ) -> Result<WindowRefreshDecision, String> {
+        if self.selection.is_cancelled() {
+            return Err("Window selection was cancelled.".into());
+        }
+        let (current, _) = observe_backend(&*self.source.backend, request)?;
+        validate_evidence(&current, self.source.layout)?;
+        request.check().map_err(|e| e.to_string())?;
+        if self.selection.is_cancelled() {
+            return Err("Window selection was cancelled.".into());
+        }
+        decide_window_refresh(
+            WindowRefreshSource {
+                independent_window: true,
+                scrolling_active: false,
+                cut_from_frozen: true,
+                window_id: self.selection.selected_identity().window_id,
+                frame: Some(self.target_frame),
+            },
+            current.occlusion_rows.as_deref(),
+            self.source.own_pid,
+            self.source.layers,
+        )
+        .map_err(|e| e.to_string())
+    }
+    pub fn decision(&self, cancellation: Arc<AtomicBool>) -> Result<WindowRefreshDecision, String> {
+        self.resolve_decision(&self.observation(CaptureCancellation::from_flag(cancellation)))
+    }
     pub fn run(
         self,
         cancellation: Arc<AtomicBool>,
     ) -> Result<(ScreenshotDocument, Publication), String> {
-        let started = Instant::now();
+        let started = self.started;
         let flag = CaptureCancellation::from_flag(cancellation.clone());
         if flag.is_cancelled() || self.selection.is_cancelled() {
             return Err("Window acquisition was cancelled.".into());
         }
+        let observation = self.observation(flag.clone());
+        observation.check().map_err(|e| e.to_string())?;
         let request = AcquisitionRequest {
-            selection: self.selection,
+            selection: self.selection.clone(),
             options: WindowCaptureOptions::default(),
             session: self.source.session.clone(),
             cancellation: flag.clone(),
+            observation,
             #[cfg(any(debug_assertions, test))]
             layout: self.source.layout,
             #[cfg(any(debug_assertions, test))]
@@ -428,8 +586,11 @@ impl Acquisition {
             image_size: CapturePixelSize { width, height },
             cancellation: flag,
             started,
+            selection: self.selection,
+            observed_revision: None,
+            boundary: self.boundary,
         };
-        publication.validate()?;
+        let publication = publication.validate_acquisition()?;
         Ok((document, publication))
     }
 }
@@ -442,16 +603,40 @@ pub struct Publication {
     image_size: CapturePixelSize,
     cancellation: CaptureCancellation,
     started: Instant,
+    selection: WindowCaptureSelection,
+    observed_revision: Option<u64>,
+    boundary: CaptureCancellation,
 }
 impl Publication {
+    /// Cheap delivery guard. This is fresh-at-completed-observation evidence,
+    /// not a live/atomic native incarnation check. No native work or image work.
     pub fn is_current(&self) -> bool {
-        self.validate().is_ok()
+        self.started.elapsed() < self.plan.options().timeout
+            && !self.cancellation.is_cancelled()
+            && !self.selection.is_cancelled()
+            && self
+                .source
+                .session
+                .current()
+                .is_ok_and(|token| token == self.source.token)
+            && self
+                .observed_revision
+                .is_some_and(|revision| revision == self.source.backend.revision())
     }
-    fn validate(&self) -> Result<(), String> {
-        if self.started.elapsed() > self.plan.options().timeout {
-            return Err("Window image refresh timed out.".into());
+    /// Consuming worker-side final observation. Production calls this AFTER
+    /// masking, then hands the evidence once to the generation-bound UI job.
+    pub fn observe_after_mask(self) -> Result<Self, String> {
+        self.validate_acquisition()
+    }
+    // Acquisition completion and post-mask delivery are separate observations;
+    // the transport-injected backend must also reject changes during acquisition.
+    fn validate_acquisition(mut self) -> Result<Self, String> {
+        let request = observation_request(self.cancellation.clone(), self.started)
+            .with_boundary(self.boundary.clone());
+        if self.selection.is_cancelled() {
+            return Err("Window selection was cancelled.".into());
         }
-        let current = self.source.backend.observe()?;
+        let (current, revision) = observe_backend(&*self.source.backend, &request)?;
         validate_evidence(&current, self.source.layout)?;
         let fresh: Vec<_> = current
             .observations
@@ -462,14 +647,17 @@ impl Publication {
             .validate_completion(
                 &fresh,
                 current.topology.borrowed(),
-                self.source
-                    .session
-                    .current()
-                    .map_err(|error| error.to_string())?,
+                self.source.session.current().map_err(|e| e.to_string())?,
                 self.image_size,
                 &self.cancellation,
             )
-            .map_err(|error| error.to_string())
+            .map_err(|e| e.to_string())?;
+        request.check().map_err(|e| e.to_string())?;
+        self.observed_revision = Some(revision);
+        if !self.is_current() {
+            return Err("Window delivery evidence expired.".into());
+        }
+        Ok(self)
     }
 }
 

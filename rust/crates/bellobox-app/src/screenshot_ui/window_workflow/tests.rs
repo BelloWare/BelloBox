@@ -755,9 +755,12 @@ fn production_backend_reads_acquisition_and_publication_evidence_independently()
         fn identity_and_layers(&self) -> Result<(i32, OcclusionLayers), String> {
             self.supplied.identity_and_layers()
         }
-        fn observe(&self) -> Result<Evidence, String> {
+        fn revision(&self) -> u64 {
+            self.supplied.revision()
+        }
+        fn observe(&self, request: &WindowObservationRequest) -> Result<Evidence, String> {
             self.observations.fetch_add(1, Ordering::Relaxed);
-            self.supplied.observe()
+            self.supplied.observe(request)
         }
         fn acquire(&self, request: &AcquisitionRequest) -> Result<Acquired, String> {
             self.acquisitions.fetch_add(1, Ordering::Relaxed);
@@ -785,13 +788,14 @@ fn production_backend_reads_acquisition_and_publication_evidence_independently()
     assert_eq!(acquisitions.load(Ordering::Relaxed), 1);
     assert_eq!(observations.load(Ordering::Relaxed), 3);
     assert!(publication.is_current());
-    assert_eq!(observations.load(Ordering::Relaxed), 4);
+    assert_eq!(observations.load(Ordering::Relaxed), 3);
     supplied.current.lock().unwrap().observations[0]
         .frame
         .origin
         .x += 0.000_001;
+    supplied.revision.fetch_add(1, Ordering::Release);
     assert!(!publication.is_current());
-    assert_eq!(observations.load(Ordering::Relaxed), 5);
+    assert_eq!(observations.load(Ordering::Relaxed), 3);
 }
 
 #[test]
@@ -806,6 +810,7 @@ fn host_decodes_the_native_completion_contract_without_reconstructing_submission
         options: WindowCaptureOptions::default(),
         session: fixture.source.session.clone(),
         cancellation: CaptureCancellation::default(),
+        observation: observation_request(CaptureCancellation::default(), Instant::now()),
         cancellation_flag: flag(),
         layout: fixture.layout,
     };
@@ -855,4 +860,255 @@ fn host_decodes_the_native_completion_contract_without_reconstructing_submission
         .source
         .update_current(|current| current.observations[0].frame.origin.x += 0.000_001);
     assert!(!publication.is_current());
+}
+
+#[test]
+fn pending_request_does_not_observe_or_delay_frozen_materialization() {
+    let mut fixture = fixture().unwrap();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let worker_calls = calls.clone();
+    fixture.source = fixture.source.with_observer(move |_| {
+        worker_calls.fetch_add(1, Ordering::Relaxed);
+        Err("controlled observation failure".into())
+    });
+    let (_selector, commit) = select(&fixture, 1);
+    let (_, acquisition) = fixture.source.pending_request(&commit, flag()).unwrap();
+    let frozen = commit.materialize(&AtomicBool::new(false)).unwrap();
+    assert_eq!(frozen.editor.document().dimensions(), (680, 540));
+    assert_eq!(calls.load(Ordering::Relaxed), 0);
+    assert!(acquisition.decision(flag()).is_err());
+    assert_eq!(calls.load(Ordering::Relaxed), 1);
+}
+
+#[test]
+fn late_success_and_cancelled_native_like_observation_never_create_evidence() {
+    struct LateBackend {
+        evidence: Evidence,
+        calls: AtomicUsize,
+        cancel: bool,
+    }
+    impl Backend for LateBackend {
+        fn check_available(&self) -> Result<(), String> {
+            Ok(())
+        }
+        fn identity_and_layers(&self) -> Result<(i32, OcclusionLayers), String> {
+            unreachable!()
+        }
+        fn revision(&self) -> u64 {
+            0
+        }
+        fn observe(&self, request: &WindowObservationRequest) -> Result<Evidence, String> {
+            self.calls.fetch_add(1, Ordering::Relaxed);
+            if self.cancel {
+                request.cancellation().cancel();
+            } else {
+                std::thread::sleep(
+                    request.deadline().saturating_duration_since(Instant::now())
+                        + Duration::from_millis(2),
+                );
+            }
+            // Simulate an opaque native API that returns success after logical
+            // timeout/cancellation. The common host boundary MUST reject this.
+            Ok(self.evidence.clone())
+        }
+        fn acquire(&self, _: &AcquisitionRequest) -> Result<Acquired, String> {
+            unreachable!()
+        }
+    }
+    for cancel in [false, true] {
+        let fixture = fixture().unwrap();
+        let backend = LateBackend {
+            evidence: evidence(&fixture.source),
+            calls: AtomicUsize::new(0),
+            cancel,
+        };
+        let request = WindowObservationRequest::new(
+            CaptureCancellation::default(),
+            Instant::now() + Duration::from_millis(20),
+        );
+        assert!(observe_backend(&backend, &request).is_err());
+        assert_eq!(backend.calls.load(Ordering::Relaxed), 1);
+        assert!(observe_backend(&backend, &request).is_err());
+        assert_eq!(
+            backend.calls.load(Ordering::Relaxed),
+            1,
+            "expired/cancelled precheck invokes zero additional native operations"
+        );
+    }
+}
+
+#[test]
+fn final_worker_observation_after_mask_rejects_changed_exact_metadata() {
+    let fixture = fixture().unwrap();
+    let (_selector, commit) = select(&fixture, 1);
+    let (context, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    let session = commit.materialize(&AtomicBool::new(false)).unwrap().editor;
+    let plan = bellobox_core::screenshot::window_refresh::WindowRefreshPlan::new(
+        &session,
+        context,
+        WindowRefreshDecision::KeepFrozen,
+        flag(),
+    )
+    .unwrap()
+    .with_decision(WindowRefreshDecision::MaskFrozenAlpha);
+    let (image, publication) = acquisition.run(flag()).unwrap();
+    let prepared = plan.prepare(image).unwrap().unwrap();
+    fixture
+        .source
+        .update_current(|e| e.observations[0].frame.origin.x += 0.000_001);
+    assert!(publication.observe_after_mask().is_err());
+    drop(prepared);
+    assert_eq!(session.revision(), 0);
+    assert_eq!(
+        session.document().render_rgba().unwrap().get_pixel(0, 0).0[3],
+        255
+    );
+}
+
+#[test]
+fn platform_raw_transport_keeps_partial_target_order_and_exact_identity_separate() {
+    use bello_platform::native_capture::{OwnedWindowObservation, RawWindowOcclusionRow};
+    let base = fixture().unwrap();
+    let strict = evidence(&base.source);
+    let make = |rows| {
+        evidence_from_native(WindowCatalogSnapshot {
+            observations: strict
+                .observations
+                .iter()
+                .map(|row| OwnedWindowObservation {
+                    window_id: row.window_id,
+                    owner_process_id: row.owner_process_id,
+                    owner_bundle_id: None,
+                    frame: row.frame,
+                    layer: row.layer,
+                    alpha: row.alpha,
+                    on_screen: row.on_screen,
+                })
+                .collect(),
+            main_display_id: strict.topology.main_display_id,
+            displays: strict.topology.displays.clone(),
+            occlusion_rows: rows,
+        })
+    };
+    let own = RawWindowOcclusionRow {
+        window_id: Some(77),
+        owner_process_id: Some(999),
+        layer: Some(0),
+        alpha: Some(1.),
+        frame: Some(CaptureRect::new(300., 80., 10., 10.)),
+    };
+    let target = RawWindowOcclusionRow {
+        window_id: Some(1),
+        ..Default::default()
+    };
+    for (rows, expected) in [
+        (None, WindowRefreshDecision::MaskFrozenAlpha),
+        (Some(vec![]), WindowRefreshDecision::MaskFrozenAlpha),
+        (
+            Some(vec![target, own]),
+            WindowRefreshDecision::MaskFrozenAlpha,
+        ),
+        (
+            Some(vec![RawWindowOcclusionRow::default(), own, target]),
+            WindowRefreshDecision::ReplaceWithIndependent,
+        ),
+        (
+            Some(vec![
+                RawWindowOcclusionRow {
+                    layer: Some(1000),
+                    ..own
+                },
+                target,
+            ]),
+            WindowRefreshDecision::MaskFrozenAlpha,
+        ),
+        (
+            Some(vec![
+                RawWindowOcclusionRow {
+                    frame: Some(CaptureRect::new(638.01, 80., 10., 10.)),
+                    ..own
+                },
+                target,
+            ]),
+            WindowRefreshDecision::MaskFrozenAlpha,
+        ),
+        (
+            Some(vec![
+                RawWindowOcclusionRow {
+                    frame: Some(CaptureRect::new(638., 80., 10., 10.)),
+                    ..own
+                },
+                target,
+            ]),
+            WindowRefreshDecision::ReplaceWithIndependent,
+        ),
+    ] {
+        let supplied = make(rows.clone());
+        assert_eq!(
+            supplied.occlusion_rows.as_ref().map(Vec::len),
+            rows.as_ref().map(Vec::len)
+        );
+        let source = rebuild(
+            &base,
+            supplied,
+            base.source.supplied.as_ref().unwrap().submissions.clone(),
+        )
+        .unwrap();
+        let fixture = Fixture {
+            source,
+            layout: base.layout,
+            document: base.document.clone(),
+        };
+        let (_selector, commit) = select(&fixture, 1);
+        let (_, acquisition) = fixture.source.pending_request(&commit, flag()).unwrap();
+        assert_eq!(acquisition.decision(flag()).unwrap(), expected);
+    }
+}
+
+#[test]
+fn supplied_platform_level_values_survive_app_adaptation_without_constants() {
+    let levels = bello_platform::native_capture::WindowCatalogLayers {
+        normal: 0,
+        floating: 37,
+        modal_panel: 38,
+        main_menu: 39,
+        status: 40,
+        popup_menu: 41,
+        screen_saver: 42,
+    };
+    let adapted = layers_from_native(levels);
+    assert_eq!(
+        [
+            adapted.normal,
+            adapted.floating,
+            adapted.modal_panel,
+            adapted.main_menu,
+            adapted.status,
+            adapted.popup_menu,
+            adapted.screen_saver
+        ],
+        [0, 37, 38, 39, 40, 41, 42]
+    );
+    for (layer, pid, expected) in [
+        (37, 300, true),
+        (3, 300, false),
+        (0, 999, true),
+        (42, 999, false),
+    ] {
+        let occluded = bellobox_core::screenshot::window_refresh::is_occluded(
+            1,
+            Rect::new(10., 10., 80., 60.),
+            Some(&[OcclusionRow {
+                window_id: Some(2),
+                owner_process_id: Some(pid),
+                layer: Some(layer),
+                alpha: Some(1.),
+                frame: Some(Rect::new(10., 10., 80., 60.)),
+            }]),
+            999,
+            adapted,
+        )
+        .unwrap();
+        assert_eq!(occluded, expected);
+    }
 }

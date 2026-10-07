@@ -339,7 +339,7 @@ fn unavailable_native_capability_precedes_hide_and_freeze_even_inside_admission(
     );
     assert_eq!(
         result,
-        Err("Native Window catalog is awaiting native review.".into())
+        Err("Independent window capture is not enabled.".into())
     );
     assert_eq!([hide.get(), freeze.get(), capture.get()], [0, 0, 0]);
 }
