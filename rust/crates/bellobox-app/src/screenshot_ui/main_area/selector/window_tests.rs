@@ -113,10 +113,10 @@ fn window_mode_selects_and_refreshes_inside_the_same_owned_overlay(cx: &mut Test
             if id == 1 {
                 assert_eq!(pixels.get_pixel(0, 0).0, [0, 0, 0, 0]);
                 assert_eq!(pixels.get_pixel(200, 200).0, [255, 224, 186, 255]);
-                assert_eq!(view.source, "Window · synthetic alpha on frozen pixels");
+                assert_eq!(view.source, "Window · alpha on frozen pixels");
             } else {
                 assert_eq!(pixels.get_pixel(500, 100).0, [185, 215, 241, 255]);
-                assert_eq!(view.source, "Window · synthetic independent pixels");
+                assert_eq!(view.source, "Window · independent pixels");
             }
             assert!(!view.preview_tiles.is_empty());
         });
@@ -245,11 +245,16 @@ fn window_copy_finish_exports_only_window_pixels_and_releases_coordinator(cx: &m
 }
 
 fn refresh_request(boundary: Arc<AtomicBool>) -> window_refresh::Request {
-    let (display, candidates, image) =
-        bellobox_core::screenshot::window::synthetic_window_fixture().unwrap();
-    let mut selector = FrozenWindowSession::new(display, &candidates, 999).unwrap();
+    let fixture = window_workflow::fixture().unwrap();
+    let display = geometry(fixture.layout);
+    let mut selector = FrozenWindowSession::new(
+        display,
+        &fixture.source.candidates().unwrap(),
+        fixture.source.own_pid(),
+    )
+    .unwrap();
     selector
-        .accept_frozen(selector.freeze_token().unwrap(), image, display)
+        .accept_frozen(selector.freeze_token().unwrap(), fixture.document, display)
         .unwrap();
     selector
         .begin_press(Point::new(400., 120.), display)
@@ -258,7 +263,9 @@ fn refresh_request(boundary: Arc<AtomicBool>) -> window_refresh::Request {
         .end_press(Point::new(400., 120.), display)
         .unwrap()
         .unwrap();
-    window_refresh::Request::fixture(&commit, boundary).unwrap()
+    let (context, decision, acquisition) =
+        fixture.source.request(&commit, boundary.clone()).unwrap();
+    window_refresh::Request::supplied(context, decision, boundary, acquisition)
 }
 
 #[gpui::test]
@@ -347,7 +354,7 @@ fn failed_or_changed_independent_source_keeps_frozen_window_usable(cx: &mut Test
         let (_, selector) = open_fixture(fixture, cx);
         let editor = choose(selector, 2, cx);
         editor.update(cx, |view, cx| {
-            assert_eq!(view.source, "Window · frozen supplied pixels");
+            assert_eq!(view.source, "Window · frozen pixels");
             assert!(!view.session.has_edits());
             assert!(!view.session.can_undo());
             assert_eq!(
@@ -458,4 +465,149 @@ fn fixed_window_letterbox_gesture_clamps_to_the_fitted_crop_once(cx: &mut TestAp
         assert_eq!(view.inline_selection(), Rect::new(300., 80., 340., 270.));
     });
     close(selector, cx);
+}
+
+#[gpui::test]
+fn injected_callback_mismatch_missing_and_duplicate_sources_never_acquire_pixels(
+    cx: &mut TestAppContext,
+) {
+    use std::sync::atomic::AtomicUsize;
+    for case in 0..4 {
+        let mut fixture = window_workflow::fixture().unwrap();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let counter = calls.clone();
+        fixture.source = fixture
+            .source
+            .with_submissions(|submissions| match case {
+                0 => submissions[1].owner_process_id += 1,
+                1 => submissions[1].frame.origin.x += 0.000_001,
+                2 => {
+                    submissions.pop();
+                }
+                _ => submissions.push(submissions[1].clone()),
+            })
+            .with_generator(move |_, _, _| {
+                counter.fetch_add(1, Ordering::Relaxed);
+                Err("invalid callback reached pixels".into())
+            });
+        let (_, selector) = open_fixture(fixture, cx);
+        let editor = choose(selector, 2, cx);
+        cx.read(|cx| {
+            assert_eq!(calls.load(Ordering::Relaxed), 0, "case {case}");
+            let view = editor.read(cx);
+            assert_eq!(view.source, "Window · frozen pixels");
+            assert_eq!(
+                view.session
+                    .document()
+                    .render_rgba()
+                    .unwrap()
+                    .get_pixel(500, 100)
+                    .0,
+                [255, 224, 186, 255]
+            );
+            assert!(!view.session.has_edits());
+        });
+        close(selector, cx);
+    }
+}
+
+#[gpui::test]
+fn injected_completion_revalidates_full_evidence_and_dimensions_in_coordinator(
+    cx: &mut TestAppContext,
+) {
+    for case in 0..6 {
+        let mut fixture = window_workflow::fixture().unwrap();
+        let owner = Arc::new(std::sync::Mutex::new(
+            None::<std::sync::Weak<window_workflow::Source>>,
+        ));
+        let worker_owner = owner.clone();
+        fixture.source = fixture
+            .source
+            .with_generator(move |submission, _, cancellation| {
+                let source = worker_owner
+                    .lock()
+                    .unwrap()
+                    .as_ref()
+                    .unwrap()
+                    .upgrade()
+                    .unwrap();
+                match case {
+                    0 => source.update_current(|e| {
+                        e.observations.pop();
+                    }),
+                    1 => source.update_current(|e| e.observations.push(e.observations[1].clone())),
+                    2 => source.update_current(|e| e.observations[1].frame.origin.x += 0.000_001),
+                    3 => {
+                        source.update_current(|e| e.topology.displays[0].display.pixels.width += 1)
+                    }
+                    4 => source.advance_generation(),
+                    _ => {}
+                }
+                bellobox_core::screenshot::window::synthetic_independent_window(
+                    if case == 5 { 1 } else { submission.window_id },
+                    cancellation,
+                )
+                .map_err(|e| e.to_string())
+            });
+        *owner.lock().unwrap() = Some(Arc::downgrade(&fixture.source));
+        let (_, selector) = open_fixture(fixture, cx);
+        let editor = choose(selector, 2, cx);
+        editor.update(cx, |view, cx| {
+            assert_eq!(view.source, "Window · frozen pixels", "case {case}");
+            assert_eq!(view.session.document().dimensions(), (840, 460));
+            assert_eq!(
+                view.session
+                    .document()
+                    .render_rgba()
+                    .unwrap()
+                    .get_pixel(500, 100)
+                    .0,
+                [255, 224, 186, 255]
+            );
+            view.session
+                .add_annotation(
+                    AnnotationKind::Rectangle(Rect::new(10., 10., 20., 20.)),
+                    AnnotationStyle::default(),
+                )
+                .unwrap();
+            view.changed(cx);
+            assert!(view.session.can_undo());
+        });
+        close(selector, cx);
+    }
+}
+
+#[gpui::test]
+fn returned_plan_for_other_equal_sized_window_or_options_keeps_frozen_pixels(
+    cx: &mut TestAppContext,
+) {
+    use window_workflow::ReturnedPlanFault;
+    for fault in [
+        ReturnedPlanFault::OtherWindow,
+        ReturnedPlanFault::EquivalentSelection,
+        ReturnedPlanFault::Cursor,
+        ReturnedPlanFault::Deadline,
+    ] {
+        let mut fixture = window_workflow::fixture().unwrap();
+        fixture.source = fixture.source.with_returned_plan_fault(fault);
+        let (_, selector) = open_fixture(fixture, cx);
+        let editor = choose(selector, 2, cx);
+        cx.read(|cx| {
+            let view = editor.read(cx);
+            assert_eq!(view.source, "Window · frozen pixels");
+            assert_eq!(view.session.document().dimensions(), (840, 460));
+            assert_eq!(
+                view.session
+                    .document()
+                    .render_rgba()
+                    .unwrap()
+                    .get_pixel(500, 100)
+                    .0,
+                [255, 224, 186, 255]
+            );
+            assert!(!view.session.has_edits());
+            assert!(!view.session.can_undo());
+        });
+        close(selector, cx);
+    }
 }

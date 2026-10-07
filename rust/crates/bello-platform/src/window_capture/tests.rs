@@ -789,3 +789,22 @@ fn scaled_output_and_actual_dimensions_use_existing_capture_budgets() {
         );
     }
 }
+
+#[test]
+fn completion_requires_exact_selection_owner_and_requested_options() {
+    let fixture = Fixture::new();
+    let plan = fixture.plan().unwrap();
+    assert!(plan.matches_request(&fixture.selection.clone(), fixture.options));
+    let same_metadata = select(observed(), &fixture.displays).unwrap();
+    assert!(!plan.matches_request(&same_metadata, fixture.options));
+    let mut other_window = observed();
+    other_window.identity.window_id += 1;
+    let other = select(other_window, &fixture.displays).unwrap();
+    assert!(!plan.matches_request(&other, fixture.options));
+    let mut options = fixture.options;
+    options.include_cursor = !options.include_cursor;
+    assert!(!plan.matches_request(&fixture.selection, options));
+    options = fixture.options;
+    options.timeout -= Duration::from_millis(1);
+    assert!(!plan.matches_request(&fixture.selection, options));
+}

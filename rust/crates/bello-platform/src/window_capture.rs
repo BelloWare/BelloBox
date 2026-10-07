@@ -355,6 +355,17 @@ impl WindowCaptureSelection {
     }
 }
 impl WindowCapturePlan {
+    /// Bind a returned completion to the exact request selection, including its
+    /// original cancellation owner, and exact options. Value-equal metadata or a
+    /// reused session token is insufficient: another window/request may have the
+    /// same dimensions. This compares Rust ownership, never a native pointer.
+    pub fn matches_request(
+        &self,
+        selection: &WindowCaptureSelection,
+        options: WindowCaptureOptions,
+    ) -> bool {
+        Arc::ptr_eq(&self.selection.0, &selection.0) && self.options == options
+    }
     pub fn output_size(&self) -> CapturePixelSize {
         self.output_size
     }

@@ -476,6 +476,7 @@ fn complete_validated(
     let identity = target.plan.submitted_identity();
     job.complete(Ok(NativeWindowCaptureSnapshot {
         png: std::mem::take(png),
+        completion: target.plan.clone(),
         diagnostics: WindowCaptureDiagnostics {
             window_id: identity.window_id,
             owner_process_id: identity.owner_process_id,

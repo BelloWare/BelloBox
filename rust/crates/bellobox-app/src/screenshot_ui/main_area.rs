@@ -23,6 +23,31 @@ use std::sync::{
 // No production fixture/environment bypass. Native compilation/runtime review must approve
 // production enablement separately, including callback and visibility behavior.
 pub(super) const PRODUCTION_AREA_ENABLED: bool = false;
+pub(super) const PRODUCTION_WINDOW_ENABLED: bool = false;
+
+#[derive(Clone, Copy)]
+enum CaptureIntent {
+    Area,
+    Window,
+}
+impl CaptureIntent {
+    fn admitted<T>(self, work: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
+        let (enabled, name) = match self {
+            Self::Area => (PRODUCTION_AREA_ENABLED, "Area"),
+            Self::Window => (PRODUCTION_WINDOW_ENABLED, "Window"),
+        };
+        if !enabled {
+            return Err(format!(
+                "{name} · main display only is awaiting native review."
+            ));
+        }
+        work()
+    }
+}
+enum Preparation {
+    Area,
+    Window(Box<dyn FnOnce() -> Result<Arc<super::window_workflow::Source>, String> + Send>),
+}
 const SNAPSHOT_DELAY: std::time::Duration = std::time::Duration::from_millis(60);
 
 #[derive(Default)]
@@ -143,14 +168,49 @@ pub(super) fn requester_closed(requester: AnyWindowHandle, cx: &mut App) {
 /// reenter that logical handle: use the supplied window directly throughout hide
 /// and synchronous failure restoration. Other windows are borrowed one at a time.
 pub(super) fn begin(window: &mut Window, cx: &mut App) -> Result<(), String> {
-    if !PRODUCTION_AREA_ENABLED {
-        return Err("Area · main display only is awaiting native review.".into());
-    }
+    CaptureIntent::Area.admitted(|| begin_native(window, cx, |_| Ok(Preparation::Area)))
+}
+pub(super) fn begin_window(window: &mut Window, cx: &mut App) -> Result<(), String> {
+    begin_window_with(window, cx, || {
+        Arc::new(super::window_workflow::NativeBackend)
+    })
+}
+fn begin_window_with(
+    window: &mut Window,
+    cx: &mut App,
+    backend: impl FnOnce() -> Arc<dyn super::window_workflow::Backend>,
+) -> Result<(), String> {
+    // Check the independent Window gate before even constructing a backend or
+    // reading displays, catalogs, permissions, clipboard or presentation state.
+    CaptureIntent::Window.admitted(|| {
+        with_window_capability(backend, |backend| {
+            begin_native(window, cx, |layout| {
+                Ok(Preparation::Window(Box::new(move || {
+                    super::window_workflow::Source::from_backend(layout, backend)
+                })))
+            })
+        })
+    })
+}
+fn with_window_capability<T>(
+    backend: impl FnOnce() -> Arc<dyn super::window_workflow::Backend>,
+    begin: impl FnOnce(Arc<dyn super::window_workflow::Backend>) -> Result<T, String>,
+) -> Result<T, String> {
+    let backend = backend();
+    backend.check_available()?;
+    begin(backend)
+}
+fn begin_native(
+    window: &mut Window,
+    cx: &mut App,
+    prepare: impl FnOnce(host::MainDisplayOverlayLayout) -> Result<Preparation, String>,
+) -> Result<(), String> {
     if cx.default_global::<NativeCaptureVisibility>().busy {
         return Err("Another capture is still finishing.".into());
     }
     let layout = host::main_display_overlay_layout().map_err(|e| e.to_string())?;
     layout.validate().map_err(|e| e.to_string())?;
+    let preparation = prepare(layout)?;
     let requester = window.window_handle();
     let context = native::context(window)?;
     if !context.requester_visible || !context.allows_capture_continuation(0, 0) {
@@ -210,7 +270,9 @@ pub(super) fn begin(window: &mut Window, cx: &mut App) -> Result<(), String> {
         run.transaction.cancellation.clone()
     };
     let task = cx.background_executor().spawn(async move {
-        super::caught_capture(|| prepare_area_with(layout, cancellation, capture::capture))
+        super::caught_capture(|| {
+            prepare_capture_with(layout, cancellation, preparation, capture::capture)
+        })
     });
     // App-owned cleanup is independent of requester/window/entity liveness.
     cx.spawn(async move |cx| {
@@ -220,9 +282,21 @@ pub(super) fn begin(window: &mut Window, cx: &mut App) -> Result<(), String> {
     .detach();
     Ok(())
 }
+#[cfg(any(debug_assertions, test))]
 fn prepare_area_with(
     layout: host::MainDisplayOverlayLayout,
     cancellation: Arc<AtomicBool>,
+    capture: impl FnOnce(
+        capture::CaptureRequest,
+        capture::CaptureCancellation,
+    ) -> capture::CaptureResult<capture::NativeCaptureSnapshot>,
+) -> Result<PreparedArea, String> {
+    prepare_capture_with(layout, cancellation, Preparation::Area, capture)
+}
+fn prepare_capture_with(
+    layout: host::MainDisplayOverlayLayout,
+    cancellation: Arc<AtomicBool>,
+    preparation: Preparation,
     capture: impl FnOnce(
         capture::CaptureRequest,
         capture::CaptureCancellation,
@@ -258,24 +332,46 @@ fn prepare_area_with(
     if document.dimensions() != display.pixel_size {
         return Err("Frozen display dimensions changed.".into());
     }
-    let mut area = FrozenAreaSession::new(display).map_err(|e| e.to_string())?;
-    let token = area
-        .freeze_token()
-        .ok_or("Area freeze was already consumed.")?;
     let tiles = document.render_preview_tiles()?;
     active()?;
-    if !area
-        .accept_frozen(token, document, display)
-        .map_err(|e| e.to_string())?
-    {
-        return Err("Area freeze was superseded.".into());
-    }
+    let selection = match preparation {
+        Preparation::Area => {
+            let mut area = FrozenAreaSession::new(display).map_err(|e| e.to_string())?;
+            let token = area
+                .freeze_token()
+                .ok_or("Area freeze was already consumed.")?;
+            if !area
+                .accept_frozen(token, document, display)
+                .map_err(|e| e.to_string())?
+            {
+                return Err("Area freeze was superseded.".into());
+            }
+            selector::Selection::Area(area)
+        }
+        Preparation::Window(source) => {
+            use bellobox_core::screenshot::window::FrozenWindowSession;
+            // Source catalogs the windows only after the full-display freeze,
+            // before an overlay exists. The exact native catalog stays gated.
+            let source = source()?;
+            let mut window =
+                FrozenWindowSession::new(display, &source.candidates()?, source.own_pid())
+                    .map_err(|error| error.to_string())?;
+            let token = window
+                .freeze_token()
+                .ok_or("Window freeze was already consumed.")?;
+            if !window
+                .accept_frozen(token, document, display)
+                .map_err(|e| e.to_string())?
+            {
+                return Err("Window freeze was superseded.".into());
+            }
+            selector::Selection::Window(window, source)
+        }
+    };
     active()?;
-    Ok(PreparedArea {
-        selection: selector::Selection::Area(area),
-        tiles,
-    })
+    Ok(PreparedArea { selection, tiles })
 }
+
 pub(super) fn current(id: u64, owner: &Window, cx: &App) -> bool {
     let Some(state) = cx.try_global::<Coordinator>() else {
         return false;
@@ -716,10 +812,10 @@ pub(super) fn editor_cancellation(id: u64, cx: &mut App) -> Option<Arc<AtomicBoo
 pub(super) fn begin_window_fixture(window: &mut Window, cx: &mut App) -> Result<(), String> {
     let layout = super::window_workflow::fixture_layout();
     begin_supplied_prepared(window.window_handle(), layout, cx, move |cancellation| {
-        prepare_window_supplied(super::window_workflow::fixture()?, cancellation)
+        prepare_window_supplied(super::window_workflow::fixture_for_ui()?, cancellation)
     })
 }
-#[cfg(all(debug_assertions, test))]
+#[cfg(test)]
 fn begin_window_supplied(
     requester: AnyWindowHandle,
     fixture: super::window_workflow::Fixture,
@@ -729,32 +825,31 @@ fn begin_window_supplied(
         prepare_window_supplied(fixture, cancellation)
     })
 }
-#[cfg(debug_assertions)]
+#[cfg(any(debug_assertions, test))]
 fn prepare_window_supplied(
     fixture: super::window_workflow::Fixture,
     cancellation: Arc<AtomicBool>,
 ) -> Result<PreparedArea, String> {
-    use bellobox_core::screenshot::window::FrozenWindowSession;
-    if cancellation.load(Ordering::Acquire) {
-        return Err("Window selection was cancelled.".into());
-    }
-    let display = geometry(fixture.layout);
-    let candidates = fixture.source.candidates()?;
-    let mut selection = FrozenWindowSession::new(display, &candidates, fixture.source.own_pid())
-        .map_err(|error| error.to_string())?;
-    let token = selection
-        .freeze_token()
-        .ok_or("Window freeze was consumed.")?;
-    let tiles = fixture.document.render_preview_tiles()?;
-    if cancellation.load(Ordering::Acquire)
-        || !selection
-            .accept_frozen(token, fixture.document, display)
-            .map_err(|error| error.to_string())?
-    {
-        return Err("Window freeze was superseded.".into());
-    }
-    Ok(PreparedArea {
-        selection: selector::Selection::Window(selection, fixture.source),
-        tiles,
-    })
+    prepare_capture_with(
+        fixture.layout,
+        cancellation,
+        Preparation::Window(Box::new(move || Ok(fixture.source))),
+        move |request, _| {
+            Ok(capture::NativeCaptureSnapshot {
+                png: fixture
+                    .document
+                    .render_png()
+                    .map_err(|_| capture::CaptureError::InvalidImage)?,
+                diagnostics: capture::CaptureDiagnostics {
+                    requested_display_id: request.display.id,
+                    resolved_display_id: request.display.id,
+                    resolution_path: capture::DisplayResolutionPath::InitialId,
+                    output_size: request.output_size,
+                    region: None,
+                    includes_cursor: false,
+                    backend: "supplied synthetic pixels",
+                },
+            })
+        },
+    )
 }

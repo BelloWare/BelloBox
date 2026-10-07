@@ -24,9 +24,7 @@ mod inline_area;
 mod main_area;
 #[cfg(debug_assertions)]
 mod scroll_capture;
-#[cfg(debug_assertions)]
 mod window_refresh;
-#[cfg(debug_assertions)]
 mod window_workflow;
 
 const TOOLS: [(AnnotationTool, &str, &str); 9] = [
@@ -299,6 +297,20 @@ impl CaptureChooser {
         }
         cx.notify();
     }
+    #[cfg(target_os = "macos")]
+    fn capture_window(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.busy {
+            return;
+        }
+        match main_area::begin_window(window, cx) {
+            Ok(()) => {
+                self.busy = true;
+                self.status = "Freezing the main display…".into();
+            }
+            Err(error) => self.status = error,
+        }
+        cx.notify();
+    }
     fn capture(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.busy {
             return;
@@ -471,10 +483,24 @@ impl Render for CaptureChooser {
         let area = area.when(area_available, |button| {
             button.on_click(cx.listener(|this, _, window, cx| this.capture_area(window, cx)))
         });
+        let window_capture = button("window", "Window · main display only", p)
+            .flex_1()
+            .opacity(if main_area::PRODUCTION_WINDOW_ENABLED && !self.busy {
+                1.
+            } else {
+                0.5
+            });
+        #[cfg(target_os = "macos")]
+        let window_capture = window_capture.when(
+            main_area::PRODUCTION_WINDOW_ENABLED && !self.busy,
+            |button| {
+                button.on_click(cx.listener(|this, _, window, cx| this.capture_window(window, cx)))
+            },
+        );
         div().size_full().p(px(18.)).flex().flex_col().gap(px(16.)).bg(p.bg).text_color(p.primary).font_family(theme::ui_font()).track_focus(&self.focus)
             .on_key_down(cx.listener(|this,e:&gpui::KeyDownEvent,window,_cx|{if e.keystroke.key=="escape"{this.jobs.cancel(); main_area::requester_closed(window.window_handle(), _cx); window.remove_window();}}))
             .child(header("Capture and annotate".into(),p))
-            .child(div().flex().flex_col().gap(px(10.)).child(div().flex().gap(px(10.)).child(area).child(button("window","Window · unavailable",p).flex_1().opacity(0.5))).child(div().flex().gap(px(10.)).child(button("screen",if self.busy{"Capturing…"}else{"Screen"},p).flex_1().on_click(cx.listener(Self::capture_click))).child(button("scroll","Scrolling · unavailable",p).flex_1().opacity(0.5))))
+            .child(div().flex().flex_col().gap(px(10.)).child(div().flex().gap(px(10.)).child(area).child(window_capture)).child(div().flex().gap(px(10.)).child(button("screen",if self.busy{"Capturing…"}else{"Screen"},p).flex_1().on_click(cx.listener(Self::capture_click))).child(button("scroll","Scrolling · unavailable",p).flex_1().opacity(0.5))))
             .child(div().text_size(px(11.)).text_color(p.secondary).child("Screen captures the full virtual screen on Linux and the main display on macOS. Area, window and scrolling selection are not available yet."))
             .child(button("paste-image","Paste Image",p).on_click(cx.listener(|this,_,window,cx|this.paste(window,cx))))
             .child(div().text_size(px(11.)).text_color(p.danger).child(self.status.clone()))
@@ -539,7 +565,6 @@ enum Menu {
 }
 #[derive(Default)]
 struct CapturePresentation {
-    #[cfg(debug_assertions)]
     window_refresh: Option<window_refresh::Request>,
     open_unfocused: bool,
     scrolling: bool,
@@ -560,7 +585,6 @@ fn prepare_scroll_result(
     PreparedScrollCapture {
         session: prepare_document(result.document),
         presentation: CapturePresentation {
-            #[cfg(debug_assertions)]
             window_refresh: None,
             open_unfocused: false,
             scrolling: true,
@@ -577,7 +601,6 @@ fn open_scroll_result(result: PreparedScrollCapture, cx: &mut App) {
 
 struct ScreenshotEditor {
     inline: Option<inline_area::InlineArea>,
-    #[cfg(debug_assertions)]
     window_refresh: Option<window_refresh::Host>,
     capture_presentation: CapturePresentation,
     shows_capture_notes: bool,
@@ -661,10 +684,7 @@ fn try_open_presented_session(
 }
 impl ScreenshotEditor {
     fn cancel_window_refresh(&mut self) {
-        #[cfg(debug_assertions)]
-        {
-            self.window_refresh = None;
-        }
+        self.window_refresh = None;
     }
     fn new(
         session: ScreenshotEditSession,
@@ -721,9 +741,7 @@ impl ScreenshotEditor {
                 cx.notify();
             }
         });
-        #[cfg(debug_assertions)]
         let mut presentation = presentation;
-        #[cfg(debug_assertions)]
         let window_refresh = presentation.window_refresh.take();
         let initial_zoom = if presentation.scrolling {
             Zoom::FitWidth
@@ -732,7 +750,6 @@ impl ScreenshotEditor {
         };
         let mut view = Self {
             inline,
-            #[cfg(debug_assertions)]
             window_refresh: None,
             shows_capture_notes: !presentation.notes.is_empty(),
             shows_all_capture_notes: false,
@@ -802,7 +819,6 @@ impl ScreenshotEditor {
             });
         }
         view.render_preview(cx);
-        #[cfg(debug_assertions)]
         if let Some(request) = window_refresh {
             view.start_window_refresh(request, cx);
         }

@@ -1,7 +1,7 @@
 //! Frozen full-display selector. Dragging changes only chrome; immutable tiled
 //! pixels and the coordinator remain owned throughout the inline editing phase.
 use super::*;
-#[cfg(debug_assertions)]
+
 use bellobox_core::screenshot::window::{
     FrozenWindowCommit, FrozenWindowCommitToken, FrozenWindowPhase, FrozenWindowSession,
 };
@@ -23,7 +23,7 @@ use std::{
 /// The shared selector keeps one frozen image owner for either selection policy.
 pub(super) enum Selection {
     Area(FrozenAreaSession),
-    #[cfg(debug_assertions)]
+
     Window(
         FrozenWindowSession,
         Arc<super::super::window_workflow::Source>,
@@ -33,14 +33,14 @@ impl Selection {
     fn preview_rect(&self) -> Option<Rect> {
         match self {
             Self::Area(area) => area.preview_rect(),
-            #[cfg(debug_assertions)]
+
             Self::Window(window, _) => window.preview_rect(),
         }
     }
     fn begin(&mut self, point: Point, display: AreaDisplayGeometry) -> Result<(), String> {
         match self {
             Self::Area(area) => area.begin_drag(point, display).map_err(|e| e.to_string()),
-            #[cfg(debug_assertions)]
+
             Self::Window(window, _) => window
                 .begin_press(point, display)
                 .map_err(|e| e.to_string()),
@@ -52,7 +52,7 @@ impl Selection {
                 area.update_drag(point, display).map_err(|e| e.to_string())
             }
             Self::Area(_) => Ok(()),
-            #[cfg(debug_assertions)]
+
             Self::Window(window, _) => window.hover(point, display).map_err(|e| e.to_string()),
         }
     }
@@ -67,12 +67,12 @@ impl Selection {
                 .map(|c| c.map(Commit::Area))
                 .map_err(|e| e.to_string()),
             Self::Area(_) => Ok(None),
-            #[cfg(debug_assertions)]
+
             Self::Window(window, source) if window.phase() == FrozenWindowPhase::Pressed => window
                 .end_press(point, display)
                 .map(|c| c.map(|c| Commit::Window(c, source.clone())))
                 .map_err(|e| e.to_string()),
-            #[cfg(debug_assertions)]
+
             Self::Window(_, _) => Ok(None),
         }
     }
@@ -82,7 +82,7 @@ impl Selection {
                 let _ = editor;
                 area.phase() == AreaPhase::Committed && area.validate_topology(display).is_ok()
             }
-            #[cfg(debug_assertions)]
+
             Self::Window(window, _) => editor
                 .token
                 .is_some_and(|token| window.accepts_commit(token, display).unwrap_or(false)),
@@ -91,7 +91,7 @@ impl Selection {
 }
 enum Commit {
     Area(AreaSelection),
-    #[cfg(debug_assertions)]
+
     Window(
         FrozenWindowCommit,
         Arc<super::super::window_workflow::Source>,
@@ -100,16 +100,16 @@ enum Commit {
 struct PreparedEditor {
     session: ScreenshotEditSession,
     fixed_frame: Option<Rect>,
-    #[cfg(debug_assertions)]
+
     token: Option<FrozenWindowCommitToken>,
-    #[cfg(debug_assertions)]
+
     refresh: Option<super::super::window_refresh::Request>,
 }
 impl Commit {
     fn rect(&self) -> Rect {
         match self {
             Self::Area(area) => area.selection_local_points,
-            #[cfg(debug_assertions)]
+
             Self::Window(window, _) => window.candidate().frame_local_points,
         }
     }
@@ -119,12 +119,12 @@ impl Commit {
             Self::Area(area) => Ok(PreparedEditor {
                 session: super::super::prepare_session(area.editor),
                 fixed_frame: None,
-                #[cfg(debug_assertions)]
+
                 token: None,
-                #[cfg(debug_assertions)]
+
                 refresh: None,
             }),
-            #[cfg(debug_assertions)]
+
             Self::Window(commit, source) => {
                 let fixed_frame = commit.candidate().frame_local_points;
                 let token = commit.token();
@@ -568,17 +568,15 @@ fn editor_prepared(
                         } else {
                             super::super::inline_area::InlineArea::new(id, view.layout)
                         };
-                        #[allow(unused_mut)]
-                        let mut presentation = super::super::CapturePresentation::default();
-                        #[cfg(debug_assertions)]
-                        {
-                            presentation.window_refresh = prepared.refresh;
-                        }
+                        let presentation = super::super::CapturePresentation {
+                            window_refresh: prepared.refresh,
+                            ..Default::default()
+                        };
                         view.editor = Some(cx.new(|cx| {
                             super::super::ScreenshotEditor::new_with_inline(
                                 prepared.session,
                                 if prepared.fixed_frame.is_some() {
-                                    "Window · frozen supplied pixels"
+                                    "Window · frozen pixels"
                                 } else {
                                     "Area · full-display pixels"
                                 },
@@ -729,5 +727,5 @@ impl Render for MainAreaSelector {
 #[cfg(test)]
 mod tests;
 
-#[cfg(all(test, debug_assertions))]
+#[cfg(test)]
 mod window_tests;

@@ -158,3 +158,14 @@ cfg attributes; unguarded host scaffolding remains production. Comments count.
 Against the reviewed native-mask baseline, totals become 43,445 production,
 20,692 test/support and 105 benchmark lines. The per-file delta and exact support
 spans are in the manifest. These are source counts, not a completion percentage.
+
+
+## Later cloud dialog environment acceptance
+
+The original dialog failures above describe that original runtime environment.
+The restored process-local FileChooser portal now passes actual Open/Save
+cancel/reopen, synthetic GIF Save, and valid generated MP4 selection-to-native-
+unavailable handling on the exact later published `f403966` app binary. See
+[cloud-dialog-acceptance.md](cloud-dialog-acceptance.md) for full hashes, original
+screenshots, verified files and launch recipe. Native MovieAsset decoding and
+macOS dialog acceptance remain open.

@@ -97,3 +97,13 @@ native catalog acquisition, live callback lifetime, accessibility/IME, and compl
 source UI fidelity remain separate gates. Production Area/Window capture remains
 unavailable. No release, signing, migration of real settings, credentials or paid
 service was performed.
+
+## Exact published CI follow-up
+
+Commit `f403966c4a55dc8af25fb7d725035e7f0cc72faf`, tree
+`1a08993a0574eca80c6e48124cce5d19daf91bde`, passed
+[Linux run 37584275866](https://github.com/BelloWare/BelloBox/actions/runs/37584275866)
+and [macOS run 37584275876](https://github.com/BelloWare/BelloBox/actions/runs/37584275876).
+Every step passed, including native compile/link, strict normalized mask tests,
+worker-only mask publication, builds and offline packaging. Native acquisition,
+permissions and interactive macOS acceptance remain outside these tests.

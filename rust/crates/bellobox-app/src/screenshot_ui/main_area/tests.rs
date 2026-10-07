@@ -65,7 +65,6 @@ fn single_freeze_prepares_tiles_then_mouse_up_reuses_clean_full_pixels() {
     );
     let mut area = match prepared.selection {
         selector::Selection::Area(area) => area,
-        #[cfg(debug_assertions)]
         _ => panic!("Area preparation"),
     };
     assert!(area.freeze_token().is_none());
@@ -245,4 +244,102 @@ fn terminal_owner_releases_guard_without_requester_entity_access() {
     let (run, drops) = observed_run();
     drop(run);
     assert_eq!(drops.get(), 1);
+}
+
+#[test]
+fn separate_production_gates_precede_every_admission_side_effect() {
+    // All read/acquire/presentation work is inside the continuation used by the
+    // real entry points. A false gate must not invoke any of those operations.
+    for intent in [CaptureIntent::Area, CaptureIntent::Window] {
+        let backend = Cell::new(0);
+        let catalog = Cell::new(0);
+        let permission = Cell::new(0);
+        let capture = Cell::new(0);
+        let clipboard = Cell::new(0);
+        let presentation = Cell::new(0);
+        assert!(
+            intent
+                .admitted(|| {
+                    backend.set(backend.get() + 1);
+                    catalog.set(catalog.get() + 1);
+                    permission.set(permission.get() + 1);
+                    capture.set(capture.get() + 1);
+                    clipboard.set(clipboard.get() + 1);
+                    presentation.set(presentation.get() + 1);
+                    Ok(())
+                })
+                .is_err()
+        );
+        assert_eq!(
+            [
+                backend.get(),
+                catalog.get(),
+                permission.get(),
+                capture.get(),
+                clipboard.get(),
+                presentation.get()
+            ],
+            [0; 6]
+        );
+    }
+}
+
+#[gpui::test]
+fn production_window_entry_does_not_construct_backend_or_mutate_coordinator(
+    cx: &mut gpui::TestAppContext,
+) {
+    let requester = cx.add_window(|window, cx| {
+        let focus = cx.focus_handle();
+        window.focus(&focus);
+        CaptureChooser {
+            busy: false,
+            status: String::new(),
+            jobs: Default::default(),
+            focus,
+        }
+    });
+    let before = cx.read(|cx| cx.windows());
+    requester
+        .update(cx, |_, window, cx| {
+            cx.write_to_clipboard(gpui::ClipboardItem::new_string(
+                "unchanged gate sentinel".into(),
+            ));
+            assert_eq!(
+                begin_window_with(window, cx, || panic!("closed gate constructed backend")),
+                Err("Window · main display only is awaiting native review.".into())
+            );
+            assert_eq!(
+                begin(window, cx),
+                Err("Area · main display only is awaiting native review.".into())
+            );
+            assert!(cx.try_global::<Coordinator>().is_none());
+            assert!(cx.try_global::<NativeCaptureVisibility>().is_none());
+            assert_eq!(
+                cx.read_from_clipboard().and_then(|item| item.text()),
+                Some("unchanged gate sentinel".into())
+            );
+        })
+        .unwrap();
+    cx.read(|cx| assert!(cx.windows() == before));
+}
+
+#[test]
+fn unavailable_native_capability_precedes_hide_and_freeze_even_inside_admission() {
+    let hide = Cell::new(0);
+    let freeze = Cell::new(0);
+    let capture = Cell::new(0);
+    let result = with_window_capability(
+        || Arc::new(super::super::window_workflow::NativeBackend),
+        |_| {
+            hide.set(hide.get() + 1);
+            freeze.set(freeze.get() + 1);
+            capture.set(capture.get() + 1);
+            Ok(())
+        },
+    );
+    assert_eq!(
+        result,
+        Err("Native Window catalog is awaiting native review.".into())
+    );
+    assert_eq!([hide.get(), freeze.get(), capture.get()], [0, 0, 0]);
 }

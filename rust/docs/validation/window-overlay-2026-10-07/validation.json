@@ -14,6 +14,12 @@
     "actual_supplied_pixel_linux_gui": "passed_scoped_matrix"
   },
   "native_acquisition": "not_performed",
-  "new_exact_commit_native_ci": "pending_publication",
+  "new_exact_commit_native_ci": {
+    "commit": "f403966c4a55dc8af25fb7d725035e7f0cc72faf",
+    "tree": "1a08993a0574eca80c6e48124cce5d19daf91bde",
+    "linux_run": 37584275866,
+    "macos_run": 37584275876,
+    "result": "all_steps_passed"
+  },
   "production_gates": "unchanged"
 }

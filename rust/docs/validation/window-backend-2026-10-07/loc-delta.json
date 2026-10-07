@@ -1,0 +1,1383 @@
+{
+  "baseline_commit": "f403966c4a55dc8af25fb7d725035e7f0cc72faf",
+  "baseline_counts": {
+    "production": 44451,
+    "support": 23705,
+    "benchmark": 105
+  },
+  "counting_rule": "Source-reviewed delta of nonblank physical Rust lines, including comments. Explicit positive cfg test/DEBUG support ranges begin at the attribute; preceding comments stay in their containing classification. Entire external DEBUG/test modules are support. In partial mixed-file entries, unchanged support spans omitted from both sides cancel; only the listed changed/reclassified spans affect the delta. No generic cfg parser or feature percentage.",
+  "reclassification_rule": "Separately enumerate literal preserved nonblank lines switching category under the explicit ranges. Correspondence is deterministic per-file SequenceMatcher(autojunk=False) on stripped lines: indentation-only edits preserve physical lines. Reworked/reordered replacements and cross-file moves count as remove/add, not an estimated semantic reclassification. Every category equation is checked. Exact preserved before/after line ranges are included, so this conservative textual decomposition is auditable.",
+  "files": [
+    {
+      "path": "rust/crates/bello-platform/src/native_capture.rs",
+      "before_nonblank": 468,
+      "after_nonblank": 473,
+      "total_delta": 5,
+      "production_delta": 5,
+      "support_delta": 0,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [],
+      "classification": "Only added public completion ownership lines are production; unchanged conditional spans cancel.",
+      "before_sha256": "50b80670064bc6dbce2f81a681d65559bac583ea55361f42108f59ed5230a500",
+      "after_sha256": "2ce9d07b531598255bd90aab594f158bbf3cdb1eeaa262111e60a415b978a8df",
+      "added_production": 5,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window.rs",
+      "before_nonblank": 680,
+      "after_nonblank": 681,
+      "total_delta": 1,
+      "production_delta": 0,
+      "support_delta": 1,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          687
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          688
+        ]
+      ],
+      "classification": "Entire native candidate is imported under cfg(test) in macos.rs.",
+      "before_sha256": "165f72e7c60f9caff12d6a7ba994cb9e3ffba74bed31bfb9335a0ba24609514f",
+      "after_sha256": "9e64d152b5c62dd1859b8d94a7fb83542c625c5d9260a9e6a5d4617dd618bac1",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 1,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/tests.rs",
+      "before_nonblank": 324,
+      "after_nonblank": 389,
+      "total_delta": 65,
+      "production_delta": 0,
+      "support_delta": 65,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          326
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          392
+        ]
+      ],
+      "classification": "Synthetic native no-acquisition tests.",
+      "before_sha256": "79d6a47a07cb311e43c6cbf34ee719ae06e0f60bc66475296fb52432eb839e5f",
+      "after_sha256": "b43ac47f3149bfec5b83717a679b9ec21155768092fec2e2280730d212472061",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 65,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "before_nonblank": 538,
+      "after_nonblank": 549,
+      "total_delta": 11,
+      "production_delta": 11,
+      "support_delta": 0,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [],
+      "classification": "Only added normal-build request-binding predicate is production; unchanged tests cancel.",
+      "before_sha256": "f848f3325046c6de844d4c930ed9491febb9f6eec5fdd41d751e86e052327dfa",
+      "after_sha256": "8839352acc3fa8fe5553f01b198be9c58f22532ca9b7f41933b466574d59a05e",
+      "added_production": 11,
+      "removed_production": 0,
+      "added_support": 0,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "before_nonblank": 756,
+      "after_nonblank": 774,
+      "total_delta": 18,
+      "production_delta": 0,
+      "support_delta": 18,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          791
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          810
+        ]
+      ],
+      "classification": "Pure request-binding regression tests.",
+      "before_sha256": "b5f40947837e54120b4dd5d0d2524b0a55139116b427ab4d684de2d0bda77d11",
+      "after_sha256": "1c2c275a265ab03c181813f4187b278e5a79e0300466105f4999652ca0642354",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 18,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "before_nonblank": 3611,
+      "after_nonblank": 3627,
+      "total_delta": 16,
+      "production_delta": 39,
+      "support_delta": -23,
+      "before_reviewed_support_ranges_1based": [
+        [
+          27,
+          30
+        ],
+        [
+          542,
+          543
+        ],
+        [
+          556,
+          571
+        ],
+        [
+          580,
+          581
+        ],
+        [
+          664,
+          667
+        ],
+        [
+          724,
+          727
+        ],
+        [
+          735,
+          736
+        ],
+        [
+          805,
+          808
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          581,
+          595
+        ]
+      ],
+      "classification": "Changed Window module/field/start/cancel spans are now production. The changed prepare_scroll_result remains wholly DEBUG-only. Other unchanged support cancels.",
+      "before_sha256": "b3e9820c3cc9b9d6cffccd440a9dc104d6cf6391dfb501adf120d87d25e7f01f",
+      "after_sha256": "ac967e08e5c5856110b290d01453d0e965d18690b5f235f5115d59ac3e058c0a",
+      "added_production": 29,
+      "removed_production": 1,
+      "added_support": 0,
+      "removed_support": 12,
+      "support_to_production": 11,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            28,
+            28
+          ],
+          "after": [
+            27,
+            27
+          ]
+        },
+        {
+          "before": [
+            30,
+            30
+          ],
+          "after": [
+            28,
+            28
+          ]
+        },
+        {
+          "before": [
+            543,
+            543
+          ],
+          "after": [
+            568,
+            568
+          ]
+        },
+        {
+          "before": [
+            581,
+            581
+          ],
+          "after": [
+            604,
+            604
+          ]
+        },
+        {
+          "before": [
+            666,
+            666
+          ],
+          "after": [
+            687,
+            687
+          ]
+        },
+        {
+          "before": [
+            725,
+            725
+          ],
+          "after": [
+            744,
+            744
+          ]
+        },
+        {
+          "before": [
+            727,
+            727
+          ],
+          "after": [
+            745,
+            745
+          ]
+        },
+        {
+          "before": [
+            736,
+            736
+          ],
+          "after": [
+            753,
+            753
+          ]
+        },
+        {
+          "before": [
+            806,
+            808
+          ],
+          "after": [
+            822,
+            824
+          ]
+        }
+      ],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "before_nonblank": 753,
+      "after_nonblank": 846,
+      "total_delta": 93,
+      "production_delta": 83,
+      "support_delta": 10,
+      "before_reviewed_support_ranges_1based": [
+        [
+          715,
+          760
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          285,
+          295
+        ],
+        [
+          811,
+          855
+        ]
+      ],
+      "classification": "New shared intent/admission/freeze preparation is production. Explicit supplied entry/helpers remain support, including the new Area test wrapper. Unchanged support cancels.",
+      "before_sha256": "57e6e3ffe10894a8662caad53d91011fb0e29618b40101f0d81b1cbe8fafb280",
+      "after_sha256": "2d96de53bc395815fc3ad5bfff4a0b02ccce9320dbba2a746e8f31550afe48da",
+      "added_production": 95,
+      "removed_production": 9,
+      "added_support": 33,
+      "removed_support": 26,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 3,
+      "production_to_support_preserved_ranges": [
+        {
+          "before": [
+            223,
+            225
+          ],
+          "after": [
+            286,
+            288
+          ]
+        }
+      ]
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "before_nonblank": 729,
+      "after_nonblank": 712,
+      "total_delta": -17,
+      "production_delta": 56,
+      "support_delta": -73,
+      "before_reviewed_support_ranges_1based": [
+        [
+          4,
+          7
+        ],
+        [
+          26,
+          30
+        ],
+        [
+          36,
+          37
+        ],
+        [
+          43,
+          46
+        ],
+        [
+          55,
+          56
+        ],
+        [
+          70,
+          76
+        ],
+        [
+          85,
+          88
+        ],
+        [
+          94,
+          98
+        ],
+        [
+          103,
+          106
+        ],
+        [
+          112,
+          113
+        ],
+        [
+          122,
+          125
+        ],
+        [
+          127,
+          152
+        ],
+        [
+          573,
+          576
+        ],
+        [
+          729,
+          730
+        ],
+        [
+          732,
+          733
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          727,
+          728
+        ],
+        [
+          730,
+          731
+        ]
+      ],
+      "classification": "Former DEBUG Window policy/commit/editor/publication arms are production; test module declarations remain support.",
+      "before_sha256": "1595ffd097aff0c25996446fa9d6bd95cf75cfe80a3d83f4b6274dea62937601",
+      "after_sha256": "ca8319ea32da23688a219f2fd0116c36d41e28b24877a6d4ea255cf3ca7b24ea",
+      "added_production": 5,
+      "removed_production": 3,
+      "added_support": 1,
+      "removed_support": 20,
+      "support_to_production": 54,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            5,
+            7
+          ],
+          "after": [
+            5,
+            7
+          ]
+        },
+        {
+          "before": [
+            27,
+            30
+          ],
+          "after": [
+            27,
+            30
+          ]
+        },
+        {
+          "before": [
+            37,
+            37
+          ],
+          "after": [
+            37,
+            37
+          ]
+        },
+        {
+          "before": [
+            44,
+            46
+          ],
+          "after": [
+            44,
+            46
+          ]
+        },
+        {
+          "before": [
+            56,
+            56
+          ],
+          "after": [
+            56,
+            56
+          ]
+        },
+        {
+          "before": [
+            71,
+            74
+          ],
+          "after": [
+            71,
+            74
+          ]
+        },
+        {
+          "before": [
+            76,
+            76
+          ],
+          "after": [
+            76,
+            76
+          ]
+        },
+        {
+          "before": [
+            86,
+            88
+          ],
+          "after": [
+            86,
+            88
+          ]
+        },
+        {
+          "before": [
+            95,
+            98
+          ],
+          "after": [
+            95,
+            98
+          ]
+        },
+        {
+          "before": [
+            104,
+            104
+          ],
+          "after": [
+            104,
+            104
+          ]
+        },
+        {
+          "before": [
+            106,
+            106
+          ],
+          "after": [
+            106,
+            106
+          ]
+        },
+        {
+          "before": [
+            113,
+            113
+          ],
+          "after": [
+            113,
+            113
+          ]
+        },
+        {
+          "before": [
+            123,
+            123
+          ],
+          "after": [
+            123,
+            123
+          ]
+        },
+        {
+          "before": [
+            125,
+            125
+          ],
+          "after": [
+            125,
+            125
+          ]
+        },
+        {
+          "before": [
+            128,
+            152
+          ],
+          "after": [
+            128,
+            152
+          ]
+        }
+      ],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs",
+      "before_nonblank": 451,
+      "after_nonblank": 600,
+      "total_delta": 149,
+      "production_delta": 0,
+      "support_delta": 149,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          461
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          613
+        ]
+      ],
+      "classification": "Same-coordinator Window lifecycle regressions, now also present with app debug assertions disabled.",
+      "before_sha256": "4b4bc8b68f6f4214cca9b5d9161297167a3eff83f15ad6ef5d52a89fac81533a",
+      "after_sha256": "368bbc1fe4d6c85f372800164a914f37ca556d9f13d58d6a193a2814dfed551a",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 157,
+      "removed_support": 8,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "before_nonblank": 246,
+      "after_nonblank": 340,
+      "total_delta": 94,
+      "production_delta": 0,
+      "support_delta": 94,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          248
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          345
+        ]
+      ],
+      "classification": "Shared admission and gate regression tests.",
+      "before_sha256": "1ce3ada816d89ea1a9fb8d85221447efb089bb8fa68af38a8dea524a3fd19756",
+      "after_sha256": "9d290822468b71a97aaa7285c31ae62f9581ba40b6ddd7d25b1f2b06d1d3fb2f",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 95,
+      "removed_support": 1,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs",
+      "before_nonblank": 336,
+      "after_nonblank": 336,
+      "total_delta": 0,
+      "production_delta": 221,
+      "support_delta": -221,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          343
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          8,
+          12
+        ],
+        [
+          24,
+          25
+        ],
+        [
+          28,
+          29
+        ],
+        [
+          44,
+          45
+        ],
+        [
+          49,
+          103
+        ],
+        [
+          147,
+          148
+        ],
+        [
+          155,
+          160
+        ],
+        [
+          194,
+          197
+        ],
+        [
+          304,
+          305
+        ],
+        [
+          309,
+          343
+        ]
+      ],
+      "classification": "Former whole DEBUG module now has production Request/Host/worker/mask/publication flow. Generated Fixture input, fixture request and disposal test instrumentation remain support.",
+      "before_sha256": "1527eb9b904103990b19084f9cee07c01897df428c7c1af0a066abfcf1bf308a",
+      "after_sha256": "1a10ee151f134271163f356b05e1b7d653fd12e2c4051ce29bc405af56b2c16f",
+      "added_production": 7,
+      "removed_production": 0,
+      "added_support": 5,
+      "removed_support": 12,
+      "support_to_production": 214,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            3,
+            4
+          ],
+          "after": [
+            3,
+            4
+          ]
+        },
+        {
+          "before": [
+            12,
+            16
+          ],
+          "after": [
+            13,
+            17
+          ]
+        },
+        {
+          "before": [
+            18,
+            22
+          ],
+          "after": [
+            19,
+            23
+          ]
+        },
+        {
+          "before": [
+            25,
+            26
+          ],
+          "after": [
+            26,
+            27
+          ]
+        },
+        {
+          "before": [
+            28,
+            41
+          ],
+          "after": [
+            30,
+            43
+          ]
+        },
+        {
+          "before": [
+            44,
+            45
+          ],
+          "after": [
+            46,
+            47
+          ]
+        },
+        {
+          "before": [
+            101,
+            101
+          ],
+          "after": [
+            104,
+            104
+          ]
+        },
+        {
+          "before": [
+            103,
+            143
+          ],
+          "after": [
+            106,
+            146
+          ]
+        },
+        {
+          "before": [
+            146,
+            151
+          ],
+          "after": [
+            149,
+            154
+          ]
+        },
+        {
+          "before": [
+            157,
+            189
+          ],
+          "after": [
+            161,
+            193
+          ]
+        },
+        {
+          "before": [
+            194,
+            200
+          ],
+          "after": [
+            198,
+            204
+          ]
+        },
+        {
+          "before": [
+            202,
+            239
+          ],
+          "after": [
+            206,
+            243
+          ]
+        },
+        {
+          "before": [
+            246,
+            255
+          ],
+          "after": [
+            246,
+            255
+          ]
+        },
+        {
+          "before": [
+            257,
+            302
+          ],
+          "after": [
+            257,
+            302
+          ]
+        },
+        {
+          "before": [
+            307,
+            308
+          ],
+          "after": [
+            307,
+            308
+          ]
+        }
+      ],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh/tests.rs",
+      "before_nonblank": 325,
+      "after_nonblank": 325,
+      "total_delta": 0,
+      "production_delta": 0,
+      "support_delta": 0,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          334
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          334
+        ]
+      ],
+      "classification": "Refresh host tests.",
+      "before_sha256": "d392c45be0474ba52205f6adb7469320dd575b986569d6c449c5e5b723caeb00",
+      "after_sha256": "86bf0e6a8ee1bf1725e26b510ba490c9cd285d961a560ecb8120e2ea3c1fa9f2",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 1,
+      "removed_support": 1,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow.rs",
+      "before_nonblank": 662,
+      "after_nonblank": 581,
+      "total_delta": -81,
+      "production_delta": 486,
+      "support_delta": -567,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          672
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          75,
+          101
+        ],
+        [
+          169,
+          172
+        ],
+        [
+          183,
+          211
+        ],
+        [
+          242,
+          243
+        ],
+        [
+          311,
+          312
+        ],
+        [
+          374,
+          375
+        ],
+        [
+          384,
+          385
+        ],
+        [
+          402,
+          416
+        ],
+        [
+          584,
+          597
+        ]
+      ],
+      "classification": "Former whole DEBUG module now has production exact observations/topology/backend/session/acquisition/publication. Supplied submission/binding helpers, mutation seams and fixture imports remain support.",
+      "before_sha256": "286d192e52dfa9b6e912709a2164c9ca47e2d44f37c8dd609f1e60ddca376a5b",
+      "after_sha256": "c1e7feeff0779888a8e1736277b33ab82722c1023655fce0b7f18737c636de16",
+      "added_production": 114,
+      "removed_production": 0,
+      "added_support": 71,
+      "removed_support": 266,
+      "support_to_production": 372,
+      "support_to_production_preserved_ranges": [
+        {
+          "before": [
+            2,
+            5
+          ],
+          "after": [
+            2,
+            5
+          ]
+        },
+        {
+          "before": [
+            8,
+            10
+          ],
+          "after": [
+            8,
+            10
+          ]
+        },
+        {
+          "before": [
+            13,
+            14
+          ],
+          "after": [
+            12,
+            13
+          ]
+        },
+        {
+          "before": [
+            19,
+            23
+          ],
+          "after": [
+            17,
+            21
+          ]
+        },
+        {
+          "before": [
+            28,
+            34
+          ],
+          "after": [
+            23,
+            29
+          ]
+        },
+        {
+          "before": [
+            36,
+            39
+          ],
+          "after": [
+            31,
+            34
+          ]
+        },
+        {
+          "before": [
+            41,
+            41
+          ],
+          "after": [
+            36,
+            36
+          ]
+        },
+        {
+          "before": [
+            44,
+            78
+          ],
+          "after": [
+            39,
+            73
+          ]
+        },
+        {
+          "before": [
+            105,
+            125
+          ],
+          "after": [
+            102,
+            122
+          ]
+        },
+        {
+          "before": [
+            131,
+            135
+          ],
+          "after": [
+            233,
+            237
+          ]
+        },
+        {
+          "before": [
+            137,
+            138
+          ],
+          "after": [
+            238,
+            239
+          ]
+        },
+        {
+          "before": [
+            142,
+            143
+          ],
+          "after": [
+            244,
+            245
+          ]
+        },
+        {
+          "before": [
+            147,
+            147
+          ],
+          "after": [
+            247,
+            247
+          ]
+        },
+        {
+          "before": [
+            160,
+            160
+          ],
+          "after": [
+            249,
+            249
+          ]
+        },
+        {
+          "before": [
+            161,
+            161
+          ],
+          "after": [
+            253,
+            253
+          ]
+        },
+        {
+          "before": [
+            164,
+            164
+          ],
+          "after": [
+            256,
+            256
+          ]
+        },
+        {
+          "before": [
+            177,
+            208
+          ],
+          "after": [
+            258,
+            289
+          ]
+        },
+        {
+          "before": [
+            211,
+            226
+          ],
+          "after": [
+            290,
+            305
+          ]
+        },
+        {
+          "before": [
+            229,
+            230
+          ],
+          "after": [
+            307,
+            308
+          ]
+        },
+        {
+          "before": [
+            234,
+            253
+          ],
+          "after": [
+            313,
+            332
+          ]
+        },
+        {
+          "before": [
+            255,
+            259
+          ],
+          "after": [
+            334,
+            338
+          ]
+        },
+        {
+          "before": [
+            261,
+            269
+          ],
+          "after": [
+            340,
+            348
+          ]
+        },
+        {
+          "before": [
+            280,
+            303
+          ],
+          "after": [
+            350,
+            373
+          ]
+        },
+        {
+          "before": [
+            306,
+            307
+          ],
+          "after": [
+            376,
+            377
+          ]
+        },
+        {
+          "before": [
+            337,
+            338
+          ],
+          "after": [
+            378,
+            379
+          ]
+        },
+        {
+          "before": [
+            340,
+            342
+          ],
+          "after": [
+            381,
+            383
+          ]
+        },
+        {
+          "before": [
+            345,
+            346
+          ],
+          "after": [
+            386,
+            387
+          ]
+        },
+        {
+          "before": [
+            362,
+            367
+          ],
+          "after": [
+            388,
+            393
+          ]
+        },
+        {
+          "before": [
+            397,
+            397
+          ],
+          "after": [
+            421,
+            421
+          ]
+        },
+        {
+          "before": [
+            401,
+            413
+          ],
+          "after": [
+            423,
+            435
+          ]
+        },
+        {
+          "before": [
+            417,
+            418
+          ],
+          "after": [
+            439,
+            440
+          ]
+        },
+        {
+          "before": [
+            420,
+            429
+          ],
+          "after": [
+            442,
+            451
+          ]
+        },
+        {
+          "before": [
+            431,
+            431
+          ],
+          "after": [
+            453,
+            453
+          ]
+        },
+        {
+          "before": [
+            437,
+            456
+          ],
+          "after": [
+            455,
+            474
+          ]
+        },
+        {
+          "before": [
+            458,
+            564
+          ],
+          "after": [
+            476,
+            582
+          ]
+        }
+      ],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/fixtures.rs",
+      "before_nonblank": 0,
+      "after_nonblank": 423,
+      "total_delta": 423,
+      "production_delta": 0,
+      "support_delta": 423,
+      "before_reviewed_support_ranges_1based": [],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          427
+        ]
+      ],
+      "classification": "New external DEBUG/test-only supplied generators, callbacks, mutations and GUI controls. No production classification.",
+      "before_sha256": null,
+      "after_sha256": "c31550bc3497da312b64a608faad7c3b67fd090aa591851813cfade095935843",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 423,
+      "removed_support": 0,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/tests.rs",
+      "before_nonblank": 605,
+      "after_nonblank": 837,
+      "total_delta": 232,
+      "production_delta": 0,
+      "support_delta": 232,
+      "before_reviewed_support_ranges_1based": [
+        [
+          1,
+          622
+        ]
+      ],
+      "after_reviewed_support_ranges_1based": [
+        [
+          1,
+          858
+        ]
+      ],
+      "classification": "Backend contract and metadata/identity/topology/cancellation tests.",
+      "before_sha256": "96aaaffe4f9b868065e347fadfccd3e7ff0c9d1ecb6028d4808d0ef9a128e0cd",
+      "after_sha256": "62f86d451bffd81001549de03e3590d0be8ae80baa9d25a219e2943231f36da9",
+      "added_production": 0,
+      "removed_production": 0,
+      "added_support": 244,
+      "removed_support": 12,
+      "support_to_production": 0,
+      "support_to_production_preserved_ranges": [],
+      "production_to_support": 0,
+      "production_to_support_preserved_ranges": []
+    }
+  ],
+  "delta": {
+    "production_delta": 901,
+    "support_delta": 108,
+    "total_delta": 1009,
+    "support_to_production": 651,
+    "production_to_support": 3,
+    "added_production": 266,
+    "removed_production": 13,
+    "added_support": 1114,
+    "removed_support": 358
+  },
+  "counts": {
+    "production": 45352,
+    "support": 23813,
+    "benchmark": 105
+  }
+}

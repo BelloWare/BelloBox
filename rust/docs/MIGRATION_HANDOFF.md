@@ -600,3 +600,89 @@ DEBUG evidence revalidation performs a bounded quadratic duplicate scan over at
 most 512 observations under its mutex; pixel generation runs without that lock.
 No measured latency/FPS or native responsiveness claim follows, and this cost
 should be revisited before integrating a native catalog.
+
+### Exact supplied Window overlay checkpoint verified
+
+Published `f403966c4a55dc8af25fb7d725035e7f0cc72faf`, tree
+`1a08993a0574eca80c6e48124cce5d19daf91bde`, passed Linux run
+`37584275866` and macOS run `37584275876`. All steps passed, including native
+compile/link, pure regressions, strict normalized alpha/lifecycle tests, supplied
+host-mask worker, app build and offline development packaging. This supersedes
+the pending exact-CI statements for that supplied Window source; the separate
+native acquisition, catalog and interactive runtime gates remain open.
+
+### Actual cloud system-dialog acceptance
+
+The missing Linux FileChooser portal prerequisite is restored for a private
+process-local session, with two verified official Debian packages extracted in the
+workspace. No global service/settings or Rust source changed. On exact published
+Window source `f403966` and immutable binary `f002f201…`, actual CUA Save
+cancel/reopen wrote a verified 680×540 transparent-corner PNG. Converter Save
+cancel/reopen wrote a verified 45-frame, 320×180, 3-second GIF. Open cancel retained
+source/result; selecting a generated valid one-second H.264 MP4 reached the honest
+native-movie-unavailable gate. Apps and private portal session closed cleanly.
+
+See [cloud-dialog-acceptance.md](cloud-dialog-acceptance.md) for full binary/source
+hashes, official package hashes, exact process-local launch recipe, six original
+screenshots and verified output artifacts. This supersedes the earlier cloud
+system-dialog failure statements only for this restored launch environment; it
+is not native movie decoding or macOS dialog/capture acceptance. The ordinary
+unwrapped desktop bus remains unchanged and still lacks its own portal service.
+
+## Continuation checkpoint: production-compiled Window backend composition
+
+Window-specific selection, refresh and editor publication now compile in ordinary
+app builds alongside Area's shared coordinator. Generated pixels, supplied callback
+records, evidence mutation and delayed/failure controls remain DEBUG/test-only.
+Separate false Area/Window admission constants are checked before backend creation
+or any display, permission, capture, clipboard or presentation operation. A second
+side-effect-free native capability preflight rejects the unavailable catalog before
+hide/freeze; real catalog enumeration would occur after the frozen display.
+
+An owned backend now supplies exact observations/topology and acquisition through
+the same host path. The native snapshot carries the exact Arc<WindowCapturePlan>
+created from the callback-local retained SCWindow before filter submission. Native
+acquisition remains test-compiled and public capture remains Unavailable; missing
+raw occlusion-catalog/thread/runtime evidence is not fabricated from strict selector
+rows. No native object is made Send and no activation gate is enabled.
+
+Independent review found that checking a returned plan only against its own target
+was insufficient. Completion now must match the exact original selection Arc owner
+and requested options, before generic refresh and before native PNG decode. Same-
+session/same-sized other-window plans, reconstructed equal-looking selections and
+changed cursor/deadline options are rejected. A negative control removing this
+check caused the real coordinator regression to publish wrong independent pixels;
+restoring the exact check made the focused/full suites pass.
+
+The hardened immutable Linux binary is
+`7681a1008962862464e2342bbf4cc9eacbf9e74bf6df49f6c6fa362fa6344056`.
+Actual CUA covers front/back, fixed-frame Crop/Undo/Redo and letterboxes, edge text,
+Copy & Finish/reimport, delayed refresh while editing, one-shot rejection after
+Undo to clean, controlled failure retaining usable pixels, close before completion,
+and the shared Area resize/move regression. Eight original screenshots and exact
+source/binary links are in [window-backend-host.md](window-backend-host.md) and its
+validation directory. This remains supplied-pixel interaction, not native capture.
+
+Final automated evidence includes 96 screenshot app tests, 88 in the exact app-only
+debug-assertions-disabled test executable, 130 platform tests with 3 existing ignored,
+strict app/platform all-target Clippy, minimal-feature check, normal app build and
+warning-free app-only non-DEBUG metadata compile. Exact new-commit Linux/macOS CI,
+native completion ownership and strict mask/worker tests remain pending publication.
+Observation-thread placement and measured latency remain native activation gates;
+owned snapshot cloning and the 512-row bounded quadratic duplicate check do not
+establish a responsiveness claim.
+
+The final cfg(test)-only paused-disposal helper was then strengthened to enter
+`Source::request` and backend acquisition/publication. Its 11 coordinator tests
+passed again in ordinary and app non-DEBUG configurations, with strict app Clippy.
+No normal executable input changed after the hardened GUI pass; validation.json
+retains both GUI and final test-source hashes.
+
+The reviewed net Rust delta is +901 production / +108 support / +0 benchmark,
+yielding 45,352 production / 23,813 support / 105 benchmark. The auditable literal-
+line decomposition separately records 651 preserved support lines reclassified to
+production and 3 in reverse, plus 266/13 production lines added/removed and
+1,114/358 support lines added/removed. Fixtures remain support. This is scoped
+nonblank physical-line accounting including comments, not feature completion or
+engineering-effort measurement; see the before/after ranges and source hashes in
+`validation/window-backend-2026-10-07/loc-delta.json`.

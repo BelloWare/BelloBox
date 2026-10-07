@@ -1,0 +1,267 @@
+{
+  "baseline_commit": "f403966c4a55dc8af25fb7d725035e7f0cc72faf",
+  "binary_sha256": "7681a1008962862464e2342bbf4cc9eacbf9e74bf6df49f6c6fa362fa6344056",
+  "source_files": [
+    {
+      "path": "rust/crates/bello-platform/src/native_capture.rs",
+      "sha256": "2ce9d07b531598255bd90aab594f158bbf3cdb1eeaa262111e60a415b978a8df",
+      "nonblank": 473
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window.rs",
+      "sha256": "9e64d152b5c62dd1859b8d94a7fb83542c625c5d9260a9e6a5d4617dd618bac1",
+      "nonblank": 681
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/tests.rs",
+      "sha256": "b43ac47f3149bfec5b83717a679b9ec21155768092fec2e2280730d212472061",
+      "nonblank": 389
+    },
+    {
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "sha256": "8839352acc3fa8fe5553f01b198be9c58f22532ca9b7f41933b466574d59a05e",
+      "nonblank": 549
+    },
+    {
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "sha256": "1c2c275a265ab03c181813f4187b278e5a79e0300466105f4999652ca0642354",
+      "nonblank": 774
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "sha256": "ac967e08e5c5856110b290d01453d0e965d18690b5f235f5115d59ac3e058c0a",
+      "nonblank": 3627
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "sha256": "2d96de53bc395815fc3ad5bfff4a0b02ccce9320dbba2a746e8f31550afe48da",
+      "nonblank": 846
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "sha256": "ca8319ea32da23688a219f2fd0116c36d41e28b24877a6d4ea255cf3ca7b24ea",
+      "nonblank": 712
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs",
+      "sha256": "368bbc1fe4d6c85f372800164a914f37ca556d9f13d58d6a193a2814dfed551a",
+      "nonblank": 600
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "sha256": "9d290822468b71a97aaa7285c31ae62f9581ba40b6ddd7d25b1f2b06d1d3fb2f",
+      "nonblank": 340
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs",
+      "sha256": "1a10ee151f134271163f356b05e1b7d653fd12e2c4051ce29bc405af56b2c16f",
+      "nonblank": 336
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh/tests.rs",
+      "sha256": "86bf0e6a8ee1bf1725e26b510ba490c9cd285d961a560ecb8120e2ea3c1fa9f2",
+      "nonblank": 325
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow.rs",
+      "sha256": "c1e7feeff0779888a8e1736277b33ab82722c1023655fce0b7f18737c636de16",
+      "nonblank": 581
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/fixtures.rs",
+      "sha256": "c31550bc3497da312b64a608faad7c3b67fd090aa591851813cfade095935843",
+      "nonblank": 423
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/tests.rs",
+      "sha256": "62f86d451bffd81001549de03e3590d0be8ae80baa9d25a219e2943231f36da9",
+      "nonblank": 837
+    }
+  ],
+  "tests": {
+    "screenshot_application": {
+      "passed": 96,
+      "failed": 0
+    },
+    "app_debug_assertions_disabled_screenshot": {
+      "passed": 88,
+      "failed": 0,
+      "scope": "App-only rustc flag; dependencies retain ordinary debug settings."
+    },
+    "portable_platform": {
+      "passed": 130,
+      "failed": 0,
+      "ignored_existing": 3
+    },
+    "strict_app_all_targets_clippy": "passed",
+    "strict_platform_all_targets_clippy": "passed",
+    "minimal_features_check": "passed",
+    "normal_app_build": "passed",
+    "app_no_debug_assertions_metadata": "passed",
+    "final_test_only_coordinator": {
+      "passed": 11,
+      "failed": 0
+    },
+    "strict_app_all_targets_clippy_after_test_strengthening": "passed",
+    "final_test_only_no_debug_coordinator": {
+      "passed": 11,
+      "failed": 0
+    }
+  },
+  "negative_control": {
+    "change": "Temporarily omit generic returned-plan request-binding validation",
+    "observed": "Same-coordinator other-window equal-dimension regression failed: independent pixels instead of frozen pixels",
+    "restored": true,
+    "corrected_full_suites_passed": true
+  },
+  "native_ci": "Pending exact new published commit; no native capture or permissions performed",
+  "production_gates": {
+    "area": false,
+    "window": false,
+    "movie": "Unavailable"
+  },
+  "images": [
+    {
+      "file": "01-front-window.jpg",
+      "sha256": "5e52fe4ca660a7d5265111e6c1a9ae795265e05ac0de39e39adb6a40655fc7ef",
+      "bytes": 25589,
+      "mime_type": "image/jpeg",
+      "original_unedited_tool_output": true
+    },
+    {
+      "file": "02-fixed-crop-redo.jpg",
+      "sha256": "a5814828e33473af167e1076cfc35af6641c1106f9caef5497f4f85d7ae254a6",
+      "bytes": 27257,
+      "mime_type": "image/jpeg",
+      "original_unedited_tool_output": true
+    },
+    {
+      "file": "03-edge-text.jpg",
+      "sha256": "afc2deb4ed75793f0a4d1a2b674c61a7ade86f4dc4d85c030769d10f410f3f8c",
+      "bytes": 28145,
+      "mime_type": "image/jpeg",
+      "original_unedited_tool_output": true
+    },
+    {
+      "file": "04-clipboard-reimport.jpg",
+      "sha256": "3ec81334fff13e1154ec2e2bf14c6a8c28fea074731e127a6cb0cb5f0f047b16",
+      "bytes": 47529,
+      "mime_type": "image/jpeg",
+      "original_unedited_tool_output": true
+    },
+    {
+      "file": "05-back-window.jpg",
+      "sha256": "9a40ef96cd4589651cd564b6a3ec189e7fca32df3d20ef717c1927ebc0cbc939",
+      "bytes": 25512,
+      "mime_type": "image/jpeg",
+      "original_unedited_tool_output": true
+    },
+    {
+      "file": "06-delayed-edit-preserved.jpg",
+      "sha256": "1802034bc7ab4c75723f27a8a7f7bafba93412e2323338dceb2acacbfec9c480",
+      "bytes": 27057,
+      "mime_type": "image/jpeg",
+      "original_unedited_tool_output": true
+    },
+    {
+      "file": "07-failed-refresh-edit.jpg",
+      "sha256": "d92a703536a58a2a722b141fcd4779fbe25b4bd0720f3cc50d87c5e1695d8dd1",
+      "bytes": 27912,
+      "mime_type": "image/jpeg",
+      "original_unedited_tool_output": true
+    },
+    {
+      "file": "08-area-regression.jpg",
+      "sha256": "deb7cfb412630bc97891d83e1473ee1d71333aa077b9cb04186e040999cec836",
+      "bytes": 83743,
+      "mime_type": "image/jpeg",
+      "original_unedited_tool_output": true
+    }
+  ],
+  "gui_source_files": [
+    {
+      "path": "rust/crates/bello-platform/src/native_capture.rs",
+      "sha256": "2ce9d07b531598255bd90aab594f158bbf3cdb1eeaa262111e60a415b978a8df",
+      "nonblank": 473
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window.rs",
+      "sha256": "9e64d152b5c62dd1859b8d94a7fb83542c625c5d9260a9e6a5d4617dd618bac1",
+      "nonblank": 681
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/tests.rs",
+      "sha256": "b43ac47f3149bfec5b83717a679b9ec21155768092fec2e2280730d212472061",
+      "nonblank": 389
+    },
+    {
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "sha256": "8839352acc3fa8fe5553f01b198be9c58f22532ca9b7f41933b466574d59a05e",
+      "nonblank": 549
+    },
+    {
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "sha256": "1c2c275a265ab03c181813f4187b278e5a79e0300466105f4999652ca0642354",
+      "nonblank": 774
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "sha256": "ac967e08e5c5856110b290d01453d0e965d18690b5f235f5115d59ac3e058c0a",
+      "nonblank": 3627
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "sha256": "2d96de53bc395815fc3ad5bfff4a0b02ccce9320dbba2a746e8f31550afe48da",
+      "nonblank": 846
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "sha256": "ca8319ea32da23688a219f2fd0116c36d41e28b24877a6d4ea255cf3ca7b24ea",
+      "nonblank": 712
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs",
+      "sha256": "65764fdf083e05cd182a604ba0e4b908dba39e886f852e3624b392a949d87d53",
+      "nonblank": 593
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "sha256": "9d290822468b71a97aaa7285c31ae62f9581ba40b6ddd7d25b1f2b06d1d3fb2f",
+      "nonblank": 340
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs",
+      "sha256": "1a10ee151f134271163f356b05e1b7d653fd12e2c4051ce29bc405af56b2c16f",
+      "nonblank": 336
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh/tests.rs",
+      "sha256": "86bf0e6a8ee1bf1725e26b510ba490c9cd285d961a560ecb8120e2ea3c1fa9f2",
+      "nonblank": 325
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow.rs",
+      "sha256": "c1e7feeff0779888a8e1736277b33ab82722c1023655fce0b7f18737c636de16",
+      "nonblank": 581
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/fixtures.rs",
+      "sha256": "c31550bc3497da312b64a608faad7c3b67fd090aa591851813cfade095935843",
+      "nonblank": 423
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/tests.rs",
+      "sha256": "62f86d451bffd81001549de03e3590d0be8ae80baa9d25a219e2943231f36da9",
+      "nonblank": 837
+    }
+  ],
+  "changes_after_gui": [
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs",
+      "kind": "test-only; module imported under cfg(test)",
+      "purpose": "Route the paused-disposal/coordinator-retirement helper through Source::request and the backend acquisition/publication seam",
+      "normal_gui_executable_inputs_changed": false,
+      "nonblank_support_delta": 7
+    }
+  ]
+}

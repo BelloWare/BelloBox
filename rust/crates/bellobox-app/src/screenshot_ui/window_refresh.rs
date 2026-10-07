@@ -1,13 +1,14 @@
-//! DEBUG-only Window refresh host. Generated independent pixels flow through the
-//! real editor/preview/OCR path; no native capture API or permission is reachable.
+//! Production-compiled backend-injected refresh through the real editor/OCR path.
+//! Generated pixels exist only in explicit DEBUG/test fixtures. Native gates stay shut.
 use super::ScreenshotEditor;
 use crate::session::{JobToken, SessionJobs};
+use bellobox_core::screenshot::window_refresh::{
+    PreparedWindowRefresh, WindowRefreshContext, WindowRefreshDecision, WindowRefreshPlan,
+};
+#[cfg(any(debug_assertions, test))]
 use bellobox_core::screenshot::{
     window::{FrozenWindowCommit, synthetic_independent_window},
-    window_refresh::{
-        OcclusionLayers, OcclusionRow, PreparedWindowRefresh, WindowRefreshContext,
-        WindowRefreshDecision, WindowRefreshPlan, WindowRefreshSource, decide_window_refresh,
-    },
+    window_refresh::{OcclusionLayers, OcclusionRow, WindowRefreshSource, decide_window_refresh},
 };
 use gpui::Context;
 use std::sync::{
@@ -24,6 +25,7 @@ pub(super) struct Request {
     pub(super) disposal_gate: Option<DisposalGate>,
 }
 enum Input {
+    #[cfg(any(debug_assertions, test))]
     Fixture(u32),
     Supplied(super::window_workflow::Acquisition),
 }
@@ -44,6 +46,7 @@ impl Request {
         }
     }
 
+    #[cfg(any(debug_assertions, test))]
     pub fn fixture(commit: &FrozenWindowCommit, boundary: Arc<AtomicBool>) -> Result<Self, String> {
         let candidate = commit.candidate();
         // This is an explicitly synthetic occluder catalog, separate from selector
@@ -149,6 +152,7 @@ impl ScreenshotEditor {
                     return Ok((None, None));
                 }
                 let (independent, publication) = match input {
+                    #[cfg(any(debug_assertions, test))]
                     Input::Fixture(window_id) => (
                         synthetic_independent_window(window_id, &cancellation)
                             .map_err(|e| e.to_string())?,
@@ -237,12 +241,8 @@ impl ScreenshotEditor {
         host.jobs.cancel();
         if accepted {
             self.source = match decision {
-                WindowRefreshDecision::MaskFrozenAlpha => {
-                    "Window · synthetic alpha on frozen pixels"
-                }
-                WindowRefreshDecision::ReplaceWithIndependent => {
-                    "Window · synthetic independent pixels"
-                }
+                WindowRefreshDecision::MaskFrozenAlpha => "Window · alpha on frozen pixels",
+                WindowRefreshDecision::ReplaceWithIndependent => "Window · independent pixels",
                 WindowRefreshDecision::KeepFrozen => return false,
             };
             // Same path as edits: pending OCR cancelled, copy payload cleared,

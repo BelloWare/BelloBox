@@ -1,7 +1,9 @@
 use super::*;
+use bellobox_core::screenshot::window::synthetic_independent_window;
 use bellobox_core::screenshot::{
     AnnotationKind, AnnotationStyle, Point, ScreenshotEditSession, window::FrozenWindowSession,
 };
+use std::sync::Mutex;
 use std::{
     sync::{atomic::AtomicUsize, mpsc},
     time::Duration,
@@ -35,7 +37,14 @@ fn select(fixture: &Fixture, id: u32) -> (FrozenWindowSession, FrozenWindowCommi
     (selector, commit)
 }
 fn evidence(source: &Source) -> Evidence {
-    source.current.lock().unwrap().clone()
+    source
+        .supplied
+        .as_ref()
+        .unwrap()
+        .current
+        .lock()
+        .unwrap()
+        .clone()
 }
 fn rebuild(
     fixture: &Fixture,
@@ -147,7 +156,18 @@ fn selector_filters_exact_scope_but_raw_occlusion_retains_own_regular_windows() 
         .as_mut()
         .unwrap()
         .insert(0, row(&own));
-    fixture.source = rebuild(&fixture, supplied, fixture.source.submissions.clone()).unwrap();
+    fixture.source = rebuild(
+        &fixture,
+        supplied,
+        fixture
+            .source
+            .supplied
+            .as_ref()
+            .unwrap()
+            .submissions
+            .clone(),
+    )
+    .unwrap();
     assert_eq!(
         fixture
             .source
@@ -217,7 +237,18 @@ fn selection_catalog_keeps_supplied_front_to_back_order() {
     let mut fixture = fixture().unwrap();
     let mut supplied = evidence(&fixture.source);
     supplied.observations.reverse();
-    fixture.source = rebuild(&fixture, supplied, fixture.source.submissions.clone()).unwrap();
+    fixture.source = rebuild(
+        &fixture,
+        supplied,
+        fixture
+            .source
+            .supplied
+            .as_ref()
+            .unwrap()
+            .submissions
+            .clone(),
+    )
+    .unwrap();
     assert_eq!(
         fixture
             .source
@@ -276,7 +307,18 @@ fn malformed_catalog_identity_and_topology_fail_before_selection() {
             _ => supplied.topology.displays[0].appkit_size_points.width += 0.000_001,
         }
         assert!(
-            rebuild(&fixture, supplied, fixture.source.submissions.clone()).is_err(),
+            rebuild(
+                &fixture,
+                supplied,
+                fixture
+                    .source
+                    .supplied
+                    .as_ref()
+                    .unwrap()
+                    .submissions
+                    .clone()
+            )
+            .is_err(),
             "case {case}"
         );
     }
@@ -295,7 +337,13 @@ fn unsupported_and_oversized_supplied_sources_fail_closed() {
             layout,
             999,
             supplied,
-            fixture.source.submissions.clone(),
+            fixture
+                .source
+                .supplied
+                .as_ref()
+                .unwrap()
+                .submissions
+                .clone(),
             fixture.source.layers,
             |_, _, _| unreachable!("invalid source cannot acquire")
         )
@@ -303,7 +351,18 @@ fn unsupported_and_oversized_supplied_sources_fail_closed() {
     );
     let mut supplied = evidence(&fixture.source);
     supplied.observations[0].frame.origin.x = 799.;
-    let source = rebuild(&fixture, supplied, fixture.source.submissions.clone()).unwrap();
+    let source = rebuild(
+        &fixture,
+        supplied,
+        fixture
+            .source
+            .supplied
+            .as_ref()
+            .unwrap()
+            .submissions
+            .clone(),
+    )
+    .unwrap();
     assert_eq!(
         source
             .candidates()
@@ -313,7 +372,13 @@ fn unsupported_and_oversized_supplied_sources_fail_closed() {
             .collect::<Vec<_>>(),
         [2]
     );
-    let mut submissions = fixture.source.submissions.clone();
+    let mut submissions = fixture
+        .source
+        .supplied
+        .as_ref()
+        .unwrap()
+        .submissions
+        .clone();
     submissions.push(submissions[0].clone());
     assert!(rebuild(&fixture, evidence(&fixture.source), submissions).is_err());
 }
@@ -323,7 +388,13 @@ fn exact_subpixel_change_is_not_hidden_by_selector_f32_conversion() {
     let mut fixture = fixture().unwrap();
     let mut supplied = evidence(&fixture.source);
     supplied.observations[0].frame.origin.x += 0.000_001;
-    let mut submissions = fixture.source.submissions.clone();
+    let mut submissions = fixture
+        .source
+        .supplied
+        .as_ref()
+        .unwrap()
+        .submissions
+        .clone();
     submissions[0].frame = supplied.observations[0].frame;
     fixture.source = rebuild(&fixture, supplied, submissions).unwrap();
     let (_selector, commit) = select(&fixture, 1);
@@ -347,7 +418,16 @@ fn exact_subpixel_change_is_not_hidden_by_selector_f32_conversion() {
         .source
         .update_current(|current| current.observations[0].frame.origin.x += 0.000_001);
     assert_eq!(
-        fixture.source.current.lock().unwrap().observations[0].candidate(),
+        fixture
+            .source
+            .supplied
+            .as_ref()
+            .unwrap()
+            .current
+            .lock()
+            .unwrap()
+            .observations[0]
+            .candidate(),
         commit.candidate()
     );
     assert!(!publication.is_current());
@@ -388,7 +468,13 @@ fn changed_or_missing_fresh_source_never_reaches_the_generator() {
 fn exact_submitted_source_is_checked_before_generator() {
     let original = fixture().unwrap();
     for case in 0..5 {
-        let mut submissions = original.source.submissions.clone();
+        let mut submissions = original
+            .source
+            .supplied
+            .as_ref()
+            .unwrap()
+            .submissions
+            .clone();
         match case {
             0 => submissions[0].owner_process_id = 201,
             1 => submissions[0].frame.origin.x += 0.000_001,
@@ -490,7 +576,18 @@ fn all_displays_participate_and_topology_order_is_not_identity() {
     secondary.display.id = 2;
     secondary.display.bounds.origin.x = -800.;
     supplied.topology.displays.push(secondary);
-    fixture.source = rebuild(&fixture, supplied, fixture.source.submissions.clone()).unwrap();
+    fixture.source = rebuild(
+        &fixture,
+        supplied,
+        fixture
+            .source
+            .supplied
+            .as_ref()
+            .unwrap()
+            .submissions
+            .clone(),
+    )
+    .unwrap();
     let (_selector, commit) = select(&fixture, 1);
     let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
     let (_, publication) = acquisition.run(flag()).unwrap();
@@ -615,8 +712,147 @@ fn request_rejects_foreign_commit_metadata_and_display_geometry() {
     let other = rebuild(
         &fixture,
         evidence(&fixture.source),
-        fixture.source.submissions.clone(),
+        fixture
+            .source
+            .supplied
+            .as_ref()
+            .unwrap()
+            .submissions
+            .clone(),
     )
     .unwrap();
     assert_ne!(fixture.source.token.session, other.token.session);
+}
+
+#[test]
+fn native_catalog_boundary_is_explicitly_unavailable() {
+    assert!(Source::from_backend(fixture_layout(), Arc::new(NativeBackend)).is_err());
+}
+
+#[test]
+fn expired_completion_never_republishes_even_with_unchanged_evidence() {
+    let fixture = fixture().unwrap();
+    let (_selector, commit) = select(&fixture, 1);
+    let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    let (_, mut publication) = acquisition.run(flag()).unwrap();
+    assert!(publication.is_current());
+    publication.started =
+        Instant::now() - publication.plan.options().timeout - Duration::from_millis(1);
+    assert!(!publication.is_current());
+}
+
+#[test]
+fn production_backend_reads_acquisition_and_publication_evidence_independently() {
+    struct CountedBackend {
+        supplied: Arc<fixtures::SuppliedBackend>,
+        observations: Arc<AtomicUsize>,
+        acquisitions: Arc<AtomicUsize>,
+    }
+    impl Backend for CountedBackend {
+        fn check_available(&self) -> Result<(), String> {
+            self.supplied.check_available()
+        }
+        fn identity_and_layers(&self) -> Result<(i32, OcclusionLayers), String> {
+            self.supplied.identity_and_layers()
+        }
+        fn observe(&self) -> Result<Evidence, String> {
+            self.observations.fetch_add(1, Ordering::Relaxed);
+            self.supplied.observe()
+        }
+        fn acquire(&self, request: &AcquisitionRequest) -> Result<Acquired, String> {
+            self.acquisitions.fetch_add(1, Ordering::Relaxed);
+            self.supplied.acquire(request)
+        }
+    }
+    let mut fixture = fixture().unwrap();
+    let supplied = fixture.source.supplied.as_ref().unwrap().clone();
+    let observations = Arc::new(AtomicUsize::new(0));
+    let acquisitions = Arc::new(AtomicUsize::new(0));
+    fixture.source = Source::from_backend(
+        fixture.layout,
+        Arc::new(CountedBackend {
+            supplied: supplied.clone(),
+            observations: observations.clone(),
+            acquisitions: acquisitions.clone(),
+        }),
+    )
+    .unwrap();
+    assert_eq!(observations.load(Ordering::Relaxed), 1);
+    let (_selector, commit) = select(&fixture, 1);
+    let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    assert_eq!(observations.load(Ordering::Relaxed), 2);
+    let (_, publication) = acquisition.run(flag()).unwrap();
+    assert_eq!(acquisitions.load(Ordering::Relaxed), 1);
+    assert_eq!(observations.load(Ordering::Relaxed), 3);
+    assert!(publication.is_current());
+    assert_eq!(observations.load(Ordering::Relaxed), 4);
+    supplied.current.lock().unwrap().observations[0]
+        .frame
+        .origin
+        .x += 0.000_001;
+    assert!(!publication.is_current());
+    assert_eq!(observations.load(Ordering::Relaxed), 5);
+}
+
+#[test]
+fn host_decodes_the_native_completion_contract_without_reconstructing_submission() {
+    use bello_platform::native_capture::{NativeWindowCaptureSnapshot, WindowCaptureDiagnostics};
+    let fixture = fixture().unwrap();
+    let (_selector, commit) = select(&fixture, 1);
+    let (_, _, acquisition) = fixture.source.request(&commit, flag()).unwrap();
+    let selected = acquisition.selection.clone();
+    let mut request = AcquisitionRequest {
+        selection: selected,
+        options: WindowCaptureOptions::default(),
+        session: fixture.source.session.clone(),
+        cancellation: CaptureCancellation::default(),
+        cancellation_flag: flag(),
+        layout: fixture.layout,
+    };
+    let (document, publication) = acquisition.run(flag()).unwrap();
+    let plan = publication.plan.clone();
+    let completed = Acquired::from_native(
+        NativeWindowCaptureSnapshot {
+            png: document.render_png().unwrap(),
+            completion: plan.clone(),
+            diagnostics: WindowCaptureDiagnostics {
+                window_id: 1,
+                owner_process_id: 101,
+                output_size: plan.output_size(),
+                includes_cursor: false,
+                backend: "synthetic callback contract",
+            },
+        },
+        &request,
+    )
+    .unwrap();
+    assert!(Arc::ptr_eq(&completed.plan, &plan));
+    assert_eq!(completed.document.dimensions(), (680, 540));
+    assert_eq!(
+        completed.plan.submitted_identity().owner_bundle_id,
+        Some("example.synthetic.window1")
+    );
+    request.options.include_cursor = true;
+    let rejected = Acquired::from_native(
+        NativeWindowCaptureSnapshot {
+            png: vec![0], // invalid PNG: binding must fail before the decoder is called.
+            completion: plan.clone(),
+            diagnostics: WindowCaptureDiagnostics {
+                window_id: 1,
+                owner_process_id: 101,
+                output_size: plan.output_size(),
+                includes_cursor: false,
+                backend: "synthetic callback contract",
+            },
+        },
+        &request,
+    );
+    assert_eq!(
+        rejected.err().unwrap(),
+        "Window completion does not belong to the acquisition request."
+    );
+    fixture
+        .source
+        .update_current(|current| current.observations[0].frame.origin.x += 0.000_001);
+    assert!(!publication.is_current());
 }

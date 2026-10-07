@@ -442,6 +442,11 @@ pub struct WindowCaptureDiagnostics {
 }
 pub struct NativeWindowCaptureSnapshot {
     pub png: Vec<u8>,
+    /// The exact callback-created plan, validated against the retained SCWindow
+    /// before filter submission. Owns source identity/frame/topology and flags;
+    /// never reconstructed from PNG diagnostics or initial CG catalog rows.
+    /// The caller must validate fresh evidence again at actual publication.
+    pub completion: Arc<crate::window_capture::WindowCapturePlan>,
     pub diagnostics: WindowCaptureDiagnostics,
 }
 impl fmt::Debug for NativeWindowCaptureSnapshot {

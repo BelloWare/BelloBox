@@ -1,0 +1,150 @@
+{
+  "date_utc": "2026-10-07",
+  "application_commit": "f403966c4a55dc8af25fb7d725035e7f0cc72faf",
+  "application_tree": "1a08993a0574eca80c6e48124cce5d19daf91bde",
+  "binary_sha256": "f002f201725dbd9a08bb2270948a073a7095b2642d7a35ce9a9df4c5f140c970",
+  "source_manifest": "../window-overlay-2026-10-07/source-inputs.json",
+  "source_verification": "All 13 modified-source hashes verified against exact published commit; all remaining sources inherited from its recorded baseline. Current backend WIP was not used.",
+  "portal_packages": [
+    {
+      "package": "xdg-desktop-portal",
+      "version": "1.20.3+ds-1",
+      "sha256": "9dce4bf7ca1cc9afce6d48735a4a9897a27bcfd17791a05031eb73ac76788922"
+    },
+    {
+      "package": "xdg-desktop-portal-gtk",
+      "version": "1.15.3-1",
+      "sha256": "84fdc449f05ffa0772e6eb4c6ccb348a353d2abd382dacc206ba3c5eee71f630"
+    }
+  ],
+  "package_source": "Signed configured Debian trixie snapshot https://snapshot.debian.org/archive/debian/20260925T181338Z/",
+  "package_install": "dpkg-deb extraction into workspace portal-sysroot; no package maintainer scripts/root/system configuration",
+  "desktop_initial_probe": "org.freedesktop.portal.Desktop ServiceUnknown",
+  "isolated_probe": "org.freedesktop.portal.FileChooser version uint32 4",
+  "desktop_final_probe": "org.freedesktop.portal.Desktop ServiceUnknown; private session retired",
+  "window_png": {
+    "dimensions": [
+      680,
+      540
+    ],
+    "mode": "RGBA",
+    "corner_pixel": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "body_pixel_at_100_100": [
+      255,
+      224,
+      186,
+      255
+    ]
+  },
+  "movie_input": {
+    "generation": "ffmpeg -f lavfi -i color=c=orange:s=160x90:r=12:d=1 -an -c:v libx264 -pix_fmt yuv420p -threads 1",
+    "verified_with": "ffprobe",
+    "codec": "h264",
+    "dimensions": [
+      160,
+      90
+    ],
+    "duration_seconds": 1,
+    "scope": "App-generated color input only; native MovieAsset gate remained unavailable after Open selection."
+  },
+  "files": [
+    {
+      "path": "gif-after-save.jpg",
+      "bytes": 74220,
+      "sha256": "5b70a76ce6090fcca6ba1161ea6d58edbe9729b11d7220937f2d05d033c9880f",
+      "format": "JPEG",
+      "dimensions": [
+        1180,
+        812
+      ]
+    },
+    {
+      "path": "gif-native-gate.jpg",
+      "bytes": 75546,
+      "sha256": "5a345350fc6647b5d2012dbbcd87a56ed994e348c956fb5e2b28360be2999703",
+      "format": "JPEG",
+      "dimensions": [
+        1180,
+        812
+      ]
+    },
+    {
+      "path": "gif-open-dialog.jpg",
+      "bytes": 65744,
+      "sha256": "e82497c9d588962c31f889d85d7ef51dff65c286fc6796910becc5d797f984e9",
+      "format": "JPEG",
+      "dimensions": [
+        1096,
+        845
+      ]
+    },
+    {
+      "path": "gif-save-dialog.jpg",
+      "bytes": 58187,
+      "sha256": "f19328111539dd1107879ad338252f063343121a0f2ae80df1dcbfe4990f646e",
+      "format": "JPEG",
+      "dimensions": [
+        1096,
+        822
+      ]
+    },
+    {
+      "path": "saved-synthetic.gif",
+      "bytes": 44416,
+      "sha256": "f8d807418cd1ee8e946d98bab25d77abe716d1f90ce27f03e78044c86066c6cd",
+      "format": "GIF",
+      "dimensions": [
+        320,
+        180
+      ],
+      "frames": 45,
+      "total_duration_ms": 3000
+    },
+    {
+      "path": "saved-window.png",
+      "bytes": 8975,
+      "sha256": "9f2f3fe76bf8e66ea1fda219580958eef09368d5f4ced085acd291e175c81e99",
+      "format": "PNG",
+      "dimensions": [
+        680,
+        540
+      ]
+    },
+    {
+      "path": "synthetic-orange.mp4",
+      "bytes": 1924,
+      "sha256": "692428a76a5797a64756e5adabefbf08d79be88d73322fe33177b262da01127d"
+    },
+    {
+      "path": "window-after-save.jpg",
+      "bytes": 28572,
+      "sha256": "e434b0fabf90753232a134841d8f039b5757c707f327639ece87f206ef0c6eb7",
+      "format": "JPEG",
+      "dimensions": [
+        800,
+        500
+      ]
+    },
+    {
+      "path": "window-save-dialog.jpg",
+      "bytes": 53770,
+      "sha256": "770b982308b07013243a376d95a7cf7c3144e6285d347c78b3daf4983911a130",
+      "format": "JPEG",
+      "dimensions": [
+        1096,
+        822
+      ]
+    },
+    {
+      "path": "launch-recipe.sh",
+      "bytes": 1767,
+      "sha256": "faeee662c727c0162375e74a3629c9ddee33e1e2c1ccbea6300bdb23a1405681",
+      "format": "shell source, exact tested process-local inner launcher"
+    }
+  ]
+}

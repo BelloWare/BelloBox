@@ -133,7 +133,7 @@ fn async_fixture_preparation_publishes_through_editor_host(cx: &mut TestAppConte
     cx.read(|cx| {
         let view = root.read(cx);
         assert_eq!(view.session.revision(), 1);
-        assert_eq!(view.source, "Window · synthetic independent pixels");
+        assert_eq!(view.source, "Window · independent pixels");
         assert!(!view.preview_tiles.is_empty());
     });
 }

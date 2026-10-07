@@ -324,3 +324,69 @@ fn final_window_validation_rejects_live_generation_and_fresh_window_changes() {
         assert!(job.wait().is_err());
     }
 }
+
+#[test]
+fn completion_owns_the_exact_submission_plan_after_callback_target_drops() {
+    fn send_sync<T: Send + Sync>() {}
+    send_sync::<NativeWindowCaptureSnapshot>();
+    let (target, topology, fresh) = fixture();
+    let plan = Arc::downgrade(&target.plan);
+    let session = target.request.session.clone();
+    let cancellation = target.request.cancellation.clone();
+    let token = session.current().unwrap();
+    let job = WindowJob::new(cancellation.clone(), Duration::from_secs(1));
+    assert!(job.transition(Stage::InitialContent, Stage::Validating));
+    let mut png = vec![1, 2, 3];
+    complete_validated(
+        &target,
+        &mut png,
+        target.plan.output_size(),
+        &fresh,
+        topology.borrowed(),
+        &job,
+    )
+    .unwrap();
+    let snapshot = job.wait().unwrap();
+    assert!(Arc::ptr_eq(&snapshot.completion, &target.plan));
+    drop(target);
+    assert!(plan.upgrade().is_some());
+    assert_eq!(
+        snapshot.completion.submitted_identity().owner_bundle_id,
+        Some("org.example.source")
+    );
+    snapshot
+        .completion
+        .validate_completion(
+            &fresh,
+            topology.borrowed(),
+            token,
+            snapshot.diagnostics.output_size,
+            &cancellation,
+        )
+        .unwrap();
+    let mut changed = fresh.clone();
+    changed[0].frame.0.origin.x += 0.000_001;
+    assert!(snapshot
+        .completion
+        .validate_completion(
+            &changed,
+            topology.borrowed(),
+            token,
+            snapshot.diagnostics.output_size,
+            &cancellation
+        )
+        .is_err());
+    cancellation.cancel();
+    assert!(snapshot
+        .completion
+        .validate_completion(
+            &fresh,
+            topology.borrowed(),
+            token,
+            snapshot.diagnostics.output_size,
+            &cancellation
+        )
+        .is_err());
+    drop(snapshot);
+    assert!(plan.upgrade().is_none());
+}
