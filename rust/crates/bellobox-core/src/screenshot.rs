@@ -13,6 +13,7 @@ pub mod selection;
 mod tests;
 mod text;
 pub mod window;
+pub mod window_refresh;
 
 use image::{ImageDecoder, RgbaImage};
 use std::{
@@ -35,9 +36,14 @@ pub const MAX_POINTS: usize = 65_536;
 pub const MAX_TEXT_BYTES: usize = 16_384;
 pub const MAX_DOCUMENT_BYTES: usize = 4_000_000;
 pub const MAX_HISTORY_STEPS: usize = 64;
-const MAX_HISTORY_BYTES: usize = 16_000_000;
+// Combined annotation/crop history metadata plus distinct older RGBA buffers.
+// The active base is excluded; ordinary Undo on a large current image remains
+// useful. Older bases beyond this explicit cap are evicted, unlike Swift's
+// unrestricted whole-document history. Detached render jobs own separate bounds.
+const MAX_HISTORY_BYTES: usize = 64 * 1024 * 1024;
 const MAX_COORDINATE: f32 = 1_000_000.;
 static NEXT_ANNOTATION_ID: AtomicU64 = AtomicU64::new(1);
+static NEXT_EDIT_SESSION_ID: AtomicU64 = AtomicU64::new(1);
 pub type AnnotationId = u64;
 
 /// One lossless, native-resolution preview tile in active-crop coordinates.
@@ -687,6 +693,25 @@ impl Snapshot {
             + std::mem::size_of::<Self>()
     }
 }
+#[derive(Clone)]
+struct HistorySnapshot {
+    state: Snapshot,
+    base_image: Arc<RgbaImage>,
+    serial: u64,
+}
+impl HistorySnapshot {
+    fn byte_cost(&self) -> usize {
+        self.state.byte_cost() + std::mem::size_of::<Arc<RgbaImage>>() + std::mem::size_of::<u64>()
+    }
+}
+/// Opaque edit-session/base-generation identity for an asynchronous refresh.
+/// Annotation edits and font preparation do not change the base generation.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BaseCaptureToken {
+    owner: u64,
+    generation: u64,
+}
+
 /// An immutable, cheap, Send + Sync document clone for background rendering.
 pub type RenderSnapshot = ScreenshotDocument;
 
@@ -695,9 +720,12 @@ pub type RenderSnapshot = ScreenshotDocument;
 pub struct ScreenshotEditSession {
     document: ScreenshotDocument,
     initial: Snapshot,
-    undo: VecDeque<Snapshot>,
-    redo: VecDeque<Snapshot>,
+    undo: VecDeque<HistorySnapshot>,
+    redo: VecDeque<HistorySnapshot>,
     revision: u64,
+    owner: u64,
+    base_generation: u64,
+    history_serial: u64,
 }
 impl ScreenshotEditSession {
     pub fn new(document: ScreenshotDocument) -> Self {
@@ -711,6 +739,9 @@ impl ScreenshotEditSession {
             undo: VecDeque::new(),
             redo: VecDeque::new(),
             revision: 0,
+            owner: NEXT_EDIT_SESSION_ID.fetch_add(1, Ordering::Relaxed),
+            base_generation: 0,
+            history_serial: 0,
         }
     }
     pub fn document(&self) -> &ScreenshotDocument {
@@ -721,6 +752,36 @@ impl ScreenshotEditSession {
     }
     pub fn render_snapshot(&self) -> RenderSnapshot {
         self.document.clone()
+    }
+    pub fn base_capture_token(&self) -> BaseCaptureToken {
+        BaseCaptureToken {
+            owner: self.owner,
+            generation: self.base_generation,
+        }
+    }
+    /// Source guard: the same base-owning edit session, CURRENT annotations empty
+    /// and crop absent. Clean-after-Undo and font preparation remain eligible.
+    /// Replaces only base pixels, preserving font and current editing history.
+    /// No Undo step is added; historical bases remain paired with their geometry
+    /// until the combined 64 MiB history budget evicts the oldest snapshots.
+    pub fn replace_base_capture(
+        &mut self,
+        expected: BaseCaptureToken,
+        replacement: ScreenshotDocument,
+    ) -> bool {
+        if expected != self.base_capture_token()
+            || !self.document.annotations.is_empty()
+            || self.document.crop_rect.is_some()
+            || !replacement.annotations.is_empty()
+            || replacement.crop_rect.is_some()
+        {
+            return false;
+        }
+        self.document.base_image = replacement.base_image;
+        self.base_generation = self.base_generation.wrapping_add(1);
+        self.revision = self.revision.wrapping_add(1);
+        self.trim_history(MAX_HISTORY_BYTES);
+        true
     }
     pub fn can_undo(&self) -> bool {
         !self.undo.is_empty()
@@ -922,16 +983,20 @@ impl ScreenshotEditSession {
         let Some(previous) = self.undo.pop_back() else {
             return false;
         };
-        self.redo.push_back(self.snapshot());
+        let current = self.history_snapshot();
+        self.redo.push_back(current);
         self.restore(previous);
+        self.trim_history(MAX_HISTORY_BYTES);
         true
     }
     pub fn redo(&mut self) -> bool {
         let Some(next) = self.redo.pop_back() else {
             return false;
         };
-        self.undo.push_back(self.snapshot());
+        let current = self.history_snapshot();
+        self.undo.push_back(current);
         self.restore(next);
+        self.trim_history(MAX_HISTORY_BYTES);
         true
     }
     pub fn render_png(&self) -> Result<Vec<u8>, String> {
@@ -949,10 +1014,60 @@ impl ScreenshotEditSession {
             crop_rect: self.document.crop_rect,
         }
     }
-    fn restore(&mut self, s: Snapshot) {
-        self.document.annotations = s.annotations;
-        self.document.crop_rect = s.crop_rect;
+    fn history_snapshot(&mut self) -> HistorySnapshot {
+        self.history_serial = self.history_serial.wrapping_add(1);
+        HistorySnapshot {
+            state: self.snapshot(),
+            base_image: self.document.base_image.clone(),
+            serial: self.history_serial,
+        }
+    }
+    fn restore(&mut self, s: HistorySnapshot) {
+        if !Arc::ptr_eq(&self.document.base_image, &s.base_image) {
+            // Never restore an old epoch: revisiting an earlier image must not
+            // revive a refresh request issued before a later accepted base swap.
+            self.base_generation = self.base_generation.wrapping_add(1);
+        }
+        self.document.base_image = s.base_image;
+        self.document.annotations = s.state.annotations;
+        self.document.crop_rect = s.state.crop_rect;
         self.revision = self.revision.wrapping_add(1);
+    }
+    fn retained_history_bytes(&self) -> usize {
+        let mut bytes = self
+            .undo
+            .iter()
+            .chain(&self.redo)
+            .fold(0usize, |n, s| n.saturating_add(s.byte_cost()));
+        let active = Arc::as_ptr(&self.document.base_image);
+        let mut seen = Vec::with_capacity(self.undo.len() + self.redo.len());
+        for snapshot in self.undo.iter().chain(&self.redo) {
+            let identity = Arc::as_ptr(&snapshot.base_image);
+            if identity != active && !seen.contains(&identity) {
+                seen.push(identity);
+                // Count actual Vec capacity, not compressed PNGs or equal-pixel
+                // comparisons. Repeated references to one allocation count once.
+                bytes = bytes.saturating_add(snapshot.base_image.as_raw().capacity());
+            }
+        }
+        bytes
+    }
+    fn trim_history(&mut self, byte_budget: usize) {
+        while self.undo.len() + self.redo.len() > MAX_HISTORY_STEPS
+            || self.retained_history_bytes() > byte_budget
+        {
+            let remove_undo = match (self.undo.front(), self.redo.front()) {
+                (Some(a), Some(b)) => a.serial <= b.serial,
+                (Some(_), None) => true,
+                (None, Some(_)) => false,
+                (None, None) => break,
+            };
+            if remove_undo {
+                self.undo.pop_front();
+            } else {
+                self.redo.pop_front();
+            }
+        }
     }
     fn commit(
         &mut self,
@@ -969,14 +1084,15 @@ impl ScreenshotEditSession {
                     .into(),
             );
         }
-        self.undo.push_back(self.snapshot());
+        let current = self.history_snapshot();
+        self.undo.push_back(current);
         self.redo.clear();
-        self.restore(next);
-        while self.undo.len() > MAX_HISTORY_STEPS
-            || self.undo.iter().map(Snapshot::byte_cost).sum::<usize>() > MAX_HISTORY_BYTES
-        {
-            self.undo.pop_front();
-        }
+        self.restore(HistorySnapshot {
+            state: next,
+            base_image: self.document.base_image.clone(),
+            serial: self.history_serial,
+        });
+        self.trim_history(MAX_HISTORY_BYTES);
         Ok(())
     }
 }
