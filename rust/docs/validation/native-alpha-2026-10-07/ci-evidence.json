@@ -1,0 +1,67 @@
+{
+  "implementation_commit": "c41ce17a520a9bc39073e2302c5a061d29dd27df",
+  "implementation_tree": "fd17a83c4ddf4d5b9e54158250d89ed1a7091f2e",
+  "linux": {
+    "run_id": 37575287239,
+    "job_id": 112642690061,
+    "url": "https://github.com/BelloWare/BelloBox/actions/runs/37575287239",
+    "conclusion": "success",
+    "scope": [
+      "workspace tests",
+      "strict workspace Clippy",
+      "workspace build",
+      "software-rendered startup smoke"
+    ]
+  },
+  "macos": {
+    "run_id": 37575287155,
+    "job_id": 112642690044,
+    "url": "https://github.com/BelloWare/BelloBox/actions/runs/37575287155",
+    "conclusion": "success",
+    "platform_tests_passed": 153,
+    "platform_tests_existing_ignored": 3,
+    "filtered_alpha_oracle_and_lifecycle_tests_passed": 9,
+    "actual_host_worker_mask_test_passed": 1,
+    "scope": [
+      "native compile/link all test targets",
+      "strict normalized-input native RGBA oracle",
+      "same-size 65536 alpha pairs",
+      "same-size and plus/minus-one pixel resampling including larger matrices",
+      "worker host preparation through core publication",
+      "native app build",
+      "offline preview packaging"
+    ]
+  },
+  "portable_characterization": {
+    "known_case": {
+      "frozen_size": [
+        2,
+        3
+      ],
+      "shape_size": [
+        1,
+        2
+      ],
+      "pixel": [
+        0,
+        1
+      ],
+      "coregraphics_alpha": 17,
+      "portable_alpha": 60
+    },
+    "rgb_corpus_pixels": 144,
+    "straight_rgb_mismatching_pixels": 89,
+    "maximum_straight_rgb_channel_delta": 129,
+    "diagnostic_integer_premultiplied_projection_mismatching_pixels": 33,
+    "maximum_projection_channel_delta": 1,
+    "tolerance_added": false
+  },
+  "scope_limits": [
+    "Original captured-image ICC/HDR and color conversion not established",
+    "Portable resampling and straight RGB are not CoreGraphics-equivalent",
+    "Native TCC capture, focus, Spaces, display alignment and real capture callbacks untested",
+    "All production Area/Window/movie capture gates unchanged",
+    "Combined native input byte cap is 64 MiB, not all general screenshot sizes",
+    "Reported visible-buffer caps exclude opaque framework/process peak memory"
+  ]
+}

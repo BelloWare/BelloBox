@@ -886,3 +886,9 @@ core/platform/app Clippy. New exact full-RGBA native oracle, lifecycle and no-GP
 host-mask tests still require the checkpoint's Apple CI. See
 [native-alpha-oracle.md](native-alpha-oracle.md) for bounds, failed historical
 checks, normalized-input scope, and remaining native/ICC/HDR/capture gates.
+
+
+Exact native-mask code checkpoint `c41ce17a` subsequently passed Linux37575287239
+and macOS37575287155, including strict normalized RGBA oracle, mask lifecycle and
+actual host worker tests. Portable alpha/RGB discrepancies remain explicit, not
+silently accepted as native equivalence; see the updated native-alpha evidence.

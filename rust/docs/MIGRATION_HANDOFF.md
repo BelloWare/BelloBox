@@ -419,3 +419,18 @@ preparation. Updated scoped source counts are42,267 production,19,802 test/suppo
 105 benchmark lines, excluding concurrent converter work; reviewed hashes/delta
 are stored with native-alpha evidence. Always inspect the exact published SHA's
 native results before accepting the adapter or repeating these pending statements.
+
+
+### Exact native mask checkpoint verified
+
+`c41ce17a520a9bc39073e2302c5a061d29dd27df`, tree
+`fd17a83c4ddf4d5b9e54158250d89ed1a7091f2e`, passed exact Linux37575287239 and
+macOS37575287155. All9 alpha/oracle/lifecycle tests and the actual host worker
+mask test passed; native platform153 passed,3 existing ignored, app build/offline
+packaging passed. This supersedes the pending native statements for that code.
+The normalized native RGBA path matches its oracle; portable resampling remains
+17 versus60 in the retained case, and144-pixel low-alpha RGB characterization
+reports89 straight mismatches/max129 and33 diagnostic premultiplied-projection
+mismatches/max1. No tolerance or broader equivalence is inferred. Exact evidence
+and remaining gates are in native-alpha-oracle.md and its linked validation JSON.
+The subsequent documentation-only checkpoint does not change those tested inputs.

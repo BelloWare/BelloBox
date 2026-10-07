@@ -98,14 +98,36 @@ The second command is a plain worker test of the actual host mask wiring. It doe
 not create a GPUI application/window or perform native capture. The macOS workflow
 runs both commands; additional native step/lease regressions run with platform tests.
 
-At source preparation: 25 core refresh/seam tests pass locally; 129 platform tests
-pass (3 existing ignored), including 8 portable mask input-contract tests; 43 app screenshot tests pass; strict
-core/platform/app all-target Clippy passes. Independent source review fixed three outdated
-helper call sites and added direct host-wiring coverage. Native compilation,
-strict oracle execution and successful RGB diagnostic output are pending for this
-checkpoint. Passing this corpus will establish only its normalized-SDR cases,
-not actual capture, AppKit focus/Spaces/TCC, ICC/HDR, every framework implementation,
-or whole-application parity. A native mask oracle is not native GUI acceptance.
+## Verified exact checkpoint
+
+At `c41ce17a520a9bc39073e2302c5a061d29dd27df` (tree
+`fd17a83c4ddf4d5b9e54158250d89ed1a7091f2e`), both exact runs passed:
+
+- [Linux 37575287239](https://github.com/BelloWare/BelloBox/actions/runs/37575287239):
+  workspace tests, strict Clippy, build and software-rendered startup smoke.
+- [macOS 37575287155](https://github.com/BelloWare/BelloBox/actions/runs/37575287155):
+  all native test targets compiled/linked, 153 platform tests passed (3 existing
+  ignored), all 9 filtered alpha/oracle/lifecycle tests passed, the actual
+  supplied-image host worker test passed, and app build/offline packaging passed.
+
+The native adapter matched the independent normalized-input oracle exactly in
+all RGBA channels for the tested corpus. The portable limitations remain measured:
+in the 144-pixel low-alpha corpus, 89 pixels differed in straight RGB (maximum
+channel delta 129); the diagnostic integer-premultiplied projection differed in
+33 pixels (maximum channel delta 1). The original sampling case remains native
+alpha 17 versus portable 60. No tolerance was introduced or inferred from these
+numbers. [Machine-readable evidence](validation/native-alpha-2026-10-07/ci-evidence.json)
+retains the exact run/job identities, counts and limits.
+
+Local focused validation also passed: 25 core refresh/seam tests, 129 platform
+tests (3 existing ignored), 43 app screenshot tests, strict component Clippy and
+formatting. Independent review fixed outdated helper test call sites and added
+actual host-wiring, lifecycle and trailing-storage coverage.
+
+This establishes the tested normalized-SDR mask path only. It does not establish
+original capture color/ICC/HDR fidelity, native capture permission/callback/focus/
+Spaces/Retina behavior, every framework implementation, native GUI acceptance,
+or whole-application parity. Production capture gates remain disabled.
 
 
 ## Reviewed source delta
