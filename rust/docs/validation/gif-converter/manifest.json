@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "date_utc": "2026-10-07",
+  "baseline_commit": "603b4d3549f362aa69ad2f2dfd8470f8a569827b",
+  "baseline_tree": "4dc344d2a230fb55bda6a36376c29d4743df41be",
+  "binary_sha256": "9d75021db47df2af330ad35bb52bfbb604bd29b155dc6e0afd09f1a5e92118d2",
+  "build": "Rust1.99.0 dev profile; debug info disabled; isolated converter-only source on baseline tree; pinned GPUI0.2.2; Linux Mesa software renderer",
+  "source_sha256": {
+    "rust/crates/bellobox-app/src/main.rs": "caf5508153394b9848f30600c736f718677a71f675a07679e55fecf77a457c20",
+    "rust/crates/bellobox-app/src/desktop.rs": "bb505b24b90c90c1e4ccc09fd7d2c103a3f2bdb99ff260bb9ac81dd7ce624829",
+    "rust/crates/bellobox-app/src/gif_converter.rs": "0635a0e3b66a3c016d2111e43f780cd9ecb8eabef2f462637bb4004e35abd15e",
+    "rust/crates/bellobox-app/src/gif_converter/model.rs": "5464da8edfada14672c5f11d20bde2d9bb0d248e5a4d88aaa79584e339635278",
+    "rust/crates/bellobox-app/src/gif_converter/preview.rs": "f8d23e3ef691bfbd9e4efef6bb3ae41667ad5e896fdf5fd70773db7e70638007",
+    "rust/crates/bellobox-app/src/gif_converter/tests.rs": "146bfc4b1ab6732477352f13d6d5df961965b1704e1dabb37e3bb3d1c77b3e87",
+    "rust/crates/bellobox-core/src/recording/gif.rs": "e7e46e45bc6ab855ebecd2e08845d32b5ded40e9b5c482e28c80a60ffc2e5c64",
+    "rust/crates/bellobox-core/src/recording/gif/gif_preview.rs": "b57b6a5b98b9d1bab9a399dc8880536ee67e9bd8db3d0e23f1fc81b377c4e059"
+  },
+  "screenshots": {
+    "reviewed-cancel.jpg": {
+      "sha256": "cda5a669dac0d4c79c04c85117e5fa3f72771e67d47a85c4757632786c6dda8a",
+      "bytes": 108152,
+      "format": "JPEG",
+      "dimensions": [
+        1364,
+        1024
+      ]
+    },
+    "reviewed-dialog-blocker.jpg": {
+      "sha256": "0fb9a24b0b9df3b85a55875c777df40ab885e7c667f4bf0b0cbf249cd54160f5",
+      "bytes": 128287,
+      "format": "JPEG",
+      "dimensions": [
+        1364,
+        1024
+      ]
+    },
+    "reviewed-initial.jpg": {
+      "sha256": "5570df24f772c577b2fd1e6fe1dc228017f2039955be385a62324c6d9007b83f",
+      "bytes": 105613,
+      "format": "JPEG",
+      "dimensions": [
+        1364,
+        1024
+      ]
+    },
+    "reviewed-minimum.jpg": {
+      "sha256": "5ff7af89a5603441abf547a369573ee64aa3cd8139e87d449ee4fbfb4760b54e",
+      "bytes": 124985,
+      "format": "JPEG",
+      "dimensions": [
+        1364,
+        1024
+      ]
+    },
+    "reviewed-normal-unavailable.jpg": {
+      "sha256": "e13ee0ccbbf28c2e3f77edc38f7280cf7fb5d971437d1d9993b5e43d414edf3a",
+      "bytes": 101372,
+      "format": "JPEG",
+      "dimensions": [
+        1364,
+        1024
+      ]
+    },
+    "reviewed-play-visible.jpg": {
+      "sha256": "783551f741e72e1f213708bec7f38b8d1fc85eaf0076f7a9fcad2b69a97e5a8b",
+      "bytes": 112859,
+      "format": "JPEG",
+      "dimensions": [
+        1364,
+        1024
+      ]
+    },
+    "reviewed-small-footer.jpg": {
+      "sha256": "4a402f92a306589b0a347b38ecc744ff2226ae9de51e4ba477dc3eb429b70f83",
+      "bytes": 127854,
+      "format": "JPEG",
+      "dimensions": [
+        1364,
+        1024
+      ]
+    }
+  },
+  "loc": {
+    "method": "Nonblank physical Rust lines, including comments. Explicit test/DEBUG synthetic spans are test/support; unguarded host scaffolding stays production. No completion percentage.",
+    "files": [
+      {
+        "path": "rust/crates/bellobox-app/src/main.rs",
+        "production_delta": 1,
+        "test_support_delta": 0
+      },
+      {
+        "path": "rust/crates/bellobox-app/src/desktop.rs",
+        "production_delta": 4,
+        "test_support_delta": 0
+      },
+      {
+        "path": "rust/crates/bellobox-app/src/gif_converter.rs",
+        "production_delta": 533,
+        "test_support_delta": 27,
+        "support_spans_inclusive": [
+          [
+            5,
+            6
+          ],
+          [
+            60,
+            63
+          ],
+          [
+            74,
+            77
+          ],
+          [
+            294,
+            308
+          ],
+          [
+            507,
+            508
+          ]
+        ]
+      },
+      {
+        "path": "rust/crates/bellobox-app/src/gif_converter/model.rs",
+        "production_delta": 307,
+        "test_support_delta": 49,
+        "support_spans_inclusive": [
+          [
+            21,
+            22
+          ],
+          [
+            32,
+            33
+          ],
+          [
+            41,
+            47
+          ],
+          [
+            241,
+            250
+          ],
+          [
+            277,
+            304
+          ]
+        ]
+      },
+      {
+        "path": "rust/crates/bellobox-app/src/gif_converter/preview.rs",
+        "production_delta": 174,
+        "test_support_delta": 0
+      },
+      {
+        "path": "rust/crates/bellobox-app/src/gif_converter/tests.rs",
+        "production_delta": 0,
+        "test_support_delta": 814,
+        "classification": "whole cfg(test) module"
+      },
+      {
+        "path": "rust/crates/bellobox-core/src/recording/gif.rs",
+        "production_delta": 2,
+        "test_support_delta": 0
+      },
+      {
+        "path": "rust/crates/bellobox-core/src/recording/gif/gif_preview.rs",
+        "production_delta": 157,
+        "test_support_delta": 0
+      }
+    ],
+    "delta": {
+      "production": 1178,
+      "test_support": 890,
+      "benchmark": 0
+    },
+    "baseline": {
+      "production": 42267,
+      "test_support": 19802,
+      "benchmark": 105
+    },
+    "totals": {
+      "production": 43445,
+      "test_support": 20692,
+      "benchmark": 105
+    }
+  },
+  "superseded_binary": {
+    "sha256": "1e3024413c6281226e642293420ec225610dbeefdef55e4d7564053a6628e5d6",
+    "findings": [
+      "Tab skipped End editor",
+      "PNG asset loading briefly blanked the image during playback"
+    ],
+    "status": "Both corrected and rerun on reviewed binary; no superseded screenshot is included."
+  },
+  "checks": {
+    "converter_tests": 36,
+    "core_gif_tests": 30,
+    "strict_app_core_clippy": "passed",
+    "app_build": "passed",
+    "debug_assertions_disabled_test_harness": 36,
+    "optimized_release_or_native_macos_gui": "not run"
+  }
+}

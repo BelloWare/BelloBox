@@ -5,12 +5,14 @@
 //! provider, network, subprocess, or ffmpeg implementation is provided here.
 mod gif_encode;
 mod gif_file;
+mod gif_preview;
 mod gif_structure;
 #[cfg(test)]
 mod gif_tests;
 
 pub use gif_encode::export_gif;
 pub use gif_file::{CancelOutcome, ExportControl, ExportStatus, ReplacePolicy};
+pub use gif_preview::{GifPreview, GifPreviewFrame};
 use serde::{Deserialize, Serialize};
 use std::{fmt, path::PathBuf};
 

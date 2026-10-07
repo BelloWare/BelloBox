@@ -434,3 +434,35 @@ reports89 straight mismatches/max129 and33 diagnostic premultiplied-projection
 mismatches/max1. No tolerance or broader equivalence is inferred. Exact evidence
 and remaining gates are in native-alpha-oracle.md and its linked validation JSON.
 The subsequent documentation-only checkpoint does not change those tested inputs.
+
+
+## Continuation checkpoint: standalone GIF host and bounded result preview
+
+The `videoToGIF` route now opens a dedicated GPUI host. Metadata/export workers
+are generation fenced; source changes reset trim/results but retain format
+choices. Source-shaped paired sliders, exact numeric drafts, real encoding
+progress, cancellation and result retention are wired to the existing bounded
+Rust GIF exporter. `MovieAsset` remains production-disabled before source I/O;
+this is a synthetic-export acceptance checkpoint, not usable native movie parity.
+
+A DEBUG app-owned fixture supplies generated frames. The exported GIF preview is
+streamed one frame ahead with validated timing, explicit Play/Pause, Once/Loop,
+pinned-file rewind, owned-task cancellation and worker-prepared GPUI BGRA images.
+Old GPU frames are explicitly retired. Preview starts paused; native movie seek,
+Reduce Motion integration, source file clipboard and complete launcher handoff
+remain absent. No source images/options/paths enter preferences.
+
+Thirty-six converter regressions, thirty existing GIF regressions, strict app/core
+all-target Clippy, app build and the exact debug-assertions-disabled test harness
+pass. Actual Linux GUI testing found and fixed a skipped End-field Tab stop and
+asset-loader blanking during playback, then verified the corrected candidate.
+Seven unedited JPEG screenshots, binary/source hashes, scoped observations and
+reviewed counts are preserved in [gif-converter-host.md](gif-converter-host.md)
+and its validation manifest. The cloud system Open/Save dialogs fail; their
+recoverable error handling is tested, while actual movie selection/conversion and
+system-dialog save remain unverified. No native gate was enabled.
+
+The reviewed converter delta is 1,178 production and 890 test/support nonblank
+Rust lines: cumulative totals 43,445 / 20,692 / 105 benchmark. Concurrent inline
+Area work is not part of this checkpoint or those totals. No completion percentage
+or whole-project performance claim follows from these counts.

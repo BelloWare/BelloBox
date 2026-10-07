@@ -1872,6 +1872,11 @@ fn open_tool_with_clock_context(
         return;
     }
 
+    if id == "videoToGIF" {
+        crate::gif_converter::open(cx);
+        return;
+    }
+
     if id == "screenshot" {
         crate::screenshot_ui::open(cx);
         return;
