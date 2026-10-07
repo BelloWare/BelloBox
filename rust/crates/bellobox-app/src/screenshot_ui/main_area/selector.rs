@@ -327,7 +327,7 @@ impl MainAreaSelector {
         let weak = cx.entity().downgrade();
         window.on_window_should_close(cx, move |window, cx| {
             let _ = weak.update(cx, |view: &mut Self, cx| view.retire(window, cx));
-            true
+            crate::shutdown::allow_close(window, cx)
         });
         let activation = cx.observe_window_activation(window, |view: &mut Self, window, cx| {
             if view.presented
@@ -462,7 +462,7 @@ impl MainAreaSelector {
         }
         self.presented = false;
         self.release_pixels(cx);
-        window.remove_window();
+        crate::shutdown::close_window(window, cx);
     }
     fn guard(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
         if self.presented

@@ -16,6 +16,61 @@ pub(super) struct SourceFile {
     changed: (i64, i64),
 }
 impl SourceFile {
+    /// Snapshot only after the transaction's intentional hard-link/unlink work.
+    pub fn from_owned_file(path: PathBuf, file: File) -> MovieResult<Self> {
+        use std::os::unix::fs::MetadataExt;
+        let metadata = file.metadata().map_err(|_| MovieError::Io)?;
+        if !metadata.is_file()
+            || metadata.len() == 0
+            || metadata.len() > crate::recording::MAX_RECORDING_FILE_BYTES
+        {
+            return Err(MovieError::InvalidSource);
+        }
+        let result = Self {
+            path,
+            file,
+            length: metadata.len(),
+            modified: metadata.modified().ok(),
+            changed: (metadata.ctime(), metadata.ctime_nsec()),
+        };
+        result.verify()?;
+        Ok(result)
+    }
+    pub fn copy_recording_to(
+        &self,
+        output: &mut File,
+        cancelled: impl Fn() -> bool,
+    ) -> MovieResult<()> {
+        use std::{io::Write, os::unix::fs::FileExt};
+        self.verify()?;
+        if self.length > crate::recording::MAX_RECORDING_FILE_BYTES {
+            return Err(MovieError::LimitExceeded);
+        }
+        let mut buffer = [0u8; 64 * 1024];
+        let mut offset = 0;
+        while offset < self.length {
+            if cancelled() {
+                return Err(MovieError::Cancelled);
+            }
+            let count = (self.length - offset).min(buffer.len() as u64) as usize;
+            let read = self
+                .file
+                .read_at(&mut buffer[..count], offset)
+                .map_err(|_| MovieError::Io)?;
+            if read == 0 {
+                return Err(MovieError::SourceChanged);
+            }
+            output
+                .write_all(&buffer[..read])
+                .map_err(|_| MovieError::Io)?;
+            offset += read as u64;
+        }
+        if cancelled() {
+            return Err(MovieError::Cancelled);
+        }
+        self.verify()
+    }
+
     pub fn open(path: &Path) -> MovieResult<Self> {
         let path = fs::canonicalize(path).map_err(|_| MovieError::InvalidSource)?;
         let entry = fs::metadata(&path).map_err(|_| MovieError::InvalidSource)?;

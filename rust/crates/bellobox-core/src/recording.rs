@@ -1,6 +1,6 @@
 //! Portable, local recording-output building blocks.
 //!
-//! This is not a recorder or movie importer. ScreenCaptureKit capture and
-//! AVFoundation sequential decoding/preferred-transform orientation are missing
-//! platform adapters. Production CLI/UI recording routes remain unavailable.
+//! Session policy does not grant capture or filesystem authority. Native recording
+//! and ordinary movie decoding remain behind closed platform admission gates.
 pub mod gif;
+pub mod session;

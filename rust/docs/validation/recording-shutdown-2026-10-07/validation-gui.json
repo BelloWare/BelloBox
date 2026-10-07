@@ -1,0 +1,699 @@
+{
+  "status": "PASS for the specified generated-media Linux whole-app GUI paths; no full-suite or native parity claim",
+  "recorded_at_utc": "2026-10-07T19:19:14.538784+00:00",
+  "binary_sha256": "bdfc718a20ad84be9f59dc52b459ef0f02c275fa0525c2f6b82dd60ad1d28a54",
+  "binary_bytes": 143488824,
+  "source_manifest": "production-source-inputs.json",
+  "source_manifest_sha256": "56d04a62fdbc7414f975f4a7db1929969decc64a4d58f1e9131399fd2b75467f",
+  "pre_gui_verification": {
+    "recorded_inputs": 179,
+    "mismatches": 0
+  },
+  "post_gui_verification": {
+    "recorded_inputs": 179,
+    "matching": 178,
+    "changed_external_verification_helper": [
+      {
+        "path": "/workspace/shared/recording-shutdown-provenance.py",
+        "recorded_sha256": "a826bfccac70e2a36e4045f0f026ebfc7544c3eb46855aae5f8005bd4fde1831",
+        "current_sha256": "97856c86f9f5f277b021de2ee5aed7430811ad243780c2661f0b6d3431f47950"
+      }
+    ],
+    "recorded_helper_preserved_as": "provenance-initial179.py.txt",
+    "recorded_helper_hash_verified": true,
+    "repository_and_other_build_inputs_unchanged": true
+  },
+  "later_input_audits": [
+    "later-include-input-audit.json",
+    "supplemental-input-byte-proof.json"
+  ],
+  "scope": "Cloud Linux GPUI whole executable. Generated MOV/known frames and portable GIF only. App-controlled close route, not native Quit/Cmd-Q or process kill.",
+  "screenshots": [
+    {
+      "file": "01-held-start-ready.jpg",
+      "sha256": "501c2723d7f240421d2e9f1ee786cf036c04d70656fdf2f346b4bc6fab641d36",
+      "bytes": 43907,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "02-held-start-pending.jpg",
+      "sha256": "41f6fb8d1a5fdd4a94036374395874da8cf819d6c6fd466c1c70c9ed267ef03a",
+      "bytes": 43191,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "03-held-start-closing.jpg",
+      "sha256": "b23f2ca8a449c49bd3fb4f9f03f1e5ba03f885a410c88d4ee3b12fb6699a3088",
+      "bytes": 30461,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "04-held-start-repeat-close.jpg",
+      "sha256": "b23f2ca8a449c49bd3fb4f9f03f1e5ba03f885a410c88d4ee3b12fb6699a3088",
+      "bytes": 30461,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "05-held-start-exit.jpg",
+      "sha256": "17c4ead38197e2e888917afa0f126a3f57f04ad4693ea375672712f2f77f2c03",
+      "bytes": 53067,
+      "dimensions": [
+        1177,
+        808
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "06-held-finish-started.jpg",
+      "sha256": "1a0892204b392135f892e16b36793ca4a81af0b219eed6eac35539aee13beac1",
+      "bytes": 47152,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "07-held-finish-pending.jpg",
+      "sha256": "3da7abe86ec6ea3b503d37203c262dcfdcac3143e20fbcdf577f40338b411b79",
+      "bytes": 43934,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "08-held-finish-closing.jpg",
+      "sha256": "b23f2ca8a449c49bd3fb4f9f03f1e5ba03f885a410c88d4ee3b12fb6699a3088",
+      "bytes": 30461,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "09-held-finish-repeat-close.jpg",
+      "sha256": "b23f2ca8a449c49bd3fb4f9f03f1e5ba03f885a410c88d4ee3b12fb6699a3088",
+      "bytes": 30461,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "10-held-finish-clean-exit.jpg",
+      "sha256": "5173d5c243c37743b29ab42a283cdf68f916f1fd8d732dd3ce46763f2bd34425",
+      "bytes": 63949,
+      "dimensions": [
+        1177,
+        808
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "11-home-pair-recording.jpg",
+      "sha256": "1a0892204b392135f892e16b36793ca4a81af0b219eed6eac35539aee13beac1",
+      "bytes": 47152,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "12-pair-held-finish.jpg",
+      "sha256": "3da7abe86ec6ea3b503d37203c262dcfdcac3143e20fbcdf577f40338b411b79",
+      "bytes": 43934,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "13-home-after-recording-close.jpg",
+      "sha256": "0ffdb9718f3ef3617c7acac0bdeec459461958cabbf272fbad0021a264115111",
+      "bytes": 100347,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "14-home-closing.jpg",
+      "sha256": "b23f2ca8a449c49bd3fb4f9f03f1e5ba03f885a410c88d4ee3b12fb6699a3088",
+      "bytes": 30461,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "15-home-no-reopen.jpg",
+      "sha256": "b23f2ca8a449c49bd3fb4f9f03f1e5ba03f885a410c88d4ee3b12fb6699a3088",
+      "bytes": 30461,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "16-home-last-clean-exit.jpg",
+      "sha256": "f16ac68b150ae6360f2098cead1e8afd5a4fc4565c79a5edbdad849ced5914ab",
+      "bytes": 76375,
+      "dimensions": [
+        1177,
+        808
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "17-completed-movie-review.jpg",
+      "sha256": "93d965a7170da2fd7f40cad67b92d19212db963afc03d43a1aca243ba0150f88",
+      "bytes": 51156,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": "Transient metadata/response observation; acceptance uses settled successor screenshot."
+    },
+    {
+      "file": "18-completed-movie-ready.jpg",
+      "sha256": "ab42fda5e9163eb57a97072d3691ba36364366aa802cf695430c0bd2f20e8f53",
+      "bytes": 56608,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "19-movie-save-dialog.jpg",
+      "sha256": "ab253fb75aa4998a87f411d60e46ea9fa0328983c50489b89dad66c2d82925c2",
+      "bytes": 52857,
+      "dimensions": [
+        1096,
+        822
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "20-movie-save-cancelled.jpg",
+      "sha256": "fd0e85a12f3b45979cda0ea6c7bcc1eaa7ad225511b1b6bc5179956fa1a8341b",
+      "bytes": 57529,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "21-movie-saved.jpg",
+      "sha256": "d20999f6dfa01679e4416b4408753d5a566435c599525bab953a9453bfd5db59",
+      "bytes": 57142,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "22-gif-trim-options.jpg",
+      "sha256": "9fc8a25dded38044bc780c0abe236517acd005b2b3c82ef20a6f60183d051141",
+      "bytes": 72053,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "23-gif-export-held.jpg",
+      "sha256": "3a670ec95ae3bd919ae9366ad695095299f06e6a74b0097bb95c09816a57cd72",
+      "bytes": 72430,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": "Transient metadata/response observation; acceptance uses settled successor screenshot."
+    },
+    {
+      "file": "24-gif-cancelling.jpg",
+      "sha256": "36b62888d0cd39712ebc669324263b8e9e5e2ff6603d5713c8cb220996eb8a83",
+      "bytes": 74177,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "25-gif-cancelled-settled.jpg",
+      "sha256": "0b1e69a1df56ac46e06653ab6ed7b9bda2d139e7dd09e4a66135eaa2e1835cd2",
+      "bytes": 75539,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "26-gif-retry-saved.jpg",
+      "sha256": "3fac737cab8d206b028adba032b53f37375abe91dabf602e2916238534496517",
+      "bytes": 60583,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "27-movie-retained-after-gif.jpg",
+      "sha256": "d618921ed9dd37d5d138cbad1204894df7dbb467d413f77c6d206f26a947756e",
+      "bytes": 59588,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "28-gif-playing.jpg",
+      "sha256": "f5eb7607de4c0a792275eb794bf302246c40d7de53cac70d14c8a5bb68636718",
+      "bytes": 61241,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "29-gif-once-ended.jpg",
+      "sha256": "9e87fb03b65ce512f9fbf70dbd00e17e90626f1cea28994675c202ae47383076",
+      "bytes": 61069,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "30-held-gif-before-close.jpg",
+      "sha256": "15d0500c2604ba66592f5c3d8249ce1dd3f8754c2a24ade08cad703b8c6a8b1b",
+      "bytes": 71939,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "31-held-gif-closing.jpg",
+      "sha256": "b23f2ca8a449c49bd3fb4f9f03f1e5ba03f885a410c88d4ee3b12fb6699a3088",
+      "bytes": 30461,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "32-held-gif-repeat-close.jpg",
+      "sha256": "b23f2ca8a449c49bd3fb4f9f03f1e5ba03f885a410c88d4ee3b12fb6699a3088",
+      "bytes": 30461,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "33-held-gif-clean-exit.jpg",
+      "sha256": "d58df60beb01b03167822fffc744948289d1e4da9bd42492816fc3339ba013a1",
+      "bytes": 114924,
+      "dimensions": [
+        1177,
+        808
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "34-save-dialog-parent-close.jpg",
+      "sha256": "269c60283bb7921cee20f7565b04996329e0fa8d078ba912fe38f7892952a87b",
+      "bytes": 113437,
+      "dimensions": [
+        1364,
+        1024
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "35-save-dialog-close-exit.jpg",
+      "sha256": "ed35edecd64164c4b9f419e2c56fba53f8010302eddc6bcc4fecbee6239782c1",
+      "bytes": 154721,
+      "dimensions": [
+        1177,
+        808
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    },
+    {
+      "file": "36-normal-start-remains-gated.jpg",
+      "sha256": "1ed9e803be5caf05d878e58d9b9d852cf28c21cf284a6763c8253637c0f3df1f",
+      "bytes": 44821,
+      "dimensions": [
+        1180,
+        812
+      ],
+      "format": "JPEG",
+      "original_unedited": true,
+      "note": ""
+    }
+  ],
+  "image_filename_map": [
+    {
+      "original_filename": "34-save-dialog-parent-close.png",
+      "published_filename": "34-save-dialog-parent-close.jpg",
+      "sha256": "269c60283bb7921cee20f7565b04996329e0fa8d078ba912fe38f7892952a87b",
+      "operation": "filename suffix correction only; original bytes unchanged"
+    }
+  ],
+  "cases": [
+    {
+      "case": "sole-held-start",
+      "start_before": 1791399609116,
+      "start_observed": 1791399609484,
+      "close_sent": 1791399609647,
+      "closing_observed": 1791399609881,
+      "repeat_close_sent": 1791399609910,
+      "repeat_closing_observed": 1791399610176,
+      "source_run_directory": "runtime/20261007T185900-536686",
+      "exit_ms": 1791399612311,
+      "operation_to_process_exit_ms": 3195
+    },
+    {
+      "case": "sole-held-finalize",
+      "stop_before": 1791399692235,
+      "held_observed": 1791399692539,
+      "close_sent": 1791399692708,
+      "closing_observed": 1791399692940,
+      "repeat_closing_observed": 1791399693378,
+      "source_run_directory": "runtime/20261007T190032-537261",
+      "exit_ms": 1791399697329,
+      "operation_to_process_exit_ms": 5094
+    },
+    {
+      "case": "recording-first-home-last",
+      "stop_before": 1791399815238,
+      "recording_close_sent": 1791399815683,
+      "home_close_sent": 1791399815953,
+      "old_recording_open_attempt": 1791399816303,
+      "closing_after_attempt": 1791399816541,
+      "source_run_directory": "runtime/20261007T190215-537526",
+      "exit_ms": 1791399820321,
+      "operation_to_process_exit_ms": 5083
+    },
+    {
+      "case": "delayed-gif-cancel",
+      "save_before": 1791400080151,
+      "pending_observed": 1791400080508,
+      "cancel_sent": 1791400080638,
+      "source_run_directory": "runtime/20261007T190403-537853",
+      "exit_ms": 1791400232067
+    },
+    {
+      "case": "sole-held-gif-close",
+      "save_before": 1791400226621,
+      "held_observed": 1791400227106,
+      "close_sent": 1791400227227,
+      "closing_observed": 1791400227453,
+      "repeat_closing_observed": 1791400227704,
+      "source_run_directory": "runtime/20261007T190403-537853",
+      "exit_ms": 1791400232067,
+      "operation_to_process_exit_ms": 5446
+    },
+    {
+      "case": "close-with-save-dialog-pending",
+      "before_close": 1791400355324,
+      "close_sent": 1791400355483,
+      "source_run_directory": "runtime/20261007T191143-543174",
+      "exit_ms": 1791400355494
+    }
+  ],
+  "supervised_process_runs": [
+    {
+      "directory": "runtime/20261007T185900-536686",
+      "pid": 536716,
+      "launch_ms": 1791399540971,
+      "exit_ms": 1791399612311,
+      "exit_code": 0,
+      "files_before": [],
+      "files_after": [],
+      "app_log_bytes": 0
+    },
+    {
+      "directory": "runtime/20261007T190032-537261",
+      "pid": 537292,
+      "launch_ms": 1791399632405,
+      "exit_ms": 1791399697329,
+      "exit_code": 0,
+      "files_before": [],
+      "files_after": [],
+      "app_log_bytes": 0
+    },
+    {
+      "directory": "runtime/20261007T190215-537526",
+      "pid": 537557,
+      "launch_ms": 1791399735710,
+      "exit_ms": 1791399820321,
+      "exit_code": 0,
+      "files_before": [],
+      "files_after": [],
+      "app_log_bytes": 0
+    },
+    {
+      "directory": "runtime/20261007T190403-537853",
+      "pid": 537884,
+      "launch_ms": 1791399843142,
+      "exit_ms": 1791400232067,
+      "exit_code": 0,
+      "files_before": [],
+      "files_after": [
+        ".BelloBox-recording-537884-1791399880678389033-0/recording.mov 221877",
+        "repaired-movie.mov 221877",
+        "repaired-once.gif 1987"
+      ],
+      "app_log_bytes": 0
+    },
+    {
+      "directory": "runtime/20261007T191143-543174",
+      "pid": 543204,
+      "launch_ms": 1791400303511,
+      "exit_ms": 1791400355494,
+      "exit_code": 0,
+      "files_before": [
+        ".BelloBox-recording-537884-1791399880678389033-0/recording.mov 221877",
+        "repaired-movie.mov 221877",
+        "repaired-once.gif 1987"
+      ],
+      "files_after": [
+        ".BelloBox-recording-537884-1791399880678389033-0/recording.mov 221877",
+        ".BelloBox-recording-543204-1791400325190183353-0/recording.mov 221877",
+        "repaired-movie.mov 221877",
+        "repaired-once.gif 1987"
+      ],
+      "app_log_bytes": 0
+    },
+    {
+      "directory": "runtime/20261007T191310-543967",
+      "pid": 543998,
+      "launch_ms": 1791400390665,
+      "exit_ms": 1791400411369,
+      "exit_code": 0,
+      "files_before": [
+        ".BelloBox-recording-537884-1791399880678389033-0/recording.mov 221877",
+        ".BelloBox-recording-543204-1791400325190183353-0/recording.mov 221877",
+        "repaired-movie.mov 221877",
+        "repaired-once.gif 1987"
+      ],
+      "files_after": [
+        ".BelloBox-recording-537884-1791399880678389033-0/recording.mov 221877",
+        ".BelloBox-recording-543204-1791400325190183353-0/recording.mov 221877",
+        "repaired-movie.mov 221877",
+        "repaired-once.gif 1987"
+      ],
+      "app_log_bytes": 0
+    }
+  ],
+  "outputs": [
+    {
+      "file": "repaired-movie.mov",
+      "bytes": 221877,
+      "sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9",
+      "mode": "0o600",
+      "ffprobe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "rawvideo",
+            "width": 96,
+            "height": 64,
+            "duration": "1.200000",
+            "nb_frames": "12"
+          }
+        ],
+        "format": {
+          "duration": "1.200000",
+          "size": "221877"
+        }
+      }
+    },
+    {
+      "file": "repaired-once.gif",
+      "bytes": 1987,
+      "sha256": "ce0065a59693f4cf98a8bf2da5da93706bded18e31a20e1597dcc6ec6209e801",
+      "mode": "0o600",
+      "width": 96,
+      "height": 64,
+      "frames": 7,
+      "loop": null,
+      "durations_ms": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "magenta_sentinel_pixels": 0
+    }
+  ],
+  "final_export_files": [
+    {
+      "path": ".BelloBox-recording-537884-1791399880678389033-0/recording.mov",
+      "bytes": 221877,
+      "sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9"
+    },
+    {
+      "path": ".BelloBox-recording-543204-1791400325190183353-0/recording.mov",
+      "bytes": 221877,
+      "sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9"
+    },
+    {
+      "path": "repaired-movie.mov",
+      "bytes": 221877,
+      "sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9"
+    },
+    {
+      "path": "repaired-once.gif",
+      "bytes": 1987,
+      "sha256": "ce0065a59693f4cf98a8bf2da5da93706bded18e31a20e1597dcc6ec6209e801"
+    }
+  ],
+  "canceled_destinations_absent": [
+    "cancelled-held.gif",
+    "closed-held.gif"
+  ],
+  "incomplete_stages_present": false,
+  "test_limits": [
+    "Full App test executable did not compile locally (SIGKILL); this is actual whole-app interaction, not a full automated-suite pass.",
+    "Physical mid-MOV-save cancellation/publication overlap not exercised: fixed221KB source saved faster than observation, and immutable binary exposes no Save hold. System dialog cancellation, re-open, save success and parent close during pending dialog were exercised.",
+    "Stale Home Screen Recording click while Closing caused no new window; direct internal post-quit route admission belongs to separate focused tests.",
+    "Held GIF delay is pre-encoding; staged filesystem publication race needs separate deterministic tests.",
+    "No actual macOS AVAssetWriter/SCK/TCC/Spaces/audio/native movie decoding or real credentials were used."
+  ]
+}

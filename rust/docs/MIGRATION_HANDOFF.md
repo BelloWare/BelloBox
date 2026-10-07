@@ -807,7 +807,7 @@ window is explicitly unavailable. This is not exact AVPlayer seeking, continuous
 source playback or audio. Export/result preview retain prior cancellation behavior.
 
 The core SequentialFrameSource::finish hook runs after encoded staging has synced
-and passed readback, immediately before publication and outside its mutex. Native
+and passed readback, immediately before the atomic publication claim. Native
 adapters validate terminal decoder state, original source and cancellation on the
 same owner thread, then intentionally retire a still-Reading trimmed decoder.
 Failure, cancellation and panic preserve prior output and clean staging. The two
@@ -1026,3 +1026,76 @@ The immutable source names, SHA-256s and exact CI evidence are in
 [`validation/ai-ocr-2026-10-07/published-ci.json`](validation/ai-ocr-2026-10-07/published-ci.json).
 This continuation changes only CI and documentation. The Rust source, lockfile,
 production admission gates and 50,053 / 28,388 / 105 line totals are unchanged.
+
+### Recording/converter app-controlled shutdown correction
+
+A real Linux last-window reproducer on immutable recording candidate `77b9…`
+exited approximately 823 ms after Stop while its injected finalization still had
+five seconds of physical work. Its staged capture remained on disk. Immediate
+`on_app_quit` futures only signaled cancellation; GPUI's 100 ms observer budget
+could not establish native or filesystem retirement. See the recording-host
+validation timestamps and screenshots 18–19; they remain historical defect proof.
+
+The correction adds an app-global, one-shot media quit latch. It rejects
+new tool/launcher opens after quit intent, signals bounded cancellation controls,
+and waits without a deadline for worker-owned retirement tickets before invoking
+GPUI quit. GPUI X11/Wayland independently stop at zero native windows, so final
+titlebar and programmatic closes retain the existing window with a Closing view
+until drain. Default Home/settings/launcher/clock windows share that veto, covering
+media closed earlier while another window remained. Native recording tickets live through Admission retirement, including
+callback copies and rejected terminal owners. Converter inspect/seek/export,
+MOV Save, source-image preparation and GIF-preview preparation use a reserved
+permit and a bounded worker-owned terminal slot. Readiness is not payload transfer:
+only final current-owner adoption takes a result. Rejection/close drops it on the
+background worker before releasing its ticket; preview delay retains that owner.
+
+This gate covers the registered recording/converter media jobs, not every unrelated
+OCR, capture, utility or session worker. Known Rust-controlled quit calls route
+through it, including Linux last-window close. The pinned GPUI `on_app_quit`
+observer cannot veto platform termination. Native AppKit menu Quit/Cmd-Q has not
+been verified to pass through this app-controlled gate; normal platform Quit,
+forced termination, process kill and OS shutdown retain only best-effort signaling
+and recovery. No hard native callback deadline or complete native quit guarantee
+is claimed. A framework callback that never retires can keep app-controlled quit
+pending indefinitely rather than being mislabeled as drained.
+
+The core GIF publication control now uses atomic cancellation/claim/status, with
+truthful `PublicationClaimed` and `AlreadyFailed` captions. The former publication
+mutex description above is superseded. Its independent 35-test/strict-Clippy and
+held-publication negative-control evidence is in the recording validation folder.
+The 80-test exact-production focused media/shutdown harness, 23 platform recording
+tests, strict App/platform Clippy and production-only fixture build now pass. The
+full App test executable remained SIGKILL-blocked even with partitioned codegen
+and the approved terminal retry; no full App pass is claimed. Binary SHA256 is
+`bdfc718a20ad84be9f59dc52b459ef0f02c275fa0525c2f6b82dd60ad1d28a54`, bound to 179
+unchanged recorded inputs. Repaired whole-app Linux GUI replay now passes:
+held Start 3.195 s, held Finish 5.094 s, recording-first/Home-last 5.083 s and
+delayed GIF close 5.446 s, all with visible Closing and successful exit. Stage
+cleanup and retained MOV/prior GIF hashes were verified. The saved build helper
+revision is preserved separately from its later include audit; two extra compiled
+inputs match the tracked baseline and their exact bytes are embedded in the same
+binary. The original 179-input observation is not relabeled as an181-input check.
+Exact full/native publication CI remains pending. Linux/macOS workflows now run
+recording-feature platform and full App suites while preserving existing OCR
+filters and the free-public-repository guard. See [shutdown validation](validation/recording-shutdown-2026-10-07/README.md).
+
+The earlier OCR checkpoint `1f587…` has now passed exact Linux and macOS CI;
+macOS run `37662351059`, job `112932784837`, executed 12 transport, 18 controller
+and 12 inline OCR tests. That evidence applies to that checkpoint and must not be
+transferred to this unpublished shutdown correction.
+
+### Final independent recording checkpoint accounting
+
+The frozen recording/shutdown source is **52,593 production / 31,183 test-support /
+105 benchmark nonblank physical Rust lines**, totaling **83,881**. Relative to
+published `1f5874ce741b8de21fa09c747a5bada7488e2982`, the delta is **+2,540 / +2,795 /
+0**. All 35 changed Rust files have complete before/after classification, and all
+163 resulting Rust files bind to the frozen GUI executable. Shared workbench
+crates are counted once; archived copies and the external focused harness are
+excluded. The independent verifier and 24 detecting controls pass.
+
+The [final audit package](validation/recording-loc-2026-10-07/README.md) preserves
+prior ledgers, exact source snapshots and the sealed 216-file implementation
+manifest. Its publication overlay adds documentation/evidence only. These counts
+do not establish additional runtime or native parity; exact new full/native CI
+remains pending for the eventual published commit.

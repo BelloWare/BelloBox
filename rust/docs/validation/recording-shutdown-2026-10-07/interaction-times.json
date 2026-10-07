@@ -1,0 +1,52 @@
+[
+  {
+    "case": "sole-held-start",
+    "run": "/workspace/scratch/8b6fda578834/build-environment/recording-shutdown-qa/gui/logs/20261007T185900-536686",
+    "start_before": 1791399609116,
+    "start_observed": 1791399609484,
+    "close_sent": 1791399609647,
+    "closing_observed": 1791399609881,
+    "repeat_close_sent": 1791399609910,
+    "repeat_closing_observed": 1791399610176
+  },
+  {
+    "case": "sole-held-finalize",
+    "run": "/workspace/scratch/8b6fda578834/build-environment/recording-shutdown-qa/gui/logs/20261007T190032-537261",
+    "stop_before": 1791399692235,
+    "held_observed": 1791399692539,
+    "close_sent": 1791399692708,
+    "closing_observed": 1791399692940,
+    "repeat_closing_observed": 1791399693378
+  },
+  {
+    "case": "recording-first-home-last",
+    "run": "/workspace/scratch/8b6fda578834/build-environment/recording-shutdown-qa/gui/logs/20261007T190215-537526",
+    "stop_before": 1791399815238,
+    "recording_close_sent": 1791399815683,
+    "home_close_sent": 1791399815953,
+    "old_recording_open_attempt": 1791399816303,
+    "closing_after_attempt": 1791399816541
+  },
+  {
+    "case": "delayed-gif-cancel",
+    "run": "/workspace/scratch/8b6fda578834/build-environment/recording-shutdown-qa/gui/logs/20261007T190403-537853",
+    "save_before": 1791400080151,
+    "pending_observed": 1791400080508,
+    "cancel_sent": 1791400080638
+  },
+  {
+    "case": "sole-held-gif-close",
+    "run": "/workspace/scratch/8b6fda578834/build-environment/recording-shutdown-qa/gui/logs/20261007T190403-537853",
+    "save_before": 1791400226621,
+    "held_observed": 1791400227106,
+    "close_sent": 1791400227227,
+    "closing_observed": 1791400227453,
+    "repeat_closing_observed": 1791400227704
+  },
+  {
+    "case": "close-with-save-dialog-pending",
+    "run": "/workspace/scratch/8b6fda578834/build-environment/recording-shutdown-qa/gui/logs/20261007T191143-543174",
+    "before_close": 1791400355324,
+    "close_sent": 1791400355483
+  }
+]

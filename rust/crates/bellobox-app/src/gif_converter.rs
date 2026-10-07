@@ -6,6 +6,9 @@ mod model;
 #[cfg(all(test, feature = "movie-fixtures", target_os = "macos"))]
 mod native_host_tests;
 mod preview;
+mod recording;
+#[cfg(all(test, feature = "recording-fixtures"))]
+mod recording_tests;
 mod source_preview;
 #[cfg(test)]
 mod tests;
@@ -18,6 +21,9 @@ use model::{Model, Source};
 use std::{path::PathBuf, sync::atomic::Ordering, time::Duration};
 
 pub fn open(cx: &mut App) {
+    if crate::shutdown::requested(cx) {
+        return;
+    }
     let bounds = Bounds::centered(None, size(px(600.), px(630.)), cx);
     if let Err(error) = cx.open_window(
         WindowOptions {
@@ -34,7 +40,15 @@ pub fn open(cx: &mut App) {
         eprintln!("Cannot open GIF converter: {error}");
     }
 }
-struct Converter {
+pub(crate) struct Converter {
+    recording: Option<recording::OwnedRecording>,
+    closed: bool,
+    _lifetime: [Subscription; 3],
+    shows_options: bool,
+    movie_save: Option<bello_platform::recording::SaveControl>,
+    movie_save_completion: Option<crate::shutdown::Close>,
+    worker_completion: Option<crate::shutdown::Close>,
+    save_generation: u64,
     model: Model,
     start: Entity<EditorView>,
     end: Entity<EditorView>,
@@ -48,16 +62,57 @@ struct Converter {
 }
 impl Converter {
     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+        Self::new_with_recording(None, window, cx)
+    }
+    pub(crate) fn new_recording(
+        movie: bello_platform::recording::FinalizedRecording,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
+        Self::new_with_recording(Some(recording::OwnedRecording(movie)), window, cx)
+    }
+    fn new_with_recording(
+        recording: Option<recording::OwnedRecording>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
         let p = theme::for_window(window);
         let start = editor("0.00", p, window, cx);
         let end = editor("", p, window, cx);
         let weak = cx.weak_entity();
-        window.on_window_should_close(cx, move |_, cx| {
-            let _ = weak.update(cx, |this, cx| this.close(cx));
-            true
+        if recording.is_none() {
+            window.on_window_should_close(cx, move |window, cx| {
+                let _ = weak.update(cx, |this, cx| this.close(cx));
+                crate::shutdown::allow_close(window, cx)
+            });
+        }
+        let owner_window = window.window_handle();
+        let weak = cx.weak_entity();
+        let window_closed = cx.on_window_closed(move |cx| {
+            if !cx.windows().contains(&owner_window) {
+                let _ = weak.update(cx, |this, cx| this.close(cx));
+            }
+        });
+        crate::shutdown::registry(cx);
+        let shutdown = cx.observe_global::<crate::shutdown::Shutdown>(|this, cx| {
+            if crate::shutdown::requested(cx) {
+                this.close(cx);
+            }
+        });
+        let quit = cx.on_app_quit(|this, cx| {
+            this.close(cx);
+            async {}
         });
         #[allow(unused_mut)] // DEBUG fixture loads through the ordinary async host.
         let mut this = Self {
+            recording,
+            closed: false,
+            _lifetime: [window_closed, quit, shutdown],
+            shows_options: false,
+            movie_save: None,
+            movie_save_completion: None,
+            worker_completion: None,
+            save_generation: 0,
             model: Model::default(),
             start,
             end,
@@ -70,19 +125,13 @@ impl Converter {
             trim_bounds: Default::default(),
         };
         #[cfg(debug_assertions)]
-        if std::env::var("BELLOBOX_GIF_FIXTURE").as_deref() == Ok("1") {
+        if this.recording.is_none() && std::env::var("BELLOBOX_GIF_FIXTURE").as_deref() == Ok("1") {
             this.load(Source::Synthetic, cx);
         }
-        cx.on_release(|this, cx| {
-            this.worker.close();
-            if let Some(image) = this.source_preview.image.take() {
-                crate::image_disposal::drop_image(image, cx);
-            }
-            if let Some(image) = this.preview.image.take() {
-                crate::image_disposal::drop_image(image, cx);
-            }
-        })
-        .detach();
+        if let Some(recording) = this.recording.clone() {
+            this.load(Source::Recording(recording), cx);
+        }
+        cx.on_release(|this, cx| this.close(cx)).detach();
         this.focus.focus(window);
         this
     }
@@ -96,11 +145,31 @@ impl Converter {
             false
         }
     }
-    fn close(&mut self, cx: &mut Context<Self>) {
+    pub(crate) fn close(&mut self, cx: &mut App) {
+        if self.closed {
+            return;
+        }
+        self.closed = true;
+        if let Some(completion) = self.movie_save_completion.take() {
+            completion.close();
+        }
+        if let Some(completion) = self.worker_completion.take() {
+            completion.close();
+        }
+        self.save_generation += 1;
+        if let Some(save) = self.movie_save.take() {
+            save.cancel();
+        }
         self.model.close();
         self.worker.close();
         self.preview.reset(cx);
         self.source_preview.reset(cx);
+    }
+    fn submit(&mut self, request: worker::Request) {
+        if let Some(completion) = self.worker_completion.take() {
+            completion.close();
+        }
+        self.worker.submit(request);
     }
     fn sync_trim(&mut self, cx: &mut Context<Self>) {
         self.start.update(cx, |editor, cx| {
@@ -151,6 +220,11 @@ impl Converter {
         }
     }
     fn load(&mut self, source: Source, cx: &mut Context<Self>) {
+        if let Some(recording) = &self.recording
+            && source != Source::Recording(recording.clone())
+        {
+            return;
+        }
         let Some((generation, cancellation)) = self.model.load(source.clone()) else {
             return;
         };
@@ -158,7 +232,7 @@ impl Converter {
         self.source_preview.reset(cx);
         self.shows_result = false;
         self.sync_trim(cx);
-        self.worker.submit(worker::Request::Inspect {
+        self.submit(worker::Request::Inspect {
             generation,
             source,
             cancel: cancellation,
@@ -167,13 +241,14 @@ impl Converter {
         cx.notify();
     }
     fn accepts_choose_shortcut(&self, event: &KeyDownEvent) -> bool {
-        event.keystroke.key == "o"
+        self.recording.is_none()
+            && event.keystroke.key == "o"
             && event.keystroke.modifiers.platform
             && self.model.source.is_none()
             && !self.model.busy()
     }
     fn choose(&mut self, cx: &mut Context<Self>) {
-        if self.model.busy() {
+        if self.recording.is_some() || self.model.busy() {
             return;
         }
         self.model.dialog = true;
@@ -222,6 +297,15 @@ impl Converter {
         self.model.dialog = true;
         let generation = self.model.generation;
         let name = match &self.model.source {
+            Some(Source::Recording(recording)) => format!(
+                "{}.gif",
+                recording
+                    .0
+                    .path()
+                    .file_stem()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+            ),
             Some(Source::Movie(path)) => format!(
                 "{}.gif",
                 path.file_stem().unwrap_or_default().to_string_lossy()
@@ -272,7 +356,7 @@ impl Converter {
         // A preempted source seek remains visibly pending until its intended
         // time can be restored after this export physically retires.
         let generation = work.generation;
-        self.worker.submit(worker::Request::Export(work));
+        self.submit(worker::Request::Export(work));
         self.drive_worker(cx);
         cx.spawn(async move |this, cx| {
             loop {
@@ -408,6 +492,9 @@ impl Converter {
 impl Render for Converter {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let p = theme::for_window(window);
+        if self.recording.is_some() && !self.shows_options {
+            return self.render_recording(p, window, cx).into_any_element();
+        }
         let fixture = self.is_fixture();
         let busy = self.model.busy();
         if self.fields_locked != busy {
@@ -495,9 +582,9 @@ impl Render for Converter {
                     cx.stop_propagation();
                 }
             }))
-            .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| { if event.keystroke.key == "escape" && !this.start.read(cx).has_marked_text() && !this.end.read(cx).has_marked_text() { this.close(cx); window.remove_window(); } }))
+            .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| { if event.keystroke.key == "escape" && !this.start.read(cx).has_marked_text() && !this.end.read(cx).has_marked_text() { if this.recording.is_some() { this.shows_options = false; cx.notify(); } else { this.close(cx); crate::shutdown::close_window(window, cx); } } }))
             .child(div().flex().flex_col().gap_3()
-                .child(div().text_xl().child("Video to GIF"))
+                .child(div().text_xl().child(if self.recording.is_some() { "Make a GIF" } else { "Video to GIF" }))
                 .child(div().text_color(p.secondary).child(source))
                 .child(div().min_h(px(120.)).max_h(px(180.)).p_2().rounded_lg().bg(p.well).flex().flex_col().justify_center().gap_2()
                     .when_some(if self.shows_result { self.preview.image.clone() } else { self.source_preview.image.clone() }, |el, image| el.child(img(image).h(px(140.)).object_fit(ObjectFit::Contain)))
@@ -510,7 +597,8 @@ impl Render for Converter {
                     .child(button("show-movie", "Movie", p).when(!self.shows_result, |el| el.bg(p.accent_fill).text_color(rgb(0xffffff))).on_click(cx.listener(|this, _, _, cx| this.show_movie(cx))))
                     .child(button("show-gif", "GIF", p).when(self.shows_result, |el| el.bg(p.accent_fill).text_color(rgb(0xffffff))).on_click(cx.listener(|this, _, _, cx| this.show_gif(cx))))))
                 .when(self.shows_result && self.preview.image.is_some(), |el| el.child(button("preview-play", if self.preview.playing { "Pause GIF" } else { "Play GIF" }, p).when(!busy, |el| el.on_click(cx.listener(|this, _, _, cx| this.toggle_preview(cx))))))
-                .child(button("choose", if self.model.source.is_some() { "Choose Another…" } else { "Choose Movie…" }, p).when(!busy, |el| el.on_click(cx.listener(|this, _, _, cx| this.choose(cx)))))
+                .when(self.recording.is_none(), |el| el.child(button("choose", if self.model.source.is_some() { "Choose Another…" } else { "Choose Movie…" }, p).when(!busy, |el| el.on_click(cx.listener(|this, _, _, cx| this.choose(cx))))))
+                .when(self.recording.is_some(), |el| el.child(button("recording-back", "Back to Recording", p).on_click(cx.listener(|this, _, _, cx| { this.shows_options = false; cx.notify(); }))))
                 .child(controls)
                 .child(button("loop", if self.model.options.loops { "Loop: On" } else { "Loop: Once" }, p).when(!busy, |el| el.on_click(cx.listener(|this, _, _, cx| { this.model.options.loops = !this.model.options.loops; cx.notify(); }))))
                 .child(self.trim_slider(true, p, cx))
@@ -530,7 +618,7 @@ impl Render for Converter {
                 .when_some(self.model.result.as_ref(), |el, result| el.child(div().flex().flex_col().gap_2().child(format!("Saved: {} frames · {} × {} · {} bytes", result.frame_count, result.size.0, result.size.1, result.file_size)).child(button("reveal", "Show GIF in folder", p).on_click(cx.listener(|this, _, _, cx| { if let Some(result) = &this.model.result { cx.reveal_path(&result.path); } }))).child(button("copy-path", "Copy GIF path", p).on_click(cx.listener(|this, _, _, cx| { if let Some(result) = &this.model.result { cx.write_to_clipboard(ClipboardItem::new_string(result.path.to_string_lossy().into_owned())); this.model.status = "Copied GIF path (file clipboard is not supported).".into(); cx.notify(); } })))))
                 .child(div().text_color(if self.model.error { p.danger } else { p.secondary }).child(self.model.status.clone()))
                 .child(div().text_xs().text_color(p.secondary).child("Movie review uses paused frames only; continuous playback and audio are not implemented."))
-                .child(div().text_xs().text_color(p.secondary).child("Converted locally. Nothing is uploaded. Existing destination files are kept.")))
+                .child(div().text_xs().text_color(p.secondary).child("Converted locally. Nothing is uploaded. Existing destination files are kept."))).into_any_element()
     }
 }
 fn button(id: impl Into<ElementId>, label: impl Into<SharedString>, p: Palette) -> Stateful<Div> {

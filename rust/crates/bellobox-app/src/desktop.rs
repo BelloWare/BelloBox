@@ -842,7 +842,7 @@ impl BelloBox {
                 .child(
                     button("close", "×", p)
                         .w(px(28.))
-                        .on_click(|_, window, _| window.remove_window()),
+                        .on_click(|_, window, cx| crate::shutdown::close_window(window, cx)),
                 )
         } else {
             header
@@ -1778,7 +1778,7 @@ impl Render for BelloBox {
                 .child(div().flex_1())
                 .child(
                     button("close-status", "Close", p)
-                        .on_click(|_, window, _| window.remove_window()),
+                        .on_click(|_, window, cx| crate::shutdown::close_window(window, cx)),
                 )
                 .into_any_element(),
             _ => self.render_workbench(p, window, cx),
@@ -1824,7 +1824,7 @@ impl Render for BelloBox {
                     || cfg!(target_os = "linux") && event.keystroke.modifiers.control;
                 if command {
                     match event.keystroke.key.as_str() {
-                        "w" => window.remove_window(),
+                        "w" => crate::shutdown::close_window(window, cx),
                         "n" => open_tool(&this.selected, String::new(), cx),
                         "k" => open_launcher(this.input.read(cx).text().into(), cx),
                         _ => return,
@@ -1854,6 +1854,9 @@ fn open_tool_with_clock_context(
     clock_handoff: Option<crate::clock_preview_session::ClockHandoff>,
     cx: &mut App,
 ) {
+    if crate::shutdown::requested(cx) {
+        return;
+    }
     crate::screenshot_ui::area_navigation_changed(cx);
     if id == "settings" {
         crate::settings_ui::open(cx);
@@ -1869,6 +1872,11 @@ fn open_tool_with_clock_context(
 
     if id == "worldClock" {
         crate::world_clock_ui::open_with_handoff(input, clock_handoff, cx);
+        return;
+    }
+
+    if id == "recording" {
+        crate::recording_ui::open(cx);
         return;
     }
 
@@ -1901,12 +1909,18 @@ fn open_tool_with_clock_context(
             }),
             ..Default::default()
         },
-        move |window, cx| cx.new(|cx| BelloBox::new_for(id, input, window, cx)),
+        move |window, cx| {
+            crate::shutdown::guard_window(window, cx);
+            cx.new(|cx| BelloBox::new_for(id, input, window, cx))
+        },
     ) {
         eprintln!("Cannot open tool window: {error}");
     }
 }
 pub fn open_launcher(input: String, cx: &mut App) {
+    if crate::shutdown::requested(cx) {
+        return;
+    }
     crate::screenshot_ui::area_navigation_changed(cx);
     crate::launcher_ui::open(input, cx);
 }
@@ -1917,23 +1931,7 @@ pub fn run() {
         if let Ok(settings) = Settings::load(&config_dir().join("settings.json")) {
             crate::theme::set_saved_appearance(settings.appearance);
         }
-        cx.on_window_closed(|cx| {
-            if cx.windows().is_empty() {
-                // Native close/input callbacks still hold the X11 client borrow here.
-                // Queue on the foreground executor, rather than quitting reentrantly
-                // (or merely at the end of this same GPUI effect cycle).
-                cx.spawn(async move |cx| {
-                    let _ = cx.update(|cx| {
-                        // A replacement window may have opened before this task ran.
-                        if cx.windows().is_empty() {
-                            cx.quit();
-                        }
-                    });
-                })
-                .detach();
-            }
-        })
-        .detach();
+        crate::shutdown::init(cx);
         if let Ok(tool) = std::env::var("BELLOBOX_TOOL")
             && tool != "home"
         {
@@ -1956,7 +1954,10 @@ pub fn run() {
                 }),
                 ..Default::default()
             },
-            |window, cx| cx.new(|cx| crate::home::Home::new(window, cx)),
+            |window, cx| {
+                crate::shutdown::guard_window(window, cx);
+                cx.new(|cx| crate::home::Home::new(window, cx))
+            },
         );
         match result {
             Ok(_) => {
@@ -1965,7 +1966,7 @@ pub fn run() {
             }
             Err(e) => {
                 eprintln!("Cannot open Bello Box: {e}");
-                cx.quit();
+                crate::shutdown::request_quit(cx);
             }
         }
     });

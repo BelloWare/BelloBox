@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Authorized local, offline, synthetic verification. No live recording/provider work.
+set -euo pipefail
+ROOT=/workspace/scratch/8b6fda578834/BelloBox-recording-staging
+BASE=/workspace/scratch/8b6fda578834/build-environment
+QA="$BASE/recording-shutdown-qa"
+source "$BASE/env.sh"
+export CARGO_BUILD_JOBS=1
+export CARGO_TARGET_DIR=/workspace/scratch/8b6fda578834/BelloAgent/rust/target
+unset BELLOBOX_AI_KEY BELLOBOX_AI_ENDPOINT BELLOBOX_AI_MODEL BELLOBOX_AI_PROVIDER
+unset BELLOBOX_GIF_FIXTURE BELLOBOX_RECORDING_FIXTURE BELLOBOX_RECORDING_EXPORT_DELAY_MS
+STAMP=$(date -u +%Y%m%dT%H%M%SZ)-$$
+RUN="$QA/$STAMP"
+mkdir -p "$RUN" "$RUN/app-config" "$RUN/tmp"
+export BELLOBOX_CONFIG_DIR="$RUN/app-config" TMPDIR="$RUN/tmp"
+cd "$ROOT"
+export SHUTDOWN_BUILD_RUN="$RUN"
+printf '%s\n' "$RUN" > "$QA/current-run.txt"
+python3 /workspace/shared/recording-shutdown-provenance.py capture "$RUN"
+
+run() {
+ local label="$1"; shift
+ printf '\n== %s ==\n' "$label"
+ printf '%q ' "$@"; printf '\n'
+ "$@" > "$RUN/$label.log" 2>&1 || { local code=$?; tail -100 "$RUN/$label.log"; printf '%s\n' "$code" > "$RUN/$label.exit"; return "$code"; }
+ printf '0\n' > "$RUN/$label.exit"
+ tail -6 "$RUN/$label.log"
+}
+run app-platform-clippy cargo clippy --manifest-path rust/Cargo.toml --locked --offline -p bellobox-app -p bello-platform --all-targets --features recording-fixtures --no-deps -- -D warnings
+run app-test-build cargo test --manifest-path rust/Cargo.toml --locked --offline -p bellobox-app --features recording-fixtures --no-run --config profile.test.package.bellobox-app.codegen-units=256
+run app-tests cargo test --manifest-path rust/Cargo.toml --locked --offline -p bellobox-app --features recording-fixtures --config profile.test.package.bellobox-app.codegen-units=256 -- --test-threads=1
+run platform-recording-tests cargo test --manifest-path rust/Cargo.toml --locked --offline -p bello-platform --features recording-fixtures recording:: -- --test-threads=1
+run app-build cargo build --manifest-path rust/Cargo.toml --locked --offline -p bellobox-app --features recording-fixtures --config profile.dev.package.bellobox-app.codegen-units=256
+python3 /workspace/shared/recording-shutdown-provenance.py verify "$RUN"
+python3 - <<'PY'
+import hashlib,json,pathlib,os,shutil,subprocess
+run=pathlib.Path(os.environ['SHUTDOWN_BUILD_RUN']); manifest=json.loads((run/'source-inputs-before.json').read_text())
+for row in manifest['files']:
+ assert hashlib.sha256(pathlib.Path(row['path']).read_bytes()).hexdigest()==row['sha256'],('Build input changed',row['path'])
+binary=pathlib.Path(os.environ['CARGO_TARGET_DIR'])/'debug/bellobox'; digest=hashlib.sha256(binary.read_bytes()).hexdigest(); frozen=run.parent/('bellobox-'+digest[:16])
+if frozen.exists(): assert hashlib.sha256(frozen.read_bytes()).hexdigest()==digest
+else: shutil.copy2(binary,frozen)
+manifest.update(binary_path=str(frozen),binary_sha256=digest,binary_bytes=frozen.stat().st_size,features=['developer-tools','recording-fixtures'],codegen_units=256,jobs=1,rustc=subprocess.check_output(['rustc','--version'],text=True).strip(),status='Local app tests, platform recording tests, strict Clippy and fixture binary build passed. GUI process replay remains pending.')
+(run/'source-inputs.json').write_text(json.dumps(manifest,indent=2)); (run/'complete').write_text('0\n');print(json.dumps({k:v for k,v in manifest.items() if k!='files'},indent=2))
+PY

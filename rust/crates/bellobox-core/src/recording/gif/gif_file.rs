@@ -2,7 +2,10 @@ use super::GifError;
 use std::{
     fs::{self, File, Metadata, OpenOptions},
     path::{Path, PathBuf},
-    sync::{Arc, Mutex, MutexGuard},
+    sync::{
+        Arc,
+        atomic::{AtomicU8, Ordering},
+    },
 };
 
 /// No filesystem export is available without both private-file creation and
@@ -26,88 +29,113 @@ pub enum ReplacePolicy {
     ReplaceExistingFile,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[repr(u8)]
 pub enum ExportStatus {
     #[default]
-    Ready,
-    Running,
-    Cancelled,
-    Published,
-    Failed,
+    Ready = 0,
+    Running = 1,
+    Cancelled = 2,
+    /// Publication owns the outcome, but filesystem work may still fail.
+    PublicationClaimed = 3,
+    Published = 4,
+    Failed = 5,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CancelOutcome {
     Cancelled,
+    /// Cancellation lost the claim race; this does not mean a file was saved.
+    PublicationClaimed,
     AlreadyPublished,
     AlreadyFailed,
 }
 
-/// Single-use control. `cancel` and final publication use the same mutex, making
-/// the outcome linearizable: a successful cancellation cannot be followed by a
-/// publication. Cancellation after publication leaves that completed file intact.
+/// Single-use atomic control. Cancellation and publication-start compete for one
+/// state transition, without waiting for filesystem work. Accepted cancellation
+/// prevents publication; after a publication claim, await the worker's result.
+/// Neither cancellation nor a claim implies that physical work has retired.
 /// Clone this into the owner/UI and pass another clone to the export worker.
 #[derive(Clone, Debug, Default)]
 pub struct ExportControl {
-    state: Arc<Mutex<ExportStatus>>,
+    state: Arc<AtomicU8>,
 }
 impl ExportControl {
-    fn lock(&self) -> Result<MutexGuard<'_, ExportStatus>, GifError> {
-        self.state.lock().map_err(|_| GifError::ControlPoisoned)
-    }
     pub fn status(&self) -> Result<ExportStatus, GifError> {
-        Ok(*self.lock()?)
+        Ok(match self.state.load(Ordering::Acquire) {
+            0 => ExportStatus::Ready,
+            1 => ExportStatus::Running,
+            2 => ExportStatus::Cancelled,
+            3 => ExportStatus::PublicationClaimed,
+            4 => ExportStatus::Published,
+            5 => ExportStatus::Failed,
+            _ => unreachable!("invalid private GIF export state"),
+        })
     }
     pub fn cancel(&self) -> Result<CancelOutcome, GifError> {
-        let mut state = self.lock()?;
-        match *state {
-            ExportStatus::Published => Ok(CancelOutcome::AlreadyPublished),
-            ExportStatus::Failed => Ok(CancelOutcome::AlreadyFailed),
-            _ => {
-                *state = ExportStatus::Cancelled;
-                Ok(CancelOutcome::Cancelled)
-            }
-        }
+        // Keep the declared workspace MSRV: try_update requires Rust 1.95.
+        #[allow(deprecated)] // fetch_update is the same operation, stable since 1.45.
+        let previous = self
+            .state
+            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |state| {
+                matches!(state, 0 | 1).then_some(ExportStatus::Cancelled as u8)
+            });
+        Ok(match previous {
+            Ok(_) | Err(2) => CancelOutcome::Cancelled,
+            Err(3) => CancelOutcome::PublicationClaimed,
+            Err(4) => CancelOutcome::AlreadyPublished,
+            Err(5) => CancelOutcome::AlreadyFailed,
+            Err(_) => unreachable!("invalid private GIF export state"),
+        })
     }
     pub fn check_active(&self) -> Result<(), GifError> {
-        match *self.lock()? {
+        match self.status()? {
             ExportStatus::Ready | ExportStatus::Running => Ok(()),
             ExportStatus::Cancelled => Err(GifError::Cancelled),
             _ => Err(GifError::ControlAlreadyUsed),
         }
     }
     pub(super) fn begin(&self) -> Result<JobGuard<'_>, GifError> {
-        let mut state = self.lock()?;
-        match *state {
-            ExportStatus::Ready => {
-                *state = ExportStatus::Running;
-                Ok(JobGuard(self))
-            }
-            ExportStatus::Cancelled => Err(GifError::Cancelled),
-            _ => Err(GifError::ControlAlreadyUsed),
-        }
+        self.transition(ExportStatus::Ready, ExportStatus::Running)?;
+        Ok(JobGuard(self))
     }
     pub(super) fn publish<T>(
         &self,
         action: impl FnOnce() -> Result<T, GifError>,
     ) -> Result<T, GifError> {
-        let mut state = self.lock()?;
-        match *state {
-            ExportStatus::Running => {}
-            ExportStatus::Cancelled => return Err(GifError::Cancelled),
-            _ => return Err(GifError::ControlAlreadyUsed),
-        }
+        self.transition(ExportStatus::Running, ExportStatus::PublicationClaimed)?;
+        let _publication = PublicationGuard(self);
         let result = action()?;
-        *state = ExportStatus::Published;
+        self.state
+            .store(ExportStatus::Published as u8, Ordering::Release);
         Ok(result)
+    }
+    fn transition(&self, from: ExportStatus, to: ExportStatus) -> Result<(), GifError> {
+        self.state
+            .compare_exchange(from as u8, to as u8, Ordering::AcqRel, Ordering::Acquire)
+            .map(|_| ())
+            .map_err(|state| {
+                if state == ExportStatus::Cancelled as u8 {
+                    GifError::Cancelled
+                } else {
+                    GifError::ControlAlreadyUsed
+                }
+            })
     }
 }
 pub(super) struct JobGuard<'a>(&'a ExportControl);
 impl Drop for JobGuard<'_> {
     fn drop(&mut self) {
-        if let Ok(mut state) = self.0.state.lock()
-            && *state == ExportStatus::Running
-        {
-            *state = ExportStatus::Failed;
-        }
+        let _ = self
+            .0
+            .transition(ExportStatus::Running, ExportStatus::Failed);
+    }
+}
+/// Error or unwind after claiming must not leave the outcome indefinitely pending.
+struct PublicationGuard<'a>(&'a ExportControl);
+impl Drop for PublicationGuard<'_> {
+    fn drop(&mut self) {
+        let _ = self
+            .0
+            .transition(ExportStatus::PublicationClaimed, ExportStatus::Failed);
     }
 }
 

@@ -59,13 +59,13 @@ impl Fixture {
         let focus = cx.focus_handle();
         window.focus(&focus);
         let weak = cx.entity().downgrade();
-        window.on_window_should_close(cx, move |_, cx| {
+        window.on_window_should_close(cx, move |window, cx| {
             let _ = weak.update(cx, |this, _| {
                 this.handoff_jobs.cancel();
                 this.session.stop();
                 this.preview_cancellation.cancel();
             });
-            true
+            crate::shutdown::allow_close(window, cx)
         });
         cx.spawn_in(window, async |this, cx| {
             loop {
@@ -226,7 +226,7 @@ impl Fixture {
                                     return;
                                 }
                                 super::open_scroll_result(prepared, cx);
-                                window.remove_window();
+                                crate::shutdown::close_window(window, cx);
                             });
                         })
                         .detach();
@@ -266,12 +266,12 @@ impl Fixture {
         })
         .detach();
     }
-    fn cancel(&mut self, window: &mut Window) {
+    fn cancel(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.handoff_jobs.cancel();
         self.final_sample_schedule.reset();
         self.session.stop();
         self.preview_cancellation.cancel();
-        window.remove_window();
+        crate::shutdown::close_window(window, cx);
     }
 }
 impl Render for Fixture {
@@ -296,7 +296,7 @@ impl Render for Fixture {
             .track_focus(&self.focus)
             .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
                 match event.keystroke.key.as_str() {
-                    "escape" => this.cancel(window),
+                    "escape" => this.cancel(window, cx),
                     "down" => this.scroll_by(90, cx),
                     "up" => this.scroll_by(-90, cx),
                     _ => {}
@@ -403,7 +403,7 @@ impl Render for Fixture {
                     .child(div().flex_1())
                     .child(
                         button("scroll-cancel", "Cancel", p)
-                            .on_click(cx.listener(|this, _, window, _| this.cancel(window))),
+                            .on_click(cx.listener(|this, _, window, cx| this.cancel(window, cx))),
                     )
                     .child(
                         button(

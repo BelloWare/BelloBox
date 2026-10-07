@@ -1,0 +1,1022 @@
+//! Image-specific consent controller. A single physical lease spans preparation,
+//! retained confirmation bytes, transport and final off-thread disposal.
+use super::*;
+use crate::transport::image_ocr as transport;
+#[cfg(any(test, debug_assertions))]
+use bellobox_core::screenshot::ai_ocr::ProviderAuthority;
+use bellobox_core::screenshot::{
+    BaseCaptureToken,
+    ai_ocr::{OcrResult, PreparedImage, ProviderLease, UploadOptions},
+};
+use std::sync::atomic::{AtomicBool, Ordering};
+
+#[cfg(test)]
+mod test_support;
+#[cfg(test)]
+mod tests;
+#[cfg(test)]
+pub(super) use test_support::{TEST_LOCK, TestPause};
+
+static PHYSICAL_WORK: AtomicBool = AtomicBool::new(false);
+
+struct PhysicalLease {
+    busy: Arc<AtomicBool>,
+    #[cfg(test)]
+    disposal_pause: Option<Arc<TestPause>>,
+}
+impl PhysicalLease {
+    fn acquire(busy: &Arc<AtomicBool>) -> Option<Self> {
+        if PHYSICAL_WORK
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .is_err()
+        {
+            return None;
+        }
+        busy.store(true, Ordering::Release);
+        Some(Self {
+            busy: busy.clone(),
+            #[cfg(test)]
+            disposal_pause: None,
+        })
+    }
+}
+impl Drop for PhysicalLease {
+    fn drop(&mut self) {
+        self.busy.store(false, Ordering::Release);
+        PHYSICAL_WORK.store(false, Ordering::Release);
+    }
+}
+struct Owned<T> {
+    value: T,
+    lease: PhysicalLease,
+    inline_work: Option<main_area::OwnedEditorWork>,
+    notify: gpui::EntityId,
+}
+/// The completion does not release capture-busy until the final byte/image owner
+/// has actually been dropped on a worker, including after editor destruction.
+fn dispose<T: Send + 'static>(owned: Owned<T>, cx: &mut App) {
+    cx.spawn(async move |cx| dispose_async(owned, cx).await)
+        .detach();
+}
+async fn dispose_async<T: Send + 'static>(owned: Owned<T>, cx: &mut gpui::AsyncApp) {
+    let Owned {
+        value,
+        lease,
+        inline_work,
+        notify,
+    } = owned;
+    // This worker is not conditional on updating a still-live window/entity.
+    let inline_id = inline_work.as_ref().map(main_area::OwnedEditorWork::id);
+    cx.background_executor()
+        .spawn(async move {
+            #[cfg(test)]
+            if let Some(pause) = &lease.disposal_pause {
+                pause.wait().await;
+            }
+            drop(value);
+            if let Some(work) = inline_work {
+                work.finish();
+            }
+            drop(lease);
+        })
+        .await;
+    let _ = cx.update(|cx| {
+        main_area::owned_editor_work_drained(inline_id, cx);
+        cx.notify(notify);
+    });
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Fence {
+    base: BaseCaptureToken,
+    revision: u64,
+    interaction: u64,
+}
+impl Fence {
+    fn current(editor: &ScreenshotEditor) -> Self {
+        Self {
+            base: editor.session.base_capture_token(),
+            revision: editor.session.revision(),
+            interaction: editor.ai_ocr.interaction,
+        }
+    }
+}
+#[derive(Clone)]
+enum Route {
+    Production,
+    #[cfg(any(test, debug_assertions))]
+    Fixture(transport::fixture::FixturePermit),
+}
+impl Route {
+    fn send(
+        &self,
+        image: &PreparedImage,
+        options: &UploadOptions,
+        provider: &ProviderLease,
+        cancel: &AtomicBool,
+    ) -> Result<OcrResult, String> {
+        match self {
+            Self::Production => transport::send(image, options, provider, cancel),
+            #[cfg(any(test, debug_assertions))]
+            Self::Fixture(permit) => {
+                transport::send_fixture(image, options, provider, cancel, permit)
+            }
+        }
+    }
+}
+struct Approval {
+    fence: Fence,
+    job: crate::session::JobToken,
+    image: PreparedImage,
+    preview: Arc<gpui::RenderImage>,
+    options: UploadOptions,
+    provider: ProviderLease,
+    route: Route,
+}
+struct ResultText {
+    fence: Fence,
+    provider: ProviderLease,
+    value: OcrResult,
+}
+#[cfg(any(test, debug_assertions))]
+struct Fixture {
+    authority: ProviderAuthority,
+    permit: transport::fixture::FixturePermit,
+    original_base: BaseCaptureToken,
+    mode_index: usize,
+}
+
+pub(super) struct Host {
+    jobs: SessionJobs,
+    save_jobs: SessionJobs,
+    // Present only while this explicit OCR Save owns the dialog/file operation.
+    active_save: Option<crate::session::JobToken>,
+    busy: Arc<AtomicBool>,
+    interaction: u64,
+    confirmation: Option<Owned<Approval>>,
+    result: Option<ResultText>,
+    markdown: bool,
+    modal_focus: FocusHandle,
+    modal_selection: usize,
+    closed: bool,
+    lifecycle: Vec<gpui::Subscription>,
+    #[cfg(test)]
+    completion_pause: Option<Arc<TestPause>>,
+    #[cfg(test)]
+    preparation_pause: Option<Arc<TestPause>>,
+    #[cfg(test)]
+    cancel_before_count: Option<Arc<AtomicBool>>,
+    #[cfg(test)]
+    disposal_pause: Option<Arc<TestPause>>,
+    #[cfg(test)]
+    save_pause: Option<Arc<TestPause>>,
+    #[cfg(any(test, debug_assertions))]
+    fixture: Option<Fixture>,
+}
+impl Host {
+    pub fn new(cx: &mut App) -> Self {
+        Self {
+            jobs: SessionJobs::default(),
+            save_jobs: SessionJobs::default(),
+            active_save: None,
+            busy: Arc::new(AtomicBool::new(false)),
+            interaction: 0,
+            confirmation: None,
+            result: None,
+            markdown: false,
+            modal_focus: cx.focus_handle(),
+            modal_selection: 0,
+            closed: false,
+            lifecycle: Vec::new(),
+            #[cfg(test)]
+            completion_pause: None,
+            #[cfg(test)]
+            preparation_pause: None,
+            #[cfg(test)]
+            cancel_before_count: None,
+            #[cfg(test)]
+            disposal_pause: None,
+            #[cfg(test)]
+            save_pause: None,
+            #[cfg(any(test, debug_assertions))]
+            fixture: None,
+        }
+    }
+    pub fn modal(&self) -> bool {
+        self.confirmation.is_some()
+    }
+    fn busy(&self) -> bool {
+        self.busy.load(Ordering::Acquire)
+    }
+    pub fn retire(&mut self, cx: &mut App) {
+        self.jobs.cancel();
+        self.save_jobs.cancel();
+        if let Some(owned) = self.confirmation.take() {
+            // Run after the currently borrowed window is returned to App, so
+            // GPUI can retire this preview from every window atlas.
+            cx.defer(move |cx| {
+                cx.drop_image(owned.value.preview.clone(), None);
+                dispose(owned, cx);
+            });
+        }
+    }
+    fn configured(&self, base: BaseCaptureToken) -> Result<(ProviderLease, Route), String> {
+        #[cfg(any(test, debug_assertions))]
+        if let Some(fixture) = &self.fixture {
+            if fixture.original_base != base {
+                return Err(
+                    "The supplied image was replaced. Fixture upload authority has ended.".into(),
+                );
+            }
+            let lease = fixture.authority.lease();
+            if !lease.is_valid() {
+                return Err("Image upload authority was revoked.".into());
+            }
+            return Ok((lease, Route::Fixture(fixture.permit.clone())));
+        }
+        let _ = base;
+        // This gate is deliberately before settings, credentials, client or DNS.
+        Ok((
+            transport::production_authority()?.lease(),
+            Route::Production,
+        ))
+    }
+}
+
+impl ScreenshotEditor {
+    pub(super) fn retire_ai_owner(&mut self, cx: &mut App) {
+        self.ai_ocr.closed = true;
+        if self.ai_ocr.active_save.take().is_some() {
+            self.export_busy = false;
+        }
+        self.ai_ocr.retire(cx);
+        #[cfg(any(test, debug_assertions))]
+        {
+            self.ai_ocr.fixture = None;
+        }
+        self.ai_ocr.result = None;
+        self.ai_ocr.markdown = false;
+        self.ocr_jobs.cancel();
+        self.ocr_busy = false;
+        self.ocr_content.invalidate();
+        self.ocr
+            .update(cx, |editor, cx| editor.set_text(String::new(), cx));
+    }
+    pub(super) fn watch_ai_owner(&mut self, window: &Window, cx: &mut Context<Self>) {
+        let owner = window.window_handle();
+        let weak = cx.weak_entity();
+        self.ai_ocr.lifecycle.push(cx.on_window_closed(move |cx| {
+            if !cx.windows().contains(&owner) {
+                let _ = weak.update(cx, |this, cx| {
+                    this.retire_ai_owner(cx);
+                    this.invalidate_ocr_interaction(cx);
+                });
+            }
+        }));
+        self.ai_ocr.lifecycle.push(cx.on_app_quit(|this, cx| {
+            this.ai_ocr.closed = true;
+            if this.ai_ocr.active_save.take().is_some() {
+                this.export_busy = false;
+            }
+            #[cfg(any(test, debug_assertions))]
+            {
+                this.ai_ocr.fixture = None;
+            }
+            this.ai_ocr.jobs.cancel();
+            this.ai_ocr.save_jobs.cancel();
+            this.ocr_jobs.cancel();
+            this.ai_ocr.result = None;
+            this.ocr_content.invalidate();
+            this.ocr
+                .update(cx, |editor, cx| editor.set_text(String::new(), cx));
+            let pending = this.ai_ocr.confirmation.take();
+            if let Some(owned) = &pending {
+                cx.drop_image(owned.value.preview.clone(), None);
+            }
+            let executor = cx.background_executor().clone();
+            async move {
+                // Shutdown handlers may not spawn new foreground tasks. Heavy
+                // owners and their RAII counters still retire on the worker.
+                executor
+                    .spawn(async move {
+                        drop(pending);
+                    })
+                    .await;
+            }
+        }));
+    }
+    pub(super) fn fixture_controls(&self, p: Palette, _cx: &mut Context<Self>) -> gpui::Div {
+        let row = div().flex().flex_col().gap(px(4.));
+        #[cfg(any(test, debug_assertions))]
+        if let Some(fixture) = &self.ai_ocr.fixture {
+            let label = transport::fixture::ResponseMode::ALL[fixture.mode_index].label();
+            return row.child(div().text_size(px(10.)).child(format!("Supplied numeric-loopback fixture · {} requests · {} redirects", transport::fixture::request_count(&fixture.permit), transport::fixture::redirect_request_count(&fixture.permit))))
+                .child(button("ai-fixture-mode", format!("Response: {label} ▸"), p).on_click(_cx.listener(|this, _, _, cx| {
+                    if this.ai_ocr.busy() { return; }
+                    if let Some(fixture) = &mut this.ai_ocr.fixture {
+                        fixture.mode_index = (fixture.mode_index + 1) % transport::fixture::ResponseMode::ALL.len();
+                        transport::fixture::set_response_mode(&fixture.permit, transport::fixture::ResponseMode::ALL[fixture.mode_index]);
+                    }
+                    cx.notify();
+                })))
+                .child(button("ai-fixture-revoke", "Revoke fixture authority", p).on_click(_cx.listener(|this, _, _, cx| {
+                    if let Some(fixture) = &this.ai_ocr.fixture { fixture.authority.revoke(); }
+                    this.invalidate_ocr_interaction(cx);
+                    this.status = "Fixture upload authority revoked. Reopen the supplied fixture to restore it.".into();
+                    cx.notify();
+                })));
+        }
+        let _ = p;
+        row
+    }
+    #[cfg(any(test, debug_assertions))]
+    pub(super) fn install_ai_fixture(
+        &mut self,
+        authority: ProviderAuthority,
+        permit: transport::fixture::FixturePermit,
+    ) -> Result<(), String> {
+        if !permit.check_document(self.session.document()) {
+            return Err("Fixture authority does not own this supplied image.".into());
+        }
+        self.ai_ocr.fixture = Some(Fixture {
+            authority,
+            permit,
+            original_base: self.session.base_capture_token(),
+            mode_index: 0,
+        });
+        self.shows_ocr = true;
+        Ok(())
+    }
+    pub(super) fn ai_ocr_busy(&self) -> bool {
+        self.ai_ocr.busy()
+    }
+    pub(super) fn clear_ai_result(&mut self) {
+        self.ai_ocr.result = None;
+        self.ai_ocr.markdown = false;
+    }
+    pub(super) fn reader_warnings(&self) -> String {
+        self.ai_ocr
+            .result
+            .as_ref()
+            .filter(|_| self.ai_result_current())
+            .map(|result| result.value.warnings.join("\n"))
+            .unwrap_or_default()
+    }
+    pub(super) fn check_ai_result_authority(&mut self, cx: &mut Context<Self>) {
+        if self.ai_ocr.result.is_some() && !self.ai_result_current() {
+            self.invalidate_ocr_interaction(cx);
+        }
+    }
+    fn owned_inline_work(
+        &self,
+        cx: &mut App,
+    ) -> Result<Option<main_area::OwnedEditorWork>, String> {
+        let Some(inline) = &self.inline else {
+            return Ok(None);
+        };
+        main_area::begin_owned_editor_work(inline.id, cx)
+            .map(Some)
+            .ok_or_else(|| {
+                "This capture session has ended. Reopen the editor before reading or saving text."
+                    .into()
+            })
+    }
+    pub(super) fn export_caption(&self) -> &'static str {
+        if self.ai_ocr.active_save.is_some() {
+            "Saving the OCR result…"
+        } else {
+            "Exporting the current screenshot…"
+        }
+    }
+    pub(super) fn save_reader(&mut self, cx: &mut Context<Self>) {
+        if self.export_busy || self.ai_ocr.modal() {
+            return;
+        }
+        if !self.inline_current(cx) {
+            self.cancel_inline_owner(cx);
+            return;
+        }
+        let Some(text) = self.reader_text(self.ai_ocr.markdown).map(str::to_owned) else {
+            return;
+        };
+        let fence = Fence::current(self);
+        let authority = self
+            .ai_ocr
+            .result
+            .as_ref()
+            .map(|result| result.provider.clone());
+        let suffix = if self.ai_ocr.markdown { "md" } else { "txt" };
+        let name = format!("BelloBox-OCR.{suffix}");
+        let inline_work = match self.owned_inline_work(cx) {
+            Ok(work) => work,
+            Err(error) => {
+                self.status = error;
+                self.error = true;
+                cx.notify();
+                return;
+            }
+        };
+        let dialog = cx.prompt_for_new_path(
+            &std::env::current_dir().unwrap_or_else(|_| ".".into()),
+            Some(&name),
+        );
+        let save_job = self.ai_ocr.save_jobs.begin();
+        self.ai_ocr.active_save = Some(save_job);
+        let cancellation = self.ai_ocr.save_jobs.cancellation();
+        #[cfg(test)]
+        let save_pause = self.ai_ocr.save_pause.take();
+        self.export_busy = true;
+        cx.notify();
+        cx.spawn(async move |this, cx| {
+            let mut text = Some(text);
+            let mut inline_work = inline_work;
+            let inline_id = inline_work.as_ref().map(main_area::OwnedEditorWork::id);
+            let response = dialog.await;
+            let current = this
+                .update(cx, |this, cx| {
+                    this.inline_current(cx)
+                        && Fence::current(this) == fence
+                        && authority.as_ref().is_none_or(ProviderLease::is_valid)
+                })
+                .unwrap_or(false);
+            if current {
+                match response {
+                    Ok(Ok(Some(path))) => {
+                        let owned = OwnedSave {
+                            text: text.take().expect("one explicit save"),
+                            authority,
+                            inline_work: inline_work.take(),
+                        };
+                        let task = cx.background_executor().spawn(async move {
+                            #[cfg(test)]
+                            if let Some(pause) = save_pause {
+                                pause.wait().await;
+                            }
+                            run_owned_save(&path, owned, &cancellation, || {})
+                        });
+                        let result = task.await;
+                        let _ = this.update(cx, |this, cx| {
+                            if Fence::current(this) == fence && this.inline_current(cx) {
+                                match result {
+                                    Ok(()) => {
+                                        this.status = "Saved OCR result.".into();
+                                        this.error = false;
+                                    }
+                                    Err(error) => {
+                                        this.status = error;
+                                        this.error = true;
+                                    }
+                                }
+                                cx.notify();
+                            }
+                        });
+                    }
+                    Ok(Ok(None)) => {}
+                    _ => {
+                        let _ = this.update(cx, |this, cx| {
+                            this.status = "Could not open the OCR save dialog.".into();
+                            this.error = true;
+                            cx.notify();
+                        });
+                    }
+                }
+            }
+            cx.background_executor()
+                .spawn(async move {
+                    drop(text);
+                    drop(inline_work);
+                })
+                .await;
+            let _ = cx.update(|cx| main_area::owned_editor_work_drained(inline_id, cx));
+            let _ = this.update(cx, |this, cx| {
+                if this.ai_ocr.active_save == Some(save_job) {
+                    this.ai_ocr.active_save = None;
+                    this.export_busy = false;
+                    cx.notify();
+                }
+            });
+        })
+        .detach();
+    }
+    pub(super) fn invalidate_ocr_interaction(&mut self, cx: &mut Context<Self>) {
+        self.ai_ocr.interaction = self.ai_ocr.interaction.wrapping_add(1);
+        self.ai_ocr.retire(cx);
+        self.ai_ocr.result = None;
+        self.ai_ocr.markdown = false;
+        self.ocr_jobs.cancel();
+        self.ocr_busy = false;
+        self.ocr_content.invalidate();
+        // EditorView::set_text replaces its editor engine, including undo/copy.
+        self.ocr
+            .update(cx, |editor, cx| editor.set_text(String::new(), cx));
+    }
+    fn ai_result_current(&self) -> bool {
+        if self.ai_ocr.closed {
+            return false;
+        }
+        self.ai_ocr.result.as_ref().is_some_and(|result| {
+            result.fence == Fence::current(self) && result.provider.is_valid()
+        })
+    }
+    pub(super) fn reader_text(&self, markdown: bool) -> Option<&str> {
+        if self.ai_ocr.closed {
+            return None;
+        }
+        if let Some(result) = &self.ai_ocr.result {
+            if !self.ai_result_current() {
+                return None;
+            }
+            if markdown {
+                result.value.markdown_text.as_deref()
+            } else {
+                Some(&result.value.plain_text)
+            }
+        } else if !markdown {
+            self.ocr_content.current(self.session.revision())
+        } else {
+            None
+        }
+    }
+    pub(super) fn refresh_reader_mode(&mut self, markdown: bool, cx: &mut Context<Self>) {
+        self.ai_ocr.markdown = markdown && self.reader_text(true).is_some();
+        let text = self
+            .reader_text(self.ai_ocr.markdown)
+            .unwrap_or_default()
+            .to_owned();
+        self.ocr.update(cx, |editor, cx| editor.set_text(text, cx));
+        cx.notify();
+    }
+    pub(super) fn copy_reader(&mut self, markdown: bool, cx: &mut Context<Self>) {
+        if let Some(text) = self.reader_text(markdown) {
+            cx.write_to_clipboard(ClipboardItem::new_string(text.to_owned()));
+        } else {
+            self.refresh_reader_mode(false, cx);
+        }
+    }
+    pub(super) fn cancel_ai_ocr(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.ai_ocr.retire(cx);
+        self.status = "AI OCR canceled. Any late result will be ignored.".into();
+        self.error = false;
+        window.focus(&self.focus);
+        cx.notify();
+    }
+    pub(super) fn request_ai_ocr(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.ai_ocr.closed || self.ai_ocr.busy() || self.ocr_busy || self.export_busy {
+            return;
+        }
+        // Ordinary uploads fail before even rendering the image or reading config.
+        let (provider, route) = match self.ai_ocr.configured(self.session.base_capture_token()) {
+            Ok(value) => value,
+            Err(error) => {
+                self.status = error;
+                self.error = true;
+                cx.notify();
+                return;
+            }
+        };
+        let Some(snapshot) = self.prepare_output_snapshot(cx) else {
+            return;
+        };
+        #[allow(unused_mut)]
+        let Some(mut lease) = PhysicalLease::acquire(&self.ai_ocr.busy) else {
+            self.status =
+                "Another image OCR job is still finishing. Try again once it drains.".into();
+            cx.notify();
+            return;
+        };
+        #[cfg(test)]
+        {
+            lease.disposal_pause = self.ai_ocr.disposal_pause.take();
+        }
+        let options = UploadOptions::default();
+        let fence = Fence::current(self);
+        let job = self.ai_ocr.jobs.begin();
+        let cancellation = self.ai_ocr.jobs.cancellation();
+        #[cfg(test)]
+        if let Some(cancel) = self.ai_ocr.cancel_before_count.take() {
+            cancel.store(true, Ordering::Release);
+        }
+        let inline_work = match self.owned_inline_work(cx) {
+            Ok(work) => work,
+            Err(error) => {
+                drop(lease);
+                self.status = error;
+                self.error = true;
+                cx.notify();
+                return;
+            }
+        };
+        let notify = cx.entity_id();
+        let svg_renderer = cx.svg_renderer();
+        #[cfg(test)]
+        let preparation_pause = self.ai_ocr.preparation_pause.take();
+        self.open_menu = None;
+        self.color_target = None;
+        self.shows_ocr = true;
+        self.status = "Preparing the cropped, masked upload preview locally…".into();
+        self.error = false;
+        window.focus(&self.focus);
+        cx.notify();
+        let task = cx.background_executor().spawn(async move {
+            let value: Result<Approval, String> = (|| {
+                if cancellation.load(Ordering::Acquire) {
+                    return Err("AI OCR canceled.".into());
+                }
+                let image = PreparedImage::prepare(&snapshot, &options)?;
+                if cancellation.load(Ordering::Acquire) {
+                    return Err("AI OCR canceled.".into());
+                }
+                // Decode only the retained final PNG, off the UI thread. This
+                // preview and transport share the same immutable prepared bytes.
+                let preview = Image::from_bytes(ImageFormat::Png, image.png().to_vec())
+                    .to_image_data(svg_renderer)
+                    .map_err(|_| "Cannot prepare the upload preview.".to_string())?;
+                if cancellation.load(Ordering::Acquire) {
+                    return Err("AI OCR canceled.".into());
+                }
+                Ok(Approval {
+                    fence,
+                    job,
+                    image,
+                    preview,
+                    options,
+                    provider,
+                    route,
+                })
+            })();
+            drop(snapshot);
+            #[cfg(test)]
+            if let Some(pause) = preparation_pause {
+                pause.wait().await;
+            }
+            Owned {
+                value,
+                lease,
+                inline_work,
+                notify,
+            }
+        });
+        let window_handle = window.window_handle();
+        cx.spawn(async move |this, cx| {
+            let owned = task.await;
+            let Owned {
+                value,
+                lease,
+                inline_work,
+                notify,
+            } = owned;
+            let mut pending = Some(Owned {
+                value,
+                lease,
+                inline_work,
+                notify,
+            });
+            let _ = this.update(cx, |this, cx| {
+                if !this.inline_current(cx)
+                    || !this.ai_ocr.jobs.accepts(job)
+                    || Fence::current(this) != fence
+                {
+                    return;
+                }
+                let owned = pending.take().expect("one preparation completion");
+                match owned.value {
+                    Ok(approval) if approval.provider.is_valid() => {
+                        this.ai_ocr.confirmation = Some(Owned {
+                            value: approval,
+                            lease: owned.lease,
+                            inline_work: owned.inline_work,
+                            notify: owned.notify,
+                        });
+                        this.ai_ocr.modal_selection = 0;
+                        let focus = this.ai_ocr.modal_focus.clone();
+                        cx.defer(move |cx| {
+                            let _ = window_handle.update(cx, |_, window, _| window.focus(&focus));
+                        });
+                        this.status.clear();
+                    }
+                    value => {
+                        this.status = match &value {
+                            Err(error) => error.clone(),
+                            Ok(_) => "Image upload authority was revoked.".into(),
+                        };
+                        this.error = true;
+                        dispose(
+                            Owned {
+                                value,
+                                lease: owned.lease,
+                                inline_work: owned.inline_work,
+                                notify: owned.notify,
+                            },
+                            cx,
+                        );
+                    }
+                }
+                cx.notify();
+            });
+            if let Some(owned) = pending {
+                dispose_async(owned, cx).await;
+            }
+        })
+        .detach();
+    }
+    pub(super) fn approve_ai_ocr(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        // Taking the confirmation first makes repeated clicks/Enter single-use.
+        let Some(owned) = self.ai_ocr.confirmation.take() else {
+            return;
+        };
+        let valid = self.inline_current(cx)
+            && self.ai_ocr.jobs.accepts(owned.value.job)
+            && owned.value.fence == Fence::current(self)
+            && owned.value.provider.is_valid()
+            && self.gesture.is_none()
+            && self.label_drag.is_none()
+            && self.text_origin.is_none()
+            && self
+                .inline
+                .as_ref()
+                .is_none_or(|inline| inline.adjustment.is_none());
+        cx.drop_image(owned.value.preview.clone(), Some(window));
+        window.focus(&self.focus);
+        if !valid {
+            self.status =
+                "The image or upload authority changed. Review a new preview before uploading."
+                    .into();
+            self.error = true;
+            dispose(owned, cx);
+            cx.notify();
+            return;
+        }
+        let cancellation = self.ai_ocr.jobs.cancellation();
+        #[cfg(test)]
+        let completion_pause = self.ai_ocr.completion_pause.take();
+        self.status = "Reading the approved image with AI…".into();
+        self.error = false;
+        cx.notify();
+        let task = cx.background_executor().spawn(async move {
+            let result = owned.value.route.send(
+                &owned.value.image,
+                &owned.value.options,
+                &owned.value.provider,
+                &cancellation,
+            );
+            #[cfg(test)]
+            if let Some(pause) = completion_pause {
+                pause.wait().await;
+            }
+            (owned, result)
+        });
+        cx.spawn(async move |this, cx| {
+            let (owned, result) = task.await;
+            let mut result = Some(result);
+            let _ = this.update(cx, |this, cx| {
+                if !this.inline_current(cx)
+                    || !this.ai_ocr.jobs.accepts(owned.value.job)
+                    || owned.value.fence != Fence::current(this)
+                    || !owned.value.provider.is_valid()
+                {
+                    return;
+                }
+                match result.take().expect("one request completion") {
+                    Ok(value) => {
+                        this.ai_ocr.result = Some(ResultText {
+                            fence: owned.value.fence,
+                            provider: owned.value.provider.clone(),
+                            value,
+                        });
+                        this.ai_ocr.markdown = false;
+                        this.ocr_content.invalidate();
+                        this.refresh_reader_mode(false, cx);
+                        this.status = "AI OCR complete. Copy or save the result explicitly.".into();
+                        this.error = false;
+                    }
+                    Err(error) => {
+                        this.status = error;
+                        this.error = true;
+                    }
+                }
+                cx.notify();
+            });
+            let Owned {
+                value,
+                lease,
+                inline_work,
+                notify,
+            } = owned;
+            dispose_async(
+                Owned {
+                    value: (value, result),
+                    lease,
+                    inline_work,
+                    notify,
+                },
+                cx,
+            )
+            .await;
+        })
+        .detach();
+    }
+    pub(super) fn ai_modal_key(
+        &mut self,
+        event: &gpui::KeyDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> bool {
+        if !self.ai_ocr.modal() {
+            return false;
+        }
+        match event.keystroke.key.as_str() {
+            "escape" => self.cancel_ai_ocr(window, cx),
+            "tab" => {
+                self.ai_ocr.modal_selection = 1 - self.ai_ocr.modal_selection;
+                window.focus(&self.ai_ocr.modal_focus);
+                cx.notify();
+            }
+            "enter" | "space" if self.ai_ocr.modal_selection == 1 => {
+                self.approve_ai_ocr(window, cx)
+            }
+            "enter" | "space" => self.cancel_ai_ocr(window, cx),
+            _ => {}
+        }
+        cx.stop_propagation();
+        true
+    }
+    pub(super) fn ai_confirmation(
+        &self,
+        window: &Window,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        let approval = &self
+            .ai_ocr
+            .confirmation
+            .as_ref()
+            .expect("confirmation")
+            .value;
+        let (width, height) = approval.image.dimensions();
+        let compact = f32::from(window.viewport_size().height) < 550.;
+        let card = div().id("ai-ocr-card").debug_selector(|| "ai-ocr-card".into()).w(px(510.)).max_w_full().max_h_full().overflow_y_scroll()
+            .p(px(if compact { 12. } else { 18. })).rounded(px(12.)).bg(p.surface)
+            .border_1().border_color(p.separator).flex().flex_col().gap(px(if compact { 6. } else { 10. }))
+            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+            .child(div().font_weight(gpui::FontWeight::SEMIBOLD).child("Confirm LLM OCR Upload"))
+            .child(div().text_size(px(12.)).child(format!("{} · {}", approval.provider.api_format_label(), approval.provider.model())))
+            .child(div().text_size(px(11.)).child(format!("Destination: {}", approval.provider.destination())))
+            .child(div().flex().justify_center().h(px(if compact { 110. } else { 190. })).bg(gpui::white()).rounded(px(6.))
+                .child(img(approval.preview.clone()).size_full().object_fit(gpui::ObjectFit::Contain)))
+            .child(div().text_size(px(11.)).child(format!("Image: {width} × {height} px · {} bytes · PNG", approval.image.byte_count())))
+            .children(approval.image.warnings().iter().map(|warning| div().text_size(px(11.)).child(warning.clone())))
+            .child(div().text_size(px(11.)).child("No local OCR hint is included. Local hints and structured regions are unavailable in this slice."))
+            .child(div().text_size(px(11.)).child("Only the crop/mask-aware image shown above will be sent. Decorative annotations are excluded."))
+            .child(div().text_size(px(10.)).text_color(p.secondary).child(approval.provider.generation_options_description()))
+            .child(div().flex().justify_end().gap(px(8.))
+                .child(button("ai-ocr-cancel", "Cancel", p).debug_selector(|| "ai-ocr-cancel".into()).border_color(if self.ai_ocr.modal_selection == 0 { p.accent } else { p.separator })
+                    .on_click(cx.listener(|this, _, window, cx| this.cancel_ai_ocr(window, cx))))
+                .child(button("ai-ocr-approve", "Upload and Improve", p).debug_selector(|| "ai-ocr-approve".into()).bg(p.accent_fill).text_color(gpui::white())
+                    .border_color(if self.ai_ocr.modal_selection == 1 { p.primary } else { p.accent_fill })
+                    .on_click(cx.listener(|this, _, window, cx| this.approve_ai_ocr(window, cx)))));
+        div()
+            .id("ai-ocr-confirmation")
+            .absolute()
+            .inset_0()
+            .p(px(12.))
+            .occlude()
+            .bg(gpui::black().opacity(0.45))
+            .flex()
+            .items_center()
+            .justify_center()
+            .track_focus(&self.ai_ocr.modal_focus)
+            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+            .on_mouse_down(MouseButton::Right, |_, _, cx| cx.stop_propagation())
+            .on_mouse_move(|_, _, cx| cx.stop_propagation())
+            .on_mouse_up(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+            .on_scroll_wheel(|_, _, cx| cx.stop_propagation())
+            .child(card)
+    }
+}
+
+#[cfg(debug_assertions)]
+pub(super) fn open_fixture(cx: &mut App) {
+    let result = transport::fixture::start(transport::fixture::ResponseMode::Success);
+    match result {
+        Ok(fixture) => {
+            let bounds = Bounds::centered(None, size(px(1040.), px(760.)), cx);
+            let _ = cx.open_window(
+                WindowOptions {
+                    window_bounds: Some(WindowBounds::Windowed(bounds)),
+                    window_min_size: Some(size(px(640.), px(440.))),
+                    titlebar: Some(TitlebarOptions {
+                        title: Some("Supplied image OCR — Bello Box".into()),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                move |window, cx| {
+                    cx.new(|cx| {
+                        let mut editor = ScreenshotEditor::new(
+                            prepare_document(fixture.document),
+                            "Supplied image · local test listener",
+                            CapturePresentation::default(),
+                            window,
+                            cx,
+                        );
+                        editor
+                            .install_ai_fixture(fixture.authority, fixture.permit)
+                            .expect("generated fixture base");
+                        editor
+                    })
+                },
+            );
+        }
+        Err(_) => { /* No provider/file contents are logged by a failed fixture. */ }
+    }
+}
+
+struct OwnedSave {
+    text: String,
+    authority: Option<ProviderLease>,
+    // Field order is intentional for unwinding/aborted-await fallback cleanup.
+    inline_work: Option<main_area::OwnedEditorWork>,
+}
+impl Drop for OwnedSave {
+    fn drop(&mut self) {
+        // Move large text out before releasing the last physical owner. This
+        // destructor runs on the file worker, not on its UI awaiter.
+        drop(std::mem::take(&mut self.text));
+        self.authority = None;
+        self.inline_work = None;
+    }
+}
+
+fn run_owned_save(
+    path: &std::path::Path,
+    owned: OwnedSave,
+    cancel: &AtomicBool,
+    before_publication: impl FnOnce(),
+) -> Result<(), String> {
+    let result = save_result_file_with_hook(
+        path,
+        &owned.text,
+        cancel,
+        owned.authority.as_ref(),
+        before_publication,
+    );
+    // Text/file owners retire before the physical inline count, even if the UI
+    // awaiter has been destroyed during synchronous write/sync/publication.
+    drop(owned);
+    result
+}
+
+/// Write a private sibling, then publish without overwriting an existing file.
+/// File contents and destination never enter logs or preferences.
+#[cfg(test)]
+fn save_result_file(
+    path: &std::path::Path,
+    text: &str,
+    cancel: &AtomicBool,
+    authority: Option<&ProviderLease>,
+) -> Result<(), String> {
+    save_result_file_with_hook(path, text, cancel, authority, || {})
+}
+fn save_result_file_with_hook(
+    path: &std::path::Path,
+    text: &str,
+    cancel: &AtomicBool,
+    authority: Option<&ProviderLease>,
+    before_publication: impl FnOnce(),
+) -> Result<(), String> {
+    use std::io::Write;
+    let valid = || !cancel.load(Ordering::Acquire) && authority.is_none_or(ProviderLease::is_valid);
+    if !valid() {
+        return Err("OCR save canceled.".into());
+    }
+    let parent = path.parent().ok_or("Choose a valid destination.")?;
+    let staging = parent.join(format!(".bellobox-ocr-{}.tmp", uuid::Uuid::new_v4()));
+    let mut created = false;
+    let result = (|| {
+        let mut options = std::fs::OpenOptions::new();
+        options.write(true).create_new(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.mode(0o600);
+        }
+        let mut file = options
+            .open(&staging)
+            .map_err(|_| "Cannot create the OCR save file.")?;
+        created = true;
+        file.write_all(text.as_bytes())
+            .map_err(|_| "Cannot write the OCR result.")?;
+        file.sync_all()
+            .map_err(|_| "Cannot finish writing the OCR result.")?;
+        before_publication();
+        if !valid() {
+            return Err("OCR save canceled.".into());
+        }
+        std::fs::hard_link(&staging, path).map_err(|_| "Cannot publish OCR result. Choose a new filename; existing files are never overwritten.")?;
+        Ok(())
+    })();
+    if created {
+        let _ = std::fs::remove_file(staging);
+    }
+    result
+}

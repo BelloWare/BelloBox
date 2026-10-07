@@ -61,6 +61,43 @@ impl Request {
             },
         }
     }
+    pub fn aborted_response(&self) -> Response {
+        let message = "Media worker stopped unexpectedly. Try again.".to_string();
+        match self {
+            Self::Inspect { generation, .. } => Response::Inspect {
+                generation: *generation,
+                result: Err(message),
+            },
+            Self::Seek {
+                generation,
+                revision,
+                ..
+            } => Response::Seek {
+                generation: *generation,
+                revision: *revision,
+                result: Err(message),
+            },
+            Self::Export(work) => Response::Export {
+                generation: work.generation,
+                result: Err(GifError::Source(message)),
+            },
+        }
+    }
+    pub fn identity(&self) -> (u64, Option<u64>) {
+        match self {
+            Self::Inspect { generation, .. } => (*generation, None),
+            Self::Seek {
+                generation,
+                revision,
+                ..
+            } => (*generation, Some(*revision)),
+            Self::Export(work) => (work.generation, None),
+        }
+    }
+    pub fn cancel_on_shutdown(&self) -> impl Fn() + Send + Sync + 'static {
+        let cancel = self.cancellation();
+        move || cancel.cancel()
+    }
     pub fn run(self) -> Response {
         match self {
             Self::Inspect {

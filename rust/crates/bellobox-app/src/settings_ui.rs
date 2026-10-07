@@ -900,7 +900,7 @@ impl Render for SettingsView {
                     || cfg!(target_os = "linux") && event.keystroke.modifiers.control)
                     && event.keystroke.key == "w"
                 {
-                    window.remove_window();
+                    crate::shutdown::close_window(window, cx);
                     cx.stop_propagation();
                 } else if event.keystroke.key == "escape" && this.model_menu {
                     this.model_menu = false;
@@ -979,7 +979,10 @@ pub fn open(cx: &mut App) {
             }),
             ..Default::default()
         },
-        |window, cx| cx.new(|cx| SettingsView::new(window, cx)),
+        |window, cx| {
+            crate::shutdown::guard_window(window, cx);
+            cx.new(|cx| SettingsView::new(window, cx))
+        },
     ) {
         eprintln!("Cannot open Settings: {error}");
     }

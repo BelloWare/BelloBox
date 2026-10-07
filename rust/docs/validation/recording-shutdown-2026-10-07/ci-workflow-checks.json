@@ -1,0 +1,18 @@
+[
+  {
+    "path": ".github/workflows/rust.yml",
+    "preserved_public_only_guard": true,
+    "recording_platform_and_full_app_feature_suites_present": true,
+    "existing_ocr_filters_preserved": true,
+    "syntax": "PyYAML parse passed",
+    "ci_executed": false
+  },
+  {
+    "path": ".github/workflows/rust-macos.yml",
+    "preserved_public_only_guard": true,
+    "recording_platform_and_full_app_feature_suites_present": true,
+    "existing_ocr_filters_preserved": true,
+    "syntax": "PyYAML parse passed",
+    "ci_executed": false
+  }
+]

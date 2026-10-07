@@ -1,0 +1,350 @@
+{
+  "recorded_at_utc": "2026-10-07T18:01:13.652433+00:00",
+  "status": "pre-repair diagnostic; final checkpoint acceptance blocked by real premature process exit",
+  "binary_sha256": "77b9b088e5a748d33735742cac8a0e46e59a13de41da666dca75ab52d7440549",
+  "source_manifest": "source-inputs.json",
+  "source_manifest_sha256": "18bfb37325c59d9418872d6f0da98cc70ec27253b57f0f670100dd50d3882ebd",
+  "source_verified_before_recovery": {
+    "files": 174,
+    "mismatches": 0,
+    "time_utc": "2026-10-07T17:43:14Z"
+  },
+  "platform": "Linux cloud desktop, software rendering, private process-local portal, generated media only",
+  "production_native_gate": "closed",
+  "screenshots": [
+    {
+      "file": "01-normal-gate.jpg",
+      "sha256": "1ed9e803be5caf05d878e58d9b9d852cf28c21cf284a6763c8253637c0f3df1f",
+      "bytes": 44821,
+      "size": [
+        1180,
+        812
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "02-supplied-start.jpg",
+      "sha256": "ea178c77b5b245c9ca59207142a6fa59db4132f9050c3ad17408e8c43072f643",
+      "bytes": 33336,
+      "size": [
+        760,
+        520
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "03-owned-review-760x520.jpg",
+      "sha256": "b19416f7e513ac28517e528df86b43f9d5ebfa72423f37156e0669dcda9f5108",
+      "bytes": 37578,
+      "size": [
+        760,
+        520
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "04-movie-save-dialog.jpg",
+      "sha256": "3b25f934a65d28887f080be60dfe084da343a393c53e824693d3870e9ea2883f",
+      "bytes": 52164,
+      "size": [
+        1096,
+        822
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "05-movie-saved.jpg",
+      "sha256": "c001ff280e8686d234c32794a10de7a495090c74bf4626f27ebefdc6c3fd1dd8",
+      "bytes": 37723,
+      "size": [
+        760,
+        520
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "06-escape-0.jpg",
+      "sha256": "de9ac51452a851c1b1a623ed8657c2397dd7763b58c8fb5f183dcd2bc747ef6a",
+      "bytes": 34201,
+      "size": [
+        760,
+        520
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "06-escape-1.jpg",
+      "sha256": "38d59e471987cf055db570f6d27d9b0df00186f74460f202ad6576cbe407c247",
+      "bytes": 36872,
+      "size": [
+        760,
+        520
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "07-gif-trim.jpg",
+      "sha256": "bdba18f78482c366a326c5ba712d02d05bbd185681b63b617559e5841d13158c",
+      "bytes": 44808,
+      "size": [
+        760,
+        520
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "08-gif-ready.jpg",
+      "sha256": "ede204e5195cb190a7771fc015b7e5ea96632c7abdea6f059767a94a7afec2e2",
+      "bytes": 40242,
+      "size": [
+        760,
+        520
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "09-existing-gif-preserved.jpg",
+      "sha256": "6d587debdddc9a311c9f51d127fb433d161358c4c4b158e4be0e13548029a7c9",
+      "bytes": 49435,
+      "size": [
+        760,
+        520
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "10-review-640x440.jpg",
+      "sha256": "1e164008c325c0538aec18cba7d3911697fc0290fd905cf26c770fe9fdf481ed",
+      "bytes": 36052,
+      "size": [
+        640,
+        440
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "11-held-start.jpg",
+      "sha256": "7c3bd3688eee19bc3ce98db325872e8f61c29fab2ca9dbe0e9d5d4b1016f9ec5",
+      "bytes": 27880,
+      "size": [
+        640,
+        520
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "12-start-busy-after-close.jpg",
+      "sha256": "ac0009f9a449cac9d623bdda76be166fe1aa928f07f13d4479d656c187da413c",
+      "bytes": 26761,
+      "size": [
+        640,
+        440
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "13-start-retry-review.jpg",
+      "sha256": "771ca7fb55280ba241c3b541af94c77243ebdb4979da78ccffb3b2035dd583e1",
+      "bytes": 32589,
+      "size": [
+        640,
+        440
+      ],
+      "origin": "inherited original before recovery",
+      "unedited": true
+    },
+    {
+      "file": "14-failed-finalize.jpg",
+      "sha256": "895a844952618ccb956efd9b95ff9e9c14ef09f62de2c01d41d0aac7dbd13cba",
+      "bytes": 48952,
+      "size": [
+        1180,
+        812
+      ],
+      "origin": "new original recovery CUA",
+      "unedited": true
+    },
+    {
+      "file": "15-recovery-review.jpg",
+      "sha256": "3e827d607abf38a3552ecbe77c3843ec55db5ff9a38ed2e75f5b6092f5ba84d2",
+      "bytes": 61495,
+      "size": [
+        1180,
+        812
+      ],
+      "origin": "new original recovery CUA",
+      "unedited": true
+    },
+    {
+      "file": "16-recovery-saved.jpg",
+      "sha256": "8cd03ad1604df5e0331635131fc85d7ee4fe8968a10409689999dacf94636c6d",
+      "bytes": 61813,
+      "size": [
+        1180,
+        812
+      ],
+      "origin": "new original recovery CUA",
+      "unedited": true
+    },
+    {
+      "file": "17-idle-timeout-retry.jpg",
+      "sha256": "8c2bdbe011e53987406ecf4ec06b93ff8360c7cf31c941f88b0730879499b816",
+      "bytes": 49644,
+      "size": [
+        1180,
+        812
+      ],
+      "origin": "new original recovery CUA",
+      "unedited": true
+    },
+    {
+      "file": "18-held-finish-before-exit.jpg",
+      "sha256": "3da7abe86ec6ea3b503d37203c262dcfdcac3143e20fbcdf577f40338b411b79",
+      "bytes": 43934,
+      "size": [
+        1180,
+        812
+      ],
+      "origin": "new original recovery CUA",
+      "unedited": true
+    },
+    {
+      "file": "19-last-window-exit-terminal.jpg",
+      "sha256": "bfb07e712098d7ea5cce5a90465bcb4aa60ac614cfa4646e3c88e61ef090f2e6",
+      "bytes": 336556,
+      "size": [
+        1177,
+        808
+      ],
+      "origin": "new original recovery CUA",
+      "unedited": true
+    }
+  ],
+  "outputs": [
+    {
+      "file": "gui-saved.mov",
+      "bytes": 221877,
+      "sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9",
+      "mode": "0o600",
+      "ffprobe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "rawvideo",
+            "width": 96,
+            "height": 64,
+            "duration": "1.200000",
+            "nb_frames": "12"
+          }
+        ],
+        "format": {
+          "duration": "1.200000",
+          "size": "221877"
+        }
+      }
+    },
+    {
+      "file": "gui-recovery.mov",
+      "bytes": 221877,
+      "sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9",
+      "mode": "0o600",
+      "ffprobe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "rawvideo",
+            "width": 96,
+            "height": 64,
+            "duration": "1.200000",
+            "nb_frames": "12"
+          }
+        ],
+        "format": {
+          "duration": "1.200000",
+          "size": "221877"
+        }
+      }
+    },
+    {
+      "file": "gui-once.gif",
+      "bytes": 1987,
+      "sha256": "ce0065a59693f4cf98a8bf2da5da93706bded18e31a20e1597dcc6ec6209e801",
+      "mode": "0o600",
+      "width": 96,
+      "height": 64,
+      "frames": 7,
+      "loop": null,
+      "frame_delays_ms": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "magenta_sentinel_pixels": 0
+    },
+    {
+      "file": "gui-loop.gif",
+      "bytes": 2006,
+      "sha256": "581038b7ad0cd048e72c374753157ffb2aec9973aba77d7811919fb553268076",
+      "mode": "0o600",
+      "width": 96,
+      "height": 64,
+      "frames": 7,
+      "loop": 0,
+      "frame_delays_ms": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "magenta_sentinel_pixels": 0
+    }
+  ],
+  "last_window_failure": {
+    "fixture": "DelayedFinalize, fixed 5-second pre-finalize hold",
+    "only_app_window": "Recording, Home closed before Start",
+    "timings_ms_epoch": {
+      "stop_before": 1791395829337,
+      "held_observed": 1791395829683,
+      "close_sent": 1791395829847,
+      "terminal_observed": 1791395830160
+    },
+    "stop_to_terminal_observed_ms": 823,
+    "close_to_terminal_observed_ms": 313,
+    "remaining_file": {
+      "relative_to_qa_exports": ".BelloBox-recording-501985-1791395812263325207-4/capture.mov",
+      "bytes": 221877,
+      "sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9",
+      "observation": "private capture remains after application/launch script return; not a completed-publication artifact"
+    },
+    "source_movie_saved_copy_preserved": true
+  },
+  "not_executed": [
+    "native AVAssetWriter generated recording tests on macOS",
+    "real ScreenCaptureKit, permissions, audio or source movie decoding",
+    "post-repair GUI regression matrix",
+    "mid-MOV-save physical cancellation",
+    "delayed GIF export cancellation and last-window close on this binary"
+  ]
+}

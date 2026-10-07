@@ -1,0 +1,353 @@
+use super::{Phase, RecordingHandle, RecordingHost, controller};
+use gpui::TestAppContext;
+#[cfg(feature = "recording-fixtures")]
+use std::time::Duration;
+
+#[test]
+fn ordinary_start_is_closed_and_double_stop_cannot_create_work() {
+    let mut controller = controller::Controller::default();
+    controller.start(RecordingHandle::start);
+    assert_eq!(controller.session.phase(), Phase::Failed);
+    assert!(!controller.session.busy());
+    assert!(controller.status.contains("unavailable"));
+    controller.stop();
+    controller.stop();
+    assert_eq!(controller.session.phase(), Phase::Failed);
+    assert!(controller.poll().is_none());
+}
+#[gpui::test]
+fn ordinary_recording_window_start_close_and_fresh_reopen(cx: &mut TestAppContext) {
+    let window = cx.add_window(RecordingHost::new);
+    window
+        .update(cx, |host, window, cx| {
+            #[cfg(feature = "recording-fixtures")]
+            {
+                host.fixture = None;
+            }
+            host.start(window, cx);
+            assert_eq!(host.controller.session.phase(), Phase::Failed);
+            assert!(host.review.is_none());
+            host.close(cx);
+            host.start(window, cx);
+            assert_eq!(host.controller.session.phase(), Phase::Closed);
+        })
+        .unwrap();
+    cx.run_until_parked();
+    let fresh = cx.add_window(RecordingHost::new);
+    fresh
+        .update(cx, |host, _, _| {
+            assert_eq!(host.controller.session.phase(), Phase::Idle)
+        })
+        .unwrap();
+}
+
+#[cfg(feature = "recording-fixtures")]
+pub(crate) mod fixtures {
+    use super::*;
+    use bello_platform::recording::{
+        FinalizedRecording, RecordingEvent,
+        fixture::{self, Case},
+    };
+    use std::{
+        sync::Mutex,
+        time::{Duration, Instant},
+    };
+    pub(crate) static SERIAL: Mutex<()> = Mutex::new(());
+    pub(crate) struct Movie(pub FinalizedRecording);
+    impl Drop for Movie {
+        fn drop(&mut self) {
+            // Tests, never the product review, remove their exact generated directory.
+            let directory = self.0.path().parent().unwrap();
+            assert!(
+                directory
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .starts_with(".BelloBox-recording-")
+            );
+            let _ = std::fs::remove_dir_all(directory);
+        }
+    }
+    pub(crate) fn movie(case: Case) -> Movie {
+        let handle = fixture::start_injected(case).unwrap();
+        finalized(handle)
+    }
+    pub(crate) fn finalized(handle: RecordingHandle) -> Movie {
+        handle.stop();
+        let deadline = Instant::now() + Duration::from_secs(15);
+        let mut movie = None;
+        loop {
+            let drained = handle.is_drained();
+            while let Some(event) = handle.try_event() {
+                if let RecordingEvent::Finalized(value) = event {
+                    movie = Some(value);
+                }
+            }
+            if drained {
+                return Movie(movie.expect("fixture did not finalize"));
+            }
+            assert!(Instant::now() < deadline);
+            std::thread::sleep(Duration::from_millis(2));
+        }
+    }
+    fn pump(controller: &mut controller::Controller) -> Option<FinalizedRecording> {
+        let deadline = Instant::now() + Duration::from_secs(15);
+        while controller.session.busy() {
+            if let Some(movie) = controller.poll() {
+                return Some(movie);
+            }
+            assert!(Instant::now() < deadline);
+            std::thread::sleep(Duration::from_millis(2));
+        }
+        None
+    }
+    #[test]
+    fn controller_double_start_stop_and_owned_result_recovery() {
+        let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+        let mut controller = controller::Controller::default();
+        controller.start(|| fixture::start_injected(Case::RecoverPublication));
+        controller.start(|| panic!("double Start reached the backend"));
+        controller.stop();
+        controller.stop();
+        let movie = Movie(pump(&mut controller).unwrap());
+        assert_eq!(controller.session.phase(), Phase::Reviewing);
+        assert!(movie.0.recovery_warning().is_some());
+        assert_eq!(movie.0.selected_movie(), movie.0.selected_movie());
+        controller.close();
+        assert!(movie.0.verify().is_ok());
+        let path = movie.0.path().to_owned();
+        drop(controller);
+        assert!(path.exists());
+    }
+    #[test]
+    fn cancelled_held_start_reopen_is_busy_until_physical_drain_then_retries() {
+        let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+        let mut old = controller::Controller::default();
+        old.start(|| fixture::start_injected(Case::DelayedStart));
+        old.close();
+        assert!(old.session.busy());
+        let mut new = controller::Controller::default();
+        new.start(|| fixture::start_injected(Case::Standard));
+        assert_eq!(new.session.phase(), Phase::Failed);
+        assert!(new.status.contains("physically active"));
+        assert!(pump(&mut old).is_none());
+        assert_eq!(old.session.phase(), Phase::Closed);
+        new.start(|| fixture::start_injected(Case::Standard));
+        new.stop();
+        let movie = Movie(pump(&mut new).unwrap());
+        assert!(movie.0.verify().is_ok());
+    }
+    #[test]
+    fn held_finalize_cancel_never_adopts_and_failure_can_retry() {
+        let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+        let mut controller = controller::Controller::default();
+        controller.start(|| fixture::start_injected(Case::DelayedFinalize));
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while controller.session.phase() == Phase::Starting {
+            controller.poll();
+            assert!(Instant::now() < deadline);
+            std::thread::sleep(Duration::from_millis(2));
+        }
+        controller.stop();
+        std::thread::sleep(Duration::from_millis(50));
+        controller.cancel();
+        assert!(controller.session.busy());
+        controller.start(|| panic!("cancellation must not release physical admission"));
+        assert!(pump(&mut controller).is_none());
+        assert_eq!(controller.session.phase(), Phase::Idle);
+        controller.start(|| fixture::start_injected(Case::FailFinalize));
+        controller.stop();
+        assert!(pump(&mut controller).is_none());
+        assert_eq!(controller.session.phase(), Phase::Failed);
+        controller.start(|| fixture::start_injected(Case::Standard));
+        controller.stop();
+        let movie = Movie(pump(&mut controller).unwrap());
+        assert!(movie.0.verify().is_ok());
+    }
+}
+
+#[cfg(feature = "recording-fixtures")]
+#[gpui::test]
+fn injected_start_stop_mounts_review_in_the_same_window(cx: &mut TestAppContext) {
+    let _serial = fixtures::SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let window = cx.add_window(RecordingHost::new);
+    window
+        .update(cx, |host, window, cx| {
+            host.fixture = Some(bello_platform::recording::fixture::Case::Standard);
+            host.start(window, cx);
+            host.start(window, cx);
+            host.controller.stop();
+            host.controller.stop();
+            assert!(host.review.is_none());
+        })
+        .unwrap();
+    let deadline = std::time::Instant::now() + Duration::from_secs(5);
+    loop {
+        cx.background_executor
+            .advance_clock(Duration::from_millis(40));
+        cx.run_until_parked();
+        let done = window
+            .update(cx, |host, _, _| {
+                host.review.is_some() && host.controller.session.phase() == Phase::Reviewing
+            })
+            .unwrap();
+        if done {
+            break;
+        }
+        assert!(std::time::Instant::now() < deadline);
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    let path = window
+        .update(cx, |host, window, cx| {
+            let path = host
+                .review
+                .as_ref()
+                .unwrap()
+                .read(cx)
+                .recording_path_for_test();
+            host.close(cx);
+            assert_eq!(host.controller.session.phase(), Phase::Closed);
+            window.remove_window();
+            path
+        })
+        .unwrap();
+    cx.run_until_parked();
+    assert!(
+        path.exists(),
+        "last review owner must not delete the completed movie"
+    );
+    std::fs::remove_dir_all(path.parent().unwrap()).unwrap();
+}
+
+#[cfg(feature = "recording-fixtures")]
+fn advance_until(cx: &mut TestAppContext, mut ready: impl FnMut(&mut TestAppContext) -> bool) {
+    let deadline = std::time::Instant::now() + Duration::from_secs(15);
+    loop {
+        cx.background_executor
+            .advance_clock(Duration::from_millis(40));
+        cx.run_until_parked();
+        if ready(cx) {
+            return;
+        }
+        assert!(
+            std::time::Instant::now() < deadline,
+            "recording did not retire"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
+}
+
+#[cfg(feature = "recording-fixtures")]
+#[gpui::test]
+fn direct_window_removal_with_retained_entity_retires_held_start_and_finalize(
+    cx: &mut TestAppContext,
+) {
+    use bello_platform::recording::{
+        RecordingError,
+        fixture::{self, Case},
+    };
+    let _serial = fixtures::SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    for case in [Case::DelayedStart, Case::DelayedFinalize] {
+        let window = cx.add_window(RecordingHost::new);
+        let retained = window.root(cx).unwrap();
+        let control = window
+            .update(cx, |host, window, cx| {
+                host.fixture = Some(case);
+                host.start(window, cx);
+                host.controller.control_for_test().unwrap()
+            })
+            .unwrap();
+        if case == Case::DelayedFinalize {
+            advance_until(cx, |cx| {
+                retained.read_with(cx, |host, _| {
+                    host.controller.session.phase() == Phase::Recording
+                })
+            });
+            window
+                .update(cx, |host, _, _| host.controller.stop())
+                .unwrap();
+            // The finite fixture holds finalization for five seconds after Stop.
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        // Deliberately bypass on_window_should_close and retain the entity.
+        window
+            .update(cx, |_, window, _| window.remove_window())
+            .unwrap();
+        cx.run_until_parked();
+        retained.read_with(cx, |host, _| {
+            assert_eq!(host.controller.session.phase(), Phase::Closed);
+            assert!(host.controller.session.busy());
+            assert!(host.review.is_none());
+        });
+        assert!(!control.is_drained());
+        assert!(matches!(
+            fixture::start_injected(Case::Standard),
+            Err(RecordingError::Busy)
+        ));
+        // Actual native-owner cleanup completes without access to the old window.
+        advance_until(cx, |cx| {
+            control.is_drained()
+                && retained.read_with(cx, |host, _| !host.controller.session.busy())
+        });
+        retained.read_with(cx, |host, _| {
+            assert_eq!(host.controller.session.phase(), Phase::Closed);
+            assert!(
+                host.review.is_none(),
+                "late terminal events cannot mount review"
+            );
+        });
+        let movie = fixtures::movie(Case::Standard);
+        assert!(
+            movie.0.verify().is_ok(),
+            "global admission must be available after physical cleanup"
+        );
+        drop(retained);
+    }
+}
+
+#[cfg(feature = "recording-fixtures")]
+#[gpui::test]
+fn app_shutdown_retires_recording_without_window_polling_or_entity_release(
+    cx: &mut TestAppContext,
+) {
+    use bello_platform::recording::{
+        RecordingError,
+        fixture::{self, Case},
+    };
+    let _serial = fixtures::SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let window = cx.add_window(RecordingHost::new);
+    let retained = window.root(cx).unwrap();
+    let control = window
+        .update(cx, |host, window, cx| {
+            host.fixture = Some(Case::DelayedStart);
+            host.start(window, cx);
+            host.controller.control_for_test().unwrap()
+        })
+        .unwrap();
+    cx.quit();
+    retained.read_with(cx, |host, _| {
+        assert_eq!(host.controller.session.phase(), Phase::Closed)
+    });
+    assert!(!control.is_drained());
+    assert!(matches!(
+        fixture::start_injected(Case::Standard),
+        Err(RecordingError::Busy)
+    ));
+    let deadline = std::time::Instant::now() + Duration::from_secs(10);
+    // No GPUI timer/task or Entity release is driven during this wait.
+    while !control.is_drained() {
+        assert!(
+            std::time::Instant::now() < deadline,
+            "shutdown left native owner waiting for UI"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    assert!(retained.read_with(cx, |host, _| host.review.is_none()));
+    let movie = fixtures::movie(Case::Standard);
+    assert!(movie.0.verify().is_ok());
+    retained.update(cx, |host, _| {
+        assert!(host.controller.poll().is_none());
+        assert!(!host.controller.session.busy());
+        assert_eq!(host.controller.session.phase(), Phase::Closed);
+    });
+}

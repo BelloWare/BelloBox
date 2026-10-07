@@ -1,0 +1,153 @@
+{
+  "all_passed": true,
+  "controls": 24,
+  "expected_rejections": 21,
+  "expected_acceptances": 3,
+  "results": [
+    {
+      "name": "production-source-addition",
+      "expected": "reject",
+      "passed": true,
+      "observed": "after-source-inventory"
+    },
+    {
+      "name": "support-test-source-addition",
+      "expected": "reject",
+      "passed": true,
+      "observed": "after-source-inventory"
+    },
+    {
+      "name": "unchanged-source-addition",
+      "expected": "reject",
+      "passed": true,
+      "observed": "after-source-inventory"
+    },
+    {
+      "name": "new-rust-path-not-ledgered",
+      "expected": "reject",
+      "passed": true,
+      "observed": "after-source-inventory"
+    },
+    {
+      "name": "deleted-source-path",
+      "expected": "reject",
+      "passed": true,
+      "observed": "after-source-inventory"
+    },
+    {
+      "name": "changed-before-source",
+      "expected": "reject",
+      "passed": true,
+      "observed": "before-source-inventory"
+    },
+    {
+      "name": "production-total-tampering",
+      "expected": "reject",
+      "passed": true,
+      "observed": "totals-and-result-counts"
+    },
+    {
+      "name": "support-total-tampering",
+      "expected": "reject",
+      "passed": true,
+      "observed": "totals-and-result-counts"
+    },
+    {
+      "name": "benchmark-total-tampering",
+      "expected": "reject",
+      "passed": true,
+      "observed": "totals-and-result-counts"
+    },
+    {
+      "name": "ledger-support-range-removal",
+      "expected": "reject",
+      "passed": true,
+      "observed": "per-file-and-per-span-ledger"
+    },
+    {
+      "name": "unchanged-span-reclassification",
+      "expected": "reject",
+      "passed": true,
+      "observed": "per-file-and-per-span-ledger"
+    },
+    {
+      "name": "classification-review-range-tampering",
+      "expected": "reject",
+      "passed": true,
+      "observed": "reviewed-semantic-range-seal"
+    },
+    {
+      "name": "duplicate-harness-in-production-scope",
+      "expected": "reject",
+      "passed": true,
+      "observed": "after-source-inventory"
+    },
+    {
+      "name": "archived-rs-txt-excluded",
+      "expected": "accept",
+      "passed": true,
+      "observed": "verified"
+    },
+    {
+      "name": "external-focused-copy-excluded",
+      "expected": "accept",
+      "passed": true,
+      "observed": "verified"
+    },
+    {
+      "name": "build-artifact-rust-excluded",
+      "expected": "accept",
+      "passed": true,
+      "observed": "verified"
+    },
+    {
+      "name": "comment-only-change-detected",
+      "expected": "reject",
+      "passed": true,
+      "observed": "after-source-inventory"
+    },
+    {
+      "name": "blank-only-source-drift-detected",
+      "expected": "reject",
+      "passed": true,
+      "observed": "after-source-inventory"
+    },
+    {
+      "name": "baseline-commit-tampering",
+      "expected": "reject",
+      "passed": true,
+      "observed": "fixed-baseline"
+    },
+    {
+      "name": "baseline-count-tampering",
+      "expected": "reject",
+      "passed": true,
+      "observed": "fixed-baseline"
+    },
+    {
+      "name": "frozen-build-manifest-tampering",
+      "expected": "reject",
+      "passed": true,
+      "observed": "('sealed-input', 'build-provenance/source-inputs.json')"
+    },
+    {
+      "name": "retroactive-181-input-claim",
+      "expected": "reject",
+      "passed": true,
+      "observed": "('sealed-input', 'build-provenance/later-include-input-audit.json')"
+    },
+    {
+      "name": "source-archive-tampering",
+      "expected": "reject",
+      "passed": true,
+      "observed": "('sealed-input', 'build-provenance/source-snapshot.tar.gz')"
+    },
+    {
+      "name": "prior-ledger-rewrite",
+      "expected": "reject",
+      "passed": true,
+      "observed": "('sealed-input', 'prior-ledgers/rust/docs/validation/ai-ocr-2026-10-07/loc-review.json')"
+    }
+  ],
+  "restored_baseline_verifies": true
+}

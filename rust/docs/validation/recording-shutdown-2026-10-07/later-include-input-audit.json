@@ -1,0 +1,26 @@
+{
+  "scope": "Later literal include macro provenance audit. These two extra inputs were not in the original 179-input before/after manifest. The prior record is preserved unchanged; this is not a retroactive 181-input build claim.",
+  "audited_at": "2026-10-07T19:04:24.404569+00:00",
+  "original_production_manifest_sha256": "56d04a62fdbc7414f975f4a7db1929969decc64a4d58f1e9131399fd2b75467f",
+  "original_input_count": 179,
+  "later_audited_input_count": 181,
+  "frozen_binary_path": "/workspace/scratch/8b6fda578834/build-environment/recording-shutdown-qa/bellobox-bdfc718a20ad84be",
+  "frozen_binary_sha256_verified": "bdfc718a20ad84be9f59dc52b459ef0f02c275fa0525c2f6b82dd60ad1d28a54",
+  "additional_inputs": [
+    {
+      "path": "project.yml",
+      "sha256": "36d05945cb97b1f679a00e64ac6bfd9164356135ee89a0371cc50795b47fe901",
+      "matches_tracked_baseline": "0041012edc718a53f9f7bdf7e9889507d2a9817f",
+      "exact_bytes_found_in_frozen_binary": true
+    },
+    {
+      "path": "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png",
+      "sha256": "6805511e9975725ff9fb436d6824b9cda107c13e087ab9ba78b3832d25535a3f",
+      "matches_tracked_baseline": "0041012edc718a53f9f7bdf7e9889507d2a9817f",
+      "exact_bytes_found_in_frozen_binary": true
+    }
+  ],
+  "production_source_edits": false,
+  "additional_build_required": false,
+  "reason": "The exact frozen executable remains unchanged, and both additional inputs match its immutable tracked baseline. Existing GUI observations remain attributable to that executable."
+}

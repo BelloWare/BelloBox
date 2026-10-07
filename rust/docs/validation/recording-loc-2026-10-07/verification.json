@@ -1,0 +1,38 @@
+{
+  "verified": true,
+  "baseline_commit": "1f5874ce741b8de21fa09c747a5bada7488e2982",
+  "baseline_tree": "f797c0e9c7956ef842a4bb6a4dc769bb932ee897",
+  "before_rust_files": 148,
+  "after_rust_files": 163,
+  "changed_files": 35,
+  "unchanged_files": 128,
+  "physical_before": 78546,
+  "physical_after": 83881,
+  "baseline_counts": {
+    "production": 50053,
+    "support": 28388,
+    "benchmark": 105
+  },
+  "totals": {
+    "added_production": 2696,
+    "added_support": 2841,
+    "removed_production": 152,
+    "removed_support": 50,
+    "support_to_production": 0,
+    "production_to_support": 4,
+    "unchanged_production": 12484,
+    "unchanged_support": 3431,
+    "production_delta": 2540,
+    "support_delta": 2795
+  },
+  "result_counts": {
+    "production": 52593,
+    "support": 31183,
+    "benchmark": 105
+  },
+  "frozen_inputs_verified": 179,
+  "live_source_verified": true,
+  "binary_verified": true,
+  "shared_workbench_counted_once": true,
+  "archived_and_external_harness_copies_excluded": true
+}

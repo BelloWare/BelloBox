@@ -99,8 +99,8 @@ allocations, PNG/resize transients and opaque codec/renderer memory are addition
 ## Last-sample and publication boundary
 
 `SequentialFrameSource::finish` runs exactly once after successful encoding,
-staged sync and readback, immediately before core publication, outside the export
-control's publication mutex. `NativeFrames` checks decoder status, the original
+staged sync and readback, immediately before the atomic core publication claim.
+Cancellation/status never hold a filesystem publication mutex. `NativeFrames` checks decoder status, the original
 selection and cancellation on the same native owner thread. Reading is a valid
 terminal sampling state for an intentional trim; Failed, Cancelled and Unknown
 are errors. Native cancellation is serialized after the last sample read, never
@@ -108,8 +108,12 @@ concurrent with copyNextSampleBuffer. Repeated successful final checks do not
 mistake the adapter's own intentional retirement for a decoder failure.
 
 Failure, late cancellation or detected source mutation removes staging and keeps
-previous output. Core cancellation still linearizes against final publication;
-an already-published result is reported truthfully rather than called cancelled.
+previous output when cancellation wins before publication is claimed. One atomic
+transition chooses cancellation or publication ownership; `PublicationClaimed`
+means publication has begun, not that it succeeded. A later filesystem failure
+remains a failure. An already-published result is reported truthfully. Physical
+worker/terminal-payload retirement is tracked separately by the app's media quit
+coordinator; publication status is never used as a drain signal.
 
 ## Generated-media boundary and remaining rendering difference
 

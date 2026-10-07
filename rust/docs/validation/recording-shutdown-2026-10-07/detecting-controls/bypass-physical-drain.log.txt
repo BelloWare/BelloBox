@@ -1,0 +1,29 @@
+   Compiling recording-shutdown-focused v0.1.0 (/workspace/shared/recording-shutdown-focused)
+    Finished `test` profile [unoptimized] target(s) in 23.20s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (BelloAgent/rust/target/debug/deps/recording_shutdown_focused-7640b887f98cad73)
+
+running 1 test
+test shutdown::tests::last_window_close_waits_without_timeout_with_retained_entity_and_held_worker ... FAILED
+
+failures:
+
+---- shutdown::tests::last_window_close_waits_without_timeout_with_retained_entity_and_held_worker stdout ----
+
+thread 'shutdown::tests::last_window_close_waits_without_timeout_with_retained_entity_and_held_worker' (215) panicked at src/shutdown/tests.rs:103:5:
+assertion `left == right` failed
+  left: 1
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread '<unnamed>' (216) panicked at src/shutdown/tests.rs:87:21:
+called `Result::unwrap()` on an `Err` value: RecvError
+
+
+failures:
+    shutdown::tests::last_window_close_waits_without_timeout_with_retained_entity_and_held_worker
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 79 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--bin recording-shutdown-focused`

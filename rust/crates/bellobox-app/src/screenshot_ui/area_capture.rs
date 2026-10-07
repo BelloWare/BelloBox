@@ -66,7 +66,7 @@ pub(super) fn cancel_pending_launch(cx: &mut App) {
             // Defer logical retirement to avoid reentering a currently borrowed
             // selector. Its global cancellation flag already rejects publication.
             cx.defer(move |cx| {
-                let _ = previous.update(cx, |view, window, _| view.close(window));
+                let _ = previous.update(cx, |view, window, cx| view.close(window, cx));
             });
         }
     }
@@ -351,11 +351,11 @@ impl FrozenSelector {
         let focus = cx.focus_handle();
         window.focus(&focus);
         let weak = cx.entity().downgrade();
-        window.on_window_should_close(cx, move |_, cx| {
+        window.on_window_should_close(cx, move |window, cx| {
             let _ = weak.update(cx, |this: &mut FrozenSelector, _| this.cancel_work());
-            true
+            crate::shutdown::allow_close(window, cx)
         });
-        let activation = cx.observe_window_activation(window, |this: &mut Self, window, _| {
+        let activation = cx.observe_window_activation(window, |this: &mut Self, window, cx| {
             if window.is_window_active() {
                 this.has_been_active = true;
             } else if this.has_been_active && !this.transferring {
@@ -363,7 +363,7 @@ impl FrozenSelector {
                 // cancels that pending handoff too, rather than activating it later.
                 this.selection.focus_lost();
                 this.cancel_work();
-                window.remove_window();
+                crate::shutdown::close_window(window, cx);
             }
         });
         Self {
@@ -397,9 +397,9 @@ impl FrozenSelector {
         self.selection.cancel();
         self.preparing_handoff = false;
     }
-    fn close(&mut self, window: &mut Window) {
+    fn close(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.cancel_work();
-        window.remove_window();
+        crate::shutdown::close_window(window, cx);
     }
     fn launch_is_current(&self, cx: &App) -> bool {
         !self.launch_cancellation.load(Ordering::Acquire)
@@ -411,7 +411,7 @@ impl FrozenSelector {
         if self.launch_is_current(cx) {
             true
         } else {
-            self.close(window);
+            self.close(window, cx);
             false
         }
     }
@@ -525,18 +525,18 @@ impl FrozenSelector {
                     || !requester_is_active(window)
                     || !this.selection.accepts(selection_token)
                 {
-                    this.close(window);
+                    this.close(window, cx);
                     return;
                 }
                 let session = match session {
                     Ok(Some(session)) => session,
                     Ok(None) => {
-                        this.close(window);
+                        this.close(window, cx);
                         return;
                     }
                     Err(error) => {
-                        this.close(window);
                         open_error(error, cx);
+                        this.close(window, cx);
                         return;
                     }
                 };
@@ -555,7 +555,7 @@ impl FrozenSelector {
                     },
                     cx,
                 );
-                window.remove_window();
+                crate::shutdown::close_window(window, cx);
             });
         })
         .detach();
@@ -695,9 +695,9 @@ impl Render for FrozenSelector {
             .text_color(p.primary)
             .font_family(theme::ui_font())
             .track_focus(&self.focus)
-            .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, _| {
+            .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
                 if event.keystroke.key == "escape" {
-                    this.close(window);
+                    this.close(window, cx);
                 }
             }))
             .on_mouse_move(cx.listener(Self::mouse_move))
@@ -739,7 +739,7 @@ impl Render for FrozenSelector {
                     )
                     .child(
                         button("area-fixture-cancel", "Cancel", p)
-                            .on_click(cx.listener(|this, _, window, _| this.close(window))),
+                            .on_click(cx.listener(|this, _, window, cx| this.close(window, cx))),
                     ),
             )
     }
@@ -760,16 +760,16 @@ impl Render for PreparationError {
             .bg(p.bg)
             .text_color(p.primary)
             .track_focus(&self.focus)
-            .on_key_down(cx.listener(|_, event: &KeyDownEvent, window, _| {
+            .on_key_down(cx.listener(|_, event: &KeyDownEvent, window, cx| {
                 if event.keystroke.key == "escape" {
-                    window.remove_window();
+                    crate::shutdown::close_window(window, cx);
                 }
             }))
             .child("Could not prepare the synthetic capture fixture.")
             .child(self.text.clone())
             .child(
                 button("area-fixture-error-close", "Close", p)
-                    .on_click(|_, window, _| window.remove_window()),
+                    .on_click(|_, window, cx| crate::shutdown::close_window(window, cx)),
             )
     }
 }
@@ -781,6 +781,7 @@ fn open_error(error: String, cx: &mut App) {
             ..Default::default()
         },
         move |window, cx| {
+            crate::shutdown::guard_window(window, cx);
             cx.new(|cx| {
                 let focus = cx.focus_handle();
                 window.focus(&focus);

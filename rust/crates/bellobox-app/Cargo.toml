@@ -11,6 +11,7 @@ path = "src/main.rs"
 default = ["developer-tools"]
 developer-tools = ["bellobox-core/developer-tools"]
 movie-fixtures = ["bello-platform/movie-fixtures"]
+recording-fixtures = ["bello-platform/recording-fixtures"]
 
 [dependencies]
 gpui.workspace = true

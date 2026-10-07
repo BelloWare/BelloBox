@@ -13,6 +13,7 @@ pub(super) struct Preview {
     pub playing: bool,
     pub loading: bool,
     task: Option<Task<()>>,
+    cancel: Option<Arc<std::sync::atomic::AtomicBool>>,
     generation: u64,
     reader: Option<GifPreview>,
     result: Option<GifExportResult>,
@@ -28,6 +29,7 @@ impl Preview {
             playing: false,
             loading: false,
             task: None,
+            cancel: None,
             generation: 0,
             reader: None,
             result: None,
@@ -39,6 +41,9 @@ impl Preview {
     }
     pub fn reset(&mut self, cx: &mut App) {
         self.generation += 1;
+        if let Some(cancel) = self.cancel.take() {
+            cancel.store(true, Ordering::Release);
+        }
         self.task = None;
         self.reader = None;
         self.result = None;
@@ -87,13 +92,12 @@ impl Converter {
         }
     }
     fn step_preview(&mut self, cx: &mut Context<Self>) {
-        if self.preview.loading {
+        if self.preview.loading || self.closed || crate::shutdown::requested(cx) {
             return;
         }
         let Some(result) = self.preview.result.clone() else {
             return;
         };
-        let mut reader = self.preview.reader.take();
         let generation = self.preview.generation;
         let model_generation = self.model.generation;
         let loops = self.preview.loops && self.preview.playing;
@@ -102,37 +106,55 @@ impl Converter {
         let rewind = self.preview.ended;
         self.preview.ended = false;
         self.preview.loading = true;
+        let cancel = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let signal = cancel.clone();
+        self.preview.cancel = Some(cancel.clone());
         let svg_renderer = cx.svg_renderer();
-        self.preview.task = Some(cx.spawn(async move |this, cx| {
-            let response = cx
-                .background_executor()
-                .spawn(async move {
-                    let mut reader = match reader.take() {
-                        Some(reader) => reader,
-                        None => model::open_preview(&result)?,
-                    };
-                    if rewind {
-                        reader = reader.rewind()?;
-                    }
-                    let mut frame = reader.next_frame()?;
-                    if frame.is_none() && loops {
-                        reader = reader.rewind()?;
-                        frame = reader.next_frame()?;
-                    }
-                    let frame = frame
-                        .map(|frame| {
-                            let image = Image::from_bytes(ImageFormat::Png, frame.png)
-                                .to_image_data(svg_renderer)
-                                .map_err(|error| GifError::Source(error.to_string()))?;
-                            Ok::<_, GifError>(PreparedFrame {
-                                image,
-                                delay_centiseconds: frame.delay_centiseconds,
-                            })
-                        })
-                        .transpose()?;
-                    Ok::<_, GifError>((reader, frame))
+        let Some(permit) =
+            crate::shutdown::admit(cx, move || signal.store(true, Ordering::Release))
+        else {
+            self.preview.reset(cx);
+            return;
+        };
+        let mut reader = self.preview.reader.take();
+        let mut task = permit.spawn(cx, move || {
+            let check = || {
+                if cancel.load(Ordering::Acquire) {
+                    Err(GifError::Cancelled)
+                } else {
+                    Ok(())
+                }
+            };
+            check()?;
+            let mut reader = match reader.take() {
+                Some(reader) => reader,
+                None => model::open_preview(&result)?,
+            };
+            if rewind {
+                reader = reader.rewind()?;
+            }
+            let mut frame = reader.next_frame()?;
+            if frame.is_none() && loops {
+                reader = reader.rewind()?;
+                frame = reader.next_frame()?;
+            }
+            check()?;
+            let frame = frame
+                .map(|frame| {
+                    let image = Image::from_bytes(ImageFormat::Png, frame.png)
+                        .to_image_data(svg_renderer)
+                        .map_err(|error| GifError::Source(error.to_string()))?;
+                    Ok::<_, GifError>(PreparedFrame {
+                        image,
+                        delay_centiseconds: frame.delay_centiseconds,
+                    })
                 })
-                .await;
+                .transpose()?;
+            check()?;
+            Ok::<_, GifError>((reader, frame))
+        });
+        self.preview.task = Some(cx.spawn(async move |this, cx| {
+            task.ready().await;
             // At most one decoded/PNG frame waits here. Late decoding presents
             // as soon as possible; it never causes catch-up bursts or a queue.
             if let Some(deadline) = deadline {
@@ -141,13 +163,24 @@ impl Converter {
                     cx.background_executor().timer(remaining).await;
                 }
             }
+            task.ready().await;
             let _ = this.update(cx, |this, cx| {
                 if this.preview.generation != generation
                     || this.model.generation != model_generation
+                    || this.closed
+                    || crate::shutdown::requested(cx)
                 {
                     return;
                 }
+                let response = match task.take() {
+                    Some(response) => response,
+                    None if task.aborted() => Err(GifError::Source(
+                        "Preview worker stopped unexpectedly. Try again.".into(),
+                    )),
+                    None => return,
+                };
                 this.preview.loading = false;
+                this.preview.cancel = None;
                 match response {
                     Ok((reader, frame)) => {
                         this.preview.reader = Some(reader);

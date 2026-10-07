@@ -35,6 +35,21 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Core and integration tests
         run: cargo test --locked --workspace
+      - name: Test recording feature platform lifecycle with generated media
+        # Sealed supplied MOV/generated pixels only. Ordinary capture stays closed.
+        env:
+          CARGO_BUILD_JOBS: '1'
+        run: |
+          cargo test --locked -p bello-platform --features recording-fixtures recording:: -- --test-threads=1 --show-output
+      - name: Run full App suite with recording and shutdown fixtures
+        # Full original App tests, including the desktop-router test omitted locally.
+        env:
+          CARGO_BUILD_JOBS: '1'
+        run: cargo test --locked -p bellobox-app --features recording-fixtures -- --test-threads=1 --show-output
+      - name: Lint recording fixture paths
+        env:
+          CARGO_BUILD_JOBS: '1'
+        run: cargo clippy --locked -p bellobox-app -p bello-platform --all-targets --features recording-fixtures --no-deps -- -D warnings
       - name: Lints
         run: cargo clippy --locked --workspace --all-targets -- -D warnings
       - name: Build native applications

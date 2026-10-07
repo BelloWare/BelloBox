@@ -1,0 +1,22 @@
+{
+  "binary_sha256": "bdfc718a20ad84be9f59dc52b459ef0f02c275fa0525c2f6b82dd60ad1d28a54",
+  "method": "Search exact complete file bytes in immutable executable; compare file bytes with staging HEAD Git blob. This is a post-build proof, not a retroactive pre-build manifest.",
+  "files": [
+    {
+      "path": "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png",
+      "bytes": 64779,
+      "sha256": "6805511e9975725ff9fb436d6824b9cda107c13e087ab9ba78b3832d25535a3f",
+      "matches_staging_head": true,
+      "binary_exact_byte_offset": 11140438,
+      "mtime_ns": 1791380233321860645
+    },
+    {
+      "path": "project.yml",
+      "bytes": 3335,
+      "sha256": "36d05945cb97b1f679a00e64ac6bfd9164356135ee89a0371cc50795b47fe901",
+      "matches_staging_head": true,
+      "binary_exact_byte_offset": 11282297,
+      "mtime_ns": 1791380233335318906
+    }
+  ]
+}

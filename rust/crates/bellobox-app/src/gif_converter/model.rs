@@ -1,5 +1,6 @@
 //! Source-shaped converter lifecycle. Worker results are generation fenced; an
 //! admitted export remains busy until its worker settles, including cancellation.
+use super::recording::OwnedRecording;
 use bello_platform::movie::{
     MovieAsset, MovieCancellation, MovieInfo, MovieReadRange, MovieReader, MovieSeek, SelectedMovie,
 };
@@ -18,6 +19,7 @@ use std::{
 #[derive(Clone, Debug, PartialEq)]
 pub(super) enum Source {
     Movie(PathBuf),
+    Recording(OwnedRecording),
     #[cfg(any(test, debug_assertions))]
     Synthetic,
     #[cfg(all(test, feature = "movie-fixtures", target_os = "macos"))]
@@ -26,6 +28,13 @@ pub(super) enum Source {
 impl Source {
     pub fn name(&self) -> String {
         match self {
+            Self::Recording(recording) => recording
+                .0
+                .path()
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into_owned(),
             Self::Movie(path) => path
                 .file_name()
                 .unwrap_or_default()
@@ -40,6 +49,13 @@ impl Source {
     pub fn inspect(&self, cancellation: MovieCancellation) -> Result<Inspection, String> {
         cancellation.check().map_err(|e| e.to_string())?;
         match self {
+            Self::Recording(recording) => {
+                recording.0.verify().map_err(|e| e.to_string())?;
+                Ok(Inspection {
+                    info: info(recording.0.info()),
+                    selected: SelectedSource::Recording(recording.clone()),
+                })
+            }
             Self::Movie(path) => inspect_asset(MovieAsset::open(path, cancellation)),
             #[cfg(any(test, debug_assertions))]
             Self::Synthetic => {
@@ -73,6 +89,7 @@ pub(super) struct Inspection {
 #[derive(Clone, Debug)]
 pub(super) enum SelectedSource {
     Movie(SelectedMovie),
+    Recording(OwnedRecording),
     #[cfg(any(test, debug_assertions))]
     Synthetic(Arc<()>),
 }
@@ -98,6 +115,7 @@ impl SelectedSource {
     ) -> Result<SourceFrame, String> {
         let seek = MovieSeek::new(seconds).map_err(|e| e.to_string())?;
         let (actual, width, height, rgba) = match self {
+            Self::Recording(recording) => recording.seek(seconds, cancellation.clone())?,
             Self::Movie(selected) => {
                 MovieAsset::open_selected(selected.clone(), cancellation.clone())
                     .and_then(|asset| asset.seek(seek))
@@ -297,7 +315,13 @@ impl Model {
                 Ok(gif::CancelOutcome::AlreadyPublished) => {
                     self.status = "GIF was already saved; finishing…".into()
                 }
-                Ok(_) => self.status = "Cancelling conversion…".into(),
+                Ok(gif::CancelOutcome::PublicationClaimed) => {
+                    self.status = "GIF publication already started; waiting for its result…".into()
+                }
+                Ok(gif::CancelOutcome::AlreadyFailed) => {
+                    self.status = "GIF export failed; waiting for its result…".into()
+                }
+                Ok(gif::CancelOutcome::Cancelled) => self.status = "Cancelling conversion…".into(),
                 Err(error) => {
                     self.status = error.to_string();
                     self.error = true;
@@ -324,30 +348,37 @@ impl Drop for Model {
 impl Work {
     pub fn run(self) -> Result<GifExportResult, GifError> {
         self.control.check_active()?;
-        let progress = |written, _| {
-            self.progress.store(written, Ordering::Release);
-        };
-        match self.source {
-            SelectedSource::Movie(selected) => {
-                let path = selected.path().to_owned();
-                let asset =
-                    MovieAsset::open_selected(selected, self.movie_cancel).map_err(movie_error)?;
-                let range = MovieReadRange::new(
-                    self.plan.start(),
-                    self.plan.end(),
-                    self.plan.frame_delay(),
-                )
-                .map_err(movie_error)?;
-                let mut reader = NativeFrames(asset.reader(range).map_err(movie_error)?);
-                gif::export_gif(
-                    &mut reader,
-                    &self.plan,
-                    Some(&path),
-                    &self.destination,
-                    self.replace,
-                    &self.control,
-                    progress,
-                )
+        let source = self.source.clone();
+        match source {
+            SelectedSource::Movie(selected) => self.run_movie(selected),
+            SelectedSource::Recording(recording) => {
+                recording
+                    .0
+                    .verify()
+                    .map_err(|e| GifError::Source(e.to_string()))?;
+                #[cfg(feature = "recording-fixtures")]
+                if let Some(recipe) = recording.0.known_frames() {
+                    if !recipe.is_bound_to(&recording.0) {
+                        return Err(GifError::Source(
+                            "Recording fixture identity changed.".into(),
+                        ));
+                    }
+                    super::recording::fixture_hold_export(&self.movie_cancel)?;
+                    let mut frames =
+                        super::recording::KnownFramesSource::new(recipe, self.movie_cancel.clone());
+                    return gif::export_gif(
+                        &mut frames,
+                        &self.plan,
+                        Some(recording.0.path()),
+                        &self.destination,
+                        self.replace,
+                        &self.control,
+                        |written, _| {
+                            self.progress.store(written, Ordering::Release);
+                        },
+                    );
+                }
+                self.run_movie(recording.0.selected_movie())
             }
             #[cfg(any(test, debug_assertions))]
             SelectedSource::Synthetic(_owner) => {
@@ -359,12 +390,34 @@ impl Work {
                     &self.destination,
                     self.replace,
                     &self.control,
-                    progress,
+                    |written, _| {
+                        self.progress.store(written, Ordering::Release);
+                    },
                 )
             }
         }
     }
+    fn run_movie(self, selected: SelectedMovie) -> Result<GifExportResult, GifError> {
+        let path = selected.path().to_owned();
+        let asset = MovieAsset::open_selected(selected, self.movie_cancel).map_err(movie_error)?;
+        let range =
+            MovieReadRange::new(self.plan.start(), self.plan.end(), self.plan.frame_delay())
+                .map_err(movie_error)?;
+        let mut reader = NativeFrames(asset.reader(range).map_err(movie_error)?);
+        gif::export_gif(
+            &mut reader,
+            &self.plan,
+            Some(&path),
+            &self.destination,
+            self.replace,
+            &self.control,
+            |written, _| {
+                self.progress.store(written, Ordering::Release);
+            },
+        )
+    }
 }
+
 fn movie_error(error: bello_platform::movie::MovieError) -> GifError {
     if error == bello_platform::movie::MovieError::Cancelled {
         GifError::Cancelled

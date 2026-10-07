@@ -244,7 +244,7 @@ pub fn open(cx: &mut App) {
                 window.on_window_should_close(cx, move |_window, cx| {
                     let _ = weak.update(cx, |this: &mut CaptureChooser, _| this.jobs.cancel());
                     main_area::requester_closed(_window.window_handle(), cx);
-                    true
+                    crate::shutdown::allow_close(_window, cx)
                 });
                 {
                     let requester = window.window_handle();
@@ -427,7 +427,7 @@ impl CaptureChooser {
                         }
                         #[cfg(not(target_os = "macos"))]
                         open_session(session, "Screen capture", cx);
-                        window.remove_window();
+                        crate::shutdown::close_window(window, cx);
                     }
                     Err(e) => {
                         this.status = e;
@@ -474,7 +474,7 @@ impl CaptureChooser {
                 match result {
                     Ok(session) => {
                         open_session(session, "Clipboard image", cx);
-                        window.remove_window();
+                        crate::shutdown::close_window(window, cx);
                     }
                     Err(e) => {
                         this.status = e;
@@ -517,7 +517,7 @@ impl Render for CaptureChooser {
             },
         );
         div().size_full().p(px(18.)).flex().flex_col().gap(px(16.)).bg(p.bg).text_color(p.primary).font_family(theme::ui_font()).track_focus(&self.focus)
-            .on_key_down(cx.listener(|this,e:&gpui::KeyDownEvent,window,_cx|{if e.keystroke.key=="escape"{this.jobs.cancel(); main_area::requester_closed(window.window_handle(), _cx); window.remove_window();}}))
+            .on_key_down(cx.listener(|this,e:&gpui::KeyDownEvent,window,_cx|{if e.keystroke.key=="escape"{this.jobs.cancel(); main_area::requester_closed(window.window_handle(), _cx); crate::shutdown::close_window(window, _cx);}}))
             .child(header("Capture and annotate".into(),p))
             .child(div().flex().flex_col().gap(px(10.)).child(div().flex().gap(px(10.)).child(area).child(window_capture)).child(div().flex().gap(px(10.)).child(button("screen",if self.busy{"Capturing…"}else{"Screen"},p).flex_1().on_click(cx.listener(Self::capture_click))).child(button("scroll","Scrolling · unavailable",p).flex_1().opacity(0.5))))
             .child(div().text_size(px(11.)).text_color(p.secondary).child("Screen captures the full virtual screen on Linux and the main display on macOS. Area, window and scrolling selection are not available yet."))
@@ -820,26 +820,28 @@ impl ScreenshotEditor {
         let weak = cx.entity().downgrade();
         if view.inline.is_none() {
             window.on_window_should_close(cx, move |window, cx| {
-                weak.update(cx, |this, cx| {
-                    this.ai_ocr.retire(cx);
-                    if this.export_busy {
-                        return false;
-                    }
-                    if this.text_origin.is_some() {
-                        this.cancel_active_text(window, cx);
-                        return false;
-                    }
-                    this.finish_label_drag(cx);
-                    if this.session.has_edits() {
-                        this.show_discard = true;
-                        cx.notify();
-                        false
-                    } else {
-                        this.cancel_window_refresh();
-                        true
-                    }
-                })
-                .unwrap_or(true)
+                let allowed = weak
+                    .update(cx, |this, cx| {
+                        this.ai_ocr.retire(cx);
+                        if this.export_busy {
+                            return false;
+                        }
+                        if this.text_origin.is_some() {
+                            this.cancel_active_text(window, cx);
+                            return false;
+                        }
+                        this.finish_label_drag(cx);
+                        if this.session.has_edits() {
+                            this.show_discard = true;
+                            cx.notify();
+                            false
+                        } else {
+                            this.cancel_window_refresh();
+                            true
+                        }
+                    })
+                    .unwrap_or(true);
+                allowed && crate::shutdown::allow_close(window, cx)
             });
         }
         view.render_preview(cx);
@@ -1227,7 +1229,7 @@ impl ScreenshotEditor {
             cx.notify();
         } else {
             self.cancel_window_refresh();
-            window.remove_window();
+            crate::shutdown::close_window(window, cx);
         }
     }
     fn prepare_output_snapshot(
@@ -1289,7 +1291,7 @@ impl ScreenshotEditor {
                                 if this.inline.is_some() {
                                     this.cancel_inline_owner(cx);
                                 } else {
-                                    window.remove_window();
+                                    crate::shutdown::close_window(window, cx);
                                 }
                             }
                         }
@@ -2289,9 +2291,9 @@ impl Render for ScreenshotEditor {
                                     .child(
                                         button("discard", "Discard", p)
                                             .text_color(p.danger)
-                                            .on_click(cx.listener(|this, _, window, _| {
+                                            .on_click(cx.listener(|this, _, window, cx| {
                                                 this.cancel_window_refresh();
-                                                window.remove_window()
+                                                crate::shutdown::close_window(window, cx)
                                             })),
                                     ),
                             ),
@@ -2820,7 +2822,7 @@ impl CaptureChooser {
                 match result {
                     Ok(session) => {
                         open_session(session, "Local PNG fixture", cx);
-                        window.remove_window();
+                        crate::shutdown::close_window(window, cx);
                     }
                     Err(error) => {
                         this.status = error;

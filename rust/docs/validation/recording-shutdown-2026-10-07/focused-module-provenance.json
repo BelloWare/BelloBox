@@ -1,0 +1,154 @@
+{
+  "scope": "Focused-module evidence only; not the complete App or native process acceptance. Production whole-app GUI uses the independent frozen staging binary.",
+  "files": [
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter.rs",
+      "harness": "src/gif_converter.rs",
+      "sha256": "6b9b40ca6cbb5944a6d3c3b20b4e1173becf2a06a647a9d259a6a18e18842bc1",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/recording_ui.rs",
+      "harness": "src/recording_ui.rs",
+      "sha256": "c772fd3ae2cdee32185c0defce105ea59edb846269b60e13a01f0c26719509df",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/shutdown.rs",
+      "harness": "src/shutdown.rs",
+      "sha256": "4600a62a8d07ce56be21f77f7861f2d904bc2997bd515f4ca701bf99499fe2f3",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/image_disposal.rs",
+      "harness": "src/image_disposal.rs",
+      "sha256": "7943005ca34ca01b75bb60e920fb09ddf9c7735209f0b42bd3ba9f164a32bfc7",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/theme.rs",
+      "harness": "src/theme.rs",
+      "sha256": "ca71c7a15f1d159715b86753974998624f83d6e5e527ae01eb0dd43c6b6b0e02",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter/tests.rs",
+      "harness": "src/gif_converter/tests.rs",
+      "sha256": "2e02f7a9162aec7da3c34bf37d707e048ed8627c5eb981d8d46218a1f4c0cd31",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs",
+      "harness": "src/gif_converter/native_host_tests.rs",
+      "sha256": "642d000ad3cbf7526625e0c4f4b6bb3bcec60e6eaba4bcff1bdb294a0d78dd3a",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter/recording.rs",
+      "harness": "src/gif_converter/recording.rs",
+      "sha256": "1c8d61ec64c5287236d46aef7fe6d9f27b45b0a65ac9b49d3acd7ac4725096e7",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter/source_preview.rs",
+      "harness": "src/gif_converter/source_preview.rs",
+      "sha256": "c76d8129cc54925a53e80fddfa153346f1d1b325c4dd2c56e15531025463bb21",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter/recording_tests.rs",
+      "harness": "src/gif_converter/recording_tests.rs",
+      "sha256": "2832651b65766516acbe1c0ed8d2239ee64ae339d093c8b338d6943680c8b2e5",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter/disposal_tests.rs",
+      "harness": "src/gif_converter/disposal_tests.rs",
+      "sha256": "9c161b5b88708db59a05a6e2e9b5466a59a453318ac53a9dbe7f41da0baefeca",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter/worker.rs",
+      "harness": "src/gif_converter/worker.rs",
+      "sha256": "354665aee47fbde2b35b78c1811a69b2619d043d6750f8d7a2c15c9a8a53474a",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter/preview.rs",
+      "harness": "src/gif_converter/preview.rs",
+      "sha256": "0f19cf930dbfe101dec4c5f82e39a1e6a25da6655945257ba251ff9e84b1c938",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/gif_converter/model.rs",
+      "harness": "src/gif_converter/model.rs",
+      "sha256": "c590fc7458d60fd896a216a04f75e78d631c1a5f7c12949b09ef6a3ae5ad857a",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/recording_ui/tests.rs",
+      "harness": "src/recording_ui/tests.rs",
+      "sha256": "c9633719aaa88f5fe9098cc84d9cedac58740190846c4461b530c1b010513086",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/recording_ui/controller.rs",
+      "harness": "src/recording_ui/controller.rs",
+      "sha256": "de8726474bfb39187e3d9e6ff82563ad9ebc9a75737ac557e70ab01d49b76cd9",
+      "classification": "exact production/test/helper bytes"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/shutdown/tests.rs",
+      "harness": "src/shutdown/tests.rs",
+      "sha256": "7edfd51d5af21f93446bcfd842c4992e484fe43f31963ca3cc174d187b6d4459",
+      "classification": "real tests with one desktop-only test omitted",
+      "harness_sha256": "8935b6f8dfbec9ccb0679452648c8694d81cf1870a9411012fc9fc10180038db"
+    }
+  ],
+  "helper_ranges": [
+    {
+      "source": "rust/crates/bellobox-app/src/home.rs",
+      "source_sha256": "b9bf53be7dcc1e27930859aaf5cff07c78f75dc1bda8c781aec2b0d872b0ce48",
+      "start_byte": 2336,
+      "end_byte": 3531,
+      "slice_sha256": "fe0c247f6827042443561cf6f31acfc6dbacdd93b0b90dc325a2a9b1b23d80c4"
+    },
+    {
+      "source": "rust/crates/bellobox-app/src/home.rs",
+      "start_byte": 41994,
+      "end_byte": 82178,
+      "slice_sha256": "190c5e0c03487379e396deae2f18560b0ec2af5fe246b46ee21f572c383471bd"
+    }
+  ],
+  "omitted_real_test": "shutdown::tests::latched_quit_rejects_new_tool_and_launcher_windows",
+  "compile_differences": [
+    "New harness crate root/package name; only five exact production module trees are included.",
+    "Pure Home label/icon helper item ranges copied exactly to satisfy unchanged theme reexports. Home navigation/rendering omitted.",
+    "Unrelated desktop, screenshot/OCR, utility, launcher, settings and world-clock module tests are not compiled.",
+    "Crate-local unused/dead-code warnings allowed for intentionally unused extracted helpers only; normal App strict Clippy remains unchanged.",
+    "Linux debug/test compilation with original default developer-tools plus recording-fixtures; Apple/movie-fixtures conditional tests retain original cfg exclusion.",
+    "Original full App test inclusion and CI configuration are untouched."
+  ],
+  "cargo_manifest_sha256": "f644b1fec4152ec9b407c1cc2a4bf11deaab5b1d6b753825f0d8a74e1ef149df",
+  "original_lock_sha256": "99fbd169b067e3697f1c1f51c87e15e5e503ee7237ca9c3f333988f69844f965",
+  "harness_lock_sha256": "921318dbf519ee1dc9df18fc3f2626bd6dbf79e704f14a78086e431095efb616",
+  "registry_dependency_versions_and_checksums_match": true,
+  "metadata_note": "Initial unfiltered offline Cargo metadata requested an uncached Android-only package. Linux-filtered metadata is used; no dependency download or version change is authorized by this harness.",
+  "validation": {
+    "passed": 80,
+    "failed": 0,
+    "ignored": 0,
+    "test_elapsed_seconds": 30.92,
+    "compile_elapsed_seconds": 23.69,
+    "exit_code": 0,
+    "post_run_source_and_harness_hashes_verified": true,
+    "verified_at": "2026-10-07T19:00:38.337971+00:00",
+    "command": "cargo test --manifest-path /workspace/shared/recording-shutdown-focused/Cargo.toml --locked --offline --features recording-fixtures -- --test-threads=1"
+  },
+  "generated_files": {
+    "src/main.rs": "86d3b4da0871601e602c1ca566cbe38d620572097a5107066b77ee6648d8759f",
+    "src/home.rs": "76603b915bd36870c81d08a60d0da8c362a79fd641ac6acb94982580359cc5ae",
+    "Cargo.toml": "f644b1fec4152ec9b407c1cc2a4bf11deaab5b1d6b753825f0d8a74e1ef149df",
+    "Cargo.lock": "921318dbf519ee1dc9df18fc3f2626bd6dbf79e704f14a78086e431095efb616"
+  }
+}

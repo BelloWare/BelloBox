@@ -1,0 +1,68 @@
+{
+  "baseline_sha256": "4600a62a8d07ce56be21f77f7861f2d904bc2997bd515f4ca701bf99499fe2f3",
+  "restored_sha256": "4600a62a8d07ce56be21f77f7861f2d904bc2997bd515f4ca701bf99499fe2f3",
+  "controls": [
+    {
+      "label": "bypass-physical-drain",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "/workspace/shared/recording-shutdown-focused/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "recording-fixtures",
+        "shutdown::tests::last_window_close_waits_without_timeout_with_retained_entity_and_held_worker",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "exit_code": 101,
+      "detected": true,
+      "elapsed_seconds": 23.292974948883057,
+      "mutant_sha256": "90758cb3d19addf01f3021e0d6df505daa60132c9e5c6d7c73bdd183d92526da",
+      "expected_failure": "Quit called with held physical ticket"
+    },
+    {
+      "label": "bypass-final-window-veto",
+      "command": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "/workspace/shared/recording-shutdown-focused/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "recording-fixtures",
+        "shutdown::tests::last_window_close_waits_without_timeout_with_retained_entity_and_held_worker",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "exit_code": 101,
+      "detected": true,
+      "elapsed_seconds": 20.088020086288452,
+      "mutant_sha256": "8dcbce69644b3d94ca6a9f139d76ec31f494078cd6b6c485e05a846418fef97e",
+      "expected_failure": "Final native window removed while ticket remains"
+    }
+  ],
+  "production_stage_modified": false,
+  "restored_positive": {
+    "command": [
+      "cargo",
+      "test",
+      "--manifest-path",
+      "/workspace/shared/recording-shutdown-focused/Cargo.toml",
+      "--locked",
+      "--offline",
+      "--features",
+      "recording-fixtures",
+      "--",
+      "--test-threads=1"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 51.38992428779602,
+    "log": "restored-all-tests.log"
+  }
+}

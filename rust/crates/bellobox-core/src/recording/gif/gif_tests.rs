@@ -6,6 +6,7 @@ use std::{
     path::Path,
     sync::{Arc, Barrier, mpsc},
     thread,
+    time::Duration,
 };
 use tempfile::tempdir;
 
@@ -466,48 +467,153 @@ fn successful_publication_is_terminal_and_late_cancel_preserves_it() {
     ));
 }
 #[test]
-fn cancellation_and_publication_share_a_linearized_fence() {
+fn cancellation_during_held_publication_returns_claimed_without_waiting() {
     let control = ExportControl::default();
     let _job = control.begin().unwrap();
-    let entered = Arc::new(Barrier::new(2));
-    let release = Arc::new(Barrier::new(2));
+    let (entered, publishing) = mpsc::channel();
+    let (release, released) = mpsc::channel();
     let publisher = {
         let control = control.clone();
-        let entered = entered.clone();
-        let release = release.clone();
         thread::spawn(move || {
             control.publish(|| {
-                entered.wait();
-                release.wait();
+                entered.send(()).unwrap();
+                released.recv().unwrap();
                 Ok(())
             })
         })
     };
-    entered.wait();
-    // The publisher holds the fence before cancellation is requested. Cancelling
-    // must wait and report AlreadyPublished, never falsely report successful cancel.
-    let (requested, observed) = mpsc::channel();
+    publishing.recv_timeout(Duration::from_secs(5)).unwrap();
+    // A stalled filesystem action must not stall close/cancel on the UI thread.
+    // Read status on that same cancellation thread to check both public calls.
+    let (cancelled, observed) = mpsc::channel();
     let canceller = {
         let control = control.clone();
         thread::spawn(move || {
-            requested.send(()).unwrap();
-            control.cancel()
+            cancelled
+                .send((control.cancel(), control.status()))
+                .unwrap();
         })
     };
-    observed.recv().unwrap();
-    release.wait();
+    let outcome = observed.recv_timeout(Duration::from_secs(1));
+    // Release/join even if the regression is present, rather than strand threads.
+    release.send(()).unwrap();
     publisher.join().unwrap().unwrap();
-    assert_eq!(
-        canceller.join().unwrap().unwrap(),
-        CancelOutcome::AlreadyPublished
-    );
-    let cancelled = ExportControl::default();
-    let _job = cancelled.begin().unwrap();
-    cancelled.cancel().unwrap();
+    canceller.join().unwrap();
+    let (cancelled, status) = outcome.expect("cancellation waited for publication I/O");
+    assert_eq!(cancelled.unwrap(), CancelOutcome::PublicationClaimed);
+    assert_eq!(status.unwrap(), ExportStatus::PublicationClaimed);
+    assert_eq!(control.status().unwrap(), ExportStatus::Published);
+    assert_eq!(control.cancel().unwrap(), CancelOutcome::AlreadyPublished);
+}
+#[test]
+fn accepted_cancellation_and_publication_claim_have_exactly_one_winner() {
+    for _ in 0..128 {
+        let control = ExportControl::default();
+        let _job = control.begin().unwrap();
+        let start = Arc::new(Barrier::new(3));
+        let publisher = {
+            let control = control.clone();
+            let start = start.clone();
+            thread::spawn(move || {
+                start.wait();
+                control.publish(|| Ok(()))
+            })
+        };
+        let canceller = {
+            let control = control.clone();
+            let start = start.clone();
+            thread::spawn(move || {
+                start.wait();
+                control.cancel().unwrap()
+            })
+        };
+        start.wait();
+        let result = publisher.join().unwrap();
+        match canceller.join().unwrap() {
+            CancelOutcome::Cancelled => {
+                assert!(matches!(result, Err(GifError::Cancelled)));
+                assert_eq!(control.status().unwrap(), ExportStatus::Cancelled);
+            }
+            CancelOutcome::PublicationClaimed | CancelOutcome::AlreadyPublished => {
+                result.unwrap();
+                assert_eq!(control.status().unwrap(), ExportStatus::Published);
+            }
+            CancelOutcome::AlreadyFailed => panic!("neither operation can fail"),
+        }
+    }
+    for running in [false, true] {
+        let control = ExportControl::default();
+        let _job = running.then(|| control.begin().unwrap());
+        assert_eq!(control.cancel().unwrap(), CancelOutcome::Cancelled);
+        assert_eq!(control.cancel().unwrap(), CancelOutcome::Cancelled);
+        assert!(matches!(control.begin(), Err(GifError::Cancelled)));
+        assert!(matches!(
+            control.publish::<()>(|| panic!("cancelled action must not execute")),
+            Err(GifError::Cancelled)
+        ));
+        assert_eq!(control.status().unwrap(), ExportStatus::Cancelled);
+    }
+}
+#[test]
+fn publication_claim_is_not_success_and_errors_or_panics_are_terminal() {
+    for panic in [false, true] {
+        let control = ExportControl::default();
+        let _job = control.begin().unwrap();
+        let result = std::panic::catch_unwind(|| {
+            control.publish::<()>(|| {
+                assert_eq!(control.cancel().unwrap(), CancelOutcome::PublicationClaimed);
+                assert_eq!(control.cancel().unwrap(), CancelOutcome::PublicationClaimed);
+                assert!(matches!(control.begin(), Err(GifError::ControlAlreadyUsed)));
+                assert!(matches!(
+                    control.check_active(),
+                    Err(GifError::ControlAlreadyUsed)
+                ));
+                if panic {
+                    panic!("controlled publication failure");
+                }
+                Err(GifError::DestinationExists)
+            })
+        });
+        if panic {
+            assert!(result.is_err());
+        } else {
+            assert!(matches!(result, Ok(Err(GifError::DestinationExists))));
+        }
+        assert_eq!(control.status().unwrap(), ExportStatus::Failed);
+        assert_eq!(control.cancel().unwrap(), CancelOutcome::AlreadyFailed);
+        assert!(matches!(control.begin(), Err(GifError::ControlAlreadyUsed)));
+        assert!(matches!(
+            control.publish::<()>(|| panic!("failed control must not publish again")),
+            Err(GifError::ControlAlreadyUsed)
+        ));
+    }
+}
+#[cfg(unix)]
+#[test]
+fn final_publication_failure_preserves_source_destination_and_cleans_owned_stage() {
+    let directory = tempdir().unwrap();
+    let source = directory.path().join("source.mov");
+    let destination = directory.path().join("final.gif");
+    fs::write(&source, b"retained source").unwrap();
+    let target =
+        gif_file::Target::new(Some(&source), &destination, ReplacePolicy::RefuseExisting).unwrap();
+    let control = ExportControl::default();
+    let _job = control.begin().unwrap();
+    let stage = target.stage().unwrap();
+    let staged_path = stage.path.clone();
+    // A new destination appears after preparation but before the final claim.
+    fs::write(&destination, b"raced destination").unwrap();
     assert!(matches!(
-        cancelled.publish::<()>(|| panic!("must not execute")),
-        Err(GifError::Cancelled)
+        target.publish(&stage, &control),
+        Err(GifError::DestinationExists)
     ));
+    assert_eq!(control.status().unwrap(), ExportStatus::Failed);
+    assert_eq!(control.cancel().unwrap(), CancelOutcome::AlreadyFailed);
+    drop(stage);
+    assert!(!staged_path.exists());
+    assert_eq!(fs::read(&source).unwrap(), b"retained source");
+    assert_eq!(fs::read(&destination).unwrap(), b"raced destination");
+    no_stage(directory.path());
 }
 #[cfg(unix)]
 #[test]

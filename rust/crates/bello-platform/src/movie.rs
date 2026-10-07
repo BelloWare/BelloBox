@@ -161,12 +161,52 @@ impl fmt::Debug for MovieFrame {
 pub struct SelectedMovie {
     #[cfg(unix)]
     source: Arc<source_file::SourceFile>,
+    _recording: Option<Arc<crate::recording::RecordingLifetime>>,
     #[cfg(any(test, feature = "movie-fixtures"))]
     generated: bool,
     #[cfg(feature = "movie-fixtures")]
     _fixture: Option<Arc<GeneratedDirectory>>,
 }
 impl SelectedMovie {
+    /// Only the private recording transaction can mint this completed-file proof.
+    pub(crate) fn from_recording(proof: crate::recording::FinalizationProof) -> MovieResult<Self> {
+        let (path, file, lifetime, generated_native) = proof.into_parts();
+        let _ = generated_native;
+        #[cfg(unix)]
+        {
+            Ok(Self {
+                source: Arc::new(source_file::SourceFile::from_owned_file(path, file)?),
+                _recording: Some(lifetime),
+                #[cfg(any(test, feature = "movie-fixtures"))]
+                generated: generated_native,
+                #[cfg(feature = "movie-fixtures")]
+                _fixture: None,
+            })
+        }
+        #[cfg(not(unix))]
+        {
+            let _ = (path, file, lifetime);
+            Err(MovieError::Unavailable)
+        }
+    }
+    pub(crate) fn copy_recording_to(
+        &self,
+        output: &mut std::fs::File,
+        cancelled: impl Fn() -> bool,
+    ) -> MovieResult<()> {
+        if self._recording.is_none() {
+            return Err(MovieError::InvalidSource);
+        }
+        #[cfg(unix)]
+        {
+            self.source.copy_recording_to(output, cancelled)
+        }
+        #[cfg(not(unix))]
+        {
+            let _ = (output, cancelled);
+            Err(MovieError::Unavailable)
+        }
+    }
     pub fn path(&self) -> &Path {
         #[cfg(unix)]
         {
@@ -198,6 +238,7 @@ impl SelectedMovie {
     fn select(path: &Path) -> MovieResult<Self> {
         Ok(Self {
             source: Arc::new(source_file::SourceFile::open(path)?),
+            _recording: None,
             #[cfg(any(test, feature = "movie-fixtures"))]
             generated: false,
             #[cfg(feature = "movie-fixtures")]

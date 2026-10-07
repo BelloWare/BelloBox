@@ -1730,6 +1730,7 @@ pub fn open_with_handoff(
             ..Default::default()
         },
         move |window, cx| {
+            crate::shutdown::guard_window(window, cx);
             cx.new(|cx| {
                 let mut clock = WorldClock::new(input, window, cx);
                 if let Some(handoff) = &handoff {

@@ -54,6 +54,24 @@ jobs:
           cargo test --locked -p bellobox-app --features movie-fixtures gif_converter::native_host_tests -- --test-threads=1 --show-output
           cargo test --locked -p bellobox-app --features movie-fixtures gif_converter::tests::production_adapter_is_truthfully_unavailable_before_path_io
           cargo clippy --locked -p bello-platform --all-targets --features movie-fixtures --no-deps -- -D warnings
+      - name: Test generated recording writer and physical callback retirement
+        # Runs native_generated_writer_finalizes_and_same_owned_token_decodes and
+        # native_finish_callback_hold_keeps_lease_until_real_block_and_pool_retire.
+        # Fixed generated media only; no ScreenCaptureKit, permissions or capture.
+        env:
+          CARGO_BUILD_JOBS: '1'
+        run: |
+          cargo test --locked -p bello-platform --features recording-fixtures recording:: -- --test-threads=1 --show-output
+      - name: Run full App suite with recording and shutdown fixtures
+        # TestAppContext uses TestPlatform, not a native interactive GUI launch.
+        # Keep the complete suite; local focused-module evidence does not replace it.
+        env:
+          CARGO_BUILD_JOBS: '1'
+        run: cargo test --locked -p bellobox-app --features recording-fixtures -- --test-threads=1 --show-output
+      - name: Lint recording feature App and native platform paths
+        env:
+          CARGO_BUILD_JOBS: '1'
+        run: cargo clippy --locked -p bellobox-app -p bello-platform --all-targets --features recording-fixtures --no-deps -- -D warnings
       - name: Test immutable image OCR on generated pixels and numeric loopback
         # Pure local fixtures. No credentials, paid endpoints, native GUI or capture.
         # 12 transport tests, including accepted-socket blocking normalization.

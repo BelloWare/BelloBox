@@ -69,7 +69,7 @@ impl Launcher {
                 // this addition to the clock slice; no background preview survives.
                 this.jobs.cancel();
                 this.clock = None;
-                window.remove_window();
+                crate::shutdown::close_window(window, cx);
                 cx.notify();
             }
         });
@@ -217,12 +217,12 @@ impl Launcher {
             // The source clock transfers a value snapshot. Closing the palette
             // releases its preview; the full window owns independent state.
             self.jobs.cancel();
-            window.remove_window();
             if let Some(handoff) = handoff {
                 crate::desktop::open_clock_handoff(self.input.clone(), handoff, cx);
             } else {
                 crate::desktop::open_tool(c.id, self.input.clone(), cx);
             }
+            crate::shutdown::close_window(window, cx);
         }
     }
 }
@@ -340,7 +340,7 @@ impl Render for Launcher {
                 match key {
                     "escape" => {
                         this.jobs.cancel();
-                        window.remove_window();
+                        crate::shutdown::close_window(window, cx);
                     }
                     "up" => {
                         this.selected = this.selected.saturating_sub(1);
@@ -698,7 +698,10 @@ pub fn open(input: String, cx: &mut App) {
             is_resizable: false,
             ..Default::default()
         },
-        move |window, cx| cx.new(|cx| Launcher::new(input, window, cx)),
+        move |window, cx| {
+            crate::shutdown::guard_window(window, cx);
+            cx.new(|cx| Launcher::new(input, window, cx))
+        },
     );
 }
 

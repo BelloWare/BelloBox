@@ -5,9 +5,11 @@ mod home;
 mod image_disposal;
 mod launcher_clock_ui;
 mod launcher_ui;
+mod recording_ui;
 mod screenshot_color;
 mod screenshot_ui;
 mod session;
+mod shutdown;
 mod settings_ui;
 mod snippet_library;
 mod theme;
@@ -163,7 +165,8 @@ if !second.trim().is_empty(){p.set_zones(&second.split(',').map(|s|s.trim().to_s
         "settings"=>{let settings=Settings::load(&config_dir().join("settings.json"))?;serde_json::to_string_pretty(&settings).map_err(|e|e.to_string())},
         "ai"=>Err("AI sends only from the explicit Send AI action. Configure endpoint/model through BELLOBOX_AI_* environment variables; keys stay in memory.".into()),
         "screenshot"=>Ok("Use Capture full screen to save a new PNG, or OCR local image for offline text recognition. These actions require a working display server/helper or macOS permissions. Area/window selection and annotations are not yet ported.".into()),
-        "scrollCapture"|"recording"|"videoToGIF"=>Err("This native workflow is not yet wired into the Rust UI. Full-screen capture and local OCR are available through the --capture/--ocr commands when the platform status reports them available. See rust/docs/bellobox-parity.md.".into()),
+        "recording"=>Err("The recording lifecycle host is available in the desktop app. Native screen recording remains unavailable; no capture or permissions were requested.".into()),
+        "scrollCapture"|"videoToGIF"=>Err("This native workflow is not yet wired into the Rust UI. Full-screen capture and local OCR are available through the --capture/--ocr commands when the platform status reports them available. See rust/docs/bellobox-parity.md.".into()),
         _=>{
             #[cfg(feature="developer-tools")] {bellobox_core::developer::execute(id,input,second)}
             #[cfg(not(feature="developer-tools"))] {Err("Developer utility engines are excluded in this minimal build. Build with the default developer-tools feature to include them.".into())}

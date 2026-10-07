@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+"""Capture/verify local build inputs; excludes target/evidence/output trees."""
+import hashlib,json,os,pathlib,subprocess,sys,tarfile
+ROOT=pathlib.Path('/workspace/scratch/8b6fda578834/BelloBox-recording-staging')
+BASE=pathlib.Path('/workspace/scratch/8b6fda578834/build-environment')
+PRIOR=ROOT/'rust/docs/validation/recording-host-2026-10-07/source-inputs.json'
+SKIP={'.git','target','node_modules','docs','dist','output','outputs','logs','validation','__pycache__'}
+def pathset():
+    paths={ROOT/row['path'] for row in json.loads(PRIOR.read_text())['files']}
+    for directory,dirs,files in os.walk(ROOT):
+        dirs[:]=[d for d in dirs if d not in SKIP]
+        for name in files:
+            p=pathlib.Path(directory)/name
+            if name.endswith('.rs') or name in {'Cargo.toml','Cargo.lock','rust-toolchain','rust-toolchain.toml'}:
+                paths.add(p)
+            elif p.parent.name=='.cargo' and name in {'config','config.toml'}:
+                paths.add(p)
+    # Every crate asset/file was an input in the previous immutable manifest.
+    # Keep discovering new crate assets, not only new Rust modules.
+    for directory,dirs,files in os.walk(ROOT/'rust/crates'):
+        dirs[:]=[d for d in dirs if d not in SKIP]
+        paths.update(pathlib.Path(directory)/name for name in files)
+    for p in [BASE/'env.sh',BASE/'cargo/config',BASE/'cargo/config.toml',pathlib.Path(os.environ.get('SHUTDOWN_BUILD_SCRIPT','/workspace/shared/recording-shutdown-build.sh')),pathlib.Path(__file__)]:
+        if p.is_file(): paths.add(p)
+    return sorted(paths,key=str)
+def capture():
+    rows=[]
+    for p in pathset():
+        rows.append({'path':str(p.relative_to(ROOT)) if p.is_relative_to(ROOT) else str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})
+    return {'files':rows,'rustc_verbose':subprocess.check_output(['rustc','--version','--verbose'],text=True),'cargo_version':subprocess.check_output(['cargo','--version'],text=True).strip(),'prior_manifest_sha256':hashlib.sha256(PRIOR.read_bytes()).hexdigest(),'jobs':1,'codegen_units':256,'build_environment':{key:os.environ.get(key) for key in ['CARGO_BUILD_JOBS','CARGO_PROFILE_DEV_DEBUG','CARGO_PROFILE_TEST_DEBUG','CARGO_INCREMENTAL','RUSTFLAGS','CARGO_ENCODED_RUSTFLAGS','RUSTC_WRAPPER','RUSTUP_TOOLCHAIN','PKG_CONFIG_PATH','PKG_CONFIG_SYSROOT_DIR','LIBRARY_PATH','LD_LIBRARY_PATH','CPATH','LIBCLANG_PATH']}}
+mode=sys.argv[1];run=pathlib.Path(sys.argv[2]); current=capture()
+if mode=='capture':
+    (run/'source-inputs-before.json').write_text(json.dumps(current,indent=2))
+    with tarfile.open(run/'source-snapshot.tar.gz','w:gz') as archive:
+        for row in current['files']:
+            p=pathlib.Path(row['path'])
+            if not p.is_absolute(): archive.add(ROOT/p,arcname=str(p))
+    print('Captured',len(current['files']),'source/asset/config/script inputs; toolchain recorded.')
+elif mode=='verify':
+    before=json.loads((run/'source-inputs-before.json').read_text())
+    assert current==before,'Build input path set, bytes, build script, prior manifest, or toolchain changed during validation'
+    (run/'source-inputs-after.json').write_text(json.dumps(current,indent=2))
+    print('Verified exact before/after input path set and hashes.')
+else: raise SystemExit('unknown mode')
