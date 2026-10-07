@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "verified_at_utc": "2026-10-07T17:44:00Z",
+  "repository": "BelloWare/BelloBox",
+  "branch": "rust",
+  "commit": "91f9a8484a09801845b83505fcfbd32183bc6e6d",
+  "tree": "b775300cda6eb34d15d3dc8d8fdfe4d3b44c4065",
+  "linux": {
+    "run_id": 37645491894,
+    "job_id": 112875030620,
+    "url": "https://github.com/BelloWare/BelloBox/actions/runs/37645491894",
+    "conclusion": "success",
+    "app_tests": {
+      "passed": 288,
+      "failed": 0,
+      "ignored": 0
+    },
+    "core_tests": {
+      "passed": 375,
+      "failed": 0,
+      "ignored": 0
+    },
+    "prerequisites": {
+      "observed_run_start_utc": "2026-10-07T15:38:09.8109850Z",
+      "following_toolchain_step_utc": "2026-10-07T16:00:04.1029310Z",
+      "approximate_seconds": 1314,
+      "observation": "Slow successful official Ubuntu mirror downloads. Dependency setup was not a failed check. Existing apt commands and job timeout are unchanged."
+    }
+  },
+  "macos": {
+    "run_id": 37645491886,
+    "job_id": 112875030297,
+    "url": "https://github.com/BelloWare/BelloBox/actions/runs/37645491886",
+    "conclusion": "success",
+    "ocr_app_tests_compiled_and_linked": true,
+    "ocr_app_tests_executed": false,
+    "coverage": "Existing workflow compiled all targets and ran core/platform/workbench, alpha, Window host mask and generated movie tests; app build and offline packaging succeeded. This run does not prove OCR transport/controller/inline test execution on macOS."
+  },
+  "suites": [
+    {
+      "filter": "transport::image_ocr::tests",
+      "linux_passed": [
+        "transport::image_ocr::tests::accepted_fixture_stream_normalizes_inherited_nonblocking_flags",
+        "transport::image_ocr::tests::ambient_proxy_child",
+        "transport::image_ocr::tests::ambient_proxy_environment_is_ignored_in_isolated_subprocess",
+        "transport::image_ocr::tests::explicit_revocation_during_successful_read_blocks_publication",
+        "transport::image_ocr::tests::logical_cancel_during_blocking_read_waits_for_physical_return_and_cannot_publish",
+        "transport::image_ocr::tests::numeric_ipv6_loopback_uses_same_sealed_transport_when_available",
+        "transport::image_ocr::tests::ordinary_gate_is_closed_even_for_sealed_fixture_configuration",
+        "transport::image_ocr::tests::no_connection_before_explicit_dispatch_or_after_cancel_revoke_wrong_source_owner",
+        "transport::image_ocr::tests::held_body_read_deadline_fires_before_the_separate_total_deadline",
+        "transport::image_ocr::tests::real_loopback_builders_send_exact_approved_png_model_path_and_headers",
+        "transport::image_ocr::tests::response_modes_parse_plain_markdown_and_chunked_literal_results",
+        "transport::image_ocr::tests::error_redirect_disconnect_oversize_invalid_and_timeouts_never_retry_or_echo_body"
+      ],
+      "source": "rust/crates/bellobox-app/src/transport/image_ocr/tests.rs",
+      "source_sha256": "ea3094337d8c6643adaf6a77e6ba339a23ab63ed19f8fd3159e73471904c0d2b",
+      "expected_test_count": 12
+    },
+    {
+      "filter": "screenshot_ui::ai_ocr::tests",
+      "linux_passed": [
+        "screenshot_ui::ai_ocr::tests::actual_modal_approve_response_literal_copy_and_save",
+        "screenshot_ui::ai_ocr::tests::application_shutdown_retires_modal_owners_without_foreground_spawn",
+        "screenshot_ui::ai_ocr::tests::constrained_inline_status_never_overlaps_toolbar_or_reader",
+        "screenshot_ui::ai_ocr::tests::base_replacement_cannot_borrow_fixture_authority_even_after_undo",
+        "screenshot_ui::ai_ocr::tests::bounded_transport_failures_keep_current_result_and_allow_explicit_recovery",
+        "screenshot_ui::ai_ocr::tests::close_before_save_dialog_response_cannot_write_retained_result",
+        "screenshot_ui::ai_ocr::tests::constrained_reader_keeps_provider_warning_viewport_visible_and_bounded",
+        "screenshot_ui::ai_ocr::tests::direct_window_destruction_with_retained_entity_retires_modal_and_preparation",
+        "screenshot_ui::ai_ocr::tests::explicit_save_dialog_cancel_reopen_and_literal_file_publication",
+        "screenshot_ui::ai_ocr::tests::modal_cancel_default_enter_escape_and_reopen_never_dispatch",
+        "screenshot_ui::ai_ocr::tests::production_editor_gate_precedes_configuration_and_pixels",
+        "screenshot_ui::ai_ocr::tests::modal_close_keeps_physical_ownership_until_disposal_and_new_editor_is_separate",
+        "screenshot_ui::ai_ocr::tests::ordinary_settings_replacement_keeps_exact_approved_provider_snapshot",
+        "screenshot_ui::ai_ocr::tests::privacy_gesture_start_retires_approval_before_revision_and_undo_never_revives",
+        "screenshot_ui::ai_ocr::tests::save_cancellation_never_publishes_or_leaves_staging",
+        "screenshot_ui::ai_ocr::tests::real_modal_event_capture_shields_reader_toolbar_and_default_enter",
+        "screenshot_ui::ai_ocr::tests::result_revocation_clears_focused_reader_undo_and_native_copy",
+        "screenshot_ui::ai_ocr::tests::revoked_or_edited_confirmation_is_single_use_and_zero_dispatch"
+      ],
+      "source": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/tests.rs",
+      "source_sha256": "b0c997f03e7ae2329ec8a50d0bd68cb1164d0ee864ee5e428186be7492fa2083",
+      "expected_test_count": 18
+    },
+    {
+      "filter": "screenshot_ui::main_area::selector::ai_fixture::tests",
+      "linux_passed": [
+        "screenshot_ui::main_area::selector::ai_fixture::tests::application_shutdown_retires_inline_modal_owners_without_ui_completion",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::canceled_inline_session_refuses_save_chooser_even_with_current_reader_text",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::canceling_inline_modal_holds_capture_until_real_disposal_and_reopen",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::cancellation_between_snapshot_and_owned_admission_keeps_actual_prepared_pixels_counted",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::dropped_file_awaiter_does_not_retire_real_synced_writer_guard",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::generated_preparation_owns_capture_after_close_until_real_preview_drop",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::inline_file_worker_retains_guard_after_save_ui_entity_drops",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::inline_generated_area_and_fixed_window_use_same_consent_transport_and_reader",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::inline_modal_shields_pointer_tab_enter_escape_and_area_handles",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::inline_privacy_gestures_clear_actual_results_before_revision_and_undo_cannot_revive",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::parsed_completion_then_disposal_keep_real_coordinator_busy_after_editor_destruction",
+        "screenshot_ui::main_area::selector::ai_fixture::tests::stale_inline_owner_cannot_borrow_missing_or_successor_transaction"
+      ],
+      "source": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/ai_fixture/tests.rs",
+      "source_sha256": "db328ee217c1b00c81bbbee9854a7aa62571d08f5b01b7744b97116041169178",
+      "expected_test_count": 12
+    }
+  ],
+  "continuation": {
+    "kind": "CI and documentation only",
+    "change": "Add explicit serial macOS cargo filters for the 12 transport, 18 controller and 12 inline OCR app tests.",
+    "status": "Prepared locally; no new-commit macOS result claimed.",
+    "native_gui_acceptance": false,
+    "live_capture_or_provider_activation": false,
+    "rust_source_or_lockfile_changed": false
+  }
+}

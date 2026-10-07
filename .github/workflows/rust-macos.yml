@@ -54,6 +54,16 @@ jobs:
           cargo test --locked -p bellobox-app --features movie-fixtures gif_converter::native_host_tests -- --test-threads=1 --show-output
           cargo test --locked -p bellobox-app --features movie-fixtures gif_converter::tests::production_adapter_is_truthfully_unavailable_before_path_io
           cargo clippy --locked -p bello-platform --all-targets --features movie-fixtures --no-deps -- -D warnings
+      - name: Test immutable image OCR on generated pixels and numeric loopback
+        # Pure local fixtures. No credentials, paid endpoints, native GUI or capture.
+        # 12 transport tests, including accepted-socket blocking normalization.
+        run: cargo test --locked -p bellobox-app transport::image_ocr::tests -- --test-threads=1 --show-output
+      - name: Test image OCR consent and inline retirement on the GPUI test platform
+        # TestAppContext uses TestPlatform; these are not native interactive UI tests.
+        # 18 controller tests and 12 actual-inline coordinator tests.
+        run: |
+          cargo test --locked -p bellobox-app screenshot_ui::ai_ocr::tests -- --test-threads=1 --show-output
+          cargo test --locked -p bellobox-app screenshot_ui::main_area::selector::ai_fixture::tests -- --test-threads=1 --show-output
       - name: Build native applications without launching
         run: cargo build --locked --workspace
       - name: Test isolated preview packaging policy

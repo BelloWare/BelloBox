@@ -152,7 +152,7 @@ Cancel/reopen, literal private file output, visible constrained warnings, status
 clear of the toolbar, actual delayed HTTP close/drain, and minimum-size modal
 keyboard/scroll containment. See the [final local report](validation/ai-ocr-2026-10-07/QA-report.md).
 Candidate-1 evidence remains separately attributed. Exact published Linux/macOS
-OCR CI is still owned by the parent publication task.
+OCR CI is recorded below, with the macOS app-test execution gap kept explicit.
 No native macOS capture/provider runtime or complete screenshot parity is claimed.
 
 
@@ -171,4 +171,30 @@ O_NONBLOCK before existing bounded timeouts. It changes two DEBUG/test support
 files, not production transport or UI. The pre-correction GUI source snapshots
 and candidate2 manifest remain intact; a separate publication manifest records
 new hashes. All12 transport regressions, final strict app Clippy and format pass.
-Exact published OCR CI remains pending. See `validation/ai-ocr-2026-10-07/QA-report.md`.
+See `validation/ai-ocr-2026-10-07/QA-report.md` for the immutable local acceptance.
+
+## Exact published CI and focused macOS execution
+
+Commit `91f9a8484a09801845b83505fcfbd32183bc6e6d`, tree
+`b775300cda6eb34d15d3dc8d8fdfe4d3b44c4065`, passed
+[Linux 37645491894](https://github.com/BelloWare/BelloBox/actions/runs/37645491894)
+and [macOS 37645491886](https://github.com/BelloWare/BelloBox/actions/runs/37645491886).
+Linux executed all 288 app tests, including 12 transport, 18 controller and
+12 inline OCR tests. macOS compiled those app tests but did not run these modules;
+its successful existing fixture/build/package steps are not OCR app execution.
+
+The focused CI continuation runs these three filters serially on macOS:
+
+```sh
+cargo test --locked -p bellobox-app transport::image_ocr::tests -- --test-threads=1 --show-output
+cargo test --locked -p bellobox-app screenshot_ui::ai_ocr::tests -- --test-threads=1 --show-output
+cargo test --locked -p bellobox-app screenshot_ui::main_area::selector::ai_fixture::tests -- --test-threads=1 --show-output
+```
+
+The two controller modules use `TestAppContext` and GPUI's test platform. Their
+synthetic windows, clipboard and chooser tests do not launch the native app or
+establish real macOS GUI behavior. Transport uses only the generated-image sealed
+numeric-loopback route. Check the new commit's exact run before claiming macOS
+execution; no Rust source, production admission gate or dependency changes here.
+The public-repository/free-runner guard stays intact. See the source-name/hash and
+CI record in [`published-ci.json`](validation/ai-ocr-2026-10-07/published-ci.json).

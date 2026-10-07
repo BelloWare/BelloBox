@@ -985,8 +985,9 @@ A final portability audit normalized nonblocking accepted fixture sockets before
 the existing bounded synchronous timeouts. This later support-only DEBUG/test
 delta is explicitly separate from candidate2 GUI inputs; source snapshots are
 retained. All12 transport tests, strict original app Clippy and format passed after
-that correction. Published OCR CI remains pending; prior native movie CI is not
-substituted for it. No capture, real-provider or credential gate was enabled.
+that correction. The exact published OCR results are recorded below; prior native
+movie CI is not substituted for them. No capture, real-provider or credential
+gate was enabled.
 
 `validation/ai-ocr-2026-10-07/` retains53 meaningful unedited original screenshots;
 six converter originals are already in the disposal checkpoint. The complete
@@ -1000,3 +1001,28 @@ with no preserved-line category reclassification. Over exact green `26dd6ed`,
 totals are **50,053 production /28,388 support /105 benchmark**. Nonblank physical
 lines include comments; positive support ranges and every before/after source
 hash are in the LOC ledger. This is not a feature-completion percentage.
+
+### Exact published OCR checkpoint and macOS coverage continuation
+
+Published `91f9a8484a09801845b83505fcfbd32183bc6e6d`, tree
+`b775300cda6eb34d15d3dc8d8fdfe4d3b44c4065`, passed both
+[Linux 37645491894](https://github.com/BelloWare/BelloBox/actions/runs/37645491894)
+and [macOS 37645491886](https://github.com/BelloWare/BelloBox/actions/runs/37645491886).
+Linux job `112875030620` passed all 288 app tests, including the exact 12 image
+transport, 18 OCR controller and 12 inline coordinator tests, all 375 core tests,
+workspace Clippy/build and the software-rendered startup smoke. Prerequisite
+installation succeeded after about 21 minutes 54 seconds of slow official Ubuntu
+mirror downloads; it was not a failed check. The apt commands remain unchanged.
+
+macOS job `112875030297` compiled and linked all test targets, then passed its
+existing pure/native fixtures, app build and offline packaging. That workflow
+did not execute the three OCR app test modules. The next CI-only checkpoint adds
+their explicit serial filters with output; its actual macOS execution must be
+verified for its own published commit. `TestAppContext` uses GPUI's test platform;
+these are generated-image/loopback and test-platform checks, not interactive
+macOS GUI, permission, live-capture or real-provider acceptance.
+
+The immutable source names, SHA-256s and exact CI evidence are in
+[`validation/ai-ocr-2026-10-07/published-ci.json`](validation/ai-ocr-2026-10-07/published-ci.json).
+This continuation changes only CI and documentation. The Rust source, lockfile,
+production admission gates and 50,053 / 28,388 / 105 line totals are unchanged.
