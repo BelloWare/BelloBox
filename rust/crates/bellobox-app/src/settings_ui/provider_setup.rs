@@ -308,6 +308,7 @@ mod tests {
             model: "fixture".into(),
             system_prompt: String::new(),
             max_output_tokens: 20,
+            generation_options: Default::default(),
         };
         let (admitted, admission) = mpsc::channel();
         let (release, released) = mpsc::channel();

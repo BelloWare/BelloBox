@@ -280,6 +280,7 @@ mod tests {
             model: "synthetic-model".into(),
             system_prompt: "synthetic system".into(),
             max_output_tokens: 4096,
+            generation_options: Default::default(),
         };
         assert_eq!(
             test_connection(
@@ -344,6 +345,7 @@ mod tests {
             model: "synthetic-model".into(),
             system_prompt: "synthetic system".into(),
             max_output_tokens: 4096,
+            generation_options: Default::default(),
         };
         assert_eq!(
             test_connection(test_request(&c, "synthetic").unwrap(), flag()).unwrap(),

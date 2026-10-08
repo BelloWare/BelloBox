@@ -1,4 +1,5 @@
 //! Pure provider request and streaming parsers. No network request occurs here.
+pub mod generation;
 pub mod provider_setup;
 
 use serde_json::{Value, json};
@@ -17,6 +18,7 @@ pub struct Config {
     pub model: String,
     pub system_prompt: String,
     pub max_output_tokens: u32,
+    pub generation_options: generation::GenerationOptions,
 }
 /// Deliberately does not implement Debug: headers may contain a credential.
 pub struct Request {
@@ -112,18 +114,18 @@ pub fn request(
     }
     let mut headers = vec![("content-type".into(), "application/json".into())];
     let user = user_message(instruction, selection)?;
-    let body = match config.provider {
+    let mut body = match config.provider {
         Provider::OpenAIChat => {
             if !key.is_empty() {
                 headers.push(("authorization".into(), format!("Bearer {key}")));
             }
-            json!({"model":config.model,"stream":true,"max_completion_tokens":config.max_output_tokens,"messages":[{"role":"system","content":config.system_prompt},{"role":"user","content":user}]})
+            json!({"model":config.model,"stream":true,"messages":[{"role":"system","content":config.system_prompt},{"role":"user","content":user}]})
         }
         Provider::OpenAIResponses => {
             if !key.is_empty() {
                 headers.push(("authorization".into(), format!("Bearer {key}")));
             }
-            json!({"model":config.model,"stream":true,"max_output_tokens":config.max_output_tokens,"instructions":config.system_prompt,"input":user})
+            json!({"model":config.model,"stream":true,"instructions":config.system_prompt,"input":user})
         }
         Provider::Anthropic => {
             if key.is_empty() {
@@ -134,6 +136,9 @@ pub fn request(
             json!({"model":config.model,"stream":true,"max_tokens":config.max_output_tokens,"system":config.system_prompt,"messages":[{"role":"user","content":user}]})
         }
     };
+    config
+        .generation_options
+        .apply(&mut body, config.provider, config.max_output_tokens);
     Ok(Request { url, headers, body })
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -233,6 +238,7 @@ mod tests {
             model: "model".into(),
             system_prompt: DEFAULT_SYSTEM_PROMPT.into(),
             max_output_tokens: 2048,
+            generation_options: Default::default(),
         }
     }
     #[test]

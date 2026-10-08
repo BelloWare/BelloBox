@@ -31,6 +31,7 @@ pub struct Settings {
     pub provider_model: String,
     pub provider_kind: String,
     pub system_prompt: String,
+    pub model_generation: std::collections::BTreeMap<String, crate::ai::generation::Entry>,
 }
 impl Default for Settings {
     fn default() -> Self {
@@ -47,10 +48,62 @@ impl Default for Settings {
             provider_model: String::new(),
             provider_kind: "openai".into(),
             system_prompt: crate::ai::DEFAULT_SYSTEM_PROMPT.into(),
+            model_generation: Default::default(),
         }
     }
 }
 impl Settings {
+    pub fn generation_preferences(
+        &self,
+        provider: crate::ai::Provider,
+        endpoint: &str,
+        model: &str,
+    ) -> crate::ai::generation::Preferences {
+        self.model_generation
+            .get(&crate::ai::generation::key(provider, endpoint, model))
+            .map(|entry| entry.options)
+            .unwrap_or_default()
+            .normalized(provider)
+    }
+    /// Called only for explicit behavior edits; browsing and route resolution are pure reads.
+    pub fn change_generation(
+        &mut self,
+        provider: crate::ai::Provider,
+        endpoint: &str,
+        model: &str,
+        options: Option<crate::ai::generation::Preferences>,
+        modified_at: u64,
+    ) -> Result<(), String> {
+        if model.trim().is_empty() || model.len() > 1024 || endpoint.len() > 8192 {
+            return Err("Choose a bounded model and endpoint before editing its behavior.".into());
+        }
+        let key = crate::ai::generation::key(provider, endpoint, model);
+        if let Some(options) = options {
+            self.model_generation.insert(
+                key,
+                crate::ai::generation::Entry {
+                    options: options.normalized(provider),
+                    modified_at,
+                },
+            );
+        } else {
+            self.model_generation.remove(&key);
+        }
+        self.bound_generation();
+        Ok(())
+    }
+    fn bound_generation(&mut self) {
+        let mut keys: Vec<_> = self
+            .model_generation
+            .iter()
+            .map(|(k, v)| (k.clone(), v.modified_at))
+            .collect();
+        keys.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+        for (key, _) in keys.into_iter().skip(128) {
+            self.model_generation.remove(&key);
+        }
+    }
+
     /// Explicit clock-location action only. Reload first so unrelated settings,
     /// including unknown forward-compatible keys, survive. Corruption blocks writes.
     pub fn save_clock_preferences(path: &Path, ids: &[String], anchor: &str) -> Result<(), String> {
@@ -112,11 +165,12 @@ impl Settings {
             return Ok(Self::default());
         }
         let bytes = read_bounded(path, 128_000)?;
-        let settings: Self = serde_json::from_slice(&bytes)
+        let mut settings: Self = serde_json::from_slice(&bytes)
             .map_err(|e| format!("Preferences were not changed: {e}"))?;
         if settings.schema_version != 1 {
             return Err("Unknown preferences version; file left unchanged.".into());
         }
+        settings.bound_generation();
         Ok(settings)
     }
     pub fn save(&self, path: &Path) -> Result<(), String> {

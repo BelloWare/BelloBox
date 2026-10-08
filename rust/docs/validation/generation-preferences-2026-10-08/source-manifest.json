@@ -1,0 +1,95 @@
+{
+  "base": "3bbef6854b5b1323c8573409f7f7b42ea71022d6",
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/tests.rs",
+      "sha256": "92a4eb203516fd084ad60252d8a5ebf94e958d94e8547159db0a2ef5e9f0d4f1",
+      "bytes": 29634
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/settings_ui.rs",
+      "sha256": "3e972cf876a0e2a716878707d5acbfbc2a6c13c88ac78a64738ec399ec9a4169",
+      "bytes": 63972
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/settings_ui/generation.rs",
+      "sha256": "63b3a7709f71273bbe590b41e90279147cefd747e13c68e17e6153ea82b5c4d8",
+      "bytes": 18372
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/settings_ui/provider_setup.rs",
+      "sha256": "8bad433e50f8af6debbb6afe74859d7e99ff0ee641e16f127420734e80ae8b55",
+      "bytes": 13145
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/settings_ui/setup_tests.rs",
+      "sha256": "d7edcd35430d393fc8a5476a7024c50f74f00d27dea780cb7907fe9bd34008bf",
+      "bytes": 13020
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport.rs",
+      "sha256": "7c59d0286ba0ab29aca9586a7ece6a3def8b13af7816523e640f7214b152c79b",
+      "bytes": 6254
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/generation_tests.rs",
+      "sha256": "6c1e1a248203d0076d3385d90d28361e972fb1bfd0e61875ce6686f2a387547e",
+      "bytes": 2106
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr/fixture.rs",
+      "sha256": "f7b95f8f9a7e199dbdc0f872a36b90f3d82b0a1514e3a51f0f2e76cb1b52ef85",
+      "bytes": 19016
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr/tests.rs",
+      "sha256": "efb511cbdb31b2659a542c8529528b01adaae235e7a58caddaf1632e7d682dfb",
+      "bytes": 17354
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/provider_setup.rs",
+      "sha256": "3d8aaa8e5049994bfda8848a592538df1f3ead6b8635d4a0639f372f5ab38327",
+      "bytes": 17119
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/ai.rs",
+      "sha256": "fa3ba4e853cc6434f73d63ced2d19f0976e8a2bbb62661eb22420232ca07deb0",
+      "bytes": 11211
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/ai/generation.rs",
+      "sha256": "7da19ea41c55000b89911dd871a71503fb8d51233095905e5863db7c69589412",
+      "bytes": 15663
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/ai/provider_setup.rs",
+      "sha256": "370ee7a999c53898e996b1b78dea7791c7b3a207562c3535df639e23ef45a75a",
+      "bytes": 8565
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot/protocol/tests.rs",
+      "sha256": "3f5b8e241f52a762e9983016dd311e280e586f768b05a6c3475e469612c3cc1c",
+      "bytes": 15194
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr/request.rs",
+      "sha256": "e42ecc56b07dd191eec06a76d4de4ac29b815216f0aec1bb611063ca10304190",
+      "bytes": 13342
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr/tests.rs",
+      "sha256": "1e2b295d81dd18908f654f37f60332df244af9f9892a0ece642cae3a915c5325",
+      "bytes": 22875
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/settings.rs",
+      "sha256": "fc0613d8d844e5ae6947da38d36624d13cf65f60058d331b8c4dec5f9ca11442",
+      "bytes": 17735
+    },
+    {
+      "path": "rust/docs/generation-preferences.md",
+      "sha256": "1d5bd67e744e1f7eca5f478e118b6ae795f6b416af7efb4fa0a934ca4d65631d",
+      "bytes": 2846
+    }
+  ]
+}

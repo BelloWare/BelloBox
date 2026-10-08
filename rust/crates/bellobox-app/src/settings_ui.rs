@@ -1,5 +1,6 @@
 //! The seven source Settings pages, using SettingsView.swift's layout and labels.
 //! Mounting and editing never sends a request or asks for system permission.
+mod generation;
 mod provider_setup;
 use provider_setup::{Action as SetupAction, Setup};
 
@@ -144,6 +145,7 @@ struct SettingsView {
     switching_provider: bool,
     model_menu: bool,
     setup: Setup,
+    generation: BTreeMap<String, bellobox_core::ai::generation::Entry>,
     focus: FocusHandle,
     scroll: ScrollHandle,
     icon: Arc<Image>,
@@ -245,6 +247,7 @@ impl SettingsView {
             switching_provider: false,
             model_menu: false,
             setup: Setup::default(),
+            generation: settings.model_generation,
             focus,
             scroll: ScrollHandle::new(),
             icon: Arc::new(Image::from_bytes(
@@ -684,6 +687,7 @@ impl SettingsView {
         let endpoint = self.endpoint.read(cx).text().to_owned();
         let model = self.model.read(cx).text().to_owned();
         let result = validate_provider(self.provider, &endpoint, &model).and_then(|_| {
+            let preferences = self.generation_preferences(cx);
             let config = bellobox_core::ai::Config {
                 provider: match self.provider {
                     Provider::Anthropic => bellobox_core::ai::Provider::Anthropic,
@@ -693,7 +697,8 @@ impl SettingsView {
                 endpoint,
                 model,
                 system_prompt: self.prompt.read(cx).text().to_owned(),
-                max_output_tokens: 4096,
+                max_output_tokens: preferences.output_token_limit,
+                generation_options: preferences.options(self.generation_provider()),
             };
             self.setup.start(action, &config, key, cx)
         });
@@ -782,20 +787,6 @@ impl SettingsView {
             button = button.child(deferred(menu).with_priority(1));
         }
         button
-    }
-    fn model_behavior(&self, p: Palette, cx: &App) -> Div {
-        let model = self.model.read(cx).text();
-        column(12.).p(px(14.)).rounded(px(12.)).border_1().border_color(p.separator).bg(p.well)
-            .child(div().flex().items_center().gap(px(8.)).child(theme::tool_icon("slider.horizontal.3", 16., p)).child(div().text_size(px(13.)).font_weight(FontWeight::SEMIBOLD).child("Model behavior")))
-            .child(column(3.)
-                .child(div().text_size(px(11.)).font_family("monospace").text_color(p.accent).child(if model.is_empty() { "Choose a model above".to_owned() } else { model.to_owned() }))
-                .child(help("Per-model behavior overrides are not yet connected; requests use the transport defaults.", p)))
-            .child(separator(p))
-            .when(self.provider != Provider::Codex, |s| s.child(column(7.)
-                .child(div().flex().items_center().gap(px(12.)).child("Temperature").child(div().flex_1()).child(disabled_button("Model default", p)).child(disabled_button("Custom", p)))
-                .child(help("No temperature is sent. Use this for models that don’t support temperature.", p))))
-            .child(column(7.).child(disabled_value("Reasoning effort", "Model default  ⌄", p)).child(help("No effort is sent. Choose a level only if your model supports it.", p)))
-            .when(self.provider == Provider::Anthropic, |s| s.child(separator(p)).child(disabled_value("Thinking & token limits", "Not yet connected", p)))
     }
     fn capture(&self, p: Palette) -> Div {
         column(14.)

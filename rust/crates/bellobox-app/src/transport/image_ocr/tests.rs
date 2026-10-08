@@ -120,6 +120,7 @@ fn no_connection_before_explicit_dispatch_or_after_cancel_revoke_wrong_source_ow
             model: lease.model().into(),
             system_prompt: String::new(),
             max_output_tokens: 4096,
+            generation_options: Default::default(),
         },
         String::new(),
     )

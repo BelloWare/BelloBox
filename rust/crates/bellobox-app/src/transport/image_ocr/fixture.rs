@@ -212,6 +212,7 @@ fn start_internal(
             model: "fixture-vision-model".into(),
             system_prompt: "Never used by OCR".into(),
             max_output_tokens: 4_096,
+            generation_options: Default::default(),
         },
         if provider == Provider::Anthropic {
             "synthetic-fixture-key".into()

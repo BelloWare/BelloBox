@@ -199,6 +199,7 @@ mod tests {
                 model: "synthetic-model".into(),
                 system_prompt: "test system".into(),
                 max_output_tokens: 4096,
+                generation_options: Default::default(),
             };
             let r = test_request(&c, "synthetic").unwrap();
             assert_eq!(r.body["stream"], true);
@@ -208,11 +209,11 @@ mod tests {
             match provider {
                 Provider::OpenAIChat => {
                     assert_eq!(r.body["messages"][1]["content"], TEST_USER_TEXT);
-                    assert_eq!(r.body["max_completion_tokens"], 4096);
+                    assert!(r.body.get("max_completion_tokens").is_none());
                 }
                 Provider::OpenAIResponses => {
                     assert_eq!(r.body["input"], TEST_USER_TEXT);
-                    assert_eq!(r.body["max_output_tokens"], 4096);
+                    assert!(r.body.get("max_output_tokens").is_none());
                 }
                 Provider::Anthropic => {
                     assert_eq!(r.body["messages"][0]["content"], TEST_USER_TEXT);

@@ -53,12 +53,14 @@ pub fn config_from_settings(
     if model.trim().is_empty() {
         return Err("Choose a model in Settings → AI Provider before sending.".into());
     }
+    let preferences = settings.generation_preferences(provider, &endpoint, &model);
     Ok(Config {
         provider,
         endpoint,
         model,
         system_prompt: settings.system_prompt,
-        max_output_tokens: 4096,
+        max_output_tokens: preferences.output_token_limit,
+        generation_options: preferences.options(provider),
     })
 }
 // UI status must not read a preferences file on every paint. Settings invalidates
@@ -173,3 +175,6 @@ pub fn send_cancellable(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod generation_tests;

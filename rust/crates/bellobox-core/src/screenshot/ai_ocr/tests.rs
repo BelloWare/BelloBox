@@ -24,6 +24,7 @@ fn config(provider: Provider) -> Config {
         model: "approved-old-model".into(),
         system_prompt: "WRITING_PROMPT_MUST_NEVER_LEAK".into(),
         max_output_tokens: 4096,
+        generation_options: Default::default(),
     }
 }
 fn authority(provider: Provider) -> ProviderAuthority {
@@ -378,7 +379,7 @@ fn approved_old_config_options_key_survive_new_settings_but_explicit_revoke_bloc
     assert!(!lease.same_authority(&replacement.lease()));
     let request = build_request(&prepared(), &UploadOptions::default(), &lease).unwrap();
     assert_eq!(body(&request)["model"], "approved-old-model");
-    assert_eq!(body(&request)["max_completion_tokens"], 4096);
+    assert!(body(&request).get("max_completion_tokens").is_none());
     assert_eq!(body(&request)["reasoning_effort"], "high");
     assert_eq!(body(&request)["temperature"], 0.4);
     assert!(
@@ -537,4 +538,70 @@ fn png_encoder_cannot_publish_over_limit_even_when_only_final_chunk_exceeds() {
     assert!(encode_upload_png(&image, bytes.len()).unwrap() == bytes);
     assert!(encode_upload_png(&image, bytes.len() - 1).is_err());
     assert!(encode_upload_png(&image, 8).is_err());
+}
+
+#[test]
+fn text_clock_and_confirmed_image_share_generation_wire_options() {
+    use crate::clock::{
+        Planner,
+        copilot::protocol::{Context, CopilotRequest, provider_request},
+    };
+    let now = crate::clock::parse_instant("2026-10-08T12:00:00Z").unwrap();
+    let planner = Planner::from_preferences(&["UTC".into()], "UTC", "UTC", now, None).unwrap();
+    let clock = CopilotRequest {
+        question: "When is noon?".into(),
+        context: Context::from_planner(&planner, now, "UTC").unwrap(),
+        history: vec![],
+    };
+    for provider in [
+        Provider::OpenAIChat,
+        Provider::OpenAIResponses,
+        Provider::Anthropic,
+    ] {
+        for thinking in [
+            Thinking::ProviderDefault,
+            Thinking::Disabled,
+            Thinking::Adaptive,
+            Thinking::Budgeted(8192),
+        ] {
+            if provider != Provider::Anthropic && thinking != Thinking::ProviderDefault {
+                continue;
+            }
+            let mut cfg = config(provider);
+            cfg.generation_options = GenerationOptions {
+                temperature: Some(0.6),
+                reasoning_effort: Some(ReasoningEffort::High),
+                thinking,
+            };
+            let text = crate::ai::request(&cfg, "synthetic-key", "hello", "").unwrap();
+            let copilot = provider_request(&cfg, "synthetic-key", &clock).unwrap();
+            let owner = ProviderAuthority::new(cfg.clone(), "synthetic-key".into()).unwrap();
+            // Mutation after approval cannot change the image authority snapshot.
+            cfg.generation_options = GenerationOptions::default();
+            let image = body(
+                &build_request(&prepared(), &UploadOptions::default(), &owner.lease()).unwrap(),
+            );
+            for field in [
+                "temperature",
+                "reasoning_effort",
+                "reasoning",
+                "output_config",
+                "thinking",
+                "max_tokens",
+                "max_completion_tokens",
+                "max_output_tokens",
+            ] {
+                assert_eq!(
+                    text.body.get(field),
+                    copilot.body.get(field),
+                    "{provider:?} {field}"
+                );
+                assert_eq!(
+                    text.body.get(field),
+                    image.get(field),
+                    "{provider:?} {field}"
+                );
+            }
+        }
+    }
 }

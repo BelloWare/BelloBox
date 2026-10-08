@@ -1,0 +1,8 @@
+{
+  "base": "3bbef6854b5b1323c8573409f7f7b42ea71022d6",
+  "source_manifest_sha256": "54fd3706d632b760dc99cc8168e73b74d17df08826a0538065c179bd7589f673",
+  "binary_sha256": "e8962356f1c752d93d4234a73bdc2b9782eb4b18f4aebc56ec3162069987b203",
+  "command": "cargo build --locked -p bellobox-app",
+  "features": "ordinary default features; not recording fixture build",
+  "target": "Linux x86_64; not macOS acceptance"
+}

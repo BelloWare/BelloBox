@@ -28,6 +28,7 @@ fn config(provider: ai::Provider) -> ai::Config {
         model: "test-model".into(),
         system_prompt: "Original writing prompt".into(),
         max_output_tokens: 1024,
+        generation_options: Default::default(),
     }
 }
 
@@ -72,7 +73,11 @@ fn provider_shapes_use_raw_prompt_and_preserve_config() {
             &user_prompt(&req).unwrap()
         );
         assert_eq!(result.body["model"], "test-model");
-        assert_eq!(result.body[tokens], 1024);
+        if provider == ai::Provider::Anthropic {
+            assert_eq!(result.body[tokens], 1024);
+        } else {
+            assert!(result.body.get(tokens).is_none());
+        }
         assert_eq!(result.body["stream"], true);
         assert!(result.headers.iter().any(|(k, _)| k == auth));
         assert!(!result.body.to_string().contains("selected_text"));

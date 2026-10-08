@@ -115,6 +115,14 @@ fn setup_flow(cx: &mut TestAppContext) {
         assert_eq!(view.setup.models, ["selected-model", "zeta"]);
         // The same model editor mutation used by the model-menu action.
         view.select_model("selected-model".into(), cx);
+        view.edit_generation(super::generation::Edit::TemperatureMode(true), cx);
+        view.edit_generation(super::generation::Edit::Temperature(-0.3), cx);
+        view.edit_generation(
+            super::generation::Edit::Effort(Some(
+                bellobox_core::ai::generation::ReasoningEffort::High,
+            )),
+            cx,
+        );
     })
     .unwrap();
     cx.run_until_parked();
@@ -153,6 +161,9 @@ fn setup_flow(cx: &mut TestAppContext) {
             serde_json::from_str(request.split_once("\r\n\r\n").unwrap().1).unwrap();
         assert_eq!(body["model"], "selected-model");
         assert_eq!(body["stream"], true);
+        assert_eq!(body["temperature"], 0.7);
+        assert_eq!(body["reasoning_effort"], "high");
+        assert!(body.get("max_completion_tokens").is_none());
     }
     assert!(
         !std::fs::read_to_string(&path)
@@ -243,6 +254,7 @@ fn actual_window_close_fences_retained_entity_and_fresh_reopen(cx: &mut TestAppC
             model: "fixture".into(),
             system_prompt: String::new(),
             max_output_tokens: 20,
+            generation_options: Default::default(),
         };
         assert!(
             view.setup

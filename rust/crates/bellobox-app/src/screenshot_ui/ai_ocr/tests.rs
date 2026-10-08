@@ -404,6 +404,7 @@ fn ordinary_settings_replacement_keeps_exact_approved_provider_snapshot(cx: &mut
                     model: "new-unapproved-model".into(),
                     system_prompt: "unrelated".into(),
                     max_output_tokens: 2048,
+                    generation_options: Default::default(),
                 },
                 "different-unread-key".into(),
             )

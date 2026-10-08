@@ -1,0 +1,170 @@
+{
+  "01-settings.png": {
+    "bytes": 99616,
+    "sha256": "eb9cb98254c4fd0c51ba69556265a334775eacf080901e5ec160de9206e1e885"
+  },
+  "02-custom.png": {
+    "bytes": 99691,
+    "sha256": "2072a5af98b4649306e9cf7a7e0633a4b810cdc606edf89b904c6ae6c5a16f5c"
+  },
+  "03-effort.png": {
+    "bytes": 95962,
+    "sha256": "0397033a6de7c98b1213c73346cb143030f723bf1dcb23732134a8ca6b3f6c6d"
+  },
+  "04-scrolled.png": {
+    "bytes": 103890,
+    "sha256": "fe33e6f1872a3949f790c75e642c446938957992c6b8755dd41e38b20ed7c2a0"
+  },
+  "05-edited.png": {
+    "bytes": 103936,
+    "sha256": "2831044d7084011720bac92cd2d8a30b5284fbe34ba7c994c0ad1020661b9b8b"
+  },
+  "06-test.png": {
+    "bytes": 105467,
+    "sha256": "bf612bc33519e0dc618513539facae326bbd23c911a5d003d483bffa4c5476de"
+  },
+  "07-connected.png": {
+    "bytes": 103927,
+    "sha256": "3a1b30f27845111651b1b0be697f02c6b73f97b0df22299c211c72d134b6710a"
+  },
+  "08-loaded.png": {
+    "bytes": 100024,
+    "sha256": "db453165badf01b6919aac118d26e2056196eb7ee416980ff31e0aad65127e9c"
+  },
+  "09-model-menu.png": {
+    "bytes": 100712,
+    "sha256": "1768f774a9b20ea9d4a4191b47a603eb204abbea67a4a605c2915c60a2d881fb"
+  },
+  "10-other-model.png": {
+    "bytes": 106737,
+    "sha256": "b68e7b60f05c1fc9f3f0a323ec02651af6f99bf1f4093c72837f032d42495202"
+  },
+  "11-other-low-menu.png": {
+    "bytes": 109079,
+    "sha256": "c1a31692f94bbf67407e87b584fb77583359cc021de1a129f0c33989bdf100a9"
+  },
+  "12-restored-selected.png": {
+    "bytes": 106870,
+    "sha256": "45d9f2624c1127254b298ab4e2eeba5b3f5b102a8cd9e60193faddd89aaffa5b"
+  },
+  "13-endpoint-change.png": {
+    "bytes": 107126,
+    "sha256": "d05b73cbdb0d9fadcf6bbaddab7f9930853a4335ce6e83d24c78551a057ea41f"
+  },
+  "14-endpoint-restored.png": {
+    "bytes": 106870,
+    "sha256": "45d9f2624c1127254b298ab4e2eeba5b3f5b102a8cd9e60193faddd89aaffa5b"
+  },
+  "15-reopened.png": {
+    "bytes": 103688,
+    "sha256": "5898bf4aa4faa550122ab4ceaf56dc512cd5363c9e87330bc5fb3778bb99fa18"
+  },
+  "16-reset.png": {
+    "bytes": 104270,
+    "sha256": "80f85af76bddabca3b3fb39e1d0a18d64a425b38754834fc5f5fdc971734448f"
+  },
+  "17-reset-settled.png": {
+    "bytes": 107036,
+    "sha256": "e2d9b938573173e6e78a5612976991811244d48dd8a0a9d79621ac09033f4990"
+  },
+  "18-anthropic.png": {
+    "bytes": 88220,
+    "sha256": "916e39a0e856b3e2d25a4dc57895b4d9edbe914157f56abbb8f62f110bb7a672"
+  },
+  "19-anthropic-loopback.png": {
+    "bytes": 90624,
+    "sha256": "2560f92129619ab73dffc5d9193dfc6997c8381ddeb40f5a81ae3c9262b840ee"
+  },
+  "20-corrected-endpoint.png": {
+    "bytes": 88166,
+    "sha256": "ed9cc105206241c6fb43623dcd6f15a6fff69546e3d0320f6c0922afcef39dd5"
+  },
+  "21-anthropic-controls.png": {
+    "bytes": 97024,
+    "sha256": "e95f4f46056917afdd82032f8282bc98750adfd0b36704848acdd24a334dbfef"
+  },
+  "22-thinking-controls.png": {
+    "bytes": 102603,
+    "sha256": "c7ef81e97ce99474bc85b1eb88e85be9155ba310a2f3c1ec0b7a07759b15dd10"
+  },
+  "23-thinking-budget.png": {
+    "bytes": 106134,
+    "sha256": "c797d0d811e7eb63a4d55ca03e31b06801839c5803fd4ccdf96a32998de489a7"
+  },
+  "24-anthropic-test.png": {
+    "bytes": 107149,
+    "sha256": "f99a67d3be8896ec55e9efa73bb7f3c8733e4518fe0c64e11a9a216191b112d9"
+  },
+  "25-anthropic-result.png": {
+    "bytes": 104286,
+    "sha256": "c98090519abcfcdc83f0022c08591b4f507202ea5f8d862e5630f697f61137ea"
+  },
+  "26-quit-desktop.png": {
+    "bytes": 201732,
+    "sha256": "fd702837002f1ccbc39cdcdd1251fc5d595885556641b96f7d64638edcd63cb9"
+  },
+  "README.md": {
+    "bytes": 6012,
+    "sha256": "94bd121522a05487ef68a005033c3e970ca40702cae7f5aece42410447e83255"
+  },
+  "app.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "binary-sha256.txt": {
+    "bytes": 131,
+    "sha256": "7cffc84632214bb1b6eae0934335a4d44030f0f54a2bafcaec3105e105c4b2fc"
+  },
+  "config/settings.json": {
+    "bytes": 1325,
+    "sha256": "2eb35a15967690c42db19dff9e7e372eaf1ce4f0677f402db57ca7681d235857"
+  },
+  "config-anthropic.json": {
+    "bytes": 1325,
+    "sha256": "2eb35a15967690c42db19dff9e7e372eaf1ce4f0677f402db57ca7681d235857"
+  },
+  "config-edited.json": {
+    "bytes": 951,
+    "sha256": "5fed3c4081a7c7e6f82191662b6ceb3c5dcdd99ed70a398992640a06a77fdacf"
+  },
+  "config-endpoint-change.json": {
+    "bytes": 1313,
+    "sha256": "771c5591295bd875496cfd49994e36a0c4221de7e4fcc5edbf48f165f4d593fd"
+  },
+  "config-reset.json": {
+    "bytes": 951,
+    "sha256": "729a363ee2c03789ab14e6bc2ca3383a26e0858fa947e92191c6fc06d36df574"
+  },
+  "config-two-profiles.json": {
+    "bytes": 1305,
+    "sha256": "e78b804ae3a6a4fbfb6b2e9e9ce77d64cd42b1839b04effac7ebc1e691265e37"
+  },
+  "endpoint": {
+    "bytes": 25,
+    "sha256": "0ae3890b4c1039ad6b8f326a7a8855db9bdf57832985919708005cc3b8f7b8c3"
+  },
+  "exit-code": {
+    "bytes": 2,
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "launch.sh": {
+    "bytes": 630,
+    "sha256": "f1285df4560e2033265e4a572bc6fa053fb6af9a645275f65b4c584189b437fb"
+  },
+  "requests.jsonl": {
+    "bytes": 1098,
+    "sha256": "cc4d211ca90498455c0853a2579114da1eabd6654e3d61ae591613c17a20186e"
+  },
+  "server.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "server.py": {
+    "bytes": 1466,
+    "sha256": "5e7fa69abc2a3a90ca99e9c8207202102bb630f726e8735675d42188aaa570b3"
+  },
+  "source-r1-manifest.json": {
+    "bytes": 3439,
+    "sha256": "54fd3706d632b760dc99cc8168e73b74d17df08826a0538065c179bd7589f673"
+  }
+}

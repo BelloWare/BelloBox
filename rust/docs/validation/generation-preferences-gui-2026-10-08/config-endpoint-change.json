@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "appearance": "Light",
+  "favorites": [],
+  "recents": [],
+  "usage": {
+    "entries": {}
+  },
+  "zone_ids": [],
+  "anchor_zone_id": "",
+  "provider_endpoint": "http://127.0.0.1:33909/v1x    ",
+  "provider_model": "gui-selected-model",
+  "provider_kind": "openai",
+  "system_prompt": "You are a writing assistant embedded in macOS. The user selects text in any app and asks you to transform it. Unless the instruction asks a question, reply with ONLY the transformed text — no preamble, no explanations, and no surrounding quotation marks.",
+  "model_generation": {
+    "174bd5d1933c768733d79ab532fec4a2d8c105da39910ad0690e20ad082746ce": {
+      "options": {
+        "custom_temperature": false,
+        "temperature": 1.0,
+        "reasoning_effort": "low",
+        "thinking": "ProviderDefault",
+        "thinking_budget": 4096,
+        "output_token_limit": 2048
+      },
+      "modified_at": 1791498055645729027
+    },
+    "aecb76b68ad238e4cbb5d6dbf02c94ba216876effce33955b5d1032f49a8ef2a": {
+      "options": {
+        "custom_temperature": true,
+        "temperature": 1.1,
+        "reasoning_effort": "high",
+        "thinking": "ProviderDefault",
+        "thinking_budget": 4096,
+        "output_token_limit": 2048
+      },
+      "modified_at": 1791498007668864937
+    }
+  }
+}

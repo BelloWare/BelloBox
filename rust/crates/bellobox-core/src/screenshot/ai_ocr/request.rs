@@ -3,50 +3,14 @@ use super::{
 };
 use crate::ai::{Config, Provider};
 use base64::{Engine, engine::general_purpose::STANDARD};
-use serde_json::{Value, json};
+use serde_json::json;
 use std::sync::{
     Arc,
     atomic::{AtomicBool, AtomicU64, Ordering},
 };
 use url::Url;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ReasoningEffort {
-    None,
-    Minimal,
-    Low,
-    Medium,
-    High,
-    XHigh,
-    Max,
-}
-impl ReasoningEffort {
-    fn wire(self) -> &'static str {
-        match self {
-            Self::None => "none",
-            Self::Minimal => "minimal",
-            Self::Low => "low",
-            Self::Medium => "medium",
-            Self::High => "high",
-            Self::XHigh => "xhigh",
-            Self::Max => "max",
-        }
-    }
-}
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub enum Thinking {
-    #[default]
-    ProviderDefault,
-    Disabled,
-    Adaptive,
-    Budgeted(u32),
-}
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct GenerationOptions {
-    pub temperature: Option<f64>,
-    pub reasoning_effort: Option<ReasoningEffort>,
-    pub thinking: Thinking,
-}
+pub use crate::ai::generation::{GenerationOptions, ReasoningEffort, Thinking};
 struct Snapshot {
     provider: Provider,
     destination: Url,
@@ -71,7 +35,8 @@ pub struct ProviderLease {
 }
 impl ProviderAuthority {
     pub fn new(config: Config, key: String) -> Result<Self, String> {
-        Self::with_options(config, key, GenerationOptions::default())
+        let options = config.generation_options;
+        Self::with_options(config, key, options)
     }
     pub fn with_options(
         config: Config,
@@ -181,9 +146,15 @@ impl ProviderLease {
     pub fn generation_options_description(&self) -> String {
         let snapshot = &self.owner.snapshot;
         let options = snapshot.generation_options;
-        let temperature = options
-            .temperature
-            .map_or_else(|| "model default".into(), |v| v.to_string());
+        let temperature = if snapshot.provider == Provider::Anthropic
+            && matches!(options.thinking, Thinking::Adaptive | Thinking::Budgeted(_))
+        {
+            "not sent while thinking is enabled".into()
+        } else {
+            options
+                .temperature
+                .map_or_else(|| "model default".into(), |v| v.to_string())
+        };
         let effort = options
             .reasoning_effort
             .map_or("model default", ReasoningEffort::wire);
@@ -193,9 +164,13 @@ impl ProviderLease {
             Thinking::Adaptive => "adaptive".into(),
             Thinking::Budgeted(v) => format!("budget {v}"),
         };
+        let output = if snapshot.provider == Provider::Anthropic {
+            format!("{} tokens", effective_output_tokens(snapshot))
+        } else {
+            "model default".into()
+        };
         format!(
-            "Output limit: {} tokens; temperature: {temperature}; effort: {effort}; thinking: {thinking}",
-            effective_output_tokens(snapshot)
+            "Output limit: {output}; temperature: {temperature}; effort: {effort}; thinking: {thinking}"
         )
     }
 }
@@ -335,13 +310,13 @@ pub fn build_request(
             if !snapshot.key.is_empty() {
                 headers.push(("authorization".into(), format!("Bearer {}", snapshot.key)));
             }
-            json!({"model":snapshot.model,"stream":false,"max_completion_tokens":snapshot.max_output_tokens,"messages":[{"role":"user","content":[{"type":"text","text":prompt},{"type":"image_url","image_url":{"url":format!("data:image/png;base64,{encoded}")}}]}]})
+            json!({"model":snapshot.model,"stream":false,"messages":[{"role":"user","content":[{"type":"text","text":prompt},{"type":"image_url","image_url":{"url":format!("data:image/png;base64,{encoded}")}}]}]})
         }
         Provider::OpenAIResponses => {
             if !snapshot.key.is_empty() {
                 headers.push(("authorization".into(), format!("Bearer {}", snapshot.key)));
             }
-            json!({"model":snapshot.model,"stream":false,"max_output_tokens":snapshot.max_output_tokens,"text":{"format":{"type":"json_object"}},"input":[{"role":"user","content":[{"type":"input_text","text":prompt},{"type":"input_image","image_url":format!("data:image/png;base64,{encoded}")}]}]})
+            json!({"model":snapshot.model,"stream":false,"text":{"format":{"type":"json_object"}},"input":[{"role":"user","content":[{"type":"input_text","text":prompt},{"type":"input_image","image_url":format!("data:image/png;base64,{encoded}")}]}]})
         }
         Provider::Anthropic => {
             headers.push(("x-api-key".into(), snapshot.key.clone()));
@@ -349,31 +324,9 @@ pub fn build_request(
             json!({"model":snapshot.model,"stream":false,"max_tokens":effective_output_tokens(snapshot),"messages":[{"role":"user","content":[{"type":"image","source":{"type":"base64","media_type":"image/png","data":encoded}},{"type":"text","text":prompt}]}]})
         }
     };
-    let generation = snapshot.generation_options;
-    if let Some(temperature) = generation.temperature
-        && !matches!(
-            generation.thinking,
-            Thinking::Adaptive | Thinking::Budgeted(_)
-        )
-    {
-        body["temperature"] = json!(temperature);
-    }
-    if let Some(effort) = generation.reasoning_effort {
-        match snapshot.provider {
-            Provider::OpenAIChat => body["reasoning_effort"] = json!(effort.wire()),
-            Provider::OpenAIResponses => body["reasoning"] = json!({"effort":effort.wire()}),
-            Provider::Anthropic => body["output_config"] = json!({"effort":effort.wire()}),
-        }
-    }
-    let thinking: Option<Value> = match generation.thinking {
-        Thinking::ProviderDefault => None,
-        Thinking::Disabled => Some(json!({"type":"disabled"})),
-        Thinking::Adaptive => Some(json!({"type":"adaptive"})),
-        Thinking::Budgeted(v) => Some(json!({"type":"enabled","budget_tokens":v})),
-    };
-    if let Some(thinking) = thinking {
-        body["thinking"] = thinking;
-    }
+    snapshot
+        .generation_options
+        .apply(&mut body, snapshot.provider, snapshot.max_output_tokens);
     let mut output = BoundedBytes::new(MAX_REQUEST_BYTES);
     serde_json::to_writer(&mut output, &body)
         .map_err(|_| "AI OCR request exceeds its serialized limit.")?;
