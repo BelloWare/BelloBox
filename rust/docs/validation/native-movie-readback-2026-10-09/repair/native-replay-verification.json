@@ -1,0 +1,50 @@
+[
+  {
+    "orientation": "Landscape",
+    "loops": false,
+    "bytes": 799,
+    "sha256": "d963d363448da5fee8fdbbb0ae84dc1d9b8f140f0430e44d80ccee4a282783bd",
+    "native_equals_replay": true,
+    "equals_preserved_baseline": true
+  },
+  {
+    "orientation": "Landscape",
+    "loops": true,
+    "bytes": 818,
+    "sha256": "de30a99f39c11aec984b566e8f704c2094ccf2070352215be6966022775f0860",
+    "native_equals_replay": true,
+    "equals_preserved_baseline": true
+  },
+  {
+    "orientation": "Portrait",
+    "loops": false,
+    "bytes": 877,
+    "sha256": "988c1499c878434ddfbceaf07fb2316ac8ab5204414f8670b2ece7a186ff1bb5",
+    "native_equals_replay": true,
+    "equals_preserved_baseline": true
+  },
+  {
+    "orientation": "Portrait",
+    "loops": true,
+    "bytes": 896,
+    "sha256": "b1689ae29f8445a3931435b119cf557189e617c4f96d41c15c3b7e8c493ccd58",
+    "native_equals_replay": true,
+    "equals_preserved_baseline": true
+  },
+  {
+    "orientation": "Mirrored",
+    "loops": false,
+    "bytes": 794,
+    "sha256": "6629b6303725b54e46052c802b3d1c430e1fd665b6194920946a5971f2063d35",
+    "native_equals_replay": true,
+    "equals_preserved_baseline": true
+  },
+  {
+    "orientation": "Mirrored",
+    "loops": true,
+    "bytes": 813,
+    "sha256": "bceb757c9968bd8d1b97f9ae57337d29145f940f96dd5d921af0d854c2c546cc",
+    "native_equals_replay": true,
+    "equals_preserved_baseline": true
+  }
+]

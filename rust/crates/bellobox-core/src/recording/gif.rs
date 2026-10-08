@@ -3,6 +3,9 @@
 //! Planning has no side effects. [`export_gif`] explicitly writes a private staged
 //! sibling and publishes only after complete readback. No capture, movie decoding,
 //! provider, network, subprocess, or ffmpeg implementation is provided here.
+mod gif_decode;
+#[cfg(test)]
+mod gif_decode_tests;
 mod gif_encode;
 mod gif_file;
 mod gif_preview;

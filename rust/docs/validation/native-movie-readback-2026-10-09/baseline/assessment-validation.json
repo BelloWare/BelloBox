@@ -1,0 +1,413 @@
+{
+  "identity": {
+    "label": "box-abd-movie-assessment",
+    "commit": "abd7247c25c1736f7a4fd6a34032e7af9d7a1f5d",
+    "tree": "167c1e1e0209320f725153cbcd2063ddd134bbe5",
+    "repo": "/Users/admin/projects/BelloBox-rust-native-movie",
+    "source": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/source",
+    "evidence": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence",
+    "checked_at": "2026-10-08T22:49:26.149433+00:00",
+    "tracked_files": 1342,
+    "source_manifest_sha256": "b27fdb8938157b1960459937c48817590273a9d5bafba8aee2e9ac4449fcc582",
+    "archive_sha256": "8eb2627e959569ed84a341ee8785a8545fcb170969c11aadacb9e77c17e89a80",
+    "exact_source_verified": true,
+    "repository_status": "",
+    "repository_head": "a2389dac0cc425b1b179ab2b3e6c3483d4e201fa"
+  },
+  "verified_at": "2026-10-08T22:58:30.521914+00:00",
+  "source_after_matches_before": true,
+  "extra_source_files": 0,
+  "repository_head_unchanged": "a2389dac0cc425b1b179ab2b3e6c3483d4e201fa",
+  "repository_status_unchanged": "",
+  "host": {
+    "checked_at": "2026-10-08T22:50:48.345218+00:00",
+    "commands": [
+      {
+        "command": [
+          "/usr/bin/sw_vers"
+        ],
+        "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t14.8\nBuildVersion:\t\t23J21\n",
+        "stderr": "",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/usr/bin/uname",
+          "-m"
+        ],
+        "stdout": "arm64\n",
+        "stderr": "",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/opt/homebrew/bin/rustc",
+          "-vV"
+        ],
+        "stdout": "rustc 1.91.1 (ed61e7d7e 2025-11-07) (Homebrew)\nbinary: rustc\ncommit-hash: ed61e7d7e242494fb7057f2657300d9e77bb4fcb\ncommit-date: 2025-11-07\nhost: aarch64-apple-darwin\nrelease: 1.91.1\nLLVM version: 21.1.5\n",
+        "stderr": "",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/opt/homebrew/bin/cargo",
+          "-V"
+        ],
+        "stdout": "cargo 1.91.1 (Homebrew)\n",
+        "stderr": "",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/usr/bin/xcrun",
+          "swiftc",
+          "--version"
+        ],
+        "stdout": "Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)\nTarget: arm64-apple-macosx14.0\n",
+        "stderr": "swift-driver version: 1.115 ",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/usr/bin/xcrun",
+          "--sdk",
+          "macosx",
+          "--show-sdk-version"
+        ],
+        "stdout": "15.1\n",
+        "stderr": "",
+        "exit_code": 0
+      }
+    ],
+    "removed_environment_variable_names": [],
+    "required_unset": [
+      "BELLOBOX_AI_PROVIDER",
+      "BELLOBOX_AI_ENDPOINT",
+      "BELLOBOX_AI_MODEL",
+      "BELLOBOX_AI_KEY"
+    ],
+    "build_environment": {
+      "CARGO_TARGET_DIR": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+      "CARGO_BUILD_JOBS": "2",
+      "MACOSX_DEPLOYMENT_TARGET": "14.0",
+      "RUST_BACKTRACE": "1",
+      "RUSTC": null,
+      "RUSTFLAGS": null,
+      "CARGO_ENCODED_RUSTFLAGS": null,
+      "DEVELOPER_DIR": null,
+      "BELLOBOX_CONFIG_DIR": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/isolated-config"
+    }
+  },
+  "results": [
+    {
+      "name": "platform-movie",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bello-platform",
+        "--lib",
+        "movie::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_passed": 23,
+      "expected_ignored": 0,
+      "expected_tests_from_candidate_log": [
+        "movie::macos::tests::native_admission_waits_for_old_converter_lease_and_cancels_own_waiter",
+        "movie::macos::tests::native_cancel_and_sample_limit_retire_reader_and_preserve_prior_output",
+        "movie::macos::tests::native_final_validation_checks_late_cancel_source_mutation_and_own_retirement",
+        "movie::macos::tests::native_invalid_movie_reports_metadata_error_and_honors_precancel",
+        "movie::macos::tests::native_metadata_delivery_rechecks_late_cancel_and_source_after_callback_drain",
+        "movie::macos::tests::native_render_matches_display_orientation_and_coded_size_scaling",
+        "movie::macos::tests::native_synthetic_movie_pts_orientation_and_staged_gif_integration",
+        "movie::macos::tests::native_time_rejects_invalid_nonfinite_negative_and_epoch_values",
+        "movie::macos::tests::nil_sample_status_mapping_never_masks_failure_as_clean_eof",
+        "movie::retirement::tests::logical_cancellation_cannot_complete_held_callback_retirement",
+        "movie::tests::cancellation_is_shared_atomic_state",
+        "movie::tests::frame_transfer_moves_pixels_and_debug_redacts_them",
+        "movie::tests::geometry_handles_rotation_mirror_and_origin",
+        "movie::tests::geometry_rejects_nonfinite_singular_and_excessive",
+        "movie::tests::identity::source_guard_canonicalizes_symlinked_parent_directories",
+        "movie::tests::identity::source_guard_rejects_directory_empty_and_replaced_files",
+        "movie::tests::identity::source_guard_resolves_symlink_and_detects_edits",
+        "movie::tests::pixel_storage_requires_entire_padded_last_row",
+        "movie::tests::read_range_preserves_source_pts_and_tolerance",
+        "movie::tests::read_range_rejects_invalid_or_unbounded_values",
+        "movie::tests::selected_source_is_send_sync_owned_identity_not_equal_metadata",
+        "movie::tests::source_seek_has_independent_short_long_end_and_invalid_rules",
+        "movie::tests::unavailable_open_never_reads_a_path"
+      ],
+      "expected_names_basis": "exact-source macOS test --list; see setup.json and raw listing",
+      "started_at": "2026-10-08T22:50:48.544636+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/platform-movie.log",
+      "ended_at": "2026-10-08T22:50:49.797075+00:00",
+      "elapsed_seconds": 1.2522705829469487,
+      "exit_code": 0,
+      "log_sha256": "c71cc2e402cb67b14b549b40fb205c5e29e31e32bd5e296081208a6254dd3417",
+      "counts": [
+        {
+          "passed": 23,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 190
+        }
+      ],
+      "test_binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bello_platform-d2735769049f8c13",
+          "sha256": "692e36771f4e026b5593efb3c631079e898e10c6be47889e4e3f56fe64f04ae8"
+        }
+      ],
+      "test_results": [
+        {
+          "name": "movie::macos::tests::native_admission_waits_for_old_converter_lease_and_cancels_own_waiter",
+          "result": "ok"
+        },
+        {
+          "name": "movie::macos::tests::native_cancel_and_sample_limit_retire_reader_and_preserve_prior_output",
+          "result": "ok"
+        },
+        {
+          "name": "movie::macos::tests::native_final_validation_checks_late_cancel_source_mutation_and_own_retirement",
+          "result": "ok"
+        },
+        {
+          "name": "movie::macos::tests::native_invalid_movie_reports_metadata_error_and_honors_precancel",
+          "result": "ok"
+        },
+        {
+          "name": "movie::macos::tests::native_metadata_delivery_rechecks_late_cancel_and_source_after_callback_drain",
+          "result": "ok"
+        },
+        {
+          "name": "movie::macos::tests::native_render_matches_display_orientation_and_coded_size_scaling",
+          "result": "ok"
+        },
+        {
+          "name": "movie::macos::tests::native_synthetic_movie_pts_orientation_and_staged_gif_integration",
+          "result": "ok"
+        },
+        {
+          "name": "movie::macos::tests::native_time_rejects_invalid_nonfinite_negative_and_epoch_values",
+          "result": "ok"
+        },
+        {
+          "name": "movie::macos::tests::nil_sample_status_mapping_never_masks_failure_as_clean_eof",
+          "result": "ok"
+        },
+        {
+          "name": "movie::retirement::tests::logical_cancellation_cannot_complete_held_callback_retirement",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::cancellation_is_shared_atomic_state",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::frame_transfer_moves_pixels_and_debug_redacts_them",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::geometry_handles_rotation_mirror_and_origin",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::geometry_rejects_nonfinite_singular_and_excessive",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::identity::source_guard_canonicalizes_symlinked_parent_directories",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::identity::source_guard_rejects_directory_empty_and_replaced_files",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::identity::source_guard_resolves_symlink_and_detects_edits",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::pixel_storage_requires_entire_padded_last_row",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::read_range_preserves_source_pts_and_tolerance",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::read_range_rejects_invalid_or_unbounded_values",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::selected_source_is_send_sync_owned_identity_not_equal_metadata",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::source_seek_has_independent_short_long_end_and_invalid_rules",
+          "result": "ok"
+        },
+        {
+          "name": "movie::tests::unavailable_open_never_reads_a_path",
+          "result": "ok"
+        }
+      ]
+    },
+    {
+      "name": "app-native-movie",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "gif_converter::native_host_tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_passed": 2,
+      "expected_ignored": 0,
+      "expected_tests_from_candidate_log": [
+        "gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing",
+        "gif_converter::native_host_tests::generated_native_host_short_sparse_long_and_leading_gap_seek_contract"
+      ],
+      "expected_names_basis": "exact-source macOS test --list; see setup.json and raw listing",
+      "started_at": "2026-10-08T22:50:49.797711+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/app-native-movie.log",
+      "ended_at": "2026-10-08T22:50:52.203355+00:00",
+      "elapsed_seconds": 2.4053442920558155,
+      "exit_code": 101,
+      "log_sha256": "7aeed62f4940a62b548ae1b3a47377d524255a1f9750ef081a9f01e826319f47",
+      "counts": [
+        {
+          "passed": 1,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 409
+        }
+      ],
+      "test_binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+          "sha256": "8bd0138fcac36c0e9e20f5f03d6f654b986b8911aa613f410f98580637be4647"
+        }
+      ],
+      "test_results": [
+        {
+          "name": "gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing",
+          "result": "FAILED"
+        },
+        {
+          "name": "gif_converter::native_host_tests::generated_native_host_short_sparse_long_and_leading_gap_seek_contract",
+          "result": "ok"
+        }
+      ]
+    }
+  ],
+  "passed": 24,
+  "failed": 1,
+  "ignored": 0,
+  "native_suite_status": "blocked by original App InvalidOutput; never relabeled as passing",
+  "external_probe": {
+    "started_at": "2026-10-08T22:55:30.920325+00:00",
+    "commands": [
+      {
+        "command": [
+          "/opt/homebrew/bin/cargo",
+          "build",
+          "--offline",
+          "--locked",
+          "-p",
+          "bello-platform",
+          "-p",
+          "bellobox-core",
+          "--features",
+          "movie-fixtures",
+          "--lib",
+          "--message-format=json"
+        ],
+        "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/source/rust",
+        "exit_code": 0,
+        "stdout_sha256": "119a46473e6b4ed76b8fcd127d8d53d48463a440b20fc0bd1ee91342283ba911",
+        "stderr_sha256": "31704339844e58bcc636e8366f01d6b18e95eba5ed0fa72373e42caa60b9b4a2"
+      },
+      {
+        "command": [
+          "/opt/homebrew/bin/rustc",
+          "--edition=2024",
+          "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/native-export-probe.rs",
+          "-L",
+          "dependency=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps",
+          "--extern",
+          "gif=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/libgif-1924417c87de232c.rlib",
+          "--extern",
+          "bello_platform=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbello_platform.rlib",
+          "--extern",
+          "bellobox_core=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbellobox_core.rlib",
+          "-o",
+          "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/native-export-probe"
+        ],
+        "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence",
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "command": [
+          "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/native-export-probe",
+          "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures"
+        ],
+        "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence",
+        "exit_code": 0,
+        "stdout_sha256": "ddd42b829aeee4310a4f116630f078bd556889a7545a536d88e2f589d57b6d65",
+        "stderr_sha256": "f337bd442e4ee4f644bc08cb34c02e9e02781f9bf0ec4526580644f96a879193"
+      }
+    ],
+    "source_sha256": "d404a2e89507c40fa51d537051422a31e1e928efea5bb90965ba441049e258ee",
+    "libraries": {
+      "gif": {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/libgif-1924417c87de232c.rlib",
+        "sha256": "7c52c69dbc1f522af2dfc2762ee3265e87b4cb516edc6a9f7ebf9d556d664211"
+      },
+      "bello_platform": {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbello_platform.rlib",
+        "sha256": "83b4ab3a4c32bd98ad5830b8cf86cae032e04d6484f79166782b7f5e3e5ed131"
+      },
+      "bellobox_core": {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbellobox_core.rlib",
+        "sha256": "11c35a8e558371746650afca1ca717919d843da9a90f96dda0520cef56ebc945"
+      }
+    },
+    "binary_sha256": "7bc99d35065485b37819fc10313fdfa28de7ee5195c5843ccd91d208e2929f5d",
+    "completed_at": "2026-10-08T22:55:36.249027+00:00"
+  },
+  "probe_observations": {
+    "native_cases": 6,
+    "native_exports_ok": 4,
+    "native_exports_invalid_output": 2,
+    "replay_cases": 6,
+    "replay_exports_ok": 4,
+    "replay_exports_invalid_output": 2,
+    "native_replay_bytes_equal_all_six": true,
+    "all_failed_cases_mirrored": true,
+    "failed_publications": 0,
+    "staging_leftovers": 0,
+    "strict_decoder_failure": "EndCodeNotFound after yielding both frames",
+    "strict_disabled_diagnostic_only": "all cases complete; production validation not changed",
+    "independent_lzw_inspection_sha256": "9610309451dab7230cfc837252ef7ee340c3bf27954eda23247f302e1f13d31c"
+  },
+  "artifact_manifest_sha256": "b716106b1c2fee945abdef47af209fd6f1b818d895feb7b09b768c195988f20d",
+  "scope": "Read-only exact source assessment; generated MOV/RGBA/GIF fixtures and cache-only diagnostic code; no repository edits or claims, real user media, GUI launch, capture, permissions, provider/key access, install, signing or release."
+}

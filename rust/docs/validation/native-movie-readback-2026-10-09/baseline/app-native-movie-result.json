@@ -1,0 +1,47 @@
+{
+  "name": "app-native-movie",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--features",
+    "movie-fixtures",
+    "--bin",
+    "bellobox",
+    "gif_converter::native_host_tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "expected_passed": 2,
+  "expected_ignored": 0,
+  "expected_tests_from_candidate_log": [
+    "gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing",
+    "gif_converter::native_host_tests::generated_native_host_short_sparse_long_and_leading_gap_seek_contract"
+  ],
+  "expected_names_basis": "exact-source macOS test --list; see setup.json and raw listing",
+  "started_at": "2026-10-08T22:50:49.797711+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/app-native-movie.log",
+  "ended_at": "2026-10-08T22:50:52.203355+00:00",
+  "elapsed_seconds": 2.4053442920558155,
+  "exit_code": 101,
+  "log_sha256": "7aeed62f4940a62b548ae1b3a47377d524255a1f9750ef081a9f01e826319f47",
+  "counts": [
+    {
+      "passed": 1,
+      "failed": 1,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 409
+    }
+  ],
+  "test_binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+      "sha256": "8bd0138fcac36c0e9e20f5f03d6f654b986b8911aa613f410f98580637be4647"
+    }
+  ]
+}

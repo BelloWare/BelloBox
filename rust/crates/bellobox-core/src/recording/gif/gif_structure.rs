@@ -146,30 +146,32 @@ pub(super) fn validate(
     if file.metadata()?.len() > MAX_OUTPUT_BYTES {
         return Err(GifError::LimitExceeded("encoded GIF bytes"));
     }
-    file.seek(SeekFrom::Start(0))?;
-    inspect(
+    validate_reader(file, plan, control)
+}
+
+pub(super) fn validate_reader(
+    reader: &mut (impl Read + Seek),
+    plan: &GifExportPlan,
+    control: &ExportControl,
+) -> Result<(), GifError> {
+    control.check_active()?;
+    reader.seek(SeekFrom::Start(0))?;
+    let inspection = inspect(
         &mut BufReader::new(CancelReader {
-            file: &mut *file,
+            inner: &mut *reader,
             control,
         }),
         plan,
-    )?;
-    file.seek(SeekFrom::Start(0))?;
-    let mut options = ::gif::DecodeOptions::new();
-    options.set_color_output(::gif::ColorOutput::RGBA);
-    options.check_frame_consistency(true);
-    options.check_lzw_end_code(true);
-    options.set_memory_limit(::gif::MemoryLimit::Bytes(
-        (1080 * 1080 * 4).try_into().expect("positive constant"),
-    ));
-    let mut decoder = options
-        .read_info(CancelReader { file, control })
-        .map_err(|_| GifError::InvalidOutput)?;
+    );
+    control.check_active()?;
+    inspection?;
+    reader.seek(SeekFrom::Start(0))?;
+    let mut decoder = super::gif_decode::Decoder::new(CancelReader {
+        inner: reader,
+        control,
+    })?;
     let mut count = 0;
-    while let Some(frame) = decoder
-        .read_next_frame()
-        .map_err(|_| GifError::InvalidOutput)?
-    {
+    while let Some(frame) = decoder.next_frame(|| control.check_active())? {
         control.check_active()?;
         if count >= plan.frame_count()
             || frame.delay != plan.delays[count]
@@ -187,13 +189,13 @@ pub(super) fn validate(
     }
     control.check_active()
 }
-struct CancelReader<'a> {
-    file: &'a mut File,
+struct CancelReader<'a, R> {
+    inner: &'a mut R,
     control: &'a ExportControl,
 }
-impl Read for CancelReader<'_> {
+impl<R: Read> Read for CancelReader<'_, R> {
     fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
         self.control.check_active().map_err(io::Error::other)?;
-        self.file.read(buffer)
+        self.inner.read(buffer)
     }
 }

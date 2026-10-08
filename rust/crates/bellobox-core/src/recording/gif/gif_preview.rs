@@ -3,12 +3,12 @@
 use super::{GifError, GifExportResult, MAX_FRAMES, MAX_OUTPUT_BYTES};
 use std::{
     fs::File,
-    io::{Cursor, Read, Seek, SeekFrom, Take},
+    io::{Cursor, Seek, SeekFrom},
     time::SystemTime,
 };
 
 pub struct GifPreview {
-    reader: ::gif::Decoder<Take<File>>,
+    reader: super::gif_decode::Decoder<File>,
     identity: File,
     length: u64,
     modified: Option<SystemTime>,
@@ -47,15 +47,8 @@ impl GifPreview {
             return Err(GifError::InvalidOutput);
         }
         let identity = file.try_clone()?;
-        let mut options = ::gif::DecodeOptions::new();
-        options.set_color_output(::gif::ColorOutput::RGBA);
-        options.set_memory_limit(::gif::MemoryLimit::Bytes(
-            std::num::NonZeroU64::new(16 * 1024 * 1024).unwrap(),
-        ));
-        let reader = options
-            .read_info(file.take(MAX_OUTPUT_BYTES))
-            .map_err(|e| GifError::Source(e.to_string()))?;
-        if (reader.width(), reader.height()) != result.size {
+        let reader = super::gif_decode::Decoder::new(file)?;
+        if reader.size() != result.size {
             return Err(GifError::InvalidOutput);
         }
         Ok(Self {
@@ -110,10 +103,7 @@ impl GifPreview {
         {
             return Err(GifError::InvalidOutput);
         }
-        let frame = self
-            .reader
-            .read_next_frame()
-            .map_err(|e| GifError::Source(e.to_string()))?;
+        let frame = self.reader.next_frame(|| Ok(()))?;
         let after = self.identity.metadata()?;
         if after.len() != self.length || after.modified().ok() != self.modified {
             return Err(GifError::InvalidOutput);
@@ -142,7 +132,7 @@ impl GifPreview {
         let image = image::RgbaImage::from_raw(
             u32::from(frame.width),
             u32::from(frame.height),
-            frame.buffer.to_vec(),
+            frame.buffer.into_owned(),
         )
         .ok_or(GifError::InvalidFrame)?;
         let delay_centiseconds = frame.delay;

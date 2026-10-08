@@ -1,0 +1,47 @@
+{
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-core",
+    "--lib",
+    "recording::gif::gif_decode_tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "cwd": "/Users/admin/projects/BelloBox-rust-gif-strict-readback/rust",
+  "started_at": "2026-10-08T23:20:39.323446+00:00",
+  "environment": {
+    "CARGO_TARGET_DIR": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+    "CARGO_BUILD_JOBS": "2",
+    "MACOSX_DEPLOYMENT_TARGET": "14.0",
+    "RUST_BACKTRACE": "1",
+    "RUSTC": null,
+    "RUSTFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "DEVELOPER_DIR": null,
+    "BELLOBOX_CONFIG_DIR": "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/isolated-config"
+  },
+  "removed_environment_variable_names": [],
+  "exit_code": 0,
+  "ended_at": "2026-10-08T23:21:07.329320+00:00",
+  "elapsed_seconds": 28.007487582974136,
+  "log_sha256": "5a47c40567a30aeca3be425a48815803f0b7582d17e71f13752069a6bfca44c0",
+  "counts": [
+    {
+      "passed": 13,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 432
+    }
+  ],
+  "test_binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823",
+      "sha256": "5cb74f7accbd44a9ff5e45d4942dd6f16a1a0c77125d86cb2d8f8b18ddc347ec"
+    }
+  ]
+}

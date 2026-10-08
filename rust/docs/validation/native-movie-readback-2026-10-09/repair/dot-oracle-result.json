@@ -1,0 +1,83 @@
+{
+  "file": "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/mirrored-once.gif",
+  "length": 794,
+  "sha256": "6629b6303725b54e46052c802b3d1c430e1fd665b6194920946a5971f2063d35",
+  "canvas": [
+    64,
+    48
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "size": [
+        64,
+        48
+      ],
+      "delay_centiseconds": 10,
+      "subblock_lengths": [
+        255,
+        66
+      ],
+      "minimum_code_size": 4,
+      "pixel_count": 3072,
+      "last_pixel_code": {
+        "bit_offset": 2545,
+        "width": 9,
+        "code": 274,
+        "word_length": 3,
+        "total_pixels": 3072
+      },
+      "eoi": {
+        "bit_offset": 2554,
+        "width": 9,
+        "code": 17,
+        "file_byte_offsets": [
+          407,
+          408
+        ]
+      },
+      "consumed_bits": 2563,
+      "payload_bits": 2568,
+      "terminator_offset": 409,
+      "indices_sha256": "a518966dd7007687cc611d206f5343a41dae8825b08ba15c14261d2fe4e3de4f",
+      "rgba_sha256": "ff8565eb548b7addfec7a86e9620afb730975d4e38859011d1f1efd72a9e5655"
+    },
+    {
+      "index": 1,
+      "size": [
+        64,
+        48
+      ],
+      "delay_centiseconds": 5,
+      "subblock_lengths": [
+        255,
+        58
+      ],
+      "minimum_code_size": 4,
+      "pixel_count": 3072,
+      "last_pixel_code": {
+        "bit_offset": 2482,
+        "width": 9,
+        "code": 4,
+        "word_length": 1,
+        "total_pixels": 3072
+      },
+      "eoi": {
+        "bit_offset": 2491,
+        "width": 9,
+        "code": 17,
+        "file_byte_offsets": [
+          790,
+          791
+        ]
+      },
+      "consumed_bits": 2500,
+      "payload_bits": 2504,
+      "terminator_offset": 792,
+      "indices_sha256": "549ce4e931f50a9259500bad66b756441acc9c1ba676ff24de181f1028609152",
+      "rgba_sha256": "8b6e6610ec5d5eefdcde5f4e539fdaba94eed64319ffb4bbb4278c5f8763f64d"
+    }
+  ],
+  "trailer_offset": 793,
+  "exact_eof": true
+}

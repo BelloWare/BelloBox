@@ -1,0 +1,152 @@
+CASE Landscape loops=false info=MovieInfo { duration: 0.4, display_width: 64.0, display_height: 48.0, nominal_frame_rate: 10.0 } plan=GifExportPlan { start: 0.1, end: 0.251, frames_per_second: 10, output_width: 64, output_height: 48, loops: false, source_size: (64, 48), delays: [10, 5] }
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Landscape/native-false result=Ok(GifExportResult { path: "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Landscape/native-false/output.gif", frame_count: 2, size: (64, 48), duration: 0.15, file_size: 799 }) control=Ok(Published)
+stage_leftovers=0 output_exists=true
+diagnostic reconstruction equals published bytes
+strict=true frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=true complete frames=2
+strict=false frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+native_sample=0 pts=0.1 size=64x48 rgba=12288
+native_sample=1 pts=0.2 size=64x48 rgba=12288
+native_sample=2 pts=0.3 size=64x48 rgba=12288
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Landscape/replay-false result=Ok(GifExportResult { path: "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Landscape/replay-false/output.gif", frame_count: 2, size: (64, 48), duration: 0.15, file_size: 799 }) control=Ok(Published)
+stage_leftovers=0 output_exists=true
+diagnostic reconstruction equals published bytes
+strict=true frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=true complete frames=2
+strict=false frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+CASE Landscape loops=true info=MovieInfo { duration: 0.4, display_width: 64.0, display_height: 48.0, nominal_frame_rate: 10.0 } plan=GifExportPlan { start: 0.1, end: 0.251, frames_per_second: 10, output_width: 64, output_height: 48, loops: true, source_size: (64, 48), delays: [10, 5] }
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Landscape/native-true result=Ok(GifExportResult { path: "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Landscape/native-true/output.gif", frame_count: 2, size: (64, 48), duration: 0.15, file_size: 818 }) control=Ok(Published)
+stage_leftovers=0 output_exists=true
+diagnostic reconstruction equals published bytes
+strict=true frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=true complete frames=2
+strict=false frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+native_sample=0 pts=0.1 size=64x48 rgba=12288
+native_sample=1 pts=0.2 size=64x48 rgba=12288
+native_sample=2 pts=0.3 size=64x48 rgba=12288
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Landscape/replay-true result=Ok(GifExportResult { path: "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Landscape/replay-true/output.gif", frame_count: 2, size: (64, 48), duration: 0.15, file_size: 818 }) control=Ok(Published)
+stage_leftovers=0 output_exists=true
+diagnostic reconstruction equals published bytes
+strict=true frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=true complete frames=2
+strict=false frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+CASE Portrait loops=false info=MovieInfo { duration: 0.4, display_width: 48.0, display_height: 64.0, nominal_frame_rate: 10.0 } plan=GifExportPlan { start: 0.1, end: 0.251, frames_per_second: 10, output_width: 48, output_height: 64, loops: false, source_size: (48, 64), delays: [10, 5] }
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Portrait/native-false result=Ok(GifExportResult { path: "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Portrait/native-false/output.gif", frame_count: 2, size: (48, 64), duration: 0.15, file_size: 877 }) control=Ok(Published)
+stage_leftovers=0 output_exists=true
+diagnostic reconstruction equals published bytes
+strict=true frame=0 size=48x64 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=48x64 delay=5 rgba=12288 transparent=None
+strict=true complete frames=2
+strict=false frame=0 size=48x64 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=48x64 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+native_sample=0 pts=0.1 size=48x64 rgba=12288
+native_sample=1 pts=0.2 size=48x64 rgba=12288
+native_sample=2 pts=0.3 size=48x64 rgba=12288
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Portrait/replay-false result=Ok(GifExportResult { path: "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Portrait/replay-false/output.gif", frame_count: 2, size: (48, 64), duration: 0.15, file_size: 877 }) control=Ok(Published)
+stage_leftovers=0 output_exists=true
+diagnostic reconstruction equals published bytes
+strict=true frame=0 size=48x64 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=48x64 delay=5 rgba=12288 transparent=None
+strict=true complete frames=2
+strict=false frame=0 size=48x64 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=48x64 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+CASE Portrait loops=true info=MovieInfo { duration: 0.4, display_width: 48.0, display_height: 64.0, nominal_frame_rate: 10.0 } plan=GifExportPlan { start: 0.1, end: 0.251, frames_per_second: 10, output_width: 48, output_height: 64, loops: true, source_size: (48, 64), delays: [10, 5] }
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Portrait/native-true result=Ok(GifExportResult { path: "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Portrait/native-true/output.gif", frame_count: 2, size: (48, 64), duration: 0.15, file_size: 896 }) control=Ok(Published)
+stage_leftovers=0 output_exists=true
+diagnostic reconstruction equals published bytes
+strict=true frame=0 size=48x64 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=48x64 delay=5 rgba=12288 transparent=None
+strict=true complete frames=2
+strict=false frame=0 size=48x64 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=48x64 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+native_sample=0 pts=0.1 size=48x64 rgba=12288
+native_sample=1 pts=0.2 size=48x64 rgba=12288
+native_sample=2 pts=0.3 size=48x64 rgba=12288
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Portrait/replay-true result=Ok(GifExportResult { path: "/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Portrait/replay-true/output.gif", frame_count: 2, size: (48, 64), duration: 0.15, file_size: 896 }) control=Ok(Published)
+stage_leftovers=0 output_exists=true
+diagnostic reconstruction equals published bytes
+strict=true frame=0 size=48x64 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=48x64 delay=5 rgba=12288 transparent=None
+strict=true complete frames=2
+strict=false frame=0 size=48x64 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=48x64 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+CASE Mirrored loops=false info=MovieInfo { duration: 0.4, display_width: 64.0, display_height: 48.0, nominal_frame_rate: 10.0 } plan=GifExportPlan { start: 0.1, end: 0.251, frames_per_second: 10, output_width: 64, output_height: 48, loops: false, source_size: (64, 48), delays: [10, 5] }
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Mirrored/native-false result=Err(InvalidOutput) control=Ok(Failed)
+stage_leftovers=0 output_exists=false
+strict=true frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=true decode_error_after=2: EndCodeNotFound
+strict=false frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+native_sample=0 pts=0.1 size=64x48 rgba=12288
+native_sample=1 pts=0.2 size=64x48 rgba=12288
+native_sample=2 pts=0.3 size=64x48 rgba=12288
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Mirrored/replay-false result=Err(InvalidOutput) control=Ok(Failed)
+stage_leftovers=0 output_exists=false
+strict=true frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=true decode_error_after=2: EndCodeNotFound
+strict=false frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+CASE Mirrored loops=true info=MovieInfo { duration: 0.4, display_width: 64.0, display_height: 48.0, nominal_frame_rate: 10.0 } plan=GifExportPlan { start: 0.1, end: 0.251, frames_per_second: 10, output_width: 64, output_height: 48, loops: true, source_size: (64, 48), delays: [10, 5] }
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Mirrored/native-true result=Err(InvalidOutput) control=Ok(Failed)
+stage_leftovers=0 output_exists=false
+strict=true frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=true decode_error_after=2: EndCodeNotFound
+strict=false frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2
+native_sample=0 pts=0.1 size=64x48 rgba=12288
+native_sample=1 pts=0.2 size=64x48 rgba=12288
+native_sample=2 pts=0.3 size=64x48 rgba=12288
+progress=1/2
+progress=2/2
+export_dir=/Users/admin/Library/Caches/BelloRustWork/box-abd-movie-assessment-vljcrn2n/evidence/probe-fixtures/Mirrored/replay-true result=Err(InvalidOutput) control=Ok(Failed)
+stage_leftovers=0 output_exists=false
+strict=true frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=true frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=true decode_error_after=2: EndCodeNotFound
+strict=false frame=0 size=64x48 delay=10 rgba=12288 transparent=None
+strict=false frame=1 size=64x48 delay=5 rgba=12288 transparent=None
+strict=false complete frames=2

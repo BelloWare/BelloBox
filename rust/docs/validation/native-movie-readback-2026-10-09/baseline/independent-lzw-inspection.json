@@ -1,0 +1,569 @@
+{
+  "method": "External diagnostic GIF block extraction and independent little-endian LZW dictionary walk; no repository edits; reconstructed pre-trailer snapshots plus one trailer, with all successful controls byte-equal to original published output.",
+  "results": [
+    {
+      "file": "Landscape/native-false/diagnostic-appended-trailer.gif",
+      "sha256": "d963d363448da5fee8fdbbb0ae84dc1d9b8f140f0430e44d80ccee4a282783bd",
+      "frames": [
+        {
+          "index": 0,
+          "width": 64,
+          "height": 48,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            67
+          ],
+          "payload_sha256": "c2c646e8d7bc51fddc95cb4ef7eec670b9ccc92463ceab3e464e4c8f53fbad77",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "a207f83583f8c08f20d7c8ab0783dd44e72fdeb6e879a9af23c307a63d0f4f9f",
+          "consumed_bits": 2572,
+          "payload_bits": 2576,
+          "tail": [
+            {
+              "bit": 2527,
+              "width": 9,
+              "code": 332
+            },
+            {
+              "bit": 2536,
+              "width": 9,
+              "code": 341
+            },
+            {
+              "bit": 2545,
+              "width": 9,
+              "code": 342
+            },
+            {
+              "bit": 2554,
+              "width": 9,
+              "code": 2
+            },
+            {
+              "bit": 2563,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "width": 64,
+          "height": 48,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            62
+          ],
+          "payload_sha256": "549d44ee8392b11b19024b7197214e930127a9c78875dbad2728dffff98abd43",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "43817b09d3b2d62073a28470de1819d6a8f2d8b05016647d5d43a839b7730a96",
+          "consumed_bits": 2536,
+          "payload_bits": 2536,
+          "tail": [
+            {
+              "bit": 2491,
+              "width": 9,
+              "code": 324
+            },
+            {
+              "bit": 2500,
+              "width": 9,
+              "code": 337
+            },
+            {
+              "bit": 2509,
+              "width": 9,
+              "code": 334
+            },
+            {
+              "bit": 2518,
+              "width": 9,
+              "code": 339
+            },
+            {
+              "bit": 2527,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "Landscape/native-true/diagnostic-appended-trailer.gif",
+      "sha256": "de30a99f39c11aec984b566e8f704c2094ccf2070352215be6966022775f0860",
+      "frames": [
+        {
+          "index": 0,
+          "width": 64,
+          "height": 48,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            67
+          ],
+          "payload_sha256": "c2c646e8d7bc51fddc95cb4ef7eec670b9ccc92463ceab3e464e4c8f53fbad77",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "a207f83583f8c08f20d7c8ab0783dd44e72fdeb6e879a9af23c307a63d0f4f9f",
+          "consumed_bits": 2572,
+          "payload_bits": 2576,
+          "tail": [
+            {
+              "bit": 2527,
+              "width": 9,
+              "code": 332
+            },
+            {
+              "bit": 2536,
+              "width": 9,
+              "code": 341
+            },
+            {
+              "bit": 2545,
+              "width": 9,
+              "code": 342
+            },
+            {
+              "bit": 2554,
+              "width": 9,
+              "code": 2
+            },
+            {
+              "bit": 2563,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "width": 64,
+          "height": 48,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            62
+          ],
+          "payload_sha256": "549d44ee8392b11b19024b7197214e930127a9c78875dbad2728dffff98abd43",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "43817b09d3b2d62073a28470de1819d6a8f2d8b05016647d5d43a839b7730a96",
+          "consumed_bits": 2536,
+          "payload_bits": 2536,
+          "tail": [
+            {
+              "bit": 2491,
+              "width": 9,
+              "code": 324
+            },
+            {
+              "bit": 2500,
+              "width": 9,
+              "code": 337
+            },
+            {
+              "bit": 2509,
+              "width": 9,
+              "code": 334
+            },
+            {
+              "bit": 2518,
+              "width": 9,
+              "code": 339
+            },
+            {
+              "bit": 2527,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "Mirrored/native-false/diagnostic-appended-trailer.gif",
+      "sha256": "6629b6303725b54e46052c802b3d1c430e1fd665b6194920946a5971f2063d35",
+      "frames": [
+        {
+          "index": 0,
+          "width": 64,
+          "height": 48,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            66
+          ],
+          "payload_sha256": "59d923e124a4902f8af806b263f1557746238dc2f61a00fec074a0860731e8ba",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "a518966dd7007687cc611d206f5343a41dae8825b08ba15c14261d2fe4e3de4f",
+          "consumed_bits": 2563,
+          "payload_bits": 2568,
+          "tail": [
+            {
+              "bit": 2518,
+              "width": 9,
+              "code": 294
+            },
+            {
+              "bit": 2527,
+              "width": 9,
+              "code": 340
+            },
+            {
+              "bit": 2536,
+              "width": 9,
+              "code": 342
+            },
+            {
+              "bit": 2545,
+              "width": 9,
+              "code": 274
+            },
+            {
+              "bit": 2554,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "width": 64,
+          "height": 48,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            58
+          ],
+          "payload_sha256": "27d392b99df288509f21e569fae1c976e46c6079c2fcc1a7d5bcc5b15fa1716f",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "549ce4e931f50a9259500bad66b756441acc9c1ba676ff24de181f1028609152",
+          "consumed_bits": 2500,
+          "payload_bits": 2504,
+          "tail": [
+            {
+              "bit": 2455,
+              "width": 9,
+              "code": 332
+            },
+            {
+              "bit": 2464,
+              "width": 9,
+              "code": 221
+            },
+            {
+              "bit": 2473,
+              "width": 9,
+              "code": 281
+            },
+            {
+              "bit": 2482,
+              "width": 9,
+              "code": 4
+            },
+            {
+              "bit": 2491,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "Mirrored/native-true/diagnostic-appended-trailer.gif",
+      "sha256": "bceb757c9968bd8d1b97f9ae57337d29145f940f96dd5d921af0d854c2c546cc",
+      "frames": [
+        {
+          "index": 0,
+          "width": 64,
+          "height": 48,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            66
+          ],
+          "payload_sha256": "59d923e124a4902f8af806b263f1557746238dc2f61a00fec074a0860731e8ba",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "a518966dd7007687cc611d206f5343a41dae8825b08ba15c14261d2fe4e3de4f",
+          "consumed_bits": 2563,
+          "payload_bits": 2568,
+          "tail": [
+            {
+              "bit": 2518,
+              "width": 9,
+              "code": 294
+            },
+            {
+              "bit": 2527,
+              "width": 9,
+              "code": 340
+            },
+            {
+              "bit": 2536,
+              "width": 9,
+              "code": 342
+            },
+            {
+              "bit": 2545,
+              "width": 9,
+              "code": 274
+            },
+            {
+              "bit": 2554,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "width": 64,
+          "height": 48,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            58
+          ],
+          "payload_sha256": "27d392b99df288509f21e569fae1c976e46c6079c2fcc1a7d5bcc5b15fa1716f",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "549ce4e931f50a9259500bad66b756441acc9c1ba676ff24de181f1028609152",
+          "consumed_bits": 2500,
+          "payload_bits": 2504,
+          "tail": [
+            {
+              "bit": 2455,
+              "width": 9,
+              "code": 332
+            },
+            {
+              "bit": 2464,
+              "width": 9,
+              "code": 221
+            },
+            {
+              "bit": 2473,
+              "width": 9,
+              "code": 281
+            },
+            {
+              "bit": 2482,
+              "width": 9,
+              "code": 4
+            },
+            {
+              "bit": 2491,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "Portrait/native-false/diagnostic-appended-trailer.gif",
+      "sha256": "988c1499c878434ddfbceaf07fb2316ac8ab5204414f8670b2ece7a186ff1bb5",
+      "frames": [
+        {
+          "index": 0,
+          "width": 48,
+          "height": 64,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            106
+          ],
+          "payload_sha256": "1af6635b3c55b3857318b2458d46e2354e4e969a61f65ec00b677568243faaac",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "137fc667398908e044645c670e975665957ba193ad2f197c057f8103c42543a2",
+          "consumed_bits": 2887,
+          "payload_bits": 2888,
+          "tail": [
+            {
+              "bit": 2842,
+              "width": 9,
+              "code": 360
+            },
+            {
+              "bit": 2851,
+              "width": 9,
+              "code": 361
+            },
+            {
+              "bit": 2860,
+              "width": 9,
+              "code": 374
+            },
+            {
+              "bit": 2869,
+              "width": 9,
+              "code": 133
+            },
+            {
+              "bit": 2878,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "width": 48,
+          "height": 64,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            101
+          ],
+          "payload_sha256": "9e23c1ea23e1f61d857bd1e2883a6bd27d334e6e1726d5647c5e01ecf3380986",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "67cb259488b08c640aa78f5318497209c2167ef0e04eaa3c074bfee6076fbb48",
+          "consumed_bits": 2842,
+          "payload_bits": 2848,
+          "tail": [
+            {
+              "bit": 2797,
+              "width": 9,
+              "code": 348
+            },
+            {
+              "bit": 2806,
+              "width": 9,
+              "code": 373
+            },
+            {
+              "bit": 2815,
+              "width": 9,
+              "code": 345
+            },
+            {
+              "bit": 2824,
+              "width": 9,
+              "code": 236
+            },
+            {
+              "bit": 2833,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "Portrait/native-true/diagnostic-appended-trailer.gif",
+      "sha256": "b1689ae29f8445a3931435b119cf557189e617c4f96d41c15c3b7e8c493ccd58",
+      "frames": [
+        {
+          "index": 0,
+          "width": 48,
+          "height": 64,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            106
+          ],
+          "payload_sha256": "1af6635b3c55b3857318b2458d46e2354e4e969a61f65ec00b677568243faaac",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "137fc667398908e044645c670e975665957ba193ad2f197c057f8103c42543a2",
+          "consumed_bits": 2887,
+          "payload_bits": 2888,
+          "tail": [
+            {
+              "bit": 2842,
+              "width": 9,
+              "code": 360
+            },
+            {
+              "bit": 2851,
+              "width": 9,
+              "code": 361
+            },
+            {
+              "bit": 2860,
+              "width": 9,
+              "code": 374
+            },
+            {
+              "bit": 2869,
+              "width": 9,
+              "code": 133
+            },
+            {
+              "bit": 2878,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "width": 48,
+          "height": 64,
+          "minimum_code_size": 4,
+          "subblock_lengths": [
+            255,
+            101
+          ],
+          "payload_sha256": "9e23c1ea23e1f61d857bd1e2883a6bd27d334e6e1726d5647c5e01ecf3380986",
+          "eoi": true,
+          "eoi_code": 17,
+          "decoded_pixels": 3072,
+          "decoded_indices_sha256": "67cb259488b08c640aa78f5318497209c2167ef0e04eaa3c074bfee6076fbb48",
+          "consumed_bits": 2842,
+          "payload_bits": 2848,
+          "tail": [
+            {
+              "bit": 2797,
+              "width": 9,
+              "code": 348
+            },
+            {
+              "bit": 2806,
+              "width": 9,
+              "code": 373
+            },
+            {
+              "bit": 2815,
+              "width": 9,
+              "code": 345
+            },
+            {
+              "bit": 2824,
+              "width": 9,
+              "code": 236
+            },
+            {
+              "bit": 2833,
+              "width": 9,
+              "code": 17
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

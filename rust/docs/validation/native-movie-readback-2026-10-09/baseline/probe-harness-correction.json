@@ -1,0 +1,4 @@
+{
+  "initial_harness_outcome": "Cargo build succeeded; artifact assertion failed because bello-platform depends on bellobox-core only as a dev-dependency, so normal platform build emitted no core/gif artifacts.",
+  "correction": "Build bellobox-core explicitly along with fixture-enabled platform; preserve initial source, output and receipt. No repository or test changes."
+}

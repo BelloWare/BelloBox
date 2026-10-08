@@ -1,0 +1,73 @@
+{
+  "started_at": "2026-10-08T23:24:35.756513+00:00",
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bello-platform",
+        "-p",
+        "bellobox-core",
+        "--features",
+        "movie-fixtures",
+        "--lib",
+        "--message-format=json"
+      ],
+      "cwd": "/Users/admin/projects/BelloBox-rust-gif-strict-readback/rust",
+      "exit_code": 0,
+      "stdout_sha256": "5945f3487372e07bf6e6279ad7e74d2601bdf27880b0f094234bd89b12ffcb1a",
+      "stderr_sha256": "d6264997178a79c851b8fd46e52e3aabba5acba7f7b1d5d8a5e351384cc23f0f"
+    },
+    {
+      "command": [
+        "/opt/homebrew/bin/rustc",
+        "--edition=2024",
+        "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/native-export-probe.rs",
+        "-L",
+        "dependency=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps",
+        "--extern",
+        "gif=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/libgif-1924417c87de232c.rlib",
+        "--extern",
+        "bello_platform=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbello_platform.rlib",
+        "--extern",
+        "bellobox_core=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbellobox_core.rlib",
+        "-o",
+        "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/native-export-probe"
+      ],
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/native-export-probe",
+        "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/probe-fixtures"
+      ],
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence",
+      "exit_code": 0,
+      "stdout_sha256": "5e744e204d9233be67787edbc1a0e0f8049355bc31b561f6e8e0f30bbb519c7c",
+      "stderr_sha256": "f337bd442e4ee4f644bc08cb34c02e9e02781f9bf0ec4526580644f96a879193"
+    }
+  ],
+  "source_sha256": "d404a2e89507c40fa51d537051422a31e1e928efea5bb90965ba441049e258ee",
+  "libraries": {
+    "gif": {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/libgif-1924417c87de232c.rlib",
+      "sha256": "7c52c69dbc1f522af2dfc2762ee3265e87b4cb516edc6a9f7ebf9d556d664211"
+    },
+    "bello_platform": {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbello_platform.rlib",
+      "sha256": "e95582b20918b0c348185c700a93795b34464a2517fef2ce9417a8fc02440732"
+    },
+    "bellobox_core": {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbellobox_core.rlib",
+      "sha256": "e9436620feb7ef32cf90f13bd710092289e67f19c3a205806ab711d2bb95a23f"
+    }
+  },
+  "binary_sha256": "e2609ef52ab62a216f669ff9d71370f9681a05444a0ec44aeb1b725d3e83797a",
+  "completed_at": "2026-10-08T23:24:41.350684+00:00"
+}

@@ -1,0 +1,35 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/bin/rustc",
+      "--edition=2024",
+      "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/completion-probe.rs",
+      "-L",
+      "dependency=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps",
+      "--extern",
+      "gif=/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/libgif-1924417c87de232c.rlib",
+      "-o",
+      "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/completion-probe"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "command": [
+      "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/completion-probe",
+      "legacy",
+      "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/mirrored-once.gif"
+    ],
+    "exit_code": 0,
+    "output": "frame1 64x48 delay10 rgba12288\nframe2 64x48 delay5 rgba12288\nerror after2: EndCodeNotFound\n"
+  },
+  {
+    "command": [
+      "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/completion-probe",
+      "drain",
+      "/Users/admin/Library/Caches/BelloRustWork/box-gif-repair-ytl1tx5r/evidence/mirrored-once.gif"
+    ],
+    "exit_code": 0,
+    "output": "frame1 64x48 delay10 rgba12288 strict-drain-extra=false\nframe2 64x48 delay5 rgba12288 strict-drain-extra=false\ncomplete 2\n"
+  }
+]

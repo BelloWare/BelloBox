@@ -1,0 +1,31 @@
+{
+  "base": "abd7247c25c1736f7a4fd6a34032e7af9d7a1f5d",
+  "base_tree": "167c1e1e0209320f725153cbcd2063ddd134bbe5",
+  "source": [
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif.rs",
+      "sha256": "cfc628f84cbb7e9834aa335688a5c74873ab291d53b84f7f6746d9b11d7412a9",
+      "git_blob": "2497f17aba087051163cc94ab8828f184ebffc41"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_decode.rs",
+      "sha256": "f80bfaf78c868798c4fdfdb659932dbf4045b12559e80005e6665cb1f2cce710",
+      "git_blob": "3b82688e3814eab75ef37cfac928ccaf70f3b194"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_decode_tests.rs",
+      "sha256": "d0c518add0d344f46f3de557d43486afaccbf914000aad8f900167f122187900",
+      "git_blob": "c1bfc55e64c52c8d2e890e02db987a8064a97bad"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_structure.rs",
+      "sha256": "ed11b0226a6186905b1d0afdb335ab6d14cac788fdb70babe98ba91174d66d5b",
+      "git_blob": "32fa4189a070d12f14243aea1ea7aaaab4cf6b94"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_preview.rs",
+      "sha256": "e12a29da015c378dda2668dcfc0b3a622e76c5f1a1e2cd4c163241b625140d62",
+      "git_blob": "4b59d53bffee264f66555ef8c7173dd09e8faf6e"
+    }
+  ]
+}
