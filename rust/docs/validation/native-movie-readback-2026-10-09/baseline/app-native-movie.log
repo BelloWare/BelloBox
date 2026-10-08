@@ -1,0 +1,29 @@
+    Finished `test` profile [unoptimized] target(s) in 0.89s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e)
+
+running 2 tests
+test gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing ... IOServiceMatchingfailed for: AppleM2ScalerCSCDriver
+FAILED
+test gif_converter::native_host_tests::generated_native_host_short_sparse_long_and_leading_gap_seek_contract ... ok
+
+failures:
+
+---- gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing stdout ----
+
+thread 'gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing' (55068509) panicked at crates/bellobox-app/src/gif_converter/native_host_tests.rs:106:21:
+Err(InvalidOutput)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: bellobox::gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing
+   3: bellobox::gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing::{{closure}}
+   4: core::ops::function::FnOnce::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 409 filtered out; finished in 1.37s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

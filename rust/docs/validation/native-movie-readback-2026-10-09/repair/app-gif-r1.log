@@ -1,0 +1,65 @@
+   Compiling bello-workbench v0.1.0 (/Users/admin/projects/BelloBox-rust-gif-strict-readback/rust/crates/bello-workbench)
+   Compiling bello-platform v0.1.0 (/Users/admin/projects/BelloBox-rust-gif-strict-readback/rust/crates/bello-platform)
+   Compiling bello-workbench-ui v0.1.0 (/Users/admin/projects/BelloBox-rust-gif-strict-readback/rust/crates/bello-workbench-ui)
+   Compiling bellobox-core v0.1.0 (/Users/admin/projects/BelloBox-rust-gif-strict-readback/rust/crates/bellobox-core)
+   Compiling bellobox-app v0.1.0 (/Users/admin/projects/BelloBox-rust-gif-strict-readback/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 27.92s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e)
+
+running 52 tests
+test gif_converter::disposal_tests::background_source_completion_disposes_previous_frame_with_live_window ... ok
+test gif_converter::disposal_tests::narrow_converter_trim_fields_keep_fraction_prefix_visible_at_end_caret ... ok
+test gif_converter::disposal_tests::navigation_retains_previews_but_same_window_rechoose_disposes_both ... ok
+test gif_converter::disposal_tests::removed_window_and_entity_release_do_not_cancel_image_disposal ... ok
+test gif_converter::disposal_tests::resuming_prefetched_gif_disposes_replaced_frame_after_window_returns ... ok
+test gif_converter::disposal_tests::retained_close_disposes_images_and_late_seek_cannot_resurrect_them ... ok
+test gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing ... IOServiceMatchingfailed for: AppleM2ScalerCSCDriver
+ok
+test gif_converter::native_host_tests::generated_native_host_short_sparse_long_and_leading_gap_seek_contract ... ok
+test gif_converter::tests::actual_source_worker_delivers_initial_start_end_and_latest_coalesced_frame ... ok
+test gif_converter::tests::actual_synthetic_export_publishes_then_reports_result ... ok
+test gif_converter::tests::busy_rejects_source_replacement_and_duplicate_export ... ok
+test gif_converter::tests::cancellation_after_publication_reports_saved_and_retains_file ... ok
+test gif_converter::tests::cancelled_export_creates_no_file_and_preserves_source ... ok
+test gif_converter::tests::cancelled_retry_retains_last_successful_result ... ok
+test gif_converter::tests::cancelling_export_while_initial_preview_retires_restores_source_review ... ok
+test gif_converter::tests::choosing_movie_retires_synthetic_label_immediately ... ok
+test gif_converter::tests::close_before_save_dialog_reply_cannot_start_export ... ok
+test gif_converter::tests::closing_retained_view_releases_prefetch_reader_image_and_timer ... ok
+test gif_converter::tests::escape_routes_from_initial_converter_focus ... ok
+test gif_converter::tests::existing_destination_survives_and_result_is_not_invented ... ok
+test gif_converter::tests::exported_preview_streams_exact_frame_count_and_centisecond_delays ... ok
+test gif_converter::tests::fractional_source_duration_roundtrips_without_invalid_default ... ok
+test gif_converter::tests::host_worker_export_delivers_paused_preview_then_retires_it_on_rechoose ... ok
+test gif_converter::tests::initial_command_o_admission_is_guarded_before_native_chooser ... ok
+test gif_converter::tests::invalid_extension_never_starts_worker ... ok
+test gif_converter::tests::invalid_trim_draft_cannot_silently_change_plan ... ok
+test gif_converter::tests::late_completion_is_ignored_after_close ... ok
+test gif_converter::tests::late_metadata_cannot_replace_new_source_or_closed_state ... ok
+test gif_converter::tests::looping_preview_uses_finished_job_options_not_new_draft ... ok
+test gif_converter::tests::malformed_export_delay_is_rejected_before_scheduling ... ok
+test gif_converter::tests::movie_gif_switch_keeps_source_owner_and_cancelled_retry_result ... ok
+test gif_converter::tests::paired_trim_handles_follow_source_coupling_and_limit ... ok
+test gif_converter::tests::paused_preview_does_not_advance_and_once_playback_stops ... ok
+test gif_converter::tests::pending_conversion_blocks_trim_and_repeated_export ... ok
+test gif_converter::tests::pending_preview_is_fenced_by_rechoose ... ok
+test gif_converter::tests::preempted_seek_restores_latest_request_after_export_with_an_older_frame_and_prior_gif ... ok
+test gif_converter::tests::prefetched_frame_waits_for_deadline_and_pause_holds_it ... ok
+test gif_converter::tests::prepared_render_image_uses_gpui_bgra_and_opaque_export_alpha ... ok
+test gif_converter::tests::preview_refuses_symlink_and_fifo_without_following_or_blocking ... ok
+test gif_converter::tests::preview_rejects_changed_file_and_wrong_expected_frame_count ... ok
+test gif_converter::tests::preview_repeat_pins_opened_file_when_path_is_replaced ... ok
+test gif_converter::tests::production_adapter_is_truthfully_unavailable_before_path_io ... ok
+test gif_converter::tests::rapid_pause_play_preserves_every_prefetched_frame_exactly_once ... ok
+test gif_converter::tests::rechoose_and_retained_close_fence_pending_source_preview_without_resurrection ... ok
+test gif_converter::tests::short_movie_slider_minimum_still_clamps_to_actual_source ... ok
+test gif_converter::tests::source_change_resets_trim_and_result_but_keeps_format ... ok
+test gif_converter::tests::stale_completion_cannot_create_result_in_closed_converter ... ok
+test gif_converter::tests::tab_from_trim_editor_does_not_insert_text ... ok
+test gif_converter::tests::trim_fields_apply_to_the_actual_export_plan ... ok
+test gif_converter::tests::trim_seek_preserves_explicit_gif_selection_and_playback ... ok
+test gif_converter::worker::tests::close_drops_pending_and_keeps_active_cancelled_until_retired ... ok
+test gif_converter::worker::tests::latest_request_waits_for_physical_retirement_not_logical_cancel ... ok
+
+test result: ok. 52 passed; 0 failed; 0 ignored; 0 measured; 359 filtered out; finished in 6.59s
+

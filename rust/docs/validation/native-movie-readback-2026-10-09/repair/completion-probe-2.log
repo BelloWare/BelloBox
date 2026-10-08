@@ -1,0 +1,3 @@
+frame1 64x48 delay10 rgba12288 strict-drain-extra=false
+frame2 64x48 delay5 rgba12288 strict-drain-extra=false
+complete 2

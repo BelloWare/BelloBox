@@ -1,0 +1,57 @@
+   Compiling bellobox-core v0.1.0 (/Users/admin/projects/BelloBox-rust-gif-strict-readback/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 21.22s
+     Running unittests src/lib.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823)
+
+running 49 tests
+test recording::gif::gif_decode_tests::additional_pixels_and_invalid_palette_references_are_rejected ... ok
+test recording::gif::gif_decode_tests::bounds_and_failure_are_checked_before_later_frames_can_be_admitted ... ok
+test recording::gif::gif_decode_tests::cancellation_during_decoding_is_preserved_and_cannot_resume ... ok
+test recording::gif::gif_decode_tests::completion_io_failure_and_cancellation_preserve_prior_output_and_remove_stage ... ok
+test recording::gif::gif_decode_tests::dictionary_growth_decodes_without_losing_pixels ... ok
+test recording::gif::gif_decode_tests::exact_fixture_passes_full_readback_and_owned_preview_rewind ... ok
+test recording::gif::gif_decode_tests::export_and_preview_reject_first_and_last_frame_completion_failures ... ok
+test recording::gif::gif_decode_tests::export_and_preview_require_trailer_and_exact_eof ... ok
+test recording::gif::gif_decode_tests::full_readback_still_rejects_trailing_bytes_frame_count_timing_and_loop_changes ... ok
+test recording::gif::gif_decode_tests::injected_completion_failures_occur_after_exact_pixel_output ... ok
+test recording::gif::gif_decode_tests::legal_reblocking_and_fragmented_reads_preserve_eoi_pixels_and_timing ... ok
+test recording::gif::gif_decode_tests::strict_eoi_is_required_even_after_all_expected_pixels_have_arrived ... ok
+test recording::gif::gif_decode_tests::truncated_frames_and_missing_trailer_never_become_clean_eof ... ok
+test recording::gif::gif_decode_tests::unchanged_mirrored_payload_reproduces_legacy_eoi_failure_and_strict_drain_preserves_pixels ... ok
+test recording::gif::gif_tests::accepted_cancellation_and_publication_claim_have_exactly_one_winner ... ok
+test recording::gif::gif_tests::cancellation_before_during_and_after_encoding_prevents_publication ... ok
+test recording::gif::gif_tests::cancellation_during_held_publication_returns_claimed_without_waiting ... ok
+test recording::gif::gif_tests::competing_exports_do_not_clobber_and_new_destination_race_is_safe ... ok
+test recording::gif::gif_tests::counting_writer_rejects_output_overflow_and_reports_underlying_failure ... ok
+test recording::gif::gif_tests::delays_use_cumulative_budget_and_borrow_for_partial_last_frame ... ok
+test recording::gif::gif_tests::encoder_trailer_failure_is_observable ... ok
+test recording::gif::gif_tests::failed_staged_readback_never_replaces_the_previous_file ... ok
+test recording::gif::gif_tests::fallback_first_frame_and_eof_hold_keep_planned_count ... ok
+test recording::gif::gif_tests::filesystem_support_gate_matches_the_platform_contract ... ok
+test recording::gif::gif_tests::final_publication_failure_preserves_source_destination_and_cleans_owned_stage ... ok
+test recording::gif::gif_tests::frame_validation_and_debug_never_expose_pixels ... ok
+test recording::gif::gif_tests::loop_markers_in_comment_payload_are_not_repeat_blocks ... ok
+test recording::gif::gif_tests::malformed_gif_readbacks_are_rejected_without_loading_full_output ... ok
+test recording::gif::gif_tests::no_overwrite_default_and_explicit_replace_success ... ok
+test recording::gif::gif_tests::once_omits_repeat_block_forever_emits_zero_and_validates ... ok
+test recording::gif::gif_tests::options_defaults_normalize_and_deserialize_missing_fields ... ok
+test recording::gif::gif_tests::orientation_is_display_input_and_alpha_is_black_composited ... ok
+test recording::gif::gif_tests::planning_clamps_trim_and_rejects_bad_metadata ... ok
+test recording::gif::gif_tests::planning_preserves_source_caps_portrait_and_no_upscale ... ok
+test recording::gif::gif_tests::publication_claim_is_not_success_and_errors_or_panics_are_terminal ... ok
+test recording::gif::gif_tests::rejects_empty_after_cut_wrong_size_and_backward_frames ... ok
+test recording::gif::gif_tests::replaced_stage_is_neither_published_nor_removed ... ok
+test recording::gif::gif_tests::sequential_sampling_tolerance_trim_end_and_hold_match_source ... ok
+test recording::gif::gif_tests::source_failure_and_panics_preserve_prior_destination_and_cleanup ... ok
+test recording::gif::gif_tests::source_finalization_failure_cancel_mutation_and_panic_never_publish ... ok
+test recording::gif::gif_tests::source_finalization_runs_once_without_requiring_trimmed_stream_eof ... ok
+test recording::gif::gif_tests::source_same_path_is_never_replaced_even_with_replace_permission ... ok
+test recording::gif::gif_tests::source_sample_cap_stops_pathological_equal_timestamp_stream ... ok
+test recording::gif::gif_tests::source_symlinks_hardlinks_and_late_aliases_are_protected ... ok
+test recording::gif::gif_tests::source_wire_null_defaults_and_signed_64_bit_bounds ... ok
+test recording::gif::gif_tests::staged_and_published_files_are_owner_only_and_other_symlinks_rejected ... ok
+test recording::gif::gif_tests::successful_publication_is_terminal_and_late_cancel_preserves_it ... ok
+test recording::gif::gif_tests::timing_invariants_cover_all_rates_and_partial_endings ... ok
+test recording::gif::gif_tests::truncated_lzw_payload_fails_full_readback ... ok
+
+test result: ok. 49 passed; 0 failed; 0 ignored; 0 measured; 397 filtered out; finished in 0.96s
+

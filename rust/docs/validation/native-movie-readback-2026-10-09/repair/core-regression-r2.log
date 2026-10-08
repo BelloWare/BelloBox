@@ -1,0 +1,21 @@
+   Compiling bellobox-core v0.1.0 (/Users/admin/projects/BelloBox-rust-gif-strict-readback/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 27.40s
+     Running unittests src/lib.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823)
+
+running 13 tests
+test recording::gif::gif_decode_tests::additional_pixels_and_invalid_palette_references_are_rejected ... ok
+test recording::gif::gif_decode_tests::bounds_and_failure_are_checked_before_later_frames_can_be_admitted ... ok
+test recording::gif::gif_decode_tests::cancellation_during_decoding_is_preserved_and_cannot_resume ... ok
+test recording::gif::gif_decode_tests::completion_io_failure_and_cancellation_preserve_prior_output_and_remove_stage ... ok
+test recording::gif::gif_decode_tests::dictionary_growth_decodes_without_losing_pixels ... ok
+test recording::gif::gif_decode_tests::exact_fixture_passes_full_readback_and_owned_preview_rewind ... ok
+test recording::gif::gif_decode_tests::export_and_preview_reject_first_and_last_frame_completion_failures ... ok
+test recording::gif::gif_decode_tests::export_and_preview_require_trailer_and_exact_eof ... ok
+test recording::gif::gif_decode_tests::full_readback_still_rejects_trailing_bytes_frame_count_timing_and_loop_changes ... ok
+test recording::gif::gif_decode_tests::legal_reblocking_and_fragmented_reads_preserve_eoi_pixels_and_timing ... ok
+test recording::gif::gif_decode_tests::strict_eoi_is_required_even_after_all_expected_pixels_have_arrived ... ok
+test recording::gif::gif_decode_tests::truncated_frames_and_missing_trailer_never_become_clean_eof ... ok
+test recording::gif::gif_decode_tests::unchanged_mirrored_payload_reproduces_legacy_eoi_failure_and_strict_drain_preserves_pixels ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 432 filtered out; finished in 0.41s
+

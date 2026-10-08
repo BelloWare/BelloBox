@@ -1,0 +1,3 @@
+frame1 64x48 delay10 rgba12288
+frame2 64x48 delay5 rgba12288
+error after2: EndCodeNotFound
