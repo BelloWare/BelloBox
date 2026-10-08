@@ -1859,8 +1859,12 @@ pub fn open_clock_handoff(
     input: String,
     handoff: crate::clock_preview_session::ClockHandoff,
     cx: &mut App,
-) {
-    open_tool_with_clock_context("worldClock", input, Some(handoff), cx);
+) -> Result<(), String> {
+    if crate::shutdown::requested(cx) {
+        return Err("The app is closing.".into());
+    }
+    crate::screenshot_ui::area_navigation_changed(cx);
+    crate::world_clock_ui::open_with_handoff(input, Some(handoff), cx)
 }
 fn open_tool_with_clock_context(
     id: &str,
@@ -1885,7 +1889,9 @@ fn open_tool_with_clock_context(
     }
 
     if id == "worldClock" {
-        crate::world_clock_ui::open_with_handoff(input, clock_handoff, cx);
+        if let Err(error) = crate::world_clock_ui::open_with_handoff(input, clock_handoff, cx) {
+            eprintln!("Cannot open World Clock: {error}");
+        }
         return;
     }
 

@@ -1,0 +1,24 @@
+{
+  "verified": true,
+  "baseline_commit": "2a5f95b35d27f33b19e4530e696a06da496fc9b8",
+  "reviewed_changed_rust_paths": 14,
+  "unchanged_rust_paths": 175,
+  "delta": {
+    "production": 828,
+    "support": 1240,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 56104,
+    "support": 38430,
+    "benchmark": 105
+  },
+  "physical_totals": {
+    "before": 92571,
+    "after": 94639,
+    "before_files": 185,
+    "after_files": 188
+  },
+  "final_manifest_paths": 14,
+  "live_repository_verified": true
+}

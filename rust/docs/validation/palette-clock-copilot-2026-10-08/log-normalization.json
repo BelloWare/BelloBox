@@ -1,0 +1,40 @@
+{
+  "replacement": "Only local source and Cargo target path prefixes are replaced with <source> and <target>; all test outcomes and diagnostics are preserved.",
+  "logs": [
+    {
+      "path": "app-default-clippy.log",
+      "raw_sha256": "c0315b26ff69e731800d81e00bebdcbcceda8d8404e28c5e7cf8a50fea2a3ffe",
+      "published_sha256": "465390e389612fdfd0942a4d217eb8640880b75039bb6be6d3d40056d41a1180"
+    },
+    {
+      "path": "app-fixture-clippy.log",
+      "raw_sha256": "c9de22fac52d7fddbbaea9f965236add2d413afc4d2b88f8783c0bbb6c893d54",
+      "published_sha256": "2a0149570b9905b91afcbb60ec1869c131d97548387cb75079a07b68cf1b53a1"
+    },
+    {
+      "path": "app-full.log",
+      "raw_sha256": "32f2b1bffcddb6f196999c3c375cee2549c04dcde3d25f0ebcac709bfa99a9ac",
+      "published_sha256": "c97a2753a4a2902d4b39f77c12e889bb716469e61d1ac70968bcbb0a0d2173d1"
+    },
+    {
+      "path": "core-clippy.log",
+      "raw_sha256": "0bb1546aa166e4b43ce1c06781f3d376530cb7a2b85a67bd5692c9dd3cb15d29",
+      "published_sha256": "879db036bf9320437b48f3e27f4d0437cade08c4e223e94b856ef3f9c769aebf"
+    },
+    {
+      "path": "core-full.log",
+      "raw_sha256": "6c2a742f550ba71b0fa106a3ed136162019ce6b25ab4bb2fd49df58293b0721d",
+      "published_sha256": "e15ba09fa45f9cfd7b48954b9a861bbbb1f9307855b87c31ebe75dce72b73dfc"
+    },
+    {
+      "path": "fmt.log",
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "published_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "package-clean.log",
+      "raw_sha256": "0c5c113a83601a8d45af197167a3c079c5371ccbb847c3b44d01c471decff87e",
+      "published_sha256": "0c5c113a83601a8d45af197167a3c079c5371ccbb847c3b44d01c471decff87e"
+    }
+  ]
+}

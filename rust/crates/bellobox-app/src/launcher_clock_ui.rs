@@ -1,16 +1,22 @@
 //! The bounded World Clock row in the launcher. Its planner is ephemeral: only
 //! an explicit launcher handoff can carry this state into the full clock window.
+mod copilot;
 use crate::{
     clock_preview_session::{ClockHandoff, ClockPreviewSession},
     theme::Palette,
     world_clock_ui::{WheelAccumulator, local_zone, quality_badge, quality_color},
 };
+use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
     clock::{self, Quality, Timeline, ZonePresentation},
     settings::Settings,
 };
 use gpui::{prelude::*, *};
-use std::{cell::Cell, collections::HashMap, rc::Rc};
+use std::{
+    cell::{Cell, RefCell},
+    collections::HashMap,
+    rc::Rc,
+};
 
 pub const PREVIEW_HEIGHT: f32 = 261.;
 const HEADER_HEIGHT: f32 = 18.;
@@ -33,6 +39,8 @@ struct CapturedScrub {
 
 pub struct LauncherClockPreview {
     session: ClockPreviewSession,
+    copilot: copilot::Copilot,
+    revision: u64,
     focus: FocusHandle,
     timeline_focus: FocusHandle,
     controls: HashMap<Control, FocusHandle>,
@@ -83,8 +91,11 @@ impl LauncherClockPreview {
                 }
             }
         });
+        let copilot = copilot::Copilot::new(window, cx);
         let mut this = Self {
             session,
+            copilot,
+            revision: 0,
             focus: cx.focus_handle(),
             timeline_focus: cx.focus_handle(),
             controls,
@@ -102,13 +113,22 @@ impl LauncherClockPreview {
             ticker: None,
             _subscriptions: vec![activation],
         };
+        this.install_copilot(cx);
         this.refresh_bands();
         // Mounting a preview never takes focus from the launcher's search field.
         this
     }
 
-    pub fn handoff(&self) -> ClockHandoff {
-        self.session.handoff()
+    pub fn handoff(&self, cx: &App) -> Result<ClockHandoff, String> {
+        let draft = self.copilot.draft.read(cx).text();
+        if draft.len() > 8192 {
+            return Err("Copilot draft exceeds the 8,192-byte handoff limit. Shorten it before opening World Clock.".into());
+        }
+        Ok(self.session.handoff().with_copilot(
+            self.copilot.session.snapshot(),
+            draft.to_owned(),
+            self.copilot.worker.guard(),
+        ))
     }
 
     pub fn set_active(&mut self, active: bool, cx: &mut Context<Self>) {
@@ -146,6 +166,7 @@ impl LauncherClockPreview {
         }
         match self.session.refresh_now() {
             Ok(true) => {
+                self.revision = self.revision.wrapping_add(1);
                 self.refresh_bands();
                 cx.notify();
             }
@@ -181,6 +202,8 @@ impl LauncherClockPreview {
             order.push(self.controls[&Control::Reset].clone());
         }
         order.push(self.timeline_focus.clone());
+        order.push(self.copilot.draft_focus.clone());
+        order.extend(self.copilot_focus_order());
         order
     }
 
@@ -193,6 +216,37 @@ impl LauncherClockPreview {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> bool {
+        if self.draft_focused(window, cx) {
+            if self.copilot.draft.read(cx).has_marked_text() {
+                return true;
+            }
+            let modifiers = event.keystroke.modifiers;
+            if event.keystroke.key == "k"
+                && (modifiers.platform || modifiers.control)
+                && !modifiers.alt
+                && !modifiers.shift
+            {
+                return false;
+            }
+            match event.keystroke.key.as_str() {
+                "enter" => {
+                    self.consume_enter_release = true;
+                    if !event.is_held {
+                        self.send_copilot(false, cx);
+                        cx.notify();
+                    }
+                    window.prevent_default();
+                    cx.stop_propagation();
+                    return true;
+                }
+                "escape" => return false,
+                "tab" => {}
+                _ => return true,
+            }
+        }
+        if self.activate_copilot_control(event, window, cx) {
+            return true;
+        }
         let key = event.keystroke.key.as_str();
         let modifiers = event.keystroke.modifiers;
         if self.reference_menu {
@@ -334,6 +388,7 @@ impl LauncherClockPreview {
     }
 
     fn changed(&mut self, result: Result<(), String>, cx: &mut Context<Self>) {
+        self.revision = self.revision.wrapping_add(1);
         self.error = result.err();
         if self.error.is_none() {
             self.refresh_bands();
@@ -856,12 +911,13 @@ impl LauncherClockPreview {
 
 impl Render for LauncherClockPreview {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        self.refresh_copilot_controls(cx);
         let p = crate::theme::for_window(window);
         div()
             .id("launcher-clock-preview")
             .relative()
             .w_full()
-            .h(px(PREVIEW_HEIGHT))
+            .h(px(self.height()))
             .flex_none()
             .px(px(10.))
             .pt(px(4.))
@@ -889,35 +945,7 @@ impl Render for LauncherClockPreview {
                             .map(|zone| self.card(zone, p)),
                     ),
             )
-            .child(
-                div()
-                    .id("launcher-clock-copilot-unavailable")
-                    .h(px(COPILOT_HEIGHT))
-                    .flex_none()
-                    .px(px(8.))
-                    .py(px(4.))
-                    .flex()
-                    .flex_col()
-                    .gap(px(2.))
-                    .rounded(px(8.))
-                    .border_1()
-                    .border_color(p.separator)
-                    .bg(p.well)
-                    .child(
-                        div()
-                            .text_size(px(11.))
-                            .line_height(px(13.))
-                            .font_weight(FontWeight::MEDIUM)
-                            .child("Copilot"),
-                    )
-                    .child(
-                        div()
-                            .text_size(px(10.))
-                            .line_height(px(12.))
-                            .text_color(p.secondary)
-                            .child("Unavailable in this offline Rust preview."),
-                    ),
-            )
+            .child(self.copilot_view(p, cx))
     }
 }
 

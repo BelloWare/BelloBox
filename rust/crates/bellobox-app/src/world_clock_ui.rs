@@ -1,7 +1,6 @@
 //! Dedicated planner and explicit-action, ephemeral World Clock Copilot.
-//! Locale-native date controls and palette conversation transfer remain unported.
+//! Locale-native date controls remain unported.
 mod copilot;
-mod copilot_worker;
 use crate::theme::Palette;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
@@ -106,9 +105,6 @@ pub struct WorldClock {
     _subscriptions: Vec<Subscription>,
 }
 impl WorldClock {
-    fn new(input: String, window: &mut Window, cx: &mut Context<Self>) -> Self {
-        Self::new_at(input, config_dir().join("settings.json"), window, cx)
-    }
     fn new_at(
         input: String,
         settings_path: std::path::PathBuf,
@@ -278,22 +274,28 @@ impl WorldClock {
         handoff: &crate::clock_preview_session::ClockHandoff,
         window: &mut Window,
         cx: &mut Context<Self>,
-    ) {
-        let result = handoff.apply(&mut self.planner);
-        if result.is_ok() {
-            self.reset_copilot(cx);
-            self.picker = false;
-            self.reference_menu = false;
-            self.reference_generation = self.reference_generation.wrapping_add(1);
-            self.reference_reveal_pending.set(false);
-            self.restore_focus = None;
-            self.drag_timeline = None;
-            self.wheel = WheelAccumulator::default();
-            self.consume_enter_release = false;
-            self.focus.focus(window);
-        }
+    ) -> Result<(), String> {
+        // All fallible planner and transcript work precedes cancellation, focus,
+        // draft replacement and mutation of either live destination component.
+        let mut planner = self.planner.clone();
+        handoff.apply(&mut planner)?;
+        let displayed_day = planner.timeline()?;
+        let session = self.stage_copilot(handoff)?;
+        self.adopt_copilot(session, handoff, cx);
+        self.planner = planner;
+        self.displayed_day = displayed_day;
+        self.picker = false;
+        self.reference_menu = false;
+        self.reference_generation = self.reference_generation.wrapping_add(1);
+        self.reference_reveal_pending.set(false);
+        self.restore_focus = None;
+        self.drag_timeline = None;
+        self.wheel = WheelAccumulator::default();
+        self.consume_enter_release = false;
+        self.focus.focus(window);
         // Adoption is deliberately not a persistence-bearing Reference action.
-        self.changed_in_day(result, false, cx);
+        self.changed_in_day(Ok(()), false, cx);
+        Ok(())
     }
     fn displayed_date(&self) -> String {
         self.displayed_day
@@ -1784,50 +1786,72 @@ pub fn open_with_handoff(
     input: String,
     handoff: Option<crate::clock_preview_session::ClockHandoff>,
     cx: &mut App,
-) {
+) -> Result<(), String> {
+    open_with_handoff_at(input, handoff, config_dir().join("settings.json"), cx)
+}
+fn open_with_handoff_at(
+    input: String,
+    handoff: Option<crate::clock_preview_session::ClockHandoff>,
+    settings_path: std::path::PathBuf,
+    cx: &mut App,
+) -> Result<(), String> {
     if crate::shutdown::requested(cx) {
-        return;
+        return Err("The app is closing.".into());
     }
     for window in cx.windows() {
-        if let Some(clock) = window.downcast::<WorldClock>()
-            && clock
+        if let Some(clock) = window.downcast::<WorldClock>() {
+            // An adoption error must return to the source, never open a second
+            // window or activate a destination with its previous conversation.
+            clock
                 .update(cx, |this, window, cx| {
                     if let Some(handoff) = &handoff {
-                        this.adopt(handoff, window, cx);
+                        this.adopt(handoff, window, cx)?;
                     }
                     window.activate_window();
+                    Ok::<(), String>(())
                 })
-                .is_ok()
-        {
+                .map_err(|e| e.to_string())??;
             cx.activate(true);
-            return;
+            return Ok(());
         }
     }
     let bounds = Bounds::centered(None, size(px(WINDOW_SIZE.0), px(WINDOW_SIZE.1)), cx);
-    if let Err(e) = cx.open_window(
-        WindowOptions {
-            window_bounds: Some(WindowBounds::Windowed(bounds)),
-            window_min_size: Some(size(px(MIN_SIZE.0), px(MIN_SIZE.1))),
-            titlebar: Some(TitlebarOptions {
-                title: Some("World Clock".into()),
+    let mut adoption = Ok(());
+    let opened = cx
+        .open_window(
+            WindowOptions {
+                window_bounds: Some(WindowBounds::Windowed(bounds)),
+                window_min_size: Some(size(px(MIN_SIZE.0), px(MIN_SIZE.1))),
+                titlebar: Some(TitlebarOptions {
+                    title: Some("World Clock".into()),
+                    ..Default::default()
+                }),
+                // Install the transferred retirement guard before activation can
+                // dismiss the source palette. Failed adoption stays invisible.
+                focus: false,
+                show: false,
                 ..Default::default()
-            }),
-            ..Default::default()
-        },
-        move |window, cx| {
-            // WorldClock installs its physical-request close gate and retains
-            // normal app Quit admission in its constructor.
-            cx.new(|cx| {
-                let mut clock = WorldClock::new(input, window, cx);
-                if let Some(handoff) = &handoff {
-                    clock.adopt(handoff, window, cx);
-                }
-                clock
-            })
-        },
-    ) {
-        eprintln!("Cannot open World Clock: {e}");
+            },
+            |window, cx| {
+                cx.new(|cx| {
+                    let mut clock = WorldClock::new_at(input, settings_path, window, cx);
+                    if let Some(handoff) = &handoff {
+                        adoption = clock.adopt(handoff, window, cx);
+                    }
+                    clock
+                })
+            },
+        )
+        .map_err(|e| e.to_string())?;
+    if let Err(error) = adoption {
+        let _ = opened.update(cx, |_, window, _| window.remove_window());
+        return Err(error);
     }
+    opened
+        .update(cx, |_, window, _| window.activate_window())
+        .map_err(|e| e.to_string())?;
+    cx.activate(true);
+    Ok(())
 }
 
 #[cfg(test)]

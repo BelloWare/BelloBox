@@ -1,0 +1,75 @@
+{
+  "base": "2a5f95b35d27f33b19e4530e696a06da496fc9b8",
+  "source_base": "c3ced91eeb7678305f770cfc144352a9643d4327",
+  "paths": [
+    {
+      "path": "rust/crates/bellobox-app/src/clock_copilot_worker.rs",
+      "size": 5503,
+      "sha256": "57d2fad53bc9a75068c063a03514c7d619ac348f553c394fcde8026209659563"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/clock_preview_session.rs",
+      "size": 19869,
+      "sha256": "5e27f1506b37fa5ab6c7f77874d68c99a3c0915354ed676b0734365c878cce93"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "size": 81081,
+      "sha256": "a547b105e79569ea1a1caec52c71ae89b9f8cb2f0c760c80f6f6865a43de9ee3"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui.rs",
+      "size": 42278,
+      "sha256": "55d3d665985b1ee061f73633abc5e4fcd343e7ea4c5db3320021c4e7d5a10ea2"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot.rs",
+      "size": 16076,
+      "sha256": "5defce5c2215a5905301e340210574f42bf745f5ae23b5bfee5ffaf1efe9830d"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+      "size": 14043,
+      "sha256": "8fde4f7e4b0ffb2cfb8af33ec62281d488a8ba5d4f89b7fb35f901ab638d2cc3"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+      "size": 38317,
+      "sha256": "5833062481dd81182b194112af7a931271ea0f8cd911b2d9f52c316f50ef8861"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "size": 13691,
+      "sha256": "ac493ccde6a46ef5a488f957e249d93bd75a059562330da7af34fa08728c2cb6"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "size": 9984,
+      "sha256": "d2188799ac874916b29c26aae07e8e1340bc71a132c1588bce0fb90889bc289d"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui.rs",
+      "size": 83106,
+      "sha256": "6ab3809332affc39c29adb895b2ae0de180aec281bf75b8cd9a34941182a5a66"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot.rs",
+      "size": 19371,
+      "sha256": "2575781429e76e5d4d1ba4d68185a0e03ae81f0bebbcd7b9e21801d39a31946b"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot/tests.rs",
+      "size": 45364,
+      "sha256": "65a2d2b79e56dac97ae2e0e34d6d61ebf60aa67e782b5373122ebee0b0355521"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot_worker.rs",
+      "deleted": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot/session.rs",
+      "size": 18382,
+      "sha256": "50bf3df022d0aa12c9ece88d66854dfce37b0658989d8957f1476127df3731b7"
+    }
+  ]
+}

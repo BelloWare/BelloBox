@@ -1,4 +1,5 @@
 //! Separate source-sized launcher surface; never the application's Home sidebar.
+use crate::clock_copilot_worker::RetirementGuard;
 use crate::launcher_clock_ui::LauncherClockPreview;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
@@ -6,7 +7,7 @@ use bellobox_core::{
     settings::{Settings, config_dir},
 };
 use gpui::{prelude::*, *};
-use std::sync::Arc;
+use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 struct Launcher {
     query: Entity<EditorView>,
@@ -19,6 +20,10 @@ struct Launcher {
     jobs: crate::session::SessionJobs,
     qr: Option<Arc<Image>>,
     clock: Option<Entity<LauncherClockPreview>>,
+    clock_guards: Rc<RefCell<Vec<RetirementGuard>>>,
+    clock_transferred: bool,
+    suppress_escape: bool,
+    closed: bool,
     clock_active: bool,
     clock_sized: bool,
     was_active: bool,
@@ -67,9 +72,7 @@ impl Launcher {
             } else if this.was_active && this.clock_active {
                 // The compact source palette dismisses on deactivation. Limit
                 // this addition to the clock slice; no background preview survives.
-                this.jobs.cancel();
-                this.clock = None;
-                crate::shutdown::close_window(window, cx);
+                this.close(window, cx);
                 cx.notify();
             }
         });
@@ -90,13 +93,148 @@ impl Launcher {
             jobs: crate::session::SessionJobs::default(),
             qr: None,
             clock: None,
+            clock_guards: Default::default(),
+            clock_transferred: false,
+            suppress_escape: false,
+            closed: false,
             clock_active: false,
             clock_sized: false,
             was_active: window.is_window_active(),
             _subscriptions: vec![subscription, activation],
         };
+        let weak = cx.weak_entity();
+        window.on_window_should_close(cx, move |window, cx| {
+            weak.update(cx, |this, cx| this.allow_close(cx))
+                .unwrap_or(true)
+                && crate::shutdown::allow_close(window, cx)
+        });
+        let owner = window.window_handle();
+        let weak = cx.weak_entity();
+        app._subscriptions.push(cx.on_window_closed(move |cx| {
+            if !cx.windows().contains(&owner) {
+                let _ = weak.update(cx, |this, cx| {
+                    this.closed = true;
+                    this.discard_clock(cx)
+                });
+            }
+        }));
+        cx.spawn(async |this, cx| {
+            loop {
+                cx.background_executor()
+                    .timer(std::time::Duration::from_millis(50))
+                    .await;
+                if this
+                    .update(cx, |this, cx| {
+                        if this.notice.as_deref()
+                            == Some("Stopping the Copilot request. Close again after it finishes.")
+                            && !this
+                                .clock_guards
+                                .borrow()
+                                .iter()
+                                .any(RetirementGuard::physically_active)
+                        {
+                            this.notice = None;
+                            cx.notify();
+                        }
+                    })
+                    .is_err()
+                {
+                    break;
+                }
+            }
+        })
+        .detach();
         app.refresh_preview(window, cx);
         app
+    }
+    fn clock_search_shortcut(
+        &mut self,
+        event: &KeyDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> bool {
+        let modifiers = event.keystroke.modifiers;
+        if self.clock_active
+            && event.keystroke.key == "k"
+            && (modifiers.platform || modifiers.control)
+            && !modifiers.alt
+            && !modifiers.shift
+        {
+            self.query
+                .update(cx, |editor, cx| editor.set_text(String::new(), cx));
+            self.query.read(cx).focus(window);
+            window.prevent_default();
+            cx.stop_propagation();
+            true
+        } else {
+            false
+        }
+    }
+    fn route_clock_editor_key(
+        &mut self,
+        event: &KeyDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> bool {
+        if event.keystroke.key == "escape" && self.suppress_escape {
+            window.prevent_default();
+            cx.stop_propagation();
+            return true;
+        }
+        if !self.clock_active {
+            return false;
+        }
+        let Some(clock) = &self.clock else {
+            return false;
+        };
+        if clock.read(cx).draft_composing(window, cx) {
+            return true;
+        }
+        if event.keystroke.key == "escape" && clock.read(cx).draft_focused(window, cx) {
+            self.suppress_escape = true;
+            self.query.read(cx).focus(window);
+            window.prevent_default();
+            cx.stop_propagation();
+            return true;
+        }
+        false
+    }
+    fn discard_clock(&mut self, cx: &mut Context<Self>) {
+        if let Some(clock) = self.clock.take() {
+            clock.update(cx, |clock, cx| clock.retire_copilot(cx));
+        }
+        self.clock_guards
+            .borrow_mut()
+            .retain(RetirementGuard::physically_active);
+    }
+    fn allow_close(&mut self, cx: &mut Context<Self>) -> bool {
+        if self.clock_transferred {
+            return true;
+        }
+        let active = self
+            .clock_guards
+            .borrow()
+            .iter()
+            .any(RetirementGuard::physically_active);
+        if active {
+            for guard in self.clock_guards.borrow().iter() {
+                guard.cancel();
+            }
+            if let Some(clock) = &self.clock {
+                clock.update(cx, |clock, cx| clock.cancel_copilot(cx));
+            }
+            self.notice =
+                Some("Stopping the Copilot request. Close again after it finishes.".into());
+            cx.notify();
+        }
+        !active
+    }
+    fn close(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.allow_close(cx) {
+            self.jobs.cancel();
+            self.discard_clock(cx);
+            crate::shutdown::close_window(window, cx);
+        }
     }
     fn commands(&self, cx: &App) -> Vec<launcher::Command> {
         launcher::search(
@@ -112,6 +250,9 @@ impl Launcher {
         )
     }
     fn refresh_preview(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.closed || crate::shutdown::requested(cx) {
+            return;
+        }
         self.clock_active = false;
         if let Some(clock) = &self.clock {
             clock.update(cx, |clock, cx| clock.set_active(false, cx));
@@ -130,8 +271,14 @@ impl Launcher {
         if command.id == "worldClock" {
             if self.clock.is_none() {
                 self.clock = Some(cx.new(|cx| {
-                    LauncherClockPreview::new(self.input.clone(), &self.settings, window, cx)
+                    let mut preview =
+                        LauncherClockPreview::new(self.input.clone(), &self.settings, window, cx);
+                    preview.retain_guards(self.clock_guards.clone());
+                    preview
                 }));
+                let preview = self.clock.as_ref().expect("created preview").clone();
+                self._subscriptions
+                    .push(cx.observe(&preview, |_, _, cx| cx.notify()));
             }
             self.clock_active = true;
             if let Some(clock) = &self.clock {
@@ -208,9 +355,24 @@ impl Launcher {
         .detach();
     }
     fn launch(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.closed || crate::shutdown::requested(cx) {
+            return;
+        }
         if let Some(c) = self.commands(cx).get(self.selected) {
             let handoff = if c.id == "worldClock" && self.clock_active {
-                self.clock.as_ref().map(|clock| clock.read(cx).handoff())
+                match self
+                    .clock
+                    .as_ref()
+                    .map(|clock| clock.read(cx).handoff(cx))
+                    .transpose()
+                {
+                    Ok(handoff) => handoff,
+                    Err(error) => {
+                        self.notice = Some(error);
+                        cx.notify();
+                        return;
+                    }
+                }
             } else {
                 None
             };
@@ -218,11 +380,25 @@ impl Launcher {
             // releases its preview; the full window owns independent state.
             self.jobs.cancel();
             if let Some(handoff) = handoff {
-                crate::desktop::open_clock_handoff(self.input.clone(), handoff, cx);
+                let handoff = handoff.with_retirement_guard(
+                    self.clock_guards
+                        .borrow()
+                        .iter()
+                        .find(|guard| guard.physically_active())
+                        .cloned(),
+                );
+                if let Err(error) =
+                    crate::desktop::open_clock_handoff(self.input.clone(), handoff, cx)
+                {
+                    self.notice = Some(error);
+                    cx.notify();
+                    return;
+                }
+                self.clock_transferred = true;
             } else {
                 crate::desktop::open_tool(c.id, self.input.clone(), cx);
             }
-            crate::shutdown::close_window(window, cx);
+            self.close(window, cx);
         }
     }
 }
@@ -245,6 +421,11 @@ impl Render for Launcher {
         if self.clock_active || self.clock_sized {
             let natural = if self.clock_active {
                 clock_palette_height(count, !self.input.is_empty() || self.notice.is_some())
+                    + self
+                        .clock
+                        .as_ref()
+                        .map(|c| c.read(cx).height() - crate::launcher_clock_ui::PREVIEW_HEIGHT)
+                        .unwrap_or(0.)
             } else {
                 620.
             };
@@ -271,6 +452,9 @@ impl Render for Launcher {
             .border_1()
             .border_color(p.separator)
             .capture_key_up(cx.listener(|this, event: &KeyUpEvent, window, cx| {
+                if event.keystroke.key == "escape" {
+                    this.suppress_escape = false;
+                }
                 if this.query.read(cx).has_marked_text() {
                     return;
                 }
@@ -286,6 +470,9 @@ impl Render for Launcher {
                 if this.query.read(cx).has_marked_text() {
                     return;
                 }
+                if this.route_clock_editor_key(event, window, cx) {
+                    return;
+                }
                 if this.clock_active
                     && let Some(clock) = &this.clock
                     && clock.update(cx, |clock, cx| clock.handle_key(event, window, cx))
@@ -294,17 +481,7 @@ impl Render for Launcher {
                 }
                 let key = event.keystroke.key.as_str();
                 let modifiers = event.keystroke.modifiers;
-                if this.clock_active
-                    && key == "k"
-                    && (modifiers.platform || modifiers.control)
-                    && !modifiers.alt
-                    && !modifiers.shift
-                {
-                    this.query
-                        .update(cx, |editor, cx| editor.set_text(String::new(), cx));
-                    this.query.read(cx).focus(window);
-                    window.prevent_default();
-                    cx.stop_propagation();
+                if this.clock_search_shortcut(event, window, cx) {
                     return;
                 }
                 if this.clock_active && clock_returns_to_search(key) {
@@ -339,8 +516,7 @@ impl Render for Launcher {
                 }
                 match key {
                     "escape" => {
-                        this.jobs.cancel();
-                        crate::shutdown::close_window(window, cx);
+                        this.close(window, cx);
                     }
                     "up" => {
                         this.selected = this.selected.saturating_sub(1);
@@ -454,7 +630,7 @@ impl Render for Launcher {
                             .text_size(px(12.))
                             .child("×")
                             .on_click(cx.listener(|this, _, window, cx| {
-                                this.clock = None;
+                                this.discard_clock(cx);
                                 this.selected = 0;
                                 this.query
                                     .update(cx, |editor, cx| editor.set_text(String::new(), cx));
@@ -663,7 +839,7 @@ impl Render for Launcher {
                                 {
                                     match bellobox_core::validate_input(&text) {
                                         Ok(()) => {
-                                            this.clock = None;
+                                            this.discard_clock(cx);
                                             this.selected = 0;
                                             this.query.update(cx, |editor, cx| {
                                                 editor.set_text(String::new(), cx)
@@ -672,7 +848,7 @@ impl Render for Launcher {
                                             this.notice = None;
                                         }
                                         Err(e) => {
-                                            this.clock = None;
+                                            this.discard_clock(cx);
                                             this.notice = Some(e);
                                             this.input.clear();
                                         }
@@ -729,3 +905,6 @@ mod clock_tests {
         assert_eq!(clock_palette_height(1, true), 495.);
     }
 }
+
+#[cfg(test)]
+mod copilot_lifecycle_tests;

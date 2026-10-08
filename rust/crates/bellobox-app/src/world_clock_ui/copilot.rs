@@ -6,11 +6,48 @@ pub(super) struct Copilot {
     pub draft: Entity<EditorView>,
     pub visible: bool,
     session: Session,
-    worker: super::copilot_worker::Worker,
+    worker: crate::clock_copilot_worker::Worker,
+    retirement: Vec<crate::clock_copilot_worker::RetirementGuard>,
+    close_notice: bool,
     closed: bool,
     notice: Option<String>,
 }
 impl Copilot {
+    fn physically_active(&self) -> bool {
+        self.worker.physically_active()
+            || self
+                .retirement
+                .iter()
+                .any(|guard| guard.physically_active())
+    }
+    fn busy(&self) -> bool {
+        self.worker.busy()
+            || self
+                .retirement
+                .iter()
+                .any(|guard| guard.physically_active())
+    }
+    fn cancel(&mut self) {
+        self.worker.cancel();
+        for guard in &self.retirement {
+            guard.cancel();
+        }
+    }
+    fn poll(&mut self) -> bool {
+        let mut changed = false;
+        if let Some((generation, reply)) = self.worker.poll() {
+            self.session.complete(generation, reply);
+            changed = true;
+        }
+        let before = self.retirement.len();
+        self.retirement.retain(|guard| guard.physically_active());
+        changed |= before != self.retirement.len();
+        if self.close_notice && !self.physically_active() {
+            self.close_notice = false;
+            changed = true;
+        }
+        changed
+    }
     pub fn new(window: &mut Window, cx: &mut Context<WorldClock>) -> Self {
         Self {
             draft: plain_editor(
@@ -23,6 +60,8 @@ impl Copilot {
             visible: false,
             session: Session::default(),
             worker: Default::default(),
+            retirement: Vec::new(),
+            close_notice: false,
             closed: false,
             notice: None,
         }
@@ -48,7 +87,7 @@ impl WorldClock {
             if !cx.windows().contains(&owner) {
                 let _ = weak.update(cx, |this, _| {
                     this.copilot.closed = true;
-                    this.copilot.worker.cancel();
+                    this.copilot.cancel();
                     this.copilot.session.clear();
                 });
             }
@@ -66,8 +105,7 @@ impl WorldClock {
                         if this.copilot.closed {
                             return false;
                         }
-                        if let Some((generation, reply)) = this.copilot.worker.poll() {
-                            this.copilot.session.complete(generation, reply);
+                        if this.copilot.poll() {
                             cx.notify();
                         }
                         true
@@ -83,25 +121,53 @@ impl WorldClock {
     // Native close and any future owned Close action must use this gate before
     // shutdown::allow_close. Physical work outlives presentation cancellation.
     fn allow_copilot_close(&mut self, cx: &mut Context<Self>) -> bool {
-        if self.copilot.worker.physically_active() {
-            self.copilot.worker.cancel();
+        if self.copilot.physically_active() {
+            self.copilot.cancel();
             self.copilot.session.cancel();
             self.copilot.visible = true;
-            self.copilot.notice =
-                Some("Stopping the Copilot request. Close again after it finishes.".into());
+            self.copilot.close_notice = true;
             cx.notify();
             false
         } else {
             true
         }
     }
-    pub(super) fn reset_copilot(&mut self, cx: &mut Context<Self>) {
-        self.copilot.worker.cancel();
-        self.copilot.session.clear();
+    pub(super) fn stage_copilot(
+        &self,
+        handoff: &crate::clock_preview_session::ClockHandoff,
+    ) -> Result<Session, String> {
+        self.copilot.session.restored(&handoff.copilot)
+    }
+    pub(super) fn adopt_copilot(
+        &mut self,
+        session: Session,
+        handoff: &crate::clock_preview_session::ClockHandoff,
+        cx: &mut Context<Self>,
+    ) {
+        // Hold the source guard before any focus/activation can retire its view.
+        // Never discard an older destination guard while its physical work lives.
+        self.copilot
+            .retirement
+            .retain(crate::clock_copilot_worker::RetirementGuard::physically_active);
+        if let Some(guard) = &handoff.retirement
+            && guard.physically_active()
+            && !self
+                .copilot
+                .retirement
+                .iter()
+                .any(|existing| existing.same_request(guard))
+        {
+            self.copilot.retirement.push(guard.clone());
+        }
+        self.copilot.cancel();
+        self.copilot.session = session;
+        self.copilot.visible =
+            !self.copilot.session.messages().is_empty() || !handoff.draft.trim().is_empty();
         self.copilot.notice = None;
+        self.copilot.close_notice = false;
         self.copilot
             .draft
-            .update(cx, |e, cx| e.set_text(String::new(), cx));
+            .update(cx, |e, cx| e.set_text(handoff.draft.clone(), cx));
     }
     fn send_copilot(
         &mut self,
@@ -112,7 +178,7 @@ impl WorldClock {
         if self.copilot.closed || crate::shutdown::requested(cx) {
             return;
         }
-        if self.copilot.worker.busy() {
+        if self.copilot.busy() {
             self.copilot.notice = Some("The previous request is still running or stopping.".into());
             return;
         }
@@ -191,7 +257,7 @@ impl WorldClock {
                 if self.copilot.visible {
                     self.copilot.draft.read(cx).focus_handle(cx).focus(window);
                 } else {
-                    self.copilot.worker.cancel();
+                    self.copilot.cancel();
                     self.copilot.session.cancel();
                     self.focus.focus(window);
                 }
@@ -199,12 +265,12 @@ impl WorldClock {
             Action::CopilotSend => self.send_copilot(false, None, cx),
             Action::CopilotRetry => self.send_copilot(true, None, cx),
             Action::CopilotCancel => {
-                self.copilot.worker.cancel();
+                self.copilot.cancel();
                 self.copilot.session.cancel();
                 self.copilot.notice = None;
             }
             Action::CopilotClear => {
-                self.copilot.worker.cancel();
+                self.copilot.cancel();
                 self.copilot.session.clear();
                 self.copilot.notice = None;
             }
@@ -291,16 +357,19 @@ impl WorldClock {
     pub(super) fn copilot_action_enabled(&self, action: &Action, cx: &App) -> bool {
         match action {
             Action::CopilotSend => {
-                !self.copilot.worker.busy() && !self.copilot.draft.read(cx).text().trim().is_empty()
+                !self.copilot.busy() && !self.copilot.draft.read(cx).text().trim().is_empty()
             }
-            Action::CopilotPrompt(_) => !self.copilot.worker.busy(),
-            Action::CopilotRetry => !self.copilot.worker.busy() && self.copilot.session.can_retry(),
+            Action::CopilotPrompt(_) => !self.copilot.busy(),
+            Action::CopilotRetry => !self.copilot.busy() && self.copilot.session.can_retry(),
             Action::CopilotCancel => self.copilot.session.is_busy(),
             _ => true,
         }
     }
     fn copilot_notices(&self) -> Vec<String> {
         let mut notices = Vec::new();
+        if self.copilot.close_notice {
+            notices.push("Stopping the Copilot request. Close again after it finishes.".into());
+        }
         if let Some(notice) = self.copilot.notice.as_ref() {
             notices.push(notice.clone());
         }
@@ -392,7 +461,7 @@ impl WorldClock {
             .child(div().font_weight(FontWeight::SEMIBOLD).child("World Clock Copilot"))
             .child(div().text_sm().text_color(p.secondary).child("Send or a suggested question contacts your configured provider. Conversations stay in memory. Runtime provider overrides apply."))
             .child(transcript)
-            .when(self.copilot.worker.busy(),|d|d.child(if !self.copilot.worker.physically_active(){"Receiving answer…"}else if self.copilot.session.is_busy(){"Thinking…"}else{"Stopping; waiting for the request to retire…"}))
+            .when(self.copilot.busy(),|d|d.child(if !self.copilot.physically_active(){"Receiving answer…"}else if self.copilot.session.is_busy(){"Thinking…"}else{"Stopping; waiting for the request to retire…"}))
             .children(self.copilot_notices().into_iter().map(|notice| div().child(notice)))
             .child(div().h(px(44.)).bg(p.well).child(self.copilot.draft.clone()))
             .child(div().flex().gap(px(8.))

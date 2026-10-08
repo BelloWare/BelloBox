@@ -30,6 +30,15 @@ pub enum Outcome {
     Failed(String),
     Cancelled,
 }
+/// Opaque, in-memory transfer. Construction is only possible from a bounded Session.
+/// Active work never travels; its pending question becomes explicitly retryable.
+#[derive(Debug, Clone, Default)]
+pub struct Snapshot {
+    messages: Vec<Message>,
+    pending_question: Option<String>,
+    outcome: Outcome,
+}
+
 /// The admitted payload can be a validated provider request or an offline fixture.
 pub struct Started<T> {
     pub generation: u64,
@@ -47,6 +56,65 @@ pub struct Session {
     next_message: u64,
 }
 impl Session {
+    pub fn snapshot(&self) -> Snapshot {
+        Snapshot {
+            messages: self
+                .messages
+                .iter()
+                .rev()
+                .take(TRANSCRIPT_LIMIT)
+                .cloned()
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+                .collect(),
+            pending_question: self.pending_question.clone(),
+            outcome: if self.is_busy() {
+                Outcome::Cancelled
+            } else {
+                self.outcome.clone()
+            },
+        }
+    }
+    /// Stage a replacement without changing this destination. IDs and generations
+    /// belong to the destination, so old Complete, Apply and Copy callbacks cannot
+    /// address a message restored from another session (or this one).
+    pub fn restored(&self, snapshot: &Snapshot) -> Result<Self, String> {
+        let generation = self
+            .generation
+            .checked_add(1)
+            .ok_or("Session generation limit reached.")?;
+        let count = snapshot.messages.len().min(TRANSCRIPT_LIMIT);
+        let next_message = self
+            .next_message
+            .checked_add(count as u64)
+            .ok_or("Session message limit reached.")?;
+        let messages = snapshot.messages[snapshot.messages.len() - count..]
+            .iter()
+            .enumerate()
+            .map(|(index, message)| {
+                let mut message = message.clone();
+                message.id = self.next_message + index as u64 + 1;
+                message
+            })
+            .collect();
+        Ok(Self {
+            messages,
+            outcome: snapshot.outcome.clone(),
+            status_message: (snapshot.outcome == Outcome::Cancelled
+                && snapshot.pending_question.is_some())
+            .then(|| "Not answered before the palette closed. Ask again to continue.".into()),
+            pending_question: snapshot.pending_question.clone(),
+            active: None,
+            generation,
+            next_message,
+        })
+    }
+    pub fn restore(&mut self, snapshot: &Snapshot) -> Result<(), String> {
+        *self = self.restored(snapshot)?;
+        Ok(())
+    }
+
     pub fn messages(&self) -> &[Message] {
         &self.messages
     }
@@ -345,5 +413,85 @@ mod tests {
         assert!(s.messages().last().unwrap().is_fully_applied());
         assert!(!s.mark_applied(1, Parts::TIME, "evicted"));
         assert!(s.messages()[1].applied_parts.is_empty());
+    }
+    #[test]
+    fn restore_is_bounded_preserves_parts_and_rekeys_destination_callbacks() {
+        let mut source = Session::default();
+        for _ in 0..30 {
+            let run = source.begin("question", context(), |_, _| Ok(())).unwrap();
+            let mut answer = reply();
+            answer.suggestion = Some(Suggestion {
+                instant: Some(run.request.context.selected_instant),
+                zone_ids: vec!["Asia/Tokyo".into()],
+                ..Default::default()
+            });
+            source.complete(run.generation, Ok(answer));
+        }
+        let source_id = source.messages().last().unwrap().id;
+        source.mark_applied(source_id, Parts::TIME, "time");
+        let mut target = Session::default();
+        let old = target.begin("old", context(), |_, _| Ok(())).unwrap();
+        let old_id = target.messages()[0].id;
+        target.restore(&source.snapshot()).unwrap();
+        assert_eq!(target.messages().len(), TRANSCRIPT_LIMIT);
+        assert!(target.messages().iter().all(|m| m.id > old_id));
+        assert!(!target.complete(old.generation, Ok(reply())));
+        assert!(!target.mark_applied(old_id, Parts::TIME, "stale"));
+        assert!(!target.messages().iter().any(|m| m.id == old_id)); // stale Copy
+        assert_eq!(target.messages().last().unwrap().applied_parts, Parts::TIME);
+        assert!(target.messages()[1].applied_parts.is_empty());
+        assert_eq!(target.outcome(), &Outcome::Answered);
+        let previous = target.messages().last().unwrap().id;
+        target.restore(&source.snapshot()).unwrap();
+        assert!(target.messages().iter().all(|m| m.id > previous));
+        let fresh = target.begin("fresh", context(), |_, _| Ok(())).unwrap();
+        assert!(fresh.generation > old.generation);
+    }
+    #[test]
+    fn active_snapshot_is_retryable_without_mutating_source_and_empty_resets() {
+        let mut source = Session::default();
+        let active = source
+            .begin("unanswered", context(), |_, _| Ok(()))
+            .unwrap();
+        let mut target = Session::default();
+        target.restore(&source.snapshot()).unwrap();
+        assert!(source.is_busy());
+        assert!(!target.is_busy());
+        assert_eq!(target.outcome(), &Outcome::Cancelled);
+        assert!(target.status_message().unwrap().contains("Ask again"));
+        let retry = target.retry(context(), |_, _| Ok(())).unwrap();
+        assert_eq!(retry.request.question, "unanswered");
+        assert!(retry.request.history.is_empty());
+        assert_eq!(target.messages().len(), 1);
+        source.complete(active.generation, Err("synthetic failure".into()));
+        target.restore(&source.snapshot()).unwrap();
+        assert_eq!(
+            target.outcome(),
+            &Outcome::Failed("synthetic failure".into())
+        );
+        assert!(target.can_retry());
+        target.restore(&Snapshot::default()).unwrap();
+        assert!(target.messages().is_empty());
+        assert!(!target.can_retry());
+        assert_eq!(target.outcome(), &Outcome::None);
+    }
+    #[test]
+    fn failed_restore_preserves_destination_and_snapshot_cannot_reset_counters() {
+        let mut source = Session::default();
+        source.begin("source", context(), |_, _| Ok(())).unwrap();
+        let snapshot = source.snapshot();
+        let mut target = Session::default();
+        target
+            .begin("destination", context(), |_, _| Ok(()))
+            .unwrap();
+        target.next_message = u64::MAX;
+        assert!(target.restore(&snapshot).is_err());
+        assert!(target.is_busy());
+        assert_eq!(target.messages()[0].text, "destination");
+        target.next_message = 1;
+        target.generation = u64::MAX;
+        assert!(target.restore(&Snapshot::default()).is_err());
+        assert!(target.is_busy());
+        assert_eq!(target.messages()[0].text, "destination");
     }
 }

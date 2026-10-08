@@ -1,0 +1,11 @@
+{
+  "source_manifest_sha256": "298d7414e08c901f6c7840c6fd4524de237ab0a05f14dbcd268c391bf55b1dbf",
+  "test_binary_sha256": "8c3c038ae730294e7597a2d8751287b9f78ca6e9efd1aef9de238b16107bf91b",
+  "test_binary_bytes": 123652840,
+  "base": "2a5f95b35d27f33b19e4530e696a06da496fc9b8",
+  "source_bytes_reverified_after_tests": true,
+  "core_tests": 424,
+  "app_tests_passed": 413,
+  "app_ignored_child_test": 1,
+  "local_interactive_gui": false
+}

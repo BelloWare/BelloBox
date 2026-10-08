@@ -5,12 +5,12 @@ use gpui::{Focusable, TestAppContext, WindowHandle};
 use std::{
     io::{Read, Write},
     net::{TcpListener, TcpStream},
-    sync::{Mutex, mpsc},
+    sync::mpsc,
     time::{Duration, Instant},
 };
 
 // Worker admission is process-wide, so every Clock HTTP fixture shares this lock.
-static TEST_LOCK: Mutex<()> = Mutex::new(());
+use crate::clock_copilot_worker::TEST_LOCK;
 fn safe_environment() {
     for name in [
         "BELLOBOX_AI_PROVIDER",
@@ -121,9 +121,7 @@ impl gpui::Render for OtherWindow {
     }
 }
 fn poll(view: &mut WorldClock) {
-    if let Some((generation, result)) = view.copilot.worker.poll() {
-        view.copilot.session.complete(generation, result);
-    }
+    view.copilot.poll();
 }
 fn finish(view: WindowHandle<WorldClock>, cx: &mut TestAppContext) {
     let deadline = Instant::now() + Duration::from_secs(8);
@@ -590,11 +588,9 @@ fn local_close_guard_flow(with_other_window: bool, cx: &mut TestAppContext) {
         assert!(view.copilot.worker.physically_active());
         assert_eq!(view.copilot.session.outcome(), &Outcome::Cancelled);
         assert!(
-            view.copilot
-                .notice
-                .as_ref()
-                .unwrap()
-                .contains("Close again")
+            view.copilot_notices()
+                .iter()
+                .any(|notice| notice.contains("Close again"))
         );
     })
     .unwrap();
@@ -603,6 +599,7 @@ fn local_close_guard_flow(with_other_window: bool, cx: &mut TestAppContext) {
     finish(view, cx);
     view.update(cx, |view, _, _| {
         assert!(!view.copilot.closed); // Retirement must not auto-close.
+        assert!(!view.copilot.close_notice);
         assert_eq!(view.copilot.session.messages().len(), 1);
     })
     .unwrap();
@@ -847,4 +844,399 @@ fn explicit_apply_feedback_and_failed_request_are_both_visible(cx: &mut TestAppC
         assert!(notices.iter().any(|n| n == "Synthetic provider failed"));
     })
     .unwrap();
+}
+
+fn preview() -> crate::clock_preview_session::ClockPreviewSession {
+    crate::clock_preview_session::ClockPreviewSession::new(
+        &["UTC".into(), "Asia/Tokyo".into()],
+        "UTC",
+        "UTC",
+        "2026-10-09T13:00:00Z",
+    )
+    .unwrap()
+}
+
+#[gpui::test]
+fn handoff_transfers_partial_apply_draft_and_fences_old_buttons_without_saving(
+    cx: &mut TestAppContext,
+) {
+    let folder = tempfile::tempdir().unwrap();
+    let path = folder.path().join("settings.json");
+    Settings {
+        zone_ids: vec![
+            "UTC".into(),
+            "Europe/London".into(),
+            "America/New_York".into(),
+            "Europe/Berlin".into(),
+            "Asia/Kolkata".into(),
+        ],
+        anchor_zone_id: "UTC".into(),
+        ..Default::default()
+    }
+    .save(&path)
+    .unwrap();
+    let initial = std::fs::read(&path).unwrap();
+    let view = open(&path, cx);
+    let preview = preview();
+    let mut source = bellobox_core::clock::copilot::session::Session::default();
+    let context =
+        protocol::Context::from_planner(&preview.planner, preview.planner.instant, "UTC").unwrap();
+    let run = source
+        .begin("Time and Tokyo", context.clone(), |_, _| Ok(()))
+        .unwrap();
+    source.complete(run.generation, protocol::parse_response(r#"{"answer":"Use Tokyo","suggestion":{"referenceDate":"2026-10-09T13:00:00Z","timeZoneIDs":["Asia/Tokyo"],"anchorTimeZoneID":"Asia/Tokyo"}}"#));
+    let id = source.messages().last().unwrap().id;
+    source.mark_applied(id, Parts::TIME, "time");
+    let handoff =
+        preview
+            .handoff()
+            .with_copilot(source.snapshot(), "Unsent follow-up".into(), None);
+    view.update(cx, |view, window, cx| {
+        let old = view
+            .copilot
+            .session
+            .begin("Old conversation", context, |_, _| Ok(()))
+            .unwrap();
+        view.copilot
+            .session
+            .complete(old.generation, protocol::parse_response("Old answer"));
+        let old_id = view.copilot.session.messages().last().unwrap().id;
+        let revision = view.planner_revision;
+        view.adopt(&handoff, window, cx).unwrap();
+        assert_eq!(view.copilot.draft.read(cx).text(), "Unsent follow-up");
+        assert!(view.copilot.visible);
+        assert_eq!(view.planner.zones.len(), 5);
+        assert_eq!(view.planner.instant, preview.planner.instant);
+        let new_id = view.copilot.session.messages().last().unwrap().id;
+        assert!(new_id > old_id);
+        assert_eq!(
+            view.copilot
+                .session
+                .messages()
+                .last()
+                .unwrap()
+                .applied_parts,
+            Parts::TIME
+        );
+        cx.write_to_clipboard(gpui::ClipboardItem::new_string("clipboard sentinel".into()));
+        view.act(Action::CopilotCopy(old_id), window, cx);
+        assert_eq!(
+            cx.read_from_clipboard().unwrap().text().as_deref(),
+            Some("clipboard sentinel")
+        );
+        view.act(Action::CopilotApply(old_id, revision), window, cx);
+        assert_eq!(view.planner.zones.len(), 5);
+        assert!(
+            !view
+                .copilot
+                .session
+                .complete(old.generation, protocol::parse_response("Late old reply"))
+        );
+        assert_eq!(std::fs::read(&path).unwrap(), initial);
+        view.act(
+            Action::CopilotApply(new_id, view.planner_revision),
+            window,
+            cx,
+        );
+        assert_eq!(view.planner.zones.len(), 6);
+        assert_eq!(view.planner.reference.name(), "Asia/Tokyo");
+        assert!(
+            view.copilot
+                .session
+                .messages()
+                .last()
+                .unwrap()
+                .is_fully_applied()
+        );
+        assert_eq!(Settings::load(&path).unwrap().zone_ids.len(), 6);
+        // Explicit empty transfer resets the conversation and draft.
+        view.adopt(&preview.handoff(), window, cx).unwrap();
+        assert!(view.copilot.session.messages().is_empty());
+        assert!(view.copilot.draft.read(cx).text().is_empty());
+    })
+    .unwrap();
+}
+
+#[gpui::test]
+fn failed_handoff_preserves_target_planner_conversation_draft_and_source(cx: &mut TestAppContext) {
+    let folder = tempfile::tempdir().unwrap();
+    let view = open(&folder.path().join("settings.json"), cx);
+    let mut preview = preview();
+    preview.planner.instant = "+262142-12-31T23:59:59Z".parse().unwrap();
+    let mut source = bellobox_core::clock::copilot::session::Session::default();
+    let valid = clock::Planner::default();
+    let context = protocol::Context::from_planner(&valid, valid.instant, "UTC").unwrap();
+    source
+        .begin("Source question", context.clone(), |_, _| Ok(()))
+        .unwrap();
+    let handoff = preview
+        .handoff()
+        .with_copilot(source.snapshot(), "Source draft".into(), None);
+    draft(view, "Destination draft", cx);
+    view.update(cx, |view, window, cx| {
+        let old = view
+            .copilot
+            .session
+            .begin("Destination question", context, |_, _| Ok(()))
+            .unwrap();
+        let instant = view.planner.instant;
+        let revision = view.planner_revision;
+        assert!(view.adopt(&handoff, window, cx).is_err());
+        assert_eq!(view.planner.instant, instant);
+        assert_eq!(view.planner_revision, revision);
+        assert_eq!(view.copilot.draft.read(cx).text(), "Destination draft");
+        assert_eq!(
+            view.copilot.session.messages()[0].text,
+            "Destination question"
+        );
+        assert!(
+            view.copilot
+                .session
+                .complete(old.generation, protocol::parse_response("Still current"))
+        );
+    })
+    .unwrap();
+    assert!(source.is_busy());
+    assert_eq!(source.messages()[0].text, "Source question");
+    // The production open path propagates failures for both existing and new windows.
+    assert!(
+        cx.update(|cx| super::super::open_with_handoff_at(
+            String::new(),
+            Some(handoff.clone()),
+            folder.path().join("settings.json"),
+            cx
+        ))
+        .is_err()
+    );
+    view.update(cx, |_, window, _| window.remove_window())
+        .unwrap();
+    cx.run_until_parked();
+    assert!(
+        cx.update(|cx| super::super::open_with_handoff_at(
+            String::new(),
+            Some(handoff),
+            folder.path().join("settings.json"),
+            cx
+        ))
+        .is_err()
+    );
+}
+
+#[gpui::test]
+fn transferred_physical_guard_survives_replacement_and_clear_until_retirement(
+    cx: &mut TestAppContext,
+) {
+    let _serial = TEST_LOCK.lock().unwrap();
+    safe_environment();
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let folder = tempfile::tempdir().unwrap();
+    let path = folder.path().join("settings.json");
+    settings(&path, &listener);
+    let (admitted, admission) = mpsc::channel();
+    let (release, released) = mpsc::channel();
+    let server = std::thread::spawn(move || {
+        let mut socket = accept(&listener);
+        read_request(&mut socket);
+        admitted.send(()).unwrap();
+        released.recv_timeout(Duration::from_secs(8)).unwrap();
+        respond(&mut socket, "late source reply");
+    });
+    let source = open(&path, cx);
+    let target = open(&path, cx);
+    draft(source, "Source in flight", cx);
+    act(source, Action::CopilotSend, cx);
+    admission.recv_timeout(Duration::from_secs(5)).unwrap();
+    let handoff = source
+        .update(cx, |view, _, _| {
+            preview().handoff().with_copilot(
+                view.copilot.session.snapshot(),
+                "Transferred draft".into(),
+                view.copilot.worker.guard(),
+            )
+        })
+        .unwrap();
+    target
+        .update(cx, |view, window, cx| {
+            view.adopt(&handoff, window, cx).unwrap();
+            for _ in 0..20 {
+                view.adopt(&handoff, window, cx).unwrap();
+            }
+            assert_eq!(
+                view.copilot.retirement.len(),
+                1,
+                "repeated handoffs share one physical observer"
+            );
+            assert!(view.copilot.physically_active());
+            assert!(view.copilot.session.can_retry());
+            assert!(!view.allow_copilot_close(cx));
+            view.adopt(&preview().handoff(), window, cx).unwrap();
+            view.act(Action::CopilotClear, window, cx);
+            assert!(view.copilot.physically_active());
+            assert!(!view.allow_copilot_close(cx));
+            view.copilot.notice = Some("Unrelated useful notice".into());
+        })
+        .unwrap();
+    source
+        .update(cx, |_, window, _| window.remove_window())
+        .unwrap();
+    release.send(()).unwrap();
+    server.join().unwrap();
+    let deadline = Instant::now() + Duration::from_secs(8);
+    loop {
+        let busy = target
+            .update(cx, |view, _, _| {
+                poll(view);
+                view.copilot.physically_active()
+            })
+            .unwrap();
+        if !busy {
+            break;
+        }
+        assert!(Instant::now() < deadline);
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    target
+        .update(cx, |view, _, cx| {
+            assert!(view.allow_copilot_close(cx));
+            assert!(!view.copilot.close_notice);
+            assert_eq!(
+                view.copilot.notice.as_deref(),
+                Some("Unrelated useful notice")
+            );
+            assert!(view.copilot.session.messages().is_empty());
+        })
+        .unwrap();
+}
+
+#[gpui::test]
+fn plain_reopen_preserves_existing_conversation_and_successful_new_handoff_reveals_it(
+    cx: &mut TestAppContext,
+) {
+    let folder = tempfile::tempdir().unwrap();
+    let path = folder.path().join("settings.json");
+    Settings {
+        zone_ids: vec!["UTC".into()],
+        anchor_zone_id: "UTC".into(),
+        ..Default::default()
+    }
+    .save(&path)
+    .unwrap();
+    let initial = std::fs::read(&path).unwrap();
+    let preview = preview();
+    let mut session = bellobox_core::clock::copilot::session::Session::default();
+    let context =
+        protocol::Context::from_planner(&preview.planner, preview.planner.instant, "UTC").unwrap();
+    session
+        .begin("Unanswered question", context, |_, _| Ok(()))
+        .unwrap();
+    let handoff = preview
+        .handoff()
+        .with_copilot(session.snapshot(), "Unsent draft".into(), None);
+    cx.update(|cx| {
+        super::super::open_with_handoff_at(String::new(), Some(handoff), path.clone(), cx)
+    })
+    .unwrap();
+    let window = cx.read(|cx| {
+        cx.windows()
+            .into_iter()
+            .find_map(|w| w.downcast::<WorldClock>())
+            .unwrap()
+    });
+    let before = window
+        .update(cx, |view, _, cx| {
+            assert!(view.copilot.visible);
+            assert!(view.copilot.session.can_retry());
+            assert_eq!(view.copilot.draft.read(cx).text(), "Unsent draft");
+            (
+                view.planner.instant,
+                view.copilot.session.messages()[0].id,
+                view.planner_revision,
+            )
+        })
+        .unwrap();
+    cx.update(|cx| {
+        super::super::open_with_handoff_at("2001-01-01T00:00:00Z".into(), None, path.clone(), cx)
+    })
+    .unwrap();
+    window
+        .update(cx, |view, _, cx| {
+            assert_eq!(
+                (
+                    view.planner.instant,
+                    view.copilot.session.messages()[0].id,
+                    view.planner_revision
+                ),
+                before
+            );
+            assert_eq!(view.copilot.draft.read(cx).text(), "Unsent draft");
+            assert!(view.copilot.session.can_retry());
+        })
+        .unwrap();
+    assert_eq!(std::fs::read(&path).unwrap(), initial);
+}
+
+#[gpui::test]
+fn adoption_into_busy_destination_keeps_old_physical_close_gate_and_fences_reply(
+    cx: &mut TestAppContext,
+) {
+    let _serial = TEST_LOCK.lock().unwrap();
+    safe_environment();
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let folder = tempfile::tempdir().unwrap();
+    let path = folder.path().join("settings.json");
+    settings(&path, &listener);
+    let (admitted, admission) = mpsc::channel();
+    let (release, released) = mpsc::channel();
+    let server = std::thread::spawn(move || {
+        let mut socket = accept(&listener);
+        read_request(&mut socket);
+        admitted.send(()).unwrap();
+        released.recv_timeout(Duration::from_secs(8)).unwrap();
+        respond(&mut socket, "Obsolete destination answer");
+    });
+    let target = open(&path, cx);
+    draft(target, "Old destination question", cx);
+    act(target, Action::CopilotSend, cx);
+    admission.recv_timeout(Duration::from_secs(5)).unwrap();
+    let preview = preview();
+    let mut source = bellobox_core::clock::copilot::session::Session::default();
+    let context =
+        protocol::Context::from_planner(&preview.planner, preview.planner.instant, "UTC").unwrap();
+    let run = source
+        .begin("Transferred question", context, |_, _| Ok(()))
+        .unwrap();
+    source.complete(
+        run.generation,
+        protocol::parse_response("Transferred answer"),
+    );
+    let handoff =
+        preview
+            .handoff()
+            .with_copilot(source.snapshot(), "Transferred draft".into(), None);
+    target
+        .update(cx, |view, window, cx| {
+            view.adopt(&handoff, window, cx).unwrap();
+            assert!(view.copilot.physically_active());
+            assert!(!view.allow_copilot_close(cx));
+            assert_eq!(
+                view.copilot.session.messages()[1].text,
+                "Transferred answer"
+            );
+        })
+        .unwrap();
+    release.send(()).unwrap();
+    server.join().unwrap();
+    finish(target, cx);
+    target
+        .update(cx, |view, _, cx| {
+            assert!(view.allow_copilot_close(cx));
+            assert_eq!(view.copilot.session.messages().len(), 2);
+            assert_eq!(
+                view.copilot.session.messages()[1].text,
+                "Transferred answer"
+            );
+            assert_eq!(view.copilot.draft.read(cx).text(), "Transferred draft");
+            assert!(!view.copilot.close_notice);
+        })
+        .unwrap();
 }

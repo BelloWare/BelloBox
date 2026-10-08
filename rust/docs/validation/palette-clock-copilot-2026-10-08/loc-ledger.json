@@ -1,0 +1,2455 @@
+{
+  "baseline_commit": "2a5f95b35d27f33b19e4530e696a06da496fc9b8",
+  "baseline_root_tree": "cf0a951ac9bd839fa84cc6f02d3b7e730a1b1db2",
+  "method": "Nonblank physical Rust lines including comments. Reviewed complete positive cfg(test)/cfg(all(test,...)) spans and test-only modules are support; feature/production cfg(any(...,test)) remains production. Adjacent non-test comments remain production. Unchanged baseline categories inherited; no universal reclassification.",
+  "scope": "All repository tracked .rs source at baseline plus four added Rust paths, with one old worker path removed. No Git dependency source, target/build outputs, patch text, duplicated evidence or documentation counted. Shared workbench counted once in BelloBox; BelloAgent Git dependency is excluded.",
+  "baseline_counts": {
+    "production": 55276,
+    "support": 37190,
+    "benchmark": 105
+  },
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/clock_copilot_worker.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "57d2fad53bc9a75068c063a03514c7d619ac348f553c394fcde8026209659563",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            13,
+            14
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 169,
+          "support": 2,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 169,
+        "support": 2,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/clock_preview_session.rs",
+      "before_sha256": "f336f889aaac5b9517099abd1ba3940f151dbcb3a6bbce85a6d164caa04cd8f7",
+      "after_sha256": "5e27f1506b37fa5ab6c7f77874d68c99a3c0915354ed676b0734365c878cce93",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            200,
+            533
+          ]
+        ],
+        "after": [
+          [
+            225,
+            558
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 174,
+          "support": 314,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 198,
+          "support": 314,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 24,
+        "support": 0,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "before_sha256": "9d1968f30d1155b024bff40b671cccbc40204eb64858f8bed81a3eb2df857cc7",
+      "after_sha256": "a547b105e79569ea1a1caec52c71ae89b9f8cb2f0c760c80f6f6865a43de9ee3",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            1989,
+            1990
+          ]
+        ],
+        "after": [
+          [
+            1995,
+            1996
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 1981,
+          "support": 2,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 1987,
+          "support": 2,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 6,
+        "support": 0,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui.rs",
+      "before_sha256": "cdb25ce6715d550ef972d0058e92924401427771f23aac3e57c07d9b214c331d",
+      "after_sha256": "55d3d665985b1ee061f73633abc5e4fcd343e7ea4c5db3320021c4e7d5a10ea2",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            1080,
+            1129
+          ]
+        ],
+        "after": [
+          [
+            1108,
+            1157
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 1045,
+          "support": 45,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 1073,
+          "support": 45,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 28,
+        "support": 0,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "5defce5c2215a5905301e340210574f42bf745f5ae23b5bfee5ffaf1efe9830d",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            126,
+            133
+          ],
+          [
+            134,
+            138
+          ],
+          [
+            154,
+            157
+          ],
+          [
+            431,
+            432
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 411,
+          "support": 19,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 411,
+        "support": 19,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "8fde4f7e4b0ffb2cfb8af33ec62281d488a8ba5d4f89b7fb35f901ab638d2cc3",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            1,
+            380
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 0,
+          "support": 376,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 376,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+      "before_sha256": "6b2df1e9b00899135c23ea76ff3f56f211f843355c7260814c7890464368b880",
+      "after_sha256": "5833062481dd81182b194112af7a931271ea0f8cd911b2d9f52c316f50ef8861",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            716,
+            731
+          ]
+        ],
+        "after": [
+          [
+            892,
+            907
+          ],
+          [
+            909,
+            910
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 713,
+          "support": 16,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 889,
+          "support": 18,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 176,
+        "support": 2,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "ac493ccde6a46ef5a488f957e249d93bd75a059562330da7af34fa08728c2cb6",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            1,
+            382
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 0,
+          "support": 375,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 375,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "before_sha256": "5924de0cc20e02f9a67c5f934a7f44f5074e19d17b4107d4c0b3efec5829d20b",
+      "after_sha256": "d2188799ac874916b29c26aae07e8e1340bc71a132c1588bce0fb90889bc289d",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": []
+      },
+      "counts": {
+        "before": {
+          "production": 174,
+          "support": 0,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 175,
+          "support": 0,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 1,
+        "support": 0,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui.rs",
+      "before_sha256": "dce1a803d6364c187146ea5e67e58f307dd312ed611914274d94876a5c754e88",
+      "after_sha256": "6ab3809332affc39c29adb895b2ae0de180aec281bf75b8cd9a34941182a5a66",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            1833,
+            2020
+          ]
+        ],
+        "after": [
+          [
+            1857,
+            2044
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 1826,
+          "support": 188,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 1850,
+          "support": 188,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 24,
+        "support": 0,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot.rs",
+      "before_sha256": "0ddde76ca73d7df55bd087d9b57e6d17fa8d0eb836ca788c12516417953b1bb7",
+      "after_sha256": "2575781429e76e5d4d1ba4d68185a0e03ae81f0bebbcd7b9e21801d39a31946b",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            408,
+            409
+          ]
+        ],
+        "after": [
+          [
+            477,
+            478
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 405,
+          "support": 2,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 474,
+          "support": 2,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 69,
+        "support": 0,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot/tests.rs",
+      "before_sha256": "86ec52710d116e27d4d06d0cd7ab5e685b1e3258cd8597f77dc555401a6df1b7",
+      "after_sha256": "65a2d2b79e56dac97ae2e0e34d6d61ebf60aa67e782b5373122ebee0b0355521",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            1,
+            850
+          ]
+        ],
+        "after": [
+          [
+            1,
+            1242
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 837,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 0,
+          "support": 1223,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 386,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot_worker.rs",
+      "before_sha256": "c1b060a1fcd456274423e505056d515ba106b84983faeb2ca8bef9474e51ad4e",
+      "after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": []
+      },
+      "counts": {
+        "before": {
+          "production": 146,
+          "support": 0,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": -146,
+        "support": 0,
+        "benchmark": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot/session.rs",
+      "before_sha256": "a0fdc283198f8cf3c6865a157f5cc36b122bf6c83e49af9e490af92f3d387638",
+      "after_sha256": "50bf3df022d0aa12c9ece88d66854dfce37b0658989d8957f1476127df3731b7",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            233,
+            349
+          ]
+        ],
+        "after": [
+          [
+            301,
+            497
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 230,
+          "support": 117,
+          "benchmark": 0
+        },
+        "after": {
+          "production": 296,
+          "support": 197,
+          "benchmark": 0
+        }
+      },
+      "delta": {
+        "production": 66,
+        "support": 80,
+        "benchmark": 0
+      }
+    }
+  ],
+  "delta": {
+    "production": 828,
+    "support": 1240,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 56104,
+    "support": 38430,
+    "benchmark": 105
+  },
+  "physical_totals": {
+    "before": 92571,
+    "after": 94639,
+    "before_files": 185,
+    "after_files": 188
+  },
+  "baseline_evidence": {
+    "rust/docs/validation/clock-copilot-2026-10-08/LOC.md": {
+      "sha256": "198b508e7f84fd8ba4e3a481738271f9ccbd1873ddf1409e2f50791861d3c9e4",
+      "blob_sha1": "c623aeadb781a6efaeae601892e4a80bc241c6ca"
+    },
+    "rust/docs/validation/clock-copilot-2026-10-08/loc-integrated-ledger.json": {
+      "sha256": "0294a394fd7536fb55df66025762fbed3386ede63da421f1f513a98822bd0ba2",
+      "blob_sha1": "0b364714e2f847cd82453d498d5b64861a929a8f"
+    },
+    "rust/docs/validation/provider-setup-2026-10-08/LOC.md": {
+      "sha256": "0a3bfe4f89548aead6c50f98e5a40b3330591d6135732453b18f12dec3c9cf73",
+      "blob_sha1": "cba6450cdf70ac9d6ded0e7d3b2f6fd66d50af8d"
+    },
+    "rust/docs/validation/provider-setup-2026-10-08/loc-audit.json": {
+      "sha256": "3c00d0a627cb008f2b191839cfc3861a8dcaab973bf4a12e7dcc457a500f9f61",
+      "blob_sha1": "d0d9768a0e4337233b825083e5d040711ba479bf"
+    },
+    "rust/docs/MIGRATION_HANDOFF.md": {
+      "sha256": "1d541ab404d809f6bb15d24bdf3af633d267edb886e4c8d66e6be5474beb7f83",
+      "blob_sha1": "5835970174c831bc0ca3d39e7002ec4a47c27258"
+    },
+    "rust/docs/validation/guarded-quit-2026-10-08/README.md": {
+      "sha256": "08992b3117568709e6370f2e24c663372ed53bbb07f834963417cf7b9bd32a02",
+      "blob_sha1": "6fcf0b2e374be8b249c67636e6ceefc054f20c59"
+    },
+    "rust/docs/validation/guarded-quit-2026-10-08/loc-delta.json": {
+      "sha256": "32451ff028290c799177ee7a530e92836e5204c34815f0fc0a2af98646a05a67",
+      "blob_sha1": "6aef80f0e96ff27f8b3d8a16da2c6c34e2e88383"
+    },
+    "rust/docs/validation/guarded-quit-2026-10-08/verify-loc.py": {
+      "sha256": "715928e432b7b8c9a5014dcd4774dbc98a225944f87256173c92b3f5709bb96f",
+      "blob_sha1": "c9f2f28708254e10891dea6fd9a8efb35551dd2d"
+    }
+  },
+  "all_rust_files": [
+    {
+      "path": "rust/crates/bello-platform/src/backend.rs",
+      "baseline_blob_sha1": "ae157e180c00d98a2dff4fdc75c03a006a800ba9",
+      "before_sha256": "b283e68a29b6f79c9689a77cf503acdf2678c78027bd160655e323a846149a43",
+      "after_sha256": "b283e68a29b6f79c9689a77cf503acdf2678c78027bd160655e323a846149a43",
+      "before_nonblank": 540,
+      "after_nonblank": 540,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/capture.rs",
+      "baseline_blob_sha1": "7b226774b3fb7939906ccef0cb50c3354e4ac735",
+      "before_sha256": "aff7ae2fd7bf3868208ed13c025551f725079485e4d99b9f74c50806e12504a3",
+      "after_sha256": "aff7ae2fd7bf3868208ed13c025551f725079485e4d99b9f74c50806e12504a3",
+      "before_nonblank": 378,
+      "after_nonblank": 378,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/lib.rs",
+      "baseline_blob_sha1": "25d6dae5a8d6c9a54bf42e7bed1966de21d7aee4",
+      "before_sha256": "d5eb68044251d493dee31fbce1cd416db1662c49cd2753246e363133da161860",
+      "after_sha256": "d5eb68044251d493dee31fbce1cd416db1662c49cd2753246e363133da161860",
+      "before_nonblank": 431,
+      "after_nonblank": 431,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/macos_capture_overlay.rs",
+      "baseline_blob_sha1": "20bf54a57630f1074774a79916255e3297a0fbda",
+      "before_sha256": "000fce51ff0b69a141d2e3022e47d55bf0773a27a51e9363fbe68bb121081edc",
+      "after_sha256": "000fce51ff0b69a141d2e3022e47d55bf0773a27a51e9363fbe68bb121081edc",
+      "before_nonblank": 1663,
+      "after_nonblank": 1663,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/macos_capture_overlay/deactivation.rs",
+      "baseline_blob_sha1": "b4c663e2fa49376072076c5f1515fbef7d8034b1",
+      "before_sha256": "0dd45714ee6c09f351fd86738a29d829ae20e39226cce08620eb83d2f858fa2b",
+      "after_sha256": "0dd45714ee6c09f351fd86738a29d829ae20e39226cce08620eb83d2f858fa2b",
+      "before_nonblank": 235,
+      "after_nonblank": 235,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/macos_native.rs",
+      "baseline_blob_sha1": "1904f32d7558185767d4353a2834f1dfc150b199",
+      "before_sha256": "5bb824e6eacb043cb7ed1dbee5855ef566809688d10e78d739ebdb8cf859a18d",
+      "after_sha256": "5bb824e6eacb043cb7ed1dbee5855ef566809688d10e78d739ebdb8cf859a18d",
+      "before_nonblank": 1028,
+      "after_nonblank": 1028,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie.rs",
+      "baseline_blob_sha1": "a17ed73e4923950642402aa1c99188914719eee4",
+      "before_sha256": "13869eb3cc5310a24ac8ccecf5692bc71aedc614a187715758dafd4343a4bc90",
+      "after_sha256": "13869eb3cc5310a24ac8ccecf5692bc71aedc614a187715758dafd4343a4bc90",
+      "before_nonblank": 723,
+      "after_nonblank": 723,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/macos.rs",
+      "baseline_blob_sha1": "a94c0a5cd82ea1ddd7d13b1a5daa66408fe9e0af",
+      "before_sha256": "a80f925d690da68a10e9b8cfcd986e32524d292f1390a41ef77a2afdf027d970",
+      "after_sha256": "a80f925d690da68a10e9b8cfcd986e32524d292f1390a41ef77a2afdf027d970",
+      "before_nonblank": 585,
+      "after_nonblank": 585,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/macos/fixtures.rs",
+      "baseline_blob_sha1": "a290406b40db6a1f7ea7622c875b0518e750f4c0",
+      "before_sha256": "e70bea9aa7d8ad421361afb88ed189254d39f8d2ac511041b1683d478066d95c",
+      "after_sha256": "e70bea9aa7d8ad421361afb88ed189254d39f8d2ac511041b1683d478066d95c",
+      "before_nonblank": 186,
+      "after_nonblank": 186,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/macos/tests.rs",
+      "baseline_blob_sha1": "6cdded67d79b20d41cac78f16c64f43f6b2b42ab",
+      "before_sha256": "dd9159cf0ee21b4e47fdcb3e7192a7feebc3d8754f2def4408c3771b9945c4d4",
+      "after_sha256": "dd9159cf0ee21b4e47fdcb3e7192a7feebc3d8754f2def4408c3771b9945c4d4",
+      "before_nonblank": 512,
+      "after_nonblank": 512,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/retirement.rs",
+      "baseline_blob_sha1": "1ee1a611a01556d5520fe1d0ad0b767a99b3e510",
+      "before_sha256": "8d2824c9a9c08b75399ddae508093043cc73bfe8a2614df83d2134829c19da36",
+      "after_sha256": "8d2824c9a9c08b75399ddae508093043cc73bfe8a2614df83d2134829c19da36",
+      "before_nonblank": 49,
+      "after_nonblank": 49,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/source_file.rs",
+      "baseline_blob_sha1": "29fcdfeaad70077347503175f83d3a10cb371205",
+      "before_sha256": "ea4cff9d55e8e428696cce850f233f51f66a510eb4de249bb56cc794dbf41b39",
+      "after_sha256": "ea4cff9d55e8e428696cce850f233f51f66a510eb4de249bb56cc794dbf41b39",
+      "before_nonblank": 121,
+      "after_nonblank": 121,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/movie/tests.rs",
+      "baseline_blob_sha1": "aa13900223a7b7e392f8ffebb610ff9fc2488366",
+      "before_sha256": "bb4be3d8d41880a3309f832ab41e1a9c7b8a20f3ccc3d08a4534fbefbba6efc7",
+      "after_sha256": "bb4be3d8d41880a3309f832ab41e1a9c7b8a20f3ccc3d08a4534fbefbba6efc7",
+      "before_nonblank": 208,
+      "after_nonblank": 208,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture.rs",
+      "baseline_blob_sha1": "2b243b35c2e9caaca4339273db84fb9096234dc7",
+      "before_sha256": "c7e657b5eb521242e81ba3d4fe1fd23aa8dcbd776ad5220dc4b7489258b0a7b5",
+      "after_sha256": "c7e657b5eb521242e81ba3d4fe1fd23aa8dcbd776ad5220dc4b7489258b0a7b5",
+      "before_nonblank": 524,
+      "after_nonblank": 524,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/alpha_mask.rs",
+      "baseline_blob_sha1": "2f94d23ab0ded5477959e447f70d3da34ef09bf2",
+      "before_sha256": "43ae6341e033d441641f8829f58660451ac027f98ef21a4baed725cb11fabbd9",
+      "after_sha256": "43ae6341e033d441641f8829f58660451ac027f98ef21a4baed725cb11fabbd9",
+      "before_nonblank": 311,
+      "after_nonblank": 311,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/alpha_mask_macos.rs",
+      "baseline_blob_sha1": "ddf23d0529d12bbae0c8e938af2be2d92421ad91",
+      "before_sha256": "dceacfd7d809737b40be95ee75ffea95e72f9b12562aee4731ab2aafdd2d5390",
+      "after_sha256": "dceacfd7d809737b40be95ee75ffea95e72f9b12562aee4731ab2aafdd2d5390",
+      "before_nonblank": 270,
+      "after_nonblank": 270,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/alpha_mask_tests.rs",
+      "baseline_blob_sha1": "12e815fbc13f513e21f08e5d26ad800d6ee233ba",
+      "before_sha256": "561c8a1b7bae60be46bb45f0cffc4ab047fd019df5f4462f3ba8e03cb7e976b5",
+      "after_sha256": "561c8a1b7bae60be46bb45f0cffc4ab047fd019df5f4462f3ba8e03cb7e976b5",
+      "before_nonblank": 536,
+      "after_nonblank": 536,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/completion.rs",
+      "baseline_blob_sha1": "f031432f4e6c6647939b829e66f669b6ee602f3d",
+      "before_sha256": "859cd2b7bf378f1783d91e95ee73d7155d784cc34c7c468f81bcce6ce37fa9f7",
+      "after_sha256": "859cd2b7bf378f1783d91e95ee73d7155d784cc34c7c468f81bcce6ce37fa9f7",
+      "before_nonblank": 178,
+      "after_nonblank": 178,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos.rs",
+      "baseline_blob_sha1": "82cf6de4ab420dbfe1297162a15f31e581fa518e",
+      "before_sha256": "58326915ef2f4631bd1b224c65135e797836bb3b2fdcf535ad6944d37af59842",
+      "after_sha256": "58326915ef2f4631bd1b224c65135e797836bb3b2fdcf535ad6944d37af59842",
+      "before_nonblank": 751,
+      "after_nonblank": 751,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window.rs",
+      "baseline_blob_sha1": "0f51a15e95e1a1c5f9d84a3822644e1380749317",
+      "before_sha256": "a1a5ec9a4699960be1d9504bdf54add776da2fd87dfe0ac87af6ca5288b23679",
+      "after_sha256": "a1a5ec9a4699960be1d9504bdf54add776da2fd87dfe0ac87af6ca5288b23679",
+      "before_nonblank": 792,
+      "after_nonblank": 792,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/catalog.rs",
+      "baseline_blob_sha1": "752934fe99dcd892508595aaaad7a81149aed187",
+      "before_sha256": "12bfee5c646f442eea0df9c79c1996dbfa2bc7ecee4bb1764a38e304407ab48e",
+      "after_sha256": "12bfee5c646f442eea0df9c79c1996dbfa2bc7ecee4bb1764a38e304407ab48e",
+      "before_nonblank": 155,
+      "after_nonblank": 155,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/catalog/tests.rs",
+      "baseline_blob_sha1": "089ae6aaf3d88dafb1bf478a0128728a24b51dcc",
+      "before_sha256": "5f23539ccf08b01176f9a1428a4afe9382151efdd46e42e5ee691946b03347bf",
+      "after_sha256": "5f23539ccf08b01176f9a1428a4afe9382151efdd46e42e5ee691946b03347bf",
+      "before_nonblank": 314,
+      "after_nonblank": 314,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos/window/tests.rs",
+      "baseline_blob_sha1": "f6982727fd1f3efb788842c258110cbcea89b54e",
+      "before_sha256": "1602ed68adc9aedf7c2b3b777970469be6d7ab73de7083a3f3c60337d48885a6",
+      "after_sha256": "1602ed68adc9aedf7c2b3b777970469be6d7ab73de7083a3f3c60337d48885a6",
+      "before_nonblank": 390,
+      "after_nonblank": 390,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/macos_tests.rs",
+      "baseline_blob_sha1": "dea646aa2bd0773e9f9d4de93839defc5fde32ee",
+      "before_sha256": "e0efc0325f8427e8dfa1c58b86073b55941511473ca9d74187f8731820bc3d81",
+      "after_sha256": "e0efc0325f8427e8dfa1c58b86073b55941511473ca9d74187f8731820bc3d81",
+      "before_nonblank": 226,
+      "after_nonblank": 226,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/tests.rs",
+      "baseline_blob_sha1": "63299283565962e0fc6761adb063ae63b1c410df",
+      "before_sha256": "d9ffd9ad90b0368a8a36a2e2674513400b042abefce0a9fecfdef61032c23361",
+      "after_sha256": "d9ffd9ad90b0368a8a36a2e2674513400b042abefce0a9fecfdef61032c23361",
+      "before_nonblank": 688,
+      "after_nonblank": 688,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/native_capture/window_catalog.rs",
+      "baseline_blob_sha1": "58a225263ac5c5e36763d62094f3d0aa38c268e6",
+      "before_sha256": "81ecbc1cc10204c556224b706cc2f240722767b6fe2575a64afbd619ca009556",
+      "after_sha256": "81ecbc1cc10204c556224b706cc2f240722767b6fe2575a64afbd619ca009556",
+      "before_nonblank": 192,
+      "after_nonblank": 192,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/process.rs",
+      "baseline_blob_sha1": "6690fe8e5b341943e3ee87bec9e7237644940395",
+      "before_sha256": "b1697cd39f201b5ba9fa3546b78e05027b815cff3d2e333c621ad37153cd2ad9",
+      "after_sha256": "b1697cd39f201b5ba9fa3546b78e05027b815cff3d2e333c621ad37153cd2ad9",
+      "before_nonblank": 321,
+      "after_nonblank": 321,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording.rs",
+      "baseline_blob_sha1": "c605f25db003ca1770058f705293a99561926010",
+      "before_sha256": "e32b7b1f123b1c9c55703cdef031610d011464c194a1a5965b7cdab6fe32c62f",
+      "after_sha256": "e32b7b1f123b1c9c55703cdef031610d011464c194a1a5965b7cdab6fe32c62f",
+      "before_nonblank": 203,
+      "after_nonblank": 203,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/control.rs",
+      "baseline_blob_sha1": "c9a9c06b83dd79587debc71b6135947629b6bb5d",
+      "before_sha256": "a8d55d84d14f212444ecbf23f05eb0c065494e14dfecbcc454dbfeacbd773b72",
+      "after_sha256": "a8d55d84d14f212444ecbf23f05eb0c065494e14dfecbcc454dbfeacbd773b72",
+      "before_nonblank": 265,
+      "after_nonblank": 265,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/fixture.rs",
+      "baseline_blob_sha1": "a04cd779c7d67543162c34fc2e648624f321d5c1",
+      "before_sha256": "1dae9618f636b6af762bdbb3919d4d83b4648c79caa79c5999809d58ebff6482",
+      "after_sha256": "1dae9618f636b6af762bdbb3919d4d83b4648c79caa79c5999809d58ebff6482",
+      "before_nonblank": 225,
+      "after_nonblank": 225,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/macos.rs",
+      "baseline_blob_sha1": "dd4ee4d8dab7f190f14256945893185fa3722df7",
+      "before_sha256": "116bd6df95cf899885c375006db2bd4b7a7ef964038005d215fa1f33baaea67a",
+      "after_sha256": "116bd6df95cf899885c375006db2bd4b7a7ef964038005d215fa1f33baaea67a",
+      "before_nonblank": 368,
+      "after_nonblank": 368,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/output.rs",
+      "baseline_blob_sha1": "ad7779b486d2bb04c64d5e78dbb300d4e3bfa380",
+      "before_sha256": "fafbc9745183e36205c7bebc4227fb57481a37105b7f7c3216f208aa41ca1beb",
+      "after_sha256": "fafbc9745183e36205c7bebc4227fb57481a37105b7f7c3216f208aa41ca1beb",
+      "before_nonblank": 231,
+      "after_nonblank": 231,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/tests.rs",
+      "baseline_blob_sha1": "7ffb5c055d2e187463c146bc378cd55564b11ed0",
+      "before_sha256": "eb4e12e503cb438a1ea86b406a99fce289e53c43e692dd130bfb9ef1e8e159a5",
+      "after_sha256": "eb4e12e503cb438a1ea86b406a99fce289e53c43e692dd130bfb9ef1e8e159a5",
+      "before_nonblank": 890,
+      "after_nonblank": 890,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs",
+      "baseline_blob_sha1": "d26b112fc75fc73b1983c7dd6d29f84edc8ff943",
+      "before_sha256": "ebf6243327d22f7a181277e339a093cc64d6a9775caf01843df819b4a778442d",
+      "after_sha256": "ebf6243327d22f7a181277e339a093cc64d6a9775caf01843df819b4a778442d",
+      "before_nonblank": 162,
+      "after_nonblank": 162,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "baseline_blob_sha1": "a9d45b0b00dcd039f2ddbccf422ea3b4bfe4f20d",
+      "before_sha256": "fa5b23a7ff2adfff1693ae1a40f2ded14d413caac86ad30d52e2ceedf426a6be",
+      "after_sha256": "fa5b23a7ff2adfff1693ae1a40f2ded14d413caac86ad30d52e2ceedf426a6be",
+      "before_nonblank": 308,
+      "after_nonblank": 308,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/validation.rs",
+      "baseline_blob_sha1": "716ca1d1072b4b396589d71fd4ab673ae76c93d4",
+      "before_sha256": "deaf33a3508cad6a8728ef57d63c36959a444388c33541d4a481fefe93b0b58f",
+      "after_sha256": "deaf33a3508cad6a8728ef57d63c36959a444388c33541d4a481fefe93b0b58f",
+      "before_nonblank": 112,
+      "after_nonblank": 112,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/time_zone.rs",
+      "baseline_blob_sha1": "ba625c327de4ebafaa6ac74f28abd485c1afe936",
+      "before_sha256": "1e5f36ef7c00f4c86dec60c34f98169a7397690818bddbfaa02b1eafa8955cc9",
+      "after_sha256": "1e5f36ef7c00f4c86dec60c34f98169a7397690818bddbfaa02b1eafa8955cc9",
+      "before_nonblank": 330,
+      "after_nonblank": 330,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/window_capture.rs",
+      "baseline_blob_sha1": "697cde972eb3ed84b4aa7e2103f0b148599eb9aa",
+      "before_sha256": "8839352acc3fa8fe5553f01b198be9c58f22532ca9b7f41933b466574d59a05e",
+      "after_sha256": "8839352acc3fa8fe5553f01b198be9c58f22532ca9b7f41933b466574d59a05e",
+      "before_nonblank": 549,
+      "after_nonblank": 549,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-platform/src/window_capture/tests.rs",
+      "baseline_blob_sha1": "854f92a4b219bf3d077716f7f0907bc48385a1f3",
+      "before_sha256": "1c2c275a265ab03c181813f4187b278e5a79e0300466105f4999652ca0642354",
+      "after_sha256": "1c2c275a265ab03c181813f4187b278e5a79e0300466105f4999652ca0642354",
+      "before_nonblank": 774,
+      "after_nonblank": 774,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench-ui/src/appearance.rs",
+      "baseline_blob_sha1": "ebd0329ce02836f2c089c917f00198aff8372f06",
+      "before_sha256": "8aac810ff8f066c4848d1d0261aa220317a2ee77faba1ca46a284a652cd93e78",
+      "after_sha256": "8aac810ff8f066c4848d1d0261aa220317a2ee77faba1ca46a284a652cd93e78",
+      "before_nonblank": 212,
+      "after_nonblank": 212,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench-ui/src/editor_view.rs",
+      "baseline_blob_sha1": "5c48c6354392eea5510b979ba0d88b3a6f76c711",
+      "before_sha256": "9564b0052fd1f52e426c893afc7d111f7cd03fe89724439d0b729c6f12521f53",
+      "after_sha256": "9564b0052fd1f52e426c893afc7d111f7cd03fe89724439d0b729c6f12521f53",
+      "before_nonblank": 1484,
+      "after_nonblank": 1484,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench-ui/src/lib.rs",
+      "baseline_blob_sha1": "9052a3aac13e0081d95cff5b431c95f6015971c2",
+      "before_sha256": "312cc56346e4f06c49dcdff4f6e248a47f4ffd0010b5264ef1c1437c4611cb15",
+      "after_sha256": "312cc56346e4f06c49dcdff4f6e248a47f4ffd0010b5264ef1c1437c4611cb15",
+      "before_nonblank": 12,
+      "after_nonblank": 12,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench-ui/src/telemetry.rs",
+      "baseline_blob_sha1": "9ee45b7df52ca733281434b5da6f447aaaecb90a",
+      "before_sha256": "c6b15582c7948e544645c179810596842d6b9b3678055a420112377f5df931cd",
+      "after_sha256": "c6b15582c7948e544645c179810596842d6b9b3678055a420112377f5df931cd",
+      "before_nonblank": 325,
+      "after_nonblank": 325,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench-ui/src/workbench_view.rs",
+      "baseline_blob_sha1": "af81233c58a2853d0e69b7956e78fc8f936a9673",
+      "before_sha256": "6eaf346fe8e84037e430e29a2edd6aa7d56568bbc1ff846760455c92890c64ce",
+      "after_sha256": "6eaf346fe8e84037e430e29a2edd6aa7d56568bbc1ff846760455c92890c64ce",
+      "before_nonblank": 1015,
+      "after_nonblank": 1015,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench-ui/src/wrapping.rs",
+      "baseline_blob_sha1": "2bdf7c2eadd500ac5fc8de3b79c1f6035788e8d8",
+      "before_sha256": "36c3ddbe2109f915b0dd5a5f16d7dd275046adb11d44892cc01dcdb8e0d2fd29",
+      "after_sha256": "36c3ddbe2109f915b0dd5a5f16d7dd275046adb11d44892cc01dcdb8e0d2fd29",
+      "before_nonblank": 160,
+      "after_nonblank": 160,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench/examples/benchmark.rs",
+      "baseline_blob_sha1": "fa999515d002a96388b48887bcd5ff05d7245085",
+      "before_sha256": "3eb8aca3a05af1e1c6e48396d587400bc79e10183f6f9c559b7e3a71c3584d98",
+      "after_sha256": "3eb8aca3a05af1e1c6e48396d587400bc79e10183f6f9c559b7e3a71c3584d98",
+      "before_nonblank": 66,
+      "after_nonblank": 66,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench/src/diff.rs",
+      "baseline_blob_sha1": "7c61e5661485900c19712c35466854ae21533bf3",
+      "before_sha256": "d8f5c3a2d79fa28f234253dae931b29ab243eb595e4f5f8ae924fb6f2cc08b2b",
+      "after_sha256": "d8f5c3a2d79fa28f234253dae931b29ab243eb595e4f5f8ae924fb6f2cc08b2b",
+      "before_nonblank": 122,
+      "after_nonblank": 122,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench/src/document.rs",
+      "baseline_blob_sha1": "21c2ed5d29a2c75ec24ce3f8e300e9e7334a83ad",
+      "before_sha256": "bc24604c24313ed68c6727000f25c746618347fb2607260f5a15192baad8c6fe",
+      "after_sha256": "bc24604c24313ed68c6727000f25c746618347fb2607260f5a15192baad8c6fe",
+      "before_nonblank": 375,
+      "after_nonblank": 375,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench/src/editor.rs",
+      "baseline_blob_sha1": "4caa127ced0d0d98eb76663f0059bfce52244595",
+      "before_sha256": "58ca730345524f48bc642232ed2d41cbaea5b885214f9c9f863e72ae9665f2fb",
+      "after_sha256": "58ca730345524f48bc642232ed2d41cbaea5b885214f9c9f863e72ae9665f2fb",
+      "before_nonblank": 1571,
+      "after_nonblank": 1571,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench/src/git.rs",
+      "baseline_blob_sha1": "403c03ec9649bd71952215b4de2da13de57cfe59",
+      "before_sha256": "456beeff5b4eb5ecda89c9d137ee6e406d768e78a3261046f82c2ee713fea37c",
+      "after_sha256": "456beeff5b4eb5ecda89c9d137ee6e406d768e78a3261046f82c2ee713fea37c",
+      "before_nonblank": 1276,
+      "after_nonblank": 1276,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench/src/lib.rs",
+      "baseline_blob_sha1": "252bc6d53c9320ee6d5625edb6ea1f3794fe62b5",
+      "before_sha256": "159825b079a2542845fae5c4b2d722b541b21072ca925cc29fd73329faae2741",
+      "after_sha256": "159825b079a2542845fae5c4b2d722b541b21072ca925cc29fd73329faae2741",
+      "before_nonblank": 8,
+      "after_nonblank": 8,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench/src/quick_open.rs",
+      "baseline_blob_sha1": "fb66ac38399832ca635ee18c7be8ae6042b74436",
+      "before_sha256": "ff1427a1e935ed814156280ca2e128f54bf46c5f21a767729d1afe7aa3d5d596",
+      "after_sha256": "ff1427a1e935ed814156280ca2e128f54bf46c5f21a767729d1afe7aa3d5d596",
+      "before_nonblank": 2008,
+      "after_nonblank": 2008,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench/src/tree.rs",
+      "baseline_blob_sha1": "84c4d16aeb1a93cf7dbeac1ca197408d939b0ce9",
+      "before_sha256": "f68c6ae731b65c1278e6a9fa4f35abca88e28f8481d9d1c98876bf2da098c908",
+      "after_sha256": "f68c6ae731b65c1278e6a9fa4f35abca88e28f8481d9d1c98876bf2da098c908",
+      "before_nonblank": 291,
+      "after_nonblank": 291,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bello-workbench/tests/editor_invariants.rs",
+      "baseline_blob_sha1": "15150f219a865e9fe30f0c68c6d98dd893897f50",
+      "before_sha256": "0df10fb0308b80fd83f5003e1bc0ae15b8b9c74448c6ab5bb672f711d2c54ae2",
+      "after_sha256": "0df10fb0308b80fd83f5003e1bc0ae15b8b9c74448c6ab5bb672f711d2c54ae2",
+      "before_nonblank": 65,
+      "after_nonblank": 65,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/clock_copilot_worker.rs",
+      "baseline_blob_sha1": null,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "57d2fad53bc9a75068c063a03514c7d619ac348f553c394fcde8026209659563",
+      "before_nonblank": 0,
+      "after_nonblank": 171,
+      "before_present": false,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/clock_preview_session.rs",
+      "baseline_blob_sha1": "5aeb9ae5c0464e03178c1082f28c9beb2c3a854c",
+      "before_sha256": "f336f889aaac5b9517099abd1ba3940f151dbcb3a6bbce85a6d164caa04cd8f7",
+      "after_sha256": "5e27f1506b37fa5ab6c7f77874d68c99a3c0915354ed676b0734365c878cce93",
+      "before_nonblank": 488,
+      "after_nonblank": 512,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "baseline_blob_sha1": "1f4029dade85402089bc2ad88db097b06221f668",
+      "before_sha256": "9d1968f30d1155b024bff40b671cccbc40204eb64858f8bed81a3eb2df857cc7",
+      "after_sha256": "a547b105e79569ea1a1caec52c71ae89b9f8cb2f0c760c80f6f6865a43de9ee3",
+      "before_nonblank": 1983,
+      "after_nonblank": 1989,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/ai_updates.rs",
+      "baseline_blob_sha1": "3bc954b8ad254222fc2d2ec77f0e6e9e9886ce71",
+      "before_sha256": "655605c786161f3d609f11f3bed7da72990dc731d23686fc7fb51059f397ae89",
+      "after_sha256": "655605c786161f3d609f11f3bed7da72990dc731d23686fc7fb51059f397ae89",
+      "before_nonblank": 99,
+      "after_nonblank": 99,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/permissions.rs",
+      "baseline_blob_sha1": "d835903e976178a8ae6a86864f985b28a55d8d7f",
+      "before_sha256": "1dc72d0ed174278d842096992d1137d41094754cda3530fd95364627a706c4d1",
+      "after_sha256": "1dc72d0ed174278d842096992d1137d41094754cda3530fd95364627a706c4d1",
+      "before_nonblank": 318,
+      "after_nonblank": 318,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/qr_jobs.rs",
+      "baseline_blob_sha1": "596051be28e1788133b6684c612bd26d18f43876",
+      "before_sha256": "ab797dfe03383afbb5adce38446bb440d826352ea40505d4424c7efd838b7150",
+      "after_sha256": "ab797dfe03383afbb5adce38446bb440d826352ea40505d4424c7efd838b7150",
+      "before_nonblank": 175,
+      "after_nonblank": 175,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/quit_tests.rs",
+      "baseline_blob_sha1": "fb3812f8b5364aae4f1daded8d8f7f9f187b07d3",
+      "before_sha256": "bda9373462626269ce33cc75dbb721039a2e59ea80f0b69d359d3731942ed8f0",
+      "after_sha256": "bda9373462626269ce33cc75dbb721039a2e59ea80f0b69d359d3731942ed8f0",
+      "before_nonblank": 70,
+      "after_nonblank": 70,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/snippets.rs",
+      "baseline_blob_sha1": "d974f04c3a50788dd1c6d8acef13d9e62401ed74",
+      "before_sha256": "78a5b95aed01f6641131e13ddd2c6ee1bafee548e0373cae074997baa40a896e",
+      "after_sha256": "78a5b95aed01f6641131e13ddd2c6ee1bafee548e0373cae074997baa40a896e",
+      "before_nonblank": 352,
+      "after_nonblank": 352,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/snippets/fields.rs",
+      "baseline_blob_sha1": "3df10b2a4d65e3d87cb9377904855ae4d52bc195",
+      "before_sha256": "f48a902f2b515bdf0901ebdb3bfac3ec135738a2552b0c1df9cd02ed1cc17ff0",
+      "after_sha256": "f48a902f2b515bdf0901ebdb3bfac3ec135738a2552b0c1df9cd02ed1cc17ff0",
+      "before_nonblank": 667,
+      "after_nonblank": 667,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter.rs",
+      "baseline_blob_sha1": "51fad1b47e8c69459cbd68090e565407148d17e0",
+      "before_sha256": "3a49d85b5183cfd7ccf9795b67f2676560e8661cdc329901eadc9fe9beb3a294",
+      "after_sha256": "3a49d85b5183cfd7ccf9795b67f2676560e8661cdc329901eadc9fe9beb3a294",
+      "before_nonblank": 672,
+      "after_nonblank": 672,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/disposal_tests.rs",
+      "baseline_blob_sha1": "ab84461bf0f42a6bbb2028385d8f7dbef4d7af82",
+      "before_sha256": "9c161b5b88708db59a05a6e2e9b5466a59a453318ac53a9dbe7f41da0baefeca",
+      "after_sha256": "9c161b5b88708db59a05a6e2e9b5466a59a453318ac53a9dbe7f41da0baefeca",
+      "before_nonblank": 208,
+      "after_nonblank": 208,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/model.rs",
+      "baseline_blob_sha1": "b571f5760511554e2838258bf64006088fedc05c",
+      "before_sha256": "c590fc7458d60fd896a216a04f75e78d631c1a5f7c12949b09ef6a3ae5ad857a",
+      "after_sha256": "c590fc7458d60fd896a216a04f75e78d631c1a5f7c12949b09ef6a3ae5ad857a",
+      "before_nonblank": 536,
+      "after_nonblank": 536,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs",
+      "baseline_blob_sha1": "443e054848b731d29a861d8a19f9b8d7603b6137",
+      "before_sha256": "642d000ad3cbf7526625e0c4f4b6bb3bcec60e6eaba4bcff1bdb294a0d78dd3a",
+      "after_sha256": "642d000ad3cbf7526625e0c4f4b6bb3bcec60e6eaba4bcff1bdb294a0d78dd3a",
+      "before_nonblank": 271,
+      "after_nonblank": 271,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/preview.rs",
+      "baseline_blob_sha1": "83e7a1b9d0df0fc0a828edc081195f44330a250c",
+      "before_sha256": "0f19cf930dbfe101dec4c5f82e39a1e6a25da6655945257ba251ff9e84b1c938",
+      "after_sha256": "0f19cf930dbfe101dec4c5f82e39a1e6a25da6655945257ba251ff9e84b1c938",
+      "before_nonblank": 207,
+      "after_nonblank": 207,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/recording.rs",
+      "baseline_blob_sha1": "003068fb50a54f9e89a6c52eb50bfd6c51274f3a",
+      "before_sha256": "1c8d61ec64c5287236d46aef7fe6d9f27b45b0a65ac9b49d3acd7ac4725096e7",
+      "after_sha256": "1c8d61ec64c5287236d46aef7fe6d9f27b45b0a65ac9b49d3acd7ac4725096e7",
+      "before_nonblank": 346,
+      "after_nonblank": 346,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/recording_tests.rs",
+      "baseline_blob_sha1": "f76a8f2ffa96c42ccee11110536bb957bd70cd8e",
+      "before_sha256": "2832651b65766516acbe1c0ed8d2239ee64ae339d093c8b338d6943680c8b2e5",
+      "after_sha256": "2832651b65766516acbe1c0ed8d2239ee64ae339d093c8b338d6943680c8b2e5",
+      "before_nonblank": 487,
+      "after_nonblank": 487,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/source_preview.rs",
+      "baseline_blob_sha1": "ea0cefdb72feba25ffbd077e517f0825df88536c",
+      "before_sha256": "c76d8129cc54925a53e80fddfa153346f1d1b325c4dd2c56e15531025463bb21",
+      "after_sha256": "c76d8129cc54925a53e80fddfa153346f1d1b325c4dd2c56e15531025463bb21",
+      "before_nonblank": 205,
+      "after_nonblank": 205,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/tests.rs",
+      "baseline_blob_sha1": "c97a05cdf7a5b66e87f4335792fb08c331119870",
+      "before_sha256": "ad7e667fc2e26051f47a8435a78127d48a3a761f067d8dc1d7579f25c3a973f3",
+      "after_sha256": "ad7e667fc2e26051f47a8435a78127d48a3a761f067d8dc1d7579f25c3a973f3",
+      "before_nonblank": 1036,
+      "after_nonblank": 1036,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter/worker.rs",
+      "baseline_blob_sha1": "c169a77e841cd684367e7effb4f66074eaecaa6a",
+      "before_sha256": "354665aee47fbde2b35b78c1811a69b2619d043d6750f8d7a2c15c9a8a53474a",
+      "after_sha256": "354665aee47fbde2b35b78c1811a69b2619d043d6750f8d7a2c15c9a8a53474a",
+      "before_nonblank": 234,
+      "after_nonblank": 234,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/home.rs",
+      "baseline_blob_sha1": "7fc8dfee93046a1a637a55f4a79e3bb43f3c9b65",
+      "before_sha256": "a16096f0553462f671d917d53f130fd5bec697ff2b314f49d0e5f2e535883f28",
+      "after_sha256": "a16096f0553462f671d917d53f130fd5bec697ff2b314f49d0e5f2e535883f28",
+      "before_nonblank": 2312,
+      "after_nonblank": 2312,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/image_disposal.rs",
+      "baseline_blob_sha1": "b70fac723e1bc6d003522f074d30811c132652ae",
+      "before_sha256": "7943005ca34ca01b75bb60e920fb09ddf9c7735209f0b42bd3ba9f164a32bfc7",
+      "after_sha256": "7943005ca34ca01b75bb60e920fb09ddf9c7735209f0b42bd3ba9f164a32bfc7",
+      "before_nonblank": 35,
+      "after_nonblank": 35,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui.rs",
+      "baseline_blob_sha1": "6570b8337f98d0a36e864f007917e345a9ae2045",
+      "before_sha256": "cdb25ce6715d550ef972d0058e92924401427771f23aac3e57c07d9b214c331d",
+      "after_sha256": "55d3d665985b1ee061f73633abc5e4fcd343e7ea4c5db3320021c4e7d5a10ea2",
+      "before_nonblank": 1090,
+      "after_nonblank": 1118,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot.rs",
+      "baseline_blob_sha1": null,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "5defce5c2215a5905301e340210574f42bf745f5ae23b5bfee5ffaf1efe9830d",
+      "before_nonblank": 0,
+      "after_nonblank": 430,
+      "before_present": false,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+      "baseline_blob_sha1": null,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "8fde4f7e4b0ffb2cfb8af33ec62281d488a8ba5d4f89b7fb35f901ab638d2cc3",
+      "before_nonblank": 0,
+      "after_nonblank": 376,
+      "before_present": false,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+      "baseline_blob_sha1": "8538d728bfdd91b9361dfb5db42c585a4abb0d34",
+      "before_sha256": "6b2df1e9b00899135c23ea76ff3f56f211f843355c7260814c7890464368b880",
+      "after_sha256": "5833062481dd81182b194112af7a931271ea0f8cd911b2d9f52c316f50ef8861",
+      "before_nonblank": 729,
+      "after_nonblank": 907,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "baseline_blob_sha1": null,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "ac493ccde6a46ef5a488f957e249d93bd75a059562330da7af34fa08728c2cb6",
+      "before_nonblank": 0,
+      "after_nonblank": 375,
+      "before_present": false,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "baseline_blob_sha1": "cf5e3e0b9d172697197d79f54c243258b48b12c7",
+      "before_sha256": "5924de0cc20e02f9a67c5f934a7f44f5074e19d17b4107d4c0b3efec5829d20b",
+      "after_sha256": "d2188799ac874916b29c26aae07e8e1340bc71a132c1588bce0fb90889bc289d",
+      "before_nonblank": 174,
+      "after_nonblank": 175,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/recording_ui.rs",
+      "baseline_blob_sha1": "ed30bd315c09ed5b0e25e69fb9d77f38bcc25e03",
+      "before_sha256": "1f8d800ade12269fa144cbc46a5e343361bdb07d06046096a0177281a057b8cd",
+      "after_sha256": "1f8d800ade12269fa144cbc46a5e343361bdb07d06046096a0177281a057b8cd",
+      "before_nonblank": 279,
+      "after_nonblank": 279,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/recording_ui/controller.rs",
+      "baseline_blob_sha1": "07c9577b570dc8cc4f7599a31e335f71e831c01c",
+      "before_sha256": "de8726474bfb39187e3d9e6ff82563ad9ebc9a75737ac557e70ab01d49b76cd9",
+      "after_sha256": "de8726474bfb39187e3d9e6ff82563ad9ebc9a75737ac557e70ab01d49b76cd9",
+      "before_nonblank": 125,
+      "after_nonblank": 125,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/recording_ui/tests.rs",
+      "baseline_blob_sha1": "dd83c8fd663cf847802b05c8fe5927dab741cb94",
+      "before_sha256": "c9633719aaa88f5fe9098cc84d9cedac58740190846c4461b530c1b010513086",
+      "after_sha256": "c9633719aaa88f5fe9098cc84d9cedac58740190846c4461b530c1b010513086",
+      "before_nonblank": 394,
+      "after_nonblank": 394,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_color.rs",
+      "baseline_blob_sha1": "95d8e51c2cbdafbc399082c7f0531df485901873",
+      "before_sha256": "966178dd37506c780e86e12c0ee76ed5c4dcf441a6438fdd4eb6217e0e57444c",
+      "after_sha256": "966178dd37506c780e86e12c0ee76ed5c4dcf441a6438fdd4eb6217e0e57444c",
+      "before_nonblank": 90,
+      "after_nonblank": 90,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "baseline_blob_sha1": "0656044fc0b254d4925f9c75aa355eb2cf49b9a6",
+      "before_sha256": "ea18ee8a2451999cc32fd5f2283b746c74129bc75e969625fa563ac231999c78",
+      "after_sha256": "ea18ee8a2451999cc32fd5f2283b746c74129bc75e969625fa563ac231999c78",
+      "before_nonblank": 3731,
+      "after_nonblank": 3731,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr.rs",
+      "baseline_blob_sha1": "74c9f98a3ac9e1ee69f302084c97f62594ef552c",
+      "before_sha256": "f255de436f7b171a1954d56aa9f3bd510ecee5af37b6ed6cad3bb6f720f96093",
+      "after_sha256": "f255de436f7b171a1954d56aa9f3bd510ecee5af37b6ed6cad3bb6f720f96093",
+      "before_nonblank": 1023,
+      "after_nonblank": 1023,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/test_support.rs",
+      "baseline_blob_sha1": "d1b55714ad3377b256abb589a148c74c31919471",
+      "before_sha256": "01e162c83ca94e12d9afbb4c560716e949d4136445d9944beab6f96ff505ac37",
+      "after_sha256": "01e162c83ca94e12d9afbb4c560716e949d4136445d9944beab6f96ff505ac37",
+      "before_nonblank": 133,
+      "after_nonblank": 133,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/tests.rs",
+      "baseline_blob_sha1": "679a647a2747071db36a19bfd3fa77b0359f0c65",
+      "before_sha256": "91337e79f943d4af8a9a3ac740c2bcfbd40b1a3700684285c1a4bf9eceb6b964",
+      "after_sha256": "91337e79f943d4af8a9a3ac740c2bcfbd40b1a3700684285c1a4bf9eceb6b964",
+      "before_nonblank": 802,
+      "after_nonblank": 802,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_capture.rs",
+      "baseline_blob_sha1": "5e2bc782cc58dd1ec8bdc614a2d6b4e60f3ca15c",
+      "before_sha256": "dc5b0a5565f0ccccda6ff81f5330de4cecba51be275cd24111f6a5c312de9c2a",
+      "after_sha256": "dc5b0a5565f0ccccda6ff81f5330de4cecba51be275cd24111f6a5c312de9c2a",
+      "before_nonblank": 1051,
+      "after_nonblank": 1051,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_transaction.rs",
+      "baseline_blob_sha1": "350b0cdd2fdb1ac7eabd6972f1b2e6577275a3d6",
+      "before_sha256": "cb476c815c18152a48b0125dfb6a78b0ccfdd4be33e02111fb1bd0c0349bbd4e",
+      "after_sha256": "cb476c815c18152a48b0125dfb6a78b0ccfdd4be33e02111fb1bd0c0349bbd4e",
+      "before_nonblank": 256,
+      "after_nonblank": 256,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/inline_area.rs",
+      "baseline_blob_sha1": "cf2ab0d67acf0b22f413ed66523eec1c84c245fb",
+      "before_sha256": "787667a9de1c2bb97f07b6d0ae6826f150a5b78fedf123b43de641161c03a47e",
+      "after_sha256": "787667a9de1c2bb97f07b6d0ae6826f150a5b78fedf123b43de641161c03a47e",
+      "before_nonblank": 624,
+      "after_nonblank": 624,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "baseline_blob_sha1": "74846ace80f4ed23515d8b5d72bbb646922c8986",
+      "before_sha256": "f4dcde722d18876cf08183460250d11f77bba9e2c525cfdc8715a0901ba8e76e",
+      "after_sha256": "f4dcde722d18876cf08183460250d11f77bba9e2c525cfdc8715a0901ba8e76e",
+      "before_nonblank": 906,
+      "after_nonblank": 906,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/native.rs",
+      "baseline_blob_sha1": "315549c998964a95753f47a9b48594cbd04157c1",
+      "before_sha256": "c56d396e444b7a6ab5142b456662a3a61332e08d9739f7d4bece0be8a7857a8a",
+      "after_sha256": "c56d396e444b7a6ab5142b456662a3a61332e08d9739f7d4bece0be8a7857a8a",
+      "before_nonblank": 91,
+      "after_nonblank": 91,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "baseline_blob_sha1": "d2ae9a4ac84d97d6226b7635987f3acd738217d7",
+      "before_sha256": "379503c6d3155ca4e9918548fc0b43ee194b1c8825e7a5d8338838c8cb058f85",
+      "after_sha256": "379503c6d3155ca4e9918548fc0b43ee194b1c8825e7a5d8338838c8cb058f85",
+      "before_nonblank": 795,
+      "after_nonblank": 795,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/ai_fixture.rs",
+      "baseline_blob_sha1": "a772a14acc1c006afb91c5384418ce918cbb352c",
+      "before_sha256": "be74479ab2ecf84c05d0295066b3e53bc60a8714a77b3f443065409220d8a060",
+      "after_sha256": "be74479ab2ecf84c05d0295066b3e53bc60a8714a77b3f443065409220d8a060",
+      "before_nonblank": 186,
+      "after_nonblank": 186,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/ai_fixture/tests.rs",
+      "baseline_blob_sha1": "3be38a93a6358a25adabc350e0038055068b0942",
+      "before_sha256": "db328ee217c1b00c81bbbee9854a7aa62571d08f5b01b7744b97116041169178",
+      "after_sha256": "db328ee217c1b00c81bbbee9854a7aa62571d08f5b01b7744b97116041169178",
+      "before_nonblank": 745,
+      "after_nonblank": 745,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/tests.rs",
+      "baseline_blob_sha1": "c15ab86870bc90e3fb8421f685a779ed7a567e5d",
+      "before_sha256": "fb27aeafe9cb0c0437843063ec22524c2247aa139d01f9e58248c5f1c4fa107d",
+      "after_sha256": "fb27aeafe9cb0c0437843063ec22524c2247aa139d01f9e58248c5f1c4fa107d",
+      "before_nonblank": 1140,
+      "after_nonblank": 1140,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs",
+      "baseline_blob_sha1": "cc821083c6d4544e800f06a83c48406f6312c2fb",
+      "before_sha256": "0d669b95ad5f35d0f7359e42c84d2f9855b82dfc2ed51ac0ee76be2a22593f2c",
+      "after_sha256": "0d669b95ad5f35d0f7359e42c84d2f9855b82dfc2ed51ac0ee76be2a22593f2c",
+      "before_nonblank": 845,
+      "after_nonblank": 845,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "baseline_blob_sha1": "3d609abd7ba98e68f359811e9ff6e445db5ee2fb",
+      "before_sha256": "c92f3e5009df589c8e26aca06c062798e976e1ce032cd2a985d4af9835865a43",
+      "after_sha256": "c92f3e5009df589c8e26aca06c062798e976e1ce032cd2a985d4af9835865a43",
+      "before_nonblank": 423,
+      "after_nonblank": 423,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+      "baseline_blob_sha1": "b61b2876da7f88459d3a722f6502cba735d55803",
+      "before_sha256": "1e875393b96616419724b66984973a3ab03b6568be2e381ebc05e43fdd99e92c",
+      "after_sha256": "1e875393b96616419724b66984973a3ab03b6568be2e381ebc05e43fdd99e92c",
+      "before_nonblank": 667,
+      "after_nonblank": 667,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/scroll_capture.rs",
+      "baseline_blob_sha1": "1bc4f5de357f1d1d34ec150504835101a651560d",
+      "before_sha256": "92fb7e80978067fc237d76c49e6046e6c00d6df1c56e8644a9cee81f14ce62e8",
+      "after_sha256": "92fb7e80978067fc237d76c49e6046e6c00d6df1c56e8644a9cee81f14ce62e8",
+      "before_nonblank": 426,
+      "after_nonblank": 426,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs",
+      "baseline_blob_sha1": "252e069084ec778e2c396260ed79beb8e04ab6d2",
+      "before_sha256": "38fa834803a0403a7e1119cb7c0e689ef9371cff64c6ccfe14a44122a5626239",
+      "after_sha256": "38fa834803a0403a7e1119cb7c0e689ef9371cff64c6ccfe14a44122a5626239",
+      "before_nonblank": 386,
+      "after_nonblank": 386,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_refresh/tests.rs",
+      "baseline_blob_sha1": "d8fb46566e72d51d89a40aec23b7da054b678832",
+      "before_sha256": "86bf0e6a8ee1bf1725e26b510ba490c9cd285d961a560ecb8120e2ea3c1fa9f2",
+      "after_sha256": "86bf0e6a8ee1bf1725e26b510ba490c9cd285d961a560ecb8120e2ea3c1fa9f2",
+      "before_nonblank": 325,
+      "after_nonblank": 325,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow.rs",
+      "baseline_blob_sha1": "349323e0bc6012e082be72c73bb5ae2afa35e50e",
+      "before_sha256": "52849c319c8dfd502117a9980c52c58c07019a5bc27cf7cd9e4b957511a0d327",
+      "after_sha256": "52849c319c8dfd502117a9980c52c58c07019a5bc27cf7cd9e4b957511a0d327",
+      "before_nonblank": 767,
+      "after_nonblank": 767,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/fixtures.rs",
+      "baseline_blob_sha1": "d5a7171db4d3bf2e7ac31c91f22f31308d17b21a",
+      "before_sha256": "1e3fcaa5fdc7045a1bb70c779f95b31adfdf8b9f512e783629d09f574867851e",
+      "after_sha256": "1e3fcaa5fdc7045a1bb70c779f95b31adfdf8b9f512e783629d09f574867851e",
+      "before_nonblank": 519,
+      "after_nonblank": 519,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/tests.rs",
+      "baseline_blob_sha1": "e05544e9fe7e14614fbc49d529289a861d008366",
+      "before_sha256": "24c24b83c12b1004e610ff9dc958b26f433ec74edbefc7e13791086ea5f2871e",
+      "after_sha256": "24c24b83c12b1004e610ff9dc958b26f433ec74edbefc7e13791086ea5f2871e",
+      "before_nonblank": 1088,
+      "after_nonblank": 1088,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/session.rs",
+      "baseline_blob_sha1": "c306f8feadabe5097e0208e22f6071067c00c0d1",
+      "before_sha256": "0605bb82284c782622d00b56cac001e615cf3af71b7b685bc7bbce55ba540fa8",
+      "after_sha256": "0605bb82284c782622d00b56cac001e615cf3af71b7b685bc7bbce55ba540fa8",
+      "before_nonblank": 91,
+      "after_nonblank": 91,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/settings_ui.rs",
+      "baseline_blob_sha1": "35cc7b683ca3127bb72acabf29455f9699be6d54",
+      "before_sha256": "30b94a5e92c82dd1e86b07e24a577eecae712a1e7fabdae5966e3d0c23ca89eb",
+      "after_sha256": "30b94a5e92c82dd1e86b07e24a577eecae712a1e7fabdae5966e3d0c23ca89eb",
+      "before_nonblank": 1618,
+      "after_nonblank": 1618,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/settings_ui/provider_setup.rs",
+      "baseline_blob_sha1": "467bfae626265087c468d9f8a21369374d3e328f",
+      "before_sha256": "0c5456a883148e47310887886aa86f3d17b803923d4fac38b6ef9c07cc6b8274",
+      "after_sha256": "0c5456a883148e47310887886aa86f3d17b803923d4fac38b6ef9c07cc6b8274",
+      "before_nonblank": 352,
+      "after_nonblank": 352,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/settings_ui/quit_tests.rs",
+      "baseline_blob_sha1": "d216c2b4e4cb18d6777707a3c3dea3be954c78c7",
+      "before_sha256": "8d563c9ee244997a5e094d4f0fcc1f25baa9065f34f4ac4da9f8e9e0c1aef18d",
+      "after_sha256": "8d563c9ee244997a5e094d4f0fcc1f25baa9065f34f4ac4da9f8e9e0c1aef18d",
+      "before_nonblank": 298,
+      "after_nonblank": 298,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/settings_ui/setup_tests.rs",
+      "baseline_blob_sha1": "1134f73c4e1de2ae174b8a7f9aca9114a032dc0f",
+      "before_sha256": "edd6712892783ab8969babd6ddcafdc2485773cac030ae94e77a2e3b849ee0d1",
+      "after_sha256": "edd6712892783ab8969babd6ddcafdc2485773cac030ae94e77a2e3b849ee0d1",
+      "before_nonblank": 329,
+      "after_nonblank": 329,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown.rs",
+      "baseline_blob_sha1": "ed414c260a8ff179d899c1c63abf8990eb2db018",
+      "before_sha256": "09a3814715d898b85d671c5388bcf1db679c96e0093164bb5ad1ac09de6878f8",
+      "after_sha256": "09a3814715d898b85d671c5388bcf1db679c96e0093164bb5ad1ac09de6878f8",
+      "before_nonblank": 492,
+      "after_nonblank": 492,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown/quit.rs",
+      "baseline_blob_sha1": "77b7539cf07d65ef184762300a450a7a5a33a159",
+      "before_sha256": "2ff12993df0408888ad1eae2c92b98b17b1a567281fe1cc3c864bf1a879a4918",
+      "after_sha256": "2ff12993df0408888ad1eae2c92b98b17b1a567281fe1cc3c864bf1a879a4918",
+      "before_nonblank": 334,
+      "after_nonblank": 334,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown/quit/prompt.rs",
+      "baseline_blob_sha1": "ade39962dc97fa0414358e883778b08753f86b81",
+      "before_sha256": "ef66b06f396fe8cf700889ffb7bda6851ba2f9edfa6141a0bccb97069f297dc6",
+      "after_sha256": "ef66b06f396fe8cf700889ffb7bda6851ba2f9edfa6141a0bccb97069f297dc6",
+      "before_nonblank": 241,
+      "after_nonblank": 241,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown/quit/prompt/tests.rs",
+      "baseline_blob_sha1": "f61ab528bc7b45c6a3724056140a3cae7a83b863",
+      "before_sha256": "b01ae4962749fcb614ac74364eee1f79dbfd978c272d5a76715bee5c6059f91a",
+      "after_sha256": "b01ae4962749fcb614ac74364eee1f79dbfd978c272d5a76715bee5c6059f91a",
+      "before_nonblank": 556,
+      "after_nonblank": 556,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown/tests.rs",
+      "baseline_blob_sha1": "bd1eda08c1adcf9c21d5c276136e3ad1d22bbfd2",
+      "before_sha256": "73237d501205e4aebb77357a6250c122beba2181892dfd36d209cf3ef5e3b1b7",
+      "after_sha256": "73237d501205e4aebb77357a6250c122beba2181892dfd36d209cf3ef5e3b1b7",
+      "before_nonblank": 640,
+      "after_nonblank": 640,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/snippet_library.rs",
+      "baseline_blob_sha1": "400963edc0d0b3a1fc4db22dad3fe390cc492b56",
+      "before_sha256": "6e9f958b47e871b7f7b96a64c4f20b3fd77698d4d031bead91ba0045e30c5c5f",
+      "after_sha256": "6e9f958b47e871b7f7b96a64c4f20b3fd77698d4d031bead91ba0045e30c5c5f",
+      "before_nonblank": 200,
+      "after_nonblank": 200,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/theme.rs",
+      "baseline_blob_sha1": "4d8eb8a8fbc55c08d3373fff5294952d15cb0883",
+      "before_sha256": "ca71c7a15f1d159715b86753974998624f83d6e5e527ae01eb0dd43c6b6b0e02",
+      "after_sha256": "ca71c7a15f1d159715b86753974998624f83d6e5e527ae01eb0dd43c6b6b0e02",
+      "before_nonblank": 124,
+      "after_nonblank": 124,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/tool_controls.rs",
+      "baseline_blob_sha1": "6f8bc296dfe67cfb076bebffaac4d2459fc9d8e6",
+      "before_sha256": "7bfe7a7933a49cb853682dec7d93bce6e1f7df0a3b2af923067881379b0a3072",
+      "after_sha256": "7bfe7a7933a49cb853682dec7d93bce6e1f7df0a3b2af923067881379b0a3072",
+      "before_nonblank": 382,
+      "after_nonblank": 382,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport.rs",
+      "baseline_blob_sha1": "604816fd4e504c6aa83d4e943b0acd73327743f4",
+      "before_sha256": "214f0e503691aa4fb0e84560d39f7b7d9426280a46802172a3a8800cb9903efb",
+      "after_sha256": "214f0e503691aa4fb0e84560d39f7b7d9426280a46802172a3a8800cb9903efb",
+      "before_nonblank": 173,
+      "after_nonblank": 173,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr.rs",
+      "baseline_blob_sha1": "1f661621bb8da7d644bcacd431b6ad3a93b559bb",
+      "before_sha256": "944c1383a001c30ac215c6be4a1c0e8085b1610ac47187aadec97d14b5211966",
+      "after_sha256": "944c1383a001c30ac215c6be4a1c0e8085b1610ac47187aadec97d14b5211966",
+      "before_nonblank": 202,
+      "after_nonblank": 202,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr/fixture.rs",
+      "baseline_blob_sha1": "78c9cbef65483b10f9ad98fc1ced58b491500140",
+      "before_sha256": "129efbdaa7f2e2cf4923dfd325aee1ec4c1d7116c63390d7b52d74e347f91c50",
+      "after_sha256": "129efbdaa7f2e2cf4923dfd325aee1ec4c1d7116c63390d7b52d74e347f91c50",
+      "before_nonblank": 532,
+      "after_nonblank": 532,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/image_ocr/tests.rs",
+      "baseline_blob_sha1": "572d39a6355a05043c23335d84134a961624682f",
+      "before_sha256": "ea3094337d8c6643adaf6a77e6ba339a23ab63ed19f8fd3159e73471904c0d2b",
+      "after_sha256": "ea3094337d8c6643adaf6a77e6ba339a23ab63ed19f8fd3159e73471904c0d2b",
+      "before_nonblank": 504,
+      "after_nonblank": 504,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/provider_setup.rs",
+      "baseline_blob_sha1": "04d1b90c208d3591298985a6ad9ceeeb383fadb4",
+      "before_sha256": "fca661416bae9df8a1d8a91dc6d2d615452d1a2ef67a1d98b65498fa22859b05",
+      "after_sha256": "fca661416bae9df8a1d8a91dc6d2d615452d1a2ef67a1d98b65498fa22859b05",
+      "before_nonblank": 446,
+      "after_nonblank": 446,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui.rs",
+      "baseline_blob_sha1": "d00eb3d4991157232410a8614e2fd8c3a5507be8",
+      "before_sha256": "dce1a803d6364c187146ea5e67e58f307dd312ed611914274d94876a5c754e88",
+      "after_sha256": "6ab3809332affc39c29adb895b2ae0de180aec281bf75b8cd9a34941182a5a66",
+      "before_nonblank": 2014,
+      "after_nonblank": 2038,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot.rs",
+      "baseline_blob_sha1": "12ab46ab3ff8e5641c546d6bbe0193ecbac8c1ae",
+      "before_sha256": "0ddde76ca73d7df55bd087d9b57e6d17fa8d0eb836ca788c12516417953b1bb7",
+      "after_sha256": "2575781429e76e5d4d1ba4d68185a0e03ae81f0bebbcd7b9e21801d39a31946b",
+      "before_nonblank": 407,
+      "after_nonblank": 476,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot/tests.rs",
+      "baseline_blob_sha1": "8e69b8bdb0832b486088db9e1fc5c4f67699ffd9",
+      "before_sha256": "86ec52710d116e27d4d06d0cd7ab5e685b1e3258cd8597f77dc555401a6df1b7",
+      "after_sha256": "65a2d2b79e56dac97ae2e0e34d6d61ebf60aa67e782b5373122ebee0b0355521",
+      "before_nonblank": 837,
+      "after_nonblank": 1223,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot_worker.rs",
+      "baseline_blob_sha1": "63802286e9436e287a4c29ec666b52dd47e55139",
+      "before_sha256": "c1b060a1fcd456274423e505056d515ba106b84983faeb2ca8bef9474e51ad4e",
+      "after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "before_nonblank": 146,
+      "after_nonblank": 0,
+      "before_present": true,
+      "after_present": false
+    },
+    {
+      "path": "rust/crates/bellobox-core/examples/utility_bench.rs",
+      "baseline_blob_sha1": "070e875ff5181cadec96972f2587ea6aafd6e1a1",
+      "before_sha256": "010a4eedd23f399785cd37534f96bcdb9d9085dae19f258938d49d407f6016e4",
+      "after_sha256": "010a4eedd23f399785cd37534f96bcdb9d9085dae19f258938d49d407f6016e4",
+      "before_nonblank": 39,
+      "after_nonblank": 39,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/ai.rs",
+      "baseline_blob_sha1": "681516927aa876b5473651ac4b2fe0a4f5ebd3ee",
+      "before_sha256": "0a8d8ee67bda12167dcf86f8068dbf1748b6be9df80d82f8e14e4b9c7895df6a",
+      "after_sha256": "0a8d8ee67bda12167dcf86f8068dbf1748b6be9df80d82f8e14e4b9c7895df6a",
+      "before_nonblank": 284,
+      "after_nonblank": 284,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/ai/provider_setup.rs",
+      "baseline_blob_sha1": "0b64709ca9e288de8fe516bb47227a5f71935001",
+      "before_sha256": "b551f93a87f3bd30bb5709ae8795f58989bb912399c46c8671af0f68f5745c18",
+      "after_sha256": "b551f93a87f3bd30bb5709ae8795f58989bb912399c46c8671af0f68f5745c18",
+      "before_nonblank": 218,
+      "after_nonblank": 218,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock.rs",
+      "baseline_blob_sha1": "654e24705ded5bbf9a30a4ea41e333731bbd122e",
+      "before_sha256": "fd80b4cee1049fcbc0fcc960aed4ab72d9eb1863523cd11a883cd066845e0cb3",
+      "after_sha256": "fd80b4cee1049fcbc0fcc960aed4ab72d9eb1863523cd11a883cd066845e0cb3",
+      "before_nonblank": 579,
+      "after_nonblank": 579,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot.rs",
+      "baseline_blob_sha1": "47fc1e267ffefbf46b75440786bee999a2f6cfca",
+      "before_sha256": "8519abb17f9d6756ca49f2333f7786eee706bb1b69570882a8ecefd058249b0d",
+      "after_sha256": "8519abb17f9d6756ca49f2333f7786eee706bb1b69570882a8ecefd058249b0d",
+      "before_nonblank": 197,
+      "after_nonblank": 197,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot/apply.rs",
+      "baseline_blob_sha1": "fe0b162ca0f8fd76d5da2d89032ac12f27b6f66f",
+      "before_sha256": "ee8c814b2e389e139b232bc66d067774d0ef5e7437917995f543367f151bc7cf",
+      "after_sha256": "ee8c814b2e389e139b232bc66d067774d0ef5e7437917995f543367f151bc7cf",
+      "before_nonblank": 275,
+      "after_nonblank": 275,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot/protocol.rs",
+      "baseline_blob_sha1": "8074dfec6248b6c63bd224f65439053ab7994169",
+      "before_sha256": "f404b53a5d7368cf5d093d9d60f28d9ff5d4d80f19a6af1c8884842ec504ef5b",
+      "after_sha256": "f404b53a5d7368cf5d093d9d60f28d9ff5d4d80f19a6af1c8884842ec504ef5b",
+      "before_nonblank": 356,
+      "after_nonblank": 356,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot/protocol/tests.rs",
+      "baseline_blob_sha1": "013d8e79b446701f8610e8d1ca0e4f5cd57a16cc",
+      "before_sha256": "7467b15da8ac059198a74a876fefb9976c5cd580a8fe99ec5b3345a73b37579c",
+      "after_sha256": "7467b15da8ac059198a74a876fefb9976c5cd580a8fe99ec5b3345a73b37579c",
+      "before_nonblank": 387,
+      "after_nonblank": 387,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot/session.rs",
+      "baseline_blob_sha1": "f7a782341cda4cc286bb061d74e3b5479fa98ea7",
+      "before_sha256": "a0fdc283198f8cf3c6865a157f5cc36b122bf6c83e49af9e490af92f3d387638",
+      "after_sha256": "50bf3df022d0aa12c9ece88d66854dfce37b0658989d8957f1476127df3731b7",
+      "before_nonblank": 347,
+      "after_nonblank": 493,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot/tests.rs",
+      "baseline_blob_sha1": "9cc0018045324ee57a9d8adf51cfdd3dc6b2ac60",
+      "before_sha256": "0539c0ebc1b8fcf7f4705685c7a30820dd8ddbcdfef72a1c11fc8b8b9fbe0008",
+      "after_sha256": "0539c0ebc1b8fcf7f4705685c7a30820dd8ddbcdfef72a1c11fc8b8b9fbe0008",
+      "before_nonblank": 473,
+      "after_nonblank": 473,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/tests.rs",
+      "baseline_blob_sha1": "f0c6428892812d5102c9ab91876ceae5bdd595ae",
+      "before_sha256": "d260942e604845e3f0cb9d562b958a0fea71cf51f1d4deb4893e0b5368211c0f",
+      "after_sha256": "d260942e604845e3f0cb9d562b958a0fea71cf51f1d4deb4893e0b5368211c0f",
+      "before_nonblank": 378,
+      "after_nonblank": 378,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer.rs",
+      "baseline_blob_sha1": "bbf746ccfb1c8c041ca0d99c000de44387c364f0",
+      "before_sha256": "977df5fabe4ad0433e110fd30c386f16cbe032c3d2d4af215bd8bb5043b2bb32",
+      "after_sha256": "977df5fabe4ad0433e110fd30c386f16cbe032c3d2d4af215bd8bb5043b2bb32",
+      "before_nonblank": 3173,
+      "after_nonblank": 3173,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/certificate.rs",
+      "baseline_blob_sha1": "5b8f87c2fab250b1dfceb9096db0908b5aa83dec",
+      "before_sha256": "a3f630326a33251ae11473af47b19963cba2443b86ca96c2cdf6b8497b9d79a1",
+      "after_sha256": "a3f630326a33251ae11473af47b19963cba2443b86ca96c2cdf6b8497b9d79a1",
+      "before_nonblank": 230,
+      "after_nonblank": 230,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/json_schema.rs",
+      "baseline_blob_sha1": "8c832848816f8106e159ca5949950f1fa81b20f9",
+      "before_sha256": "d89664786eabb20009c3df49bd5dcdd93966f638d931de115764c672bbfb5abf",
+      "after_sha256": "d89664786eabb20009c3df49bd5dcdd93966f638d931de115764c672bbfb5abf",
+      "before_nonblank": 1192,
+      "after_nonblank": 1192,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/list_set.rs",
+      "baseline_blob_sha1": "005423fc3cce411cd16cf28ac480067d39e77f12",
+      "before_sha256": "ee96d337ef8c760d39a62f7cd5822dbbef51cc013c384527e8253c868b9c834f",
+      "after_sha256": "ee96d337ef8c760d39a62f7cd5822dbbef51cc013c384527e8253c868b9c834f",
+      "before_nonblank": 181,
+      "after_nonblank": 181,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/number_base.rs",
+      "baseline_blob_sha1": "914cad95c6802b20b4e89a9af2d175f1eb9d50ce",
+      "before_sha256": "85dbdc8271d45f5077e71fab0f60007a5ae3e7d6e5330d7d2f290179d03e9626",
+      "after_sha256": "85dbdc8271d45f5077e71fab0f60007a5ae3e7d6e5330d7d2f290179d03e9626",
+      "before_nonblank": 293,
+      "after_nonblank": 293,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/permissions.rs",
+      "baseline_blob_sha1": "1b487a9116c2048a2247ff8f35086d5f160163d9",
+      "before_sha256": "16b35a6a31ad712e8981d33680f35d4003e92bbe7dd7dfcaa236e58d5f2f97e4",
+      "after_sha256": "16b35a6a31ad712e8981d33680f35d4003e92bbe7dd7dfcaa236e58d5f2f97e4",
+      "before_nonblank": 305,
+      "after_nonblank": 305,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/plist.rs",
+      "baseline_blob_sha1": "6b90f141f256a55d62d4a6ea71b84030962de5e7",
+      "before_sha256": "d9fcaad3e16346348a4a15c839cfa06bddef975c34e8a301c4ebee153cc24269",
+      "after_sha256": "d9fcaad3e16346348a4a15c839cfa06bddef975c34e8a301c4ebee153cc24269",
+      "before_nonblank": 378,
+      "after_nonblank": 378,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/sql_formatter.rs",
+      "baseline_blob_sha1": "8afb00b6ad945cb3fd8631bfa4695eed23b60a59",
+      "before_sha256": "fcbf2ea05f508cf87aabf7b309136f86fecc90c243aa1956eddce35192d08335",
+      "after_sha256": "fcbf2ea05f508cf87aabf7b309136f86fecc90c243aa1956eddce35192d08335",
+      "before_nonblank": 475,
+      "after_nonblank": 475,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/string_literal.rs",
+      "baseline_blob_sha1": "2add89a1f49940300f5f500ef26df54e3053f680",
+      "before_sha256": "66e5aeb582428b85925fec9f38155ef7cb69926a909e5bec7af86de6b4bc8548",
+      "after_sha256": "66e5aeb582428b85925fec9f38155ef7cb69926a909e5bec7af86de6b4bc8548",
+      "before_nonblank": 114,
+      "after_nonblank": 114,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/subnet.rs",
+      "baseline_blob_sha1": "819277664efaf13adcd22c964f84067a4320c10d",
+      "before_sha256": "c1b11f6e7aba65f778096b7be519c07d7d7b8089e67fb17df5753dd993012460",
+      "after_sha256": "c1b11f6e7aba65f778096b7be519c07d7d7b8089e67fb17df5753dd993012460",
+      "before_nonblank": 185,
+      "after_nonblank": 185,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/launcher.rs",
+      "baseline_blob_sha1": "bdbb2aee20341facc27dd1fd77e4fcfb543dd162",
+      "before_sha256": "aa357fbbb79cee16a913c20f883f10496ec373e376c8726fef6ae42f8ec6a8b7",
+      "after_sha256": "aa357fbbb79cee16a913c20f883f10496ec373e376c8726fef6ae42f8ec6a8b7",
+      "before_nonblank": 286,
+      "after_nonblank": 286,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/lib.rs",
+      "baseline_blob_sha1": "6dafbb5e31a1235613811f1d654d9f6652b88151",
+      "before_sha256": "2efad30a4f410c0d87c4f674d9ec16bd438389ac1a6da03fcbcef17f3bad3d57",
+      "after_sha256": "2efad30a4f410c0d87c4f674d9ec16bd438389ac1a6da03fcbcef17f3bad3d57",
+      "before_nonblank": 24,
+      "after_nonblank": 24,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/qr.rs",
+      "baseline_blob_sha1": "f260794d19d6d135bfcb7e02be29dc6a0ca4cce6",
+      "before_sha256": "e36e19fa1647b50d72746703d010d820e193fef8b5063b785f9aca3851cf2385",
+      "after_sha256": "e36e19fa1647b50d72746703d010d820e193fef8b5063b785f9aca3851cf2385",
+      "before_nonblank": 82,
+      "after_nonblank": 82,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording.rs",
+      "baseline_blob_sha1": "9415375e08cdf7d57a35b3692ce33835f19e9a99",
+      "before_sha256": "6305355eec3a7cb22e637754c95038c862f840156a14170d722d502324d04b18",
+      "after_sha256": "6305355eec3a7cb22e637754c95038c862f840156a14170d722d502324d04b18",
+      "before_nonblank": 7,
+      "after_nonblank": 7,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif.rs",
+      "baseline_blob_sha1": "a8f34d96f7fb3cdb099608494d32d7150cda0b4f",
+      "before_sha256": "93419c9bb0a3d4ab1a0fc849056313d518948a6e045c503669a71eb024bce08c",
+      "after_sha256": "93419c9bb0a3d4ab1a0fc849056313d518948a6e045c503669a71eb024bce08c",
+      "before_nonblank": 365,
+      "after_nonblank": 365,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_encode.rs",
+      "baseline_blob_sha1": "6fe52f1def756e4d3c6998fcf6aa53422c4eff01",
+      "before_sha256": "ed1b26ef3f58c89de3bd60463733d9a12ac334491e3d3a48ca28f30dfadd3360",
+      "after_sha256": "ed1b26ef3f58c89de3bd60463733d9a12ac334491e3d3a48ca28f30dfadd3360",
+      "before_nonblank": 244,
+      "after_nonblank": 244,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_file.rs",
+      "baseline_blob_sha1": "db0a38a413bb5cded0f5719e99239fd9a08c5096",
+      "before_sha256": "68af625034babb43ff6777de804ed7b1efb24c5b1ffd843bdf1ec92d28010971",
+      "after_sha256": "68af625034babb43ff6777de804ed7b1efb24c5b1ffd843bdf1ec92d28010971",
+      "before_nonblank": 312,
+      "after_nonblank": 312,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_preview.rs",
+      "baseline_blob_sha1": "8101d0f25c3f3cb72d546132913a589648652ebc",
+      "before_sha256": "b57b6a5b98b9d1bab9a399dc8880536ee67e9bd8db3d0e23f1fc81b377c4e059",
+      "after_sha256": "b57b6a5b98b9d1bab9a399dc8880536ee67e9bd8db3d0e23f1fc81b377c4e059",
+      "before_nonblank": 157,
+      "after_nonblank": 157,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_structure.rs",
+      "baseline_blob_sha1": "210779d6adab29b6d5a3bf150a6b118f474c2b0f",
+      "before_sha256": "56e801417384c7b24f61ab644c0eec00f8b492fdae1b2bf844b65bbc0a7c6932",
+      "after_sha256": "56e801417384c7b24f61ab644c0eec00f8b492fdae1b2bf844b65bbc0a7c6932",
+      "before_nonblank": 197,
+      "after_nonblank": 197,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/gif/gif_tests.rs",
+      "baseline_blob_sha1": "2ab84c7860f898a3e40b1b512d026d93a3907e68",
+      "before_sha256": "6cd9197ae29508b66bf97e4784ef4cd5420306ffa9ad294e01ae8adf622536da",
+      "after_sha256": "6cd9197ae29508b66bf97e4784ef4cd5420306ffa9ad294e01ae8adf622536da",
+      "before_nonblank": 1171,
+      "after_nonblank": 1171,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/output_settings.rs",
+      "baseline_blob_sha1": "a619e85c61a97f2448a9f1509e0e401cd02c3555",
+      "before_sha256": "055854012f442c2b5c53152e16b048ca9bb3bedd754ad6542eb2fa4bbeb41a61",
+      "after_sha256": "055854012f442c2b5c53152e16b048ca9bb3bedd754ad6542eb2fa4bbeb41a61",
+      "before_nonblank": 98,
+      "after_nonblank": 98,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/output_settings/swift_oracle.rs",
+      "baseline_blob_sha1": "aaf3186637dab9f28686fccec17d8cdb054ea7aa",
+      "before_sha256": "fea69cdb7e04542184988f26293f7ae3c51eff58b937ce73ee3630451884467a",
+      "after_sha256": "fea69cdb7e04542184988f26293f7ae3c51eff58b937ce73ee3630451884467a",
+      "before_nonblank": 175,
+      "after_nonblank": 175,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/output_settings/tests.rs",
+      "baseline_blob_sha1": "03fecdefe1bab2eed1b2ff7ec99f2d7d2edfa74b",
+      "before_sha256": "467cea2ebd3beed2e769bd0704312ec0b3187d32b81b00624be773e99f587c36",
+      "after_sha256": "467cea2ebd3beed2e769bd0704312ec0b3187d32b81b00624be773e99f587c36",
+      "before_nonblank": 159,
+      "after_nonblank": 159,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/recording/session.rs",
+      "baseline_blob_sha1": "3b7a77fb233254a51c8ec4ed380abcd6b74efff0",
+      "before_sha256": "2b8ed45a8f1fb4d9c8bbf4b0aabe8922b1bbdd6a6134f7f8845be21a5f3e1431",
+      "after_sha256": "2b8ed45a8f1fb4d9c8bbf4b0aabe8922b1bbdd6a6134f7f8845be21a5f3e1431",
+      "before_nonblank": 171,
+      "after_nonblank": 171,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot.rs",
+      "baseline_blob_sha1": "16656f5041c27cc0a0dd47085c89d396282396ba",
+      "before_sha256": "56068e6077016a71e996b0fe17ab2b180cc8ddade88ae857103ab1c8e69f1cd8",
+      "after_sha256": "56068e6077016a71e996b0fe17ab2b180cc8ddade88ae857103ab1c8e69f1cd8",
+      "before_nonblank": 1214,
+      "after_nonblank": 1214,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr.rs",
+      "baseline_blob_sha1": "08513fbd460a996ec533b61279a033863c95acdf",
+      "before_sha256": "5ea3f7ee7238652e29000882523f9552216f44518d52efdd6b19ac5a3f1bf55d",
+      "after_sha256": "5ea3f7ee7238652e29000882523f9552216f44518d52efdd6b19ac5a3f1bf55d",
+      "before_nonblank": 208,
+      "after_nonblank": 208,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr/request.rs",
+      "baseline_blob_sha1": "b01b0d5c8232ae5ec6552c64f252ce2cacb3ad13",
+      "before_sha256": "f7ebd4b7eb613f2cfef25db9c780a013bc603cb50e1be5c7832a7e4ad45ee038",
+      "after_sha256": "f7ebd4b7eb613f2cfef25db9c780a013bc603cb50e1be5c7832a7e4ad45ee038",
+      "before_nonblank": 387,
+      "after_nonblank": 387,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr/response.rs",
+      "baseline_blob_sha1": "a40617f445dad17b8a6f8e7fe35fd58e340c0693",
+      "before_sha256": "09d07ee7f78e96448a29ff43cdf9a095ece287e09d09fb4ea8a5970fcfa99997",
+      "after_sha256": "09d07ee7f78e96448a29ff43cdf9a095ece287e09d09fb4ea8a5970fcfa99997",
+      "before_nonblank": 232,
+      "after_nonblank": 232,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/ai_ocr/tests.rs",
+      "baseline_blob_sha1": "7dcf47d831a44d84ffeb22f21c38f5fce2aef4a1",
+      "before_sha256": "3e3061244a02b4445429bf6a6501f40e4969090c1989e613e06bc66cdf6cc2ae",
+      "after_sha256": "3e3061244a02b4445429bf6a6501f40e4969090c1989e613e06bc66cdf6cc2ae",
+      "before_nonblank": 537,
+      "after_nonblank": 537,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/area.rs",
+      "baseline_blob_sha1": "d3b337f0c5778f1d55bcaeddf8ea7df17ec214ba",
+      "before_sha256": "59c9ed42400ac8d1731809d6a4d4aa19cc5cfbc8eb26c3583833c93b04433e11",
+      "after_sha256": "59c9ed42400ac8d1731809d6a4d4aa19cc5cfbc8eb26c3583833c93b04433e11",
+      "before_nonblank": 405,
+      "after_nonblank": 405,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/area/tests.rs",
+      "baseline_blob_sha1": "44158e552f45e1bd2484a312e306cde8af17dc2f",
+      "before_sha256": "35c16c1fe40c32b8e285bb62c672500d51075d617b75bf6071772baaa826b074",
+      "after_sha256": "35c16c1fe40c32b8e285bb62c672500d51075d617b75bf6071772baaa826b074",
+      "before_nonblank": 521,
+      "after_nonblank": 521,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/render.rs",
+      "baseline_blob_sha1": "f7f26bc1a18eeb67c1d8ab7fcbaeaa06a0da3485",
+      "before_sha256": "50e75d9bb2fda14d7bc50215098fa7dac947b12982847bd5feee33aae21fc0c3",
+      "after_sha256": "50e75d9bb2fda14d7bc50215098fa7dac947b12982847bd5feee33aae21fc0c3",
+      "before_nonblank": 511,
+      "after_nonblank": 511,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/scroll.rs",
+      "baseline_blob_sha1": "ecc0b7b2d78402c431c2a94241cca47bd8ab587b",
+      "before_sha256": "ade93691593c08e8df4df6899deb0356e6977351b7ac836d30723bccd4976bf2",
+      "after_sha256": "ade93691593c08e8df4df6899deb0356e6977351b7ac836d30723bccd4976bf2",
+      "before_nonblank": 409,
+      "after_nonblank": 409,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/scroll/analyze.rs",
+      "baseline_blob_sha1": "bd6ee07cbf17825c5108b463891f85bbd18ef3b9",
+      "before_sha256": "713ed299bdbb9df8a61c09fade496841dc9b10614b3ab6de07fd2b864ab5bc89",
+      "after_sha256": "713ed299bdbb9df8a61c09fade496841dc9b10614b3ab6de07fd2b864ab5bc89",
+      "before_nonblank": 110,
+      "after_nonblank": 110,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/scroll/session.rs",
+      "baseline_blob_sha1": "3304aeb63f27861e89b85d87b6b12a9daa38501e",
+      "before_sha256": "3741465f368da8e821bc8f927d1859df67440a7e3e57465ffdc243b48dba2662",
+      "after_sha256": "3741465f368da8e821bc8f927d1859df67440a7e3e57465ffdc243b48dba2662",
+      "before_nonblank": 455,
+      "after_nonblank": 455,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/scroll/stitch.rs",
+      "baseline_blob_sha1": "ce0504c49e6c8ffac1c50da4eed36fabbc3fc1ee",
+      "before_sha256": "ecec8de9bc7ab18aa48791c20355eb9cdea882f7a23da494514c384922214991",
+      "after_sha256": "ecec8de9bc7ab18aa48791c20355eb9cdea882f7a23da494514c384922214991",
+      "before_nonblank": 407,
+      "after_nonblank": 407,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/scroll/tests.rs",
+      "baseline_blob_sha1": "1481530b930e3188a597446e67a1ec58a79dba43",
+      "before_sha256": "32cc83031c53ba572d881757e6f058bd180ac9b42eed46a4f3eba94e18492ca3",
+      "after_sha256": "32cc83031c53ba572d881757e6f058bd180ac9b42eed46a4f3eba94e18492ca3",
+      "before_nonblank": 796,
+      "after_nonblank": 796,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/selection.rs",
+      "baseline_blob_sha1": "cdaa7fe7e02349f111649d5d72cec9b4dd04a0a5",
+      "before_sha256": "b1ceae4c43a3667910a682399b8762ef71112db025e9ce6e5ae49644314231a0",
+      "after_sha256": "b1ceae4c43a3667910a682399b8762ef71112db025e9ce6e5ae49644314231a0",
+      "before_nonblank": 914,
+      "after_nonblank": 914,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/tests.rs",
+      "baseline_blob_sha1": "7026324c7576d013608c327c229a6b7824a2642b",
+      "before_sha256": "5cd662348cd217c54d4c091285d5d581dc57438fb6c7f80a62dca7aed3649a43",
+      "after_sha256": "5cd662348cd217c54d4c091285d5d581dc57438fb6c7f80a62dca7aed3649a43",
+      "before_nonblank": 989,
+      "after_nonblank": 989,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/text.rs",
+      "baseline_blob_sha1": "1982804274e3ed2430f6cf33b1c8a25ec88166b0",
+      "before_sha256": "b62dd5746b243a8e097a6ad01725357264d0097c4ebe1227458577104331b3aa",
+      "after_sha256": "b62dd5746b243a8e097a6ad01725357264d0097c4ebe1227458577104331b3aa",
+      "before_nonblank": 146,
+      "after_nonblank": 146,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window.rs",
+      "baseline_blob_sha1": "2f44300f7cba24d3252355ad78eb40692381d35c",
+      "before_sha256": "3efb47e1ced80421950f04d617535ae2952ece79b520abf40dedc3cea6168a90",
+      "after_sha256": "3efb47e1ced80421950f04d617535ae2952ece79b520abf40dedc3cea6168a90",
+      "before_nonblank": 555,
+      "after_nonblank": 555,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window/tests.rs",
+      "baseline_blob_sha1": "b717dfa5c05cb79458cdebc5cd1f595ca73d0a0a",
+      "before_sha256": "e298fff308cd062172f0e1d57216b5b173d5f91a3fa5e395b45b580aab7f07a9",
+      "after_sha256": "e298fff308cd062172f0e1d57216b5b173d5f91a3fa5e395b45b580aab7f07a9",
+      "before_nonblank": 460,
+      "after_nonblank": 460,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh.rs",
+      "baseline_blob_sha1": "9bc93b1e0513d36cf2d2a41fdfdf26a8fde61516",
+      "before_sha256": "f1caf0ac27bb3eb1b3c4f1ebb80b939e5b3583a1c5ca020d570d4b6ad366b14a",
+      "after_sha256": "f1caf0ac27bb3eb1b3c4f1ebb80b939e5b3583a1c5ca020d570d4b6ad366b14a",
+      "before_nonblank": 400,
+      "after_nonblank": 400,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/screenshot/window_refresh/tests.rs",
+      "baseline_blob_sha1": "c5a8fe1178b96dd8c505b9b3b534b4c4196d6dcb",
+      "before_sha256": "a598207bf06f1e60f1371556da1613d57d853f1516a2563cc9ed18b4e8821048",
+      "after_sha256": "a598207bf06f1e60f1371556da1613d57d853f1516a2563cc9ed18b4e8821048",
+      "before_nonblank": 804,
+      "after_nonblank": 804,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/settings.rs",
+      "baseline_blob_sha1": "7380767e6a268a0c44b903d9ee44ff354927c7c2",
+      "before_sha256": "e64a7b5d054a92c51786ba3dbc2d15229b9bfe60170ed5b011f7f8b0e17c2e10",
+      "after_sha256": "e64a7b5d054a92c51786ba3dbc2d15229b9bfe60170ed5b011f7f8b0e17c2e10",
+      "before_nonblank": 408,
+      "after_nonblank": 408,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/snippets.rs",
+      "baseline_blob_sha1": "b963bfb0e1ccc1d86f81d537d989a130bf3d50be",
+      "before_sha256": "b5d51dc121b7fa6be732fa4415bc5b2f771f9e5e9da62f2eea0082b778bb534a",
+      "after_sha256": "b5d51dc121b7fa6be732fa4415bc5b2f771f9e5e9da62f2eea0082b778bb534a",
+      "before_nonblank": 220,
+      "after_nonblank": 220,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/text.rs",
+      "baseline_blob_sha1": "e070c3341d742a50d6d85fd8c9e262749efbc311",
+      "before_sha256": "ae021f9b330c50b8f6b36a2c94cba2f95c41671b86d1533fe0bd50d583616516",
+      "after_sha256": "ae021f9b330c50b8f6b36a2c94cba2f95c41671b86d1533fe0bd50d583616516",
+      "before_nonblank": 382,
+      "after_nonblank": 382,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/developer_safety.rs",
+      "baseline_blob_sha1": "caa0e3585ebb44997e9be7d8c1e2974aa8b6ef41",
+      "before_sha256": "29a5e9575b190292929411d03f5e7b8d54d111bcbdb24eb1dfe79943a78aea06",
+      "after_sha256": "29a5e9575b190292929411d03f5e7b8d54d111bcbdb24eb1dfe79943a78aea06",
+      "before_nonblank": 54,
+      "after_nonblank": 54,
+      "before_present": true,
+      "after_present": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/ui_tool_controls.rs",
+      "baseline_blob_sha1": "a64fd7f027785e5841f4d8a4c8f512f342bec3bd",
+      "before_sha256": "6b6a0ff2eea8cfa2524948c94ef478809d50cb3bd5564609be25bfc59af49c68",
+      "after_sha256": "6b6a0ff2eea8cfa2524948c94ef478809d50cb3bd5564609be25bfc59af49c68",
+      "before_nonblank": 397,
+      "after_nonblank": 397,
+      "before_present": true,
+      "after_present": true
+    }
+  ],
+  "manifest_notes": {
+    "palette_rust_hashes_match": true,
+    "manifest_drift": {},
+    "final_manifest_all_paths_match": true
+  },
+  "validation": "Existing independently frozen palette source is preserved; independent final review/full tests pending, not rerun by this LOC audit. LOC is neither an ETA nor a parity/completion measure.",
+  "source_base_commit": "c3ced91eeb7678305f770cfc144352a9643d4327",
+  "source_base_tree": "a643ac99d950d37f61ceec49a2066e2d4d198b29",
+  "source_base_rust_identical": true,
+  "manifest_sha256": "298d7414e08c901f6c7840c6fd4524de237ab0a05f14dbcd268c391bf55b1dbf",
+  "patch_sha256": "32c5b6017439fe8601ffe7f5af843f5bbfdb738926a85ef4345ff43e4d481169",
+  "worker_relocation": {
+    "old": "rust/crates/bellobox-app/src/world_clock_ui/copilot_worker.rs",
+    "new": "rust/crates/bellobox-app/src/clock_copilot_worker.rs",
+    "delta": {
+      "production": 23,
+      "support": 2,
+      "benchmark": 0
+    }
+  }
+}

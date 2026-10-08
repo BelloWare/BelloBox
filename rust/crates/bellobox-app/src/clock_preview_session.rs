@@ -42,6 +42,9 @@ impl ClockPreviewSession {
     pub fn handoff(&self) -> ClockHandoff {
         ClockHandoff {
             snapshot: self.planner.clone(),
+            copilot: Default::default(),
+            draft: String::new(),
+            retirement: None,
         }
     }
 
@@ -149,9 +152,31 @@ impl ClockPreviewSession {
 #[derive(Debug, Clone)]
 pub struct ClockHandoff {
     snapshot: Planner,
+    pub(crate) copilot: bellobox_core::clock::copilot::session::Snapshot,
+    pub(crate) draft: String,
+    pub(crate) retirement: Option<crate::clock_copilot_worker::RetirementGuard>,
 }
 
 impl ClockHandoff {
+    pub fn with_retirement_guard(
+        mut self,
+        guard: Option<crate::clock_copilot_worker::RetirementGuard>,
+    ) -> Self {
+        self.retirement = guard;
+        self
+    }
+    pub fn with_copilot(
+        mut self,
+        snapshot: bellobox_core::clock::copilot::session::Snapshot,
+        draft: String,
+        guard: Option<crate::clock_copilot_worker::RetirementGuard>,
+    ) -> Self {
+        self.copilot = snapshot;
+        self.draft = draft;
+        self.retirement = guard;
+        self
+    }
+
     pub fn is_live(&self) -> bool {
         self.snapshot.follows_now
     }

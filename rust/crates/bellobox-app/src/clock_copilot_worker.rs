@@ -10,6 +10,9 @@ use std::sync::{
     mpsc,
 };
 
+#[cfg(test)]
+pub(crate) static TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 static BUSY: AtomicBool = AtomicBool::new(false);
 struct Lease;
 impl Lease {
@@ -26,6 +29,23 @@ impl Drop for Lease {
         BUSY.store(false, Ordering::Release);
     }
 }
+/// Observer only: cloning or dropping this never releases physical admission.
+#[derive(Clone, Debug)]
+pub(crate) struct RetirementGuard {
+    cancel: Arc<AtomicBool>,
+    retired: Arc<AtomicBool>,
+}
+impl RetirementGuard {
+    pub fn same_request(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.retired, &other.retired)
+    }
+    pub fn cancel(&self) {
+        self.cancel.store(true, Ordering::Release);
+    }
+    pub fn physically_active(&self) -> bool {
+        !self.retired.load(Ordering::Acquire)
+    }
+}
 struct Retirement(Arc<AtomicBool>);
 impl Drop for Retirement {
     fn drop(&mut self) {
@@ -39,10 +59,16 @@ struct Pending {
     receive: mpsc::Receiver<Result<Reply, String>>,
 }
 #[derive(Default)]
-pub(super) struct Worker {
+pub(crate) struct Worker {
     pending: Option<Pending>,
 }
 impl Worker {
+    pub fn guard(&self) -> Option<RetirementGuard> {
+        self.pending.as_ref().map(|p| RetirementGuard {
+            cancel: p.cancel.clone(),
+            retired: p.retired.clone(),
+        })
+    }
     pub fn busy(&self) -> bool {
         self.pending.is_some()
     }
