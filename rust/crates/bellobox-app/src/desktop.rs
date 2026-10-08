@@ -152,6 +152,18 @@ impl BelloBox {
                 editor.set_appearance(appearance, cx);
             });
         }
+        crate::shutdown::guard_quit(window, cx, |this, _, cx| {
+            if this.snippets.as_ref().is_some_and(|ui| ui.deleting) {
+                // Keep the existing native delete confirmation in place.
+                this.status = "Dismiss the snippet dialog first.".into();
+                cx.notify();
+                crate::shutdown::QuitAdmission::Refused
+            } else if this.busy {
+                crate::shutdown::QuitAdmission::Explain("Finish this tool's current action.")
+            } else {
+                crate::shutdown::QuitAdmission::Ready
+            }
+        });
         app.init_snippets(window, cx);
         app.init_permissions(window, cx);
         if matches!(app.selected.as_str(), "subnet" | "chmod" | "numberBase") {
@@ -535,6 +547,7 @@ impl BelloBox {
             cx.notify();
             return;
         }
+        let quit_blocker = crate::shutdown::block_quit(cx, "Finish or cancel the QR save first.");
         let revision = self.qr_saves.begin();
         self.qr_save_status = true;
         self.status = "Choose where to save the QR image…".into();
@@ -547,6 +560,7 @@ impl BelloBox {
                 Ok(Ok(Some(path))) => {
                     executor
                         .spawn(async move {
+                            let _quit_blocker = quit_blocker;
                             match bellobox_core::qr::png(&input)
                                 .and_then(|bytes| crate::save_new(&path, &bytes))
                             {
@@ -1971,3 +1985,6 @@ pub fn run() {
         }
     });
 }
+
+#[cfg(test)]
+mod quit_tests;

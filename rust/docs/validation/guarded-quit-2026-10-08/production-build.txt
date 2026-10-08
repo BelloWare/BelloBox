@@ -1,0 +1,38 @@
+   Compiling wayland-backend v0.3.17
+   Compiling ring v0.17.14
+   Compiling libc v0.2.186
+   Compiling rustls-webpki v0.103.15
+   Compiling wayland-client v0.31.15
+   Compiling rustls v0.23.45
+   Compiling getrandom v0.2.17
+   Compiling psm v0.1.32
+   Compiling freetype-sys v0.20.1
+   Compiling rand v0.9.5
+   Compiling const-random-macro v0.1.16
+   Compiling stacker v0.1.25
+   Compiling tokio-rustls v0.26.6
+   Compiling hyper-rustls v0.27.10
+   Compiling const-random v0.1.18
+   Compiling gpui_collections v0.2.2
+   Compiling zed-font-kit v0.14.1-zed
+   Compiling gpui_util v0.2.2
+   Compiling zed-reqwest v0.12.15-zed
+   Compiling ahash v0.8.12
+   Compiling gpui v0.2.2
+   Compiling ashpd v0.12.3
+   Compiling wayland-protocols v0.31.2
+   Compiling wayland-protocols v0.32.13
+   Compiling zed-xim v0.4.0-zed
+   Compiling calloop-wayland-source v0.3.0
+   Compiling wayland-protocols-plasma v0.2.0
+   Compiling ashpd v0.11.1
+   Compiling oo7 v0.5.0
+   Compiling gpui_http_client v0.2.2
+   Compiling stacksafe v0.1.4
+   Compiling wayland-cursor v0.31.14
+   Compiling reqwest v0.12.28
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-recovery/rust/crates/bello-workbench-ui)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-recovery/rust/crates/bellobox-app)
+    Finished `dev` profile [unoptimized] target(s) in 37.68s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`

@@ -343,3 +343,88 @@ fn unavailable_native_capability_precedes_hide_and_freeze_even_inside_admission(
     );
     assert_eq!([hide.get(), freeze.get(), capture.get()], [0, 0, 0]);
 }
+
+#[gpui::test]
+fn pending_supplied_preparation_refuses_quit_and_failure_clears_its_blocker(
+    cx: &mut gpui::TestAppContext,
+) {
+    struct Root;
+    impl gpui::Render for Root {
+        fn render(
+            &mut self,
+            _: &mut gpui::Window,
+            _: &mut gpui::Context<Self>,
+        ) -> impl gpui::IntoElement {
+            gpui::div()
+        }
+    }
+    cx.update(crate::shutdown::init);
+    let requester = cx.add_window(|window, cx| {
+        crate::shutdown::guard_window(window, cx);
+        Root
+    });
+    cx.update(|cx| {
+        begin_supplied_prepared(requester.into(), layout(), cx, |_| {
+            Err("injected preparation failure".into())
+        })
+        .unwrap();
+        assert!(cx.global::<Coordinator>().quit_blocker.is_some());
+        cx.dispatch_action(&crate::shutdown::Quit);
+    });
+    assert!(!cx.read(crate::shutdown::requested));
+    assert!(crate::shutdown::pending_refusal(cx).is_some());
+    cx.run_until_parked();
+    assert!(cx.read(|cx| cx.global::<Coordinator>().active.is_none()));
+    assert!(cx.read(|cx| cx.global::<Coordinator>().quit_blocker.is_none()));
+    crate::shutdown::dismiss_refusal(cx);
+    cx.run_until_parked();
+    assert!(!cx.read(crate::shutdown::requested));
+    cx.dispatch_action(requester.into(), crate::shutdown::Quit);
+    assert_eq!(cx.read(crate::shutdown::quit_calls), 1);
+}
+
+#[gpui::test]
+fn pending_supplied_cancel_keeps_quit_refused_until_preparation_retires(
+    cx: &mut gpui::TestAppContext,
+) {
+    struct Root;
+    impl gpui::Render for Root {
+        fn render(
+            &mut self,
+            _: &mut gpui::Window,
+            _: &mut gpui::Context<Self>,
+        ) -> impl gpui::IntoElement {
+            gpui::div()
+        }
+    }
+    cx.update(crate::shutdown::init);
+    let requester = cx.add_window(|window, cx| {
+        crate::shutdown::guard_window(window, cx);
+        Root
+    });
+    cx.update(|cx| {
+        begin_supplied_prepared(requester.into(), layout(), cx, |cancelled| {
+            assert!(cancelled.load(Ordering::Acquire));
+            Err("cancelled preparation".into())
+        })
+        .unwrap();
+        let id = cx
+            .global::<Coordinator>()
+            .active
+            .as_ref()
+            .unwrap()
+            .transaction
+            .id;
+        cancel(id, cx);
+        assert!(cx.global::<Coordinator>().quit_blocker.is_some());
+        cx.dispatch_action(&crate::shutdown::Quit);
+    });
+    assert!(!cx.read(crate::shutdown::requested));
+    cx.run_until_parked();
+    assert!(cx.read(|cx| cx.global::<Coordinator>().active.is_none()));
+    assert!(cx.read(|cx| cx.global::<Coordinator>().quit_blocker.is_none()));
+    crate::shutdown::dismiss_refusal(cx);
+    cx.run_until_parked();
+    cx.dispatch_action(requester.into(), crate::shutdown::Quit);
+    assert_eq!(cx.read(crate::shutdown::quit_calls), 1);
+}

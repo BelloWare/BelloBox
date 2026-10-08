@@ -76,6 +76,7 @@ impl Converter {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
+        crate::shutdown::admit_quit_window(window, cx);
         let p = theme::for_window(window);
         let start = editor("0.00", p, window, cx);
         let end = editor("", p, window, cx);

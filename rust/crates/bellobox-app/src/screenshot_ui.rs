@@ -240,6 +240,15 @@ pub fn open(cx: &mut App) {
                     jobs: SessionJobs::default(),
                     focus,
                 };
+                crate::shutdown::guard_quit(window, cx, |this: &mut CaptureChooser, _, _| {
+                    if this.busy {
+                        crate::shutdown::QuitAdmission::Explain(
+                            "Finish or cancel the screenshot first.",
+                        )
+                    } else {
+                        crate::shutdown::QuitAdmission::Ready
+                    }
+                });
                 let weak = cx.entity().downgrade();
                 window.on_window_should_close(cx, move |_window, cx| {
                     let _ = weak.update(cx, |this: &mut CaptureChooser, _| this.jobs.cancel());
@@ -355,7 +364,10 @@ impl CaptureChooser {
         #[cfg(not(target_os = "macos"))]
         window.minimize_window();
         cx.notify();
+        let quit_blocker = crate::shutdown::block_quit(cx, "Wait for capture cleanup to finish.");
+        let worker_quit = quit_blocker.clone();
         let task = cx.background_executor().spawn(async move {
+            let _quit_blocker = worker_quit;
             #[cfg(target_os = "macos")]
             {
                 // Restore the hidden application even if a Rust worker panics.
@@ -382,6 +394,7 @@ impl CaptureChooser {
             }
         });
         cx.spawn_in(window, async move |this, cx| {
+            let _quit_blocker = quit_blocker;
             let result = task.await;
             #[cfg(target_os = "macos")]
             let (result, application_active) = {
@@ -642,6 +655,7 @@ struct ScreenshotEditor {
     slider_bounds: Rc<Cell<Bounds<Pixels>>>,
     viewport_size: Rc<Cell<(f32, f32)>>,
     gesture: Option<Gesture>,
+    quit_pointer_notice: bool,
     selected: Option<u64>,
     status: String,
     error: bool,
@@ -792,6 +806,7 @@ impl ScreenshotEditor {
             slider_bounds: Rc::new(Cell::new(Bounds::default())),
             viewport_size: Rc::new(Cell::new((0., 0.))),
             gesture: None,
+            quit_pointer_notice: false,
             selected: None,
             status: String::new(),
             error: false,
@@ -815,8 +830,13 @@ impl ScreenshotEditor {
             menu_index: 0,
             focus,
         };
+        crate::shutdown::guard_quit(window, cx, Self::quit_admission);
         view.watch_ai_owner(window, cx);
-        cx.on_release(|this, cx| this.ai_ocr.retire(cx)).detach();
+        cx.on_release(|this, cx| {
+            this.quit_pointer_notice = false;
+            this.ai_ocr.retire(cx);
+        })
+        .detach();
         let weak = cx.entity().downgrade();
         if view.inline.is_none() {
             window.on_window_should_close(cx, move |window, cx| {
@@ -837,6 +857,7 @@ impl ScreenshotEditor {
                             false
                         } else {
                             this.cancel_window_refresh();
+                            this.quit_pointer_notice = false;
                             true
                         }
                     })
@@ -1055,6 +1076,7 @@ impl ScreenshotEditor {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        self.clear_pointer_quit_notice(cx);
         if !self.inline_current(cx) {
             self.cancel_inline_owner(cx);
             return;
@@ -1139,6 +1161,7 @@ impl ScreenshotEditor {
         }
     }
     fn mouse_up(&mut self, e: &gpui::MouseUpEvent, _: &mut Window, cx: &mut Context<Self>) {
+        self.clear_pointer_quit_notice(cx);
         if !self.inline_current(cx) {
             self.cancel_inline_owner(cx);
             return;
@@ -1212,6 +1235,76 @@ impl ScreenshotEditor {
             }
         };
         self.report(result, cx);
+    }
+    fn pointer_edit_active(&self) -> bool {
+        self.gesture.is_some()
+            || self.label_drag.is_some()
+            || self
+                .inline
+                .as_ref()
+                .is_some_and(|inline| inline.adjustment.is_some())
+    }
+    fn pointer_quit_message(&self) -> Option<&'static str> {
+        (self.quit_pointer_notice && self.pointer_edit_active())
+            .then_some("Finish drag or Esc, then Quit.")
+    }
+    fn clear_pointer_quit_notice(&mut self, cx: &mut Context<Self>) {
+        if std::mem::take(&mut self.quit_pointer_notice) {
+            cx.notify();
+        }
+    }
+    fn quit_admission(
+        &mut self,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> crate::shutdown::QuitAdmission {
+        use crate::shutdown::QuitAdmission;
+        if self.show_discard {
+            return self.discard_quit_refusal(window, cx);
+        }
+        if self.pointer_edit_active() && crate::shutdown::is_quit_feedback_window(window, cx) {
+            // No modal may occlude a pointer owner's outside-capture release.
+            // Keep its original geometry, release and Escape semantics intact.
+            self.quit_pointer_notice = true;
+            cx.notify();
+            return QuitAdmission::Refused;
+        }
+        if self.export_busy
+            || self.ocr_busy
+            || self.ai_ocr_busy()
+            || self.ai_ocr.modal()
+            || self.rendering
+        {
+            return QuitAdmission::Explain("Finish the screenshot task first.");
+        }
+        if self.text_origin.is_some() || self.pointer_edit_active() || self.color_target.is_some() {
+            return QuitAdmission::Explain("Finish or cancel the screenshot edit.");
+        }
+        if self.inline.is_some() {
+            // The capture selector owns this editor's Cancel/Finish decision.
+            // Inline chrome has no standalone Discard dialog; do not arm one.
+            return QuitAdmission::Explain("Finish or cancel the capture overlay.");
+        }
+        if self.session.has_edits() {
+            // This is the ordinary window-local prompt only. Its Discard button
+            // cannot authorize this abandoned app Quit or any future attempt.
+            self.show_discard = true;
+            cx.notify();
+            return self.discard_quit_refusal(window, cx);
+        }
+        QuitAdmission::Ready
+    }
+    fn discard_quit_refusal(&self, window: &Window, cx: &App) -> crate::shutdown::QuitAdmission {
+        if cx
+            .active_window()
+            .is_some_and(|active| active.window_id() == window.window_handle().window_id())
+        {
+            crate::shutdown::QuitAdmission::Refused
+        } else {
+            // The local prompt may be behind another window or minimized.
+            // Explain on the active window without assuming native restoration.
+            crate::shutdown::QuitAdmission::Explain("Restore the screenshot to resolve edits.")
+        }
     }
     fn close(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.ai_ocr.retire(cx);
@@ -1331,6 +1424,7 @@ impl ScreenshotEditor {
             Some(&name),
         );
         let inline_work = self.begin_inline_work(cx);
+        let quit_blocker = crate::shutdown::block_quit(cx, "Finish or cancel the PNG save first.");
         cx.spawn(async move |this, cx| {
             async {
                 let path = match dialog.await {
@@ -1373,6 +1467,7 @@ impl ScreenshotEditor {
                     return;
                 }
                 let task = cx.background_executor().spawn(async move {
+                    let _quit_blocker = quit_blocker;
                     if !path
                         .extension()
                         .is_some_and(|s| s.eq_ignore_ascii_case("png"))
@@ -1431,7 +1526,9 @@ impl ScreenshotEditor {
         self.status = "Reading the cropped, masked image locally…".into();
         self.error = false;
         cx.notify();
+        let quit_blocker = crate::shutdown::block_quit(cx, "Wait for local text recognition.");
         let task = cx.background_executor().spawn(async move {
+            let _quit_blocker = quit_blocker;
             let image = snapshot.render_for_external_ocr_png()?;
             bello_platform::Platform::new()
                 .recognize_image_bytes(&image, None)
@@ -1508,6 +1605,9 @@ impl ScreenshotEditor {
             self.copy(true, window, cx);
             cx.stop_propagation();
             return;
+        }
+        if key == "escape" {
+            self.clear_pointer_quit_notice(cx);
         }
         if self.inline.is_some() && key == "escape" {
             self.close(window, cx);
@@ -2080,12 +2180,27 @@ impl ScreenshotEditor {
         let status = div()
             .flex_1()
             .min_w(px(0.))
+            .relative()
             .text_size(px(10.))
             .text_color(if self.error { p.danger } else { p.secondary })
+            // Keep the normal text in layout, even while the pointer notice is
+            // visible: replacing a multiline error can resize the Fit canvas.
             .child(if self.rendering {
                 "Rendering current edits…".to_string()
             } else {
                 self.status.clone()
+            })
+            .when_some(self.pointer_quit_message(), |status, message| {
+                status.child(
+                    div()
+                        .absolute()
+                        .left_0()
+                        .right_0()
+                        .bottom_0()
+                        .bg(p.bg)
+                        .text_color(p.secondary)
+                        .child(message),
+                )
             });
         if compact {
             div()
@@ -3144,6 +3259,7 @@ impl ScreenshotEditor {
         position: ViewPoint<Pixels>,
         cx: &mut Context<Self>,
     ) {
+        self.clear_pointer_quit_notice(cx);
         if self.export_busy || self.show_discard || self.ai_ocr.modal() {
             return;
         }
@@ -3645,3 +3761,6 @@ mod tests {
         assert!(transient_label_snapshot(session.render_snapshot(), Some(drag)).is_err());
     }
 }
+
+#[cfg(test)]
+mod quit_tests;

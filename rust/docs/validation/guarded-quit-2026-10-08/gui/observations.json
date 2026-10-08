@@ -1,0 +1,23 @@
+{
+  "date_utc": "2026-10-08",
+  "binary_sha256": "23147cd33abf02794c0116b5fcf1f379a3703865f74622b7112aca7c0b3a8c95",
+  "platform": "Linux own cloud desktop, Mesa25.0.7 lavapipe software Vulkan",
+  "fixture": "locally generated QR PNG, 518x518; isolated config; no capture or user data",
+  "observed": [
+    "App launched after installing isolated official Vulkan software driver; initial no-device startup failure retained separately",
+    "Home keyboard navigation and Return opened Screenshot editor",
+    "Ctrl+Alt+4 selected Rectangle visibly",
+    "Ctrl+Q from clean editor closed both app windows and exited0"
+  ],
+  "not_accepted": [
+    "Bound/global pointer clicks and drags did not produce reliable control activation or annotations; cause not established",
+    "Dirty editor Quit decision, held-pointer Quit overlap, prompt click-through and active-work drain could not be established by this manual attempt",
+    "This does not recreate the missing historical GUI screenshots or broad matrix",
+    "No native macOS/TCC/AX/Keychain/signing/performance/release acceptance"
+  ],
+  "exit_code": 0,
+  "screenshots": {
+    "01-clean-editor-after-pointer-attempt.jpg": "f6771369c8a5f186da8d1212f50320a3d73c912aeaabbbf320c432a9acc1e7af",
+    "02-keyboard-rectangle-clean.jpg": "7038c3cb40b73549af7e52d8032926aeb5258b195afacb2a9c4265726a1553a4"
+  }
+}

@@ -58,6 +58,9 @@ impl Fixture {
             .expect("bounded fixture config");
         let focus = cx.focus_handle();
         window.focus(&focus);
+        crate::shutdown::guard_quit(window, cx, |_, _, _| {
+            crate::shutdown::QuitAdmission::Explain("Finish or cancel scrolling capture.")
+        });
         let weak = cx.entity().downgrade();
         window.on_window_should_close(cx, move |window, cx| {
             let _ = weak.update(cx, |this, _| {

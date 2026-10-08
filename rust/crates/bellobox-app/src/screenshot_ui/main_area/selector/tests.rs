@@ -143,6 +143,294 @@ fn selected() -> Rect {
     Rect::new(100., 100., 300., 200.)
 }
 
+// These helpers deliberately enter the drawn GPUI window. In particular, an
+// outside release must traverse GPUI's capture phase rather than call the
+// editor's mouse_up method directly.
+pub(super) fn quit_draw(handle: AnyWindowHandle, cx: &mut TestAppContext) {
+    // Measured canvas bounds can schedule a second preview/layout pass. Settle
+    // that work before comparing geometry or starting a held pointer gesture.
+    for _ in 0..3 {
+        handle
+            .update(cx, |_, window, cx| window.draw(cx).clear())
+            .unwrap();
+        cx.run_until_parked();
+    }
+}
+pub(super) fn quit_input(
+    handle: AnyWindowHandle,
+    event: impl gpui::InputEvent,
+    cx: &mut TestAppContext,
+) {
+    VisualTestContext::from_window(handle, cx).simulate_event(event);
+    cx.run_until_parked();
+}
+pub(super) fn quit_pointer_down(handle: AnyWindowHandle, x: f32, y: f32, cx: &mut TestAppContext) {
+    quit_input(
+        handle,
+        MouseMoveEvent {
+            position: point(px(x), px(y)),
+            pressed_button: None,
+            ..Default::default()
+        },
+        cx,
+    );
+    quit_input(handle, down(x, y), cx);
+}
+pub(super) fn quit_key(handle: AnyWindowHandle, key: &str, cx: &mut TestAppContext) {
+    quit_input(
+        handle,
+        gpui::KeyDownEvent {
+            keystroke: gpui::Keystroke::parse(key).unwrap(),
+            is_held: false,
+        },
+        cx,
+    );
+    quit_input(
+        handle,
+        gpui::KeyUpEvent {
+            keystroke: gpui::Keystroke::parse(key).unwrap(),
+        },
+        cx,
+    );
+}
+pub(super) fn quit_shortcut(handle: AnyWindowHandle, cx: &mut TestAppContext) {
+    #[cfg(target_os = "macos")]
+    quit_key(handle, "cmd-q", cx);
+    #[cfg(not(target_os = "macos"))]
+    quit_key(handle, "ctrl-q", cx);
+    quit_draw(handle, cx);
+}
+
+#[derive(PartialEq)]
+pub(super) struct QuitInlineSnapshot {
+    selection: Rect,
+    crop: Option<Rect>,
+    dimensions: (u32, u32),
+    revision: u64,
+    annotations: Vec<bellobox_core::screenshot::ScreenshotAnnotation>,
+    pixels: Vec<u8>,
+    image_bounds: Bounds<gpui::Pixels>,
+    viewport: Bounds<gpui::Pixels>,
+    can_undo: bool,
+    can_redo: bool,
+    has_edits: bool,
+    status: String,
+}
+pub(super) fn quit_inline_snapshot(
+    selector: WindowHandle<MainAreaSelector>,
+    editor: &Entity<ScreenshotEditor>,
+    cx: &TestAppContext,
+) -> QuitInlineSnapshot {
+    cx.read(|cx| {
+        let view = editor.read(cx);
+        QuitInlineSnapshot {
+            selection: view.inline_selection(),
+            crop: view.session.document().crop_rect(),
+            dimensions: view.session.document().dimensions(),
+            revision: view.session.revision(),
+            annotations: view.session.document().annotations().to_vec(),
+            pixels: view.session.document().render_rgba().unwrap().into_raw(),
+            image_bounds: view.image_bounds.get(),
+            viewport: selector.read(cx).unwrap().viewport.get(),
+            can_undo: view.session.can_undo(),
+            can_redo: view.session.can_redo(),
+            has_edits: view.session.has_edits(),
+            status: view.status.clone(),
+        }
+    })
+}
+
+#[gpui::test]
+fn quit_during_inline_adjustment_runs_all_foreground_guards_and_keeps_natural_release(
+    cx: &mut TestAppContext,
+) {
+    cx.update(crate::shutdown::init);
+    let (_, selector) = open(cx);
+    lock(selector, selected(), cx);
+    let editor = editor(selector, cx);
+    let checks = Rc::new(Cell::new(0));
+    let calls = checks.clone();
+    let _explaining_owner = selector
+        .update(cx, |_, window, cx| {
+            cx.new(|cx| {
+                crate::shutdown::guard_quit(window, cx, move |_: &mut (), _, _| {
+                    calls.set(calls.get() + 1);
+                    crate::shutdown::QuitAdmission::Explain("Another foreground task is busy.")
+                });
+            })
+        })
+        .unwrap();
+    let _worker =
+        cx.update(|cx| crate::shutdown::block_quit(cx, "A supplied worker is still publishing."));
+    quit_draw(selector.into(), cx);
+    quit_pointer_down(selector.into(), 200., 200., cx);
+    quit_input(
+        selector.into(),
+        MouseMoveEvent {
+            position: point(px(240.), px(220.)),
+            pressed_button: Some(MouseButton::Left),
+            ..Default::default()
+        },
+        cx,
+    );
+    quit_draw(selector.into(), cx);
+    cx.read(|cx| {
+        let view = editor.read(cx);
+        assert!(view.inline.as_ref().unwrap().adjustment.is_some());
+        assert_eq!(view.inline_selection(), Rect::new(140., 120., 300., 200.));
+        assert_eq!(
+            view.session.document().crop_rect(),
+            Some(Rect::new(200., 250., 600., 500.))
+        );
+        assert!(!view.session.has_edits());
+    });
+    let before = quit_inline_snapshot(selector, &editor, cx);
+    let windows = cx.read(|cx| cx.windows());
+    for attempt in 1..=3 {
+        quit_shortcut(selector.into(), cx);
+        assert_eq!(
+            checks.get(),
+            attempt,
+            "all same-window guards run exactly once"
+        );
+        assert!(quit_inline_snapshot(selector, &editor, cx) == before);
+        assert!(crate::shutdown::pending_refusal(cx).is_none());
+        assert!(!cx.has_pending_prompt());
+        cx.read(|cx| {
+            assert!(cx.windows() == windows);
+            assert!(cx.active_window() == Some(selector.into()));
+            assert!(!crate::shutdown::requested(cx));
+            assert_eq!(crate::shutdown::quit_calls(cx), 0);
+            assert!(selector.read(cx).unwrap().quit_notice);
+            let view = editor.read(cx);
+            assert!(view.quit_pointer_notice, "nested editor guard also ran");
+            assert!(view.inline.as_ref().unwrap().adjustment.is_some());
+            assert!(!view.show_discard);
+        });
+    }
+    // Release over the newly painted top-right selector notice. Its chrome
+    // must not steal the owned move, nor turn its ordinary release into an OK.
+    quit_input(selector.into(), up(500., 24.), cx);
+    quit_draw(selector.into(), cx);
+    cx.read(|cx| {
+        let view = editor.read(cx);
+        assert!(view.inline.as_ref().unwrap().adjustment.is_none());
+        assert!(!view.quit_pointer_notice);
+        assert!(!selector.read(cx).unwrap().quit_notice);
+        assert_eq!(view.inline_selection(), Rect::new(300., 0., 300., 200.));
+        assert_eq!(
+            view.session.document().crop_rect(),
+            Some(Rect::new(600., 0., 600., 500.))
+        );
+        assert!(view.session.can_undo());
+        assert!(view.session.document().annotations().is_empty());
+        assert!(!crate::shutdown::requested(cx));
+    });
+    quit_key(selector.into(), "ctrl-z", cx);
+    cx.read(|cx| {
+        let view = editor.read(cx);
+        assert_eq!(view.inline_selection(), selected());
+        assert!(
+            !view.session.can_undo(),
+            "natural release adds exactly one undo"
+        );
+        assert!(!view.session.has_edits());
+    });
+    close(selector, cx);
+}
+
+#[gpui::test]
+fn quit_during_inline_handle_adjustment_keeps_escape_and_owner_retirement_semantics(
+    cx: &mut TestAppContext,
+) {
+    cx.update(crate::shutdown::init);
+    let mut last_requester = None;
+    for navigation in [false, true] {
+        let (requester, selector) = open(cx);
+        requester
+            .update(cx, |_, window, cx| {
+                crate::shutdown::admit_quit_window(window, cx)
+            })
+            .unwrap();
+        last_requester = Some(requester);
+        lock(selector, selected(), cx);
+        let editor = editor(selector, cx);
+        let owner = selector.root(cx).unwrap();
+        let worker = cx
+            .update(|cx| crate::shutdown::block_quit(cx, "A supplied worker is still publishing."));
+        quit_draw(selector.into(), cx);
+        quit_pointer_down(selector.into(), 400., 300., cx);
+        quit_input(
+            selector.into(),
+            MouseMoveEvent {
+                position: point(px(340.), px(260.)),
+                pressed_button: Some(MouseButton::Left),
+                ..Default::default()
+            },
+            cx,
+        );
+        quit_draw(selector.into(), cx);
+        let before = quit_inline_snapshot(selector, &editor, cx);
+        for _ in 0..2 {
+            quit_shortcut(selector.into(), cx);
+            assert!(quit_inline_snapshot(selector, &editor, cx) == before);
+            assert!(crate::shutdown::pending_refusal(cx).is_none());
+            cx.read(|cx| {
+                let view = editor.read(cx);
+                assert!(view.inline.as_ref().unwrap().adjustment.is_some());
+                assert!(view.quit_pointer_notice);
+                assert!(owner.read(cx).quit_notice);
+                assert!(!crate::shutdown::requested(cx));
+            });
+        }
+        if navigation {
+            cx.update(navigation_changed);
+            cx.run_until_parked();
+        } else {
+            // Inline Escape normally retires the capture owner. Quit must not
+            // interpose a modal that consumes it or commits this draft first.
+            quit_input(
+                selector.into(),
+                KeyDownEvent {
+                    keystroke: gpui::Keystroke::parse("escape").unwrap(),
+                    is_held: false,
+                },
+                cx,
+            );
+        }
+        cx.read(|cx| {
+            assert!(cx.global::<Coordinator>().active.is_none());
+            assert!(!cx.global::<NativeCaptureVisibility>().busy);
+            assert!(!cx.windows().contains(&selector.into()));
+            assert!(owner.read(cx).retired);
+            assert!(!owner.read(cx).quit_notice);
+            let view = editor.read(cx);
+            assert!(!view.quit_pointer_notice);
+            assert!(view.inline.as_ref().unwrap().adjustment.is_none());
+            assert!(view.gesture.is_none());
+            assert!(view.label_drag.is_none());
+            assert_eq!(view.session.document().dimensions(), (1, 1));
+            assert!(!view.session.can_undo());
+            assert!(!crate::shutdown::requested(cx));
+        });
+        assert!(crate::shutdown::pending_refusal(cx).is_none());
+        drop(worker);
+        cx.run_until_parked();
+        assert!(
+            !cx.read(crate::shutdown::requested),
+            "refusal stores no retry"
+        );
+    }
+    let requester = last_requester.unwrap();
+    requester
+        .update(cx, |_, window, _| window.activate_window())
+        .unwrap();
+    cx.run_until_parked();
+    cx.dispatch_action(requester, crate::shutdown::Quit);
+    assert!(cx.read(crate::shutdown::requested));
+    assert_eq!(cx.read(crate::shutdown::quit_calls), 1);
+}
+
 #[gpui::test]
 fn supplied_route_mounts_real_editor_in_same_owned_overlay(cx: &mut TestAppContext) {
     let (_, selector) = open(cx);

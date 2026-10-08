@@ -1,0 +1,10 @@
+{
+  "production-build.txt": "321066ea185528165ff91fb6ae257522cd4ec697471401fbd18e671cf4544705",
+  "performance-harness.txt": "40c16c5b4191fbaf62ac9f8b8f101e3b04923fb1963748961e0b8c4cef349ee1",
+  "app-tests-full.txt": "5281d38ad53b1a2cc3f2dcd4eb01ddac88873bc69f0e8fd1222cf92675f848ab",
+  "app-test-build.txt": "dc53ef8f0e3e8c91bf0e47dde758f2c35a10456a75ae10a3a88a4b2d2b152045",
+  "clippy-default-app.txt": "d0214f02d8d7ca602cf69e35c264a0dbb1a63322ee75a32172f922cc7a95f12f",
+  "clippy-recording.txt": "8992871c6dda448c1ede49bef97fe72d73ff272c36d7bfc6858a5e17caa55ec4",
+  "ui-harness.txt": "b5be84059a592bac8ab718a2fc242bb980a3534435556a124428c254d4d9131e",
+  "core-tests.txt": "a218af15aea8113abbf7519bc188751c25cc79143a691c9ccedf68ace621a32c"
+}

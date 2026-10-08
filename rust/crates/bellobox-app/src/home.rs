@@ -646,6 +646,7 @@ impl Home {
                 let id = tool.id;
                 div()
                     .id(SharedString::from(format!("homeTool_{id}")))
+                    .debug_selector(move || format!("homeTool_{id}"))
                     .min_w_0()
                     .h(px(95.))
                     .p(px(14.))

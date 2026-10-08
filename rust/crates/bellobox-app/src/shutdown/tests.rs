@@ -140,7 +140,7 @@ fn latched_quit_rejects_new_tool_and_launcher_windows(cx: &mut gpui::TestAppCont
     cx.update(init);
     let registry = cx.update(registry);
     let ticket = registry.admit(|| {}).unwrap();
-    cx.update(request_quit);
+    cx.update(|cx| cx.dispatch_action(&Quit));
     cx.update(|cx| {
         crate::desktop::open_tool("recording", String::new(), cx);
         crate::desktop::open_tool("videoToGIF", String::new(), cx);
@@ -308,6 +308,352 @@ fn a_different_last_window_retains_native_lifetime_for_already_retiring_media(
     assert!(cx.read(requested));
     assert_eq!(cx.read(|cx| cx.windows().len()), 1);
     assert_eq!(cx.read(quit_calls), 0);
+    drop(ticket);
+    cx.run_until_parked();
+    assert_eq!(cx.read(quit_calls), 1);
+}
+
+#[gpui::test]
+fn quit_action_without_an_active_window_waits_for_every_physical_worker(
+    cx: &mut gpui::TestAppContext,
+) {
+    cx.update(init);
+    assert!(cx.read(|cx| cx.active_window().is_none()));
+    let registry = cx.update(registry);
+    let cancellations = Arc::new(AtomicUsize::new(0));
+    let mut workers = Vec::new();
+    for _ in 0..2 {
+        let signal = cancellations.clone();
+        let ticket = registry
+            .admit(move || {
+                signal.fetch_add(1, Ordering::AcqRel);
+            })
+            .unwrap();
+        let (release, hold) = std::sync::mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            let _ticket = ticket;
+            hold.recv().unwrap();
+        });
+        workers.push((release, worker));
+    }
+    cx.update(|cx| cx.dispatch_action(&Quit));
+    cx.run_until_parked();
+    assert!(cx.read(requested));
+    assert_eq!(cancellations.load(Ordering::Acquire), 2);
+    assert!(cx.read(|cx| cx.windows().is_empty()));
+    cx.background_executor
+        .advance_clock(std::time::Duration::from_secs(3600));
+    cx.run_until_parked();
+    assert_eq!(cx.read(quit_calls), 0);
+    for (index, (release, worker)) in workers.into_iter().enumerate() {
+        cx.update(|cx| cx.dispatch_action(&Quit));
+        release.send(()).unwrap();
+        worker.join().unwrap();
+        cx.run_until_parked();
+        assert_eq!(registry.active(), 1 - index);
+        assert_eq!(cx.read(quit_calls), index);
+    }
+    cx.update(|cx| cx.dispatch_action(&Quit));
+    cx.run_until_parked();
+    assert_eq!(cancellations.load(Ordering::Acquire), 2);
+    assert_eq!(cx.read(quit_calls), 1);
+}
+
+#[gpui::test]
+fn window_quit_action_defers_all_roots_and_vetoes_repeated_mixed_closes(
+    cx: &mut gpui::TestAppContext,
+) {
+    cx.update(init);
+    let first = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        Retained
+    });
+    let second = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        Retained
+    });
+    let retained = first.root(cx).unwrap();
+    let registry = cx.update(registry);
+    let cancellations = Arc::new(AtomicUsize::new(0));
+    let signal = cancellations.clone();
+    let ticket = registry
+        .admit(move || {
+            signal.fetch_add(1, Ordering::AcqRel);
+        })
+        .unwrap();
+    // Actual GPUI window dispatch invokes the global listener while borrowing
+    // this window. Synchronous root updates would fail or skip the active root.
+    cx.dispatch_action(first.into(), Quit);
+    for handle in [first.into(), second.into()] {
+        cx.update_window(handle, |_, window, _| assert!(is_closing(window)))
+            .unwrap();
+    }
+    assert_eq!(cx.read(|cx| cx.windows().len()), 2);
+    let mut visual = gpui::VisualTestContext::from_window(first.into(), cx);
+    assert!(!visual.simulate_close());
+    cx.dispatch_action(second.into(), Quit);
+    cx.update_window(second.into(), |_, window, cx| close_window(window, cx))
+        .unwrap();
+    cx.run_until_parked();
+    assert_eq!(cx.read(|cx| cx.windows().len()), 2);
+    assert_eq!(cx.read(quit_calls), 0);
+    assert_eq!(cancellations.load(Ordering::Acquire), 1);
+    cx.background_executor
+        .advance_clock(std::time::Duration::from_secs(3600));
+    cx.run_until_parked();
+    assert_eq!(cx.read(quit_calls), 0);
+    retained.read_with(cx, |_, _| ());
+    drop(ticket);
+    cx.run_until_parked();
+    assert_eq!(cx.read(quit_calls), 1);
+}
+
+#[gpui::test]
+fn app_quit_with_inactive_existing_window_still_shows_closing(cx: &mut gpui::TestAppContext) {
+    cx.update(init);
+    let window = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        Retained
+    });
+    let mut visual = gpui::VisualTestContext::from_window(window.into(), cx);
+    visual.deactivate_window();
+    assert!(cx.read(|cx| cx.active_window().is_none()));
+    let ticket = cx.update(|cx| registry(cx).admit(|| {}).unwrap());
+    cx.update(|cx| cx.dispatch_action(&Quit));
+    cx.run_until_parked();
+    cx.update_window(window.into(), |_, window, _| assert!(is_closing(window)))
+        .unwrap();
+    assert_eq!(cx.read(quit_calls), 0);
+    assert_eq!(cx.read(|cx| cx.windows().len()), 1);
+    drop(ticket);
+    cx.run_until_parked();
+    assert_eq!(cx.read(quit_calls), 1);
+}
+
+#[gpui::test]
+fn quit_shortcut_bubbles_from_focused_editor_without_replacing_edit_shortcuts(
+    cx: &mut gpui::TestAppContext,
+) {
+    cx.update(init);
+    let window = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        let editor = bello_workbench_ui::EditorView::new("kept text".into(), window, cx);
+        editor.focus(window);
+        editor
+    });
+    let editor = window.root(cx).unwrap();
+    let mut visual = gpui::VisualTestContext::from_window(window.into(), cx);
+    visual.run_until_parked();
+    let select_copy = if cfg!(target_os = "macos") {
+        "cmd-a cmd-c"
+    } else {
+        "ctrl-a ctrl-c"
+    };
+    visual.simulate_keystrokes(select_copy);
+    assert_eq!(
+        cx.update(|cx| cx.read_from_clipboard().and_then(|item| item.text())),
+        Some("kept text".into())
+    );
+    visual.simulate_keystrokes("q");
+    assert!(!cx.read(requested), "plain q remains text input");
+    editor.read_with(cx, |editor, _| assert_eq!(editor.text(), "q"));
+    let ticket = cx.update(|cx| registry(cx).admit(|| {}).unwrap());
+    visual.simulate_keystrokes(QUIT_KEYSTROKE);
+    assert!(cx.read(requested));
+    visual.update(|window, _| assert!(is_closing(window)));
+    assert_eq!(cx.read(quit_calls), 0);
+    // The replacement root has no editor focus handle. Repeat still resolves
+    // the global binding and must not bypass the existing physical drain.
+    visual.simulate_keystrokes(QUIT_KEYSTROKE);
+    assert_eq!(cx.read(quit_calls), 0);
+    editor.read_with(cx, |editor, _| assert_eq!(editor.text(), "q"));
+    drop(ticket);
+    cx.run_until_parked();
+    assert_eq!(cx.read(quit_calls), 1);
+}
+
+#[gpui::test]
+fn repeated_quit_action_without_work_calls_final_quit_once(cx: &mut gpui::TestAppContext) {
+    cx.update(init);
+    cx.update(|cx| {
+        cx.dispatch_action(&Quit);
+        cx.dispatch_action(&Quit);
+    });
+    cx.run_until_parked();
+    assert!(cx.read(requested));
+    assert_eq!(cx.read(quit_calls), 1);
+}
+
+#[gpui::test]
+fn refused_quit_keeps_media_and_roots_live_then_rechecks_without_saved_approval(
+    cx: &mut gpui::TestAppContext,
+) {
+    cx.update(init);
+    let blocked = Arc::new(AtomicBool::new(true));
+    let flag = blocked.clone();
+    let window = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        guard_quit(window, cx, move |_, _, _| {
+            if flag.load(Ordering::Acquire) {
+                QuitAdmission::Explain("Finish editing before quitting.")
+            } else {
+                QuitAdmission::Ready
+            }
+        });
+        Retained
+    });
+    let cancelled = Arc::new(AtomicBool::new(false));
+    let signal = cancelled.clone();
+    let ticket = cx.update(|cx| {
+        registry(cx)
+            .admit(move || signal.store(true, Ordering::Release))
+            .unwrap()
+    });
+    cx.dispatch_action(window.into(), Quit);
+    assert!(!cx.read(requested));
+    assert!(!cancelled.load(Ordering::Acquire));
+    assert!(window.root(cx).is_ok());
+    let prompt = crate::shutdown::pending_refusal(cx);
+    assert!(prompt.is_some());
+    for _ in 0..3 {
+        cx.dispatch_action(window.into(), Quit);
+        assert_eq!(crate::shutdown::pending_refusal(cx), prompt);
+    }
+    crate::shutdown::dismiss_refusal(cx);
+    cx.run_until_parked();
+    assert!(
+        !crate::shutdown::pending_refusal(cx).is_some(),
+        "one acknowledgment dismisses one prompt"
+    );
+    assert!(!cx.read(requested));
+    let fresh = cx.update(|cx| registry(cx).admit(|| {}).unwrap());
+    drop(fresh);
+    blocked.store(false, Ordering::Release);
+    assert!(!cx.read(requested), "refusal has no queued continuation");
+    cx.dispatch_action(window.into(), Quit);
+    assert!(cx.read(requested));
+    assert!(cancelled.load(Ordering::Acquire));
+    assert_eq!(cx.read(quit_calls), 0);
+    drop(ticket);
+    cx.run_until_parked();
+    assert_eq!(cx.read(quit_calls), 1);
+}
+
+#[gpui::test]
+fn closed_guarded_owner_cannot_veto_and_registry_does_not_retain_it(cx: &mut gpui::TestAppContext) {
+    cx.update(init);
+    let first = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        guard_quit(window, cx, |_, _, _| {
+            QuitAdmission::Explain("Still editing.")
+        });
+        Retained
+    });
+    let weak = first.root(cx).unwrap().downgrade();
+    let second = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        Retained
+    });
+    first
+        .update(cx, |_, window, cx| close_window(window, cx))
+        .unwrap();
+    cx.run_until_parked();
+    assert!(weak.upgrade().is_none());
+    cx.dispatch_action(second.into(), Quit);
+    assert!(cx.read(requested));
+    assert_eq!(cx.read(quit_calls), 1);
+}
+
+#[gpui::test]
+fn unregistered_root_fails_closed_with_deduplicated_feedback(cx: &mut gpui::TestAppContext) {
+    cx.update(init);
+    let window = cx.add_window(|_, _| Retained);
+    cx.dispatch_action(window.into(), Quit);
+    assert!(!cx.read(requested));
+    assert!(
+        crate::shutdown::pending_refusal(cx)
+            .unwrap()
+            .1
+            .contains("Close the capture or tool window")
+    );
+    cx.dispatch_action(window.into(), Quit);
+    crate::shutdown::dismiss_refusal(cx);
+    cx.run_until_parked();
+    assert!(!crate::shutdown::pending_refusal(cx).is_some());
+    assert!(window.root(cx).is_ok());
+}
+
+#[gpui::test]
+fn physical_nonmedia_guard_survives_host_close_until_every_owner_retires(
+    cx: &mut gpui::TestAppContext,
+) {
+    cx.update(init);
+    let owner = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        Retained
+    });
+    let home = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        Retained
+    });
+    let blocker = cx.update(|cx| block_quit(cx, "A QR image is still being saved."));
+    let worker_blocker = blocker.clone();
+    let (release, hold) = std::sync::mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        let _physical_owner = worker_blocker;
+        hold.recv().unwrap();
+    });
+    owner
+        .update(cx, |_, window, cx| close_window(window, cx))
+        .unwrap();
+    drop(blocker);
+    cx.dispatch_action(home.into(), Quit);
+    assert!(!cx.read(requested));
+    assert!(home.root(cx).is_ok());
+    cx.background_executor
+        .advance_clock(std::time::Duration::from_secs(3600));
+    cx.run_until_parked();
+    assert_eq!(cx.read(quit_calls), 0);
+    release.send(()).unwrap();
+    worker.join().unwrap();
+    crate::shutdown::dismiss_refusal(cx);
+    cx.run_until_parked();
+    assert!(
+        !cx.read(requested),
+        "physical completion never resumes a refused Quit"
+    );
+    cx.dispatch_action(home.into(), Quit);
+    assert_eq!(cx.read(quit_calls), 1);
+}
+
+#[gpui::test]
+fn actual_home_settings_and_media_roots_are_admitted_before_one_final_quit(
+    cx: &mut gpui::TestAppContext,
+) {
+    cx.update(init);
+    let home = cx.add_window(|window, cx| {
+        guard_window(window, cx);
+        crate::home::Home::new(window, cx)
+    });
+    cx.update(|cx| {
+        crate::settings_ui::open(cx);
+        crate::recording_ui::open(cx);
+        crate::gif_converter::open(cx);
+    });
+    cx.run_until_parked();
+    assert_eq!(cx.read(|cx| cx.windows().len()), 4);
+    let ticket = cx.update(|cx| registry(cx).admit(|| {}).unwrap());
+    cx.dispatch_action(home.into(), Quit);
+    assert!(cx.read(requested));
+    assert!(!crate::shutdown::pending_refusal(cx).is_some());
+    assert_eq!(cx.read(|cx| cx.windows().len()), 4);
+    assert_eq!(cx.read(quit_calls), 0);
+    cx.update(|cx| {
+        for handle in cx.windows() {
+            cx.update_window(handle, |_, window, _| assert!(is_closing(window)))
+                .unwrap();
+        }
+    });
     drop(ticket);
     cx.run_until_parked();
     assert_eq!(cx.read(quit_calls), 1);

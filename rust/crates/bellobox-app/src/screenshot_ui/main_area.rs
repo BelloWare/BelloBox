@@ -58,6 +58,7 @@ struct Coordinator {
     next_id: u64,
     active: Option<ActiveCapture>,
     cleanup_notice: Option<String>,
+    quit_blocker: Option<crate::shutdown::QuitBlocker>,
 }
 impl gpui::Global for Coordinator {}
 #[derive(Clone, Copy, Default)]
@@ -239,7 +240,9 @@ fn begin_native(
     if !prior_visible.contains(&requester) {
         return Err(host::OverlayError::NavigationChanged.to_string());
     }
+    let quit_blocker = crate::shutdown::block_quit(cx, "Finish or cancel the capture first.");
     let coordinator = cx.default_global::<Coordinator>();
+    coordinator.quit_blocker = Some(quit_blocker);
     coordinator.next_id = coordinator.next_id.wrapping_add(1);
     let id = coordinator.next_id;
     // All prior-visible handles are recorded before the first native mutation.
@@ -662,6 +665,7 @@ fn finish_if_ready(id: u64, cx: &mut App) {
         .take()
         .expect("completed Area transaction");
     unregister(run.deactivation.take());
+    cx.default_global::<Coordinator>().quit_blocker.take();
     cx.default_global::<NativeCaptureVisibility>().busy = false;
     let requester = run.transaction.requester;
     cx.defer(move |cx| {
@@ -771,7 +775,9 @@ fn begin_supplied_prepared(
     if cx.default_global::<NativeCaptureVisibility>().busy {
         return Err("Another capture is still finishing.".into());
     }
+    let quit_blocker = crate::shutdown::block_quit(cx, "Finish or cancel the capture first.");
     let state = cx.default_global::<Coordinator>();
+    state.quit_blocker = Some(quit_blocker);
     state.next_id = state.next_id.wrapping_add(1);
     let id = state.next_id;
     let mut transaction = AreaTransaction::new(id, state.generation, requester, vec![]);

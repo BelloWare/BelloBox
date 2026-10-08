@@ -43,6 +43,7 @@ struct RecordingHost {
 }
 impl RecordingHost {
     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+        crate::shutdown::admit_quit_window(window, cx);
         let weak = cx.weak_entity();
         window.on_window_should_close(cx, move |window, cx| {
             let _ = weak.update(cx, |this, cx| this.close(cx));

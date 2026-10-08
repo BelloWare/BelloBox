@@ -752,3 +752,72 @@ fn constrained_reader_keeps_provider_warning_viewport_visible_and_bounded(cx: &m
     }
     close(window, cx);
 }
+
+#[gpui::test]
+fn app_quit_refuses_actual_ai_confirmation_without_transmitting_or_latching(
+    cx: &mut TestAppContext,
+) {
+    let _guard = TEST_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    cx.update(crate::shutdown::init);
+    let window = editor(cx);
+    start(window, cx);
+    cx.dispatch_action(window.into(), crate::shutdown::Quit);
+    assert!(!cx.read(crate::shutdown::requested));
+    assert_eq!(count(window, cx), 0);
+    window
+        .update(cx, |view, _, _| assert!(view.ai_ocr.modal()))
+        .unwrap();
+    crate::shutdown::dismiss_refusal(cx);
+    window
+        .update(cx, |view, _, cx| view.ai_ocr.retire(cx))
+        .unwrap();
+    cx.run_until_parked();
+    assert!(!cx.read(crate::shutdown::requested));
+    cx.dispatch_action(window.into(), crate::shutdown::Quit);
+    assert_eq!(cx.read(crate::shutdown::quit_calls), 1);
+}
+
+#[gpui::test]
+fn app_quit_refuses_retained_ocr_payload_until_worker_disposal_after_host_close(
+    cx: &mut TestAppContext,
+) {
+    let _guard = TEST_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    cx.update(crate::shutdown::init);
+    let home = cx.add_window(|window, cx| {
+        crate::shutdown::guard_window(window, cx);
+        crate::home::Home::new(window, cx)
+    });
+    let window = editor(cx);
+    let retained = window.root(cx).unwrap();
+    let pause = window
+        .update(cx, |view, _, _| view.ai_test_pause_disposal())
+        .unwrap();
+    start(window, cx);
+    let permit = retained.read_with(cx, |view, _| view.ai_test_permit());
+    window
+        .update(cx, |_, window, _| window.remove_window())
+        .unwrap();
+    cx.run_until_parked();
+    assert!(pause.is_waiting());
+    assert!(PHYSICAL_WORK.load(Ordering::Acquire));
+    cx.dispatch_action(home.into(), crate::shutdown::Quit);
+    assert!(!cx.read(crate::shutdown::requested));
+    cx.background_executor
+        .advance_clock(std::time::Duration::from_secs(3600));
+    cx.run_until_parked();
+    assert_eq!(cx.read(crate::shutdown::quit_calls), 0);
+    assert_eq!(fixture::request_count(&permit), 0);
+    pause.release();
+    cx.run_until_parked();
+    assert!(!PHYSICAL_WORK.load(Ordering::Acquire));
+    assert!(!cx.read(crate::shutdown::requested));
+    crate::shutdown::dismiss_refusal(cx);
+    cx.run_until_parked();
+    cx.dispatch_action(home.into(), crate::shutdown::Quit);
+    assert_eq!(cx.read(crate::shutdown::quit_calls), 1);
+    retained.read_with(cx, |view, _| assert!(view.ai_ocr.closed));
+}

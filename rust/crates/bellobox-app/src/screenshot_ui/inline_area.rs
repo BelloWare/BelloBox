@@ -183,6 +183,7 @@ impl ScreenshotEditor {
         position: ViewPoint<Pixels>,
         cx: &mut Context<Self>,
     ) {
+        self.clear_pointer_quit_notice(cx);
         if !self.inline_current(cx) {
             self.cancel_inline_owner(cx);
             return;
@@ -229,6 +230,9 @@ impl ScreenshotEditor {
         finish: bool,
         cx: &mut Context<Self>,
     ) -> bool {
+        if finish {
+            self.clear_pointer_quit_notice(cx);
+        }
         if !self.inline_current(cx) {
             self.cancel_inline_owner(cx);
             return true;
@@ -303,6 +307,7 @@ impl ScreenshotEditor {
         }
     }
     pub(super) fn retire_inline(&mut self, cx: &mut App) {
+        self.quit_pointer_notice = false;
         self.retire_ai_owner(cx);
         self.jobs.cancel();
         self.ocr_jobs.cancel();
@@ -509,7 +514,8 @@ impl ScreenshotEditor {
                             ),
                     ),
             );
-        if !self.status.is_empty() {
+        let status_text = self.pointer_quit_message().unwrap_or(&self.status);
+        if !status_text.is_empty() {
             let status = status_frame(toolbar, bounds, self.shows_ocr);
             root = root.child(
                 div()
@@ -526,7 +532,7 @@ impl ScreenshotEditor {
                     .bg(p.surface)
                     .text_size(px(11.))
                     .text_color(if self.error { p.danger } else { p.secondary })
-                    .child(self.status.clone()),
+                    .child(status_text.to_owned()),
             );
         }
         // Source order is deliberate: handles must win hit testing even where

@@ -1,8 +1,9 @@
 //! App-controlled quit waits for physical media retirement before asking GPUI to
 //! quit. GPUI's 100 ms shutdown observer budget is not a native drain deadline.
-//! Platform termination, including native Quit/Cmd-Q unless separately routed,
-//! can bypass this gate. Recovery remains best effort for those paths.
-use gpui::{App, BorrowAppContext, Global, Window};
+//! The app-owned Quit action and shortcut use this gate. Native platform
+//! termination (including Dock Quit), forced quit and OS shutdown can bypass it.
+//! Recovery remains best effort for those paths.
+use gpui::{App, AppContext, BorrowAppContext, Global, KeyBinding, Window};
 use std::{
     collections::HashMap,
     future::Future,
@@ -13,6 +14,22 @@ use std::{
     },
     task::{Context, Poll, Waker},
 };
+
+mod quit;
+pub(crate) use quit::{
+    Admission as QuitAdmission, Blocker as QuitBlocker, admit_window as admit_quit_window,
+    block as block_quit, guard as guard_quit, is_feedback_window as is_quit_feedback_window,
+};
+
+#[cfg(test)]
+pub(crate) use quit::{dismiss_refusal, pending_refusal};
+
+gpui::actions!(bellobox, [Quit]);
+
+#[cfg(target_os = "macos")]
+const QUIT_KEYSTROKE: &str = "cmd-q";
+#[cfg(not(target_os = "macos"))]
+const QUIT_KEYSTROKE: &str = "ctrl-q";
 
 type Cancel = Arc<dyn Fn() + Send + Sync>;
 #[derive(Default)]
@@ -354,6 +371,14 @@ pub(crate) fn request_quit(cx: &mut App) {
     // Close/invalidate every retained recording and converter entity immediately
     // through its global observer, independently of window or entity destruction.
     cx.update_global::<Shutdown, _>(|_, _| ());
+    // Global actions run while their active window is borrowed. Do not update
+    // any existing window until dispatch returns it to App. Retaining these
+    // native windows keeps Linux's event loop alive throughout physical drain.
+    cx.defer(|cx| {
+        for handle in cx.windows() {
+            let _ = cx.update_window(handle, |_, window, cx| show_closing(window, cx));
+        }
+    });
     cx.spawn(async move |cx| {
         registry.drained().await;
         let _ = cx.update(|cx| {
@@ -368,7 +393,8 @@ pub(crate) fn request_quit(cx: &mut App) {
 }
 /// Register on ordinary root windows; roots with their own close policy call
 /// allow_close after their existing cancellation/discard decision instead.
-pub(crate) fn guard_window(window: &mut Window, cx: &App) {
+pub(crate) fn guard_window(window: &mut Window, cx: &mut App) {
+    admit_quit_window(window, cx);
     window.on_window_should_close(cx, allow_close);
 }
 /// Keep the final existing native window alive. GPUI's X11/Wayland backends stop
@@ -381,10 +407,7 @@ pub(crate) fn allow_close(window: &mut Window, cx: &mut App) -> bool {
         .is_some_and(|s| s.registry.active() > 0);
     if requested(cx) || (cx.windows().len() <= 1 && pending) {
         request_quit(cx);
-        if window.root::<Closing>().flatten().is_none() {
-            window.replace_root(cx, |_, _| Closing);
-            window.set_window_title("Closing — Bello Box");
-        }
+        show_closing(window, cx);
         return false;
     }
     true
@@ -394,6 +417,12 @@ pub(crate) fn allow_close(window: &mut Window, cx: &mut App) -> bool {
 pub(crate) fn close_window(window: &mut Window, cx: &mut App) {
     if allow_close(window, cx) {
         window.remove_window();
+    }
+}
+fn show_closing(window: &mut Window, cx: &mut App) {
+    if window.root::<Closing>().flatten().is_none() {
+        window.replace_root(cx, |_, _| Closing);
+        window.set_window_title("Closing — Bello Box");
     }
 }
 struct Closing;
@@ -431,11 +460,15 @@ pub(crate) fn is_closing(window: &Window) -> bool {
 
 /// Called once by the desktop host. Test hosts use the exact same exit route.
 pub(crate) fn init(cx: &mut App) {
+    // Add only our shortcut; preserve all existing bindings and native menus.
+    // This does not intercept NSApplication's Dock/OS termination callback.
+    cx.bind_keys([KeyBinding::new(QUIT_KEYSTROKE, Quit, None)]);
+    cx.on_action(|_: &Quit, cx| quit::request(cx));
     let registry = registry(cx);
     cx.on_app_quit(move |_| {
-        // This observer cannot veto platform termination, including an unrouted
-        // native Quit/Cmd-Q. Signal promptly, but do
-        // not call an immediately-ready future a physical retirement guarantee.
+        // This observer cannot veto native platform termination, including
+        // Dock Quit. Signal promptly, but do not call an immediately-ready
+        // future a physical retirement guarantee.
         registry.request();
         async {}
     })

@@ -1,0 +1,1034 @@
+{
+  "baseline_commit": "a2389dac0cc425b1b179ab2b3e6c3483d4e201fa",
+  "method": "Nonblank physical Rust lines including comments; complete explicit positive cfg(test)/cfg(all(test,...)) spans and test-only modules are support. cfg(any(test,debug_assertions)) remains production. Only the 23 reviewed changed source paths are recounted; no percentage inference. Benchmarks unchanged.",
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/quit_tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "bda9373462626269ce33cc75dbb721039a2e59ea80f0b69d359d3731942ed8f0",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            1,
+            71
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0
+        },
+        "after": {
+          "production": 0,
+          "support": 70
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 70
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/snippets.rs",
+      "before_sha256": "7418ae576c8735786d7ab0baff7f656ff26d2031048c13917ecdbc5fc2dfed77",
+      "after_sha256": "78a5b95aed01f6641131e13ddd2c6ee1bafee548e0373cae074997baa40a896e",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": []
+      },
+      "counts": {
+        "before": {
+          "production": 352,
+          "support": 0
+        },
+        "after": {
+          "production": 352,
+          "support": 0
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "before_sha256": "cd72bbecc361844bd8120e30a369b78817116409bb07ee66038e6fb4ca384bc1",
+      "after_sha256": "9d1968f30d1155b024bff40b671cccbc40204eb64858f8bed81a3eb2df857cc7",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            1989,
+            1990
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 1967,
+          "support": 0
+        },
+        "after": {
+          "production": 1981,
+          "support": 2
+        }
+      },
+      "delta": {
+        "production": 14,
+        "support": 2
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/gif_converter.rs",
+      "before_sha256": "6b9b40ca6cbb5944a6d3c3b20b4e1173becf2a06a647a9d259a6a18e18842bc1",
+      "after_sha256": "3a49d85b5183cfd7ccf9795b67f2676560e8661cdc329901eadc9fe9beb3a294",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            3,
+            4
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            13,
+            14
+          ]
+        ],
+        "after": [
+          [
+            3,
+            4
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            13,
+            14
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 663,
+          "support": 8
+        },
+        "after": {
+          "production": 664,
+          "support": 8
+        }
+      },
+      "delta": {
+        "production": 1,
+        "support": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/home.rs",
+      "before_sha256": "b9bf53be7dcc1e27930859aaf5cff07c78f75dc1bda8c781aec2b0d872b0ce48",
+      "after_sha256": "a16096f0553462f671d917d53f130fd5bec697ff2b314f49d0e5f2e535883f28",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            2206,
+            2321
+          ]
+        ],
+        "after": [
+          [
+            2207,
+            2322
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 2195,
+          "support": 116
+        },
+        "after": {
+          "production": 2196,
+          "support": 116
+        }
+      },
+      "delta": {
+        "production": 1,
+        "support": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/recording_ui.rs",
+      "before_sha256": "c772fd3ae2cdee32185c0defce105ea59edb846269b60e13a01f0c26719509df",
+      "after_sha256": "1f8d800ade12269fa144cbc46a5e343361bdb07d06046096a0177281a057b8cd",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            4,
+            5
+          ]
+        ],
+        "after": [
+          [
+            4,
+            5
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 276,
+          "support": 2
+        },
+        "after": {
+          "production": 277,
+          "support": 2
+        }
+      },
+      "delta": {
+        "production": 1,
+        "support": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/tests.rs",
+      "before_sha256": "b0c997f03e7ae2329ec8a50d0bd68cb1164d0ee864ee5e428186be7492fa2083",
+      "after_sha256": "91337e79f943d4af8a9a3ac740c2bcfbd40b1a3700684285c1a4bf9eceb6b964",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            1,
+            754
+          ]
+        ],
+        "after": [
+          [
+            1,
+            823
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 735
+        },
+        "after": {
+          "production": 0,
+          "support": 802
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 67
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr.rs",
+      "before_sha256": "ff918e3aabd83162bccc0915f8e2c7ced759c2cfae7bdb5f307d986e45d7ca98",
+      "after_sha256": "f255de436f7b171a1954d56aa9f3bd510ecee5af37b6ed6cad3bb6f720f96093",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            13,
+            14
+          ],
+          [
+            15,
+            16
+          ],
+          [
+            17,
+            18
+          ],
+          [
+            24,
+            25
+          ],
+          [
+            38,
+            39
+          ],
+          [
+            72,
+            75
+          ],
+          [
+            163,
+            164
+          ],
+          [
+            165,
+            166
+          ],
+          [
+            167,
+            168
+          ],
+          [
+            169,
+            170
+          ],
+          [
+            171,
+            172
+          ],
+          [
+            191,
+            192
+          ],
+          [
+            193,
+            194
+          ],
+          [
+            195,
+            196
+          ],
+          [
+            197,
+            198
+          ],
+          [
+            199,
+            200
+          ],
+          [
+            426,
+            427
+          ],
+          [
+            451,
+            454
+          ],
+          [
+            587,
+            590
+          ],
+          [
+            595,
+            598
+          ],
+          [
+            611,
+            612
+          ],
+          [
+            648,
+            651
+          ],
+          [
+            750,
+            751
+          ],
+          [
+            762,
+            765
+          ],
+          [
+            971,
+            979
+          ]
+        ],
+        "after": [
+          [
+            13,
+            14
+          ],
+          [
+            15,
+            16
+          ],
+          [
+            17,
+            18
+          ],
+          [
+            25,
+            26
+          ],
+          [
+            40,
+            41
+          ],
+          [
+            74,
+            77
+          ],
+          [
+            165,
+            166
+          ],
+          [
+            167,
+            168
+          ],
+          [
+            169,
+            170
+          ],
+          [
+            171,
+            172
+          ],
+          [
+            173,
+            174
+          ],
+          [
+            193,
+            194
+          ],
+          [
+            195,
+            196
+          ],
+          [
+            197,
+            198
+          ],
+          [
+            199,
+            200
+          ],
+          [
+            201,
+            202
+          ],
+          [
+            429,
+            430
+          ],
+          [
+            458,
+            461
+          ],
+          [
+            598,
+            601
+          ],
+          [
+            606,
+            609
+          ],
+          [
+            622,
+            623
+          ],
+          [
+            659,
+            662
+          ],
+          [
+            761,
+            762
+          ],
+          [
+            773,
+            776
+          ],
+          [
+            982,
+            990
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 943,
+          "support": 69
+        },
+        "after": {
+          "production": 954,
+          "support": 69
+        }
+      },
+      "delta": {
+        "production": 11,
+        "support": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/area_capture.rs",
+      "before_sha256": "b9a1f67c1b251d17fb80d8c5c6e8ae78f0c2cb50f0f05e25049a968a3395794e",
+      "after_sha256": "dc5b0a5565f0ccccda6ff81f5330de4cecba51be275cd24111f6a5c312de9c2a",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            794,
+            916
+          ]
+        ],
+        "after": [
+          [
+            807,
+            1056
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 788,
+          "support": 123
+        },
+        "after": {
+          "production": 801,
+          "support": 250
+        }
+      },
+      "delta": {
+        "production": 13,
+        "support": 127
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/inline_area.rs",
+      "before_sha256": "d5edd8b43539647678603ed91f7b7929e4b2d4f239cc29b63ff4c498558c23e0",
+      "after_sha256": "787667a9de1c2bb97f07b6d0ae6826f150a5b78fedf123b43de641161c03a47e",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": []
+      },
+      "counts": {
+        "before": {
+          "production": 618,
+          "support": 0
+        },
+        "after": {
+          "production": 624,
+          "support": 0
+        }
+      },
+      "delta": {
+        "production": 6,
+        "support": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/tests.rs",
+      "before_sha256": "acbeca45afb0013ff77b44064feda49c5e4eddb0d6978a47f4aad030a8f7ad37",
+      "after_sha256": "fb27aeafe9cb0c0437843063ec22524c2247aa139d01f9e58248c5f1c4fa107d",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            1,
+            876
+          ]
+        ],
+        "after": [
+          [
+            1,
+            1164
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 856
+        },
+        "after": {
+          "production": 0,
+          "support": 1140
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 284
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs",
+      "before_sha256": "5b439e528e3c5605275719732cd4037185a6afc8b6a91e6660b5ee8283b4370b",
+      "after_sha256": "0d669b95ad5f35d0f7359e42c84d2f9855b82dfc2ed51ac0ee76be2a22593f2c",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            1,
+            747
+          ]
+        ],
+        "after": [
+          [
+            1,
+            862
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 732
+        },
+        "after": {
+          "production": 0,
+          "support": 845
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 113
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs",
+      "before_sha256": "b311237d7d1a5ad7467a59b9be573a1f1413f8c5586d62bc00f2109f8e9ec22b",
+      "after_sha256": "379503c6d3155ca4e9918548fc0b43ee194b1c8825e7a5d8338838c8cb058f85",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            781,
+            782
+          ],
+          [
+            784,
+            785
+          ]
+        ],
+        "after": [
+          [
+            816,
+            817
+          ],
+          [
+            819,
+            820
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 756,
+          "support": 4
+        },
+        "after": {
+          "production": 791,
+          "support": 4
+        }
+      },
+      "delta": {
+        "production": 35,
+        "support": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs",
+      "before_sha256": "5d7ba294fdaf090515e3fe8b76f8f790415bd0cba5a624e200993960a9bdb891",
+      "after_sha256": "c92f3e5009df589c8e26aca06c062798e976e1ce032cd2a985d4af9835865a43",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            1,
+            345
+          ]
+        ],
+        "after": [
+          [
+            1,
+            430
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 340
+        },
+        "after": {
+          "production": 0,
+          "support": 423
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 83
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs",
+      "before_sha256": "ef533bfefdfec28c8323294702cc805b36cc44a5015c0d9594b0b65105ac7aa3",
+      "after_sha256": "f4dcde722d18876cf08183460250d11f77bba9e2c525cfdc8715a0901ba8e76e",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            6,
+            7
+          ],
+          [
+            864,
+            873
+          ]
+        ],
+        "after": [
+          [
+            6,
+            7
+          ],
+          [
+            870,
+            879
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 888,
+          "support": 12
+        },
+        "after": {
+          "production": 894,
+          "support": 12
+        }
+      },
+      "delta": {
+        "production": 6,
+        "support": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "1e875393b96616419724b66984973a3ab03b6568be2e381ebc05e43fdd99e92c",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            1,
+            677
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0
+        },
+        "after": {
+          "production": 0,
+          "support": 667
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 667
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui/scroll_capture.rs",
+      "before_sha256": "7d9d981db37c91a2354c53414f77eb46e799be180324dab98c0db5ef6f2355a2",
+      "after_sha256": "92fb7e80978067fc237d76c49e6046e6c00d6df1c56e8644a9cee81f14ce62e8",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": []
+      },
+      "counts": {
+        "before": {
+          "production": 423,
+          "support": 0
+        },
+        "after": {
+          "production": 426,
+          "support": 0
+        }
+      },
+      "delta": {
+        "production": 3,
+        "support": 0
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/screenshot_ui.rs",
+      "before_sha256": "f3f9e7c3b98aaee2791bc11a6da89c7d1e1f2436fa9fa522874bd7bf61cf4aa1",
+      "after_sha256": "ea18ee8a2451999cc32fd5f2283b746c74129bc75e969625fa563ac231999c78",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            3398,
+            3647
+          ]
+        ],
+        "after": [
+          [
+            3514,
+            3763
+          ],
+          [
+            3765,
+            3766
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 3367,
+          "support": 246
+        },
+        "after": {
+          "production": 3483,
+          "support": 248
+        }
+      },
+      "delta": {
+        "production": 116,
+        "support": 2
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown/quit/prompt/tests.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "b01ae4962749fcb614ac74364eee1f79dbfd978c272d5a76715bee5c6059f91a",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            1,
+            569
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0
+        },
+        "after": {
+          "production": 0,
+          "support": 556
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 556
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown/quit/prompt.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "ef66b06f396fe8cf700889ffb7bda6851ba2f9edfa6141a0bccb97069f297dc6",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            150,
+            157
+          ],
+          [
+            208,
+            209
+          ],
+          [
+            211,
+            221
+          ],
+          [
+            223,
+            247
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0
+        },
+        "after": {
+          "production": 195,
+          "support": 46
+        }
+      },
+      "delta": {
+        "production": 195,
+        "support": 46
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown/quit.rs",
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "2ff12993df0408888ad1eae2c92b98b17b1a567281fe1cc3c864bf1a879a4918",
+      "reviewed_support_ranges_1based": {
+        "before": [],
+        "after": [
+          [
+            21,
+            22
+          ],
+          [
+            40,
+            41
+          ],
+          [
+            290,
+            344
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0
+        },
+        "after": {
+          "production": 275,
+          "support": 59
+        }
+      },
+      "delta": {
+        "production": 275,
+        "support": 59
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown/tests.rs",
+      "before_sha256": "7edfd51d5af21f93446bcfd842c4992e484fe43f31963ca3cc174d187b6d4459",
+      "after_sha256": "73237d501205e4aebb77357a6250c122beba2181892dfd36d209cf3ef5e3b1b7",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            1,
+            314
+          ]
+        ],
+        "after": [
+          [
+            1,
+            660
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 304
+        },
+        "after": {
+          "production": 0,
+          "support": 640
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 336
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown.rs",
+      "before_sha256": "95071ba972a48fbd5d6b243f18fdd95e648ef6d550c1e12e56fcac226271b72a",
+      "after_sha256": "09a3814715d898b85d671c5388bcf1db679c96e0093164bb5ad1ac09de6878f8",
+      "reviewed_support_ranges_1based": {
+        "before": [
+          [
+            301,
+            302
+          ],
+          [
+            308,
+            311
+          ],
+          [
+            330,
+            331
+          ],
+          [
+            332,
+            333
+          ],
+          [
+            360,
+            363
+          ],
+          [
+            427,
+            430
+          ],
+          [
+            459,
+            462
+          ],
+          [
+            463,
+            464
+          ],
+          [
+            466,
+            469
+          ]
+        ],
+        "after": [
+          [
+            24,
+            25
+          ],
+          [
+            318,
+            319
+          ],
+          [
+            325,
+            328
+          ],
+          [
+            347,
+            348
+          ],
+          [
+            349,
+            350
+          ],
+          [
+            385,
+            388
+          ],
+          [
+            456,
+            459
+          ],
+          [
+            492,
+            495
+          ],
+          [
+            496,
+            497
+          ],
+          [
+            499,
+            502
+          ]
+        ]
+      },
+      "counts": {
+        "before": {
+          "production": 435,
+          "support": 28
+        },
+        "after": {
+          "production": 462,
+          "support": 30
+        }
+      },
+      "delta": {
+        "production": 27,
+        "support": 2
+      }
+    }
+  ],
+  "delta": {
+    "production": 704,
+    "support": 2414,
+    "benchmark": 0
+  }
+}

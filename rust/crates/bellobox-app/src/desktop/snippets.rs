@@ -10,7 +10,7 @@ pub(super) struct SnippetUi {
     query: Entity<EditorView>,
     notice: Option<String>,
     error: Option<String>,
-    deleting: bool,
+    pub(super) deleting: bool,
     menu_focus: gpui::FocusHandle,
     previous_focus: Option<gpui::FocusHandle>,
 }

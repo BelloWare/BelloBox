@@ -1,0 +1,19 @@
+test_activation_failure_is_bounded_and_never_claims_success (test_linux_ui_smoke.HarnessTests.test_activation_failure_is_bounded_and_never_claims_success) ... ok
+test_activation_stops_on_app_exit_before_native_probe (test_linux_ui_smoke.HarnessTests.test_activation_stops_on_app_exit_before_native_probe) ... ok
+test_activation_waits_for_manager_and_exact_active_window (test_linux_ui_smoke.HarnessTests.test_activation_waits_for_manager_and_exact_active_window) ... ok
+test_actual_noisy_probe_is_killed_without_temporary_storage (test_linux_ui_smoke.HarnessTests.test_actual_noisy_probe_is_killed_without_temporary_storage) ... ok
+test_crashed_app_produces_failed_sanitized_report (test_linux_ui_smoke.HarnessTests.test_crashed_app_produces_failed_sanitized_report) ... ok
+test_deadline_fails_instead_of_claiming_success (test_linux_ui_smoke.HarnessTests.test_deadline_fails_instead_of_claiming_success) ... ok
+test_existing_evidence_is_never_reused (test_linux_ui_smoke.HarnessTests.test_existing_evidence_is_never_reused) ... ok
+test_log_categories_never_emit_private_text (test_linux_ui_smoke.HarnessTests.test_log_categories_never_emit_private_text) ... ok
+test_noisy_app_storage_is_bounded_and_stops_before_diagnostics (test_linux_ui_smoke.HarnessTests.test_noisy_app_storage_is_bounded_and_stops_before_diagnostics) ... ok
+test_poll_returns_actual_value (test_linux_ui_smoke.HarnessTests.test_poll_returns_actual_value) ... ok
+test_probe_failure_status_does_not_claim_zero_windows (test_linux_ui_smoke.HarnessTests.test_probe_failure_status_does_not_claim_zero_windows) ... ok
+test_probe_preserves_small_stdout_stderr_and_exit (test_linux_ui_smoke.HarnessTests.test_probe_preserves_small_stdout_stderr_and_exit) ... ok
+test_probe_timeout_kills_real_process (test_linux_ui_smoke.HarnessTests.test_probe_timeout_kills_real_process) ... ok
+test_startup_diagnostics_are_numeric_or_allowlisted (test_linux_ui_smoke.HarnessTests.test_startup_diagnostics_are_numeric_or_allowlisted) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.342s
+
+OK

@@ -20,6 +20,7 @@ pub(super) use test_support::{TEST_LOCK, TestPause};
 static PHYSICAL_WORK: AtomicBool = AtomicBool::new(false);
 
 struct PhysicalLease {
+    quit_blocker: Option<crate::shutdown::QuitBlocker>,
     busy: Arc<AtomicBool>,
     #[cfg(test)]
     disposal_pause: Option<Arc<TestPause>>,
@@ -34,6 +35,7 @@ impl PhysicalLease {
         }
         busy.store(true, Ordering::Release);
         Some(Self {
+            quit_blocker: None,
             busy: busy.clone(),
             #[cfg(test)]
             disposal_pause: None,
@@ -245,6 +247,7 @@ impl Host {
 
 impl ScreenshotEditor {
     pub(super) fn retire_ai_owner(&mut self, cx: &mut App) {
+        self.quit_pointer_notice = false;
         self.ai_ocr.closed = true;
         if self.ai_ocr.active_save.take().is_some() {
             self.export_busy = false;
@@ -427,7 +430,9 @@ impl ScreenshotEditor {
         let save_pause = self.ai_ocr.save_pause.take();
         self.export_busy = true;
         cx.notify();
+        let quit_blocker = crate::shutdown::block_quit(cx, "Finish or cancel the OCR save first.");
         cx.spawn(async move |this, cx| {
+            let _quit_blocker = quit_blocker;
             let mut text = Some(text);
             let mut inline_work = inline_work;
             let inline_id = inline_work.as_ref().map(main_area::OwnedEditorWork::id);
@@ -447,7 +452,9 @@ impl ScreenshotEditor {
                             authority,
                             inline_work: inline_work.take(),
                         };
+                        let file_quit = _quit_blocker.clone();
                         let task = cx.background_executor().spawn(async move {
+                            let _quit_blocker = file_quit;
                             #[cfg(test)]
                             if let Some(pause) = save_pause {
                                 pause.wait().await;
@@ -584,6 +591,10 @@ impl ScreenshotEditor {
             cx.notify();
             return;
         };
+        lease.quit_blocker = Some(crate::shutdown::block_quit(
+            cx,
+            "Finish or cancel image OCR first.",
+        ));
         #[cfg(test)]
         {
             lease.disposal_pause = self.ai_ocr.disposal_pause.take();

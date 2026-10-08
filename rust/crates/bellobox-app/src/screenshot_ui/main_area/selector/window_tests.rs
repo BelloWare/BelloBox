@@ -93,6 +93,121 @@ fn close(selector: WindowHandle<MainAreaSelector>, cx: &mut TestAppContext) {
 }
 
 #[gpui::test]
+fn quit_during_nested_window_rectangle_preserves_document_and_outside_release(
+    cx: &mut TestAppContext,
+) {
+    use super::tests::{
+        quit_draw, quit_inline_snapshot, quit_input, quit_key, quit_pointer_down, quit_shortcut,
+    };
+
+    cx.update(crate::shutdown::init);
+    let (_, selector) = open_fixture(window_workflow::fixture().unwrap(), cx);
+    let editor = choose(selector, 1, cx);
+    editor.update(cx, |view, cx| {
+        view.tool = AnnotationTool::Rectangle;
+        cx.notify();
+    });
+    let _worker =
+        cx.update(|cx| crate::shutdown::block_quit(cx, "A supplied worker is still publishing."));
+    quit_draw(selector.into(), cx);
+    quit_pointer_down(selector.into(), 400., 160., cx);
+    quit_input(
+        selector.into(),
+        MouseMoveEvent {
+            position: point(px(500.), px(260.)),
+            pressed_button: Some(MouseButton::Left),
+            ..Default::default()
+        },
+        cx,
+    );
+    quit_draw(selector.into(), cx);
+    let release = point(px(700.), px(24.));
+    let (points, expected) = cx.read(|cx| {
+        let view = editor.read(cx);
+        let gesture = view.gesture.as_ref().expect("actual canvas owns Rectangle");
+        assert_eq!(gesture.points.len(), 2);
+        assert!(view.session.document().annotations().is_empty());
+        assert!(!view.session.can_undo());
+        (
+            gesture.points.clone(),
+            Rect::from_points(gesture.points[0], view.document_point(release)),
+        )
+    });
+    let before = quit_inline_snapshot(selector, &editor, cx);
+    let windows = cx.read(|cx| cx.windows());
+    for _ in 0..3 {
+        quit_shortcut(selector.into(), cx);
+        assert!(quit_inline_snapshot(selector, &editor, cx) == before);
+        assert!(crate::shutdown::pending_refusal(cx).is_none());
+        assert!(!cx.has_pending_prompt());
+        cx.read(|cx| {
+            assert!(cx.windows() == windows);
+            assert!(!crate::shutdown::requested(cx));
+            assert_eq!(crate::shutdown::quit_calls(cx), 0);
+            assert!(selector.read(cx).unwrap().quit_notice);
+            let view = editor.read(cx);
+            assert!(
+                view.quit_pointer_notice,
+                "both nested guards were consulted"
+            );
+            assert_eq!(view.gesture.as_ref().unwrap().points, points);
+            assert!(!view.show_discard);
+        });
+    }
+    // The notice is outside the fixed selected window. This is the real
+    // capture-phase mouse_up_out path that a modal used to misinterpret.
+    quit_input(selector.into(), up(700., 24.), cx);
+    quit_draw(selector.into(), cx);
+    cx.read(|cx| {
+        let view = editor.read(cx);
+        assert!(view.gesture.is_none());
+        assert!(!view.quit_pointer_notice);
+        assert!(!selector.read(cx).unwrap().quit_notice);
+        assert_eq!(view.inline_selection(), Rect::new(300., 80., 340., 270.));
+        assert!(view.session.document().crop_rect().is_none());
+        assert_eq!(view.session.document().annotations().len(), 1);
+        assert_eq!(
+            view.session.document().annotations()[0].kind,
+            AnnotationKind::Rectangle(expected)
+        );
+        assert!(view.session.can_undo());
+        assert!(!crate::shutdown::requested(cx));
+    });
+    let committed = quit_inline_snapshot(selector, &editor, cx);
+    for _ in 0..2 {
+        quit_shortcut(selector.into(), cx);
+        assert!(quit_inline_snapshot(selector, &editor, cx) == committed);
+        assert!(crate::shutdown::pending_refusal(cx).is_none());
+        assert!(!cx.has_pending_prompt());
+        cx.read(|cx| {
+            assert!(cx.windows() == windows);
+            assert!(selector.read(cx).unwrap().quit_notice);
+            assert!(!crate::shutdown::requested(cx));
+            assert_eq!(crate::shutdown::quit_calls(cx), 0);
+            let view = editor.read(cx);
+            assert!(view.session.has_edits());
+            assert!(view.gesture.is_none());
+            assert!(!view.quit_pointer_notice);
+            assert!(
+                !view.show_discard,
+                "inline capture must not acquire a hidden standalone Discard prompt"
+            );
+        });
+    }
+    quit_key(selector.into(), "ctrl-z", cx);
+    cx.read(|cx| {
+        let view = editor.read(cx);
+        assert!(view.session.document().annotations().is_empty());
+        assert!(
+            !view.session.can_undo(),
+            "outside release committed exactly once"
+        );
+        assert!(!view.session.has_edits());
+    });
+    close(selector, cx);
+}
+
+#[gpui::test]
 fn window_mode_selects_and_refreshes_inside_the_same_owned_overlay(cx: &mut TestAppContext) {
     for id in [1, 2] {
         let (_, selector) = open_fixture(window_workflow::fixture().unwrap(), cx);

@@ -205,6 +205,7 @@ pub(super) struct MainAreaSelector {
     preparing_editor: bool,
     editor: Option<gpui::Entity<super::super::ScreenshotEditor>>,
     locked: Option<Rect>,
+    quit_notice: bool,
     _activation: Subscription,
 }
 fn owns_key(window: &Window) -> bool {
@@ -324,6 +325,15 @@ impl MainAreaSelector {
     ) -> Self {
         let focus = cx.focus_handle();
         window.focus(&focus);
+        crate::shutdown::guard_quit(window, cx, |this: &mut Self, window, cx| {
+            if crate::shutdown::is_quit_feedback_window(window, cx) {
+                this.quit_notice = true;
+                cx.notify();
+                crate::shutdown::QuitAdmission::Refused
+            } else {
+                crate::shutdown::QuitAdmission::Explain("Finish or cancel the capture overlay.")
+            }
+        });
         let weak = cx.entity().downgrade();
         window.on_window_should_close(cx, move |window, cx| {
             let _ = weak.update(cx, |view: &mut Self, cx| view.retire(window, cx));
@@ -366,6 +376,7 @@ impl MainAreaSelector {
             preparing_editor: false,
             editor: None,
             locked: None,
+            quit_notice: false,
             _activation: activation,
         }
     }
@@ -442,6 +453,7 @@ impl MainAreaSelector {
         }
     }
     pub(super) fn retire(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.quit_notice = false;
         if self.retired {
             return;
         }
@@ -486,6 +498,9 @@ impl MainAreaSelector {
         ))
     }
     fn mouse_down(&mut self, event: &MouseDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        if std::mem::take(&mut self.quit_notice) {
+            cx.notify();
+        }
         if self.locked.is_some() || !self.guard(window, cx) {
             return;
         }
@@ -519,6 +534,9 @@ impl MainAreaSelector {
         cx.notify();
     }
     fn mouse_up(&mut self, event: &MouseUpEvent, window: &mut Window, cx: &mut Context<Self>) {
+        if std::mem::take(&mut self.quit_notice) {
+            cx.notify();
+        }
         if self.locked.is_some() || !self.guard(window, cx) {
             return;
         }
@@ -770,6 +788,23 @@ impl Render for MainAreaSelector {
             }))
             .when_some(self.editor.clone(), |root, editor| {
                 root.child(div().absolute().inset_0().child(editor))
+            })
+            .when(self.quit_notice, |root| {
+                // Absolute, noninteractive and nonoccluding: pointer geometry
+                // and capture-phase selection release remain owned underneath.
+                root.child(
+                    div()
+                        .absolute()
+                        .top(px(12.))
+                        .right(px(12.))
+                        .px(px(10.))
+                        .py(px(6.))
+                        .rounded(px(6.))
+                        .bg(gpui::black().opacity(0.8))
+                        .text_color(gpui::white())
+                        .text_size(px(12.))
+                        .child("Finish or cancel capture, then Quit."),
+                )
             })
             .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
             .on_mouse_move(cx.listener(Self::mouse_move))

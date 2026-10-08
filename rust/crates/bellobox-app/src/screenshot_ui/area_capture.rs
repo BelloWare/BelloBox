@@ -199,8 +199,11 @@ fn open_fixture_mode(window_mode: bool, cx: &mut App) {
         let token = launch.jobs.begin();
         (token, launch.jobs.cancellation())
     };
+    let quit_blocker = crate::shutdown::block_quit(cx, "Wait for capture preparation to finish.");
+    let worker_quit = quit_blocker.clone();
     let worker_cancellation = cancellation.clone();
     let task = cx.background_executor().spawn(async move {
+        let _quit_blocker = worker_quit;
         if window_mode {
             prepare_window_fixture(worker_cancellation)
         } else {
@@ -208,6 +211,7 @@ fn open_fixture_mode(window_mode: bool, cx: &mut App) {
         }
     });
     cx.spawn(async move |cx| {
+        let _quit_blocker = quit_blocker;
         let prepared = task.await;
         let _ = cx.update(|cx| {
             let launch = cx.default_global::<FixtureLaunch>();
@@ -348,6 +352,15 @@ impl FrozenSelector {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
+        crate::shutdown::guard_quit(window, cx, |this: &mut Self, window, cx| {
+            if crate::shutdown::is_quit_feedback_window(window, cx) {
+                this.status = "Finish or cancel capture, then Quit.".into();
+                cx.notify();
+                crate::shutdown::QuitAdmission::Refused
+            } else {
+                crate::shutdown::QuitAdmission::Explain("Finish or cancel the Area/Window choice.")
+            }
+        });
         let focus = cx.focus_handle();
         window.focus(&focus);
         let weak = cx.entity().downgrade();
@@ -912,5 +925,132 @@ mod tests {
     #[test]
     fn cancelled_fixture_preparation_does_not_make_a_selector() {
         assert!(prepare_fixture(Arc::new(AtomicBool::new(true))).is_err());
+    }
+    #[gpui::test]
+    fn pointer_quit_frozen_selectors_keep_geometry_and_the_original_release(
+        cx: &mut gpui::TestAppContext,
+    ) {
+        use gpui::{AnyWindowHandle, KeyUpEvent, Keystroke, Modifiers, VisualTestContext};
+        cx.update(crate::shutdown::init);
+        // Selectors launch from Home. The native handoff may reject the test
+        // platform after release; keep Home alive so closing that selector
+        // does not trigger ordinary last-window shutdown after a refused Quit.
+        let home = cx.add_window(|window, cx| {
+            crate::shutdown::guard_window(window, cx);
+            crate::home::Home::new(window, cx)
+        });
+        for window_mode in [false, true] {
+            let (token, cancel) = cx.update(|cx| {
+                let launch = cx.default_global::<FixtureLaunch>();
+                let token = launch.jobs.begin();
+                (token, launch.jobs.cancellation())
+            });
+            let prepared = if window_mode {
+                prepare_window_fixture(cancel.clone())
+            } else {
+                prepare_fixture(cancel.clone())
+            }
+            .unwrap();
+            let handle = cx
+                .add_window(|window, cx| FrozenSelector::new(prepared, token, cancel, window, cx));
+            let retained = handle.root(cx).unwrap();
+            let any: AnyWindowHandle = handle.into();
+            handle
+                .update(cx, |_, window, _| window.activate_window())
+                .unwrap();
+            for _ in 0..3 {
+                any.update(cx, |_, window, cx| window.draw(cx).clear())
+                    .unwrap();
+                cx.run_until_parked();
+            }
+            let bounds = handle.read_with(cx, |view, _| view.viewport.get()).unwrap();
+            let at = |x: f32, y: f32| {
+                bounds.origin
+                    + point(
+                        bounds.size.width * (x / WIDTH),
+                        bounds.size.height * (y / HEIGHT),
+                    )
+            };
+            let (start, end, expected) = if window_mode {
+                (
+                    at(150., 200.),
+                    at(150., 200.),
+                    Rect::new(100., 170., 420., 230.),
+                )
+            } else {
+                (
+                    at(100., 80.),
+                    at(200., 150.),
+                    Rect::new(100., 80., 100., 70.),
+                )
+            };
+            {
+                let mut visual = VisualTestContext::from_window(any, cx);
+                visual.simulate_event(MouseMoveEvent {
+                    position: start,
+                    pressed_button: None,
+                    modifiers: Modifiers::default(),
+                });
+                visual.simulate_event(MouseDownEvent {
+                    position: start,
+                    button: MouseButton::Left,
+                    click_count: 1,
+                    ..Default::default()
+                });
+                visual.simulate_event(MouseMoveEvent {
+                    position: end,
+                    pressed_button: Some(MouseButton::Left),
+                    modifiers: Modifiers::default(),
+                });
+            }
+            let preview = handle
+                .read_with(cx, |view, _| {
+                    assert!(view.selection.pressing());
+                    view.selection.preview_rect()
+                })
+                .unwrap();
+            for _ in 0..3 {
+                let key = Keystroke::parse(if cfg!(target_os = "macos") {
+                    "cmd-q"
+                } else {
+                    "ctrl-q"
+                })
+                .unwrap();
+                {
+                    let mut visual = VisualTestContext::from_window(any, cx);
+                    visual.simulate_event(KeyDownEvent {
+                        keystroke: key.clone(),
+                        is_held: false,
+                    });
+                    visual.simulate_event(KeyUpEvent { keystroke: key });
+                }
+                any.update(cx, |_, window, cx| window.draw(cx).clear())
+                    .unwrap();
+                assert!(crate::shutdown::pending_refusal(cx).is_none());
+                assert!(!cx.read(crate::shutdown::requested));
+                handle
+                    .read_with(cx, |view, _| {
+                        assert_eq!(view.viewport.get(), bounds);
+                        assert!(view.selection.pressing());
+                        assert_eq!(view.selection.preview_rect(), preview);
+                        assert!(!view.preparing_handoff && view.locked_rect.is_none());
+                        assert_eq!(view.status, "Finish or cancel capture, then Quit.");
+                    })
+                    .unwrap();
+            }
+            VisualTestContext::from_window(any, cx).simulate_event(MouseUpEvent {
+                position: end,
+                button: MouseButton::Left,
+                click_count: 1,
+                ..Default::default()
+            });
+            cx.run_until_parked();
+            retained.read_with(cx, |view, _| {
+                assert_eq!(view.locked_rect, Some(expected));
+                assert!(!view.selection.pressing());
+            });
+            assert!(!cx.read(crate::shutdown::requested));
+            assert!(cx.read(|cx| cx.windows().contains(&home.into())));
+        }
     }
 }
