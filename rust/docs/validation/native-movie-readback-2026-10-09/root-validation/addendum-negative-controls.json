@@ -1,0 +1,12 @@
+[
+  {
+    "control": "addendum-source-drift",
+    "rejected": true,
+    "reason": "frozen candidate postimage"
+  },
+  {
+    "control": "category-reclassification",
+    "rejected": true,
+    "reason": "production-only classification"
+  }
+]

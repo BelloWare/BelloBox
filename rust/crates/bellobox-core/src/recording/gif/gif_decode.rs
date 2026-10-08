@@ -118,7 +118,7 @@ impl<R: Read> Decoder<R> {
         // writer emits only opaque pixels, so reject invalid palette references.
         for row in rgba.chunks(usize::from(frame.width) * 4) {
             check()?;
-            if row.chunks_exact(4).any(|pixel| pixel[3] != 255) {
+            if row.as_chunks::<4>().0.iter().any(|pixel| pixel[3] != 255) {
                 return Err(GifError::InvalidOutput);
             }
         }

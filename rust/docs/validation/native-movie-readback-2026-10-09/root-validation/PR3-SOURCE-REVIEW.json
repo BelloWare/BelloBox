@@ -1,0 +1,34 @@
+{
+  "head": "7b9a99ae7c19b8251836cc82b6618101e8f8a55e",
+  "tree": "de876ac8da9860ce584e815aff50be5cd46f4186",
+  "base": "abd7247c25c1736f7a4fd6a34032e7af9d7a1f5d",
+  "decision": "Source/evidence review approved for integration and subsequent Linux validation; no blocking findings. Not a local runtime test or merge authorization.",
+  "verification": {
+    "base_is_ancestor": true,
+    "worktree_clean": true,
+    "five_product_source_postimages_match_pre_final_check_receipt": true,
+    "evidence_manifest_passed": true,
+    "evidence_manifest_entries": 51,
+    "independent_oracle_script_byte_identical": true,
+    "independent_fixture_byte_identical": true,
+    "independent_rgba_hashes_asserted_in_tests": true
+  },
+  "contract_review": [
+    "Strict EOI and frame consistency stay enabled. Exact RGBA output followed by bounded one-pixel completion requires DataEnd and rejects extra pixels.",
+    "First/last frame missing/early EOI, invalid dictionary/palette, excess output, terminator, bounds, delay negatives cover both export and preview.",
+    "Exact fixture, preview rewind, fragmented reads, legal EOI-crossing reblocking, dictionary growth, sticky failures, injected completion I/O and cancellation are covered.",
+    "Recovered buffered reader checks physical EOF; MAX_OUTPUT_BYTES+1 sentinel prevents false success at Take cap.",
+    "Export structural checks retained; preview gains same strict completion; encoding/dependencies/native gates unchanged."
+  ],
+  "peer_runtime_evidence": {
+    "core_gif": "49 passed, 0 failed",
+    "app_converter": "52 passed, 0 failed including both unchanged native-host tests",
+    "native_replay": "All 6 native + 6 replay exports succeed with unchanged encoded bytes",
+    "strict_clippy": "Blocked by baseline macOS settings.rs:253 needless_return, independently reproduced on base; lint-allowed scoped run passed, no source suppressions"
+  },
+  "review_limits": [
+    "No Cargo, compiler, source edits, or runtime probes performed by reviewer.",
+    "Linux focused/integration testing and any required CI remain owned by root.",
+    "Preview does not validate loop metadata against result: result has no loop expectation; existing export structural loop validation is retained."
+  ]
+}

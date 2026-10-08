@@ -1,0 +1,49 @@
+{
+  "peer_commit": "7b9a99ae7c19b8251836cc82b6618101e8f8a55e",
+  "peer_tree": "de876ac8da9860ce584e815aff50be5cd46f4186",
+  "path": "rust/crates/bellobox-core/src/recording/gif/gif_decode.rs",
+  "peer_sha256": "f80bfaf78c868798c4fdfdb659932dbf4045b12559e80005e6665cb1f2cce710",
+  "after_sha256": "643a162698bf3f113cfed4b6c1ec63605121ac5febc0d2d3cc47fd3efc1ca22c",
+  "changed_lines_1based": [
+    121
+  ],
+  "before_line": "            if row.chunks_exact(4).any(|pixel| pixel[3] != 255) {",
+  "after_line": "            if row.as_chunks::<4>().0.iter().any(|pixel| pixel[3] != 255) {",
+  "reviewed_support_ranges_1based": [],
+  "counts": {
+    "before": {
+      "production": 129,
+      "support": 0,
+      "benchmark": 0
+    },
+    "after": {
+      "production": 129,
+      "support": 0,
+      "benchmark": 0
+    }
+  },
+  "delta": {
+    "production": 0,
+    "support": 0,
+    "benchmark": 0
+  },
+  "product_delta_against_published_baseline": {
+    "production": 121,
+    "support": 587,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 56866,
+    "support": 39744,
+    "benchmark": 105
+  },
+  "product_physical_totals": {
+    "before": 96007,
+    "after": 96715,
+    "before_files": 192,
+    "after_files": 194
+  },
+  "excluded_evidence_nonblank": 115,
+  "all_tracked_rust_nonblank": 96830,
+  "note": "One production-line Clippy 1.99 adjustment after peer commit; frozen working-tree candidate, no new commit claimed. All other product/evidence paths retain exact peer bytes."
+}
