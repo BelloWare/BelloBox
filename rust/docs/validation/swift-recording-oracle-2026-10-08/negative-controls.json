@@ -1,0 +1,170 @@
+{
+  "controls": [
+    {
+      "control": "permit_rgb_error_one",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs",
+      "mutated_sha256": "5507c2d298bea43a9cbec67622ca4d57e96af48caceff1cdb2d7955ad6b75335",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.06s"
+      ]
+    },
+    {
+      "control": "permit_alpha_error_one",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs",
+      "mutated_sha256": "b8f2c476979e5b20ce22a3310cca4099defbf8c8791e6915e80f460a09b141f6",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.06s"
+      ]
+    },
+    {
+      "control": "bypass_pixel_comparison",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs",
+      "mutated_sha256": "4f5d8a6b1a668d0c25aa4bcc2e2c8754c4b9d172d751eae59f278bdb8a2a782e",
+      "test_summary": [
+        "test result: FAILED. 27 passed; 2 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.06s"
+      ]
+    },
+    {
+      "control": "permit_pts_slack",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs",
+      "mutated_sha256": "37c936057498f9f442290ca7a7688f764b68f75d5c4bbf215aa59adf4477d6ec",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.08s"
+      ]
+    },
+    {
+      "control": "bypass_full_source_binding",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "mutated_sha256": "84b6a3af6feffb9379834a0998460c214caf9d9971aa0132447e20c837cfe19a",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.07s"
+      ]
+    },
+    {
+      "control": "bypass_excerpt_binding",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "mutated_sha256": "cb91250be87a122da423392a4e63001742ff01163a74f239f8936360387b3522",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.07s"
+      ]
+    },
+    {
+      "control": "changed_production_swift",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "BelloBox/Recording/GIF/GIFTranscoder.swift",
+      "mutated_sha256": "8735e06f56e96204ab8c6360df17961dd86fd9a12d865f8d4d291124972325f7",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.07s"
+      ]
+    },
+    {
+      "control": "bypass_frame_count",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "mutated_sha256": "d0d6ca4c734eb688df93220031e7df9015cd94c6bca957893086100fbd7ba213",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.08s"
+      ]
+    },
+    {
+      "control": "missing_driver_substitution",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/swift_reference.swift",
+      "mutated_sha256": "b4864d4c8f77cee1bffebd826fa0d9152dc9b9d26b88c7ed2d88d4bf36a53650",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.07s"
+      ]
+    },
+    {
+      "control": "bypass_protocol_dimensions",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "mutated_sha256": "3364d060fb25987d0ebc608e90d871037fca96931ddcbf599537dae34ca913ac",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.07s"
+      ]
+    },
+    {
+      "control": "bypass_protocol_alpha",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "mutated_sha256": "831a70bdba4294b22f9839f87597bd7e7bfe1d59b1bd9e28bae9d70f01a73220",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.07s"
+      ]
+    },
+    {
+      "control": "bypass_raw_payload",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs",
+      "mutated_sha256": "e47fb6a60ece4eb24048c97af9d4739f15c35c0553f6a0a382155a320879d366",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.08s"
+      ]
+    },
+    {
+      "control": "bypass_rgba_length",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs",
+      "mutated_sha256": "2acc61eb5c9ae8692e83b83dafd877f7f8978b230a0dd05814c9b73a55270730",
+      "test_summary": [
+        "test result: FAILED. 28 passed; 1 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.08s"
+      ]
+    },
+    {
+      "control": "runner_without_timeout",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "mutated_sha256": "47a3a0f3afd6f46ce19df669432b68e7580573ccc6cbffb0081a56b3d80fd08a",
+      "test_summary": [
+        "test result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 140 filtered out; finished in 1.10s"
+      ]
+    },
+    {
+      "control": "runner_without_stderr_abort",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "mutated_sha256": "ceef2b47c8632b485517be1d30998c7fd9de170bfc336bb136ea984931c7c10d",
+      "test_summary": [
+        "test result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 140 filtered out; finished in 3.55s"
+      ]
+    },
+    {
+      "control": "runner_kills_parent_only",
+      "detected": true,
+      "exit_code": 101,
+      "mutated_path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "mutated_sha256": "72f168a76fb32c9508ad542a546cd7bc3311fb2ece7ccd7854ac37056a42ca26",
+      "test_summary": [
+        "test result: FAILED. 30 passed; 1 failed; 0 ignored; 0 measured; 140 filtered out; finished in 1.57s"
+      ]
+    }
+  ],
+  "restored_sha256": {
+    "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs": "ebf6243327d22f7a181277e339a093cc64d6a9775caf01843df819b4a778442d",
+    "rust/crates/bello-platform/src/recording/tests/swift_reference.rs": "fa5b23a7ff2adfff1693ae1a40f2ded14d413caac86ad30d52e2ceedf426a6be",
+    "BelloBox/Recording/GIF/GIFTranscoder.swift": "7628606696213e100ac9f59cf17c26517132620bf0ff7819c5d94ecc59813fe4",
+    "rust/crates/bello-platform/src/recording/tests/swift_reference.swift": "57b407c07f7c6f8bad713bf743eb09b71380c7100539e173b78d9dbf8e034c7c"
+  }
+}

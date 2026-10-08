@@ -12,6 +12,7 @@ use std::{
 };
 static SERIAL: Mutex<()> = Mutex::new(());
 mod raw_oracle;
+mod swift_reference;
 
 fn lock_serial(mutex: &Mutex<()>) -> std::sync::MutexGuard<'_, ()> {
     // This lock protects no data: it only separates admission-using tests.
@@ -438,7 +439,7 @@ fn native_generated_writer_finalizes_and_same_owned_token_decodes() {
 
 #[cfg(target_os = "macos")]
 #[test]
-fn checked_in_raw_movie_native_decode_preserves_frames_with_one_rgb_code_value_tolerance() {
+fn checked_in_raw_movie_native_decode_matches_independent_swift_source_exactly() {
     use crate::movie::{MovieAsset, MovieReadRange};
     let _serial = lock_serial(&SERIAL);
     // Sealed test source: this exact compiled-in finite asset, never a path input.
@@ -461,19 +462,30 @@ fn checked_in_raw_movie_native_decode_preserves_frames_with_one_rgb_code_value_t
         )
         .unwrap();
     let known = movie.known_frames().unwrap();
+    let reference = swift_reference::decode(&movie);
     let asset = MovieAsset::open_selected(movie.selected_movie(), Default::default()).unwrap();
     assert!((asset.info().duration - 1.2).abs() < 0.001);
     let mut reader = asset
         .reader(MovieReadRange::new(0., 1.2, 0.1).unwrap())
         .unwrap();
-    for index in 0..fixture::FRAME_COUNT {
+    let mut errors = Vec::new();
+    for (index, expected) in reference.iter().enumerate() {
         let (pts, width, height, rgba) = reader.next_frame(|| false).unwrap().unwrap().into_parts();
-        let expected = known.frame(index).unwrap();
-        raw_oracle::check_decoded_frame(&expected, pts, width, height, &rgba)
-            .unwrap_or_else(|error| panic!("raw movie frame {index}: {error}"));
+        let raw = known.frame(index).unwrap();
+        eprintln!("frame {index}: PTS Rust={pts:?} Swift={:?}; Rust/Swift {:?}; Rust/raw {:?}; Swift/raw {:?}",
+            expected.presentation_seconds, raw_oracle::differences(&rgba, &expected.rgba),
+            raw_oracle::differences(&rgba, &raw.rgba), raw_oracle::differences(&expected.rgba, &raw.rgba));
+        if let Err(error) = raw_oracle::check_decoded_frame(expected, pts, width, height, &rgba) {
+            errors.push(format!("frame {index}: {error}"));
+        }
     }
     assert!(reader.next_frame(|| false).unwrap().is_none());
     reader.finish(|| false).unwrap();
+    assert!(
+        errors.is_empty(),
+        "Rust differs from the independent Swift source:\n{}",
+        errors.join("\n")
+    );
 }
 
 #[cfg(target_os = "macos")]

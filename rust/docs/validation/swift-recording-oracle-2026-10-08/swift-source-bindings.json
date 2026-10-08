@@ -1,0 +1,22 @@
+{
+  "original_converter": {
+    "bytes": 27807,
+    "sha256": "7628606696213e100ac9f59cf17c26517132620bf0ff7819c5d94ecc59813fe4"
+  },
+  "verbatim_renderer": {
+    "bytes": 2678,
+    "sha256": "18efae846785029a354c20ddb126dbaaf2cad19c83ce26173d89dbdb00bf5f9f"
+  },
+  "verbatim_reader_settings": {
+    "bytes": 217,
+    "sha256": "9fbc0e3ab43560630bfa22d979d362123718dea769896fed6382528a9284639b"
+  },
+  "test_driver_template": {
+    "bytes": 4044,
+    "sha256": "57b407c07f7c6f8bad713bf743eb09b71380c7100539e173b78d9dbf8e034c7c"
+  },
+  "generated_reference": {
+    "bytes": 6888,
+    "sha256": "ff2e364a5f52c712a6a559c43889f546b96e4395b82d0b841ed6c763b76484f3"
+  }
+}

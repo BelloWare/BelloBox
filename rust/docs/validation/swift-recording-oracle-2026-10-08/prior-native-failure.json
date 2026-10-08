@@ -1,0 +1,12 @@
+{
+  "commit": "d193ca393bd5db75f8bdb00e0861fde5a7c20cab",
+  "run_id": 37695162872,
+  "job_id": 113044965213,
+  "result": "failure",
+  "passed": 205,
+  "failed": 1,
+  "ignored": 3,
+  "failure": "frame 4 pixel (8, 0), blue 253 versus raw 255, allowance 1",
+  "other_native_recording_tests": "Generated writer, finish callback retirement and cancellation passed in the default platform suite. Dedicated feature and full App steps were skipped.",
+  "interpretation": "The one-code-value acceptance budget was inferred from only frame 0 and was not a native decoding guarantee. This correction replaces it with exact Rust-versus-original-Swift equivalence rather than a larger allowance."
+}

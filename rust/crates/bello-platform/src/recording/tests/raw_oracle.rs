@@ -1,9 +1,7 @@
 use super::*;
 
-// The raw RGB24 payload is lossless; the Swift-shaped AVAssetReader BGRA output
-// plus DeviceRGB CoreGraphics render is not a byte-copy contract. On macOS CI,
-// frame 0 differs only by one RGB code value (alpha remains exact). Keep that
-// fixture-specific ceiling, not the much wider lossy H.264 writer tolerance.
+// Expected native pixels and PTS come from the independent, source-bound Swift
+// converter. Exact comparison does not infer a raw-to-rendered RGB allowance.
 pub(super) fn check_decoded_frame(
     expected: &fixture::KnownFrame,
     pts: f64,
@@ -11,7 +9,7 @@ pub(super) fn check_decoded_frame(
     height: u32,
     rgba: &[u8],
 ) -> Result<(), String> {
-    if !pts.is_finite() || (pts - expected.presentation_seconds).abs() >= 0.001 {
+    if !pts.is_finite() || pts != expected.presentation_seconds {
         return Err(format!(
             "PTS {pts}, expected {}",
             expected.presentation_seconds
@@ -28,11 +26,10 @@ pub(super) fn check_decoded_frame(
         ));
     }
     for (offset, (&actual, &wanted)) in rgba.iter().zip(&expected.rgba).enumerate() {
-        let allowance = u8::from(offset % 4 != 3);
-        if actual.abs_diff(wanted) > allowance {
+        if actual != wanted {
             let pixel = offset / 4;
             return Err(format!(
-                "pixel ({}, {}), channel {}: {actual}, expected {wanted}, allowance {allowance}",
+                "pixel ({}, {}), channel {}: {actual}, expected {wanted}",
                 pixel % width as usize,
                 pixel / width as usize,
                 offset % 4,
@@ -82,8 +79,22 @@ fn checked_in_raw_payload_is_exact_and_one_byte_mutation_is_detected() {
     assert!(check_raw_payload(&bytes[..payload_end - 1], &known).is_err());
 }
 
+#[cfg(target_os = "macos")]
+pub(super) fn differences(actual: &[u8], expected: &[u8]) -> [(usize, u8); 4] {
+    // Per-channel (different sample count, maximum absolute difference), not a
+    // pass/fail allowance. Report every frame before the exact comparator fails.
+    let mut stats = [(0, 0); 4];
+    for (offset, (&actual, &wanted)) in actual.iter().zip(expected).enumerate() {
+        let difference = actual.abs_diff(wanted);
+        let channel = &mut stats[offset % 4];
+        channel.0 += usize::from(difference != 0);
+        channel.1 = channel.1.max(difference);
+    }
+    stats
+}
+
 #[test]
-fn decoded_raw_oracle_accepts_only_one_rgb_code_value_and_exact_alpha() {
+fn decoded_raw_oracle_rejects_any_rgba_change_against_reference() {
     let known = movie(true, false).known_frames().unwrap();
     for index in 0..fixture::FRAME_COUNT {
         let expected = known.frame(index).unwrap();
@@ -97,24 +108,13 @@ fn decoded_raw_oracle_accepts_only_one_rgb_code_value_and_exact_alpha() {
             )
         };
         check(&expected.rgba).unwrap();
-        for delta in [-1i16, 1] {
-            let mut rgba = expected.rgba.clone();
-            for pixel in rgba.chunks_exact_mut(4) {
-                for value in &mut pixel[..3] {
-                    *value = (i16::from(*value) + delta).clamp(0, 255) as u8;
-                }
-            }
-            check(&rgba).unwrap();
-        }
         for channel in 0..4 {
             let mut rgba = expected.rgba.clone();
             let offset = rgba.len() - 4 + channel;
-            rgba[offset] = if channel == 3 {
-                254
-            } else if rgba[offset] <= 253 {
-                rgba[offset] + 2
+            rgba[offset] = if rgba[offset] < 255 {
+                rgba[offset] + 1
             } else {
-                rgba[offset] - 2
+                rgba[offset] - 1
             };
             assert!(check(&rgba).is_err(), "frame {index}, channel {channel}");
         }
@@ -151,7 +151,7 @@ fn decoded_raw_oracle_rejects_channel_frame_row_length_dimension_and_time_corrup
     for (width, height) in [(95, 64), (96, 65), (64, 96)] {
         assert!(check_decoded_frame(&expected, 0., width, height, &expected.rgba).is_err());
     }
-    for pts in [0.1, f64::NAN, f64::INFINITY] {
+    for pts in [0.00000001, 0.1, f64::NAN, f64::INFINITY] {
         assert!(check_decoded_frame(&expected, pts, 96, 64, &expected.rgba).is_err());
     }
 }

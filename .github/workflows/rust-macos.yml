@@ -42,6 +42,13 @@ jobs:
         run: cargo test --locked --workspace --no-run
       - name: Lint normal and synthetic native platform paths
         run: cargo clippy --locked -p bello-platform --all-targets --no-deps -- -D warnings
+      - name: Compare raw movie decoding with the independent Swift source
+        # Fixed generated movie only. The test compiles hash-bound excerpts of
+        # the shipped Swift converter and compares all pixels/PTS exactly.
+        run: |
+          oracle=recording::tests::checked_in_raw_movie_native_decode_matches_independent_swift_source_exactly
+          cargo test --locked -p bello-platform -- --list | grep -Fx "$oracle: test"
+          cargo test --locked -p bello-platform "$oracle" -- --exact --show-output
       - name: Run pure domain and filesystem tests
         # No GPUI application launch, permissions, keychain, capture or updater actions.
         run: cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform

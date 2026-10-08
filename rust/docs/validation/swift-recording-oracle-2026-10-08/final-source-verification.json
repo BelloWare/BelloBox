@@ -1,0 +1,25 @@
+{
+  "baseline": "d193ca393bd5db75f8bdb00e0861fde5a7c20cab",
+  "original_checkout_remains_clean": true,
+  "changed_rust_files": [
+    "rust/crates/bello-platform/src/recording/tests.rs",
+    "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs"
+  ],
+  "new_rust_files": [
+    "rust/crates/bello-platform/src/recording/tests/swift_reference.rs"
+  ],
+  "unchanged_rust_files": 162,
+  "mutation_inputs_restored_exactly": {
+    "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs": "ebf6243327d22f7a181277e339a093cc64d6a9775caf01843df819b4a778442d",
+    "rust/crates/bello-platform/src/recording/tests/swift_reference.rs": "fa5b23a7ff2adfff1693ae1a40f2ded14d413caac86ad30d52e2ceedf426a6be",
+    "BelloBox/Recording/GIF/GIFTranscoder.swift": "7628606696213e100ac9f59cf17c26517132620bf0ff7819c5d94ecc59813fe4",
+    "rust/crates/bello-platform/src/recording/tests/swift_reference.swift": "57b407c07f7c6f8bad713bf743eb09b71380c7100539e173b78d9dbf8e034c7c"
+  },
+  "dependency_packages_and_versions_unchanged": true,
+  "only_lock_change": "bello-platform test dependency on already-locked sha2 0.10.9",
+  "unchanged_compiled_inputs": {
+    "BelloBox/Recording/GIF/GIFTranscoder.swift": "7628606696213e100ac9f59cf17c26517132620bf0ff7819c5d94ecc59813fe4",
+    "rust/crates/bello-platform/src/recording/assets/known-rgb.mov": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9"
+  },
+  "native_validation": "Pending exact macOS CI; Swift was not compiled or executed locally."
+}

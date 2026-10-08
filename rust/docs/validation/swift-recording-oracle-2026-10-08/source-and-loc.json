@@ -1,0 +1,89 @@
+{
+  "baseline_commit": "d193ca393bd5db75f8bdb00e0861fde5a7c20cab",
+  "baseline_tree": "b61907727cc1339417e66ff72f6b80a96cb07b61",
+  "method": "Nonblank physical Rust lines including comments; inherited classifications unchanged. All changed/new Rust lives only in the cfg(test) recording::tests module. Swift test driver is separately reported, never production or Rust LOC.",
+  "before_counts": {
+    "production": 52593,
+    "support": 31349,
+    "benchmark": 105
+  },
+  "after_counts": {
+    "production": 52593,
+    "support": 31668,
+    "benchmark": 105
+  },
+  "delta": {
+    "production": 0,
+    "support": 319,
+    "benchmark": 0
+  },
+  "physical_before": 84047,
+  "physical_after": 84366,
+  "files": [
+    {
+      "path": ".github/workflows/rust-macos.yml",
+      "before_sha256": "405eb0d1252f391945d20ae8596f92be9f3ff52c40b7c7ec20c691780f499332",
+      "after_sha256": "3dbeff1dbd13e010407a3d3796ac31dcc22da06cad2eafa5e5152deb05f81f1a",
+      "before_nonblank": 97,
+      "after_nonblank": 104,
+      "changed_spans_classification": "configuration_or_documentation"
+    },
+    {
+      "path": "rust/Cargo.lock",
+      "before_sha256": "99fbd169b067e3697f1c1f51c87e15e5e503ee7237ca9c3f333988f69844f965",
+      "after_sha256": "6f6c7ff14dcbfbca958421274269492bf17c35bbe45679e90b9bdc42e3d98af9",
+      "before_nonblank": 7107,
+      "after_nonblank": 7108,
+      "changed_spans_classification": "configuration_or_documentation"
+    },
+    {
+      "path": "rust/crates/bello-platform/Cargo.toml",
+      "before_sha256": "956fdc60bfaa9d4da52631fb47a68ee77c611fee8d915e368ea622b9763f5acc",
+      "after_sha256": "cc784f18b679cd60bc63ae4d56f3ba951c05a7db539bade330b00e355f744862",
+      "before_nonblank": 25,
+      "after_nonblank": 28,
+      "changed_spans_classification": "configuration_or_documentation"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/tests.rs",
+      "before_sha256": "bb6d4c04ff9f105b5f4753eee35b92d22aa9d8037a68279bce3f3e495efb4866",
+      "after_sha256": "eb4e12e503cb438a1ea86b406a99fce289e53c43e692dd130bfb9ef1e8e159a5",
+      "before_nonblank": 878,
+      "after_nonblank": 890,
+      "changed_spans_classification": "test_support"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs",
+      "before_sha256": "8feba02c41978fb4763d70c4d18d343dd1d507bc908334015be0472d21dc24fc",
+      "after_sha256": "ebf6243327d22f7a181277e339a093cc64d6a9775caf01843df819b4a778442d",
+      "before_nonblank": 163,
+      "after_nonblank": 162,
+      "changed_spans_classification": "test_support"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/tests/swift_reference.rs",
+      "before_sha256": null,
+      "after_sha256": "fa5b23a7ff2adfff1693ae1a40f2ded14d413caac86ad30d52e2ceedf426a6be",
+      "before_nonblank": 0,
+      "after_nonblank": 308,
+      "changed_spans_classification": "test_support"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/tests/swift_reference.swift",
+      "before_sha256": null,
+      "after_sha256": "57b407c07f7c6f8bad713bf743eb09b71380c7100539e173b78d9dbf8e034c7c",
+      "before_nonblank": 0,
+      "after_nonblank": 75,
+      "changed_spans_classification": "test_driver"
+    },
+    {
+      "path": "rust/crates/bello-platform/src/recording/assets/README.md",
+      "before_sha256": "7f431bfc9b73c09dbc56902ff3c5782216ce16f4f62af49392fd8f1cec8331ce",
+      "after_sha256": "49dd8781554443aa1d56ffd4cb5f5698e93516a927f5ee50ff8800df62402e97",
+      "before_nonblank": 14,
+      "after_nonblank": 15,
+      "changed_spans_classification": "configuration_or_documentation"
+    }
+  ],
+  "unchanged_fixture_sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9"
+}

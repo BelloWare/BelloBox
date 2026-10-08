@@ -13,6 +13,10 @@ movie-fixtures = ["objc2-av-foundation/AVAssetWriter", "objc2-av-foundation/AVAs
 [dependencies]
 libc.workspace = true
 
+[dev-dependencies]
+# Existing workspace-locked SHA-256; binds the independent Swift test source.
+sha2 = "=0.10.9"
+
 [target.'cfg(target_os = "macos")'.dependencies]
 block2 = "=0.6.2"
 raw-window-handle = "=0.6.2"
