@@ -859,19 +859,34 @@ fn actual_source_worker_delivers_initial_start_end_and_latest_coalesced_frame(
 #[gpui::test]
 fn movie_gif_switch_keeps_source_owner_and_cancelled_retry_result(cx: &mut gpui::TestAppContext) {
     let root = view(cx);
-    let output = destination();
-    let retry = destination();
+    let directory = tempfile::tempdir().unwrap();
+    let parent = directory.path().to_path_buf();
+    // Exercise the same parent alias that macOS's /var -> /private/var temp
+    // directory exposes, including on Unix hosts with a canonical temp root.
+    #[cfg(unix)]
+    let parent = {
+        let alias = directory.path().join("alias");
+        std::os::unix::fs::symlink(&parent, &alias).unwrap();
+        alias
+    };
+    let output = parent.join("saved.gif");
+    let retry = parent.join("retry.gif");
     root.update(cx, |view, cx| {
         view.seek_source(0.5, cx);
         view.model.options.trim_end = Some(0.2);
         view.convert(output.clone(), cx);
     });
     cx.run_until_parked();
-    root.read_with(cx, |view, _| {
+    let saved = root.read_with(cx, |view, _| {
         assert!(view.shows_result);
         assert!(view.preview.image.is_some());
         assert!(view.model.selected.is_some());
+        view.model.result.clone().unwrap()
     });
+    assert_eq!(saved.path, output.canonicalize().unwrap());
+    #[cfg(unix)]
+    assert_ne!(saved.path, output);
+    let saved_bytes = std::fs::read(&output).unwrap();
     root.update(cx, |view, cx| view.show_movie(cx));
     cx.run_until_parked();
     root.read_with(cx, |view, _| {
@@ -886,12 +901,12 @@ fn movie_gif_switch_keeps_source_owner_and_cancelled_retry_result(cx: &mut gpui:
     });
     cx.run_until_parked();
     root.read_with(cx, |view, _| {
-        assert_eq!(view.model.result.as_ref().unwrap().path, output);
+        assert_eq!(view.model.result.as_ref().unwrap(), &saved);
         assert!(view.preview.image.is_some());
         assert!(!view.preview.loading);
     });
+    assert_eq!(std::fs::read(&output).unwrap(), saved_bytes);
     assert!(!retry.exists());
-    std::fs::remove_file(output).unwrap();
 }
 
 #[gpui::test]
@@ -1021,7 +1036,10 @@ fn preempted_seek_restores_latest_request_after_export_with_an_older_frame_and_p
             assert!(view.source_preview.pending_request.is_none());
             assert_eq!(view.shows_result, !cancel || prior_gif);
             if prior_gif {
-                assert_eq!(view.model.result.as_ref().unwrap().path, prior);
+                assert_eq!(
+                    view.model.result.as_ref().unwrap().path,
+                    prior.canonicalize().unwrap()
+                );
             }
         });
         assert_eq!(output.exists(), !cancel);
