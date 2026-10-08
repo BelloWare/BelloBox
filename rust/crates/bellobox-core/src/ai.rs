@@ -1,4 +1,6 @@
 //! Pure provider request and streaming parsers. No network request occurs here.
+pub mod provider_setup;
+
 use serde_json::{Value, json};
 use url::Url;
 

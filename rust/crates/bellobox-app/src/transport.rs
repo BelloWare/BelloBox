@@ -1,4 +1,5 @@
 pub mod image_ocr;
+pub mod provider_setup;
 
 use bellobox_core::ai::{Config, Provider, Request, SseDecoder, StreamEvent};
 use std::io::Read;
@@ -9,9 +10,22 @@ pub fn config_from_env() -> Result<Config, String> {
     let settings = bellobox_core::settings::Settings::load(
         &bellobox_core::settings::config_dir().join("settings.json"),
     )?;
-    let kind =
-        std::env::var("BELLOBOX_AI_PROVIDER").unwrap_or_else(|_| settings.provider_kind.clone());
-    let provider = match kind.as_str() {
+    config_from_settings(
+        settings,
+        std::env::var("BELLOBOX_AI_PROVIDER").ok().as_deref(),
+        std::env::var("BELLOBOX_AI_ENDPOINT").ok().as_deref(),
+        std::env::var("BELLOBOX_AI_MODEL").ok().as_deref(),
+    )
+}
+/// Pure resolution: explicit runtime overrides win; persisted choices otherwise survive.
+pub fn config_from_settings(
+    settings: bellobox_core::settings::Settings,
+    provider_override: Option<&str>,
+    endpoint_override: Option<&str>,
+    model_override: Option<&str>,
+) -> Result<Config, String> {
+    let kind = provider_override.unwrap_or(&settings.provider_kind);
+    let provider = match kind {
         "openai" => Provider::OpenAIChat,
         "responses" => Provider::OpenAIResponses,
         "anthropic" => Provider::Anthropic,
@@ -22,7 +36,7 @@ pub fn config_from_env() -> Result<Config, String> {
         }
         _ => return Err("AI provider must be openai, responses, anthropic, or codex.".into()),
     };
-    let endpoint = std::env::var("BELLOBOX_AI_ENDPOINT").unwrap_or_else(|_| {
+    let endpoint = endpoint_override.map(str::to_owned).unwrap_or_else(|| {
         if kind != settings.provider_kind {
             if provider == Provider::Anthropic {
                 "https://api.anthropic.com/v1".into()
@@ -33,7 +47,9 @@ pub fn config_from_env() -> Result<Config, String> {
             settings.provider_endpoint.clone()
         }
     });
-    let model = std::env::var("BELLOBOX_AI_MODEL").unwrap_or(settings.provider_model);
+    let model = model_override
+        .unwrap_or(&settings.provider_model)
+        .to_owned();
     if model.trim().is_empty() {
         return Err("Choose a model in Settings → AI Provider before sending.".into());
     }
@@ -90,6 +106,7 @@ pub fn send_cancellable(
         return Err("Request cancelled.".into());
     }
     let client = reqwest::blocking::Client::builder()
+        .no_proxy()
         .redirect(reqwest::redirect::Policy::none())
         .connect_timeout(std::time::Duration::from_secs(10))
         .timeout(std::time::Duration::from_secs(120))

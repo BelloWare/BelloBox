@@ -1,5 +1,8 @@
 //! The seven source Settings pages, using SettingsView.swift's layout and labels.
 //! Mounting and editing never sends a request or asks for system permission.
+mod provider_setup;
+use provider_setup::{Action as SetupAction, Setup};
+
 use crate::theme::{self, Palette, opacity};
 use bello_platform::{Permission, PermissionState, PermissionStatus, Platform};
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
@@ -129,6 +132,7 @@ impl Provider {
 }
 
 struct SettingsView {
+    settings_path: std::path::PathBuf,
     category: Category,
     appearance: Appearance,
     provider: Provider,
@@ -139,6 +143,7 @@ struct SettingsView {
     provider_drafts: BTreeMap<&'static str, (String, String)>,
     switching_provider: bool,
     model_menu: bool,
+    setup: Setup,
     focus: FocusHandle,
     scroll: ScrollHandle,
     icon: Arc<Image>,
@@ -152,7 +157,14 @@ struct SettingsView {
 
 impl SettingsView {
     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
-        let (settings, status) = match Settings::load(&config_dir().join("settings.json")) {
+        Self::new_at(config_dir().join("settings.json"), window, cx)
+    }
+    fn new_at(
+        settings_path: std::path::PathBuf,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
+        let (settings, status) = match Settings::load(&settings_path) {
             Ok(settings) => (settings, None),
             Err(error) => (Settings::default(), Some(error)),
         };
@@ -163,16 +175,19 @@ impl SettingsView {
         let prompt = make_editor(settings.system_prompt, false, p, window, cx);
         let endpoint_sub = cx.subscribe(&endpoint, |this, _, event, cx| {
             if matches!(event, EditorEvent::Changed) && !this.switching_provider {
+                this.setup.invalidate(true);
                 this.save_provider(cx);
             }
         });
         let model_sub = cx.subscribe(&model, |this, _, event, cx| {
             if matches!(event, EditorEvent::Changed) && !this.switching_provider {
+                this.setup.invalidate(false);
                 this.save_provider(cx);
             }
         });
         let prompt_sub = cx.subscribe(&prompt, |this, _, event, cx| {
             if matches!(event, EditorEvent::Changed) {
+                this.setup.invalidate(false);
                 let prompt = this.prompt.read(cx).text().to_owned();
                 this.persist(
                     move |settings| {
@@ -181,6 +196,13 @@ impl SettingsView {
                     },
                     cx,
                 );
+            }
+        });
+        let owner_window = window.window_handle();
+        let weak = cx.weak_entity();
+        let closed_sub = cx.on_window_closed(move |cx| {
+            if !cx.windows().contains(&owner_window) {
+                let _ = weak.update(cx, |this, _| this.setup.close());
             }
         });
         let appearance_sub = cx.observe_window_appearance(window, |_, _, cx| cx.notify());
@@ -209,6 +231,7 @@ impl SettingsView {
         })
         .detach();
         Self {
+            settings_path,
             category: Category::fixture(
                 &std::env::var("BELLOBOX_SETTINGS_CATEGORY").unwrap_or_default(),
             ),
@@ -221,6 +244,7 @@ impl SettingsView {
             provider_drafts: BTreeMap::new(),
             switching_provider: false,
             model_menu: false,
+            setup: Setup::default(),
             focus,
             scroll: ScrollHandle::new(),
             icon: Arc::new(Image::from_bytes(
@@ -235,7 +259,13 @@ impl SettingsView {
             learned_reset: false,
             status,
             editor_ink: p.primary,
-            _subscriptions: vec![endpoint_sub, model_sub, prompt_sub, appearance_sub],
+            _subscriptions: vec![
+                endpoint_sub,
+                model_sub,
+                prompt_sub,
+                appearance_sub,
+                closed_sub,
+            ],
         }
     }
     fn persist(
@@ -243,7 +273,7 @@ impl SettingsView {
         change: impl FnOnce(&mut Settings) -> Result<(), String>,
         cx: &mut Context<Self>,
     ) -> bool {
-        match edit_saved(&config_dir().join("settings.json"), change) {
+        match edit_saved(&self.settings_path, change) {
             Ok(()) => {
                 self.status = None;
                 crate::transport::settings_changed();
@@ -295,6 +325,7 @@ impl SettingsView {
             .get(provider.id())
             .cloned()
             .unwrap_or_else(|| (provider.endpoint().into(), String::new()));
+        self.setup.invalidate(true);
         self.provider = provider;
         self.model_menu = false;
         self.switching_provider = true;
@@ -551,8 +582,7 @@ impl SettingsView {
                             )
                             .on_click(cx.listener(
                                 move |this, _, _, cx| {
-                                    this.responses = responses;
-                                    this.save_provider(cx);
+                                    this.set_request_api(responses, cx);
                                 },
                             ))
                         }),
@@ -575,8 +605,13 @@ impl SettingsView {
                         cx,
                     )))
                     .child(self.model_menu(p, cx))
-                    .when(!codex, |s| s.child(disabled_button("Load", p))),
+                    .when(!codex, |s| {
+                        s.child(self.setup_button(SetupAction::Load, p, cx))
+                    }),
             ))
+            .when_some(self.setup.load_message.clone(), |s, message| {
+                s.child(help(message, p))
+            })
             .child(self.model_behavior(p, cx));
         if codex {
             fields = fields.child(div().flex().gap(px(10.))
@@ -585,8 +620,11 @@ impl SettingsView {
                 .child(help("Sandbox and approval controls are unavailable until the Codex transport is connected.", p));
         }
         fields = fields.child(help(if codex { "Used by Ask AI and World Clock copilot." } else { "Used by Ask AI, World Clock copilot, and AI screenshot text recognition." }, p))
-            .child(div().flex().items_center().gap(px(10.)).child(disabled_button("Test connection", p)).child(help("Sends a short hello with these settings.", p)))
-            .child(help("Load and Test connection are not yet connected. Editing settings never sends a request.", p))
+            .child(div().flex().items_center().gap(px(10.)).child(if codex { disabled_button("Test connection", p).into_any_element() } else { self.setup_button(SetupAction::Test, p, cx) }).child(help("Sends a short hello with these settings.", p)))
+            .when_some(self.setup.test_message.clone(), |s, message| s.child(help(message, p)))
+            .when(self.setup.busy(), |s| s.child(button("cancel-provider-setup", "Cancel request", p).on_click(cx.listener(|this, _, _, cx| { this.setup.invalidate(false); cx.notify(); }))))
+            .when(self.setup.busy() && self.setup.action.is_none(), |s| s.child(help("Stopping the previous request. Retry becomes available after the transport stops or times out.", p)))
+            .child(help("Only Load and Test connection send requests. Editing settings never sends a request. Test checks the fields above; explicit process provider, endpoint or model overrides still take precedence in Ask AI.", p))
             .child(help(match self.provider {
                 Provider::OpenAi if self.responses => "POST {endpoint}/responses with a Bearer token and Responses API streaming. Use this for OpenAI or compatible endpoints that implement the Responses API.",
                 Provider::OpenAi => "POST {endpoint}/chat/completions with a Bearer token. Works with OpenAI, OpenRouter, Groq, Ollama, LM Studio, and other compatible servers.",
@@ -601,6 +639,91 @@ impl SettingsView {
             fields,
         )
     }
+    fn set_request_api(&mut self, responses: bool, cx: &mut Context<Self>) {
+        self.setup.invalidate(true);
+        self.responses = responses;
+        self.save_provider(cx);
+    }
+    fn select_model(&mut self, model: String, cx: &mut Context<Self>) {
+        self.model_menu = false;
+        self.model
+            .update(cx, |editor, cx| editor.set_text(model, cx));
+        cx.notify();
+    }
+    fn setup_button(&self, action: SetupAction, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+        let label = match (action, self.setup.action) {
+            (SetupAction::Load, Some(SetupAction::Load)) => "Loading…",
+            (SetupAction::Test, Some(SetupAction::Test)) => "Testing model…",
+            (SetupAction::Load, _) => "Load",
+            (SetupAction::Test, _) => "Test connection",
+        };
+        if self.setup.busy() {
+            return disabled_button(label, p).into_any_element();
+        }
+        button(
+            if action == SetupAction::Load {
+                "load-models"
+            } else {
+                "test-provider"
+            },
+            label,
+            p,
+        )
+        .on_click(cx.listener(move |this, _, _, cx| this.start_setup(action, cx)))
+        .into_any_element()
+    }
+    fn start_setup(&mut self, action: SetupAction, cx: &mut Context<Self>) {
+        // Runtime-only credential boundary; only an explicit action reads it.
+        let key = std::env::var("BELLOBOX_AI_KEY").unwrap_or_default();
+        self.start_setup_with_key(action, &key, cx);
+    }
+    fn start_setup_with_key(&mut self, action: SetupAction, key: &str, cx: &mut Context<Self>) {
+        if self.provider == Provider::Codex {
+            return;
+        }
+        let endpoint = self.endpoint.read(cx).text().to_owned();
+        let model = self.model.read(cx).text().to_owned();
+        let result = validate_provider(self.provider, &endpoint, &model).and_then(|_| {
+            let config = bellobox_core::ai::Config {
+                provider: match self.provider {
+                    Provider::Anthropic => bellobox_core::ai::Provider::Anthropic,
+                    _ if self.responses => bellobox_core::ai::Provider::OpenAIResponses,
+                    _ => bellobox_core::ai::Provider::OpenAIChat,
+                },
+                endpoint,
+                model,
+                system_prompt: self.prompt.read(cx).text().to_owned(),
+                max_output_tokens: 4096,
+            };
+            self.setup.start(action, &config, key)
+        });
+        if let Err(error) = result {
+            match action {
+                SetupAction::Load => self.setup.load_message = Some(error),
+                SetupAction::Test => self.setup.test_message = Some(error),
+            }
+        } else {
+            cx.spawn(async |this, cx| {
+                loop {
+                    cx.background_executor()
+                        .timer(std::time::Duration::from_millis(40))
+                        .await;
+                    let done = this.update(cx, |this, cx| {
+                        let done = this.setup.poll();
+                        if done {
+                            cx.notify();
+                        }
+                        done || !this.setup.busy()
+                    });
+                    if !matches!(done, Ok(false)) {
+                        break;
+                    }
+                }
+            })
+            .detach();
+        }
+        cx.notify();
+    }
     fn model_menu(&self, p: Palette, cx: &mut Context<Self>) -> Stateful<Div> {
         let mut button = button("model-menu", "⌄", p)
             .relative()
@@ -610,6 +733,14 @@ impl SettingsView {
                 cx.notify();
             }));
         if self.model_menu {
+            let models: Vec<String> = if self.setup.models.is_empty() {
+                model_presets(self.provider)
+                    .iter()
+                    .map(|s| (*s).to_owned())
+                    .collect()
+            } else {
+                self.setup.models.clone()
+            };
             let menu = div()
                 .id("model-presets")
                 .absolute()
@@ -617,6 +748,8 @@ impl SettingsView {
                 .right_0()
                 .w(px(240.))
                 .p(px(4.))
+                .max_h(px(280.))
+                .overflow_y_scroll()
                 .flex()
                 .flex_col()
                 .bg(p.surface)
@@ -629,28 +762,23 @@ impl SettingsView {
                     this.model_menu = false;
                     cx.notify();
                 }))
-                .children(model_presets(self.provider).iter().enumerate().map(
-                    |(index, &model)| {
-                        div()
-                            .id(("model-preset", index))
-                            .h(px(28.))
-                            .px(px(8.))
-                            .flex()
-                            .items_center()
-                            .rounded(px(5.))
-                            .text_color(p.primary)
-                            .cursor_pointer()
-                            .hover(|s| s.bg(opacity(p.accent, 0.09)))
-                            .child(model)
-                            .on_click(cx.listener(move |this, _, _, cx| {
-                                cx.stop_propagation();
-                                this.model_menu = false;
-                                this.model
-                                    .update(cx, |editor, cx| editor.set_text(model.into(), cx));
-                                cx.notify();
-                            }))
-                    },
-                ));
+                .children(models.into_iter().enumerate().map(|(index, model)| {
+                    div()
+                        .id(("model-preset", index))
+                        .h(px(28.))
+                        .px(px(8.))
+                        .flex()
+                        .items_center()
+                        .rounded(px(5.))
+                        .text_color(p.primary)
+                        .cursor_pointer()
+                        .hover(|s| s.bg(opacity(p.accent, 0.09)))
+                        .child(model.clone())
+                        .on_click(cx.listener(move |this, _, _, cx| {
+                            cx.stop_propagation();
+                            this.select_model(model.clone(), cx);
+                        }))
+                }));
             button = button.child(deferred(menu).with_priority(1));
         }
         button
@@ -1493,3 +1621,6 @@ mod tests {
         assert_eq!(prompt.text, p.primary);
     }
 }
+
+#[cfg(test)]
+mod setup_tests;

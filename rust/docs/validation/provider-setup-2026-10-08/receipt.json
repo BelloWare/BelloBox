@@ -1,0 +1,26 @@
+{
+  "base": "7a3ecdcf63d250519a1f99152c8f537dbc95d4ba",
+  "source_sha256": {
+    "rust/crates/bellobox-app/src/settings_ui.rs": "fb23f1661b5a3b3c56e891b76309b435f013f55c49aaa3003a1d34fd26a90fe8",
+    "rust/crates/bellobox-app/src/transport.rs": "214f0e503691aa4fb0e84560d39f7b7d9426280a46802172a3a8800cb9903efb",
+    "rust/crates/bellobox-core/src/ai.rs": "0a8d8ee67bda12167dcf86f8068dbf1748b6be9df80d82f8e14e4b9c7895df6a",
+    "rust/crates/bellobox-app/src/settings_ui/provider_setup.rs": "3f13deab87ba3c81c1c3829dec511a6091a0ef5d9568116eca35c776126d6dfd",
+    "rust/crates/bellobox-app/src/settings_ui/setup_tests.rs": "6dfb4cc915dc848a950bb8f99803ffab23460b6f576a1e5077312cc104b880b3",
+    "rust/crates/bellobox-app/src/transport/provider_setup.rs": "fca661416bae9df8a1d8a91dc6d2d615452d1a2ef67a1d98b65498fa22859b05",
+    "rust/crates/bellobox-core/src/ai/provider_setup.rs": "b551f93a87f3bd30bb5709ae8795f58989bb912399c46c8671af0f68f5745c18"
+  },
+  "logs_sha256": {
+    "core-full.log": "386286b3bff99d49a6227da045473ba4067b7fb7cce0674a435545b6be05cb96",
+    "app-isolated-final.log": "ce2313707eb844a1e2c7785488329d491f5691e32ee6779c1698e12ccf68f19c",
+    "app-final.log": "835027127d489286631dc5f0db7346da5bdd7df1aa08d6e7f7f1b8a94a846e15",
+    "app-clippy-final.log": "d16372354619320194bc8078fac47f89f4a76eb14d2eb41afdc4f61db4957be5",
+    "default-clippy-final.log": "b28f99657d06b1c01808fd23f41db77b81cd4537a30a80a5773aae061bca0ba1",
+    "core-clippy-final.log": "66a26165125431c9d14909a109a48c6eb9ce30c1ec784b1d606f2ede24611777",
+    "fmt-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "earlier-clippy-failure.log": "00eb9f22b67f0977a926ed55842e525eab1503d813a092dc318ab964429497ef"
+  },
+  "test_binary_sha256": "7cc6e08d9020a349cfbeabfeef9993efb42ce251c26c1b6a5d30ba5691d555a8",
+  "manual_gui_acceptance": false,
+  "native_acceptance": false,
+  "source_review": "Independent r3 review, no blocking findings. Seven Rust postimages unchanged."
+}
