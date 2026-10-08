@@ -42,10 +42,10 @@ Both affected GPUI tests passed during the full App invocation:
 
     CARGO_TARGET_DIR=/Users/admin/Library/Caches/BelloRustWork/box-target CARGO_BUILD_JOBS=2 cargo test --offline --locked -p bellobox-app --features recording-fixtures -- --test-threads=1
 
-Compilation took 2m 41s. The complete 317-test suite was still running at this
-checkpoint; the two repaired regressions passed. Workspace `cargo fmt --all --
---check` and `git diff --check` passed. An independent source review found no
-issues with the test correction.
+Compilation took 2m 41s. The complete suite passed: **317 passed / 0 failed /
+0 ignored**, including both repaired regressions, in 128.14 seconds. Workspace
+`cargo fmt --all -- --check` and `git diff --check` passed. An independent source
+review found no issues with the test correction.
 
 The baseline platform recording suite compiled and executed locally: **34 passed /
 1 failed**. The sole failure was the source-bound Swift raw-movie oracle, before
