@@ -1,0 +1,35 @@
+{
+  "base": "dec241107f359146d0e63fb051dfafe94e1425e1",
+  "source_sha256": {
+    "rust/crates/bellobox-app/src/settings_ui.rs": "30b94a5e92c82dd1e86b07e24a577eecae712a1e7fabdae5966e3d0c23ca89eb",
+    "rust/crates/bellobox-app/src/settings_ui/provider_setup.rs": "0c5456a883148e47310887886aa86f3d17b803923d4fac38b6ef9c07cc6b8274",
+    "rust/crates/bellobox-app/src/settings_ui/setup_tests.rs": "edd6712892783ab8969babd6ddcafdc2485773cac030ae94e77a2e3b849ee0d1",
+    "rust/crates/bellobox-app/src/settings_ui/quit_tests.rs": "8d563c9ee244997a5e094d4f0fcc1f25baa9065f34f4ac4da9f8e9e0c1aef18d"
+  },
+  "red_regression_source_sha256": "bb226e2d0ecbce035df5cc1c6641e63192ac90b9daf3a3fa031ce98d683d1b1b",
+  "logs_sha256": {
+    "red.log": "7786f767375d24cdc06169575120d9284c707d7777d15e05fa56268ccb0b7f31",
+    "green-focused.log": "989abca3c8593830919b6c9d9ae6f6f4d791078fb7d69d1c54115db8c211f7a3",
+    "green-shortcut.log": "1a2350839879d1341402cae90f5351a0170c285218ffd71be5e265cc4fcb6b51",
+    "full-app.log": "ad90df781f1832c0a9ffe07ab8bf0c98d10b360cd4c4d26b1bb86140ddd350a2",
+    "fixture-clippy.log": "946d9908cda1c0f9579b1ac0cb227b4be29e5fa4e31cc9b5a6f24e0b0bc4b1bb",
+    "default-clippy.log": "6dc53e7223cc676bb44f390d811c3bfa58f77aab403318fd0ef64c9d4179ec0b",
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "late-red.log": "dace6993cfb933b0ae13bc43670c72e36b73546199606e602ffefe03d6147e45",
+    "r2-focused.log": "4aabadcf3bfdca3ca1769bf1f2e5c6eae7c21aae63b017942b76baf220e5ffdd",
+    "r2-full-app.log": "ee22b4462a5f49e1a607187caf7f95845be1170f97eceafeb0dc25cdccfd6213",
+    "r2-fixture-clippy.log": "1294bcc428c79d997248bd810cad5c1debf83d2c971546773ccc4a80cec266e1",
+    "r2-default-clippy.log": "542654f1688a5be9befd2abd3002aa40dc599f28c14fd3e6fd71ce8b6030f289",
+    "r2-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "manual_gui_acceptance": false,
+  "native_acceptance": false,
+  "independent_review": "Final r2 four frozen Rust source postimages verified, no blocking finding.",
+  "prior_r1_source_sha256": {
+    "rust/crates/bellobox-app/src/settings_ui.rs": "30b94a5e92c82dd1e86b07e24a577eecae712a1e7fabdae5966e3d0c23ca89eb",
+    "rust/crates/bellobox-app/src/settings_ui/provider_setup.rs": "5ddbecd4412865a474cc5f09e90c7667c59a2044a1f9471a79e51973db59ec9e",
+    "rust/crates/bellobox-app/src/settings_ui/setup_tests.rs": "edd6712892783ab8969babd6ddcafdc2485773cac030ae94e77a2e3b849ee0d1",
+    "rust/crates/bellobox-app/src/settings_ui/quit_tests.rs": "ceb3133f9dfa2014ccc69883db496613b6349dc62278f6e47f2f3793b1a893b4"
+  },
+  "late_red_test_source_sha256": "8d563c9ee244997a5e094d4f0fcc1f25baa9065f34f4ac4da9f8e9e0c1aef18d"
+}

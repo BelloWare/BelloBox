@@ -1,0 +1,13 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-provider-quit-fix/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 12.71s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-6060b4a428446afc)
+
+running 4 tests
+test settings_ui::quit_tests::active_model_load_blocks_app_quit_through_settings_close ... ok
+test settings_ui::quit_tests::active_connection_test_blocks_app_quit_through_settings_close ... ok
+test settings_ui::quit_tests::failed_worker_spawn_releases_both_admission_leases ... ok
+test settings_ui::quit_tests::invalid_test_request_leaves_no_app_quit_blocker ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.23s

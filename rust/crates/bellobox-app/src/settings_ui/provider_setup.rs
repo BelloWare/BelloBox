@@ -51,6 +51,8 @@ impl Drop for WorkerLease {
 pub(super) struct Setup {
     generation: u64,
     closed: bool,
+    #[cfg(test)]
+    pub(super) fail_next_spawn: bool,
     pending: Option<Pending>,
     pub models: Vec<String>,
     pub load_message: Option<String>,
@@ -93,7 +95,16 @@ impl Setup {
     pub fn busy(&self) -> bool {
         self.pending.is_some()
     }
-    pub fn start(&mut self, action: Action, config: &Config, key: &str) -> Result<(), String> {
+    pub fn start(
+        &mut self,
+        action: Action,
+        config: &Config,
+        key: &str,
+        cx: &mut gpui::App,
+    ) -> Result<(), String> {
+        if crate::shutdown::requested(cx) {
+            return Err("Bello Box is closing. Provider setup requests are unavailable.".into());
+        }
         if self.closed {
             return Err("Settings window is closed.".into());
         }
@@ -110,13 +121,16 @@ impl Setup {
             Action::Test => Work::Test(test_request(config, key)?),
         };
         let lease = WorkerLease::acquire()?;
+        // Acquired synchronously on the UI thread, but retired by the physical
+        // worker. Closing/cancelling the Settings receiver cannot permit Quit.
+        let quit_blocker =
+            crate::shutdown::block_quit(cx, "Wait for the provider setup request to finish.");
         self.generation = self.generation.wrapping_add(1);
         let cancel = Arc::new(AtomicBool::new(false));
         let worker_cancel = cancel.clone();
         let (send, receive) = mpsc::sync_channel(1);
-        std::thread::Builder::new()
-            .name("provider-setup".into())
-            .spawn(move || {
+        spawn_worker(
+            move || {
                 let lease = lease;
                 let result = match work {
                     Work::Load(request) => {
@@ -130,9 +144,13 @@ impl Setup {
                 };
                 // Transport is fully retired before another action can start.
                 drop(lease);
+                drop(quit_blocker);
                 let _ = send.send(result);
-            })
-            .map_err(|_| "Cannot start provider setup worker.".to_owned())?;
+            },
+            #[cfg(test)]
+            std::mem::take(&mut self.fail_next_spawn),
+        )
+        .map_err(|_| "Cannot start provider setup worker.".to_owned())?;
         self.pending = Some(Pending {
             generation: self.generation,
             cancel,
@@ -185,6 +203,21 @@ impl Setup {
         true
     }
 }
+fn spawn_worker(
+    work: impl FnOnce() + Send + 'static,
+    #[cfg(test)] fail: bool,
+) -> std::io::Result<std::thread::JoinHandle<()>> {
+    #[cfg(test)]
+    if fail {
+        // Exercise the same closure/guard disposal as a failed OS spawn.
+        drop(work);
+        return Err(std::io::Error::other("synthetic spawn failure"));
+    }
+    std::thread::Builder::new()
+        .name("provider-setup".into())
+        .spawn(work)
+}
+
 impl Drop for Setup {
     fn drop(&mut self) {
         self.close();
@@ -260,8 +293,8 @@ mod tests {
         setup.invalidate(true);
         assert!(setup.models.is_empty());
     }
-    #[test]
-    fn closed_view_keeps_physical_lane_until_held_request_retires() {
+    #[gpui::test]
+    fn closed_view_keeps_physical_lane_until_held_request_retires(cx: &mut gpui::TestAppContext) {
         use std::{
             io::{Read, Write},
             net::TcpListener,
@@ -297,19 +330,18 @@ mod tests {
             );
         });
         let mut old = Setup::default();
-        old.start(Action::Load, &config, "fixture-only-key")
+        cx.update(|cx| old.start(Action::Load, &config, "fixture-only-key", cx))
             .unwrap();
         admission.recv_timeout(Duration::from_secs(5)).unwrap();
         old.invalidate(true);
         assert!(
-            old.start(Action::Load, &config, "fixture-only-key")
+            cx.update(|cx| old.start(Action::Load, &config, "fixture-only-key", cx))
                 .is_err()
         );
         drop(old);
         let mut reopened = Setup::default();
         assert!(
-            reopened
-                .start(Action::Load, &config, "fixture-only-key")
+            cx.update(|cx| reopened.start(Action::Load, &config, "fixture-only-key", cx))
                 .unwrap_err()
                 .contains("still stopping")
         );

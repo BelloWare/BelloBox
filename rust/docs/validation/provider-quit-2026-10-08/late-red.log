@@ -1,0 +1,31 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-provider-quit-fix/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 13.57s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-6060b4a428446afc)
+
+running 2 tests
+test settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_load_before_network ... FAILED
+test settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_test_before_network ... FAILED
+
+failures:
+
+---- settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_load_before_network stdout ----
+
+thread 'settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_load_before_network' (54) panicked at crates/bellobox-app/src/settings_ui/quit_tests.rs:283:5:
+shutdown-latched Settings must not dispatch a new HTTP request
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_test_before_network stdout ----
+
+thread 'settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_test_before_network' (57) panicked at crates/bellobox-app/src/settings_ui/quit_tests.rs:283:5:
+shutdown-latched Settings must not dispatch a new HTTP request
+
+
+failures:
+    settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_load_before_network
+    settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_test_before_network
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 383 filtered out; finished in 0.14s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

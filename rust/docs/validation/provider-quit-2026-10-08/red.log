@@ -1,0 +1,35 @@
+   Compiling bello-workbench v0.1.0 (/workspace/shared/box-provider-quit-fix/rust/crates/bello-workbench)
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-provider-quit-fix/rust/crates/bellobox-core)
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-provider-quit-fix/rust/crates/bello-workbench-ui)
+   Compiling bello-platform v0.1.0 (/workspace/shared/box-provider-quit-fix/rust/crates/bello-platform)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-provider-quit-fix/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 16.21s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-6060b4a428446afc)
+
+running 2 tests
+test settings_ui::quit_tests::active_connection_test_blocks_app_quit_through_settings_close ... FAILED
+test settings_ui::quit_tests::active_model_load_blocks_app_quit_through_settings_close ... FAILED
+
+failures:
+
+---- settings_ui::quit_tests::active_connection_test_blocks_app_quit_through_settings_close stdout ----
+
+thread 'settings_ui::quit_tests::active_connection_test_blocks_app_quit_through_settings_close' (125) panicked at crates/bellobox-app/src/settings_ui/quit_tests.rs:104:5:
+app Quit must refuse while setup transport is physically held
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- settings_ui::quit_tests::active_model_load_blocks_app_quit_through_settings_close stdout ----
+
+thread 'settings_ui::quit_tests::active_model_load_blocks_app_quit_through_settings_close' (129) panicked at crates/bellobox-app/src/settings_ui/quit_tests.rs:104:5:
+app Quit must refuse while setup transport is physically held
+
+
+failures:
+    settings_ui::quit_tests::active_connection_test_blocks_app_quit_through_settings_close
+    settings_ui::quit_tests::active_model_load_blocks_app_quit_through_settings_close
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.12s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

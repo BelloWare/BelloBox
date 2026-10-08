@@ -234,7 +234,7 @@ fn actual_window_close_fences_retained_entity_and_fresh_reopen(cx: &mut TestAppC
         .unwrap();
     cx.run_until_parked();
     finish();
-    retained.update(cx, |view, _| {
+    retained.update(cx, |view, cx| {
         assert!(view.setup.poll());
         assert!(view.setup.test_message.is_none());
         let config = bellobox_core::ai::Config {
@@ -246,7 +246,7 @@ fn actual_window_close_fences_retained_entity_and_fresh_reopen(cx: &mut TestAppC
         };
         assert!(
             view.setup
-                .start(SetupAction::Test, &config, "fixture-only-key")
+                .start(SetupAction::Test, &config, "fixture-only-key", cx)
                 .unwrap_err()
                 .contains("closed")
         );

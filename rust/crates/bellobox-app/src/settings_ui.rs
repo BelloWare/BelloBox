@@ -695,7 +695,7 @@ impl SettingsView {
                 system_prompt: self.prompt.read(cx).text().to_owned(),
                 max_output_tokens: 4096,
             };
-            self.setup.start(action, &config, key)
+            self.setup.start(action, &config, key, cx)
         });
         if let Err(error) = result {
             match action {
@@ -1624,3 +1624,6 @@ mod tests {
 
 #[cfg(test)]
 mod setup_tests;
+
+#[cfg(test)]
+mod quit_tests;

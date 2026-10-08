@@ -1,0 +1,157 @@
+diff --git a/rust/crates/bellobox-app/src/settings_ui.rs b/rust/crates/bellobox-app/src/settings_ui.rs
+--- a/rust/crates/bellobox-app/src/settings_ui.rs
++++ b/rust/crates/bellobox-app/src/settings_ui.rs
+@@ -1626,0 +1627,3 @@
++
++#[cfg(test)]
++mod quit_tests;
+diff --git a/rust/crates/bellobox-app/src/settings_ui/quit_tests.rs b/rust/crates/bellobox-app/src/settings_ui/quit_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/rust/crates/bellobox-app/src/settings_ui/quit_tests.rs
+@@ -0,0 +1,145 @@
++//! App-controlled Quit coverage only; no native or last-window policy claim.
++use super::{SettingsView, SetupAction};
++use bellobox_core::settings::Settings;
++use gpui::{Context, Render, TestAppContext, Window};
++use std::{
++    io::{Read, Write},
++    net::TcpListener,
++    time::{Duration, Instant},
++};
++
++struct Home;
++impl Render for Home {
++    fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl gpui::IntoElement {
++        gpui::div()
++    }
++}
++fn read_request(socket: &mut std::net::TcpStream) {
++    socket
++        .set_read_timeout(Some(Duration::from_secs(5)))
++        .unwrap();
++    let mut bytes = Vec::new();
++    let mut end = None;
++    let mut length = 0;
++    loop {
++        let mut byte = [0];
++        assert_eq!(socket.read(&mut byte).unwrap(), 1);
++        bytes.push(byte[0]);
++        assert!(bytes.len() < 32_000);
++        if end.is_none() && bytes.ends_with(b"\r\n\r\n") {
++            let head = String::from_utf8_lossy(&bytes).to_ascii_lowercase();
++            length = head
++                .lines()
++                .find_map(|line| {
++                    line.strip_prefix("content-length:")
++                        .map(|n| n.trim().parse::<usize>().unwrap())
++                })
++                .unwrap_or(0);
++            end = Some(bytes.len());
++        }
++        if end.is_some_and(|n| bytes.len() == n + length) {
++            break;
++        }
++    }
++}
++#[gpui::test]
++fn active_model_load_blocks_app_quit_through_settings_close(cx: &mut TestAppContext) {
++    held_quit(cx, SetupAction::Load);
++}
++#[gpui::test]
++fn active_connection_test_blocks_app_quit_through_settings_close(cx: &mut TestAppContext) {
++    held_quit(cx, SetupAction::Test);
++}
++fn held_quit(cx: &mut TestAppContext, action: SetupAction) {
++    let _serial = super::provider_setup::TEST_LOCK
++        .lock()
++        .unwrap_or_else(|e| e.into_inner());
++    cx.update(crate::shutdown::init);
++    let home = cx.add_window(|window, cx| {
++        crate::shutdown::guard_window(window, cx);
++        Home
++    });
++    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
++    let dir = tempfile::tempdir().unwrap();
++    let path = dir.path().join("settings.json");
++    Settings {
++        provider_endpoint: format!("http://{}/v1", listener.local_addr().unwrap()),
++        provider_model: "fixture-model".into(),
++        ..Default::default()
++    }
++    .save(&path)
++    .unwrap();
++    let (admitted, admission) = std::sync::mpsc::channel();
++    let (release, released) = std::sync::mpsc::channel();
++    let server = std::thread::spawn(move || {
++        let (mut socket, _) = listener.accept().unwrap();
++        read_request(&mut socket);
++        admitted.send(()).unwrap();
++        let _ = released.recv_timeout(Duration::from_secs(10));
++        let body = match action {
++            SetupAction::Load => r#"{"data":[{"id":"late-model"}]}"#,
++            SetupAction::Test => {
++                "data: {\"choices\":[{\"delta\":{\"content\":\"late hello\"}}]}\n\ndata: [DONE]\n\n"
++            }
++        };
++        let _ = write!(
++            socket,
++            "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
++            body.len(),
++            body
++        );
++    });
++    let settings = cx.add_window(|window, cx| {
++        crate::shutdown::guard_window(window, cx);
++        SettingsView::new_at(path, window, cx)
++    });
++    let retained = settings.root(cx).unwrap();
++    settings
++        .update(cx, |view, _, cx| {
++            view.start_setup_with_key(action, "fixture-only-key", cx)
++        })
++        .unwrap();
++    admission.recv_timeout(Duration::from_secs(5)).unwrap();
++    cx.dispatch_action(home.into(), crate::shutdown::Quit);
++    assert!(
++        !cx.read(crate::shutdown::requested),
++        "app Quit must refuse while setup transport is physically held"
++    );
++    assert_eq!(cx.read(crate::shutdown::quit_calls), 0);
++    assert!(crate::shutdown::pending_refusal(cx).is_some());
++    crate::shutdown::dismiss_refusal(cx);
++    settings
++        .update(cx, |_, window, _| window.remove_window())
++        .unwrap();
++    cx.run_until_parked();
++    cx.dispatch_action(home.into(), crate::shutdown::Quit);
++    assert!(!cx.read(crate::shutdown::requested));
++    assert_eq!(cx.read(crate::shutdown::quit_calls), 0);
++    assert!(crate::shutdown::pending_refusal(cx).is_some());
++    crate::shutdown::dismiss_refusal(cx);
++    release.send(()).unwrap();
++    server.join().unwrap();
++    let deadline = Instant::now() + Duration::from_secs(5);
++    loop {
++        let busy = retained.update(cx, |view, _| {
++            view.setup.poll();
++            view.setup.busy()
++        });
++        if !busy {
++            break;
++        }
++        assert!(Instant::now() < deadline);
++        std::thread::sleep(Duration::from_millis(5));
++    }
++    retained.update(cx, |view, _| {
++        assert!(view.setup.models.is_empty());
++        assert!(view.setup.test_message.is_none());
++        assert!(!view.setup.poll());
++    });
++    assert!(
++        !cx.read(crate::shutdown::requested),
++        "old refused Quit must never resume itself"
++    );
++    cx.dispatch_action(home.into(), crate::shutdown::Quit);
++    assert_eq!(cx.read(crate::shutdown::quit_calls), 1);
++}

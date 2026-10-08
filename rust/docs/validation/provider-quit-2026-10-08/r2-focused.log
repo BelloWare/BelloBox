@@ -1,0 +1,28 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-provider-quit-fix/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 12.62s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-6060b4a428446afc)
+
+running 19 tests
+test settings_ui::provider_setup::tests::close_cancels_and_reopen_cannot_receive_old_result ... ok
+test settings_ui::provider_setup::tests::editing_cancels_but_does_not_release_physical_ownership_or_accept_late_success ... ok
+test settings_ui::provider_setup::tests::empty_error_and_retry_leave_manual_model_available ... ok
+test settings_ui::provider_setup::tests::provider_endpoint_api_and_model_changes_reject_old_model_lists ... ok
+test settings_ui::quit_tests::active_connection_test_blocks_app_quit_through_settings_close ... ok
+test settings_ui::provider_setup::tests::closed_view_keeps_physical_lane_until_held_request_retires ... ok
+test settings_ui::quit_tests::active_model_load_blocks_app_quit_through_settings_close ... ok
+test settings_ui::quit_tests::failed_worker_spawn_releases_both_admission_leases ... ok
+test settings_ui::quit_tests::invalid_test_request_leaves_no_app_quit_blocker ... ok
+test settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_load_before_network ... ok
+test settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_test_before_network ... ok
+test settings_ui::setup_tests::actual_window_close_fences_retained_entity_and_fresh_reopen ... ok
+test settings_ui::setup_tests::actual_close_reopen_cannot_restart_a_held_transport ... ok
+test settings_ui::setup_tests::settings_load_select_persist_test_then_ask_ai_uses_selected_model ... ok
+test settings_ui::tests::categories_and_order_match_swift_source ... ok
+test settings_ui::tests::editor_theme_keeps_plain_chrome_and_prompt_wrap ... ok
+test settings_ui::tests::narrow_edits_preserve_recent_activity_and_do_not_clobber_bad_files ... ok
+test settings_ui::tests::provider_fields_reject_embedded_credentials_and_unbounded_values ... ok
+test settings_ui::setup_tests::real_configuration_callbacks_reject_delayed_setup_results ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 366 filtered out; finished in 0.80s
