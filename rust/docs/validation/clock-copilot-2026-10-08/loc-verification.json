@@ -1,0 +1,39 @@
+{
+  "integrated": {
+    "baseline_commit": "e9cdb40c6475a9ba006cd245050fc650a82780ba",
+    "cumulative_counts": {
+      "production": 55276,
+      "support": 37190,
+      "benchmark": 105
+    },
+    "physical_totals": {
+      "before": 89727,
+      "after": 92571,
+      "before_files": 178,
+      "after_files": 185
+    },
+    "disjoint": true
+  },
+  "verified": true,
+  "baseline_commit": "dec241107f359146d0e63fb051dfafe94e1425e1",
+  "reviewed_changed_rust_paths": 9,
+  "unchanged_rust_paths": 175,
+  "delta": {
+    "production": 1346,
+    "support": 1498,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 55255,
+    "support": 36880,
+    "benchmark": 105
+  },
+  "physical_totals": {
+    "before": 89396,
+    "after": 92240,
+    "before_files": 177,
+    "after_files": 184
+  },
+  "final_manifest_paths": 12,
+  "live_repository_verified": true
+}

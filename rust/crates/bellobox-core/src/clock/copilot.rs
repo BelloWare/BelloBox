@@ -17,6 +17,10 @@
 //! 12-suggestion limit and the existing Rust planner's 24-location setter limit
 //! are not limits imposed by this calculation.
 
+pub mod apply;
+pub mod protocol;
+pub mod session;
+
 use std::collections::HashSet;
 use std::ops::{BitOr, BitOrAssign};
 

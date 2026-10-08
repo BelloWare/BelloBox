@@ -1,5 +1,7 @@
-//! Dedicated offline planner, following WorldClockView and its window lifecycle.
-//! Locale-native date controls and Copilot remain unported.
+//! Dedicated planner and explicit-action, ephemeral World Clock Copilot.
+//! Locale-native date controls and palette conversation transfer remain unported.
+mod copilot;
+mod copilot_worker;
 use crate::theme::Palette;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
@@ -59,10 +61,21 @@ enum Action {
     ApplyDate,
     ApplyTime,
     Copilot,
+    CopilotSend,
+    CopilotRetry,
+    CopilotCancel,
+    CopilotClear,
+    CopilotSettings,
+    CopilotPrompt(String),
+    CopilotApply(u64, u64),
+    CopilotCopy(u64),
 }
 
 pub struct WorldClock {
     planner: Planner,
+    planner_revision: u64,
+    settings_path: std::path::PathBuf,
+    copilot: copilot::Copilot,
     displayed_day: Timeline,
     action_focus: HashMap<Action, FocusHandle>,
     consume_enter_release: bool,
@@ -94,8 +107,16 @@ pub struct WorldClock {
 }
 impl WorldClock {
     fn new(input: String, window: &mut Window, cx: &mut Context<Self>) -> Self {
+        Self::new_at(input, config_dir().join("settings.json"), window, cx)
+    }
+    fn new_at(
+        input: String,
+        settings_path: std::path::PathBuf,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
         let p = crate::theme::for_window(window);
-        let loaded = Settings::load(&config_dir().join("settings.json"));
+        let loaded = Settings::load(&settings_path);
         let mut error = loaded.as_ref().err().cloned();
         let settings = loaded.unwrap_or_default();
         // Only an explicit routed seed is parsed. Never read clipboard or selection.
@@ -165,6 +186,9 @@ impl WorldClock {
         focus.focus(window);
         let mut result = Self {
             planner,
+            planner_revision: 0,
+            settings_path,
+            copilot: copilot::Copilot::new(window, cx),
             displayed_day,
             action_focus: HashMap::new(),
             consume_enter_release: false,
@@ -194,6 +218,7 @@ impl WorldClock {
             wheel: WheelAccumulator::default(),
             _subscriptions: vec![subscription, date_blur, time_blur, activation],
         };
+        result.install_copilot_lifecycle(window, cx);
         result.sync_fields(cx);
         result.refresh_bands();
         cx.spawn_in(window, async |this, cx| {
@@ -210,6 +235,7 @@ impl WorldClock {
                             .refresh_now(clock::current_time())
                             .unwrap_or(false)
                         {
+                            this.planner_revision = this.planner_revision.wrapping_add(1);
                             this.displayed_day =
                                 this.planner.timeline().expect("validated live day");
                             let date = this.displayed_date();
@@ -255,6 +281,7 @@ impl WorldClock {
     ) {
         let result = handoff.apply(&mut self.planner);
         if result.is_ok() {
+            self.reset_copilot(cx);
             self.picker = false;
             self.reference_menu = false;
             self.reference_generation = self.reference_generation.wrapping_add(1);
@@ -315,6 +342,7 @@ impl WorldClock {
         self.error = result.err();
         self.status = None;
         if self.error.is_none() {
+            self.planner_revision = self.planner_revision.wrapping_add(1);
             if !preserve_day && let Ok(day) = self.planner.timeline() {
                 self.displayed_day = day;
             }
@@ -326,7 +354,7 @@ impl WorldClock {
     fn persist(&mut self) {
         let ids: Vec<_> = self.planner.zones.iter().map(ToString::to_string).collect();
         if let Err(e) = Settings::save_clock_preferences(
-            &config_dir().join("settings.json"),
+            &self.settings_path,
             &ids,
             self.planner.reference.name(),
         ) {
@@ -346,6 +374,9 @@ impl WorldClock {
         cx.notify();
     }
     fn act(&mut self, action: Action, window: &mut Window, cx: &mut Context<Self>) {
+        if self.copilot_action(&action, window, cx) {
+            return;
+        }
         let preserve_day = matches!(&action, Action::Add(_))
             || matches!(&action,Action::Remove(id) if id != self.planner.reference.name());
         let mut save = false;
@@ -428,12 +459,7 @@ impl WorldClock {
                 cx.notify();
                 return;
             }
-            Action::Copilot => {
-                self.status =
-                    Some("Copilot isn’t available in this offline Rust planner yet.".into());
-                cx.notify();
-                return;
-            }
+            _ => return,
         };
         let success = result.is_ok();
         self.changed_in_day(result, preserve_day, cx);
@@ -443,7 +469,7 @@ impl WorldClock {
     }
     fn key(&mut self, event: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
         let key = event.keystroke.key.as_str();
-        if [&self.date, &self.time, &self.query]
+        if [&self.date, &self.time, &self.query, &self.copilot.draft]
             .iter()
             .any(|e| e.read(cx).focus_handle(cx).is_focused(window) && e.read(cx).has_marked_text())
         {
@@ -456,6 +482,29 @@ impl WorldClock {
         // never a button revealed/restored when that press dismisses a picker.
         if repeated_activation(key, event.is_held) {
             cx.stop_propagation();
+            return;
+        }
+        if self.copilot.visible
+            && !self.picker
+            && !self.reference_menu
+            && self
+                .copilot
+                .draft
+                .read(cx)
+                .focus_handle(cx)
+                .is_focused(window)
+            && matches!(key, "enter" | "escape")
+        {
+            cx.stop_propagation();
+            self.act(
+                if key == "enter" {
+                    Action::CopilotSend
+                } else {
+                    Action::Copilot
+                },
+                window,
+                cx,
+            );
             return;
         }
         if key == "tab" {
@@ -567,6 +616,7 @@ impl WorldClock {
             let action = match key {
                 "n" => Some(Action::Now),
                 "l" => Some(Action::Picker),
+                "j" => Some(Action::Copilot),
                 "c" if event.keystroke.modifiers.shift => Some(Action::Copy),
                 _ => None,
             };
@@ -663,6 +713,24 @@ impl WorldClock {
             actions.push(Action::Remove(z.name().into()));
         }
         actions.extend(self.results(cx).into_iter().map(|z| Action::Add(z.id)));
+        actions.extend(self.copilot_actions());
+        // Preserve keyboard identity across live-clock revisions while the
+        // actual button still captures its reviewed planner revision.
+        let retained: Vec<_> = actions
+            .iter()
+            .filter_map(|action| {
+                let Action::CopilotApply(id, _) = action else {
+                    return None;
+                };
+                self.action_focus.iter().find_map(|(old, focus)| match old {
+                    Action::CopilotApply(old_id, _) if old_id == id => {
+                        Some((action.clone(), focus.clone()))
+                    }
+                    _ => None,
+                })
+            })
+            .collect();
+        self.action_focus.extend(retained);
         self.action_focus.retain(|a, _| actions.contains(a));
         for action in actions {
             self.action_focus
@@ -706,6 +774,14 @@ impl WorldClock {
         for a in [Action::Picker, Action::Copilot, Action::Copy] {
             add(&mut order, a);
         }
+        if self.copilot.visible {
+            order.push(self.copilot.draft.read(cx).focus_handle(cx));
+            for action in self.copilot_actions() {
+                if self.copilot_action_enabled(&action, cx) {
+                    add(&mut order, action);
+                }
+            }
+        }
         order
     }
     fn button(
@@ -719,7 +795,8 @@ impl WorldClock {
     ) -> Stateful<Div> {
         let disabled_add = matches!(action, Action::AddSelected)
             && selected_location(&self.results(cx), self.picker_index).is_none();
-        let enabled = !disabled_add
+        let enabled = self.copilot_action_enabled(&action, cx)
+            && !disabled_add
             && !matches!(&action, Action::Remove(_) if self.planner.zones.len() == 1)
             && !matches!(&action, Action::Reference(id) if id == self.planner.reference.name());
         let focus = self.action_focus[&action].clone();
@@ -747,7 +824,7 @@ impl WorldClock {
                 s.cursor_pointer()
                     .hover(move |s| s.bg(if primary { p.brand } else { p.well }))
             })
-            .when(disabled_add, |s| s.opacity(0.4))
+            .when(!enabled, |s| s.opacity(0.4))
             .child(label.into())
             .when(enabled, |s| {
                 s.on_click(
@@ -1275,7 +1352,7 @@ impl Render for WorldClock {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         self.prepare_focus(cx);
         let p = crate::theme::for_window(window);
-        for editor in [&self.date, &self.time, &self.query] {
+        for editor in [&self.date, &self.time, &self.query, &self.copilot.draft] {
             if editor.read(cx).appearance().text != p.primary {
                 editor.update(cx, |e, cx| {
                     let mut a = e.appearance().clone();
@@ -1455,8 +1532,12 @@ impl Render for WorldClock {
                                 cx,
                             ))
                             .child(self.button(
-                                "clock-copilot-unavailable",
-                                "Copilot",
+                                "clock-copilot-toggle",
+                                if self.copilot.visible {
+                                    "Hide Copilot"
+                                } else {
+                                    "Copilot"
+                                },
                                 Action::Copilot,
                                 false,
                                 p,
@@ -1481,6 +1562,7 @@ impl Render for WorldClock {
                             )),
                     ),
             )
+            .when(self.copilot.visible, |s| s.child(self.copilot_view(p, cx)))
             .when(self.picker, |s| s.child(self.picker_view(p, cx)))
     }
 }
@@ -1703,6 +1785,9 @@ pub fn open_with_handoff(
     handoff: Option<crate::clock_preview_session::ClockHandoff>,
     cx: &mut App,
 ) {
+    if crate::shutdown::requested(cx) {
+        return;
+    }
     for window in cx.windows() {
         if let Some(clock) = window.downcast::<WorldClock>()
             && clock
@@ -1730,7 +1815,8 @@ pub fn open_with_handoff(
             ..Default::default()
         },
         move |window, cx| {
-            crate::shutdown::guard_window(window, cx);
+            // WorldClock installs its physical-request close gate and retains
+            // normal app Quit admission in its constructor.
             cx.new(|cx| {
                 let mut clock = WorldClock::new(input, window, cx);
                 if let Some(handoff) = &handoff {

@@ -639,6 +639,7 @@ dependencies = [
  "tempfile",
  "tiny-skia",
  "unicode-normalization",
+ "unicode-segmentation",
  "url",
  "uuid",
  "x509-parser",

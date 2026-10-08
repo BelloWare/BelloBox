@@ -1,0 +1,10 @@
+{
+  "filename": "bellobox-clock",
+  "sha256": "c533b5097a5cdf91abb2ad765854fcf65634fca5af25eebe0d9bff9ce744702a",
+  "bytes": 144476832,
+  "base_commit": "f30b81f0fd62e7bb29b8809a4f57471b46b01450",
+  "source_manifest": "source-manifest-r2.json",
+  "features": "default",
+  "purpose": "ordinary binary for separate interactive GUI validation",
+  "published_executable": false
+}

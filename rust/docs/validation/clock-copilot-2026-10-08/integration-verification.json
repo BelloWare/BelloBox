@@ -1,0 +1,24 @@
+{
+  "base_commit": "f30b81f0fd62e7bb29b8809a4f57471b46b01450",
+  "candidate_base": "dec241107f359146d0e63fb051dfafe94e1425e1",
+  "source_manifest": "source-manifest-r2.json",
+  "source_manifest_sha256": "27b87dcd0e288ffe68eda9116e8a545a954b15c1980ff8383f0d560ba7e541e3",
+  "verified_postimages": 12,
+  "all_postimages_match": true,
+  "core_tests": {
+    "passed": 421,
+    "failed": 0,
+    "ignored": 0
+  },
+  "app_tests": {
+    "passed": 397,
+    "failed": 0,
+    "ignored": 1
+  },
+  "new_clock_gpui_tests": 13,
+  "strict_core_clippy": true,
+  "strict_default_app_clippy": true,
+  "strict_fixture_app_clippy": true,
+  "fmt": true,
+  "interactive_gui_acceptance": false
+}
