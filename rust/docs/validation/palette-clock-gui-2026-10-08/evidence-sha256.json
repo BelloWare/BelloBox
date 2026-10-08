@@ -1,0 +1,244 @@
+[
+  {
+    "file": "01-home.png",
+    "bytes": 129898,
+    "sha256": "f096b205a37f78d2d675c511edd111bff2436dff2bdadffcf6c69137f4a6d566",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "02-palette-open.png",
+    "bytes": 95085,
+    "sha256": "23a3dd3d44788b72743c59641a5b3bff4b15bf4f69274f15e010db8a9ddc0da2",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "03-clock-preview.png",
+    "bytes": 132210,
+    "sha256": "5badec173eafe58e8d3fe474985a551a0466c06c0f36f9b8daaf40ce0864f495",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "04-tab-observation.png",
+    "bytes": 131674,
+    "sha256": "467e6ffbdc69cc3c3ca1b6a1729bc26a3d81fd105af408652afa5692b9678731",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "05-draft-click-observation.png",
+    "bytes": 132886,
+    "sha256": "0eab070b7f54be20f9e27db7163c408ff22337d34a601e92527935c6daaecf6f",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "06-palette-answer.png",
+    "bytes": 132302,
+    "sha256": "57ebe247837b377cb1feef662876fa94e3a10f4321945d97833c188c1c8ca739",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "07-time-applied.png",
+    "bytes": 132420,
+    "sha256": "b2a756bc9d50c0c92a9f5e50c1d761040ee7f86b1e188ece9d173bd29b391ad1",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "08-draft-before-handoff.png",
+    "bytes": 132922,
+    "sha256": "11051f2cf3300e41138afb35eacedc9b6a044dd01340352c2f13c0534ecfec1e",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "09-dedicated-handoff.png",
+    "bytes": 127625,
+    "sha256": "a485d7889b317f62dddf0b7754bc076c3da799f20a403261e3cfcfad7ac2542b",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "10-remaining-location-action.png",
+    "bytes": 133175,
+    "sha256": "a95ff87dd5b4edc5a2234bf1a9a8baf0c541fba4a44ccb333a883485ada2e9bf",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "11-location-applied.png",
+    "bytes": 127897,
+    "sha256": "cde3639c5c62a3cc6b322ac8a8598f87cf46a664af3d057796b2239d488f1a47",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "12-home-after-close.png",
+    "bytes": 134301,
+    "sha256": "e1967f282412bcce31b16ca7d78350c5ae6364a4f27298f87b2cd99bac3a18db",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "13-reopened-palette.png",
+    "bytes": 134053,
+    "sha256": "45ab38addd4407256cead74e2f40bcc403dc31b245cc85780920815c33b7a3b3",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "14-held-palette.png",
+    "bytes": 128443,
+    "sha256": "c88eeb99bf7fd7da619a08bd3e141bcc81d4bc9c4fa62a7d9b648e1d0de57c19",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "15-held-handoff.png",
+    "bytes": 125870,
+    "sha256": "f93ff20e05fac0cd6255c44ea9b25b62a6eb4cd7493d4c879165cc2d11ebeedb",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "16-close-refused.png",
+    "bytes": 125599,
+    "sha256": "07d1d0af3bf9e743e1e99248f254f9c900163647371a5fa7b94dcecedcecb163",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "17-retired-no-stale-notice.png",
+    "bytes": 124652,
+    "sha256": "7e8722ead5380907c4057dbb9a31b778fff06174d57beddae9e1a25b65a62308",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "18-close-after-retirement.png",
+    "bytes": 134152,
+    "sha256": "ceb74d7a8c5e10024c564032280d3b2179c76da6d450718a0e3bc78e1bc724d1",
+    "dimensions": [
+      1364,
+      1024
+    ]
+  },
+  {
+    "file": "README.md",
+    "bytes": 5904,
+    "sha256": "2e9e5fac2cae357719ac84235c5c23a13eeb1bfe3be02e0354a8378b62b370e2"
+  },
+  {
+    "file": "admitted-held",
+    "bytes": 4,
+    "sha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+  },
+  {
+    "file": "app.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "config-after-handoff.json",
+    "bytes": 137,
+    "sha256": "6f613e7ac9d7475a8f04fa87bf47001c81f04d81bdc3432d6b378ed6040e3096"
+  },
+  {
+    "file": "config-after-location.json",
+    "bytes": 266,
+    "sha256": "f77b7e37019e311f1ce8c09ca12da46dfe200e196c56859db2d5cf637215588a"
+  },
+  {
+    "file": "config-after-time.json",
+    "bytes": 137,
+    "sha256": "6f613e7ac9d7475a8f04fa87bf47001c81f04d81bdc3432d6b378ed6040e3096"
+  },
+  {
+    "file": "config-before-send.json",
+    "bytes": 137,
+    "sha256": "6f613e7ac9d7475a8f04fa87bf47001c81f04d81bdc3432d6b378ed6040e3096"
+  },
+  {
+    "file": "config-launch.json",
+    "bytes": 137,
+    "sha256": "6f613e7ac9d7475a8f04fa87bf47001c81f04d81bdc3432d6b378ed6040e3096"
+  },
+  {
+    "file": "endpoint",
+    "bytes": 25,
+    "sha256": "50f46904ae4b98b104f3f18b69c2fec13e558723f823269121f7cfa3faffcea8"
+  },
+  {
+    "file": "exit-code",
+    "bytes": 2,
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+    "file": "launch.sh",
+    "bytes": 756,
+    "sha256": "0abf2cc2fcfdb9539933f11b956b4025591060b4c501ef55216b656a2ba8d1c8"
+  },
+  {
+    "file": "released-at.txt",
+    "bytes": 21,
+    "sha256": "fc574eb2a24e1c209086b3a1e85b1ec92f2c50dff3413181c212cf27d526f890"
+  },
+  {
+    "file": "requests.jsonl",
+    "bytes": 4002,
+    "sha256": "6c91579c655c9e3d75e746eaef39537afb41d392b50ab409e61be1785f8b842f"
+  },
+  {
+    "file": "server.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "server.py",
+    "bytes": 1474,
+    "sha256": "008de5959b4f3feb9e8298858a154aaecf908629a51ccc40b558307ac09b676e"
+  },
+  {
+    "file": "source-verification.json",
+    "bytes": 6974,
+    "sha256": "597cdb53978a7851989fa5f9982d93dedac1f6156e773a698dd1aadf71549580"
+  }
+]

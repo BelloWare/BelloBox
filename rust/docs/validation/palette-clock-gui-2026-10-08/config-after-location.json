@@ -1,0 +1,12 @@
+{
+  "appearance": "Light",
+  "provider_kind": "openai",
+  "provider_endpoint": "http://127.0.0.1:33525/v1",
+  "provider_model": "clock-gui-model",
+  "zone_ids": [
+    "America/Los_Angeles",
+    "UTC",
+    "Asia/Tokyo"
+  ],
+  "anchor_zone_id": "America/Los_Angeles"
+}

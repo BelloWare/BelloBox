@@ -1,0 +1,78 @@
+{
+  "01-empty-input.png": {
+    "bytes": 134773,
+    "sha256": "3014896b93b9c44ed9069b7bfa83444146332d75999bdf203304fc55c8ac35ac"
+  },
+  "02-typed-descenders.png": {
+    "bytes": 133986,
+    "sha256": "6795e331c6e9cd38e49234919a3ee5a1ad9669d3714a1eebcf789f4621dcd9e5"
+  },
+  "03-held-cancel.png": {
+    "bytes": 130705,
+    "sha256": "ed02398a736255db88322fb2742ecf9569c96d7e939389d8878e2253bb025992"
+  },
+  "04-actions-after-retirement.png": {
+    "bytes": 136461,
+    "sha256": "645dc7fe2d76bc643d139610c793a4986bd2fcdd030a45d849e6756fcd026100"
+  },
+  "05-time-applied-deferred.png": {
+    "bytes": 137465,
+    "sha256": "3437b13e7cefb54479ccf2fca1e3c233aab68a6cbf0ef1f779ea9629b2f8a890"
+  },
+  "README.md": {
+    "bytes": 2939,
+    "sha256": "11435c891251bd807b7a3f7f22fa88db428d4ea5b5f69e8304287910acee3115"
+  },
+  "admitted-held": {
+    "bytes": 4,
+    "sha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+  },
+  "app.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "binary-sha256": {
+    "bytes": 65,
+    "sha256": "5c32ed50ee064d8d63a8f2eef6891202032fbbbed665e3f2d3cd1ae9867e7d42"
+  },
+  "config/settings.json": {
+    "bytes": 137,
+    "sha256": "cd2d996043aafcfedc344a118ba4c9ad5114317b16bf08ed83b14ab0f945962a"
+  },
+  "config-launch.json": {
+    "bytes": 137,
+    "sha256": "cd2d996043aafcfedc344a118ba4c9ad5114317b16bf08ed83b14ab0f945962a"
+  },
+  "endpoint": {
+    "bytes": 25,
+    "sha256": "e7b9a3f7aba8c7dc2538afa0ea8b3b0b6b2bab1ddfd8259f3b58012eefa5835d"
+  },
+  "exit-code": {
+    "bytes": 2,
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "final-window-inventory.json": {
+    "bytes": 1724,
+    "sha256": "7e36d3841a64b713a94e570c55ed8be049d09489f766fe147a4fbca890ce86e1"
+  },
+  "launch.sh": {
+    "bytes": 759,
+    "sha256": "70d302f8697885086406742b023fce9567efbdb1c9ce987a605d34f52ab99b6f"
+  },
+  "released-at.txt": {
+    "bytes": 21,
+    "sha256": "093662128b40624a94e3b1e72ffcb3e0518de3fd47eb52d10b1450bc83553bdc"
+  },
+  "requests.jsonl": {
+    "bytes": 1958,
+    "sha256": "5e340626be441be2eba3fc165a207d4cd2939980fd726755c94e6c1274ff5b80"
+  },
+  "server.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "server.py": {
+    "bytes": 1474,
+    "sha256": "c4dd796203bcea10aa071e99a3012c7dcc52f1baf9e776c9cd9a9b84ceb8025a"
+  }
+}

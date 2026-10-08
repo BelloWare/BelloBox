@@ -1,0 +1,20 @@
+--- a/rust/crates/bellobox-app/src/launcher_clock_ui/copilot.rs	2026-10-08 14:38:01.975328550 -0700
++++ b/rust/crates/bellobox-app/src/launcher_clock_ui/copilot.rs	2026-10-08 14:40:19.593556470 -0700
+@@ -494,7 +494,7 @@
+             div()
+                 .id("palette-copilot-input")
+                 .debug_selector(|| "palette-copilot-input".into())
+-                .h(px(30.))
++                .h(px(18.))
+                 .flex_none()
+                 .flex()
+                 .items_center()
+@@ -539,7 +539,7 @@
+         .err()
+         .or_else(|| time.as_ref().err())
+         .cloned();
+-    let deferred = locations.ok().flatten().map(|p| p.plan.summary);
++    let deferred = if suggestion.parts().contains(Parts::LOCATIONS) { Some("Open World Clock to apply locations.".into()) } else { None };
+     let remaining = time.is_ok_and(|p| p.is_some()) || deferred.is_some() || issue.is_some();
+     let label = if remaining {
+         if applied.is_empty() {

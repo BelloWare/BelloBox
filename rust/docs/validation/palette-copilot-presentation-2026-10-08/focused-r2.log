@@ -1,0 +1,51 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-palette-presentation/rust/crates/bellobox-app)
+error[E0432]: unresolved import `chrono`
+ --> crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:4:5
+  |
+4 | use chrono::{TimeZone, Utc};
+  |     ^^^^^^ use of unresolved module or unlinked crate `chrono`
+  |
+  = help: if you wanted to use a crate named `chrono`, use `cargo add chrono` to add it to your `Cargo.toml`
+
+warning: unused imports: `Context` and `Window`
+ --> crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:2:40
+  |
+2 | use gpui::{TestAppContext, AppContext, Context, Window, px, size, Modifiers};
+  |                                        ^^^^^^^  ^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: cannot find module or crate `chrono_tz` in this scope
+ --> crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:8:21
+  |
+8 |         zones: vec![chrono_tz::UTC],
+  |                     ^^^^^^^^^ use of unresolved module or unlinked crate `chrono_tz`
+  |
+  = help: if you wanted to use a crate named `chrono_tz`, use `cargo add chrono_tz` to add it to your `Cargo.toml`
+
+error[E0433]: cannot find module or crate `chrono_tz` in this scope
+ --> crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:9:20
+  |
+9 |         reference: chrono_tz::UTC,
+  |                    ^^^^^^^^^ use of unresolved module or unlinked crate `chrono_tz`
+  |
+  = help: if you wanted to use a crate named `chrono_tz`, use `cargo add chrono_tz` to add it to your `Cargo.toml`
+
+error[E0433]: cannot find module or crate `chrono_tz` in this scope
+  --> crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:50:20
+   |
+50 |     p.zones = vec![chrono_tz::UTC];
+   |                    ^^^^^^^^^ use of unresolved module or unlinked crate `chrono_tz`
+   |
+   = help: if you wanted to use a crate named `chrono_tz`, use `cargo add chrono_tz` to add it to your `Cargo.toml`
+
+warning: unused import: `AppContext`
+ --> crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:2:28
+  |
+2 | use gpui::{TestAppContext, AppContext, Context, Window, px, size, Modifiers};
+  |                            ^^^^^^^^^^
+
+Some errors have detailed explanations: E0432, E0433.
+For more information about an error, try `rustc --explain E0432`.
+warning: `bellobox-app` (bin "bellobox" test) generated 2 warnings
+error: could not compile `bellobox-app` (bin "bellobox" test) due to 4 previous errors; 2 warnings emitted

@@ -1,0 +1,165 @@
+{
+  "published": "9ce80e005e9d8e896cb31ea9dc98aafc30000179",
+  "verified_manifest_files": [
+    {
+      "path": "rust/crates/bellobox-app/src/clock_copilot_worker.rs",
+      "size": 5503,
+      "sha256": "57d2fad53bc9a75068c063a03514c7d619ac348f553c394fcde8026209659563",
+      "git_blob_sha": "0fd59ffbb050dc068caf66dc373f78053c61cca4"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/clock_preview_session.rs",
+      "size": 19869,
+      "sha256": "5e27f1506b37fa5ab6c7f77874d68c99a3c0915354ed676b0734365c878cce93",
+      "git_blob_sha": "8c5ab2ee25efecd70000ebd4e109ecb1cb9fb453"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "size": 81081,
+      "sha256": "a547b105e79569ea1a1caec52c71ae89b9f8cb2f0c760c80f6f6865a43de9ee3",
+      "git_blob_sha": "c9e535e2e95cc979f24f51933bc9031593c32916"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui.rs",
+      "size": 42278,
+      "sha256": "55d3d665985b1ee061f73633abc5e4fcd343e7ea4c5db3320021c4e7d5a10ea2",
+      "git_blob_sha": "138bb11df5576aa6dc614bdec127d4e9911963fb"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot.rs",
+      "size": 16076,
+      "sha256": "5defce5c2215a5905301e340210574f42bf745f5ae23b5bfee5ffaf1efe9830d",
+      "git_blob_sha": "3f0802d67f8d45f769058b274c21c213fbd933c0"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+      "size": 14043,
+      "sha256": "8fde4f7e4b0ffb2cfb8af33ec62281d488a8ba5d4f89b7fb35f901ab638d2cc3",
+      "git_blob_sha": "f0e6e62b7cad68fd83519adb233ec34b1f48b7a6"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+      "size": 38317,
+      "sha256": "5833062481dd81182b194112af7a931271ea0f8cd911b2d9f52c316f50ef8861",
+      "git_blob_sha": "14025a1dc8a4b92cc6f6363d880178d290dba579"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "size": 13691,
+      "sha256": "ac493ccde6a46ef5a488f957e249d93bd75a059562330da7af34fa08728c2cb6",
+      "git_blob_sha": "5fbba1df21e35572dacd5dee3873968c359fabaf"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "size": 9984,
+      "sha256": "d2188799ac874916b29c26aae07e8e1340bc71a132c1588bce0fb90889bc289d",
+      "git_blob_sha": "0b3641d0cfa2b57176499af938f4f0de93139d1b"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui.rs",
+      "size": 83106,
+      "sha256": "6ab3809332affc39c29adb895b2ae0de180aec281bf75b8cd9a34941182a5a66",
+      "git_blob_sha": "b590895536321fcca9b3e433f5070a9de65df819"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot.rs",
+      "size": 19371,
+      "sha256": "2575781429e76e5d4d1ba4d68185a0e03ae81f0bebbcd7b9e21801d39a31946b",
+      "git_blob_sha": "82370dce34e8b7896f2ebb820411c85e1dae1c8d"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot/tests.rs",
+      "size": 45364,
+      "sha256": "65a2d2b79e56dac97ae2e0e34d6d61ebf60aa67e782b5373122ebee0b0355521",
+      "git_blob_sha": "3db9d41a89574747f3ea82a03fc04d0734a42c77"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/world_clock_ui/copilot_worker.rs",
+      "deleted": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/clock/copilot/session.rs",
+      "size": 18382,
+      "sha256": "50bf3df022d0aa12c9ece88d66854dfce37b0658989d8957f1476127df3731b7",
+      "git_blob_sha": "72481c66c73f85fd2d7c35b2d72cded9664b28a3"
+    },
+    {
+      "path": "rust/docs/palette-clock-copilot.md",
+      "size": 4986,
+      "sha256": "af7bf763ffcc5b415b737beeecfd41b3a196ad9343d05f82aa8dd38f44d5fe4a",
+      "git_blob_sha": "e15c1b2242dd7781eca034afb791a981f44d852a"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/README.md",
+      "size": 4180,
+      "sha256": "2922580af52a70dda0b8fe4d1e963d9e3494fdf61eeaa25efa34f4e729a513c8",
+      "git_blob_sha": "691b5b2dc2b6387b0a131f8361d52c6c8b4888b3"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/app-default-clippy.log",
+      "size": 684,
+      "sha256": "465390e389612fdfd0942a4d217eb8640880b75039bb6be6d3d40056d41a1180",
+      "git_blob_sha": "deb57960b99d0141763ac963eb1546831215c979"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/app-fixture-clippy.log",
+      "size": 457,
+      "sha256": "2a0149570b9905b91afcbb60ec1869c131d97548387cb75079a07b68cf1b53a1",
+      "git_blob_sha": "2a85d7b8562594b2506bc1f6876cacf02b04806e"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/app-full.log",
+      "size": 44068,
+      "sha256": "c97a2753a4a2902d4b39f77c12e889bb716469e61d1ac70968bcbb0a0d2173d1",
+      "git_blob_sha": "fb1f244ba2ae0bfa68becc1e08542e11b059da42"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/core-clippy.log",
+      "size": 131,
+      "sha256": "879db036bf9320437b48f3e27f4d0437cade08c4e223e94b856ef3f9c769aebf",
+      "git_blob_sha": "22293983884657429f80a76d500201ee79a3e760"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/core-full.log",
+      "size": 39311,
+      "sha256": "e15ba09fa45f9cfd7b48954b9a861bbbb1f9307855b87c31ebe75dce72b73dfc",
+      "git_blob_sha": "01222bc62f4d6500aa069564af634c9b51d25e79"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/fmt.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/log-normalization.json",
+      "size": 1770,
+      "sha256": "c45eecbfd45b4cc15a1c02d656c10d4e8419403a5d636652ab216870276f10e4",
+      "git_blob_sha": "3523e616e78e508cfc009bc4369d63fe4de3e302"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/package-clean.log",
+      "size": 38,
+      "sha256": "0c5c113a83601a8d45af197167a3c079c5371ccbb847c3b44d01c471decff87e",
+      "git_blob_sha": "cbc37de2babf0e10d8514a8ace6236c94fedc444"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/source-r1-manifest.json",
+      "size": 2675,
+      "sha256": "298d7414e08c901f6c7840c6fd4524de237ab0a05f14dbcd268c391bf55b1dbf",
+      "git_blob_sha": "c93f9a049355b171f7f7610cd3f58bfe97f85633"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/surviving-app-executables.txt",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "rust/docs/validation/palette-clock-copilot-2026-10-08/verification.json",
+      "size": 439,
+      "sha256": "f65e4d67b94bf6522e5db168e7de80ca3e3969e01574351f3261670fabf02858",
+      "git_blob_sha": "afd6dfe3cb8bb67b2c1b65976fbf8fced58d9074"
+    }
+  ]
+}

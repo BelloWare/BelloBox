@@ -1,0 +1,50 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-palette-presentation/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 12.74s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-1c1b4ed45597bea7)
+
+running 7 tests
+test launcher_clock_ui::copilot::presentation_tests::already_present_location_is_not_deferred ... FAILED
+test launcher_clock_ui::copilot::presentation_tests::compact_input_bounds_and_placeholder_click_focus_at_small_width ... FAILED
+test launcher_clock_ui::copilot::presentation_tests::fully_effective_suggestion_has_applied_label_but_intervening_edit_reopens_it ... FAILED
+test launcher_clock_ui::copilot::presentation_tests::placeholder_never_covers_text_or_ime_composition ... ok
+test launcher_clock_ui::copilot::presentation_tests::readiness_cache_child ... ignored, executed by isolated parent with temporary configuration
+test launcher_clock_ui::copilot::presentation_tests::readiness_cache_isolated_configuration_invalidation ... ok
+test launcher_clock_ui::copilot::presentation_tests::remaining_locations_win_over_time_applied_history ... FAILED
+
+failures:
+
+---- launcher_clock_ui::copilot::presentation_tests::already_present_location_is_not_deferred stdout ----
+
+thread 'launcher_clock_ui::copilot::presentation_tests::already_present_location_is_not_deferred' (46) panicked at crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:22:5:
+assertion failed: status.deferred.is_none()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- launcher_clock_ui::copilot::presentation_tests::compact_input_bounds_and_placeholder_click_focus_at_small_width stdout ----
+
+thread 'launcher_clock_ui::copilot::presentation_tests::compact_input_bounds_and_placeholder_click_focus_at_small_width' (47) panicked at crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:79:9:
+assertion `left == right` failed
+  left: 18px
+ right: 30px
+
+---- launcher_clock_ui::copilot::presentation_tests::fully_effective_suggestion_has_applied_label_but_intervening_edit_reopens_it stdout ----
+
+thread 'launcher_clock_ui::copilot::presentation_tests::fully_effective_suggestion_has_applied_label_but_intervening_edit_reopens_it' (48) panicked at crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:50:5:
+assertion failed: status.deferred.is_none()
+
+---- launcher_clock_ui::copilot::presentation_tests::remaining_locations_win_over_time_applied_history stdout ----
+
+thread 'launcher_clock_ui::copilot::presentation_tests::remaining_locations_win_over_time_applied_history' (53) panicked at crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs:34:5:
+assertion failed: status.deferred.unwrap().contains("Tokyo")
+
+
+failures:
+    launcher_clock_ui::copilot::presentation_tests::already_present_location_is_not_deferred
+    launcher_clock_ui::copilot::presentation_tests::compact_input_bounds_and_placeholder_click_focus_at_small_width
+    launcher_clock_ui::copilot::presentation_tests::fully_effective_suggestion_has_applied_label_but_intervening_edit_reopens_it
+    launcher_clock_ui::copilot::presentation_tests::remaining_locations_win_over_time_applied_history
+
+test result: FAILED. 2 passed; 4 failed; 1 ignored; 0 measured; 414 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

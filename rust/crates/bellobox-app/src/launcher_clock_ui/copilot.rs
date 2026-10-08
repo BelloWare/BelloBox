@@ -23,8 +23,11 @@ impl Copilot {
         let draft = cx.new(|cx| {
             let mut editor = EditorView::new(String::new(), window, cx);
             let mut appearance = EditorAppearance::plain();
-            appearance.font_size = 11.;
-            appearance.line_height = 14.;
+            appearance.font_size = 12.;
+            appearance.line_height = 20.;
+            // The surrounding card owns padding; a 20px line must fit its 20px field.
+            appearance.padding_x = 0.;
+            appearance.padding_y = 0.;
             editor.set_appearance(appearance, cx);
             editor.set_compact(true, cx);
             editor
@@ -49,6 +52,7 @@ enum Action {
     Retry,
     Cancel,
     Clear,
+    Settings,
     Copy(u64),
     Apply(u64, u64),
 }
@@ -62,7 +66,18 @@ impl Action {
 }
 impl LauncherClockPreview {
     fn control_actions(&self) -> Vec<Action> {
-        let mut actions = vec![Action::Send, Action::Retry, Action::Cancel, Action::Clear];
+        let mut actions = vec![if self.copilot.worker.busy() {
+            Action::Cancel
+        } else {
+            Action::Send
+        }];
+        if self.copilot.session.can_retry() && !self.copilot.worker.busy() {
+            actions.push(Action::Retry);
+        }
+        if !self.copilot.session.messages().is_empty() {
+            actions.push(Action::Clear);
+        }
+        actions.push(Action::Settings);
         for m in self.copilot.session.messages() {
             if m.role == protocol::Role::Assistant {
                 actions.push(Action::Copy(m.id));
@@ -268,6 +283,7 @@ impl LauncherClockPreview {
             return;
         }
         match action {
+            Action::Settings => crate::settings_ui::open(cx),
             Action::Send => self.send_copilot(false, cx),
             Action::Retry => self.send_copilot(true, cx),
             Action::Cancel => {
@@ -325,7 +341,11 @@ impl LauncherClockPreview {
         div()
             .id(id)
             .when_some(focus, |d, focus| d.track_focus(&focus))
-            .px(px(5.))
+            .px(px(7.))
+            .h(px(20.))
+            .flex_none()
+            .text_size(px(11.))
+            .line_height(px(20.))
             .rounded(px(4.))
             .bg(p.well)
             .cursor_pointer()
@@ -335,11 +355,17 @@ impl LauncherClockPreview {
     pub(super) fn copilot_view(&self, p: Palette, cx: &mut Context<Self>) -> Stateful<Div> {
         let mut transcript = div()
             .id("palette-copilot-transcript")
+            .debug_selector(|| "palette-copilot-transcript".into())
+            .flex_none()
             .h(px(98.))
             .overflow_y_scroll()
             .flex()
             .flex_col()
-            .gap(px(3.));
+            .gap(px(6.))
+            .p(px(6.))
+            .border_1()
+            .border_color(p.separator)
+            .rounded(px(8.));
         for m in self.copilot.session.messages() {
             let mut row = div().child(format!(
                 "{}: {}",
@@ -374,10 +400,15 @@ impl LauncherClockPreview {
                             row = row.child(e);
                         }
                     }
-                    if s.parts()
-                        .contains(bellobox_core::clock::copilot::Parts::LOCATIONS)
-                    {
-                        row = row.child("Open World Clock to apply locations.");
+                    let status = suggestion_status(&self.session.planner, s, m.applied_parts);
+                    if let Some(label) = status.label {
+                        row = row.child(label);
+                    }
+                    if let Some(deferred) = status.deferred {
+                        row = row.child(format!("Open World Clock to apply: {deferred}"));
+                    }
+                    if let Some(issue) = status.issue {
+                        row = row.child(issue);
                     }
                 }
                 if let Some(issue) = &m.issue {
@@ -404,29 +435,145 @@ impl LauncherClockPreview {
                 "Stopping…"
             });
         }
+        let ready = crate::transport::provider_is_configured();
+        let mut footer = div().flex().gap(px(6.));
+        if self.copilot.session.can_retry() && !self.copilot.worker.busy() {
+            footer =
+                footer.child(self.copilot_button("palette-retry", "Retry", Action::Retry, p, cx));
+        }
+        if !self.copilot.session.messages().is_empty() {
+            footer =
+                footer.child(self.copilot_button("palette-clear", "Clear", Action::Clear, p, cx));
+        }
         let mut result = div()
             .id("palette-copilot")
-            .text_size(px(10.))
+            .text_size(px(11.))
             .flex()
             .flex_col()
             .min_h(px(COPILOT_HEIGHT))
-            .gap(px(3.));
+            .gap(px(6.));
         if self.height() > PREVIEW_HEIGHT {
-            result = result.child(transcript);
+            result = result.child(transcript.child(footer));
         }
-        result
-            .child(div().h(px(18.)).child(self.copilot.draft.clone()))
-            .child(
-                div()
-                    .flex()
-                    .gap(px(3.))
-                    .child(self.copilot_button("palette-send", "Send", Action::Send, p, cx))
-                    .child(self.copilot_button("palette-retry", "Retry", Action::Retry, p, cx))
-                    .child(self.copilot_button("palette-cancel", "Cancel", Action::Cancel, p, cx))
-                    .child(self.copilot_button("palette-clear", "Clear", Action::Clear, p, cx)),
-            )
+        // A local overlay leaves the shared editor's selection, IME and input
+        // behavior untouched. Do not paint over marked text during composition.
+        let editor = self.copilot.draft.read(cx);
+        let empty = placeholder_visible(editor.text(), editor.has_marked_text());
+        let focus = self.copilot.draft.clone();
+        let field = div()
+            .debug_selector(|| "palette-copilot-field".into())
+            .relative()
+            .flex_1()
+            .min_w(px(0.))
+            .h(px(20.))
+            .overflow_hidden()
+            .child(self.copilot.draft.clone())
+            .when(empty, |d| {
+                d.child(
+                    div()
+                        .absolute()
+                        .left(px(0.))
+                        .top(px(0.))
+                        .text_size(px(12.))
+                        .line_height(px(20.))
+                        .text_color(p.secondary)
+                        .truncate()
+                        .child(if ready {
+                            "Ask the copilot, e.g. best time for everyone today…"
+                        } else {
+                            "Connect an AI provider to ask the copilot"
+                        }),
+                )
+            })
+            .on_mouse_down(MouseButton::Left, move |_, window, cx| {
+                focus.read(cx).focus(window)
+            });
+        let (label, action) = if self.copilot.worker.busy() {
+            ("Cancel", Action::Cancel)
+        } else {
+            ("Send", Action::Send)
+        };
+        result.child(
+            div()
+                .id("palette-copilot-input")
+                .debug_selector(|| "palette-copilot-input".into())
+                .h(px(30.))
+                .flex_none()
+                .flex()
+                .items_center()
+                .gap(px(8.))
+                .px(px(8.))
+                .py(px(4.))
+                .rounded(px(9.))
+                .border_1()
+                .border_color(p.separator)
+                .child(div().text_color(p.accent).child("✦"))
+                .child(field)
+                .child(self.copilot_button("palette-send", label, action, p, cx))
+                .child(self.copilot_button(
+                    "palette-settings",
+                    if ready {
+                        "AI Settings"
+                    } else {
+                        "Open Settings"
+                    },
+                    Action::Settings,
+                    p,
+                    cx,
+                )),
+        )
     }
 }
 
 #[cfg(test)]
 mod tests;
+
+/// Source suggestionRow precedence: remaining work wins over applied history.
+fn suggestion_status(
+    planner: &clock::Planner,
+    suggestion: &bellobox_core::clock::copilot::Suggestion,
+    applied: bellobox_core::clock::copilot::Parts,
+) -> SuggestionStatus {
+    use bellobox_core::clock::copilot::Parts;
+    let time = apply::prepare(planner, suggestion, applied, true, false);
+    let locations = apply::prepare(planner, suggestion, applied, false, true);
+    let issue = locations
+        .as_ref()
+        .err()
+        .or_else(|| time.as_ref().err())
+        .cloned();
+    let deferred = locations.ok().flatten().map(|p| p.plan.summary);
+    let remaining = time.is_ok_and(|p| p.is_some()) || deferred.is_some() || issue.is_some();
+    let label = if remaining {
+        if applied.is_empty() {
+            None
+        } else if applied == Parts::TIME {
+            Some("Time applied")
+        } else if applied == Parts::LOCATIONS {
+            Some("Locations applied")
+        } else {
+            Some("Partly applied")
+        }
+    } else if applied.is_empty() {
+        Some("Already in effect.")
+    } else {
+        Some("Applied")
+    };
+    SuggestionStatus {
+        label,
+        deferred,
+        issue,
+    }
+}
+#[derive(Debug)]
+struct SuggestionStatus {
+    label: Option<&'static str>,
+    deferred: Option<String>,
+    issue: Option<String>,
+}
+#[cfg(test)]
+mod presentation_tests;
+
+fn placeholder_visible(text: &str, composing: bool) -> bool {
+    text.is_empty() && !composing
+}

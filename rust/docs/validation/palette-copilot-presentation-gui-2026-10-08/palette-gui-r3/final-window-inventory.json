@@ -1,0 +1,102 @@
+[
+  {
+    "app": "com.openai.Orbit.Desktop",
+    "focused": false,
+    "height": 1024,
+    "id": 10485764,
+    "modal": false,
+    "title": "Orbit OS Desktop",
+    "width": 1364,
+    "window_type": "desktop",
+    "x": 0,
+    "y": 0
+  },
+  {
+    "app": "Chromium",
+    "focused": false,
+    "height": 852,
+    "id": 27262979,
+    "modal": false,
+    "title": "​ - Chromium",
+    "width": 1196,
+    "window_type": "normal",
+    "x": 84,
+    "y": 88
+  },
+  {
+    "app": "Xfce4-terminal",
+    "focused": true,
+    "height": 808,
+    "id": 35651587,
+    "modal": false,
+    "title": "Terminal",
+    "width": 1177,
+    "window_type": "normal",
+    "x": 93,
+    "y": 117
+  },
+  {
+    "app": "com.openai.Orbit.OS",
+    "focused": false,
+    "height": 120,
+    "id": 8388612,
+    "modal": false,
+    "title": "Orbit OS",
+    "width": 256,
+    "window_type": "dock",
+    "x": 554,
+    "y": 920
+  },
+  {
+    "app": "Xfwm4",
+    "focused": false,
+    "height": 5,
+    "id": 4194354,
+    "modal": false,
+    "title": "Xfwm4",
+    "width": 5,
+    "window_type": "normal",
+    "x": -1000,
+    "y": -1000
+  },
+  {
+    "app": "x11:4194358",
+    "focused": false,
+    "height": 1024,
+    "id": 4194358,
+    "modal": false,
+    "width": 1,
+    "x": -1,
+    "y": 0
+  },
+  {
+    "app": "x11:4194359",
+    "focused": false,
+    "height": 1024,
+    "id": 4194359,
+    "modal": false,
+    "width": 1,
+    "x": 1364,
+    "y": 0
+  },
+  {
+    "app": "x11:4194360",
+    "focused": false,
+    "height": 1,
+    "id": 4194360,
+    "modal": false,
+    "width": 1364,
+    "x": 0,
+    "y": -1
+  },
+  {
+    "app": "x11:4194361",
+    "focused": false,
+    "height": 1,
+    "id": 4194361,
+    "modal": false,
+    "width": 1364,
+    "x": 0,
+    "y": 1024
+  }
+]

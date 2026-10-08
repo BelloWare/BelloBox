@@ -1,0 +1,9 @@
+{
+  "base": "9ce80e005e9d8e896cb31ea9dc98aafc30000179",
+  "files": {
+    "rust/crates/bellobox-app/src/launcher_clock_ui/copilot.rs": "7a7d90624ad1564b555b63e885dfff7fd89b8e1a06d20f746f1b5c00b8097df9",
+    "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs": "1345d284d947540ee341b2b9220732cc4549f4d5311432d71c69217fa156a439"
+  },
+  "ordinary_binary_sha256": "7808439001d08e72830afca3a5c48dd5a91eafd691ab8400bded9a01e670c23f",
+  "prior_behavior_mutant_sha256": "58bf3e532609572aad33d9585fc2d84d9697bacde3772d04d4fdf4f7fd7714fa"
+}
