@@ -1,0 +1,370 @@
+[
+  {
+    "id": "ascii",
+    "text": "A-12 B-34",
+    "pattern": "([A-Z]+)-(\\d+)",
+    "replacement": "$2:$1",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "unicode",
+    "text": "é😀中 ab",
+    "pattern": "(😀)(中)?|(ab)(z)?",
+    "replacement": "$0/$1/$2/$3/$4",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "combining",
+    "text": "é é",
+    "pattern": "(.)",
+    "replacement": "$1",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "optional_unmatched",
+    "text": "b ab",
+    "pattern": "(a)?b",
+    "replacement": "<$1>",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "empty_groups",
+    "text": "é😀",
+    "pattern": "()",
+    "replacement": "X",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "empty_after_nonempty",
+    "text": "a",
+    "pattern": "a*",
+    "replacement": "<$0>",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "empty_edges",
+    "text": "abc",
+    "pattern": "^|$",
+    "replacement": "!",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "word_boundaries",
+    "text": "abc def",
+    "pattern": "\\b",
+    "replacement": "!",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "empty_text",
+    "text": "",
+    "pattern": "a",
+    "replacement": "!",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "no_match",
+    "text": "abc",
+    "pattern": "z",
+    "replacement": "!",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "dot_newline",
+    "text": "a\nb",
+    "pattern": "(.)",
+    "replacement": "$1!",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "options_False_False",
+    "text": "AA\naa",
+    "pattern": "^aa$",
+    "replacement": "!",
+    "ignoreCase": false,
+    "multiline": false
+  },
+  {
+    "id": "options_False_True",
+    "text": "AA\naa",
+    "pattern": "^aa$",
+    "replacement": "!",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "options_True_False",
+    "text": "AA\naa",
+    "pattern": "^aa$",
+    "replacement": "!",
+    "ignoreCase": true,
+    "multiline": false
+  },
+  {
+    "id": "options_True_True",
+    "text": "AA\naa",
+    "pattern": "^aa$",
+    "replacement": "!",
+    "ignoreCase": true,
+    "multiline": true
+  },
+  {
+    "id": "template_0",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$0",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_1",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$1",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_2",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$2",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_3",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$9",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_4",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$10",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_5",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$01",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_6",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$100",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_7",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$$",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_8",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$$1",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_9",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "\\$1",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_10",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "\\\\",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_11",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "\\x",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_12",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "${1}",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_13",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$name",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_14",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "x\\",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_15",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_16",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "😀$1中",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_17",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$1$1$1",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_18",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "\\😀",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "template_19",
+    "text": "a",
+    "pattern": "(a)",
+    "replacement": "$1\\$0",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "two_digit_0",
+    "text": "abcdefghij",
+    "pattern": "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)",
+    "replacement": "$10",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "two_digit_1",
+    "text": "abcdefghij",
+    "pattern": "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)",
+    "replacement": "$11",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "two_digit_2",
+    "text": "abcdefghij",
+    "pattern": "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)",
+    "replacement": "$01",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "two_digit_3",
+    "text": "abcdefghij",
+    "pattern": "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)",
+    "replacement": "$100",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "two_digit_4",
+    "text": "abcdefghij",
+    "pattern": "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)",
+    "replacement": "$99",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "two_digit_5",
+    "text": "abcdefghij",
+    "pattern": "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)",
+    "replacement": "$9$10",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "two_digit_6",
+    "text": "abcdefghij",
+    "pattern": "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)",
+    "replacement": "$001",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "named_pattern",
+    "text": "ab",
+    "pattern": "(?<one>a)(b)",
+    "replacement": "$1-${one}-$2",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "literal_dollar_capture",
+    "text": "$1",
+    "pattern": "\\$1",
+    "replacement": "$0",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "invalid_pattern",
+    "text": "a",
+    "pattern": "[",
+    "replacement": "",
+    "ignoreCase": false,
+    "multiline": true
+  },
+  {
+    "id": "empty_pattern",
+    "text": "a",
+    "pattern": "",
+    "replacement": "",
+    "ignoreCase": false,
+    "multiline": true
+  }
+]

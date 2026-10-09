@@ -28,6 +28,8 @@ pub mod number_base;
 pub mod permissions;
 #[path = "developer/plist.rs"]
 mod plist_engine;
+#[path = "developer/regex_inspection.rs"]
+pub mod regex_inspection;
 #[path = "developer/sql_formatter.rs"]
 mod sql_formatter;
 #[path = "developer/string_literal.rs"]

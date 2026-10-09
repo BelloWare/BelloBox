@@ -1,0 +1,95 @@
+{
+  "status": "frozen; local default/minimal/strict validation passed; exact published native CI pending",
+  "observed_utc": "2026-10-09T14:59:59.997657+00:00",
+  "base": "12a8d8b103fd3563feb8862aecf630462e535f68",
+  "swift_sha": "e43b1c4595c42383e087fe70f38c28d07c31dda0",
+  "swift_tree": "5ca17248d54fe50c5617d597be7ee6794bde6ea8",
+  "files": [
+    {
+      "path": ".github/workflows/rust-macos.yml",
+      "bytes": 7253,
+      "sha256": "41ffeaa3fde809f381d3fcdb4f2aa43327402f7963e20f621ca0353e7fc25902"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "bytes": 93724,
+      "sha256": "c342c7bb2708faeb5d6061be161ea8f5868e54dfd55240ac2c42ffd33f693062"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "bytes": 11137,
+      "sha256": "dbfbb45dd699beff7072473354c91f2b278eceb56a1acb390cd4ce885d675678"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/regex_session.rs",
+      "bytes": 9321,
+      "sha256": "6869f9ba8f23d43a41758b06229af2787b99b6938fd8cc8f19b10946320100e5"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/regex_session/tests.rs",
+      "bytes": 6476,
+      "sha256": "244535c9f05d1a3c776f2f9334e8f6127d693855458112e3560b9d10e860a2a6"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/regex_ui.rs",
+      "bytes": 29450,
+      "sha256": "6960efee18817b65b680bee8a6d1b40e11da08e162d1a71bff6c87b57e8b1c95"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/regex_ui/tests.rs",
+      "bytes": 15949,
+      "sha256": "0f0b52c9e703408db3c25bededdd429d35b4804610a1975adb4b9f17cd63808f"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer.rs",
+      "bytes": 120141,
+      "sha256": "ac25a9dceb0a7bfe6d6fe641f6930da2236093d965615f9e3930aeb07e073758"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/regex_inspection.rs",
+      "bytes": 9519,
+      "sha256": "a539d60cddabcbe1fb3d2b864a8a36e5d7793f7ded0d369701a4a2d160fd29b9"
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/regex_inspection_tests.rs",
+      "bytes": 7284,
+      "sha256": "d8c2baf993ff7bf85b1e17ca86366a8bcac79341bbb30d1b1815bb84e3b5d434"
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/fixtures/regex-swift-characterization.json",
+      "bytes": 9278,
+      "sha256": "99610c9f3b24ba5e85dc8451573704b833f1b5e0a156e2c1bf4bd9f37e433a76"
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/fixtures/regex-swift-oracle.json",
+      "bytes": 7130,
+      "sha256": "d028e2760f03f888e5b884eb8d9820330e69a0a1425abe85f516e5355481c08b"
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/regex_swift_oracle.rs",
+      "bytes": 9351,
+      "sha256": "9164ce74007b6b0ee8957dc09311eab6e78edb1ddbe8f34fc4d4acaf0fba63e5"
+    },
+    {
+      "path": "rust/docs/bellobox-parity.md",
+      "bytes": 85452,
+      "sha256": "ab6261f3e3a96a55141c2cc09e9325682bffe58e088197fe2b9a91b43624fec5"
+    },
+    {
+      "path": "rust/docs/comparison-workflow.md",
+      "bytes": 7874,
+      "sha256": "f2fcbdfa3b409b995073389b912706e2c20bf9a627f22582fd6b87a9b175e46b"
+    },
+    {
+      "path": "rust/docs/regex-workflow.md",
+      "bytes": 8768,
+      "sha256": "33ba3ce63aab58ddd856ae5fb1c23ea58c2b88fab43c7014efd2ae18929f970e"
+    },
+    {
+      "path": "rust/docs/url-workflow.md",
+      "bytes": 7731,
+      "sha256": "0b08c8845c8e0080c1cd15749a8612e854516e769d62c8a163f14e573c69fa4a"
+    }
+  ],
+  "frozen_utc": "2026-10-09T15:05:42.334656+00:00"
+}

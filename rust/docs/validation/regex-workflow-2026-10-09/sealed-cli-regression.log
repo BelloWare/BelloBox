@@ -1,0 +1,15 @@
+{
+  "count": 1,
+  "matches": [
+    {
+      "text": "a",
+      "startByte": 6,
+      "endByte": 7,
+      "groups": [
+        "a"
+      ]
+    }
+  ],
+  "engine": "Rust regex; UTF-8 byte offsets; no lookaround/backreferences",
+  "replaced": "é😀ax"
+}

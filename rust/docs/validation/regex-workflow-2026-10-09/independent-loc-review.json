@@ -1,0 +1,14 @@
+{
+  "start_utc": "2026-10-09T15:07:46.026267+00:00",
+  "end_utc": "2026-10-09T15:07:47.014861+00:00",
+  "elapsed_seconds": 0.9885964120039716,
+  "full_ledger_equal": true,
+  "counts": {
+    "production": 65297,
+    "support": 48391,
+    "benchmark": 105
+  },
+  "candidate_files_verified": 17,
+  "source_changed": false,
+  "inference_seconds": null
+}

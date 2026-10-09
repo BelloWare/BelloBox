@@ -110,3 +110,14 @@ lines are not counted again as comparison additions. Unchanged inventory hashes 
 negative controls were rejected. Shared editor source is unchanged and counted
 only once under BelloBox. These are accounting figures, not delivery or quality
 percentages.
+
+## Published native closure (2026-10-09)
+
+Exact published source `41bccf467b40daacd2d715c759165aaf0b84ddf9` passed
+[Linux 37938156319](https://github.com/BelloWare/BelloBox/actions/runs/37938156319)
+and [macOS 37938156317](https://github.com/BelloWare/BelloBox/actions/runs/37938156317).
+The native URL oracle completed and the comparison oracle checked 115 exact
+acceptance/typed-row/copy vectors using Apple Swift 6.3.3. Native preview notice
+negative tests and actual offline ad-hoc package validation also passed. This
+supersedes the earlier pending-CI statements for that source only. Native
+interactive GUI, platform IME and universal Foundation parity remain unverified.

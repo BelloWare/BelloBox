@@ -1,0 +1,58 @@
+{
+  "binary_sha256": "41cc0c0ce07f507470e141e801e85402f9ce8248a0c6f2238f7d8aea4ee80dd0",
+  "source_manifest_sha256": "087d27dacebeb5734c3d9911e93514ed4cd1f3f805682308ca6d6c63e2d7af8b",
+  "renderer": "cloud Linux Mesa lavapipe software",
+  "scope": "ordinary no-feature test build; only task-window screenshots observed, no image publication",
+  "sessions": [
+    {
+      "run": "20261009T143132-light",
+      "start_utc": "2026-10-09T14:31:32,339079327+00:00",
+      "end_utc": "2026-10-09T14:37:27,230341271+00:00",
+      "observed_elapsed_seconds": 354.891262,
+      "exit": "exit=0",
+      "binary_hash_unchanged": true,
+      "measurement": "whole interactive app-session interval, includes observation and coordination, not pure interaction or inference time"
+    },
+    {
+      "run": "20261009T143737-dark",
+      "start_utc": "2026-10-09T14:37:37,575550665+00:00",
+      "end_utc": "2026-10-09T14:39:15,947468346+00:00",
+      "observed_elapsed_seconds": 98.371918,
+      "exit": "exit=0",
+      "binary_hash_unchanged": true,
+      "measurement": "whole interactive app-session interval, includes observation and coordination, not pure interaction or inference time"
+    },
+    {
+      "run": "20261009T144957-light",
+      "purpose": "focused Multiline pointer recheck",
+      "start_utc": "2026-10-09T14:49:57,189244833+00:00",
+      "end_utc": "2026-10-09T14:54:39,655462616+00:00",
+      "observed_elapsed_seconds": 282.466218,
+      "exit": "exit=0",
+      "binary_hash_unchanged": true,
+      "measurement": "whole interactive app-session interval, includes context recovery and coordination; not pure interaction or inference time"
+    }
+  ],
+  "verified": [
+    "Pattern editor receives initial focus; initial source text includes é, supplementary emoji, newline and two case variants",
+    "Lowercase numbered-capture pattern matched second line at UTF-16 [9..<13]; Ignore case produced two highlights and first range [4..<8]",
+    "Matches details showed numbered capture groups; Extract showed A-12 and a-34",
+    "Replace retained $2:$1 template across output mode switches and produced é😀 12:A\\n34:a",
+    "Complete Copy via Ctrl-Shift-C, Ctrl-N independent blank window and explicit paste into its input preserved both replacement lines and Unicode prefix",
+    "Original window drafts survived closing the fresh window; Use as Input moved complete replacement into its input and recalculated zero matches",
+    "Escape retained original window; Ctrl-W closed owner windows normally",
+    "Dark appearance observed; native window resize verified740x560, footer actions and input controls remained present",
+    "Default Multiline anchors with ^a reported one match at beginning of second line",
+    "Outer content scrolling observed with replacement result and fixed footer both visible",
+    "Unchanged sealed ordinary binary: ^a on two-line source; pointer off visibly unchecked, No matches and count0; held pointer on visibly checked, UTF-16 [9..<10] and count1. Normal Ctrl-W exit0."
+  ],
+  "inconclusive_or_not_claimed": [
+    "Pointer off/on is now verified. Native Space/Return after visible flag focus still did not establish keyboard off-state; Return visibly triggered recalculation. Keyboard target/platform delivery remains inconclusive, and GPUI keyboard simulation passes; this is not an actual native keyboard activation pass.",
+    "Bound synthetic pointer/keyboard actions sometimes left immediate snapshot unchanged; reliable native keyboard and later bound snapshots used",
+    "Real platform IME unavailable; only actual GPUI mark/unmark/cancel tests establish scoped composition behavior",
+    "Emoji glyph displayed as fallback face in cloud font; no Unicode data loss observed in clipboard round-trip",
+    "No macOS interaction, hardware-GPU, exact minimum light-mode run, production native permission or timing-performance claim"
+  ],
+  "source_delta_after_gui": "One support-only oversized admission regression added; production source frozen byte-for-byte through GUI",
+  "inference_time": "unavailable"
+}

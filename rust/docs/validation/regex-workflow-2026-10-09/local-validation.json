@@ -1,0 +1,686 @@
+{
+  "frozen_utc": "2026-10-09T15:05:42.334656+00:00",
+  "status": "local gates complete; published CI/native pending",
+  "commands": [
+    {
+      "name": "focused-core",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "regex",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:14:32.495419+00:00",
+      "end_utc": "2026-10-09T14:14:38.715440+00:00",
+      "elapsed_seconds": 6.220025652000913,
+      "exit_code": 101,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 796,
+      "log_sha256": "25b2a80c4a31e23b296dd313e9bd134ac260709e38c34136fb8452eb48eef53f",
+      "result_lines": []
+    },
+    {
+      "name": "focused-app",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "regex",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:14:38.738221+00:00",
+      "end_utc": "2026-10-09T14:15:25.957494+00:00",
+      "elapsed_seconds": 47.219278676013346,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 2121,
+      "log_sha256": "4effd00837f0931ee362be50a16fd36b77251dd9c1471fce6a63663661f9f6fe",
+      "result_lines": [
+        "test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 537 filtered out; finished in 0.34s"
+      ]
+    },
+    {
+      "name": "focused-core-r2",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "regex",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:16:07.803717+00:00",
+      "end_utc": "2026-10-09T14:16:19.980360+00:00",
+      "elapsed_seconds": 12.176647031999892,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 3205,
+      "log_sha256": "c67799442b2f14abeab5866eb393176283fcb7af03ad0ad70c03ab5604652394",
+      "result_lines": [
+        "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 485 filtered out; finished in 0.05s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 19 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "loc-audit-preliminary",
+      "command": [
+        "python3",
+        "/workspace/shared/regex-workflow-evidence/audit-loc.py"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow",
+      "start_utc": "2026-10-09T14:23:03.356904+00:00",
+      "end_utc": "2026-10-09T14:23:04.306626+00:00",
+      "elapsed_seconds": 0.9497271569998702,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 580,
+      "log_sha256": "fe632494d8506ec65f3f2ed19f0cfce53ebdfa50b2242d91dae6235d44545fc1",
+      "result_lines": []
+    },
+    {
+      "name": "focused-app-r2",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "regex",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:26:39.641718+00:00",
+      "end_utc": "2026-10-09T14:27:26.288341+00:00",
+      "elapsed_seconds": 46.64662687499367,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 2175,
+      "log_sha256": "ff12ae52dbf6d0247ca1dac54d096b8d3ec978449817061d48887d223fe3b8df",
+      "result_lines": [
+        "test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 537 filtered out; finished in 0.85s"
+      ]
+    },
+    {
+      "name": "focused-core-r3",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "regex",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:27:26.320273+00:00",
+      "end_utc": "2026-10-09T14:27:41.879118+00:00",
+      "elapsed_seconds": 15.55884838399652,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 3407,
+      "log_sha256": "405cbb9a8e04b9f9c8df108a5ee6438f69a9aacf93c6b29f811c9870ebe62c17",
+      "result_lines": [
+        "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 485 filtered out; finished in 0.07s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 19 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "mutant-utf16_as_bytes",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::regex_inspection::tests::unicode_ranges_keep_utf16_details_and_utf8_highlights_separate",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:28:02.478856+00:00",
+      "end_utc": "2026-10-09T14:28:10.839977+00:00",
+      "elapsed_seconds": 8.361125171999447,
+      "exit_code": 101,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 1143,
+      "log_sha256": "d23c958e758d5b0aa65a7c9b23cf6a42f28a128a87a809ba95c1469b30598d73",
+      "result_lines": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 495 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "mutant-suppress_adjacent_empty",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::regex_inspection::tests::source_zero_width_match_after_nonempty_is_not_suppressed",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:28:10.862989+00:00",
+      "end_utc": "2026-10-09T14:28:18.455827+00:00",
+      "elapsed_seconds": 7.592841737001436,
+      "exit_code": 101,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 1130,
+      "log_sha256": "b751e3449ab18582e94b20067454f61dd7456ba50219fb55c165e97d6f09ec7a",
+      "result_lines": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 495 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "mutant-expand_past_output_bound",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::regex_inspection::tests::admissions_precede_work_and_match_capture_output_bounds_are_exact",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:28:18.482951+00:00",
+      "end_utc": "2026-10-09T14:28:26.716271+00:00",
+      "elapsed_seconds": 8.233324703993276,
+      "exit_code": 101,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 5301329,
+      "log_sha256": "ddebd603d541e55bbe9ffca54b864331222b7936e0941b89b523e2c526854631",
+      "result_lines": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 495 filtered out; finished in 0.05s"
+      ]
+    },
+    {
+      "name": "restore-core-clean",
+      "command": [
+        "cargo",
+        "clean",
+        "-p",
+        "bellobox-core"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:28:26.754856+00:00",
+      "end_utc": "2026-10-09T14:28:26.898270+00:00",
+      "elapsed_seconds": 0.1434181499935221,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 39,
+      "log_sha256": "281a8cc112fc5b8fdb2988cfbd5531a45b12d861c27e6a283ada7e8017b6746a",
+      "result_lines": []
+    },
+    {
+      "name": "final-format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:28:26.925871+00:00",
+      "end_utc": "2026-10-09T14:28:28.981355+00:00",
+      "elapsed_seconds": 2.0554890720086405,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result_lines": []
+    },
+    {
+      "name": "final-core",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:28:29.004365+00:00",
+      "end_utc": "2026-10-09T14:28:59.590775+00:00",
+      "elapsed_seconds": 30.586413594006444,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 52184,
+      "log_sha256": "5d7e8000d0c5cde5d8bc8f0ed0e43dcde60be6713d1acd9960fdf21d2ef04d59",
+      "result_lines": [
+        "test result: ok. 496 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.08s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "final-strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:28:59.615855+00:00",
+      "end_utc": "2026-10-09T14:29:11.728859+00:00",
+      "elapsed_seconds": 12.113008695989265,
+      "exit_code": 101,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 1331,
+      "log_sha256": "f3fb0658751d9beeeae6da328c945547427f816e90ddec9645bc89059c303ecf",
+      "result_lines": []
+    },
+    {
+      "name": "final-strict-r2",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:29:28.614814+00:00",
+      "end_utc": "2026-10-09T14:29:43.864533+00:00",
+      "elapsed_seconds": 15.24972291001177,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 512,
+      "log_sha256": "da603a80173dd376839237c84b8b360d3f95831bf4c1245d484542a5d2f5be87",
+      "result_lines": []
+    },
+    {
+      "name": "ordinary-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "bellobox-app"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:29:43.898304+00:00",
+      "end_utc": "2026-10-09T14:30:09.453106+00:00",
+      "elapsed_seconds": 25.55480681300105,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 621,
+      "log_sha256": "52f630fd914580f4b71129d5f49a76da0364ed6593dbcbc8968a342db9a300dd",
+      "result_lines": []
+    },
+    {
+      "name": "remote-final",
+      "command": [
+        "git",
+        "-c",
+        "credential.helper=",
+        "ls-remote",
+        "https://github.com/BelloWare/BelloBox.git",
+        "refs/heads/main",
+        "refs/heads/rust"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow",
+      "start_utc": "2026-10-09T14:42:15.636798+00:00",
+      "end_utc": "2026-10-09T14:42:24.168247+00:00",
+      "elapsed_seconds": 8.531452898998396,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 114,
+      "log_sha256": "e294622e2e8994b4bbbb46379bbe90d43de6671f0c6e24ea3995679ed77d6f90",
+      "result_lines": []
+    },
+    {
+      "name": "loc-audit-final",
+      "command": [
+        "python3",
+        "/workspace/shared/regex-workflow-evidence/audit-loc.py"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow",
+      "start_utc": "2026-10-09T14:42:24.195952+00:00",
+      "end_utc": "2026-10-09T14:42:25.231466+00:00",
+      "elapsed_seconds": 1.035517135009286,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 580,
+      "log_sha256": "7f3c0e9d73103ec79917c389954cdc015b1c7cba60ac88ef5a3a8889cad7969e",
+      "result_lines": []
+    },
+    {
+      "name": "sealed-cli-regression",
+      "command": [
+        "/workspace/shared/regex-workflow-evidence/sealed/bellobox",
+        "--tool",
+        "regex",
+        "--input",
+        "\u00e9\ud83d\ude00a",
+        "--second",
+        "{\"pattern\":\"(a)\",\"flags\":\"ims\",\"replacement\":\"${1}x\"}"
+      ],
+      "cwd": "/workspace/scratch/8b6fda578834",
+      "start_utc": "2026-10-09T14:45:27.147325+00:00",
+      "end_utc": "2026-10-09T14:45:27.182745+00:00",
+      "elapsed_seconds": 0.035423687993898056,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 250,
+      "log_sha256": "4ce53111c46b22df7cc24c0f56fac00ee737e433ac5970efb47c0e8cca3eee1b",
+      "result_lines": []
+    },
+    {
+      "name": "aggregate-app",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:46:26.968423+00:00",
+      "end_utc": "2026-10-09T14:47:51.856526+00:00",
+      "elapsed_seconds": 84.88810613600072,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 57255,
+      "log_sha256": "a97ca172a2e34af1433100517f117af99e5908a50682c9cfefa8578e592732a1",
+      "result_lines": [
+        "test result: ok. 552 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 42.19s"
+      ]
+    },
+    {
+      "name": "aggregate-recording-app",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "recording-fixtures"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:47:51.880364+00:00",
+      "end_utc": "2026-10-09T14:49:17.870954+00:00",
+      "elapsed_seconds": 85.99059414799558,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 59090,
+      "log_sha256": "992ed77a10a0aa7ed274135b6b18c0195078c9407141384ebb06dc53610abfb6",
+      "result_lines": [
+        "test result: ok. 568 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 43.61s"
+      ]
+    },
+    {
+      "name": "minimal-core-app",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "-p",
+        "bellobox-app",
+        "--no-default-features"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:55:41.841104+00:00",
+      "end_utc": "2026-10-09T14:56:16.859513+00:00",
+      "elapsed_seconds": 35.01841460200376,
+      "exit_code": 101,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 16251,
+      "log_sha256": "db7cd4da8361a856bdc922b70508ec7ebbfe8a7d52edea0cddde5aef55faf666",
+      "result_lines": []
+    },
+    {
+      "name": "recover-box-clean",
+      "command": [
+        "cargo",
+        "clean",
+        "-p",
+        "bellobox-app",
+        "-p",
+        "bellobox-core"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:56:56.675035+00:00",
+      "end_utc": "2026-10-09T14:56:57.030137+00:00",
+      "elapsed_seconds": 0.3551059999881545,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 39,
+      "log_sha256": "a557ac9a548ff0c6e92edfb2ac493fae26179c0512e3f87ecebb4443523fc3ed",
+      "result_lines": []
+    },
+    {
+      "name": "minimal-core-app-r2",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "-p",
+        "bellobox-app",
+        "--no-default-features"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:57:25.073340+00:00",
+      "end_utc": "2026-10-09T14:59:07.982661+00:00",
+      "elapsed_seconds": 102.90933551899798,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 90469,
+      "log_sha256": "77773236ac32c9e1e3f65aa4a2e597a2b43698d06f6df7d22da9a0ff9231e46c",
+      "result_lines": [
+        "test result: ok. 500 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 39.43s",
+        "test result: ok. 376 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.30s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "recover-minimal-app-clean",
+      "command": [
+        "cargo",
+        "clean",
+        "-p",
+        "bellobox-app"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T14:59:08.008506+00:00",
+      "end_utc": "2026-10-09T14:59:08.339956+00:00",
+      "elapsed_seconds": 0.331454961997224,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 37,
+      "log_sha256": "77e1e1105b101deed5318ab55fcdf8bc6ed88373320734f3b114e254747e6530",
+      "result_lines": []
+    },
+    {
+      "name": "loc-keyboard-update",
+      "command": [
+        "python3",
+        "/workspace/shared/regex-workflow-evidence/audit-loc.py"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow",
+      "start_utc": "2026-10-09T14:59:22.370261+00:00",
+      "end_utc": "2026-10-09T14:59:23.372707+00:00",
+      "elapsed_seconds": 1.0024502930027666,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 580,
+      "log_sha256": "d39e5da0ce33236864bc77fadac2f315bfccebf4c340b62732c6da5f0fdc09af",
+      "result_lines": []
+    },
+    {
+      "name": "aggregate-app-final",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T15:02:46.293567+00:00",
+      "end_utc": "2026-10-09T15:04:08.235116+00:00",
+      "elapsed_seconds": 81.94155260699335,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 57354,
+      "log_sha256": "1ee66bfd626a3e2ad45b697621ce031efe45ef39b034aa5a749f9eaf2b731b3d",
+      "result_lines": [
+        "test result: ok. 552 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 41.39s"
+      ]
+    },
+    {
+      "name": "final-feature-strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "recording-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T15:04:08.266384+00:00",
+      "end_utc": "2026-10-09T15:04:27.286075+00:00",
+      "elapsed_seconds": 19.01969456099323,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 613,
+      "log_sha256": "3f47b0efdd64c7767fcdd235b4ad9cac59aae780ef729e9b98a14acef04748ff",
+      "result_lines": []
+    },
+    {
+      "name": "minimal-strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--no-default-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T15:04:27.310597+00:00",
+      "end_utc": "2026-10-09T15:04:40.681043+00:00",
+      "elapsed_seconds": 13.370450591988629,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 512,
+      "log_sha256": "7451207ddab5d8ef748c9332406491f105aa23430b704b64bc2ea2b8474b97fb",
+      "result_lines": []
+    },
+    {
+      "name": "final-format-r2",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/workspace/shared/box-regex-workflow/rust",
+      "start_utc": "2026-10-09T15:04:40.705950+00:00",
+      "end_utc": "2026-10-09T15:04:42.677604+00:00",
+      "elapsed_seconds": 1.9716592869954184,
+      "exit_code": 0,
+      "measurement": "observed command interval; not implementation or inference duration",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result_lines": []
+    }
+  ],
+  "source_scope": {
+    "final_default_app": "Exact final17-file candidate;552 passed2ignored; all17 Regex tests passed including strengthened Multiline keyboard assertions.",
+    "recording_app": "568 passed2ignored before support-only keyboard test expansion; identical production source; final all-target recording-feature strict passed.",
+    "default_core": "496 unit plus44 integration passed;4nativeignored onLinux; production/testCore unchanged after this gate.",
+    "minimal": "App500+2ignored; Core376unit+3integration with2nativeignored. Developer Regex is disabled in minimalfeature graph.",
+    "ordinary_binary": "41cc0c0ce07f507470e141e801e85402f9ce8248a0c6f2238f7d8aea4ee80dd0; production matches GUI seal; support-only tests later strengthened.",
+    "native_regex": "Linux source binding passed.46exact +22characterization Foundation execution pending exact published macOS CI.",
+    "native_interactive_gui": "unverified",
+    "actual_platform_ime": "unverified; GPUI marked-text lifecycle tests passed"
+  },
+  "gui_receipt": "gui-receipt.json",
+  "latest_support_delta": "post-gui-source-delta.json",
+  "build_inputs_supplement": "supplemental-build-inputs.json",
+  "mutants": "Three semantic mutants caught; exact core restored before full gates; output-bound raw log retained locally, compact excerpt/hash for publication",
+  "inference_time": "unavailable"
+}

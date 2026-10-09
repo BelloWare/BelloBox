@@ -1,0 +1,13 @@
+{
+  "observed_utc": "2026-10-09T15:00:41.093388+00:00",
+  "sealed_manifest_unchanged": true,
+  "production_delta": [],
+  "support_delta": [
+    {
+      "path": "rust/crates/bellobox-app/src/regex_ui/tests.rs",
+      "original_sealed_sha256": "98a00a7e2fc0d293c6de4ffd760ca6f9780b82b2d47f38df04f377d036ef3de6",
+      "current_sha256": "0f0b52c9e703408db3c25bededdd429d35b4804610a1975adb4b9f17cd63808f"
+    }
+  ],
+  "description": "Added oversized admission regression and expanded exact Multiline keyboard focus/Space/Enter assertions; no production source changed."
+}

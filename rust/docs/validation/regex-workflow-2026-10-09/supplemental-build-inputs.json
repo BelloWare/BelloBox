@@ -1,0 +1,70 @@
+{
+  "observed_utc": "2026-10-09T14:58:07.626448+00:00",
+  "original_manifest_unchanged": true,
+  "original_manifest_sha256": "087d27dacebeb5734c3d9911e93514ed4cd1f3f805682308ca6d6c63e2d7af8b",
+  "limitation": "Supplemental current-byte and immutable-base comparison after GUI, not a retroactive contemporaneous seal of omitted inputs. Ordinary build and all Cargo gates used --locked. No claim original 254-entry manifest included these paths.",
+  "base": "12a8d8b103fd3563feb8862aecf630462e535f68",
+  "files": [
+    {
+      "path": "rust/Cargo.toml",
+      "bytes": 592,
+      "sha256": "ef7a02f1a62f27c77e5790548c003e2f8ef6770105b87b9db75dca5ff77d497e",
+      "equals_immutable_base": true,
+      "base_git_blob": "826b0ca0c65df079908d934d3c2b82bbd8c62fa7"
+    },
+    {
+      "path": "rust/Cargo.lock",
+      "bytes": 193552,
+      "sha256": "222781fafc842dd19d132664d33dfffbd51b1fc3bc9c42932461ce2e90b1c097",
+      "equals_immutable_base": true,
+      "base_git_blob": "265c12375857e52002ccc51be4d12a11ab8d30fa"
+    }
+  ],
+  "repository_config_observations": [
+    {
+      "path": ".cargo/config",
+      "observed": "absent"
+    },
+    {
+      "path": ".cargo/config.toml",
+      "observed": "absent"
+    },
+    {
+      "path": "rust/.cargo/config",
+      "observed": "absent"
+    },
+    {
+      "path": "rust/.cargo/config.toml",
+      "observed": "absent"
+    },
+    {
+      "path": "rust-toolchain",
+      "observed": "absent"
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "observed": "absent"
+    },
+    {
+      "path": "rust/rust-toolchain",
+      "observed": "absent"
+    },
+    {
+      "path": "rust/rust-toolchain.toml",
+      "observed": "absent"
+    }
+  ],
+  "build_environment_scripts_current_hashes": [
+    {
+      "path": "/workspace/shared/build-recovery/env.sh",
+      "sha256": "6234b4c7dc6e009e70bd3fbf90dc40382d51b6cdaa627140614aac337be33a09"
+    },
+    {
+      "path": "/workspace/shared/build-recovery/gpui-env.sh",
+      "sha256": "bebb4e930a7d8c7783201c8ee68749de55354b48ba77cf2f44ca5a22ec19d8f7"
+    }
+  ],
+  "effective_build_jobs": 1,
+  "jobs_override": "Each command exported CARGO_BUILD_JOBS=1 after sourcing both scripts; env.sh itself sets2.",
+  "cargo_home_config": "No config or config.toml file observed at configured CARGO_HOME root; credentials neither read nor used."
+}

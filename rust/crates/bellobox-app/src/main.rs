@@ -17,6 +17,10 @@ mod launcher_ui;
 mod qr_clipboard;
 mod qr_input;
 mod recording_ui;
+#[cfg(feature = "developer-tools")]
+mod regex_session;
+#[cfg(feature = "developer-tools")]
+mod regex_ui;
 mod screenshot_color;
 mod screenshot_ui;
 mod session;

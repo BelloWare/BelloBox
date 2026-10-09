@@ -2163,6 +2163,12 @@ fn open_tool_with_clock_context(
         return;
     }
 
+    #[cfg(feature = "developer-tools")]
+    if id == "regex" {
+        crate::regex_ui::open(input, cx);
+        return;
+    }
+
     if id == "url" {
         crate::url_ui::open(input, cx);
         return;

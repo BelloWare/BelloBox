@@ -1,0 +1,23 @@
+{
+  "verified": true,
+  "ledger_sha256": "4bc7b3cc26c1d645bb196ad8dd526d76267f6fe33b4d2e176b9e0fa3381fbb15",
+  "delta": {
+    "production": 1336,
+    "support": 1149,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 65297,
+    "support": 48391,
+    "benchmark": 105
+  },
+  "negative_controls": {
+    "wrong_count": "rejected",
+    "misclassify_production": "rejected",
+    "omit_changed_path": "rejected",
+    "alter_unchanged_hash": "rejected",
+    "duplicate_shared_path": "rejected"
+  },
+  "base_inventory_git_verified": true,
+  "shared_counted_once": true
+}

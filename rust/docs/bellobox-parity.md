@@ -69,6 +69,19 @@ No claim of complete visual or interaction parity is made.
 | `UI/MainView.swift`, onboarding/settings/menu bar | Source-shaped GPUI Home category sidebar/cards and separate windows | Partial: real native app window, process-local drafts, safe explicit clipboard operations and capability display. Settings category layout and working preference subset restored. Onboarding, menu-bar extra, setup guide, launch-at-login and native shortcuts remain absent. |
 | `UI/Theme.swift`, `WindowMaterials.swift`, accessibility | Source light/dark GPUI tokens, vector badges and shipped icon | Partial: exact RGB tokens, source dimensions/spacing, plain wrapping editors, original Home navigation and separate QR/JSON/Text/AI structures. Native glass, SF Symbol exact rasterization, full original controls for every utility, native window materials, Reduce Motion/Transparency and full accessibility QA remain gaps. New Settings/dropdown/appearance changes still need desktop visual and interaction QA. |
 
+
+## Exact published URL/comparison CI closure (2026-10-09)
+
+Published source `41bccf467b40daacd2d715c759165aaf0b84ddf9` passed
+[Linux 37938156319](https://github.com/BelloWare/BelloBox/actions/runs/37938156319)
+and [macOS 37938156317](https://github.com/BelloWare/BelloBox/actions/runs/37938156317).
+The Apple Swift 6.3.3 comparison oracle executed 115 exact bounded
+acceptance/row/copy vectors successfully. The native URL oracle and offline
+preview notice/package validation passed on that source, including actual
+ad-hoc preview assembly. These establish their stated test/package scopes;
+actual native interactive GUI and broad Foundation/ICU equivalence remain
+unverified. These prior results do not validate later Regex source changes.
+
 ## World Clock offline planner checkpoint — 2026-10-05
 
 The World Clock route now opens its own 920×740 window (minimum 780×640), rather
@@ -241,7 +254,7 @@ for many tools still need restoration. Sources below are in
 | `json` | `DeveloperJSON.swift` | Bounded pretty/minify/validate; exact number tokens, recursive NFC key ordering and local canonical-duplicate rejection. Recorded native-vector scope only; see [evidence](validation/json-formatter-2026-10-09/README.md). |
 | `compare` | `InspectionTools.swift`, `DeveloperJSON.swift`, `UtilityWorkbenchModel/View.swift` | Dedicated full-window Lines/Words/JSON fields with independent literal drafts, per-side Paste/Clear, Lines-only whitespace toggle, memory-only cross-window pin, bounded cancellable single-worker sessions, immediate stale-output/copy fencing, selectable signed line/JSON rows and paged inline struck-through words, complete Copy. Legacy CLI retained. 500,000 combined input bytes / 8,000 tokens / 4,000,000 output bytes. Compact interactive session transfer and native macOS IME/AX/Replace Selection remain absent; exact native oracle status is separate. See [workflow and scoped evidence](comparison-workflow.md). |
 | `jwt` | `InspectionTools.swift` | Local header/claims inspection; signature never verified |
-| `regex` | `InspectionTools.swift` | Linear-time pattern/groups/replacement with i/m/s; no ICU lookarounds/backreferences |
+| `regex` | `InspectionTools.swift`, `UtilityWorkbenchModel/View.swift` | Dedicated full-window pattern-first tester with Ignore case, default Multiline anchors, retained replacement, Matches/Extract/Replace, highlighted input, complete Copy and Extract/Replace chaining. Typed bounded single-pass capture results and window-owned cancellation/latest-result fencing; legacy CLI JSON/options/UTF-8 offsets unchanged. Portable Rust pattern dialect, UTF-16 UI detail ranges, numeric/backslash UI templates; no broad ICU parity. Compact interactive transfer and native GUI remain gaps. See [workflow](regex-workflow.md). |
 | `url` | `InspectionTools.swift` | Separate bounded full-window component/ordered-query editor with explicit Inspect/Build, stable paged rows and complete Copy/chain. CLI JSON/options preserved. Compact editor/session handoff and universal Foundation normalization remain gaps; see [URL workflow](url-workflow.md). |
 | `time` | `DeveloperTime.swift` | Seconds/milliseconds/ISO, zones and differences |
 | `cron` | `DeveloperTime.swift` | Five fields, next five UTC runs within366 days; timezone planner absent |

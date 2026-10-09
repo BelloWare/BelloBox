@@ -64,6 +64,11 @@ jobs:
         run: |
           oracle=native::native_swift_comparison_bounded_rows_and_copy
           cargo test --locked -p bellobox-core --test comparison_swift_oracle -- --list | grep -Fx "$oracle: test"
+      - name: Verify bounded Swift regex oracle is present
+        # The complete Core suite below executes this native oracle once.
+        run: |
+          oracle=native::native_swift_regex_ranges_and_templates
+          cargo test --locked -p bellobox-core --test regex_swift_oracle -- --list | grep -Fx "$oracle: test"
       - name: Run pure domain and filesystem tests
         # No GPUI application launch, permissions, keychain, capture or updater actions.
         run: cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform -- --show-output

@@ -1,0 +1,20 @@
+{
+  "observed_utc": "2026-10-09T15:08:56.926866+00:00",
+  "scope": "Independent final source/receipt/log review; actual GUI performed by implementation owner",
+  "source_inventory": "final-reproduction/receipt.json:17 exact changed source hashes and full LOC ledger equality",
+  "verified": [
+    "Final default App552 pass2ignored from terminal log",
+    "Final recording-feature and minimal all-target strict exit0; final fmt exit0",
+    "Multiline test asserts exact focus after Tab, Space toggles off and Enter on; preserves independent Ignore case and IME guard",
+    "CI change adds only regex native test-presence check; existing full native Core suite executes oracle",
+    "Native oracle binds exact Swift excerpt and fixture hashes;46 exact vectors assert all result fields;22 boundary cases separately characterized",
+    "Production source matches original sealed GUI binary; supplemental build-input verification explicitly later",
+    "Final production/support/benchmark Rust LOC65297/48391/105; shared counted once Box"
+  ],
+  "remaining": [
+    "Immutable candidate/tree/preservation proof and normal rust publication",
+    "Exact published Linux/macOS CI including native46+22",
+    "Native macOS GUI/OS IME/keyboard acceptance remains open"
+  ],
+  "inference_seconds": null
+}

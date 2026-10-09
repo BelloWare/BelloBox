@@ -1,0 +1,13 @@
+{
+  "full_log_sha256": "ddebd603d541e55bbe9ffca54b864331222b7936e0941b89b523e2c526854631",
+  "full_log_bytes": 5301329,
+  "command_receipt": "commands.jsonl: mutant-expand_past_output_bound",
+  "excerpt": [
+    "running 1 test",
+    "test developer::regex_inspection::tests::admissions_precede_work_and_match_capture_output_bounds_are_exact ... FAILED",
+    "thread 'developer::regex_inspection::tests::admissions_precede_work_and_match_capture_output_bounds_are_exact' (128) panicked at crates/bellobox-core/src/developer/regex_inspection_tests.rs:184:10:",
+    "called `Result::unwrap_err()` on an `Ok` value: Inspection { matches: [Match { bytes: 0..100000, utf16: 0..100000, groups: [Some(0..100000), Some(0..100000)] }], details: \"1. [0..<100000] aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u2026 [synthetic payload omitted]",
+    "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 495 filtered out; finished in 0.05s"
+  ],
+  "status": "semantic regression failed as intended; no compile error; complete raw synthetic payload retained locally"
+}

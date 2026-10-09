@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "name": "utf16_as_bytes",
+      "expected_test": "developer::regex_inspection::tests::unicode_ranges_keep_utf16_details_and_utf8_highlights_separate",
+      "killed": true,
+      "exit": 101
+    },
+    {
+      "name": "suppress_adjacent_empty",
+      "expected_test": "developer::regex_inspection::tests::source_zero_width_match_after_nonempty_is_not_suppressed",
+      "killed": true,
+      "exit": 101
+    },
+    {
+      "name": "expand_past_output_bound",
+      "expected_test": "developer::regex_inspection::tests::admissions_precede_work_and_match_capture_output_bounds_are_exact",
+      "killed": true,
+      "exit": 101
+    }
+  ],
+  "restored_sha256": "a539d60cddabcbe1fb3d2b864a8a36e5d7793f7ded0d369701a4a2d160fd29b9",
+  "original_sha256": "a539d60cddabcbe1fb3d2b864a8a36e5d7793f7ded0d369701a4a2d160fd29b9"
+}
