@@ -9,6 +9,8 @@ use md5::Md5;
 use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha512};
 use std::collections::HashSet;
+use unicode_normalization::UnicodeNormalization;
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CaseStyle {
@@ -245,10 +247,11 @@ pub enum LineOperation {
     Nonempty,
     Trim,
 }
+fn normalized_newlines(text: &str) -> String {
+    text.replace("\r\n", "\n").replace('\r', "\n")
+}
 pub fn lines(text: &str, operation: LineOperation) -> String {
-    let mut rows: Vec<String> = text
-        .replace("\r\n", "\n")
-        .replace('\r', "\n")
+    let mut rows: Vec<String> = normalized_newlines(text)
         .split('\n')
         .map(str::to_owned)
         .collect();
@@ -258,7 +261,9 @@ pub fn lines(text: &str, operation: LineOperation) -> String {
         LineOperation::Reverse => rows.reverse(),
         LineOperation::Unique => {
             let mut seen = HashSet::new();
-            rows.retain(|s| seen.insert(s.clone()));
+            // Swift Set<String> compares canonical equivalents. Keep the first
+            // original spelling, including empty rows; normalize only the key.
+            rows.retain(|s| seen.insert(s.nfc().collect::<String>()));
         }
         LineOperation::Nonempty => rows.retain(|s| !s.trim().is_empty()),
         LineOperation::Trim => rows = rows.iter().map(|s| s.trim().to_owned()).collect(),
@@ -296,13 +301,15 @@ pub fn counts(text: &str, model: &str) -> Counts {
             .filter(|c| !c.is_alphanumeric() && !c.is_whitespace())
             .count();
     Counts {
-        characters: text.chars().count(),
+        // Swift String.count uses extended grapheme clusters. Its separate
+        // no-spaces statistic intentionally counts Unicode scalars.
+        characters: text.graphemes(true).count(),
         without_whitespace: text.chars().filter(|c| !c.is_whitespace()).count(),
         words: text.split_whitespace().count(),
         lines: if text.is_empty() {
             0
         } else {
-            text.split('\n').count()
+            normalized_newlines(text).split('\n').count()
         },
         estimated_tokens: if text.is_empty() {
             0
@@ -373,6 +380,62 @@ mod tests {
         assert_eq!(lines("b\na\nb", LineOperation::Unique), "b\na");
         assert_eq!(counts("é界", "").characters, 2);
         assert_eq!(counts("", "").estimated_tokens, 0);
+    }
+    #[test]
+    fn text_counts_graphemes_keep_nonwhitespace_scalars() {
+        for (input, characters, without_whitespace, words, lines) in [
+            ("", 0, 0, 0, 0),
+            ("e\u{301} 界", 3, 3, 2, 1),
+            ("👨‍👩‍👧‍👦", 1, 7, 1, 1),
+            ("🇺🇳", 1, 2, 1, 1),
+            ("café", 4, 4, 1, 1),
+            ("cafe\u{301}", 4, 5, 1, 1),
+            ("\r\n", 1, 0, 0, 2),
+            ("a\rb\r\nc\n", 6, 3, 3, 4),
+        ] {
+            let got = counts(input, "");
+            assert_eq!(
+                (got.characters, got.without_whitespace, got.words, got.lines),
+                (characters, without_whitespace, words, lines),
+                "{input:?}"
+            );
+        }
+    }
+    #[test]
+    fn text_line_count_normalizes_only_crlf_and_cr_preserving_final_rows() {
+        for (input, expected) in [
+            ("", 0),
+            ("a", 1),
+            ("a\n", 2),
+            ("a\r", 2),
+            ("\r", 2),
+            ("\r\n\r\n", 3),
+            ("a\rb\r\nc\n", 4),
+            ("a\u{2028}b\u{2029}c\u{85}d", 1),
+        ] {
+            assert_eq!(counts(input, "").lines, expected, "{input:?}");
+        }
+    }
+    #[test]
+    fn text_unique_canonical_keys_preserve_first_spelling_and_empty_rows() {
+        for (input, expected) in [
+            ("é\ne\u{301}\né", "é"),
+            ("e\u{301}\né\ne\u{301}", "e\u{301}"),
+            ("가\n\u{1100}\u{1161}", "가"),
+            ("\u{1100}\u{1161}\n가", "\u{1100}\u{1161}"),
+            ("A\na", "A\na"),
+            (" x\nx", " x\nx"),
+            ("\n\n", ""),
+            ("a\r\nb\ra\n", "a\nb\n"),
+            ("a\n\n\na", "a\n"),
+            ("\na\na", "\na"),
+        ] {
+            assert_eq!(
+                lines(input, LineOperation::Unique).as_bytes(),
+                expected.as_bytes(),
+                "{input:?}"
+            );
+        }
     }
     #[test]
     fn known_hashes() {

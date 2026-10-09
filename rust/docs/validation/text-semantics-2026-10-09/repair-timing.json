@@ -1,0 +1,82 @@
+[
+  {
+    "name": "repaired-core-default",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core"
+    ],
+    "start_utc": "2026-10-09T10:33:00.648307+00:00",
+    "end_utc": "2026-10-09T10:33:13.555059+00:00",
+    "observed_elapsed_seconds": 12.907,
+    "exit_code": 0
+  },
+  {
+    "name": "repaired-core-minimal",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "--no-default-features"
+    ],
+    "start_utc": "2026-10-09T10:33:13.555400+00:00",
+    "end_utc": "2026-10-09T10:33:25.668133+00:00",
+    "observed_elapsed_seconds": 12.113,
+    "exit_code": 0
+  },
+  {
+    "name": "repaired-core-strict",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start_utc": "2026-10-09T10:33:25.668505+00:00",
+    "end_utc": "2026-10-09T10:33:26.107384+00:00",
+    "observed_elapsed_seconds": 0.439,
+    "exit_code": 0
+  },
+  {
+    "name": "repaired-core-minimal-strict",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "--no-default-features",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start_utc": "2026-10-09T10:33:26.107744+00:00",
+    "end_utc": "2026-10-09T10:33:28.579306+00:00",
+    "observed_elapsed_seconds": 2.472,
+    "exit_code": 0
+  },
+  {
+    "name": "repaired-format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "start_utc": "2026-10-09T10:33:28.579699+00:00",
+    "end_utc": "2026-10-09T10:33:30.319609+00:00",
+    "observed_elapsed_seconds": 1.74,
+    "exit_code": 0
+  }
+]

@@ -1,0 +1,33 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bellobox-core)
+warning: unused import: `unicode_segmentation::UnicodeSegmentation`
+  --> crates/bellobox-core/src/text.rs:13:5
+   |
+13 | use unicode_segmentation::UnicodeSegmentation;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `bellobox-core` (lib test) generated 1 warning (run `cargo fix --lib -p bellobox-core --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 6.99s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73)
+
+running 1 test
+test text::tests::text_counts_graphemes_keep_nonwhitespace_scalars ... FAILED
+
+failures:
+
+---- text::tests::text_counts_graphemes_keep_nonwhitespace_scalars stdout ----
+
+thread 'text::tests::text_counts_graphemes_keep_nonwhitespace_scalars' (44) panicked at crates/bellobox-core/src/text.rs:397:13:
+assertion `left == right` failed: "e\u{301} 界"
+  left: (4, 3, 2, 1)
+ right: (3, 3, 2, 1)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    text::tests::text_counts_graphemes_keep_nonwhitespace_scalars
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 466 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p bellobox-core --lib`

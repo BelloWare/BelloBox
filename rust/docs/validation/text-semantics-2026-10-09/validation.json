@@ -1,0 +1,149 @@
+{
+  "base_commit": "d872f3c659dfb95dd128e99c46cdcdda073e1f80",
+  "swift_main": "e43b1c4595c42383e087fe70f38c28d07c31dda0",
+  "created_utc": "2026-10-09T10:34:48.773162+00:00",
+  "research_window": {
+    "start": "2026-10-09T10:19:32Z",
+    "end": "2026-10-09T10:20:43Z",
+    "elapsed_seconds": 71
+  },
+  "implementation_started_utc": "2026-10-09T10:21:43Z",
+  "ordinary_build_finished_utc": "2026-10-09T10:33:00.530665Z",
+  "final_repair_gates_finished_utc": "2026-10-09T10:33:30.319609Z",
+  "results": {
+    "default_app": {
+      "passed": 497,
+      "ignored_existing": 2
+    },
+    "recording_app": {
+      "passed": 513,
+      "ignored_existing": 2
+    },
+    "core_default": {
+      "passed": 505,
+      "native_oracle_ignored_on_linux": 1
+    },
+    "core_minimal": {
+      "passed": 372,
+      "native_oracle_ignored_on_linux": 1
+    }
+  },
+  "focused": {
+    "core_text_tests": 10,
+    "app_text_filtered_tests": 35
+  },
+  "source_mutants": {
+    "source_restored": true,
+    "source_sha256": "eda9ce5e8668fa993195f984863a88d591b4238cf73c46a14f5f5af5f3137878",
+    "results": [
+      {
+        "name": "scalar-count-regression",
+        "start_utc": "2026-10-09T10:26:02.860459+00:00",
+        "end_utc": "2026-10-09T10:26:09.885396+00:00",
+        "observed_elapsed_seconds": 7.025,
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "-p",
+          "bellobox-core",
+          "--lib",
+          "text::tests::text_counts_graphemes_keep_nonwhitespace_scalars",
+          "--",
+          "--exact"
+        ],
+        "exit_code": 101,
+        "caught_by_assertion": true
+      },
+      {
+        "name": "exact-byte-unique-regression",
+        "start_utc": "2026-10-09T10:26:09.885848+00:00",
+        "end_utc": "2026-10-09T10:26:16.550400+00:00",
+        "observed_elapsed_seconds": 6.665,
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "-p",
+          "bellobox-core",
+          "--lib",
+          "text::tests::text_unique_canonical_keys_preserve_first_spelling_and_empty_rows",
+          "--",
+          "--exact"
+        ],
+        "exit_code": 101,
+        "caught_by_assertion": true
+      }
+    ]
+  },
+  "retained_failures": [
+    {
+      "log": "focused-core-initial-failure.log",
+      "cause": "Mechanical edit omitted normalized_newlines helper",
+      "resolution": "Inserted shared helper and reran"
+    },
+    {
+      "log": "focused-app-initial-failure.log",
+      "cause": "GPUI test wildcard import caused attribute macro recursion",
+      "resolution": "Narrow test imports and reran"
+    },
+    {
+      "log": "final-core-minimal-integration-failure.log",
+      "cause": "Existing JSON formatter integration target was not gated with developer-tools",
+      "resolution": "Added test-target cfg(feature = \"developer-tools\"); full default/minimal Core and strict lint rerun; default retains 17 cases"
+    },
+    {
+      "log": "native-oracle/binding-final-default.log",
+      "cause": "New native Rust harness typecheck caught an immutable Command argument where &mut Command was required",
+      "resolution": "Corrected borrow, reran default/minimal binding, strict Core and formatting; raw failure retained"
+    }
+  ],
+  "default_json_formatter_case_count": 17,
+  "minimal_json_formatter_case_count": 0,
+  "binary_sha256": "cb4e1d9d855817639fd18697c6c387aa77f06c6da1c67665a7dcd59e5cde8c56",
+  "product_source_manifest_sha256": "0e53ad2afc986c31dbae650c138775b53e9e14c83dd1e408223f9a5148bcaf32",
+  "loc": {
+    "verified": true,
+    "ledger_sha256": "fff537f470d9602d528f7095d7e52c9a98b3abda813f4f00799c94305c6a074a",
+    "delta": {
+      "production": 9,
+      "support": 502,
+      "benchmark": 0
+    },
+    "cumulative_counts": {
+      "production": 60991,
+      "support": 44859,
+      "benchmark": 105
+    },
+    "negative_controls": {
+      "wrong_count": "rejected",
+      "misclassify_production": "rejected",
+      "omit_changed_path": "rejected",
+      "alter_unchanged_hash": "rejected",
+      "duplicate_shared_path": "rejected"
+    },
+    "base_inventory_git_verified": true,
+    "shared_counted_once": true
+  },
+  "gui": "PASS within exercised scope; see gui-acceptance.json",
+  "native_oracle": "Pending exact macOS CI. Reproducible bounded oracle installed; Linux binding/default/minimal/strict/format pass, native test intentionally ignored on Linux.",
+  "exact_commit_ci": "pending publication",
+  "publication": "not performed; no refs/uploads",
+  "timing_note": "Observed wall-clock intervals only; model inference timing unavailable.",
+  "native_oracle_source_review": "Full-source/excerpt/fixture digests, input/output byte comparisons, 11 stats and 7 Unique assertions, 14 whitespace-only diagnostics, bounded process runtime/output, existing CI job single execution reviewed.",
+  "candidate_source_manifest_sha256": "b99eb9500d4e2be651c06ed0f65c28d73f880386f6ecc78e9312ca7796f59047",
+  "pre_oracle_core_results": {
+    "core_default": {
+      "passed": 504,
+      "ignored_existing": 0
+    },
+    "core_minimal": {
+      "passed": 371,
+      "ignored_existing": 0
+    }
+  },
+  "source_review": "Bounded changes consistent with source; no Trim/Nonempty/sort behavior changes observed; source-mutant controls requested and passed",
+  "combined_core_gates_finished_utc": "2026-10-09T10:50:35.636625Z",
+  "finalized_utc": "2026-10-09T10:51:19.115359+00:00",
+  "combined_candidate_source_unchanged_after_checks": true
+}

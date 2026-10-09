@@ -1,0 +1,10 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 0.44s
+     Running tests/text_swift_oracle.rs (/workspace/shared/build-recovery/target/debug/deps/text_swift_oracle-4212fb9d2bd3d90b)
+
+running 2 tests
+test native::native_swift_count_and_unique_match_pinned_source ... ignored, requires native macOS Swift/Foundation; source binding still runs
+test pinned_source_and_fixed_fixtures_are_bound ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

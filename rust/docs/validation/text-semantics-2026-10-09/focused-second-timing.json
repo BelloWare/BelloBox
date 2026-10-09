@@ -1,0 +1,34 @@
+[
+  {
+    "name": "focused-core",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "text::tests"
+    ],
+    "start_utc": "2026-10-09T10:24:45.485819+00:00",
+    "end_utc": "2026-10-09T10:24:52.553303+00:00",
+    "observed_elapsed_seconds": 7.067,
+    "exit_code": 0
+  },
+  {
+    "name": "focused-app",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "text_",
+      "--",
+      "--test-threads=2"
+    ],
+    "start_utc": "2026-10-09T10:24:52.553600+00:00",
+    "end_utc": "2026-10-09T10:25:19.057683+00:00",
+    "observed_elapsed_seconds": 26.504,
+    "exit_code": 101
+  }
+]

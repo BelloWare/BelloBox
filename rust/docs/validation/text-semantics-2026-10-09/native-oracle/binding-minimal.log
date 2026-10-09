@@ -1,0 +1,9 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 0.24s
+     Running tests/text_swift_oracle.rs (/workspace/shared/build-recovery/target/debug/deps/text_swift_oracle-9693b60bc92bd4f9)
+
+running 1 test
+test pinned_source_and_fixed_fixtures_are_bound ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

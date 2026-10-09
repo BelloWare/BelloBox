@@ -1,0 +1,56 @@
+{
+  "result": "PASS within exercised scope",
+  "environment": "Actual ordinary sealed Linux X11 GUI, Sky CUA, software lavapipe, light appearance, 1364x1024 desktop",
+  "binary_sha256": "cb4e1d9d855817639fd18697c6c387aa77f06c6da1c67665a7dcd59e5cde8c56",
+  "source_manifest_sha256": "0e53ad2afc986c31dbae650c138775b53e9e14c83dd1e408223f9a5148bcaf32",
+  "all_six_source_postimages_unchanged": true,
+  "observed_start_utc": "2026-10-09T10:36:12.597536892Z",
+  "observed_end_utc": "2026-10-09T10:43:17.194753Z",
+  "observed_workflow_seconds": 424.597216,
+  "timing_scope": "Launch fixture to post-exit verification, includes interaction and inspection; not a latency benchmark",
+  "fixture_utf8_hex": "65cc810df09f91a8e2808df09f91a9e2808df09f91a7e2808df09f91a60dc3a90d0a0d0a",
+  "fixture_escaped": "é\r👨‍👩‍👧‍👦\ré\r\n\r\n",
+  "observed": [
+    "Original Count shows 7 graphemes, 10 non-whitespace scalars, 3 words, 5 lines and generic token heuristic; all complete labels visible.",
+    "Popup Copy Result pasted into Mousepad and UTF-8-saved exact count-copy.txt, without injected expected-output text.",
+    "Ctrl+K compact Count displays same five numeric fields, short mixed-unit scope note and Copy within source 224-point preview. No clipped labels/overlap observed.",
+    "Compact Copy pasted its ending token-summary line visibly into query; no byte-exact compact-copy claim from single-line query rendering. Clearing query retains Count. Enter opens fresh Count popup, preserving original input/counters.",
+    "Fresh popup measured 720x520 by Sky inventory; Count result, scope note and Copy remain readable. Lines controls wrap and result can scroll; popup enlarged for complete Unique inspection.",
+    "Remove duplicates yields decomposed-first accent, family emoji and one final empty row. Explicit Copy pasted into Mousepad and saved exact unique-copy.txt; first spelling and trailing LF verified as bytes.",
+    "Use as Input replaces source with Unique result; repeated unchanged Unique output excludes chaining. Count shows 4 graphemes, 9 non-whitespace scalars, 2 words, 3 lines.",
+    "Reset restores displayed opening input and original 7/10/3/5 counts. Byte-exact Reset is separately covered by GPUI test, not asserted solely from screenshot.",
+    "Closing fresh popup leaves original unchanged. Both popups and saved synthetic Mousepad documents closed normally; app exit 0 and final Sky inventory shows no owned windows."
+  ],
+  "minimum_window": {
+    "id": 27263005,
+    "width": 720,
+    "height": 520,
+    "source": "Sky list_windows after actual drag"
+  },
+  "clipboard_outputs": {
+    "count": {
+      "sha256": "9d5c1dd0c2d0476dc39387549817d2ab8c6eacd3a66e593e3035f093560867a2",
+      "exact": true
+    },
+    "unique": {
+      "sha256": "82302f86594c5cfb2668d9d663ae113f7e9396dad79ae419ef7b028b78e6c99b",
+      "exact_first_spelling_and_trailing_empty_row": true
+    }
+  },
+  "harness_issues": [
+    "Terminal type_text/Paste API was unavailable; supported Sky key presses entered the launch command.",
+    "One screenshot-file save hit shell argument-size limit; same screenshot was recaptured and saved in base64 chunks. No product change.",
+    "Immediate post-action captures occasionally preceded asynchronous redraw; settled screenshots were inspected before assertions."
+  ],
+  "limitations": [
+    "Light appearance only; dark mode and exhaustive repeat/oversize/error injection remain prior/deterministic coverage.",
+    "No native macOS runtime or universal Unicode/Foundation parity claim.",
+    "Unrelated QR Save not retested because changed paths do not affect it.",
+    "No provider/capture/vault actions; no instrumented network-zero claim."
+  ],
+  "cleanup": {
+    "exit_code": 0,
+    "all_owned_windows_closed": true
+  },
+  "screenshots": "Local only; not uploaded or committed"
+}

@@ -1,0 +1,33 @@
+[
+  {
+    "name": "core-default",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core"
+    ],
+    "start_utc": "2026-10-09T10:26:32.323493+00:00",
+    "end_utc": "2026-10-09T10:26:51.674534+00:00",
+    "observed_elapsed_seconds": 19.351,
+    "exit_code": 0,
+    "log": "final-core-default.log"
+  },
+  {
+    "name": "core-minimal",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "--no-default-features"
+    ],
+    "start_utc": "2026-10-09T10:26:51.675052+00:00",
+    "end_utc": "2026-10-09T10:26:56.211904+00:00",
+    "observed_elapsed_seconds": 4.537,
+    "exit_code": 101,
+    "log": "final-core-minimal.log"
+  }
+]

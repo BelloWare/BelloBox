@@ -1,0 +1,38 @@
+{
+  "base_commit": "d872f3c659dfb95dd128e99c46cdcdda073e1f80",
+  "base_tree": "3f212f1e2edf210590e7780a5ac8c0542f3ff929",
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/text_tools/tests.rs",
+      "sha256": "dfb6bdf85452620043847143c98c55542d28dc83d337e98786754c0ba598cc72",
+      "bytes": 10766
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_text_ui.rs",
+      "sha256": "e6d66b9aeea3fa283bb7a4a63e76b622602a44de16b108664f0ce5f01a8d0b39",
+      "bytes": 17415
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "sha256": "65855176930ebcba8e1e43369f547a3b4c5691925f8a5c3c36e44fb181809ea2",
+      "bytes": 10908
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/text_tool_state.rs",
+      "sha256": "5056e4fa984ac34bc1c2b4f21e77ef3078c2734e72dabdf4e8a83ebd948633e0",
+      "bytes": 44421
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/text.rs",
+      "sha256": "eda9ce5e8668fa993195f984863a88d591b4238cf73c46a14f5f5af5f3137878",
+      "bytes": 14833
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/json_formatter_prototype.rs",
+      "sha256": "932561fde10d3bc3f33db2ea8147cec2f1e78d37559399812159c63afab048f5",
+      "bytes": 2356
+    }
+  ],
+  "cargo_lock_sha256": "222781fafc842dd19d132664d33dfffbd51b1fc3bc9c42932461ce2e90b1c097",
+  "changes": "Bounded TextTools counts/canonical Unique and mixed-unit presentation; feature-gate existing JSON formatter integration test; no dependency/shared-editor/native-gate change"
+}

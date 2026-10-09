@@ -371,3 +371,42 @@ impl Render for LauncherTextPreview {
             .children(choices.options().iter().enumerate().map(|(i,(_,label))|div().id(("text-menu-choice",i)).h(px(22.)).px(px(7.)).flex().items_center().text_size(px(11.)).when(i==self.menu_index,|s|s.bg(p.well)).child(*label).on_mouse_down(MouseButton::Left,|_,_,cx|cx.stop_propagation()).on_click(cx.listener(move|this,event,_,cx|{if matches!(event,ClickEvent::Mouse(_)){this.select_option(i,cx);}cx.stop_propagation();})))))))
     }
 }
+
+#[cfg(test)]
+mod text_semantics_tests {
+    use super::LauncherTextPreview;
+    use gpui::TestAppContext;
+
+    #[gpui::test]
+    fn text_count_preview_labels_and_explicit_copy_use_graphemes(cx: &mut TestAppContext) {
+        let view = cx.add_window(|w, cx| LauncherTextPreview::new("e\u{301} 界\r".into(), w, cx));
+        view.update(cx, |v, _, cx| v.act(6, cx)).unwrap();
+        cx.run_until_parked();
+        cx.background_executor
+            .advance_clock(std::time::Duration::from_millis(301));
+        cx.run_until_parked();
+        view.update(cx, |v, _, cx| {
+            let state = v.session.read(cx);
+            assert_eq!(state.count_rows[0], ("Characters", "4".into()));
+            assert_eq!(state.count_rows[1].1, "3");
+            assert_eq!(state.count_rows[3].1, "2");
+            assert!(
+                state
+                    .choices
+                    .scope_note()
+                    .contains("without whitespace counts scalars")
+            );
+            assert!(!state.can_chain());
+            let expected = state.output.clone();
+            assert!(expected.starts_with(
+                "4 characters (graphemes)\n3 without whitespace (scalars)\n2 words\n2 lines\n"
+            ));
+            v.act(13, cx);
+            assert_eq!(
+                cx.read_from_clipboard().unwrap().text().as_deref(),
+                Some(expected.as_str())
+            );
+        })
+        .unwrap();
+    }
+}

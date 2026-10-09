@@ -1,0 +1,35 @@
+    Finished `test` profile [unoptimized] target(s) in 0.35s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73)
+
+running 10 tests
+test text::tests::html_is_single_pass ... ok
+test text::tests::rejects_invalid_encodings ... ok
+test text::tests::encodings_round_trip_utf8 ... ok
+test text::tests::unicode_case_and_boundaries ... ok
+test text::tests::stable_unique_and_count ... ok
+test text::tests::text_line_count_normalizes_only_crlf_and_cr_preserving_final_rows ... ok
+test text::tests::text_unique_canonical_keys_preserve_first_spelling_and_empty_rows ... ok
+test text::tests::text_counts_graphemes_keep_nonwhitespace_scalars ... ok
+test text::tests::known_hashes ... ok
+test text::tests::auto_decode_does_not_treat_plain_plus_as_url ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 457 filtered out; finished in 0.00s
+
+     Running tests/developer_safety.rs (/workspace/shared/build-recovery/target/debug/deps/developer_safety-e97c7b1f6a88f09e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/json_formatter_prototype.rs (/workspace/shared/build-recovery/target/debug/deps/json_formatter_prototype-68cfd9ece45edfb7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s
+
+     Running tests/ui_tool_controls.rs (/workspace/shared/build-recovery/target/debug/deps/ui_tool_controls-2450bb5cabac794b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s
+

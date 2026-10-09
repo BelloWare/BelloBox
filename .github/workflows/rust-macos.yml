@@ -49,9 +49,14 @@ jobs:
           oracle=recording::tests::checked_in_raw_movie_native_decode_matches_independent_swift_source_exactly
           cargo test --locked -p bello-platform -- --list | grep -Fx "$oracle: test"
           cargo test --locked -p bello-platform "$oracle" -- --exact --show-output
+      - name: Verify bounded Swift text oracle is present
+        # The following complete Core suite executes it once; this step only lists.
+        run: |
+          oracle=native::native_swift_count_and_unique_match_pinned_source
+          cargo test --locked -p bellobox-core --test text_swift_oracle -- --list | grep -Fx "$oracle: test"
       - name: Run pure domain and filesystem tests
         # No GPUI application launch, permissions, keychain, capture or updater actions.
-        run: cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform
+        run: cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform -- --show-output
       - name: Characterize synthetic CoreGraphics alpha without capture
         run: cargo test --locked -p bello-platform native_alpha_ -- --show-output
       - name: Test supplied-image Window host mask without GPUI launch

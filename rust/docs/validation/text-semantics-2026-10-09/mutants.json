@@ -1,0 +1,44 @@
+{
+  "source_restored": true,
+  "source_sha256": "eda9ce5e8668fa993195f984863a88d591b4238cf73c46a14f5f5af5f3137878",
+  "results": [
+    {
+      "name": "scalar-count-regression",
+      "start_utc": "2026-10-09T10:26:02.860459+00:00",
+      "end_utc": "2026-10-09T10:26:09.885396+00:00",
+      "observed_elapsed_seconds": 7.025,
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "text::tests::text_counts_graphemes_keep_nonwhitespace_scalars",
+        "--",
+        "--exact"
+      ],
+      "exit_code": 101,
+      "caught_by_assertion": true
+    },
+    {
+      "name": "exact-byte-unique-regression",
+      "start_utc": "2026-10-09T10:26:09.885848+00:00",
+      "end_utc": "2026-10-09T10:26:16.550400+00:00",
+      "observed_elapsed_seconds": 6.665,
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "text::tests::text_unique_canonical_keys_preserve_first_spelling_and_empty_rows",
+        "--",
+        "--exact"
+      ],
+      "exit_code": 101,
+      "caught_by_assertion": true
+    }
+  ]
+}

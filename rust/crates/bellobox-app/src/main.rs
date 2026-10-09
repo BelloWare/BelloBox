@@ -165,7 +165,7 @@ fn execute(id: &str, input: &str, second: &str) -> Result<String, String> {
     bellobox_core::validate_input(input)?;
     bellobox_core::validate_input(second)?;
     match id {
-        "textTools"=>Ok(match second.trim(){"upper"=>text::case(input,text::CaseStyle::Upper),"lower"=>text::case(input,text::CaseStyle::Lower),"title"=>text::case(input,text::CaseStyle::Title),"sentence"=>text::case(input,text::CaseStyle::Sentence),"camel"=>text::case(input,text::CaseStyle::Camel),"pascal"=>text::case(input,text::CaseStyle::Pascal),"snake"=>text::case(input,text::CaseStyle::Snake),"kebab"=>text::case(input,text::CaseStyle::Kebab),"constant"=>text::case(input,text::CaseStyle::Constant),"base64"=>text::encode(input,text::Encoding::Base64),"url"=>text::encode(input,text::Encoding::Url),"html"=>text::encode(input,text::Encoding::Html),"hex"=>text::encode(input,text::Encoding::Hex),"decode"=>text::auto_decode(input)?.1,"decode-base64"=>text::decode(input,text::Encoding::Base64)?,"decode-url"=>text::decode(input,text::Encoding::Url)?,"decode-html"=>text::decode(input,text::Encoding::Html)?,"decode-hex"=>text::decode(input,text::Encoding::Hex)?,"pretty"=>{#[cfg(feature="developer-tools")] {bellobox_core::developer::execute("json",input,"pretty")?} #[cfg(not(feature="developer-tools"))] {return Err("Formatting is not included in this minimal build.".into());}},"hash"=>text::hashes(input),"sort"=>text::lines(input,text::LineOperation::Sort),"sort-reverse"=>text::lines(input,text::LineOperation::SortReverse),"nonempty"=>text::lines(input,text::LineOperation::Nonempty),"unique"=>text::lines(input,text::LineOperation::Unique),"trim"=>text::lines(input,text::LineOperation::Trim),"reverse"=>text::lines(input,text::LineOperation::Reverse),_=>{let c=text::counts(input,second);format!("{} characters (Unicode scalars)\n{} without whitespace\n{} words\n{} lines\n~{} tokens ({})\n\nOperation in second input: upper, lower, title, sentence, camel, pascal, snake, kebab, constant, base64, url, html, hex, decode, hash, sort, unique, trim, reverse.",c.characters,c.without_whitespace,c.words,c.lines,c.estimated_tokens,c.tokenizer_family)}}),
+        "textTools"=>Ok(match second.trim(){"upper"=>text::case(input,text::CaseStyle::Upper),"lower"=>text::case(input,text::CaseStyle::Lower),"title"=>text::case(input,text::CaseStyle::Title),"sentence"=>text::case(input,text::CaseStyle::Sentence),"camel"=>text::case(input,text::CaseStyle::Camel),"pascal"=>text::case(input,text::CaseStyle::Pascal),"snake"=>text::case(input,text::CaseStyle::Snake),"kebab"=>text::case(input,text::CaseStyle::Kebab),"constant"=>text::case(input,text::CaseStyle::Constant),"base64"=>text::encode(input,text::Encoding::Base64),"url"=>text::encode(input,text::Encoding::Url),"html"=>text::encode(input,text::Encoding::Html),"hex"=>text::encode(input,text::Encoding::Hex),"decode"=>text::auto_decode(input)?.1,"decode-base64"=>text::decode(input,text::Encoding::Base64)?,"decode-url"=>text::decode(input,text::Encoding::Url)?,"decode-html"=>text::decode(input,text::Encoding::Html)?,"decode-hex"=>text::decode(input,text::Encoding::Hex)?,"pretty"=>{#[cfg(feature="developer-tools")] {bellobox_core::developer::execute("json",input,"pretty")?} #[cfg(not(feature="developer-tools"))] {return Err("Formatting is not included in this minimal build.".into());}},"hash"=>text::hashes(input),"sort"=>text::lines(input,text::LineOperation::Sort),"sort-reverse"=>text::lines(input,text::LineOperation::SortReverse),"nonempty"=>text::lines(input,text::LineOperation::Nonempty),"unique"=>text::lines(input,text::LineOperation::Unique),"trim"=>text::lines(input,text::LineOperation::Trim),"reverse"=>text::lines(input,text::LineOperation::Reverse),_=>{let c=text::counts(input,second);format!("{} characters (graphemes)\n{} without whitespace (scalars)\n{} words\n{} lines\n~{} tokens ({})\n\nOperation in second input: upper, lower, title, sentence, camel, pascal, snake, kebab, constant, base64, url, html, hex, decode, hash, sort, unique, trim, reverse.",c.characters,c.without_whitespace,c.words,c.lines,c.estimated_tokens,c.tokenizer_family)}}),
         "qr"=>bellobox_core::qr::terminal(input),
         "worldClock"=>{let mut p=Planner::default();if !input.trim().is_empty(){p.set_instant(bellobox_core::clock::parse_instant(input)?)?;}
 if !second.trim().is_empty(){p.set_zones(&second.split(',').map(|s|s.trim().to_string()).collect::<Vec<_>>())?;}Ok(p.summary())},
@@ -179,5 +179,30 @@ if !second.trim().is_empty(){p.set_zones(&second.split(',').map(|s|s.trim().to_s
             #[cfg(feature="developer-tools")] {bellobox_core::developer::execute(id,input,second)}
             #[cfg(not(feature="developer-tools"))] {Err("Developer utility engines are excluded in this minimal build. Build with the default developer-tools feature to include them.".into())}
         },
+    }
+}
+
+#[cfg(test)]
+mod text_semantics_tests {
+    use super::execute;
+
+    #[test]
+    fn text_counts_execute_route_preserves_mixed_count_units() {
+        let output = execute("textTools", "e\u{301} 界\r", "count").unwrap();
+        assert!(output.starts_with(
+            "4 characters (graphemes)\n3 without whitespace (scalars)\n2 words\n2 lines\n"
+        ));
+        assert!(output.contains("generic heuristic"));
+    }
+
+    #[test]
+    fn text_unique_execute_route_preserves_first_bytes_and_empty_rows() {
+        assert_eq!(
+            execute("textTools", "e\u{301}\r\né\r\n\r\n", "unique")
+                .unwrap()
+                .as_bytes(),
+            "e\u{301}\n".as_bytes()
+        );
+        assert_eq!(execute("textTools", "A\na", "unique").unwrap(), "A\na");
     }
 }

@@ -1,3 +1,5 @@
+#![cfg(feature = "developer-tools")]
+
 // Standalone prototype lane: does not require modifying shared engine routing.
 #[path = "../src/developer/json_formatter.rs"]
 mod json_formatter;

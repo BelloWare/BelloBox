@@ -1,0 +1,46 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bellobox-core)
+error[E0433]: cannot find `developer` in `bellobox_core`
+ --> crates/bellobox-core/tests/json_formatter_prototype.rs:9:24
+  |
+9 |         bellobox_core::developer::execute("jsonPointer", input, "/é").unwrap(),
+  |                        ^^^^^^^^^ could not find `developer` in `bellobox_core`
+  |
+note: found an item that was configured out
+ --> crates/bellobox-core/src/lib.rs:6:9
+  |
+5 | #[cfg(feature = "developer-tools")]
+  |       --------------------------- the item is gated behind the `developer-tools` feature
+6 | pub mod developer;
+  |         ^^^^^^^^^
+
+error[E0433]: cannot find `developer` in `bellobox_core`
+  --> crates/bellobox-core/tests/json_formatter_prototype.rs:13:24
+   |
+13 |         bellobox_core::developer::execute("jsonPointer", input, "/e\u{301}").unwrap(),
+   |                        ^^^^^^^^^ could not find `developer` in `bellobox_core`
+   |
+note: found an item that was configured out
+  --> crates/bellobox-core/src/lib.rs:6:9
+   |
+ 5 | #[cfg(feature = "developer-tools")]
+   |       --------------------------- the item is gated behind the `developer-tools` feature
+ 6 | pub mod developer;
+   |         ^^^^^^^^^
+
+error[E0433]: cannot find `developer` in `bellobox_core`
+  --> crates/bellobox-core/tests/json_formatter_prototype.rs:58:32
+   |
+58 |                 bellobox_core::developer::execute("json", input, mode),
+   |                                ^^^^^^^^^ could not find `developer` in `bellobox_core`
+   |
+note: found an item that was configured out
+  --> crates/bellobox-core/src/lib.rs:6:9
+   |
+ 5 | #[cfg(feature = "developer-tools")]
+   |       --------------------------- the item is gated behind the `developer-tools` feature
+ 6 | pub mod developer;
+   |         ^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `bellobox-core` (test "json_formatter_prototype") due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...

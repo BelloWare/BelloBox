@@ -1,0 +1,189 @@
+[
+  {
+    "name": "core-default",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core"
+    ],
+    "start_utc": "2026-10-09T10:27:27.635851+00:00",
+    "end_utc": "2026-10-09T10:27:40.248930+00:00",
+    "observed_elapsed_seconds": 12.613,
+    "exit_code": 0,
+    "log": "final-core-default.log"
+  },
+  {
+    "name": "core-minimal",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "--no-default-features",
+      "--lib"
+    ],
+    "start_utc": "2026-10-09T10:27:40.249631+00:00",
+    "end_utc": "2026-10-09T10:27:52.458154+00:00",
+    "observed_elapsed_seconds": 12.209,
+    "exit_code": 0,
+    "log": "final-core-minimal.log"
+  },
+  {
+    "name": "core-strict",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start_utc": "2026-10-09T10:27:52.458743+00:00",
+    "end_utc": "2026-10-09T10:27:55.975761+00:00",
+    "observed_elapsed_seconds": 3.517,
+    "exit_code": 0,
+    "log": "final-core-strict.log"
+  },
+  {
+    "name": "format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "start_utc": "2026-10-09T10:27:55.976370+00:00",
+    "end_utc": "2026-10-09T10:27:57.679912+00:00",
+    "observed_elapsed_seconds": 1.704,
+    "exit_code": 0,
+    "log": "final-format.log"
+  },
+  {
+    "name": "strict",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start_utc": "2026-10-09T10:27:57.680506+00:00",
+    "end_utc": "2026-10-09T10:28:15.544209+00:00",
+    "observed_elapsed_seconds": 17.864,
+    "exit_code": 0,
+    "log": "final-strict.log"
+  },
+  {
+    "name": "default-app",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "--",
+      "--test-threads=2"
+    ],
+    "start_utc": "2026-10-09T10:28:15.544889+00:00",
+    "end_utc": "2026-10-09T10:30:17.898919+00:00",
+    "observed_elapsed_seconds": 122.354,
+    "exit_code": 0,
+    "log": "final-default-app.log"
+  },
+  {
+    "name": "recording-app",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "--features",
+      "recording-fixtures",
+      "--",
+      "--test-threads=2"
+    ],
+    "start_utc": "2026-10-09T10:30:17.899823+00:00",
+    "end_utc": "2026-10-09T10:32:38.178389+00:00",
+    "observed_elapsed_seconds": 140.279,
+    "exit_code": 0,
+    "log": "final-recording-app.log"
+  },
+  {
+    "name": "recording-strict",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "--features",
+      "recording-fixtures",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start_utc": "2026-10-09T10:32:38.180537+00:00",
+    "end_utc": "2026-10-09T10:32:45.922918+00:00",
+    "observed_elapsed_seconds": 7.742,
+    "exit_code": 0,
+    "log": "final-recording-strict.log"
+  },
+  {
+    "name": "minimal",
+    "command": [
+      "cargo",
+      "check",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "--no-default-features"
+    ],
+    "start_utc": "2026-10-09T10:32:45.924121+00:00",
+    "end_utc": "2026-10-09T10:32:49.735005+00:00",
+    "observed_elapsed_seconds": 3.811,
+    "exit_code": 0,
+    "log": "final-minimal.log"
+  },
+  {
+    "name": "clean-app",
+    "command": [
+      "cargo",
+      "clean",
+      "-p",
+      "bellobox-app"
+    ],
+    "start_utc": "2026-10-09T10:32:49.735656+00:00",
+    "end_utc": "2026-10-09T10:32:49.851217+00:00",
+    "observed_elapsed_seconds": 0.116,
+    "exit_code": 0,
+    "log": "final-clean-app.log"
+  },
+  {
+    "name": "ordinary-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "-p",
+      "bellobox-app"
+    ],
+    "start_utc": "2026-10-09T10:32:49.852057+00:00",
+    "end_utc": "2026-10-09T10:33:00.530665+00:00",
+    "observed_elapsed_seconds": 10.679,
+    "exit_code": 0,
+    "log": "final-ordinary-build.log"
+  }
+]

@@ -1,0 +1,45 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 18.44s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 35 tests
+test desktop::ai_updates::tests::completion_without_new_text_still_finishes ... ok
+test desktop::text_tools::tests::text_closed_destination_retires_even_when_entity_is_retained ... ok
+test desktop::text_tools::tests::text_explicit_paste_keeps_rejected_editor_draft_and_fences_previous_copy ... ok
+test desktop::text_tools::tests::text_open_failures_preserve_independent_palette_snapshot ... ok
+test desktop::text_tools::tests::text_busy_error_and_oversized_input_never_copy_previous_result ... ok
+test desktop::text_tools::tests::text_popup_counts_copy_and_unique_chain_preserve_unicode_semantics ... ok
+test desktop::text_tools::tests::text_popup_tab_and_held_activation_do_not_type_or_double_chain ... ok
+test desktop::text_tools::tests::text_quit_during_admission_and_oversize_are_refused ... ok
+test launcher_clock_ui::copilot::presentation_tests::placeholder_never_covers_text_or_ime_composition ... ok
+test desktop::text_tools::tests::text_popup_snapshot_focus_options_chain_reset_and_independence ... ok
+test launcher_text_ui::text_semantics_tests::text_count_preview_labels_and_explicit_copy_use_graphemes ... ok
+test launcher_ui::json_tests::json_palette_retains_mode_chained_text_and_transfers_actual_owner ... ok
+test launcher_ui::text_tests::text_option_menu_keyboard_owns_return_and_preserves_palette ... ok
+test launcher_ui::text_tests::text_output_native_copy_and_navigation_keep_source_owners ... ok
+test launcher_ui::text_tests::text_oversized_preview_defers_but_preserves_snapshot ... ok
+test launcher_ui::text_tests::text_palette_defaults_retention_snapshot_and_successful_open_latch ... ok
+test launcher_ui::text_tests::text_query_copy_and_escape_keep_keyboard_owners ... ok
+test launcher_ui::text_tests::text_selection_replacement_retires_old_preview_and_defaults_new ... ok
+test screenshot_ui::quit_tests::screenshot_export_text_and_gesture_refuse_quit_without_mutation_then_clean_retry_works ... ok
+test screenshot_ui::tests::label_preview_rejects_nontext_annotations ... ok
+test shutdown::quit::prompt::tests::text_input_and_repeated_quit_are_shielded_then_editor_input_resumes ... ok
+test text_semantics_tests::text_counts_execute_route_preserves_mixed_count_units ... ok
+test text_semantics_tests::text_unique_execute_route_preserves_first_bytes_and_empty_rows ... ok
+test text_tool_state::tests::byte_admission_and_invalid_snapshot_never_reuse_older_input ... ok
+test text_tool_state::tests::cancelled_worker_drains_before_recovery_and_empty_structured_results_work ... ok
+test text_tool_state::tests::current_result_copy_and_primary_chain_guards_preserve_reset ... ok
+test text_tool_state::tests::encoded_outputs_and_output_cap_are_complete_and_never_truncated ... ok
+test text_tool_state::tests::every_typed_option_has_a_unique_argument_and_retains_its_independent_choice ... ok
+test text_tool_state::tests::held_success_and_error_are_fenced_by_cancel_clear_reset_and_retirement ... ok
+test text_tool_state::tests::late_manual_results_output_overflow_and_retired_mutations_are_rejected ... ok
+test text_tool_state::tests::physical_worker_coalesces_rapid_input_and_option_changes ... ok
+test text_tool_state::tests::snapshot_copies_original_and_choices_into_independent_window_jobs ... ok
+test text_tool_state::tests::structured_hashes_and_counts_do_not_contain_cli_help ... ok
+test text_tool_state::tests::typed_dispatch_preserves_existing_engines_and_rejects_bad_decode ... ok
+test launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 464 filtered out; finished in 1.37s
+

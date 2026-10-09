@@ -1,0 +1,19 @@
+   Compiling git2 v0.20.4
+   Compiling bello-workbench v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bello-workbench)
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bellobox-core)
+   Compiling gpui_util v0.2.2
+   Compiling gpui_http_client v0.2.2
+   Compiling gpui v0.2.2
+   Compiling bello-platform v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bello-platform)
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bello-workbench-ui)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bellobox-app)
+error: recursion limit reached while expanding `#[test]`
+   --> crates/bellobox-app/src/launcher_text_ui.rs:379:5
+    |
+379 |     #[gpui::test]
+    |     ^^^^^^^^^^^^^
+    |
+    = help: consider increasing the recursion limit by adding a `#![recursion_limit = "256"]` attribute to your crate (`bellobox`)
+    = note: this error originates in the attribute macro `test` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `bellobox-app` (bin "bellobox" test) due to 1 previous error

@@ -266,3 +266,53 @@ fn text_explicit_paste_keeps_rejected_editor_draft_and_fences_previous_copy(
     })
     .unwrap();
 }
+
+#[gpui::test]
+fn text_popup_counts_copy_and_unique_chain_preserve_unicode_semantics(cx: &mut TestAppContext) {
+    let input = "e\u{301}\r\né\r\n\r\n";
+    let full = cx.add_window(|w, cx| BelloBox::new_for("textTools".into(), input.into(), w, cx));
+    full.update(cx, |v, _, cx| v.text_category(Category::Count, cx))
+        .unwrap();
+    tick(cx);
+    full.update(cx, |v, _, cx| {
+        let s = v.text_session.as_ref().unwrap().read(cx);
+        assert_eq!(s.count_rows[0], ("Characters", "5".into()));
+        assert_eq!(s.count_rows[1].1, "3");
+        assert_eq!(s.count_rows[3].1, "4");
+        assert!(!s.can_chain());
+        let expected = s.output.clone();
+        assert!(expected.starts_with(
+            "5 characters (graphemes)\n3 without whitespace (scalars)\n2 words\n4 lines\n"
+        ));
+        v.text_copy(cx);
+        assert_eq!(
+            cx.read_from_clipboard().unwrap().text().as_deref(),
+            Some(expected.as_str())
+        );
+        v.text_category(Category::Lines, cx);
+        v.text_option("unique", cx);
+    })
+    .unwrap();
+    tick(cx);
+    full.update(cx, |v, _, cx| {
+        assert_eq!(v.output.read(cx).text().as_bytes(), "e\u{301}\n".as_bytes());
+        v.text_copy(cx);
+        assert_eq!(
+            cx.read_from_clipboard().unwrap().text().unwrap().as_bytes(),
+            "e\u{301}\n".as_bytes()
+        );
+        v.text_chain(cx);
+    })
+    .unwrap();
+    tick(cx);
+    full.update(cx, |v, _, cx| {
+        assert_eq!(v.input.read(cx).text().as_bytes(), "e\u{301}\n".as_bytes());
+        v.text_act(16, cx);
+    })
+    .unwrap();
+    tick(cx);
+    full.update(cx, |v, _, cx| {
+        assert_eq!(v.input.read(cx).text().as_bytes(), input.as_bytes())
+    })
+    .unwrap();
+}

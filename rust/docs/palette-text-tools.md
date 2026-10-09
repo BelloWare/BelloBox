@@ -54,16 +54,18 @@ covering an editor change whose notification has not yet run.
 
 ## Existing engine differences remain explicit
 
-The UI reuses existing text engines; no parser, dependency, lockfile or shared
-editor changed. Category scope labels disclose:
+The initial UI slice reused existing text engines. The bounded count/Unique
+successor below changes only those semantics, with no dependency, lockfile,
+parser or shared-editor change. Category scope labels disclose:
 
 - Pretty is **JSON only** in Rust. Swift Text Tools uses its separate
   [PrettyPrinter](https://github.com/BelloWare/BelloBox/blob/e43b1c4595c42383e087fe70f38c28d07c31dda0/BelloBox/Tools/TextTransforms.swift#L348-L373),
   which detects/reindents JSON, XML, HTML and brace code. The JSON Formatter's
   token-preserving/sorting successor does not establish Text Tools Pretty parity.
 - Lines sorting is ordinal; Swift uses localized case-insensitive ordering.
-- Character counts use Unicode scalars and tokens a generic heuristic. Swift
-  grapheme counts and provider/model controls are not reproduced here.
+- Total Characters now counts extended grapheme clusters; Without whitespace
+  deliberately still counts Unicode scalars, matching the Swift source asymmetry.
+  Tokens remain a generic heuristic; provider/model controls remain absent.
 - Full Unicode case/decoder equivalence is not newly claimed.
 
 Hash presentation strictly validates the existing engine's four algorithm rows,
@@ -71,7 +73,9 @@ widths, hexadecimal payloads and exact compatibility footer, refusing extra rows
 UI Copy serializes complete `Algorithm: digest` rows, or one complete digest for
 an individual Copy. It never parses the generic CLI help paragraph; CLI output
 semantics stay unchanged. Count results come directly from typed count fields and
-remain labeled as scalar/heuristic data.
+label total characters as graphemes and non-whitespace characters as scalars.
+The original workflow validation below predates this semantic successor; see
+[text count/Unique scope](text-count-unique.md) for its separate evidence.
 
 Replace-in-place, native selection identity, global activation/anchoring, native
 materials/IME/accessibility and token-model settings remain separate gaps. All

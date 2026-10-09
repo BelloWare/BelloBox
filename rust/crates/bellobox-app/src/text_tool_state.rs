@@ -156,7 +156,9 @@ impl Choices {
         match self.category {
             Category::Pretty => "Pretty supports JSON only in this Rust build.",
             Category::Hash => HASH_NOTE,
-            Category::Count => "Characters are Unicode scalars; tokens use a generic heuristic.",
+            Category::Count => {
+                "Characters count graphemes; without whitespace counts scalars. Tokens use a generic heuristic."
+            }
             Category::Lines if matches!(self.lines, LineOption::Sort | LineOption::SortReverse) => {
                 "Sorting uses ordinal ordering, not localized case-insensitive ordering."
             }
@@ -217,7 +219,7 @@ fn calculate(input: &str, choices: Choices) -> Result<Calculation, String> {
         Category::Count => {
             let count = bellobox_core::text::counts(input, "");
             let count_rows = vec![
-                ("Characters (scalars)", count.characters.to_string()),
+                ("Characters", count.characters.to_string()),
                 ("Without whitespace", count.without_whitespace.to_string()),
                 ("Words", count.words.to_string()),
                 ("Lines", count.lines.to_string()),
@@ -225,7 +227,7 @@ fn calculate(input: &str, choices: Choices) -> Result<Calculation, String> {
             ];
             Calculation {
                 output: format!(
-                    "{} characters (Unicode scalars)\n{} without whitespace\n{} words\n{} lines\n~{} tokens ({})",
+                    "{} characters (graphemes)\n{} without whitespace (scalars)\n{} words\n{} lines\n~{} tokens ({})",
                     count.characters,
                     count.without_whitespace,
                     count.words,
@@ -744,8 +746,9 @@ mod tests {
         )
         .unwrap();
         assert_eq!(count.count_rows.len(), 5);
-        assert_eq!(count.count_rows[0].1, "4");
-        assert!(count.output.contains("Unicode scalars"));
+        assert_eq!(count.count_rows[0].1, "3");
+        assert_eq!(count.count_rows[1].1, "3");
+        assert!(count.output.contains("characters (graphemes)"));
         assert!(count.output.contains("generic heuristic"));
         assert!(!count.output.contains("Operation in second input"));
         assert_eq!(

@@ -940,5 +940,18 @@ Paste/Clear/Reset, per-category retention, guarded Copy/chain, input focus and
 source minimum dimensions complete the bounded offline workflow. Explicit
 oversized Paste preserves the rejected local draft and invalidates old output.
 See [scope and evidence](palette-text-tools.md). JSON-only Pretty, ordinal sorting,
-scalar counts/generic tokens and native selection/Replace limitations remain
-visible; this is not full engine or native macOS parity.
+generic tokens and native selection/Replace limitations remain visible; total
+scalar counts were superseded by the bounded change below. This is not full
+engine or native macOS parity.
+
+
+## Text count and canonical Unique successor (2026-10-09)
+
+Total Characters uses extended grapheme clusters. The separate non-whitespace
+statistic intentionally remains scalar-based, as in Swift TextStats. Line counts
+normalize CRLF and bare CR, preserving final empty rows and the empty-input zero.
+Unique compares NFC keys while retaining first original bytes and empty rows.
+The existing pinned Unicode dependencies are reused. Trim, Remove empty, ordinal
+sorting, token heuristics, JSON-only Pretty and all native/provider gates are
+unchanged. See [bounded scope and validation](text-count-unique.md); this does
+not claim universal Unicode-version or Foundation runtime equivalence.

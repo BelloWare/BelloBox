@@ -1,0 +1,17 @@
+[
+  {
+    "name": "focused-core",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "text::tests"
+    ],
+    "start_utc": "2026-10-09T10:24:19.478489+00:00",
+    "end_utc": "2026-10-09T10:24:23.091834+00:00",
+    "observed_elapsed_seconds": 3.613,
+    "exit_code": 101
+  }
+]

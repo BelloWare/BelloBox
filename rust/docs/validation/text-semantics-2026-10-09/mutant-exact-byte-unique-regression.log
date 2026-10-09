@@ -1,0 +1,33 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-text-semantics/rust/crates/bellobox-core)
+warning: unused import: `unicode_normalization::UnicodeNormalization`
+  --> crates/bellobox-core/src/text.rs:12:5
+   |
+12 | use unicode_normalization::UnicodeNormalization;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `bellobox-core` (lib test) generated 1 warning (run `cargo fix --lib -p bellobox-core --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 6.63s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73)
+
+running 1 test
+test text::tests::text_unique_canonical_keys_preserve_first_spelling_and_empty_rows ... FAILED
+
+failures:
+
+---- text::tests::text_unique_canonical_keys_preserve_first_spelling_and_empty_rows stdout ----
+
+thread 'text::tests::text_unique_canonical_keys_preserve_first_spelling_and_empty_rows' (84) panicked at crates/bellobox-core/src/text.rs:433:13:
+assertion `left == right` failed: "é\ne\u{301}\né"
+  left: [195, 169, 10, 101, 204, 129]
+ right: [195, 169]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    text::tests::text_unique_canonical_keys_preserve_first_spelling_and_empty_rows
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 466 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p bellobox-core --lib`
