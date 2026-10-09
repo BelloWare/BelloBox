@@ -1109,7 +1109,14 @@ mod qr_lifecycle_tests {
                 gpui::Modifiers::default(),
             );
             cx.simulate_input(popup, "probe");
-            cx.simulate_keystrokes(popup, "ctrl-a ctrl-c");
+            cx.simulate_keystrokes(
+                popup,
+                if cfg!(target_os = "macos") {
+                    "cmd-a cmd-c"
+                } else {
+                    "ctrl-a ctrl-c"
+                },
+            );
             let text = cx.read_from_clipboard().and_then(|c| c.text()).unwrap();
             assert!(text.contains("probe"));
             assert!(!text.contains("original must not leak"));
@@ -1163,6 +1170,10 @@ mod qr_lifecycle_tests {
         cx.run_until_parked();
         // Search -> editor -> Enlarge -> Paste -> Clear -> Save.
         cx.simulate_keystrokes(view.into(), "tab tab tab tab tab enter");
+        let mut visual = gpui::VisualTestContext::from_window(view.into(), cx);
+        visual.simulate_event(gpui::KeyUpEvent {
+            keystroke: Keystroke::parse("enter").unwrap(),
+        });
         view.update(cx, |v, w, cx| {
             assert!(v.qr_save_pending(cx));
             let selected = v.selected;
@@ -1182,5 +1193,113 @@ mod qr_lifecycle_tests {
         .unwrap();
         cx.run_until_parked();
         assert!(view.root(cx).is_err());
+    }
+    #[gpui::test]
+    fn held_save_activation_does_not_open_modal_until_release(cx: &mut TestAppContext) {
+        let view = cx.add_window(|w, cx| Launcher::new("save release".into(), w, cx));
+        view.update(cx, |v, w, cx| {
+            v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+            v.refresh_preview(w, cx);
+            v.query.read(cx).focus(w);
+        })
+        .unwrap();
+        cx.run_until_parked();
+        cx.simulate_keystrokes(view.into(), "tab tab tab tab tab");
+        let mut visual = gpui::VisualTestContext::from_window(view.into(), cx);
+        visual.simulate_event(key("enter", false));
+        for _ in 0..8 {
+            visual.simulate_event(key("enter", true));
+        }
+        view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
+            .unwrap();
+        visual.simulate_event(gpui::KeyUpEvent {
+            keystroke: Keystroke::parse("enter").unwrap(),
+        });
+        view.update(cx, |v, _, cx| assert!(v.qr_save_pending(cx)))
+            .unwrap();
+        cx.simulate_new_path_selection(|_| None);
+        cx.run_until_parked();
+        view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
+            .unwrap();
+        assert_eq!(cx.windows().len(), 1);
+    }
+    #[gpui::test]
+    fn overlapping_save_keys_cancel_until_both_releases(cx: &mut TestAppContext) {
+        for (first, second) in [("enter", "space"), ("space", "enter")] {
+            for first_released_first in [false, true] {
+                let view = cx.add_window(|w, cx| Launcher::new("overlap".into(), w, cx));
+                view.update(cx, |v, w, cx| {
+                    v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+                    v.refresh_preview(w, cx);
+                    v.query.read(cx).focus(w);
+                })
+                .unwrap();
+                cx.run_until_parked();
+                cx.simulate_keystrokes(view.into(), "tab tab tab tab tab");
+                let mut visual = gpui::VisualTestContext::from_window(view.into(), cx);
+                visual.simulate_event(key(first, false));
+                visual.simulate_event(key(second, false));
+                let releases = if first_released_first {
+                    [first, second]
+                } else {
+                    [second, first]
+                };
+                for (index, name) in releases.into_iter().enumerate() {
+                    visual.simulate_event(gpui::KeyUpEvent {
+                        keystroke: Keystroke::parse(name).unwrap(),
+                    });
+                    if index == 0 {
+                        visual.simulate_event(key(releases[1], true));
+                    }
+                    view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
+                        .unwrap();
+                }
+                // Only a fresh, fully released activation may show a chooser.
+                visual.simulate_event(key("enter", false));
+                visual.simulate_event(gpui::KeyUpEvent {
+                    keystroke: Keystroke::parse("enter").unwrap(),
+                });
+                view.update(cx, |v, _, cx| assert!(v.qr_save_pending(cx)))
+                    .unwrap();
+                cx.simulate_new_path_selection(|_| None);
+                cx.run_until_parked();
+                view.update(cx, |v, w, cx| v.close(w, cx)).unwrap();
+                cx.run_until_parked();
+            }
+        }
+    }
+    #[gpui::test]
+    fn escape_and_focus_aba_cancel_armed_save_before_release(cx: &mut TestAppContext) {
+        let view = cx.add_window(|w, cx| Launcher::new("cancel save".into(), w, cx));
+        view.update(cx, |v, w, cx| {
+            v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+            v.refresh_preview(w, cx);
+            v.query.read(cx).focus(w);
+        })
+        .unwrap();
+        cx.run_until_parked();
+        cx.simulate_keystrokes(view.into(), "tab tab tab tab tab");
+        let mut visual = gpui::VisualTestContext::from_window(view.into(), cx);
+        visual.simulate_event(key("enter", false));
+        visual.simulate_event(key("escape", false));
+        visual.simulate_event(gpui::KeyUpEvent {
+            keystroke: Keystroke::parse("escape").unwrap(),
+        });
+        visual.simulate_event(gpui::KeyUpEvent {
+            keystroke: Keystroke::parse("enter").unwrap(),
+        });
+        view.update(cx, |v, w, cx| {
+            assert!(!v.qr_save_pending(cx));
+            assert!(v.query.read(cx).focus_handle(cx).is_focused(w));
+        })
+        .unwrap();
+        cx.simulate_keystrokes(view.into(), "tab tab tab tab tab");
+        visual.simulate_event(key("enter", false));
+        cx.simulate_keystrokes(view.into(), "tab shift-tab");
+        visual.simulate_event(gpui::KeyUpEvent {
+            keystroke: Keystroke::parse("enter").unwrap(),
+        });
+        view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
+            .unwrap();
     }
 }

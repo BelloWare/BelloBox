@@ -299,7 +299,14 @@ fn density_toggle_retains_editor_identity_and_real_undo(cx: &mut TestAppContext)
         assert_eq!(v.editor.entity_id(), editor);
     })
     .unwrap();
-    cx.simulate_keystrokes(view.into(), "ctrl-z");
+    cx.simulate_keystrokes(
+        view.into(),
+        if cfg!(target_os = "macos") {
+            "cmd-z"
+        } else {
+            "ctrl-z"
+        },
+    );
     view.update(cx, |v, _, cx| assert_eq!(v.draft(cx), "draft"))
         .unwrap();
 }
@@ -330,4 +337,180 @@ fn oversized_whitespace_heading_uses_byte_admission_before_scanning(cx: &mut Tes
         }
     })
     .unwrap();
+}
+
+#[test]
+fn image_copy_capability_matches_pinned_actual_backend_contract() {
+    for compositor in ["X11", "Wayland", "headless"] {
+        assert!(
+            super::image_copy_notice(compositor, false)
+                .unwrap()
+                .contains("Save…")
+        );
+    }
+    // An empty name only enables the source-supported native macOS route.
+    assert!(super::image_copy_notice("", true).is_none());
+    assert!(super::image_copy_notice("", false).is_some());
+    for native_macos in [false, true] {
+        assert!(super::image_copy_notice("unknown compositor", native_macos).is_some());
+    }
+}
+
+#[gpui::test]
+fn unsupported_image_copy_never_changes_clipboard_or_claims_success(cx: &mut TestAppContext) {
+    let view = cx.add_window(|w, cx| LauncherQrPreview::new("current".into(), w, cx));
+    view.update(cx, |v, w, cx| {
+        for compositor in ["X11", "Wayland", "headless"] {
+            v.image_copy_notice = super::image_copy_notice(compositor, false);
+            let token = v.jobs.begin();
+            v.publish(
+                token,
+                "current".into(),
+                bellobox_core::qr::palette("current"),
+                cx,
+            );
+            assert!(v.current(cx).is_some());
+            assert!(!v.enabled(Control::Copy, cx));
+            assert!(v.enabled(Control::Save, cx));
+            assert!(!v.tab_order(cx).contains(&v.controls[&Control::Copy]));
+            cx.write_to_clipboard(gpui::ClipboardItem::new_string("external sentinel".into()));
+            v.act(Control::Copy, w, cx);
+            assert_eq!(
+                cx.read_from_clipboard()
+                    .and_then(|item| item.text())
+                    .as_deref(),
+                Some("external sentinel")
+            );
+            assert!(!v.status.contains("copied"));
+            assert!(!v.status.contains("Copy or save"));
+            assert!(v.image_copy_notice.unwrap().contains("export PNG"));
+        }
+    })
+    .unwrap();
+}
+#[gpui::test]
+fn armed_save_is_cancelled_by_focus_or_row_change_before_release(cx: &mut TestAppContext) {
+    let view = cx.add_window(|w, cx| LauncherQrPreview::new("save release".into(), w, cx));
+    view.update(cx, |v, w, cx| {
+        let token = v.jobs.begin();
+        v.publish(
+            token,
+            "save release".into(),
+            bellobox_core::qr::palette("save release"),
+            cx,
+        );
+        let search = cx.focus_handle();
+        for name in ["enter", "space"] {
+            v.controls[&Control::Save].focus(w);
+            v.handle_key(&key(name), &search, w, cx);
+            assert!(v.keyboard_save_armed);
+            assert!(!v.save_pending);
+            search.focus(w);
+            v.handle_key_up(
+                &gpui::KeyUpEvent {
+                    keystroke: gpui::Keystroke::parse(name).unwrap(),
+                },
+                w,
+                cx,
+            );
+            assert!(!v.keyboard_save_armed);
+            assert!(!v.save_pending);
+        }
+        v.controls[&Control::Save].focus(w);
+        v.handle_key(&key("enter"), &search, w, cx);
+        v.set_active(false, cx);
+        v.handle_key_up(
+            &gpui::KeyUpEvent {
+                keystroke: gpui::Keystroke::parse("enter").unwrap(),
+            },
+            w,
+            cx,
+        );
+        assert!(!v.keyboard_save_armed);
+        assert!(!v.save_pending);
+    })
+    .unwrap();
+}
+#[gpui::test]
+fn armed_save_rejects_edit_aba_and_retirement(cx: &mut TestAppContext) {
+    let view = cx.add_window(|w, cx| LauncherQrPreview::new("A".into(), w, cx));
+    view.update(cx, |v, w, cx| {
+        let search = cx.focus_handle();
+        let token = v.jobs.begin();
+        v.publish(token, "A".into(), bellobox_core::qr::palette("A"), cx);
+        v.controls[&Control::Save].focus(w);
+        v.handle_key(&key("enter"), &search, w, cx);
+        assert!(v.keyboard_save_armed);
+        v.editor.update(cx, |e, cx| e.set_text(String::new(), cx));
+        v.changed(cx);
+        v.editor.update(cx, |e, cx| e.set_text("A".into(), cx));
+        v.changed(cx);
+        let token = v.jobs.begin();
+        v.publish(token, "A".into(), bellobox_core::qr::palette("A"), cx);
+        v.handle_key_up(
+            &gpui::KeyUpEvent {
+                keystroke: gpui::Keystroke::parse("enter").unwrap(),
+            },
+            w,
+            cx,
+        );
+        assert!(!v.save_pending);
+        assert!(!v.keyboard_save_armed);
+        v.controls[&Control::Save].focus(w);
+        v.handle_key(&key("enter"), &search, w, cx);
+        v.retire(cx);
+        v.handle_key_up(
+            &gpui::KeyUpEvent {
+                keystroke: gpui::Keystroke::parse("enter").unwrap(),
+            },
+            w,
+            cx,
+        );
+        assert!(!v.save_pending);
+        assert!(!v.keyboard_save_armed);
+    })
+    .unwrap();
+}
+#[gpui::test]
+fn mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay(
+    cx: &mut TestAppContext,
+) {
+    let view = cx.add_window(|w, cx| LauncherQrPreview::new("mixed activation".into(), w, cx));
+    view.update(cx, |v, w, cx| {
+        let token = v.jobs.begin();
+        v.publish(
+            token,
+            "mixed activation".into(),
+            bellobox_core::qr::palette("mixed activation"),
+            cx,
+        );
+        let search = cx.focus_handle();
+        for direct in [false, true] {
+            v.controls[&Control::Save].focus(w);
+            v.handle_key(&key("enter"), &search, w, cx);
+            if direct {
+                v.save(cx);
+            } else {
+                v.act(Control::Save, w, cx);
+            }
+            assert!(!v.save_pending);
+            assert!(!v.keyboard_save_armed);
+            assert!(v.status.contains("Release Enter/Space"));
+            v.handle_key_up(
+                &gpui::KeyUpEvent {
+                    keystroke: gpui::Keystroke::parse("enter").unwrap(),
+                },
+                w,
+                cx,
+            );
+            assert!(!v.save_pending);
+        }
+        v.act(Control::Save, w, cx);
+        assert!(v.save_pending);
+    })
+    .unwrap();
+    cx.run_until_parked();
+    cx.simulate_new_path_selection(|_| None);
+    cx.run_until_parked();
+    view.update(cx, |v, _, _| assert!(!v.save_pending)).unwrap();
 }

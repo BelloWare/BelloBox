@@ -23,6 +23,24 @@ cannot publish; reactivation schedules the retained draft if needed. Only curren
 compact/enlarged rasters and export bytes are retained, plus one explicit pending
 Save snapshot. No payload or draft is persisted.
 
+## Image clipboard capability
+
+The pinned GPUI 0.2.2 Linux X11 clipboard implementation publishes text and caches
+image entries only inside the process. Its Wayland implementation offers text MIME
+types plus a private cache identifier, not an external image/png target. Actual
+Linux GUI testing confirmed that the previous success status did not establish an
+external PNG clipboard. The palette now disables Copy Image on X11/Wayland/headless
+and unknown backends, skips that disabled control in Tab order, and keeps a visible
+Save PNG alternative. Refused copy activation leaves the clipboard untouched.
+Capability comes from App::compositor_name(), not display environment variables.
+
+The source-supported macOS route still writes the PNG UTType to NSPasteboard.
+An empty compositor name alone does not enable other platforms. TestPlatform's
+empty-name in-memory image route is enabled only in test builds; its PNG assertions
+are synthetic and never evidence of external desktop clipboard delivery. This
+narrow guard changes the new palette only; the existing full QR popup's Linux
+clipboard limitation remains outside this slice and must not be presented as fixed.
+
 ## Geometry and input
 
 The compact white card is 128 points with a six-point inset. Actual encoder module
@@ -50,6 +68,15 @@ while the destination dialog is pending does not retarget a later approved save.
 The existing private/no-overwrite publication helper runs off the UI thread.
 An independent save-status generation prevents a late completion message from
 replacing newer edit status. A quit blocker lives through the dialog/write.
+Keyboard Save activates only after its matching activation-key release, so a held
+Return cannot carry auto-repeat into a newly opened native chooser. A second
+Enter/Space activation cancels the armed Save; both keys must be released before
+a fresh activation. Edits, Tab traversal, pointer action, focus/window loss,
+retirement and close cancel the armed action. Tab cancels directly because GPUI
+can coalesce a focus-away/back pair. Mouse/programmatic Save is refused while a
+tracked activation key remains held, without replay after release. Ordinary mouse
+Save is unchanged.
+
 Launcher navigation, Open, deactivation close and ordinary close cannot dismiss the
 palette while its save is pending. Clock's existing physical-retirement and handoff
 gates are unchanged.

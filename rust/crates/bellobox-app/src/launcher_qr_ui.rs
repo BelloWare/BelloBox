@@ -9,6 +9,20 @@ use std::{
 
 const COMPACT_SIDE: f32 = 128.;
 const CHROME_HEIGHT: f32 = 104.;
+
+/// GPUI 0.2.2 Linux backends publish text/private cache data, not external PNG.
+/// Read the actual backend from App, never infer it from environment variables.
+fn image_copy_notice(compositor: &str, native_macos: bool) -> Option<&'static str> {
+    match compositor {
+        "X11" => Some("Copy Image is unavailable on X11. Use Save… to export PNG."),
+        "Wayland" => Some("Copy Image is unavailable on Wayland. Use Save… to export PNG."),
+        "headless" => Some("Image clipboard is unavailable. Use Save… to export PNG."),
+        // macOS writes the image UTType to NSPasteboard; an empty name alone
+        // must never grant the capability on another/unknown platform.
+        "" if native_macos => None,
+        _ => Some("Image clipboard is unsupported on this backend. Use Save… to export PNG."),
+    }
+}
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Control {
     Enlarge,
@@ -43,7 +57,10 @@ pub(crate) struct LauncherQrPreview {
     active: bool,
     retired: bool,
     save_pending: bool,
+    image_copy_notice: Option<&'static str>,
     consume_release: Option<String>,
+    activation_keys_down: [bool; 2],
+    keyboard_save_armed: bool,
     controls: HashMap<Control, FocusHandle>,
     _subscriptions: Vec<Subscription>,
 }
@@ -62,6 +79,16 @@ impl LauncherQrPreview {
                 this.changed(cx);
             }
         });
+        let image_copy_notice = image_copy_notice(cx.compositor_name(), cfg!(target_os = "macos"));
+        // TestPlatform's empty-name in-memory image store is a synthetic fixture,
+        // not evidence of external Linux clipboard support. Never enable this in
+        // an ordinary binary, including an unknown/empty-name Linux backend.
+        #[cfg(test)]
+        let image_copy_notice = if cx.compositor_name().is_empty() {
+            None
+        } else {
+            image_copy_notice
+        };
         let mut this = Self {
             editor,
             jobs: SessionJobs::default(),
@@ -72,7 +99,10 @@ impl LauncherQrPreview {
             active: true,
             retired: false,
             save_pending: false,
+            image_copy_notice,
             consume_release: None,
+            activation_keys_down: [false; 2],
+            keyboard_save_armed: false,
             controls: [
                 Control::Enlarge,
                 Control::Paste,
@@ -86,6 +116,19 @@ impl LauncherQrPreview {
             .collect(),
             _subscriptions: vec![subscription],
         };
+        this._subscriptions.push(cx.on_blur(
+            &this.controls[&Control::Save],
+            window,
+            |this, _, _| {
+                this.keyboard_save_armed = false;
+            },
+        ));
+        this._subscriptions
+            .push(cx.observe_window_activation(window, |this, window, _| {
+                if !window.is_window_active() {
+                    this.keyboard_save_armed = false;
+                }
+            }));
         this.changed(cx);
         this
     }
@@ -148,6 +191,7 @@ impl LauncherQrPreview {
     }
     pub fn retire(&mut self, cx: &mut Context<Self>) {
         self.retired = true;
+        self.keyboard_save_armed = false;
         self.active = false;
         self.jobs.cancel();
         self.saves.cancel();
@@ -159,6 +203,9 @@ impl LauncherQrPreview {
             return;
         }
         self.active = active;
+        if !active {
+            self.keyboard_save_armed = false;
+        }
         if active && self.current(cx).is_none() {
             self.changed(cx);
         } else if !active {
@@ -166,6 +213,7 @@ impl LauncherQrPreview {
         }
     }
     fn changed(&mut self, cx: &mut Context<Self>) {
+        self.keyboard_save_armed = false;
         let token = self.jobs.begin();
         self.saves.cancel();
         self.accepted = None;
@@ -227,7 +275,12 @@ impl LauncherQrPreview {
                     modules: result.modules,
                     dense: result.dense,
                 });
-                self.status = "Copy or save the full-resolution PNG.".into();
+                self.status = if self.image_copy_notice.is_some() {
+                    "Full-resolution PNG ready to save."
+                } else {
+                    "Copy or save the full-resolution PNG."
+                }
+                .into();
             }
             Err(error) => {
                 self.accepted = None;
@@ -241,7 +294,8 @@ impl LauncherQrPreview {
             return false;
         }
         match control {
-            Control::Enlarge | Control::Save | Control::Copy => self.current(cx).is_some(),
+            Control::Enlarge | Control::Save => self.current(cx).is_some(),
+            Control::Copy => self.image_copy_notice.is_none() && self.current(cx).is_some(),
             Control::Clear => !self.draft(cx).is_empty(),
             Control::Open => bellobox_core::validate_input(self.draft(cx)).is_ok(),
             Control::Paste => true,
@@ -251,6 +305,7 @@ impl LauncherQrPreview {
         if !self.enabled(control, cx) {
             return;
         }
+        self.keyboard_save_armed = false;
         match control {
             Control::Enlarge => self.enlarged = !self.enlarged,
             Control::Paste => match cx.read_from_clipboard().and_then(|item| item.text()) {
@@ -280,6 +335,12 @@ impl LauncherQrPreview {
         self.current(cx).map(|a| a.bytes.clone())
     }
     fn save(&mut self, cx: &mut Context<Self>) {
+        if self.activation_keys_down.iter().any(|down| *down) {
+            self.keyboard_save_armed = false;
+            self.status = "Release Enter/Space before opening Save.".into();
+            cx.notify();
+            return;
+        }
         if self.save_pending {
             return;
         }
@@ -351,7 +412,20 @@ impl LauncherQrPreview {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> bool {
-        if self.consume_release.as_deref() == Some(event.keystroke.key.as_str()) {
+        let activation_index = match event.keystroke.key.as_str() {
+            "enter" => Some(0),
+            "space" => Some(1),
+            _ => None,
+        };
+        if let Some(index) = activation_index
+            && self.consume_release.is_some()
+        {
+            self.activation_keys_down[index] = true;
+            if self.consume_release.as_deref() != Some(event.keystroke.key.as_str()) {
+                // Keep the first owner. A second activation key cancels Save;
+                // neither release can open a chooser while the other is held.
+                self.keyboard_save_armed = false;
+            }
             window.prevent_default();
             cx.stop_propagation();
             return true;
@@ -362,6 +436,9 @@ impl LauncherQrPreview {
         let key = event.keystroke.key.as_str();
         let modifiers = event.keystroke.modifiers;
         if key == "tab" && !modifiers.platform && !modifiers.control && !modifiers.alt {
+            // Focus notifications may coalesce an away/back traversal in one
+            // frame. Retire the armed action at the navigation event itself.
+            self.keyboard_save_armed = false;
             let order = self.tab_order(cx);
             let current = order.iter().position(|f| f.is_focused(window));
             let next = match (current, modifiers.shift) {
@@ -398,8 +475,15 @@ impl LauncherQrPreview {
                 .map(|(c, _)| *c)
         {
             self.consume_release = Some(key.into());
+            self.activation_keys_down[if key == "enter" { 0 } else { 1 }] = true;
             if !event.is_held {
-                self.act(control, window, cx);
+                if control == Control::Save {
+                    // Do not hand an actively repeating Return to a newly opened
+                    // native chooser: activate the modal only on physical release.
+                    self.keyboard_save_armed = self.enabled(control, cx);
+                } else {
+                    self.act(control, window, cx);
+                }
             }
             window.prevent_default();
             cx.stop_propagation();
@@ -414,15 +498,34 @@ impl LauncherQrPreview {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> bool {
-        if self.consume_release.as_deref() == Some(event.keystroke.key.as_str()) {
-            self.consume_release = None;
+        let index = match event.keystroke.key.as_str() {
+            "enter" => 0,
+            "space" => 1,
+            _ => return false,
+        };
+        if self.consume_release.is_some() && self.activation_keys_down[index] {
+            self.activation_keys_down[index] = false;
+            let released = !self.activation_keys_down.iter().any(|down| *down);
+            let save = std::mem::take(&mut self.keyboard_save_armed)
+                && released
+                && self.consume_release.as_deref() == Some(event.keystroke.key.as_str())
+                && self.active
+                && !self.retired
+                && self.controls[&Control::Save].is_focused(window);
+            if released {
+                self.consume_release = None;
+            }
             window.prevent_default();
             cx.stop_propagation();
+            if save {
+                self.act(Control::Save, window, cx);
+            }
             true
         } else {
             false
         }
     }
+
     fn button(
         &self,
         id: &'static str,
@@ -566,6 +669,10 @@ impl Render for LauncherQrPreview {
                     .when(fits, |s| s.child(self.editor.clone()))
                     .when(!fits, |s| s.text_size(px(11.)).child(limit_notice)),
             );
+        let status = match self.image_copy_notice {
+            Some(notice) => format!("{}\n{notice}", self.status),
+            None => self.status.clone(),
+        };
         let footer = div()
             .h(px(38.))
             .flex_none()
@@ -581,13 +688,16 @@ impl Render for LauncherQrPreview {
                     .overflow_y_scroll()
                     .text_size(px(10.))
                     .text_color(p.secondary)
-                    .child(self.status.clone()),
+                    .child(status),
             )
             .child(self.button("launcher-qr-save", "Save…", Control::Save, p, cx))
             .child(self.button("launcher-qr-copy", "Copy Image", Control::Copy, p, cx))
             .child(self.button("launcher-qr-open", "Open", Control::Open, p, cx));
         div()
             .id("launcher-qr-preview")
+            .capture_any_mouse_down(cx.listener(|this, _, _, _| {
+                this.keyboard_save_armed = false;
+            }))
             .h(px(self.height()))
             .px(px(10.))
             .pb(px(10.))
