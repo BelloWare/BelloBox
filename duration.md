@@ -1,5 +1,80 @@
 # BelloBox Rust migration duration audit
 
+## Current accounting checkpoint: 2026-10-09T13:17:00Z
+
+This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains preserved below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
+
+### At a glance
+
+These top totals cover only this catch-up receipt cohort, including late-added earlier observations; they are not whole-migration cumulative totals. These are overlapping accounting views, not shares of one total. Mixed windows do not measure active labor.
+
+| Where time went | What is actually measured |
+|---|---|
+| Implementation | Active effort unavailable; no isolated implementation timer |
+| Review | Active effort unavailable; only review-focused observations: 0 mixed windows; 0 with endpoints, unavailable union |
+| Mixed implementation/review/validation windows | 0 mixed windows; 0 with endpoints, unavailable union; scopes overlap resources and do not measure Review alone |
+| Builds | Unavailable separately |
+| Tests | Unavailable separately from compilation in these command receipts |
+| Build + test/check (combined) | 1m 38.4s measured command resource time |
+| Interactive GUI validation | 5m 35.6s observed process lifetime; overlaps workflow windows, limited acceptance only |
+| CI | No new completed job duration in this cohort; prior terminal jobs are preserved below |
+| Dependency/environment setup | 0.3s measured command resource time |
+| Retries/rework | Unavailable separately; retained successful checks do not establish zero rework |
+| Publication | No isolated API total; 0 mixed windows; 0 with endpoints, unavailable union |
+| Waiting | Unavailable separately; waiting is mixed into recorded workflow windows |
+| Model inference | Unavailable; no timing telemetry |
+
+### Separate measured resource groups
+
+| Group | Timed items | Resource/client seconds | Known-endpoint items | Endpoint-subset seconds | Endpoint union seconds |
+|---|---:|---:|---:|---:|---:|
+| catchup_command | 7 | 125.122 | 7 | 125.122 | 124.116 |
+| catchup_gui_process | 1 | 335.556 | 1 | 335.556 | 335.556 |
+
+Groups overlap each other and mixed work windows; never add them into project elapsed or active-work time. Derived endpoints are excluded from unions. Monotonic timers and separately recorded UTC clocks can differ slightly. Whole-second 0s means below receipt resolution. CI steps and native subcommands are nested within job durations, not extra runner time.
+
+| Resource group / category | Seconds |
+|---|---:|
+| catchup_command: build + test/check (combined) | 98.412 |
+| catchup_command: dependency/environment or verification | 0.269 |
+| catchup_command: automated accounting validation | 1.007 |
+| catchup_command: automated lint/check | 9.300 |
+| catchup_command: dependency setup + build (combined) | 16.134 |
+| catchup_gui_process: interactive GUI validation | 335.556 |
+
+### Nested CI phases (already included in CI jobs)
+
+| Phase class | Runner step time |
+|---|---:|
+
+These conservative phase groups can include compilation and execution together; do not add them to the CI job totals.
+
+This cohort adds no CI job execution intervals; prior verified terminal runs remain in earlier accounting. Coverage of 2026-10-09T13:07:00Z–2026-10-09T13:17:00Z is partial and does not establish an idle-time or inference budget.
+
+### Mixed workflows and waits (excluded from resource totals)
+
+| Activity | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---:|---|
+
+Open task and CI rows retain unknown final duration. Failed source attempts and the original failed native URL job remain in preserved earlier accounting. Mixed windows overlap useful parallel work; they are not pure idle or active-review time.
+
+### Measured items
+
+| Activity | Category | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---|---:|---|
+| stale-cut-positive | build + test/check (combined) | 2026-10-09T13:05:22.997398+00:00 | 2026-10-09T13:05:54.955097+00:00 | 31.958 | 0 |
+| mutant-stale-cut-capture-with-positive-control | build + test/check (combined) | 2026-10-09T13:06:27.062726+00:00 | 2026-10-09T13:07:00.665493+00:00 | 33.603 | Mutation survived; no killed-control claim |
+| restore-clean-stale-cut-capture-with-positive-control | dependency/environment or verification | 2026-10-09T13:07:00.694124+00:00 | 2026-10-09T13:07:00.963572+00:00 | 0.269 | 0 |
+| status-fix-focused | build + test/check (combined) | 2026-10-09T13:07:23.963291+00:00 | 2026-10-09T13:07:56.814750+00:00 | 32.851 | 0 |
+| frozen-loc-audit | automated accounting validation | 2026-10-09T13:07:59.088286+00:00 | 2026-10-09T13:08:00.095481+00:00 | 1.007 | 0 |
+| status-fix-strict | automated lint/check | 2026-10-09T13:07:56.843718+00:00 | 2026-10-09T13:08:06.144012+00:00 | 9.3 | 0 |
+| status-fix-ordinary-build | dependency setup + build (combined) | 2026-10-09T13:08:06.169931+00:00 | 2026-10-09T13:08:22.303851+00:00 | 16.134 | 0 |
+| Final dark comparison GUI process lifetime | interactive GUI validation | 2026-10-09T13:09:25.948950763+00:00 | 2026-10-09T13:15:01.504957888+00:00 | 335.556007 | Normal exit 0; dark740x560 and complete large-result Copy checks passed |
+
+Full source hashes, source URLs, nested job steps and timing limitations are in duration-data.json. Native macOS full logs were unavailable for some Agent runs; verified job/step metadata is retained without a full-log claim. Later source CI may be running and is not silently promoted to success by this snapshot.
+
+### Earlier accounting (unchanged)
+
 ## Current accounting checkpoint: 2026-10-09T13:07:00Z
 
 This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains preserved below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
