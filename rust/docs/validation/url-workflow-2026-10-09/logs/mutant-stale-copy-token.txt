@@ -1,0 +1,14 @@
+     Removed 6 files, 36.1MiB total
+   Compiling bello-workbench v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bello-workbench)
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bellobox-core)
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bello-workbench-ui)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 35.07s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test url_ui::tests::full_url_requires_build_and_blocks_same_callback_stale_copy ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 509 filtered out; finished in 0.04s

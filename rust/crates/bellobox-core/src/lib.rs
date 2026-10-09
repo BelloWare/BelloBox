@@ -11,6 +11,7 @@ pub mod screenshot;
 pub mod settings;
 pub mod snippets;
 pub mod text;
+pub mod url_editor;
 
 pub const MAX_INPUT_BYTES: usize = 500_000;
 pub const MAX_PREVIEW_BYTES: usize = 64_000;

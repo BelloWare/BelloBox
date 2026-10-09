@@ -1,0 +1,54 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 28.31s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-8eb2811375786594)
+
+running 502 tests
+test clock_preview_session::tests::pointer_endpoint_is_stable_but_nudges_roll_the_day ... ok
+[middle omitted; complete local log hash recorded]
+test result: ok. 500 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 38.63s
+test url_ui::tests::oversized_mount_is_rejected_with_visible_error_and_no_old_draft ... ok
+test url_ui::tests::independent_close_reopen_clear_and_chain ... ok
+test url_ui::tests::mount_does_not_read_clipboard_and_copy_is_complete ... ok
+test url_ui::tests::focused_editor_build_copy_shortcuts_and_plain_copy_ownership ... ok
+test url_ui::tests::source_typing_is_explicit_inspection_and_rejected_paste_latches ... ok
+test url_ui::tests::page_remount_cannot_aba_a_built_token_before_queued_notifications ... ok
+test world_clock_ui::copilot::tests::adoption_into_busy_destination_keeps_old_physical_close_gate_and_fences_reply ... ok
+test world_clock_ui::copilot::tests::apply_focus_survives_live_revision_and_disappears_when_not_actionable ... ok
+test world_clock_ui::copilot::tests::explicit_apply_feedback_and_failed_request_are_both_visible ... ok
+test world_clock_ui::copilot::tests::close_retained_entity_and_reopen_cannot_bypass_held_request ... ok
+test world_clock_ui::copilot::tests::apply_keeps_memory_change_and_reports_persistence_failure ... ok
+test world_clock_ui::copilot::tests::failed_handoff_preserves_target_planner_conversation_draft_and_source ... ok
+test world_clock_ui::copilot::tests::cancel_retains_physical_lane_retry_has_no_duplicate_and_clear_is_ephemeral ... ok
+test world_clock_ui::copilot::tests::handoff_transfers_partial_apply_draft_and_fences_old_buttons_without_saving ... ok
+test world_clock_ui::copilot::tests::clear_during_held_request_discards_late_reply_and_keeps_draft ... ok
+test world_clock_ui::copilot::tests::app_quit_refuses_held_visible_and_hidden_work_then_fresh_quit_latches ... ok
+test transport::image_ocr::tests::held_body_read_deadline_fires_before_the_separate_total_deadline ... ok
+test world_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes ... ok
+test transport::image_ocr::tests::response_modes_parse_plain_markdown_and_chunked_literal_results ... ok
+test world_clock_ui::copilot::tests::explicit_send_answer_apply_stale_revision_and_persistence ... ok
+test world_clock_ui::tests::compact_canonical_fields_leave_room_for_editor_caret_reserve ... ok
+test world_clock_ui::tests::consumed_enter_release_does_not_reactivate_restored_focus ... ok
+test world_clock_ui::tests::continuous_pointer_mapping_preserves_source_inset ... ok
+test world_clock_ui::tests::day_arrow_uses_displayed_day_even_at_next_midnight_endpoint ... ok
+test world_clock_ui::tests::delayed_reference_reveal_cannot_reopen_or_scroll_a_newer_menu ... ok
+test world_clock_ui::tests::empty_or_stale_picker_selection_cannot_add_a_location ... ok
+test world_clock_ui::tests::held_activation_cannot_fire_the_restored_control ... ok
+test world_clock_ui::tests::keyboard_stays_on_displayed_day_but_wheel_overflows ... ok
+test world_clock_ui::tests::live_field_refresh_preserves_focus_composition_draft_and_identical_text ... ok
+test world_clock_ui::tests::quality_ink_matches_source_tokens_in_both_appearances ... ok
+test world_clock_ui::tests::reference_outside_dismissal_excludes_menu_and_toggle_anchor ... ok
+test world_clock_ui::tests::source_dimensions_and_picker_wrap ... ok
+test world_clock_ui::tests::source_wheel_direction_threshold_and_vertical_passthrough ... ok
+test world_clock_ui::tests::wrapped_reference_selection_keeps_scroll_target_in_range ... ok
+test world_clock_ui::copilot::tests::plain_reopen_preserves_existing_conversation_and_successful_new_handoff_reveals_it ... ok
+test world_clock_ui::copilot::tests::explicit_suggested_prompt_sends_without_erasing_unsent_draft ... ok
+test world_clock_ui::copilot::tests::hiding_busy_panel_cancels_and_rejects_late_answer ... ok
+test world_clock_ui::copilot::tests::invalid_configuration_keeps_draft_and_transcript_empty ... ok
+test world_clock_ui::copilot::tests::last_window_close_guard_requires_a_fresh_close_after_retirement ... ok
+test world_clock_ui::copilot::tests::local_close_guard_cancels_and_refuses_until_retired_even_with_other_window ... ok
+test world_clock_ui::copilot::tests::transferred_physical_guard_survives_replacement_and_clear_until_retirement ... ok
+test transport::image_ocr::tests::error_redirect_disconnect_oversize_invalid_and_timeouts_never_retry_or_echo_body ... ok
+
+test result: ok. 500 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 38.63s

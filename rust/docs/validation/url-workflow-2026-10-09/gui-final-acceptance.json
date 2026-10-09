@@ -1,0 +1,43 @@
+{
+  "status": "passed bounded cloud Linux GUI overlay",
+  "binary_sha256": "5b78ebafc67d106830d47ae00f0b911f36460f1504879ab945755104ed3951dd",
+  "source_manifest": "final-sealed/source-manifest.json",
+  "after_close_binary_sha256": "5b78ebafc67d106830d47ae00f0b911f36460f1504879ab945755104ed3951dd",
+  "after_close_source_drift": [
+    "rust/crates/bellobox-app/src/desktop/json/tests.rs",
+    "rust/crates/bellobox-app/src/launcher_json_ui.rs"
+  ],
+  "drift_scope": "Only test imports and cfg(test) helper feature guards. Full default/minimal/recording tests and strict rerun passed. Package-clean ordinary rebuild is bit-identical to GUI-exercised binary.",
+  "start_utc": "2026-10-09T11:49:28,348416177+00:00",
+  "end_utc": "2026-10-09T11:52:40.524951+00:00",
+  "exit": 0,
+  "environment": "cloud Linux X11, lavapipe software renderer, light, 1178x814 client",
+  "observed": [
+    "Scheme https changed to http",
+    "Port 70000 rejected on explicit Build; result actions disabled",
+    "Port corrected to 8080 and Build succeeded",
+    "Path /two words encoded as /two%20words; fragment tail + preserved on complete Copy and fresh window Paste",
+    "ShiftCtrlC from selected fragment copied complete URL, not selected field",
+    "New Window blank until explicit Paste",
+    "Pasted document retains all 3001 query rows and component edits",
+    "Last page 376 shows x=3000; edited to final+, Build, Use as Input, navigate Last again retains final+ and all 3001 rows",
+    "Closing copied window preserves source; window close controls exit process normally"
+  ],
+  "not_observed": [
+    "Native macOS/Foundation execution",
+    "Real platform IME interaction",
+    "GPU hardware rendering or performance timings"
+  ],
+  "previous_broad_gui": "gui-acceptance.json binds light/dark 740x560 and broader controls to older binary; gui-to-final-lint-overlay documents production renderer change",
+  "tool_failures": [
+    "Initial cua.rewriteDocumentation approval denied, same call authorized by transcript and retry accepted",
+    "Bound CtrlW did not close windows; used observed window close controls successfully"
+  ],
+  "screenshots_published": false,
+  "final_support_closure_build": {
+    "seconds": 11.914,
+    "package_clean_seconds": 0.142,
+    "sha256": "5b78ebafc67d106830d47ae00f0b911f36460f1504879ab945755104ed3951dd",
+    "bit_identical_to_gui_exercised_binary": true
+  }
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "name": "fmt",
+    "command": "cargo fmt --all -- --check",
+    "started": "2026-10-09T11:42:17.430524+00:00",
+    "seconds": 1.822,
+    "exit_code": 0
+  },
+  {
+    "name": "core-default",
+    "command": "cargo test -p bellobox-core --locked --offline",
+    "started": "2026-10-09T11:42:19.252444+00:00",
+    "seconds": 21.12,
+    "exit_code": 0
+  },
+  {
+    "name": "core-minimal",
+    "command": "cargo test -p bellobox-core --no-default-features --locked --offline",
+    "started": "2026-10-09T11:42:40.372913+00:00",
+    "seconds": 16.739,
+    "exit_code": 0
+  },
+  {
+    "name": "app-default",
+    "command": "cargo test -p bellobox-app --locked --offline",
+    "started": "2026-10-09T11:42:57.112629+00:00",
+    "seconds": 70.431,
+    "exit_code": 0
+  },
+  {
+    "name": "app-minimal",
+    "command": "cargo test -p bellobox-app --no-default-features --locked --offline",
+    "started": "2026-10-09T11:44:07.544143+00:00",
+    "seconds": 66.972,
+    "exit_code": 0
+  },
+  {
+    "name": "app-recording",
+    "command": "cargo test -p bellobox-app --features recording-fixtures --locked --offline",
+    "started": "2026-10-09T11:45:14.516465+00:00",
+    "seconds": 72.684,
+    "exit_code": 0
+  },
+  {
+    "name": "editor-core",
+    "command": "cargo test -p bello-workbench --locked --offline",
+    "started": "2026-10-09T11:46:27.200353+00:00",
+    "seconds": 2.079,
+    "exit_code": 0
+  },
+  {
+    "name": "editor-ui",
+    "command": "cargo test -p bello-workbench-ui --locked --offline",
+    "started": "2026-10-09T11:46:29.279790+00:00",
+    "seconds": 5.103,
+    "exit_code": 0
+  },
+  {
+    "name": "strict",
+    "command": "cargo clippy -p bellobox-app -p bellobox-core -p bello-workbench-ui -p bello-workbench --all-targets --locked --offline -- -D warnings",
+    "started": "2026-10-09T11:46:34.383991+00:00",
+    "seconds": 9.643,
+    "exit_code": 0
+  },
+  {
+    "name": "strict-recording",
+    "command": "cargo clippy -p bellobox-app --features recording-fixtures --all-targets --locked --offline -- -D warnings",
+    "started": "2026-10-09T11:46:44.027584+00:00",
+    "seconds": 9.238,
+    "exit_code": 0
+  },
+  {
+    "name": "clean-app",
+    "command": "cargo clean -p bellobox-app",
+    "started": "2026-10-09T11:46:53.266336+00:00",
+    "seconds": 0.178,
+    "exit_code": 0
+  },
+  {
+    "name": "ordinary-build",
+    "command": "cargo build -p bellobox-app --locked --offline",
+    "started": "2026-10-09T11:46:53.444906+00:00",
+    "seconds": 13.647,
+    "exit_code": 0
+  }
+]

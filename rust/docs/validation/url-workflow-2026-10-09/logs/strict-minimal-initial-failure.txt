@@ -1,0 +1,30 @@
+    Checking bellobox-core v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-core)
+    Checking bellobox-app v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-app)
+error: unused import: `crate::json_session::Mode`
+ --> crates/bellobox-app/src/desktop/json/tests.rs:2:5
+  |
+2 | use crate::json_session::Mode;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `-D unused-imports` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: unused import: `sync::atomic::Ordering::SeqCst`
+ --> crates/bellobox-app/src/desktop/json/tests.rs:4:11
+  |
+4 | use std::{sync::atomic::Ordering::SeqCst, time::Duration};
+  |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: method `output_editor` is never used
+  --> crates/bellobox-app/src/launcher_json_ui.rs:93:19
+   |
+17 | impl LauncherJsonPreview {
+   | ------------------------ method in this implementation
+...
+93 |     pub(crate) fn output_editor(&self) -> Entity<EditorView> {
+   |                   ^^^^^^^^^^^^^
+   |
+   = note: `-D dead-code` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`
+
+error: could not compile `bellobox-app` (bin "bellobox" test) due to 3 previous errors

@@ -1,0 +1,66 @@
+{
+  "status": "passed bounded observed cloud-Linux scope",
+  "binary_sha256": "28909fcb0aa6ef7a25f29f6d763303481a95f5a1032b9156eb483e47b5fc0e2c",
+  "source_manifest": "sealed/source-manifest.json",
+  "source_inventory_digest": "4da39c882b646d60c392a2104780687b7692aa4d0192c3fec199ced3f0324e8e",
+  "build": "ordinary default cargo build after package-clean App, 13.718s; preceding clean0.364s",
+  "start_utc": "2026-10-09T11:27:14Z",
+  "last_observed_utc": "2026-10-09T11:34:56.729672+00:00",
+  "environment": "cloud Linux, X11, Mesa lavapipe software rendering; separate synthetic config; no user Mac or native Foundation claim",
+  "appearances": [
+    "light",
+    "dark"
+  ],
+  "measured_client_sizes": {
+    "light": [
+      740,
+      560
+    ],
+    "dark": [
+      740,
+      560
+    ]
+  },
+  "observations": [
+    "Initial source component fields/ordered duplicate tag rows/literal plus/bare flag visible; result blank before Build.",
+    "Ctrl+Enter from source editor built complete URL.",
+    "Host edit new.example immediately cleared result and disabled Copy/Use.",
+    "Ctrl+Shift+C with selected host field copied complete URL, verified by explicit Paste in independent new window.",
+    "New window stayed blank while clipboard contained URL; mount did not import clipboard.",
+    "Independent Clear/close left first window draft/result unchanged.",
+    "Use as Input loaded complete rebuilt URL and cleared stale result.",
+    "At measured740x560 in both appearances, scrolling reached all component/query/pagination/result controls; footer stayed available.",
+    "Ordered removal of first tag retained second tag=two; flag toggled to explicit empty value; added emptyname/emptyvalue row; Build showed q=a+b&tag=two&flag=&=.",
+    "Dark3001-row input showed total3001/page1of376; Last reached value3000 onpage376.",
+    "Final row edited to last+; Build/Copy/Use as Input preserved3001rows and last+ (literal plus).",
+    "Fresh window explicitPaste of copied large result retained3001rows; Last showedlast+ onpage376.",
+    "Example replaced large copied draft with four-row source fixture and blank result; both windows closed normally, cloud desktop released."
+  ],
+  "limitations": [
+    "Actual macOS focus/IME/AppKit/clipboard behavior not established.",
+    "Real IME composition covered by GPUI test input-handler calls, not native Linux IME session.",
+    "No frame-rate, hardware-GPU or model-inference time claim.",
+    "No screenshots published; visual observations made with cloud CUA screenshot tool."
+  ],
+  "failures_and_recovery": [
+    "CUA typeText/Paste action unsupported on terminal; used supported pressKey character input.",
+    "Helper in shell /tmp absent in GUI environment; moved helper to already-shared workspace path.",
+    "Initial Sky screenshot sometimes preceded final GPUI frame; fresh subsequent screenshots verified post-action state.",
+    "An immediate second close shortcut was issued before the remaining window regained native activation; retry after verified activation closed it normally."
+  ],
+  "end_utc": "2026-10-09T11:36:52.489241+00:00",
+  "process_exit_codes": {
+    "light-small": 0,
+    "dark-large": 0
+  },
+  "untested_actual_gui": [
+    "Scheme, port, path and fragment edits; invalid-port recovery, scheduled on final lint-clean binary.",
+    "Native OS IME, macOS/AppKit behavior and accessibility-tree fidelity."
+  ],
+  "synthetic_only": [
+    "Port bounds and malformed-component rejection",
+    "Aggregate500000-byte edited field limit",
+    "IME composition blocking and overflow tokens"
+  ],
+  "final_source_overlay": "After this binary was built, strict Clippy changed only renderer if draft.is_some()+unwrap to if let Some(draft) binding. This receipt does not claim exact final-source binary execution."
+}

@@ -50,8 +50,8 @@ Actual ordinary-binary Linux GUI acceptance passed within the recorded light-mod
 scope: mixed Unicode/newline Count, complete popup Copy, compact 224-point layout,
 fresh Count handoff, measured 720×520 popup, canonical Unique byte-copy, chaining
 and Reset. See [GUI receipt](validation/text-semantics-2026-10-09/gui-acceptance.json). A tiny pinned-source Swift
-Foundation oracle has been requested independently; no native runtime result
-is claimed here yet. Its
+Foundation oracle was pending at this original Linux checkpoint; the terminal
+0717 native result is recorded below. Its
 whitespace probes are research-only, not authority to change Trim/Remove empty.
 Unicode-version/locale differences and full Text Tools parity remain qualified.
 
@@ -90,8 +90,9 @@ The ordinary binary was sealed after final gates at 2026-10-09 10:33:30 UTC:
 SHA-256 `cb4e1d9d855817639fd18697c6c387aa77f06c6da1c67665a7dcd59e5cde8c56`.
 Its product-source manifest is
 `0e53ad2afc986c31dbae650c138775b53e9e14c83dd1e408223f9a5148bcaf32`.
-Independent native oracle and exact-published-commit CI remain pending acceptance
-stages; the bounded Linux GUI acceptance passed. No publication/ref action was performed here.
+At that original checkpoint, independent native oracle and exact-published-commit
+CI were pending; the bounded Linux GUI acceptance passed. The later terminal
+0717 result below supersedes that pending status without changing the old receipts.
 
 
 ## Reproducible native-host oracle gate
@@ -115,9 +116,34 @@ Remove empty are diagnostics only. Processes have 120-second/256-KiB output boun
 No application launch, capture, permission request, credential, provider, paid
 service, new job or dependency is introduced.
 
-The native result remains pending until this exact candidate's macOS CI runs and
-passes. The original peer request is not a substitute for that result. Passing
+The original gate was pending until exact-commit macOS CI completed; the verified
+terminal result below now supplies that evidence. The peer request alone was never
+a substitute for that result. Passing
 this gate establishes only its recorded host/version/vector scope, not universal
 Foundation or Unicode-version parity. The original ordinary binary and its six
 postimages remain unchanged; the candidate source manifest adds the separate test
 and workflow while retaining the original GUI/binary manifest binding.
+
+
+## Terminal exact-commit validation (2026-10-09 11:20 UTC)
+
+Commit `0717b247370d0e30b35789fbd190b39eeecf09e8`, tree
+`4c6f216b032bdda1d2b7f0560b46b0ca664b97b8`, passed both exact CI jobs:
+[Linux run 37921262198](https://github.com/BelloWare/BelloBox/actions/runs/37921262198)
+(695 seconds job wall time) and
+[macOS run 37921262155](https://github.com/BelloWare/BelloBox/actions/runs/37921262155)
+(933 seconds job wall time). These are observed CI durations, not model inference
+or interactive app performance.
+
+The native oracle passed all 11 Count and 7 Unique vectors on arm64 macOS 26.6.2
+(build 25G83), Swift 6.3.3 (`swiftlang-6.3.3.1.3`), SDK 26.5, Foundation 5026.6,
+locale `en_US` / `en-US`. The 14 whitespace groups remain diagnostic only; no
+Trim/Remove Empty parity claim or implementation change follows. Oracle compile
+was 1.806 seconds and execution 0.142 seconds on that runner. This establishes
+only the pinned source, fixtures and recorded host/version scope.
+
+See the [terminal receipt](validation/text-semantics-2026-10-09/terminal-ci/terminal-receipt.json),
+[bounded native excerpt](validation/text-semantics-2026-10-09/terminal-ci/native-oracle-excerpt.log)
+and [native observations](validation/text-semantics-2026-10-09/terminal-ci/native-oracle-output.json).
+Historical pending records and original ordinary-binary/GUI receipts are preserved.
+These results apply to the Count/Unique checkpoint, not the subsequent URL editor.

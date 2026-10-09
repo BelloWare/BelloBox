@@ -2157,6 +2157,11 @@ fn open_tool_with_clock_context(
         let _ = settings.save(&config_dir().join("settings.json"));
     }
 
+    if id == "url" {
+        crate::url_ui::open(input, cx);
+        return;
+    }
+
     if id == "worldClock" {
         if let Err(error) = crate::world_clock_ui::open_with_handoff(input, clock_handoff, cx) {
             eprintln!("Cannot open World Clock: {error}");

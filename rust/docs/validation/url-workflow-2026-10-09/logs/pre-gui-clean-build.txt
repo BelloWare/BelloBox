@@ -1,0 +1,14 @@
+     Removed 12 files, 251.4MiB total
+
+real	0m0.364s
+user	0m0.081s
+sys	0m0.092s
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bello-workbench-ui)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-app)
+    Finished `dev` profile [unoptimized] target(s) in 13.66s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+
+real	0m13.718s
+user	0m12.180s
+sys	0m8.019s

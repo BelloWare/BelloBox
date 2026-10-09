@@ -1,0 +1,25 @@
+     Removed 341 files, 836.6MiB total
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 6.67s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73)
+
+running 1 test
+test url_editor::tests::ordered_flags_blank_plus_and_components ... FAILED
+
+failures:
+
+---- url_editor::tests::ordered_flags_blank_plus_and_components stdout ----
+
+thread 'url_editor::tests::ordered_flags_blank_plus_and_components' (47) panicked at crates/bellobox-core/src/url_editor.rs:283:9:
+assertion `left == right` failed
+  left: "a b"
+ right: "a+b"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    url_editor::tests::ordered_flags_blank_plus_and_components
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 471 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p bellobox-core --lib`

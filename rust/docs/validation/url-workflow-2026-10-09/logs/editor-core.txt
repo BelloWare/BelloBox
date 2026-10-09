@@ -1,0 +1,99 @@
+   Compiling bello-workbench v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bello-workbench)
+    Finished `test` profile [unoptimized] target(s) in 1.53s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bello_workbench-59577d9c387a6d66)
+
+running 79 tests
+test diff::tests::cap_is_visible ... ok
+test diff::tests::numbers_and_headers ... ok
+test diff::tests::zero_start_new_file ... ok
+test document::tests::external_write_preserves_both_drafts ... ok
+test document::tests::atomic_save_and_dirty ... ok
+test document::tests::invalid_utf8_never_lossy ... ok
+test document::tests::permissions_preserved ... ok
+test document::tests::symlink_replacement_refused ... ok
+test editor::tests::change_single_letter_word_does_not_eat_next_word ... ok
+test editor::tests::delete_to_end_on_empty_line_preserves_newline ... ok
+test editor::tests::change_undo_keeps_delete_and_insert_together ... ok
+test editor::tests::counted_delete_and_undo ... ok
+test editor::tests::explicit_selection_deletion_is_literal_and_read_only_keeps_caret ... ok
+test editor::tests::crlf_insert_and_delete ... ok
+test editor::tests::multiplied_operator_count ... ok
+test editor::tests::newline_deletion_preserves_single_cr_lf_and_document_boundaries ... ok
+test editor::tests::incremental_index_matches_rebuild ... ok
+test editor::tests::no_panic_on_empty_or_unicode_sequences ... ok
+test editor::tests::insert_undo_is_transaction ... ok
+test editor::tests::ordinary_arrows_follow_composed_characters_from_every_scalar_boundary ... ok
+test editor::tests::ordinary_selection_collapses_to_requested_side_without_a_step ... ok
+test editor::tests::lines_yank_delete_paste ... ok
+test editor::tests::ordinary_navigation_commits_typing_and_works_read_only ... ok
+test editor::tests::ordinary_navigation_preserves_literal_utf16_replacement_and_undo ... ok
+test editor::tests::ordinary_shift_arrows_keep_anchor_when_shrinking_and_crossing ... ok
+test editor::tests::readonly_does_not_mutate ... ok
+test editor::tests::unicode_boundaries_and_utf16 ... ok
+test editor::tests::search_wrap_and_reverse ... ok
+test editor::tests::retained_accounting_includes_spare_capacity_and_all_history ... ok
+test editor::tests::ordinary_shift_extends_existing_selection_in_either_direction ... ok
+test editor::tests::vertical_column_restores_after_short_line ... ok
+test editor::tests::unselected_deletion_joins_crlf_atomically_and_undo_restores_bytes ... ok
+test editor::tests::vim_horizontal_motions_remain_scalar_based ... ok
+test editor::tests::visual_inclusive_unicode ... ok
+test editor::host_limit_tests::bound_is_opt_in_and_rejection_counter_fails_closed ... ok
+test editor::tests::rejected_edit_reports_failure_without_cursor_change ... ok
+test git::tests::malformed_frames_and_metadata_fail_closed ... ok
+test document::tests::large_file_preview_never_editable ... ok
+test git::tests::process_fixture ... ignored, subprocess fixture, invoked by runner tests
+test git::tests::drains_both_pipes_and_bounds_diagnostics ... ok
+test editor::tests::ordinary_grapheme_lookup_handles_long_lines_and_regional_context ... ok
+test git::tests::non_utf8_names_are_lossless_on_disk ... ok
+test git::tests::status_parser_preserves_non_utf8_paths_without_filesystem_io ... ok
+test git::tests::rejects_overflow_and_cancelled_reads_without_partial_results ... ok
+test editor::tests::insert_transaction_is_memory_bounded ... ok
+test git::tests::external_diff_textconv_fsmonitor_and_pager_are_disabled ... ok
+test quick_open::tests::exhausted_ignore_budget_never_masquerades_as_a_successful_nonmatch ... ok
+test git::tests::unsafe_revision_and_path_inputs_fail_before_execution ... ok
+test quick_open::tests::fifo_ignore_files_do_not_hang ... ok
+test quick_open::tests::global_ignore_rules_have_lower_precedence ... ok
+test quick_open::tests::ignore_lines_preserve_escaped_spaces_comments_and_negation ... ok
+test git::tests::separates_staged_unstaged_and_untracked_without_mutating_index ... ok
+test git::tests::unborn_history_and_staged_diff_work_without_head ... ok
+test quick_open::tests::non_utf8_paths_parse_and_search_losslessly_without_filesystem_io ... ok
+test git::tests::literal_magic_spaces_newlines_and_unicode_names ... ok
+test quick_open::tests::non_utf8_paths_remain_lossless_on_disk ... ok
+test quick_open::tests::git_lists_tracked_ignored_and_untracked_existing_files_in_project_scope ... ok
+test quick_open::tests::oversized_ignore_file_is_reported_without_hiding_files ... ok
+test quick_open::tests::source_highlights_include_normalized_graphemes_and_expanding_casefolds ... ok
+test quick_open::tests::plain_folder_uses_nested_ignore_rules_and_keeps_dotfiles ... ok
+test quick_open::tests::source_query_order_case_whitespace_and_line_suffix ... ok
+test quick_open::tests::source_ranking_preserves_names_boundaries_runs_and_ties ... ok
+test quick_open::tests::source_wildmatch_cases ... ok
+test git::tests::history_pagination_and_root_commit_diff ... ok
+test quick_open::tests::listing_limits_are_explicit_even_with_only_directories ... ok
+test tree::tests::bounded_and_rejects_traversal ... ok
+test tree::tests::lazy_single_level_sorted_and_stable_relative_paths ... ok
+test tree::tests::non_utf8_names_are_lossless_on_disk ... ok
+test tree::tests::non_utf8_relative_paths_normalize_losslessly_without_filesystem_io ... ok
+test tree::tests::symlinks_cannot_escape_or_form_expansion_cycles ... ok
+test tree::tests::unicode_names_are_lossless_on_disk ... ok
+test quick_open::tests::symlinks_cannot_escape_cycle_or_supply_ignore_rules ... ok
+test quick_open::tests::source_ignore_corpus_agrees_with_gits_decisions_without_a_repository ... ok
+test git::tests::rename_paths_are_lossless_and_first_parent_merges_are_explicit ... ok
+test quick_open::tests::nested_repositories_keep_their_own_ignore_rules ... ok
+test quick_open::tests::repository_configuration_cannot_run_file_listing_helpers ... ok
+test git::tests::timeout_and_live_cancellation_kill_processes_promptly ... ok
+test quick_open::tests::top_results_equal_full_scoring_and_cancellation_never_returns_partial_results ... ok
+test git::tests::inherited_open_pipes_do_not_hang_after_parent_exit ... ok
+
+test result: ok. 78 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests/editor_invariants.rs (/workspace/shared/build-recovery/target/debug/deps/editor_invariants-b13feff562cff105)
+
+running 1 test
+test randomized_modal_edits_keep_unicode_and_line_indexes_valid ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+   Doc-tests bello_workbench
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

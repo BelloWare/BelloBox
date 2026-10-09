@@ -54,6 +54,11 @@ jobs:
         run: |
           oracle=native::native_swift_count_and_unique_match_pinned_source
           cargo test --locked -p bellobox-core --test text_swift_oracle -- --list | grep -Fx "$oracle: test"
+      - name: Verify bounded Swift URL oracle is present
+        # The complete Core suite below executes this native oracle once.
+        run: |
+          oracle=native::native_swift_url_bounded_vectors_and_diagnostics
+          cargo test --locked -p bellobox-core --test url_swift_oracle -- --list | grep -Fx "$oracle: test"
       - name: Run pure domain and filesystem tests
         # No GPUI application launch, permissions, keychain, capture or updater actions.
         run: cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform -- --show-output

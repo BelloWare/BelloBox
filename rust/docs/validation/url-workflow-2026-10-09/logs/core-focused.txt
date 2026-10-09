@@ -1,0 +1,45 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 8.32s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73)
+
+running 6 tests
+test url_editor::tests::ordered_flags_blank_plus_and_components ... ok
+test url_editor::tests::lexical_authority_and_stable_ids ... ok
+test developer::tests::url_preserves_duplicate_flags_plus ... ok
+test url_editor::tests::authority_rejection_and_identity_bounds ... ok
+test url_editor::tests::malformed_and_bounds_fail_closed ... ok
+test url_editor::tests::complete_large_list_last_edit ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 466 filtered out; finished in 0.02s
+
+     Running tests/developer_safety.rs (/workspace/shared/build-recovery/target/debug/deps/developer_safety-e97c7b1f6a88f09e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/json_formatter_prototype.rs (/workspace/shared/build-recovery/target/debug/deps/json_formatter_prototype-68cfd9ece45edfb7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s
+
+     Running tests/text_swift_oracle.rs (/workspace/shared/build-recovery/target/debug/deps/text_swift_oracle-4212fb9d2bd3d90b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/ui_tool_controls.rs (/workspace/shared/build-recovery/target/debug/deps/ui_tool_controls-2450bb5cabac794b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s
+
+     Running tests/url_swift_oracle.rs (/workspace/shared/build-recovery/target/debug/deps/url_swift_oracle-a35203809e74216d)
+
+running 2 tests
+test native::native_swift_url_bounded_vectors_and_diagnostics ... ignored, requires native Swift/Foundation; Linux validates only binding and Rust compilation
+test url_oracle_source_and_fixture_binding ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s

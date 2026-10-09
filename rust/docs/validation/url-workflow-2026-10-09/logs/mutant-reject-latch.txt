@@ -1,0 +1,26 @@
+     Removed 13 files, 152.9MiB total
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bellobox-core)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 34.42s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test url_ui::tests::source_typing_is_explicit_inspection_and_rejected_paste_latches ... FAILED
+
+failures:
+
+---- url_ui::tests::source_typing_is_explicit_inspection_and_rejected_paste_latches stdout ----
+
+thread 'url_ui::tests::source_typing_is_explicit_inspection_and_rejected_paste_latches' (262) panicked at crates/bellobox-app/src/url_ui/tests.rs:109:9:
+assertion failed: !s.ready(cx)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    url_ui::tests::source_typing_is_explicit_inspection_and_rejected_paste_latches
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 509 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

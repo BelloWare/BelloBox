@@ -1,0 +1,58 @@
+[
+  {
+    "name": "fmt",
+    "command": "cargo fmt --all -- --check",
+    "started": "2026-10-09T11:49:54.715278+00:00",
+    "seconds": 1.992,
+    "exit_code": 0
+  },
+  {
+    "name": "app-default",
+    "command": "cargo test -p bellobox-app --locked --offline",
+    "started": "2026-10-09T11:49:56.707774+00:00",
+    "seconds": 70.95,
+    "exit_code": 0
+  },
+  {
+    "name": "app-minimal",
+    "command": "cargo test -p bellobox-app --no-default-features --locked --offline",
+    "started": "2026-10-09T11:51:07.657948+00:00",
+    "seconds": 67.039,
+    "exit_code": 0
+  },
+  {
+    "name": "app-recording",
+    "command": "cargo test -p bellobox-app --features recording-fixtures --locked --offline",
+    "started": "2026-10-09T11:52:14.697496+00:00",
+    "seconds": 70.323,
+    "exit_code": 0
+  },
+  {
+    "name": "strict",
+    "command": "cargo clippy -p bellobox-app -p bellobox-core -p bello-workbench-ui -p bello-workbench --all-targets --locked --offline -- -D warnings",
+    "started": "2026-10-09T11:53:25.020709+00:00",
+    "seconds": 7.746,
+    "exit_code": 0
+  },
+  {
+    "name": "strict-recording",
+    "command": "cargo clippy -p bellobox-app --features recording-fixtures --all-targets --locked --offline -- -D warnings",
+    "started": "2026-10-09T11:53:32.766971+00:00",
+    "seconds": 7.209,
+    "exit_code": 0
+  },
+  {
+    "name": "clean-app",
+    "command": "cargo clean -p bellobox-app",
+    "started": "2026-10-09T11:53:39.976577+00:00",
+    "seconds": 0.142,
+    "exit_code": 0
+  },
+  {
+    "name": "ordinary-build",
+    "command": "cargo build -p bellobox-app --locked --offline",
+    "started": "2026-10-09T11:53:40.119015+00:00",
+    "seconds": 11.914,
+    "exit_code": 0
+  }
+]

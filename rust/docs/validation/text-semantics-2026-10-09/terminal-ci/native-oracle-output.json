@@ -1,0 +1,690 @@
+{
+  "host": {
+    "foundation": 5026.6,
+    "locale": "en_US",
+    "os": "Version 26.6.2 (Build 25G83)",
+    "preferred_languages": [
+      "en-US"
+    ]
+  },
+  "stats": [
+    {
+      "characters": 0,
+      "id": "empty",
+      "input": {
+        "base64": "",
+        "utf8_hex": ""
+      },
+      "lines": 0,
+      "without_whitespace": 0,
+      "words": 0
+    },
+    {
+      "characters": 3,
+      "id": "combining_cjk",
+      "input": {
+        "base64": "ZcyBIOeVjA==",
+        "utf8_hex": "65cc8120e7958c"
+      },
+      "lines": 1,
+      "without_whitespace": 3,
+      "words": 2
+    },
+    {
+      "characters": 1,
+      "id": "family",
+      "input": {
+        "base64": "8J+RqOKAjfCfkanigI3wn5Gn4oCN8J+Rpg==",
+        "utf8_hex": "f09f91a8e2808df09f91a9e2808df09f91a7e2808df09f91a6"
+      },
+      "lines": 1,
+      "without_whitespace": 7,
+      "words": 1
+    },
+    {
+      "characters": 1,
+      "id": "flag",
+      "input": {
+        "base64": "8J+HuvCfh7M=",
+        "utf8_hex": "f09f87baf09f87b3"
+      },
+      "lines": 1,
+      "without_whitespace": 2,
+      "words": 1
+    },
+    {
+      "characters": 1,
+      "id": "crlf",
+      "input": {
+        "base64": "DQo=",
+        "utf8_hex": "0d0a"
+      },
+      "lines": 2,
+      "without_whitespace": 0,
+      "words": 0
+    },
+    {
+      "characters": 6,
+      "id": "mixed_lines",
+      "input": {
+        "base64": "YQ1iDQpjCg==",
+        "utf8_hex": "610d620d0a630a"
+      },
+      "lines": 4,
+      "without_whitespace": 3,
+      "words": 3
+    },
+    {
+      "characters": 2,
+      "id": "trailing_cr",
+      "input": {
+        "base64": "YQ0=",
+        "utf8_hex": "610d"
+      },
+      "lines": 2,
+      "without_whitespace": 1,
+      "words": 1
+    },
+    {
+      "characters": 2,
+      "id": "trailing_lf",
+      "input": {
+        "base64": "YQo=",
+        "utf8_hex": "610a"
+      },
+      "lines": 2,
+      "without_whitespace": 1,
+      "words": 1
+    },
+    {
+      "characters": 2,
+      "id": "repeated_crlf",
+      "input": {
+        "base64": "DQoNCg==",
+        "utf8_hex": "0d0a0d0a"
+      },
+      "lines": 3,
+      "without_whitespace": 0,
+      "words": 0
+    },
+    {
+      "characters": 4,
+      "id": "cafe_nfc",
+      "input": {
+        "base64": "Y2Fmw6k=",
+        "utf8_hex": "636166c3a9"
+      },
+      "lines": 1,
+      "without_whitespace": 4,
+      "words": 1
+    },
+    {
+      "characters": 4,
+      "id": "cafe_nfd",
+      "input": {
+        "base64": "Y2FmZcyB",
+        "utf8_hex": "63616665cc81"
+      },
+      "lines": 1,
+      "without_whitespace": 5,
+      "words": 1
+    }
+  ],
+  "unique": [
+    {
+      "id": "nfc_first",
+      "input": {
+        "base64": "w6kKZcyBCsOp",
+        "utf8_hex": "c3a90a65cc810ac3a9"
+      },
+      "output": {
+        "base64": "w6k=",
+        "utf8_hex": "c3a9"
+      }
+    },
+    {
+      "id": "nfd_first",
+      "input": {
+        "base64": "ZcyBCsOpCmXMgQ==",
+        "utf8_hex": "65cc810ac3a90a65cc81"
+      },
+      "output": {
+        "base64": "ZcyB",
+        "utf8_hex": "65cc81"
+      }
+    },
+    {
+      "id": "hangul",
+      "input": {
+        "base64": "6rCACuGEgOGFoQ==",
+        "utf8_hex": "eab0800ae18480e185a1"
+      },
+      "output": {
+        "base64": "6rCA",
+        "utf8_hex": "eab080"
+      }
+    },
+    {
+      "id": "case",
+      "input": {
+        "base64": "QQph",
+        "utf8_hex": "410a61"
+      },
+      "output": {
+        "base64": "QQph",
+        "utf8_hex": "410a61"
+      }
+    },
+    {
+      "id": "space",
+      "input": {
+        "base64": "IHgKeA==",
+        "utf8_hex": "20780a78"
+      },
+      "output": {
+        "base64": "IHgKeA==",
+        "utf8_hex": "20780a78"
+      }
+    },
+    {
+      "id": "empty_lines",
+      "input": {
+        "base64": "Cgo=",
+        "utf8_hex": "0a0a"
+      },
+      "output": {
+        "base64": "",
+        "utf8_hex": ""
+      }
+    },
+    {
+      "id": "mixed_lines",
+      "input": {
+        "base64": "YQ0KYg1hCg==",
+        "utf8_hex": "610d0a620d610a"
+      },
+      "output": {
+        "base64": "YQpiCg==",
+        "utf8_hex": "610a620a"
+      }
+    }
+  ],
+  "whitespace_diagnostics_only": [
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "CXgJ",
+            "utf8_hex": "097809"
+          },
+          "removeEmpty": {
+            "base64": "CXgJ",
+            "utf8_hex": "097809"
+          },
+          "trim": {
+            "base64": "eA==",
+            "utf8_hex": "78"
+          }
+        },
+        {
+          "input": {
+            "base64": "CQ==",
+            "utf8_hex": "09"
+          },
+          "removeEmpty": {
+            "base64": "",
+            "utf8_hex": ""
+          },
+          "trim": {
+            "base64": "",
+            "utf8_hex": ""
+          }
+        }
+      ],
+      "scalar": "0009",
+      "whitespaces_member": true
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "C3gL",
+            "utf8_hex": "0b780b"
+          },
+          "removeEmpty": {
+            "base64": "C3gL",
+            "utf8_hex": "0b780b"
+          },
+          "trim": {
+            "base64": "C3gL",
+            "utf8_hex": "0b780b"
+          }
+        },
+        {
+          "input": {
+            "base64": "Cw==",
+            "utf8_hex": "0b"
+          },
+          "removeEmpty": {
+            "base64": "Cw==",
+            "utf8_hex": "0b"
+          },
+          "trim": {
+            "base64": "Cw==",
+            "utf8_hex": "0b"
+          }
+        }
+      ],
+      "scalar": "000B",
+      "whitespaces_member": false
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "DHgM",
+            "utf8_hex": "0c780c"
+          },
+          "removeEmpty": {
+            "base64": "DHgM",
+            "utf8_hex": "0c780c"
+          },
+          "trim": {
+            "base64": "DHgM",
+            "utf8_hex": "0c780c"
+          }
+        },
+        {
+          "input": {
+            "base64": "DA==",
+            "utf8_hex": "0c"
+          },
+          "removeEmpty": {
+            "base64": "DA==",
+            "utf8_hex": "0c"
+          },
+          "trim": {
+            "base64": "DA==",
+            "utf8_hex": "0c"
+          }
+        }
+      ],
+      "scalar": "000C",
+      "whitespaces_member": false
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "woV4woU=",
+            "utf8_hex": "c28578c285"
+          },
+          "removeEmpty": {
+            "base64": "woV4woU=",
+            "utf8_hex": "c28578c285"
+          },
+          "trim": {
+            "base64": "woV4woU=",
+            "utf8_hex": "c28578c285"
+          }
+        },
+        {
+          "input": {
+            "base64": "woU=",
+            "utf8_hex": "c285"
+          },
+          "removeEmpty": {
+            "base64": "woU=",
+            "utf8_hex": "c285"
+          },
+          "trim": {
+            "base64": "woU=",
+            "utf8_hex": "c285"
+          }
+        }
+      ],
+      "scalar": "0085",
+      "whitespaces_member": false
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "wqB4wqA=",
+            "utf8_hex": "c2a078c2a0"
+          },
+          "removeEmpty": {
+            "base64": "wqB4wqA=",
+            "utf8_hex": "c2a078c2a0"
+          },
+          "trim": {
+            "base64": "eA==",
+            "utf8_hex": "78"
+          }
+        },
+        {
+          "input": {
+            "base64": "wqA=",
+            "utf8_hex": "c2a0"
+          },
+          "removeEmpty": {
+            "base64": "",
+            "utf8_hex": ""
+          },
+          "trim": {
+            "base64": "",
+            "utf8_hex": ""
+          }
+        }
+      ],
+      "scalar": "00A0",
+      "whitespaces_member": true
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "4ZqAeOGagA==",
+            "utf8_hex": "e19a8078e19a80"
+          },
+          "removeEmpty": {
+            "base64": "4ZqAeOGagA==",
+            "utf8_hex": "e19a8078e19a80"
+          },
+          "trim": {
+            "base64": "eA==",
+            "utf8_hex": "78"
+          }
+        },
+        {
+          "input": {
+            "base64": "4ZqA",
+            "utf8_hex": "e19a80"
+          },
+          "removeEmpty": {
+            "base64": "",
+            "utf8_hex": ""
+          },
+          "trim": {
+            "base64": "",
+            "utf8_hex": ""
+          }
+        }
+      ],
+      "scalar": "1680",
+      "whitespaces_member": true
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "4oCDeOKAgw==",
+            "utf8_hex": "e2808378e28083"
+          },
+          "removeEmpty": {
+            "base64": "4oCDeOKAgw==",
+            "utf8_hex": "e2808378e28083"
+          },
+          "trim": {
+            "base64": "eA==",
+            "utf8_hex": "78"
+          }
+        },
+        {
+          "input": {
+            "base64": "4oCD",
+            "utf8_hex": "e28083"
+          },
+          "removeEmpty": {
+            "base64": "",
+            "utf8_hex": ""
+          },
+          "trim": {
+            "base64": "",
+            "utf8_hex": ""
+          }
+        }
+      ],
+      "scalar": "2003",
+      "whitespaces_member": true
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "4oCLeOKAiw==",
+            "utf8_hex": "e2808b78e2808b"
+          },
+          "removeEmpty": {
+            "base64": "4oCLeOKAiw==",
+            "utf8_hex": "e2808b78e2808b"
+          },
+          "trim": {
+            "base64": "eA==",
+            "utf8_hex": "78"
+          }
+        },
+        {
+          "input": {
+            "base64": "4oCL",
+            "utf8_hex": "e2808b"
+          },
+          "removeEmpty": {
+            "base64": "",
+            "utf8_hex": ""
+          },
+          "trim": {
+            "base64": "",
+            "utf8_hex": ""
+          }
+        }
+      ],
+      "scalar": "200B",
+      "whitespaces_member": true
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "4oCoeOKAqA==",
+            "utf8_hex": "e280a878e280a8"
+          },
+          "removeEmpty": {
+            "base64": "4oCoeOKAqA==",
+            "utf8_hex": "e280a878e280a8"
+          },
+          "trim": {
+            "base64": "4oCoeOKAqA==",
+            "utf8_hex": "e280a878e280a8"
+          }
+        },
+        {
+          "input": {
+            "base64": "4oCo",
+            "utf8_hex": "e280a8"
+          },
+          "removeEmpty": {
+            "base64": "4oCo",
+            "utf8_hex": "e280a8"
+          },
+          "trim": {
+            "base64": "4oCo",
+            "utf8_hex": "e280a8"
+          }
+        }
+      ],
+      "scalar": "2028",
+      "whitespaces_member": false
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "4oCpeOKAqQ==",
+            "utf8_hex": "e280a978e280a9"
+          },
+          "removeEmpty": {
+            "base64": "4oCpeOKAqQ==",
+            "utf8_hex": "e280a978e280a9"
+          },
+          "trim": {
+            "base64": "4oCpeOKAqQ==",
+            "utf8_hex": "e280a978e280a9"
+          }
+        },
+        {
+          "input": {
+            "base64": "4oCp",
+            "utf8_hex": "e280a9"
+          },
+          "removeEmpty": {
+            "base64": "4oCp",
+            "utf8_hex": "e280a9"
+          },
+          "trim": {
+            "base64": "4oCp",
+            "utf8_hex": "e280a9"
+          }
+        }
+      ],
+      "scalar": "2029",
+      "whitespaces_member": false
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "4oCveOKArw==",
+            "utf8_hex": "e280af78e280af"
+          },
+          "removeEmpty": {
+            "base64": "4oCveOKArw==",
+            "utf8_hex": "e280af78e280af"
+          },
+          "trim": {
+            "base64": "eA==",
+            "utf8_hex": "78"
+          }
+        },
+        {
+          "input": {
+            "base64": "4oCv",
+            "utf8_hex": "e280af"
+          },
+          "removeEmpty": {
+            "base64": "",
+            "utf8_hex": ""
+          },
+          "trim": {
+            "base64": "",
+            "utf8_hex": ""
+          }
+        }
+      ],
+      "scalar": "202F",
+      "whitespaces_member": true
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "4oGfeOKBnw==",
+            "utf8_hex": "e2819f78e2819f"
+          },
+          "removeEmpty": {
+            "base64": "4oGfeOKBnw==",
+            "utf8_hex": "e2819f78e2819f"
+          },
+          "trim": {
+            "base64": "eA==",
+            "utf8_hex": "78"
+          }
+        },
+        {
+          "input": {
+            "base64": "4oGf",
+            "utf8_hex": "e2819f"
+          },
+          "removeEmpty": {
+            "base64": "",
+            "utf8_hex": ""
+          },
+          "trim": {
+            "base64": "",
+            "utf8_hex": ""
+          }
+        }
+      ],
+      "scalar": "205F",
+      "whitespaces_member": true
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "44CAeOOAgA==",
+            "utf8_hex": "e3808078e38080"
+          },
+          "removeEmpty": {
+            "base64": "44CAeOOAgA==",
+            "utf8_hex": "e3808078e38080"
+          },
+          "trim": {
+            "base64": "eA==",
+            "utf8_hex": "78"
+          }
+        },
+        {
+          "input": {
+            "base64": "44CA",
+            "utf8_hex": "e38080"
+          },
+          "removeEmpty": {
+            "base64": "",
+            "utf8_hex": ""
+          },
+          "trim": {
+            "base64": "",
+            "utf8_hex": ""
+          }
+        }
+      ],
+      "scalar": "3000",
+      "whitespaces_member": true
+    },
+    {
+      "cases": [
+        {
+          "input": {
+            "base64": "77u/eO+7vw==",
+            "utf8_hex": "efbbbf78efbbbf"
+          },
+          "removeEmpty": {
+            "base64": "77u/eO+7vw==",
+            "utf8_hex": "efbbbf78efbbbf"
+          },
+          "trim": {
+            "base64": "77u/eO+7vw==",
+            "utf8_hex": "efbbbf78efbbbf"
+          }
+        },
+        {
+          "input": {
+            "base64": "77u/",
+            "utf8_hex": "efbbbf"
+          },
+          "removeEmpty": {
+            "base64": "77u/",
+            "utf8_hex": "efbbbf"
+          },
+          "trim": {
+            "base64": "77u/",
+            "utf8_hex": "efbbbf"
+          }
+        }
+      ],
+      "scalar": "FEFF",
+      "whitespaces_member": false
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-core)
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bello-workbench-ui)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-app)
+error[E0599]: no method named `focus_handle` found for reference `&bello_workbench_ui::EditorView` in the current scope
+   --> crates/bellobox-app/src/url_ui.rs:557:41
+    |
+557 |                     .map(|e| e.read(cx).focus_handle(cx))
+    |                                         ^^^^^^^^^^^^ method not found in `&bello_workbench_ui::EditorView`
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `Focusable` which provides `focus_handle` is implemented but not in scope; perhaps you want to import it
+    |
+  2 + use gpui::Focusable;
+    |
+
+warning: unused variable: `text`
+   --> crates/bellobox-app/src/url_ui.rs:158:13
+    |
+158 |         let text = self.input.read(cx).text();
+    |             ^^^^ help: if this is intentional, prefix it with an underscore: `_text`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0599`.
+warning: `bellobox-app` (bin "bellobox" test) generated 1 warning
+error: could not compile `bellobox-app` (bin "bellobox" test) due to 1 previous error; 1 warning emitted

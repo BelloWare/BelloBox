@@ -1,13 +1,17 @@
 use super::*;
+#[cfg(feature = "developer-tools")]
 use crate::json_session::Mode;
 use gpui::{AppContext, Focusable, TestAppContext};
-use std::{sync::atomic::Ordering::SeqCst, time::Duration};
+#[cfg(feature = "developer-tools")]
+use std::sync::atomic::Ordering::SeqCst;
+use std::time::Duration;
 fn tick(cx: &mut TestAppContext, ms: u64) {
     cx.run_until_parked();
     cx.background_executor
         .advance_clock(Duration::from_millis(ms));
     cx.run_until_parked();
 }
+#[cfg(feature = "developer-tools")]
 #[gpui::test]
 fn failed_and_closed_destination_keep_source_owner_and_draft(cx: &mut TestAppContext) {
     let s = cx.new(|cx| JsonSession::new("[9007199254740993]".into(), true, cx));
@@ -58,6 +62,7 @@ fn rejected_oversized_palette_cannot_open_stale_input(cx: &mut TestAppContext) {
         );
     });
 }
+#[cfg(feature = "developer-tools")]
 #[gpui::test]
 fn actual_full_window_adopts_pending_session_once_and_close_is_independent(
     cx: &mut TestAppContext,
@@ -119,6 +124,7 @@ fn actual_full_window_adopts_pending_session_once_and_close_is_independent(
         })
         .unwrap();
 }
+#[cfg(feature = "developer-tools")]
 #[gpui::test]
 fn full_json_options_invalidate_results_and_validate_cannot_chain(cx: &mut TestAppContext) {
     let full =

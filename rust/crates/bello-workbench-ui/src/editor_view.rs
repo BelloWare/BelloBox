@@ -90,7 +90,10 @@ fn restore_edit_state(
     if engine.revision() != 0 {
         return Err(EditStateError::EditedDestination);
     }
-    if engine.vim != saved.engine.vim || engine.read_only != saved.engine.read_only {
+    if engine.vim != saved.engine.vim
+        || engine.read_only != saved.engine.read_only
+        || engine.edit_byte_limit() != saved.engine.edit_byte_limit()
+    {
         return Err(EditStateError::IncompatibleConfiguration);
     }
     let saved = state.take().expect("checked above");
@@ -132,6 +135,10 @@ pub struct EditorView {
     draw_columns: usize,
     dragging: Option<usize>,
     compact: bool,
+    token_exhausted: bool,
+    content_epoch: u64,
+    rejection_epoch: u64,
+    engine_rejections_seen: u64,
     requested_read_only: bool,
     presentation: Option<TextPresentation>,
     validated_paint_text: Option<(usize, usize, u64)>,
@@ -169,6 +176,10 @@ impl EditorView {
             draw_columns: 120,
             dragging: None,
             compact: false,
+            token_exhausted: false,
+            content_epoch: 0,
+            rejection_epoch: 0,
+            engine_rejections_seen: 0,
             requested_read_only: false,
             presentation: None,
             validated_paint_text: None,
@@ -460,12 +471,42 @@ impl EditorView {
     pub fn get_text(&self) -> &str {
         self.text()
     }
+    /// Synchronous content/rejection generations. A false validity bit permanently
+    /// fences equality-based host actions after counter exhaustion.
+    pub fn edit_token(&self) -> (u64, u64, bool) {
+        (
+            self.content_epoch,
+            self.rejection_epoch,
+            !self.token_exhausted,
+        )
+    }
+    fn reject_edit(&mut self, cx: &mut Context<Self>) {
+        if let Some(next) = self.rejection_epoch.checked_add(1) {
+            self.rejection_epoch = next;
+        } else {
+            self.token_exhausted = true;
+        }
+        if self.engine.edit_byte_limit() < bello_workbench::editor::MAX_EDIT_BYTES {
+            cx.emit(EditorEvent::Changed);
+        }
+        cx.notify();
+    }
+    pub fn set_edit_byte_limit(&mut self, limit: usize) -> bool {
+        self.engine.set_edit_byte_limit(limit)
+    }
     pub fn set_text(&mut self, text: String, cx: &mut Context<Self>) {
+        let byte_limit = self.engine.edit_byte_limit();
+        if byte_limit < bello_workbench::editor::MAX_EDIT_BYTES && text.len() > byte_limit {
+            self.reject_edit(cx);
+            return;
+        }
         self.discard_presentation();
         self.presentation_holds_scroll = false;
         let vim = self.engine.vim;
         let read_only = self.requested_read_only;
         self.engine = Editor::new(text);
+        self.engine_rejections_seen = 0;
+        self.engine.set_edit_byte_limit(byte_limit);
         self.engine.set_vim(vim);
         self.engine.read_only |= read_only;
         self.marked = None;
@@ -474,6 +515,11 @@ impl EditorView {
         self.horizontal_column = 0;
         self.wrapped.clear();
         self.reveal_cursor = true;
+        if let Some(next) = self.content_epoch.checked_add(1) {
+            self.content_epoch = next;
+        } else {
+            self.token_exhausted = true;
+        }
         cx.emit(EditorEvent::Changed);
         cx.notify();
     }
@@ -527,10 +573,22 @@ impl EditorView {
         self.engine.buffer.byte_offset(r.start)..self.engine.buffer.byte_offset(r.end)
     }
     fn changed(&mut self, before: u64, cx: &mut Context<Self>) {
+        if self.engine.rejection_exhausted() {
+            self.token_exhausted = true;
+        }
+        if self.engine.rejected_edits() != self.engine_rejections_seen {
+            self.engine_rejections_seen = self.engine.rejected_edits();
+            self.reject_edit(cx);
+        }
         self.abandon_presentation_navigation();
         self.presentation_holds_scroll = false;
         if self.engine.revision() != before {
             self.discard_presentation();
+            if let Some(next) = self.content_epoch.checked_add(1) {
+                self.content_epoch = next;
+            } else {
+                self.token_exhausted = true;
+            }
             cx.emit(EditorEvent::Changed);
         }
         self.reveal_cursor = true;
@@ -1893,3 +1951,68 @@ mod input_tests {
 #[cfg(test)]
 #[path = "editor_presentation_tests.rs"]
 mod presentation_tests;
+
+#[cfg(test)]
+mod bounded_host_tests {
+    use super::EditorView;
+    use gpui::{EntityInputHandler, TestAppContext};
+    #[gpui::test]
+    fn host_byte_limit_tokens_and_ime_rejection_are_atomic(cx: &mut TestAppContext) {
+        let w = cx.add_window(|w, cx| EditorView::new("abc".into(), w, cx));
+        w.update(cx, |e, w, cx| {
+            assert!(e.set_edit_byte_limit(5));
+            let before = e.edit_token();
+            e.replace_text_in_range(Some(0..3), "abcdef", w, cx);
+            assert_eq!(e.text(), "abc");
+            assert_eq!(e.edit_token().0, before.0);
+            assert!(e.edit_token().1 > before.1);
+            e.replace_and_mark_text_in_range(Some(0..3), "日本", None, w, cx);
+            assert_eq!(e.text(), "abc");
+            assert!(!e.has_marked_text());
+            e.replace_and_mark_text_in_range(Some(0..3), "日", None, w, cx);
+            assert!(e.has_marked_text());
+            let token = e.edit_token();
+            e.replace_text_in_range(None, "日本", w, cx);
+            assert_eq!(e.text(), "日");
+            assert!(e.has_marked_text());
+            assert!(e.edit_token().1 > token.1);
+            e.unmark_text(w, cx);
+            e.set_text("ok".into(), cx);
+            let token = e.edit_token();
+            e.set_text("oversized".into(), cx);
+            assert_eq!(e.text(), "ok");
+            assert!(e.edit_token().1 > token.1);
+            e.set_text("new".into(), cx);
+            assert!(e.edit_token().0 > token.0);
+            assert_eq!(e.engine.edit_byte_limit(), 5);
+        })
+        .unwrap();
+    }
+}
+#[cfg(test)]
+mod token_overflow_tests {
+    use super::EditorView;
+    use gpui::TestAppContext;
+    #[gpui::test]
+    fn edit_token_overflow_is_permanently_unavailable(cx: &mut TestAppContext) {
+        let w = cx.add_window(|w, cx| EditorView::new("x".into(), w, cx));
+        w.update(cx, |e, _, cx| {
+            e.content_epoch = u64::MAX;
+            e.set_text("y".into(), cx);
+            assert!(!e.edit_token().2);
+            e.set_text("z".into(), cx);
+            assert!(!e.edit_token().2);
+        })
+        .unwrap();
+        let w = cx.add_window(|w, cx| EditorView::new("x".into(), w, cx));
+        w.update(cx, |e, _, cx| {
+            assert!(e.set_edit_byte_limit(1));
+            e.rejection_epoch = u64::MAX;
+            e.set_text("too long".into(), cx);
+            assert!(!e.edit_token().2);
+            e.set_text("z".into(), cx);
+            assert!(!e.edit_token().2);
+        })
+        .unwrap();
+    }
+}

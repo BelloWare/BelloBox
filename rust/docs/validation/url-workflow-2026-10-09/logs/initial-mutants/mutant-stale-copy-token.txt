@@ -1,0 +1,12 @@
+     Removed 6 files, 36.1MiB total
+   Compiling bello-workbench v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bello-workbench)
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bellobox-core)
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bello-workbench-ui)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-url-mutant/rust/crates/bellobox-app)
+error: couldn't read `crates/bellobox-app/src/../../../../project.yml`: No such file or directory (os error 2)
+    --> crates/bellobox-app/src/home.rs:2187:5
+     |
+2187 |     include_str!("../../../../project.yml")
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: could not compile `bellobox-app` (bin "bellobox" test) due to 1 previous error

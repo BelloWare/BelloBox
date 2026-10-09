@@ -1213,6 +1213,7 @@ impl Render for Launcher {
                                                     .overflow_hidden()
                                                     .child(self.preview.clone()),
                                             )
+                                            .when(c.id == "url", |s| s.child(div().text_size(px(11.)).text_color(p.secondary).child("Read-only inspection preview. Open for full URL fields and explicit Build; compact editing is not yet available.")))
                                             .child(
                                                 div().flex().justify_end().child(
                                                     div()

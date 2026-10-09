@@ -23,6 +23,7 @@ mod text_tool_state;
 mod theme;
 mod tool_controls;
 mod transport;
+mod url_ui;
 mod world_clock_ui;
 use bellobox_core::{
     clock::Planner,

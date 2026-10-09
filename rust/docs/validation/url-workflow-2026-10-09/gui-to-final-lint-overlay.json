@@ -1,0 +1,7 @@
+{
+  "path": "rust/crates/bellobox-app/src/url_ui.rs",
+  "before_sha256": "f0488bcb23130fdb4ba71f044bfeb956727bf42327f10997ea8c394862bca926",
+  "after_sha256": "dedceb94097aca1aaa136192558236de2e4ba8c35688df091f5668001f4fb927",
+  "reason": "Clippy unnecessary_unwrap under is_some; replace with equivalent if-let binding",
+  "exact_sealed_preimage_reconstructed_and_hash_verified": true
+}

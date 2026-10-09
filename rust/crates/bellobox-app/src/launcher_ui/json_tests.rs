@@ -14,6 +14,7 @@ fn key(k: &str) -> KeyDownEvent {
         is_held: false,
     }
 }
+#[cfg(feature = "developer-tools")]
 #[gpui::test]
 fn json_palette_retains_mode_chained_text_and_transfers_actual_owner(cx: &mut TestAppContext) {
     let view = cx.add_window(|w, cx| Launcher::new(r#"{ "z": 2, "a": 1 }"#.into(), w, cx));
@@ -106,6 +107,7 @@ fn json_search_copy_keeps_query_clipboard_ownership(cx: &mut TestAppContext) {
     })
     .unwrap();
 }
+#[cfg(feature = "developer-tools")]
 #[gpui::test]
 fn oversized_json_preview_retains_draft_and_starts_only_after_open(cx: &mut TestAppContext) {
     let draft = format!("\"{}\"", "a".repeat(bellobox_core::MAX_PREVIEW_BYTES));
@@ -132,6 +134,7 @@ fn oversized_json_preview_retains_draft_and_starts_only_after_open(cx: &mut Test
     });
 }
 
+#[cfg(feature = "developer-tools")]
 #[gpui::test]
 fn json_output_copy_and_navigation_keep_their_source_owners(cx: &mut TestAppContext) {
     let view = cx.add_window(|w, cx| Launcher::new("[42]".into(), w, cx));

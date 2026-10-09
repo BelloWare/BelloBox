@@ -1,0 +1,60 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 5.03s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-0c50f5d9e472c176)
+
+running 376 tests
+test ai::generation::tests::preferences_bound_values_without_guessing_model_capabilities ... ok
+test ai::generation::tests::exact_optional_wire_fields_and_thinking_temperature_exclusion ... ok
+test ai::generation::decoding_tests::malformed_fields_default_independently_and_signed_tokens_clamp ... ok
+[middle omitted; complete local log hash recorded]
+test result: ok. 376 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.48s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test screenshot::scroll::tests::actual_hud_fixture_sequential_down_steps_preserve_every_pixel ... ok
+test screenshot::tests::preview_tiles_reconstruct_export_across_masks_erasures_crop_and_tile_edges ... ok
+
+test result: ok. 376 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.48s
+
+     Running tests/developer_safety.rs (/workspace/shared/build-recovery/target/debug/deps/developer_safety-8ee74b7ca8d524df)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/json_formatter_prototype.rs (/workspace/shared/build-recovery/target/debug/deps/json_formatter_prototype-791d0ab62e9b2c4a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/text_swift_oracle.rs (/workspace/shared/build-recovery/target/debug/deps/text_swift_oracle-9693b60bc92bd4f9)
+
+running 2 tests
+test native::native_swift_count_and_unique_match_pinned_source ... ignored, requires native macOS Swift/Foundation; source binding still runs
+test pinned_source_and_fixed_fixtures_are_bound ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/ui_tool_controls.rs (/workspace/shared/build-recovery/target/debug/deps/ui_tool_controls-2d7c6b2626b36d79)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/url_swift_oracle.rs (/workspace/shared/build-recovery/target/debug/deps/url_swift_oracle-de336f9d3d3e73b0)
+
+running 2 tests
+test native::native_swift_url_bounded_vectors_and_diagnostics ... ignored, requires native Swift/Foundation; Linux validates only binding and Rust compilation
+test url_oracle_source_and_fixture_binding ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests bellobox_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

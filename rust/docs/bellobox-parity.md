@@ -242,7 +242,7 @@ for many tools still need restoration. Sources below are in
 | `compare` | `InspectionTools.swift` | Bounded exact line diff; JSON-specific semantic compare absent |
 | `jwt` | `InspectionTools.swift` | Local header/claims inspection; signature never verified |
 | `regex` | `InspectionTools.swift` | Linear-time pattern/groups/replacement with i/m/s; no ICU lookarounds/backreferences |
-| `url` | `InspectionTools.swift` | URL inspection and ordered duplicate-preserving query edits |
+| `url` | `InspectionTools.swift` | Separate bounded full-window component/ordered-query editor with explicit Inspect/Build, stable paged rows and complete Copy/chain. CLI JSON/options preserved. Compact editor/session handoff and universal Foundation normalization remain gaps; see [URL workflow](url-workflow.md). |
 | `time` | `DeveloperTime.swift` | Seconds/milliseconds/ISO, zones and differences |
 | `cron` | `DeveloperTime.swift` | Five fields, next five UTC runs within366 days; timezone planner absent |
 | `convert` | `DataConversion.swift` | JSON/YAML/CSV directions; YAML aliases/tags rejected |

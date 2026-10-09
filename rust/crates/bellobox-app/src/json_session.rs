@@ -381,6 +381,7 @@ mod tests {
             .advance_clock(Duration::from_millis(ms));
         cx.run_until_parked();
     }
+    #[cfg(feature = "developer-tools")]
     #[gpui::test]
     fn physical_worker_coalesces_edits_and_survives_transfer(cx: &mut TestAppContext) {
         use std::sync::atomic::Ordering::SeqCst;
@@ -445,6 +446,7 @@ mod tests {
         tick(cx, 1000);
         s.update(cx, |s, _| assert!(s.output.is_empty()));
     }
+    #[cfg(feature = "developer-tools")]
     #[gpui::test]
     fn cancelled_preview_restarts_only_on_explicit_transfer_after_physical_drain(
         cx: &mut TestAppContext,

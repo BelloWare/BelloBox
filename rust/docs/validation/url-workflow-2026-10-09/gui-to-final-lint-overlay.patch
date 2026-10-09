@@ -1,0 +1,23 @@
+--- rust/crates/bellobox-app/src/url_ui.rs (GUI sealed)
++++ rust/crates/bellobox-app/src/url_ui.rs (final lint)
+@@ -435,7 +435,7 @@
+                     }
+                 })),
+             );
+-        if self.draft.is_some() {
++        if let Some(draft) = &self.draft {
+             for (i, label) in [
+                 "Scheme (http / https)",
+                 "Host",
+@@ -461,10 +461,7 @@
+             )));
+             for (offset, r) in self.rows.iter().enumerate() {
+                 let id = r.id;
+-                let has = self
+-                    .draft
+-                    .as_ref()
+-                    .unwrap()
++                let has = draft
+                     .parameters
+                     .get(self.page * PAGE + offset)
+                     .is_some_and(|p| p.id == id && p.has_value);

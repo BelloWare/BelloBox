@@ -1,0 +1,64 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-core)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 26.20s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-8eb2811375786594)
+
+running 510 tests
+[middle omitted; complete local log hash recorded]
+test desktop::json::tests::failed_and_closed_destination_keep_source_owner_and_draft ... FAILED
+test desktop::json::tests::full_json_options_invalidate_results_and_validate_cannot_chain ... FAILED
+test desktop::json::tests::actual_full_window_adopts_pending_session_once_and_close_is_independent ... FAILED
+test json_session::tests::cancelled_preview_restarts_only_on_explicit_transfer_after_physical_drain ... FAILED
+test json_session::tests::physical_worker_coalesces_edits_and_survives_transfer ... FAILED
+test launcher_ui::json_tests::json_palette_retains_mode_chained_text_and_transfers_actual_owner ... FAILED
+test launcher_ui::json_tests::json_output_copy_and_navigation_keep_their_source_owners ... FAILED
+test launcher_ui::json_tests::oversized_json_preview_retains_draft_and_starts_only_after_open ... FAILED
+test result: FAILED. 500 passed; 8 failed; 2 ignored; 0 measured; 0 filtered out; finished in 44.28s
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`
+assertion failed: v.output.read(cx).text().contains('2')
+
+---- json_session::tests::cancelled_preview_restarts_only_on_explicit_transfer_after_physical_drain stdout ----
+
+thread 'json_session::tests::cancelled_preview_restarts_only_on_explicit_transfer_after_physical_drain' (3055) panicked at crates/bellobox-app/src/json_session.rs:470:13:
+assertion failed: s.can_copy()
+
+---- json_session::tests::physical_worker_coalesces_edits_and_survives_transfer stdout ----
+
+thread 'json_session::tests::physical_worker_coalesces_edits_and_survives_transfer' (3059) panicked at crates/bellobox-app/src/json_session.rs:407:13:
+assertion `left == right` failed
+  left: ""
+ right: "{\"n\":99}"
+
+---- launcher_ui::json_tests::json_palette_retains_mode_chained_text_and_transfers_actual_owner stdout ----
+
+thread 'launcher_ui::json_tests::json_palette_retains_mode_chained_text_and_transfers_actual_owner' (3120) panicked at crates/bellobox-app/src/launcher_ui/json_tests.rs:31:9:
+assertion `left == right` failed
+  left: ""
+ right: "{\"a\":1,\"z\":2}"
+
+---- launcher_ui::json_tests::json_output_copy_and_navigation_keep_their_source_owners stdout ----
+
+thread 'launcher_ui::json_tests::json_output_copy_and_navigation_keep_their_source_owners' (3119) panicked at crates/bellobox-app/src/launcher_ui/json_tests.rs:169:61:
+called `Result::unwrap()` on an `Err` value: "Developer utility engines are excluded in this minimal build. Build with the default developer-tools feature to include them."
+
+---- launcher_ui::json_tests::oversized_json_preview_retains_draft_and_starts_only_after_open stdout ----
+
+thread 'launcher_ui::json_tests::oversized_json_preview_retains_draft_and_starts_only_after_open' (3127) panicked at crates/bellobox-app/src/launcher_ui/json_tests.rs:130:9:
+assertion failed: s.can_copy()
+
+
+failures:
+    desktop::json::tests::actual_full_window_adopts_pending_session_once_and_close_is_independent
+    desktop::json::tests::failed_and_closed_destination_keep_source_owner_and_draft
+    desktop::json::tests::full_json_options_invalidate_results_and_validate_cannot_chain
+    json_session::tests::cancelled_preview_restarts_only_on_explicit_transfer_after_physical_drain
+    json_session::tests::physical_worker_coalesces_edits_and_survives_transfer
+    launcher_ui::json_tests::json_output_copy_and_navigation_keep_their_source_owners
+    launcher_ui::json_tests::json_palette_retains_mode_chained_text_and_transfers_actual_owner
+    launcher_ui::json_tests::oversized_json_preview_retains_draft_and_starts_only_after_open
+
+test result: FAILED. 500 passed; 8 failed; 2 ignored; 0 measured; 0 filtered out; finished in 44.28s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

@@ -1,0 +1,490 @@
+[
+  {
+    "path": "app-default.log",
+    "complete_local_sha256": "488823846ddccca40b572fa028a4ee64d981a304cb53d8109a9d0331edd316e6",
+    "bytes": 53533,
+    "artifact": "logs/app-default.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "app-light-small.log",
+    "complete_local_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "artifact": "logs/app-light-small.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "app-minimal.log",
+    "complete_local_sha256": "cfcb20b75a3a55d8cdc28eee91538d305f4664762e0018855bf2fe49f69060ed",
+    "bytes": 53564,
+    "artifact": "logs/app-minimal.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "app-recording.log",
+    "complete_local_sha256": "83374bf757dc4d55177c8b4f491265033672718a7b6ef9251d979218b5d33772",
+    "bytes": 54962,
+    "artifact": "logs/app-recording.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "clean-app.log",
+    "complete_local_sha256": "cdb700cb4461abf2d427ce6dc57ba2fca09bc6691461ea630c1fdbf5659774b7",
+    "bytes": 38,
+    "artifact": "logs/clean-app.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "core-default.log",
+    "complete_local_sha256": "66b520115f5f2c4887504904f672c13cd80c87144f41971b68b3a1c6cb690b5d",
+    "bytes": 48474,
+    "artifact": "logs/core-default.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "core-focused.log",
+    "complete_local_sha256": "691cedea0d9030cd33ea2794452e10831bf611c0a225f55559f24dcb8ce4bab3",
+    "bytes": 2211,
+    "artifact": "logs/core-focused.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "core-minimal.log",
+    "complete_local_sha256": "b23ffc83409b546e5b1f0e87d2f391194a167a29160969351206c9e88768ea10",
+    "bytes": 37542,
+    "artifact": "logs/core-minimal.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "corrected-mutant-restoration-clean.log",
+    "complete_local_sha256": "a810c5d0259e56b6b956bca83430fcd0acbe334632040226904a0a8543b57a09",
+    "bytes": 38,
+    "artifact": "logs/corrected-mutant-restoration-clean.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "editor-boundary.log",
+    "complete_local_sha256": "9ce1224000b029233fe96bfa8fe53f4caf197dc746880558f5672d5b37fca318",
+    "bytes": 875,
+    "artifact": "logs/editor-boundary.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "editor-core.log",
+    "complete_local_sha256": "d78cfeb0147324f4ff48f50231eb7f2684dda13cd1ebfbd54e86600c8d8787ed",
+    "bytes": 6701,
+    "artifact": "logs/editor-core.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "editor-ui.log",
+    "complete_local_sha256": "4c571b80f4c34504468a0131941b46e5ec35f7586b9fb833cb1068db0a2c19f4",
+    "bytes": 4362,
+    "artifact": "logs/editor-ui.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "final-package-clean.log",
+    "complete_local_sha256": "3e4e128ccd051cbae284065cf18250a0b4c2f12ef298412c72b7b4998e3acab6",
+    "bytes": 38,
+    "artifact": "logs/final-package-clean.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "first-compile.log",
+    "complete_local_sha256": "1f4126688bb2f8bbddad3cc780686bd6a820a059ee66b3ed8f35882f8d05fbda",
+    "bytes": 17517,
+    "artifact": "logs/first-compile.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "fmt.log",
+    "complete_local_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "artifact": "logs/fmt.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-matrix/app-default.log",
+    "complete_local_sha256": "abae53f8de6baf386d185536e124557c438be2c5e75c46b4e70fa473e42248a2",
+    "bytes": 53360,
+    "artifact": "logs/initial-matrix/app-default.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-matrix/app-minimal.log",
+    "complete_local_sha256": "a5a6ce872e052894aa63f022be1b177ab8427a3bccc00ebee161d1b0f9bbe653",
+    "bytes": 56959,
+    "artifact": "logs/initial-matrix/app-minimal.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-matrix/core-default.log",
+    "complete_local_sha256": "40ef1ee27c58e0a12d6ed5a1d3a17ff48d664f6c50808abe7d476d376501d184",
+    "bytes": 48474,
+    "artifact": "logs/initial-matrix/core-default.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-matrix/core-minimal.log",
+    "complete_local_sha256": "9fcaf45d3817d2fd40f0a12125f2d8ecac4ec7e7ba5f0f69bf4dda02344d7416",
+    "bytes": 37542,
+    "artifact": "logs/initial-matrix/core-minimal.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-matrix/fmt.log",
+    "complete_local_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "artifact": "logs/initial-matrix/fmt.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-mutants/mutant-flag-equals.log",
+    "complete_local_sha256": "42668dda1b0b78e7b7012e6094fa66411a91a6a37b6e69700c8602e106e9ea27",
+    "bytes": 1139,
+    "artifact": "logs/initial-mutants/mutant-flag-equals.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-mutants/mutant-literal-plus.log",
+    "complete_local_sha256": "3971d276c8b0eb4aabc152ca45be4df6c5ca6405ea5984b38816a0c21ef8ebe3",
+    "bytes": 999,
+    "artifact": "logs/initial-mutants/mutant-literal-plus.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-mutants/mutant-page-aba.log",
+    "complete_local_sha256": "e0bc590b5aa84d08019dd4f91122cd83548a63613a7b4c77c8d9e1c6bd864cb7",
+    "bytes": 579,
+    "artifact": "logs/initial-mutants/mutant-page-aba.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-mutants/mutant-reject-latch.log",
+    "complete_local_sha256": "e0bc590b5aa84d08019dd4f91122cd83548a63613a7b4c77c8d9e1c6bd864cb7",
+    "bytes": 579,
+    "artifact": "logs/initial-mutants/mutant-reject-latch.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "initial-mutants/mutant-stale-copy-token.log",
+    "complete_local_sha256": "d7f49f5ba4c27a70cb20050f26710ed533cf841fb2f60b1f20ece88ee0b85a31",
+    "bytes": 782,
+    "artifact": "logs/initial-mutants/mutant-stale-copy-token.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "loc-audit.log",
+    "complete_local_sha256": "7ac7c3deb6b0460a99df574387a8dd48fd5ce01efe408ea8ee91b7c720a075a5",
+    "bytes": 579,
+    "artifact": "logs/loc-audit.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "mutant-flag-equals.log",
+    "complete_local_sha256": "b086ccb794a3727ce5a99ba6fc226edb2216c9fc877400f256ccecee0b89b5a5",
+    "bytes": 1139,
+    "artifact": "logs/mutant-flag-equals.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "mutant-literal-plus.log",
+    "complete_local_sha256": "584e4dc96a96a972b45bd871e5e5f21085b3b427eb219dd7e21cebe1fbfef238",
+    "bytes": 999,
+    "artifact": "logs/mutant-literal-plus.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "mutant-page-aba.log",
+    "complete_local_sha256": "2ab7ef7478ce2567b1634a49ee44609141826e4f9876c2a788929d14275fe9d1",
+    "bytes": 1411,
+    "artifact": "logs/mutant-page-aba.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "mutant-ready-token-corrected.log",
+    "complete_local_sha256": "7b72466f174562125a08ec3cf0a072b1c5d9c48588d4e84a0439a47f46a8c575",
+    "bytes": 1386,
+    "artifact": "logs/mutant-ready-token-corrected.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "mutant-reject-latch.log",
+    "complete_local_sha256": "41d6f1a8bc2c98a8ff6cf7ea79dde8a84759af4000c89a6b7963d178991304e6",
+    "bytes": 1403,
+    "artifact": "logs/mutant-reject-latch.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "mutant-stale-copy-token.log",
+    "complete_local_sha256": "0ee0a5db4643c3f7a82a73f89005fee757181e54b622ca91eeda5c517aff3588",
+    "bytes": 1060,
+    "artifact": "logs/mutant-stale-copy-token.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "ordinary-build.log",
+    "complete_local_sha256": "e6ecef89a592ba5c5cf641981837d24b8cd4e2a9cfbd36120454aa9d0853f87a",
+    "bytes": 518,
+    "artifact": "logs/ordinary-build.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "post-mutant-package-clean.log",
+    "complete_local_sha256": "5c5c46c71b9558e58c157efe2a11a20c8760e833470bd48010ce57bffe8d975d",
+    "bytes": 39,
+    "artifact": "logs/post-mutant-package-clean.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-gui-clean-build.log",
+    "complete_local_sha256": "044d1783d8e1277cd27f9202a7a60261ae7a3087e46240ea308da89b53a8a16c",
+    "bytes": 642,
+    "artifact": "logs/pre-gui-clean-build.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-lint-final-matrix/app-default.log",
+    "complete_local_sha256": "c2c2075fba236df2e2e18c99b6006417285e6e563c39267b88f136012137ebff",
+    "bytes": 53533,
+    "artifact": "logs/pre-lint-final-matrix/app-default.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-lint-final-matrix/app-minimal.log",
+    "complete_local_sha256": "eff0e79abd3f139ce33c9c0122da6cd5ec483ce7e600419d823e57c6f7a569ce",
+    "bytes": 53564,
+    "artifact": "logs/pre-lint-final-matrix/app-minimal.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-lint-final-matrix/app-recording.log",
+    "complete_local_sha256": "06a2e517d405340cd2e958398b962b5a7c1b36ea2eed83f678d7a38689ae2e8c",
+    "bytes": 55061,
+    "artifact": "logs/pre-lint-final-matrix/app-recording.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-lint-final-matrix/core-default.log",
+    "complete_local_sha256": "e8d96f0c8d7ca2a9867f4dbb5be33339ffa54d174e93ccb7cd8db8ee81959597",
+    "bytes": 48474,
+    "artifact": "logs/pre-lint-final-matrix/core-default.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-lint-final-matrix/core-minimal.log",
+    "complete_local_sha256": "5562da99c262971eebed97e653c6bb172e00433fcda2aaf08a6e42e8e80a3135",
+    "bytes": 37542,
+    "artifact": "logs/pre-lint-final-matrix/core-minimal.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-lint-final-matrix/editor-core.log",
+    "complete_local_sha256": "11699195cbdd05af28be6bc61949e986cdb4e5d8a8fca5eac8f079ddf62c5dac",
+    "bytes": 6701,
+    "artifact": "logs/pre-lint-final-matrix/editor-core.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-lint-final-matrix/editor-ui.log",
+    "complete_local_sha256": "4412a0d68e701daacf72e9ada99eda322a8dd1d95190a2ee734298150c1b441d",
+    "bytes": 4362,
+    "artifact": "logs/pre-lint-final-matrix/editor-ui.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-lint-final-matrix/fmt.log",
+    "complete_local_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "artifact": "logs/pre-lint-final-matrix/fmt.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "pre-lint-final-matrix/strict.log",
+    "complete_local_sha256": "d21851cfff14b0a40af714af7442c3dcc3aed056dc8255ba8d090c027698d473",
+    "bytes": 1616,
+    "artifact": "logs/pre-lint-final-matrix/strict.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "strict-minimal-initial-failure.log",
+    "complete_local_sha256": "e2b62089b62864702a638298e8d9ba550a591da0e1eaa98098d1876cf4c756e6",
+    "bytes": 1260,
+    "artifact": "logs/strict-minimal-initial-failure.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "strict-minimal.log",
+    "complete_local_sha256": "a665a5f261a529642a2c8d78ba1c7e5017a41709c2982fefb948a73455d72cd6",
+    "bytes": 410,
+    "artifact": "logs/strict-minimal.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "strict-recording.log",
+    "complete_local_sha256": "3aa0eee01a38c6e23ff362056a5d8c1d9e277ab03dba02a84ca2154e2d32a841",
+    "bytes": 606,
+    "artifact": "logs/strict-recording.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "strict.log",
+    "complete_local_sha256": "a70aa6061d0236a66b8d49de971594b55ef9821773c3c87e54ab8d4f2eea5b64",
+    "bytes": 715,
+    "artifact": "logs/strict.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "support-closure/app-default.log",
+    "complete_local_sha256": "cbbd5700f093ec2e61b44ccbdf12ce70b8c08efbeeb77685c8111643f0dda399",
+    "bytes": 53228,
+    "artifact": "logs/support-closure/app-default.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "support-closure/app-minimal.log",
+    "complete_local_sha256": "403c4c28c934507585b591707422677381a29cdad15e22309def0d680c48982e",
+    "bytes": 52441,
+    "artifact": "logs/support-closure/app-minimal.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "support-closure/app-recording.log",
+    "complete_local_sha256": "5943ec82c13f2abcb9421fce2dcbdb7a146379356b13253533a93588f24e0df6",
+    "bytes": 54962,
+    "artifact": "logs/support-closure/app-recording.txt",
+    "excerpt": true,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "support-closure/clean-app.log",
+    "complete_local_sha256": "b4978e4794015e6c34a82203cce56285624743be24c625d5ffc7b635f709547a",
+    "bytes": 38,
+    "artifact": "logs/support-closure/clean-app.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "support-closure/fmt.log",
+    "complete_local_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "artifact": "logs/support-closure/fmt.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "support-closure/ordinary-build.log",
+    "complete_local_sha256": "d46d5f3aad6c1381619f4cf85490d8abe7c6cd3e452645e549e9ae83fe9edc6f",
+    "bytes": 411,
+    "artifact": "logs/support-closure/ordinary-build.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "support-closure/strict-recording.log",
+    "complete_local_sha256": "2e462a5033b06ee7615114b905d159f792d910e42b217a99e8a4cd13c2b34aa0",
+    "bytes": 410,
+    "artifact": "logs/support-closure/strict-recording.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "support-closure/strict.log",
+    "complete_local_sha256": "f6354c610114b4fd9d91fbd0eb206dd4798f7d560b68c779db1bd7880110fd77",
+    "bytes": 410,
+    "artifact": "logs/support-closure/strict.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "url-focused-r2.log",
+    "complete_local_sha256": "2eb2c6055a8ed5dcee63654ce7271ea9e477bae69b9200642a02c4725905cd35",
+    "bytes": 891,
+    "artifact": "logs/url-focused-r2.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "url-focused-r3.log",
+    "complete_local_sha256": "826b8554cf07da520f5dea5ff199c786aadeb3578ed33e6a4a2ec981c7cb256d",
+    "bytes": 1444,
+    "artifact": "logs/url-focused-r3.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "url-focused-r4.log",
+    "complete_local_sha256": "5bbc68efb3cad0dbb5519f77bc28ae7f5e25b8ede7c12b6794f913504ead5587",
+    "bytes": 1745,
+    "artifact": "logs/url-focused-r4.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "url-focused-r5.log",
+    "complete_local_sha256": "9146c7011237142ddc62b43201bde125d1d6062ef38cc02077d85930ad847196",
+    "bytes": 1139,
+    "artifact": "logs/url-focused-r5.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  },
+  {
+    "path": "url-focused.log",
+    "complete_local_sha256": "afa1419f742e0eaa086d28da2e0be88542528357ff42ea221272c92d95137cd4",
+    "bytes": 1669,
+    "artifact": "logs/url-focused.txt",
+    "excerpt": false,
+    "artifact_whitespace_normalized": true
+  }
+]

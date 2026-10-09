@@ -1,0 +1,32 @@
+[
+  {
+    "name": "literal-plus",
+    "seconds": 8.019,
+    "exit_code": 101,
+    "killed": true
+  },
+  {
+    "name": "flag-equals",
+    "seconds": 6.738,
+    "exit_code": 101,
+    "killed": true
+  },
+  {
+    "name": "stale-copy-token",
+    "seconds": 35.326,
+    "exit_code": 0,
+    "killed": false
+  },
+  {
+    "name": "reject-latch",
+    "seconds": 34.896,
+    "exit_code": 101,
+    "killed": true
+  },
+  {
+    "name": "page-aba",
+    "seconds": 34.587,
+    "exit_code": 101,
+    "killed": true
+  }
+]

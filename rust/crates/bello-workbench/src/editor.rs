@@ -242,6 +242,9 @@ pub struct Editor {
     pub mode: Mode,
     pub vim: bool,
     pub read_only: bool,
+    edit_byte_limit: usize,
+    rejected_edits: u64,
+    rejection_exhausted: bool,
     pub message: String,
     pub search: String,
     anchor: usize,
@@ -266,6 +269,9 @@ impl Editor {
             mode: Mode::Insert,
             vim: false,
             read_only,
+            edit_byte_limit: MAX_EDIT_BYTES,
+            rejected_edits: 0,
+            rejection_exhausted: false,
             message: if read_only {
                 "Large buffer is read-only (8 MiB editing limit)".into()
             } else {
@@ -437,13 +443,45 @@ impl Editor {
             }
         }
     }
+    pub fn rejection_exhausted(&self) -> bool {
+        self.rejection_exhausted
+    }
+    pub fn rejected_edits(&self) -> u64 {
+        self.rejected_edits
+    }
+    pub fn edit_byte_limit(&self) -> usize {
+        self.edit_byte_limit
+    }
+    /// Configure a new buffer before edits; existing undo history is never reinterpreted.
+    pub fn set_edit_byte_limit(&mut self, limit: usize) -> bool {
+        let limit = limit.min(MAX_EDIT_BYTES);
+        if self.buffer.len() > limit
+            || self.revision != 0
+            || !self.undo.is_empty()
+            || !self.redo.is_empty()
+            || self.transaction.is_some()
+        {
+            return false;
+        }
+        self.edit_byte_limit = limit;
+        true
+    }
     fn replace(&mut self, r: Range<usize>, s: &str) -> bool {
         if self.read_only {
             self.message = "Read-only buffer".into();
             return false;
         }
-        if self.buffer.len() - r.len() + s.len() > MAX_EDIT_BYTES {
-            self.message = "Edit exceeds 8 MiB limit".into();
+        if self.buffer.len() - r.len() + s.len() > self.edit_byte_limit {
+            if let Some(next) = self.rejected_edits.checked_add(1) {
+                self.rejected_edits = next;
+            } else {
+                self.rejection_exhausted = true;
+            }
+            self.message = if self.edit_byte_limit == MAX_EDIT_BYTES {
+                "Edit exceeds 8 MiB limit".into()
+            } else {
+                format!("Edit exceeds {} UTF-8 byte limit", self.edit_byte_limit)
+            };
             return false;
         }
         let edit_cost = r.len() + s.len() + 64;
@@ -1571,5 +1609,25 @@ mod tests {
             }
             assert!(e.text().is_char_boundary(e.cursor));
         }
+    }
+}
+#[cfg(test)]
+mod host_limit_tests {
+    use super::*;
+    #[test]
+    fn bound_is_opt_in_and_rejection_counter_fails_closed() {
+        let mut e = Editor::new("x".into());
+        assert_eq!(e.edit_byte_limit(), MAX_EDIT_BYTES);
+        assert!(!e.set_edit_byte_limit(0));
+        assert!(e.set_edit_byte_limit(1));
+        e.rejected_edits = u64::MAX;
+        assert!(!e.replace_range(0..1, "xx"));
+        assert!(e.rejection_exhausted());
+        assert_eq!(e.text(), "x");
+        assert!(e.replace_range(0..1, "z"));
+        assert!(e.rejection_exhausted());
+        let mut e = Editor::new(String::new());
+        assert!(!e.replace_range(0..0, &"x".repeat(MAX_EDIT_BYTES + 1)));
+        assert_eq!(e.message, "Edit exceeds 8 MiB limit");
     }
 }

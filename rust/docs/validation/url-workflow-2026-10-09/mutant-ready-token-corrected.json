@@ -1,0 +1,7 @@
+{
+  "name": "ready-token-corrected",
+  "seconds": 33.014,
+  "exit_code": 101,
+  "killed": true,
+  "previous_control": "The initial broad first-match mutation altered edited() notification optimization, leaving the authoritative ready() guard intact. It survived and was not counted as a kill; the corrected mutation targets ready() specifically."
+}

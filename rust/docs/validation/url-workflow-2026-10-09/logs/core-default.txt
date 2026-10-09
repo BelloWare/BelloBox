@@ -1,0 +1,60 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 8.51s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73)
+
+running 472 tests
+test ai::generation::tests::preferences_bound_values_without_guessing_model_capabilities ... ok
+test ai::generation::tests::exact_optional_wire_fields_and_thinking_temperature_exclusion ... ok
+test ai::generation::decoding_tests::malformed_fields_default_independently_and_signed_tokens_clamp ... ok
+[middle omitted; complete local log hash recorded]
+test result: ok. 472 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.22s
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/text_swift_oracle.rs (/workspace/shared/build-recovery/target/debug/deps/text_swift_oracle-4212fb9d2bd3d90b)
+
+running 2 tests
+test native::native_swift_count_and_unique_match_pinned_source ... ignored, requires native macOS Swift/Foundation; source binding still runs
+test pinned_source_and_fixed_fixtures_are_bound ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/ui_tool_controls.rs (/workspace/shared/build-recovery/target/debug/deps/ui_tool_controls-2450bb5cabac794b)
+
+running 17 tests
+test controls::tests::independent_windows_do_not_share_control_state ... ok
+test controls::tests::plist_direction_and_chaining_follow_source ... ok
+test controls::tests::source_sql_controls_and_literal_mappings ... ok
+test cookie_header_detection_and_manual_menu_route_to_engine ... ok
+test number_base_launcher_preview_matches_gui_defaults_not_cli_autodetection ... ok
+test permission_tab_reaches_every_checkbox_and_returns_without_editing_input ... ok
+test permission_source_grid_has_twelve_distinct_bits_and_no_options ... ok
+test number_base_source_menus_defaults_and_gui_cli_boundary ... ok
+test source_labels_follow_mode_changes_and_chaining ... ok
+test source_converter_defaults_follow_selection_and_chain_both_directions ... ok
+test list_set_source_controls_select_each_operation_without_overwriting_second_document ... ok
+test source_menus_validate_choices_without_mutating_other_windows ... ok
+test string_literal_empty_success_differs_from_idle ... ok
+test string_literal_source_format_menu_routes_without_an_option_document ... ok
+test subnet_source_label_example_no_options_and_error_recovery ... ok
+test paired_list_editor_heights_follow_source_bounded_utf16_measurement ... ok
+test string_literal_source_idle_copy_and_bounded_editor_height ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/url_swift_oracle.rs (/workspace/shared/build-recovery/target/debug/deps/url_swift_oracle-a35203809e74216d)
+
+running 2 tests
+test native::native_swift_url_bounded_vectors_and_diagnostics ... ignored, requires native Swift/Foundation; Linux validates only binding and Rust compilation
+test url_oracle_source_and_fixture_binding ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests bellobox_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

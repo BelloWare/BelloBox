@@ -1,0 +1,172 @@
+[
+  {
+    "id": "duplicate_flag_plus",
+    "input": "https://example.com:8443/a?q=a+b&tag=one&tag=two&flag#hello"
+  },
+  {
+    "id": "empty_path",
+    "input": "https://Example.COM"
+  },
+  {
+    "id": "default_port",
+    "input": "https://Example.COM:443"
+  },
+  {
+    "id": "empty_query",
+    "input": "https://example.com?"
+  },
+  {
+    "id": "empty_fragment",
+    "input": "https://example.com#"
+  },
+  {
+    "id": "segments",
+    "input": "https://example.com/?&&a=&flag&=x&"
+  },
+  {
+    "id": "encoded_delimiters",
+    "input": "https://example.com/a%2Fb?q=a%26b%3Dc&%2B=%2B#x%23y"
+  },
+  {
+    "id": "unicode",
+    "input": "https://example.com/中文?q=caf%C3%A9#é"
+  },
+  {
+    "id": "ipv6",
+    "input": "http://[::1]:80/a"
+  },
+  {
+    "id": "idna",
+    "input": "https://bücher.example/a"
+  },
+  {
+    "id": "userinfo",
+    "input": "https://fixture:synthetic@example.com/a"
+  },
+  {
+    "id": "dot_segments",
+    "input": "https://example.com/a/../b/./c"
+  },
+  {
+    "id": "backslash",
+    "input": "https://example.com/a\\b"
+  },
+  {
+    "id": "bad_percent",
+    "input": "https://example.com/%ZZ?q=%"
+  },
+  {
+    "id": "bad_utf8",
+    "input": "https://example.com/?q=%FF"
+  },
+  {
+    "id": "port_zero",
+    "input": "https://example.com:0/a"
+  },
+  {
+    "id": "unsupported_scheme",
+    "input": "ftp://example.com/a"
+  },
+  {
+    "id": "space_host",
+    "input": "https://exa mple.com/a"
+  },
+  {
+    "id": "remove_all",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "parameters": []
+    }
+  },
+  {
+    "id": "edit_components",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "scheme": "http",
+      "host": "Example.ORG",
+      "port": "8080",
+      "path": "/a b/é",
+      "fragment": "x#y"
+    }
+  },
+  {
+    "id": "port_empty",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "port": ""
+    }
+  },
+  {
+    "id": "port_one",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "port": "1"
+    }
+  },
+  {
+    "id": "port_max",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "port": "65535"
+    }
+  },
+  {
+    "id": "port_invalid_zero",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "port": "0"
+    }
+  },
+  {
+    "id": "port_invalid_large",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "port": "65536"
+    }
+  },
+  {
+    "id": "port_invalid_text",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "port": "1x"
+    }
+  },
+  {
+    "id": "blank_host",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "host": ""
+    }
+  },
+  {
+    "id": "blank_path_fragment",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "path": "",
+      "fragment": ""
+    }
+  },
+  {
+    "id": "query_punctuation",
+    "input": "https://example.com:443/original?a=old#old",
+    "edits": {
+      "parameters": [
+        {
+          "name": "a+b &?/#=",
+          "value": "x+y &=?/#é",
+          "hasValue": true
+        },
+        {
+          "name": "flag",
+          "value": "ignored",
+          "hasValue": false
+        },
+        {
+          "name": "empty",
+          "value": "",
+          "hasValue": true
+        }
+      ]
+    }
+  }
+]

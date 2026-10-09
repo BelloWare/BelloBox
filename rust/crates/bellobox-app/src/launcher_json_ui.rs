@@ -89,7 +89,7 @@ impl LauncherJsonPreview {
         self.output.read(cx).focus_handle(cx).is_focused(window)
             || self.controls.iter().any(|f| f.is_focused(window))
     }
-    #[cfg(test)]
+    #[cfg(all(test, feature = "developer-tools"))]
     pub(crate) fn output_editor(&self) -> Entity<EditorView> {
         self.output.clone()
     }

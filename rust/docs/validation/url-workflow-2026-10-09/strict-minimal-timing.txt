@@ -1,0 +1,1 @@
+seconds=7 exit=0

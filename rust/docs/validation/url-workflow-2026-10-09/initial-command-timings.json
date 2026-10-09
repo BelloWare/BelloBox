@@ -1,0 +1,50 @@
+{
+  "kind": "shell time real wall seconds, not model inference",
+  "commands": [
+    {
+      "log": "first-compile.log",
+      "seconds": 60.494,
+      "result": "failed linker: GPUI env script omitted"
+    },
+    {
+      "log": "url-focused.log",
+      "seconds": 40.178,
+      "result": "failed compile: new event exhaustive downstream match; removed variant"
+    },
+    {
+      "log": "url-focused-r2.log",
+      "seconds": 8.88,
+      "result": "failed compile: glob-imported gpui test macro recursion"
+    },
+    {
+      "log": "url-focused-r3.log",
+      "seconds": 12.291,
+      "result": "failed compile: Focusable import plus unused local"
+    },
+    {
+      "log": "url-focused-r4.log",
+      "seconds": 27.425,
+      "result": "5 passed/1 failed: test direct row removal stale row render unwrap; guarded lookup"
+    },
+    {
+      "log": "url-focused-r5.log",
+      "seconds": 26.186,
+      "result": "6 passed"
+    },
+    {
+      "log": "core-focused.log",
+      "seconds": 8.392,
+      "result": "passed; native oracle ignored on Linux"
+    },
+    {
+      "log": "editor-boundary.log",
+      "seconds": 24.845,
+      "result": "1 passed"
+    }
+  ],
+  "unmeasured_failures": [
+    "initial /usr/bin/time absent; switched to bash time",
+    "first cargo fmt invoked repository root without manifest; reran correct rust manifest"
+  ],
+  "inference_time": "unavailable"
+}

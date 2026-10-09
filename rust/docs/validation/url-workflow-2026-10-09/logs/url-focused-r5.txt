@@ -1,0 +1,15 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 26.00s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 6 tests
+test url_ui::tests::source_typing_is_explicit_inspection_and_rejected_paste_latches ... ok
+test url_ui::tests::full_url_requires_build_and_blocks_same_callback_stale_copy ... ok
+test url_ui::tests::composing_row_blocks_navigation_build_and_source_replacement ... ok
+test url_ui::tests::aggregate_edits_are_bounded_without_truncation ... ok
+test url_ui::tests::independent_close_reopen_clear_and_chain ... ok
+test url_ui::tests::all_3001_parameters_survive_paging_last_edit_and_stable_remove ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 499 filtered out; finished in 0.11s

@@ -1,0 +1,14 @@
+   Compiling git2 v0.20.4
+   Compiling gpui_util v0.2.2
+   Compiling gpui_http_client v0.2.2
+   Compiling gpui v0.2.2
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-url-workflow/rust/crates/bello-workbench-ui)
+    Finished `test` profile [unoptimized] target(s) in 24.78s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bello_workbench_ui-eed38fa1c4895fd0)
+
+running 1 test
+test editor_view::bounded_host_tests::host_byte_limit_tokens_and_ime_rejection_are_atomic ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 37 filtered out; finished in 0.00s
