@@ -1,5 +1,209 @@
 # BelloBox Rust migration duration audit
 
+## Current accounting checkpoint: 2026-10-09T12:20:16Z
+
+This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains preserved below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
+
+### At a glance
+
+These top totals cover only this catch-up receipt cohort, including late-added earlier observations; they are not whole-migration cumulative totals. These are overlapping accounting views, not shares of one total. Mixed windows do not measure active labor.
+
+| Where time went | What is actually measured |
+|---|---|
+| Implementation | Active effort unavailable; mixed source/test windows recorded below |
+| Review | Active effort unavailable; only review-focused observations: 1 mixed windows; 1 with endpoints, 49.7s union |
+| Mixed implementation/review/validation windows | 4 mixed windows; 4 with endpoints, 39m 29.5s union; scopes overlap resources and do not measure Review alone |
+| Builds | 1m 59.9s measured command resource time |
+| Tests | Unavailable separately from compilation in these command receipts |
+| Build + test/check (combined) | 22m 58.4s measured command resource time |
+| CI | 1h 55m 26.0s runner time across 8 jobs; 1h 8m 40.0s wall union |
+| Dependency/environment setup | 5.3s measured resource time |
+| Retries/rework | 3m 34.9s across 11 failed command receipts; total rework effort unavailable |
+| Publication | No isolated API total; 6 mixed windows; 6 with endpoints, 16m 31.9s union |
+| Waiting | Unavailable separately; waiting is mixed into recorded workflow windows |
+| Model inference | Unavailable; no timing telemetry |
+
+Later status, outside these totals (observed12:27UTC): [URL source fd434 macOS CI](https://github.com/BelloWare/BelloBox/actions/runs/37928860545) failed. Native URL acceptance was not established; a support-fixture repair was underway.
+
+### Separate measured resource groups
+
+| Group | Timed items | Resource/client seconds | Known-endpoint items | Endpoint-subset seconds | Endpoint union seconds |
+|---|---:|---:|---:|---:|---:|
+| catchup_ci_job | 8 | 6926.000 | 8 | 6926.000 | 4120.000 |
+| catchup_native_command | 11 | 4.661 | 11 | 4.661 | 4.661 |
+| catchup_command | 89 | 1635.105 | 61 | 899.443 | 899.440 |
+
+Groups overlap each other and mixed work windows; never add them into project elapsed or active-work time. Derived endpoints are excluded from unions. Monotonic timers and separately recorded UTC clocks can differ slightly. Whole-second 0s means below receipt resolution. CI steps and native subcommands are nested within job durations, not extra runner time.
+
+| Resource group / category | Seconds |
+|---|---:|
+| catchup_ci_job: CI runner | 6926.000 |
+| catchup_native_command: build + test/check (combined) | 0.075 |
+| catchup_native_command: dependency/environment or verification | 4.587 |
+| catchup_command: automated lint/check | 136.236 |
+| catchup_command: build + test/check (combined) | 1378.319 |
+| catchup_command: dependency/environment or verification | 0.695 |
+| catchup_command: build | 119.856 |
+
+### Nested CI phases (already included in CI jobs)
+
+| Phase class | Runner step time |
+|---|---:|
+| CI orchestration | 50.0s |
+| dependency/environment setup | 3m 28.0s |
+| build + automated lint/check | 21m 31.0s |
+| build/test/check (combined) | 1h 21m 34.0s |
+| build | 5m 13.0s |
+| CI reporting | 0.0s |
+| packaging/validation | 2m 23.0s |
+
+These conservative phase groups can include compilation and execution together; do not add them to the CI job totals.
+
+Within 2026-10-09T08:43:00Z–2026-10-09T12:20:16Z, the selected CI jobs cover 4120.000 overlap-safe wall seconds; 8916.000 seconds are outside those jobs. This remainder includes implementation, tests, review, publication, waiting and unknown time; it is neither proven idle nor model inference.
+
+### Mixed workflows and waits (excluded from resource totals)
+
+| Activity | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---:|---|
+| initial /usr/bin/time absent; switched to bash time | unknown | unknown | unknown | failure retained; elapsed unavailable |
+| first cargo fmt invoked repository root without manifest; reran correct rust manifest | unknown | unknown | unknown | failure retained; elapsed unavailable |
+| Compare native oracle receipts | 2026-10-09T08:46:08+00:00 | 2026-10-09T08:46:57.714628+00:00 | 49.714628 | completed |
+| Formatter integration, tests, GUI and sealing | 2026-10-09T08:49:33+00:00 | 2026-10-09T09:00:47.696265+00:00 | 674.696265 | completed |
+| Formatter application GUI lifetime | 2026-10-09T08:56:15+00:00 | 2026-10-09T08:59:21+00:00 | 186.0 | completed |
+| Formatter source/doc packaging, upload/retry and immutable verification | 2026-10-09T09:02:08+00:00 | 2026-10-09T09:13:59.376384+00:00 | 711.376384 | completed |
+| Text Tools portal export GUI retest | 2026-10-09T10:11:11,545051788+00:00 | 2026-10-09T10:13:01,093423163+00:00 | 109.548372 | completed |
+| Text Tools source/docs upload and exact immutable readback | 2026-10-09T10:14:32.670Z | 2026-10-09T10:18:04.558Z | 211.888 | completed |
+| TextStats/Unique oracle preparation, correction and handoff | 2026-10-09T10:21:58Z | 2026-10-09T10:48:10.827257+00:00 | 1572.827257 | completed |
+| rustfmt absent from initial shell PATH; no command executed | unknown | unknown | unknown | setup corrected; no Cargo command executed at failure |
+| sourcing gpui-env.sh without base env.sh left cargo unavailable; corrected by sourcing official existing env.sh | unknown | unknown | unknown | setup corrected; no Cargo command executed at failure |
+| URL native oracle fixture/harness observed_window | 2026-10-09T11:03:47Z | 2026-10-09T11:04:42Z | 55 | completed |
+| URL native oracle fixture/harness integration_window | 2026-10-09T11:10:29Z | 2026-10-09T11:11:36Z | 67 | completed |
+| Python fixture-generator syntax typo | 2026-10-09T11:04:24Z | unknown | unknown | corrected and generator rerun successfully |
+| URL final actual Linux GUI and source/binary recheck | 2026-10-09T11:49:28,348416177+00:00 | 2026-10-09T11:52:40.524951+00:00 | 192.176535 | completed |
+| formatter source publication and verified branch readback | 2026-10-09T09:13:46Z | 2026-10-09T09:14:09Z | 23.0 | completed |
+| text source publication and verified branch readback | 2026-10-09T10:18:20Z | 2026-10-09T10:18:40Z | 20.0 | completed |
+| semantics source publication and verified branch readback | 2026-10-09T11:01:58Z | 2026-10-09T11:02:13Z | 15.0 | completed |
+| url source publication and verified branch readback | 2026-10-09T12:15:11Z | 2026-10-09T12:15:35Z | 24.0 | completed |
+
+The 12,254.9-second cancelled orchestration includes a preceding successful Markdown upload plus transport and the blocked ledger operation; it is not isolated approval time or idle time. Independent implementation and CI continued during this interval. Individual retry duration remains unknown.
+
+### Measured items
+
+| Activity | Category | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---|---:|---|
+| Rust Linux checks / linux | CI runner | 2026-10-09T08:49:40Z | 2026-10-09T09:00:12Z | 632.0 | success |
+| Rust macOS native checks / apple-silicon | CI runner | 2026-10-09T08:49:50Z | 2026-10-09T09:07:20Z | 1050.0 | success |
+| Rust Linux checks / linux | CI runner | 2026-10-09T09:14:13Z | 2026-10-09T09:26:50Z | 757.0 | success |
+| Rust macOS native checks / apple-silicon | CI runner | 2026-10-09T09:14:19Z | 2026-10-09T09:31:12Z | 1013.0 | success |
+| Rust Linux checks / linux | CI runner | 2026-10-09T10:18:45Z | 2026-10-09T10:31:16Z | 751.0 | success |
+| Rust macOS native checks / apple-silicon | CI runner | 2026-10-09T10:18:52Z | 2026-10-09T10:37:07Z | 1095.0 | success |
+| Rust Linux checks / linux | CI runner | 2026-10-09T11:02:17Z | 2026-10-09T11:13:52Z | 695.0 | success |
+| Rust macOS native checks / apple-silicon | CI runner | 2026-10-09T11:02:23Z | 2026-10-09T11:17:56Z | 933.0 | success |
+| architecture.command.json | build + test/check (combined) | 2026-10-09T08:40:00.631049+00:00 | 2026-10-09T08:40:00.633870+00:00 | 0.0028330000350251794 | 0 |
+| binary-type.command.json | build + test/check (combined) | 2026-10-09T08:40:05.250831+00:00 | 2026-10-09T08:40:05.266293+00:00 | 0.015492584090679884 | 0 |
+| compile.command.json | dependency/environment or verification | 2026-10-09T08:40:00.875741+00:00 | 2026-10-09T08:40:05.228815+00:00 | 4.35312220803462 | 0 |
+| linked-libraries.command.json | build + test/check (combined) | 2026-10-09T08:40:05.229617+00:00 | 2026-10-09T08:40:05.250463+00:00 | 0.020874249981716275 | 0 |
+| macos.command.json | build + test/check (combined) | 2026-10-09T08:40:00.620285+00:00 | 2026-10-09T08:40:00.630756+00:00 | 0.010483375051990151 | 0 |
+| run-17-vectors.command.json | build + test/check (combined) | 2026-10-09T08:40:05.266591+00:00 | 2026-10-09T08:40:05.285204+00:00 | 0.018658041954040527 | 0 |
+| sdk-path.command.json | dependency/environment or verification | 2026-10-09T08:40:00.857828+00:00 | 2026-10-09T08:40:00.867143+00:00 | 0.009355040965601802 | 0 |
+| sdk-version.command.json | dependency/environment or verification | 2026-10-09T08:40:00.867496+00:00 | 2026-10-09T08:40:00.875215+00:00 | 0.0077527089742943645 | 0 |
+| swift-path.command.json | build + test/check (combined) | 2026-10-09T08:40:00.634114+00:00 | 2026-10-09T08:40:00.640580+00:00 | 0.006496333051472902 | 0 |
+| swift-version.command.json | dependency/environment or verification | 2026-10-09T08:40:00.640839+00:00 | 2026-10-09T08:40:00.789291+00:00 | 0.14849862502887845 | 0 |
+| xcode-version.command.json | dependency/environment or verification | 2026-10-09T08:40:00.789651+00:00 | 2026-10-09T08:40:00.857487+00:00 | 0.06787279201671481 | 0 |
+| format | automated lint/check | 2026-10-09T08:52:20.450204+00:00 | 2026-10-09T08:52:22.186792+00:00 | 1.7366 | 0 |
+| core-json | build + test/check (combined) | 2026-10-09T08:52:22.187232+00:00 | 2026-10-09T08:52:22.919547+00:00 | 0.732334 | 0 |
+| app-json | build + test/check (combined) | 2026-10-09T08:52:22.919957+00:00 | 2026-10-09T08:52:40.556242+00:00 | 17.636304 | 0 |
+| core-full | build + test/check (combined) | 2026-10-09T08:52:40.556960+00:00 | 2026-10-09T08:53:03.373983+00:00 | 22.817046 | 0 |
+| strict | automated lint/check | 2026-10-09T08:53:03.374464+00:00 | 2026-10-09T08:53:15.008558+00:00 | 11.634115 | 0 |
+| minimal | build + test/check (combined) | 2026-10-09T08:53:15.008982+00:00 | 2026-10-09T08:53:19.012041+00:00 | 4.003079 | 0 |
+| mutant-numeric-lexemes | automated lint/check | 2026-10-09T08:53:19.012734+00:00 | 2026-10-09T08:53:23.093650+00:00 | 4.080932 | Expected negative-control failure |
+| mutant-canonical-duplicates | automated lint/check | 2026-10-09T08:53:23.094386+00:00 | 2026-10-09T08:53:27.134037+00:00 | 4.039671 | Expected negative-control failure |
+| restored-core-json | build + test/check (combined) | 2026-10-09T08:53:27.135618+00:00 | 2026-10-09T08:53:34.051779+00:00 | 6.916178 | 0 |
+| restored-strict | automated lint/check | 2026-10-09T08:53:34.052375+00:00 | 2026-10-09T08:53:42.593081+00:00 | 8.540728 | 0 |
+| clean-app | dependency/environment or verification | 2026-10-09T08:53:42.593609+00:00 | 2026-10-09T08:53:42.732166+00:00 | 0.1386 | 0 |
+| ordinary-build | build | 2026-10-09T08:53:42.732718+00:00 | 2026-10-09T08:53:55.224353+00:00 | 12.491656 | 0 |
+| format | automated lint/check | 2026-10-09T08:51:07.091207+00:00 | 2026-10-09T08:51:08.666651+00:00 | 1.575458 | 0 |
+| core-json | build + test/check (combined) | 2026-10-09T08:51:08.667024+00:00 | 2026-10-09T08:51:15.847381+00:00 | 7.180376 | 0 |
+| app-json | build + test/check (combined) | 2026-10-09T08:51:15.847989+00:00 | 2026-10-09T08:51:37.173524+00:00 | 21.325551 | 101 |
+| format | automated lint/check | 2026-10-09T09:41:01.429802+00:00 | 2026-10-09T09:41:03.055954+00:00 | 1.626 | 0 |
+| strict | automated lint/check | 2026-10-09T09:41:03.056985+00:00 | 2026-10-09T09:41:09.650490+00:00 | 6.594 | 0 |
+| default-app | build + test/check (combined) | 2026-10-09T09:41:09.652278+00:00 | 2026-10-09T09:43:07.168634+00:00 | 117.516 | 0 |
+| recording-app | build + test/check (combined) | 2026-10-09T09:43:07.169569+00:00 | 2026-10-09T09:45:27.525812+00:00 | 140.356 | 0 |
+| recording-strict | automated lint/check | 2026-10-09T09:45:27.528302+00:00 | 2026-10-09T09:45:35.216260+00:00 | 7.688 | 0 |
+| minimal | build + test/check (combined) | 2026-10-09T09:45:35.217089+00:00 | 2026-10-09T09:45:39.094649+00:00 | 3.878 | 0 |
+| clean-app | dependency/environment or verification | 2026-10-09T09:45:39.095548+00:00 | 2026-10-09T09:45:39.215613+00:00 | 0.12 | 0 |
+| ordinary-build | build | 2026-10-09T09:45:39.216425+00:00 | 2026-10-09T09:45:49.846825+00:00 | 10.63 | 0 |
+| format | automated lint/check | 2026-10-09T09:39:53.835004+00:00 | 2026-10-09T09:39:55.573388+00:00 | 1.738 | 0 |
+| strict | automated lint/check | 2026-10-09T09:39:55.574120+00:00 | 2026-10-09T09:40:04.721306+00:00 | 9.147 | 101 |
+| binding-default | build + test/check (combined) | 2026-10-09T10:46:11.906417+00:00 | 2026-10-09T10:46:12.469932+00:00 | 0.563538228001562 | 0 |
+| binding-minimal | build + test/check (combined) | 2026-10-09T10:46:12.470254+00:00 | 2026-10-09T10:46:12.743519+00:00 | 0.2732876549998764 | 0 |
+| strict | automated lint/check | 2026-10-09T10:46:12.743823+00:00 | 2026-10-09T10:46:13.078952+00:00 | 0.3351521410004352 | 0 |
+| binding-final-default | build + test/check (combined) | 2026-10-09T10:46:38.398687+00:00 | 2026-10-09T10:46:38.862432+00:00 | 0.4637700349994702 | 101 |
+| binding-fixed-default | build + test/check (combined) | 2026-10-09T10:46:53.449421+00:00 | 2026-10-09T10:46:53.916651+00:00 | 0.46725449000223307 | 0 |
+| binding-fixed-minimal | build + test/check (combined) | 2026-10-09T10:46:53.916997+00:00 | 2026-10-09T10:46:54.363810+00:00 | 0.44683639999857405 | 0 |
+| strict-fixed | automated lint/check | 2026-10-09T10:46:54.364119+00:00 | 2026-10-09T10:46:54.717012+00:00 | 0.3529163499988499 | 0 |
+| fmt-fixed | automated lint/check | 2026-10-09T10:46:54.717371+00:00 | 2026-10-09T10:46:56.355038+00:00 | 1.637695072000497 | 0 |
+| fmt | automated lint/check | 2026-10-09T11:42:17.430524+00:00 | unknown | 1.822 | 0 |
+| core-default | build + test/check (combined) | 2026-10-09T11:42:19.252444+00:00 | unknown | 21.12 | 0 |
+| core-minimal | build + test/check (combined) | 2026-10-09T11:42:40.372913+00:00 | unknown | 16.739 | 0 |
+| app-default | build + test/check (combined) | 2026-10-09T11:42:57.112629+00:00 | unknown | 70.431 | 0 |
+| app-minimal | build + test/check (combined) | 2026-10-09T11:44:07.544143+00:00 | unknown | 66.972 | 0 |
+| app-recording | build + test/check (combined) | 2026-10-09T11:45:14.516465+00:00 | unknown | 72.684 | 0 |
+| editor-core | build + test/check (combined) | 2026-10-09T11:46:27.200353+00:00 | unknown | 2.079 | 0 |
+| editor-ui | build + test/check (combined) | 2026-10-09T11:46:29.279790+00:00 | unknown | 5.103 | 0 |
+| strict | automated lint/check | 2026-10-09T11:46:34.383991+00:00 | unknown | 9.643 | 0 |
+| strict-recording | automated lint/check | 2026-10-09T11:46:44.027584+00:00 | unknown | 9.238 | 0 |
+| clean-app | dependency/environment or verification | 2026-10-09T11:46:53.266336+00:00 | unknown | 0.178 | 0 |
+| ordinary-build | build | 2026-10-09T11:46:53.444906+00:00 | unknown | 13.647 | 0 |
+| fmt | automated lint/check | 2026-10-09T11:49:54.715278+00:00 | unknown | 1.992 | 0 |
+| app-default | build + test/check (combined) | 2026-10-09T11:49:56.707774+00:00 | unknown | 70.95 | 0 |
+| app-minimal | build + test/check (combined) | 2026-10-09T11:51:07.657948+00:00 | unknown | 67.039 | 0 |
+| app-recording | build + test/check (combined) | 2026-10-09T11:52:14.697496+00:00 | unknown | 70.323 | 0 |
+| strict | automated lint/check | 2026-10-09T11:53:25.020709+00:00 | unknown | 7.746 | 0 |
+| strict-recording | automated lint/check | 2026-10-09T11:53:32.766971+00:00 | unknown | 7.209 | 0 |
+| clean-app | dependency/environment or verification | 2026-10-09T11:53:39.976577+00:00 | unknown | 0.142 | 0 |
+| ordinary-build | build | 2026-10-09T11:53:40.119015+00:00 | unknown | 11.914 | 0 |
+| core-default | build + test/check (combined) | 2026-10-09T10:27:27.635851+00:00 | 2026-10-09T10:27:40.248930+00:00 | 12.613 | 0 |
+| core-minimal | build + test/check (combined) | 2026-10-09T10:27:40.249631+00:00 | 2026-10-09T10:27:52.458154+00:00 | 12.209 | 0 |
+| core-strict | automated lint/check | 2026-10-09T10:27:52.458743+00:00 | 2026-10-09T10:27:55.975761+00:00 | 3.517 | 0 |
+| format | automated lint/check | 2026-10-09T10:27:55.976370+00:00 | 2026-10-09T10:27:57.679912+00:00 | 1.704 | 0 |
+| strict | automated lint/check | 2026-10-09T10:27:57.680506+00:00 | 2026-10-09T10:28:15.544209+00:00 | 17.864 | 0 |
+| default-app | build + test/check (combined) | 2026-10-09T10:28:15.544889+00:00 | 2026-10-09T10:30:17.898919+00:00 | 122.354 | 0 |
+| recording-app | build + test/check (combined) | 2026-10-09T10:30:17.899823+00:00 | 2026-10-09T10:32:38.178389+00:00 | 140.279 | 0 |
+| recording-strict | automated lint/check | 2026-10-09T10:32:38.180537+00:00 | 2026-10-09T10:32:45.922918+00:00 | 7.742 | 0 |
+| minimal | build + test/check (combined) | 2026-10-09T10:32:45.924121+00:00 | 2026-10-09T10:32:49.735005+00:00 | 3.811 | 0 |
+| clean-app | dependency/environment or verification | 2026-10-09T10:32:49.735656+00:00 | 2026-10-09T10:32:49.851217+00:00 | 0.116 | 0 |
+| ordinary-build | build | 2026-10-09T10:32:49.852057+00:00 | 2026-10-09T10:33:00.530665+00:00 | 10.679 | 0 |
+| core-default | build + test/check (combined) | 2026-10-09T10:26:32.323493+00:00 | 2026-10-09T10:26:51.674534+00:00 | 19.351 | 0 |
+| core-minimal | build + test/check (combined) | 2026-10-09T10:26:51.675052+00:00 | 2026-10-09T10:26:56.211904+00:00 | 4.537 | 101 |
+| focused-core | build + test/check (combined) | 2026-10-09T10:24:19.478489+00:00 | 2026-10-09T10:24:23.091834+00:00 | 3.613 | 101 |
+| focused-core | build + test/check (combined) | 2026-10-09T10:24:45.485819+00:00 | 2026-10-09T10:24:52.553303+00:00 | 7.067 | 0 |
+| focused-app | build + test/check (combined) | 2026-10-09T10:24:52.553600+00:00 | 2026-10-09T10:25:19.057683+00:00 | 26.504 | 101 |
+| focused-core | build + test/check (combined) | 2026-10-09T10:25:38.648210+00:00 | 2026-10-09T10:25:39.061013+00:00 | 0.413 | 0 |
+| focused-app | build + test/check (combined) | 2026-10-09T10:25:39.061459+00:00 | 2026-10-09T10:25:58.947064+00:00 | 19.886 | 0 |
+| oracle-combined-core-default | build + test/check (combined) | 2026-10-09T10:50:08.804638+00:00 | 2026-10-09T10:50:21.098560+00:00 | 12.294 | 0 |
+| oracle-combined-core-minimal | build + test/check (combined) | 2026-10-09T10:50:21.098863+00:00 | 2026-10-09T10:50:33.254143+00:00 | 12.155 | 0 |
+| oracle-combined-core-strict | automated lint/check | 2026-10-09T10:50:33.254500+00:00 | 2026-10-09T10:50:33.538084+00:00 | 0.284 | 0 |
+| oracle-combined-core-minimal-strict | automated lint/check | 2026-10-09T10:50:33.538567+00:00 | 2026-10-09T10:50:33.838728+00:00 | 0.3 | 0 |
+| oracle-combined-format | automated lint/check | 2026-10-09T10:50:33.839090+00:00 | 2026-10-09T10:50:35.636625+00:00 | 1.798 | 0 |
+| repaired-core-default | build + test/check (combined) | 2026-10-09T10:33:00.648307+00:00 | 2026-10-09T10:33:13.555059+00:00 | 12.907 | 0 |
+| repaired-core-minimal | build + test/check (combined) | 2026-10-09T10:33:13.555400+00:00 | 2026-10-09T10:33:25.668133+00:00 | 12.113 | 0 |
+| repaired-core-strict | automated lint/check | 2026-10-09T10:33:25.668505+00:00 | 2026-10-09T10:33:26.107384+00:00 | 0.439 | 0 |
+| repaired-core-minimal-strict | automated lint/check | 2026-10-09T10:33:26.107744+00:00 | 2026-10-09T10:33:28.579306+00:00 | 2.472 | 0 |
+| repaired-format | automated lint/check | 2026-10-09T10:33:28.579699+00:00 | 2026-10-09T10:33:30.319609+00:00 | 1.74 | 0 |
+| first-compile.log | build | unknown | unknown | 60.494 | failed linker: GPUI env script omitted |
+| url-focused.log | build + test/check (combined) | unknown | unknown | 40.178 | failed compile: new event exhaustive downstream match; removed variant |
+| url-focused-r2.log | build + test/check (combined) | unknown | unknown | 8.88 | failed compile: glob-imported gpui test macro recursion |
+| url-focused-r3.log | build + test/check (combined) | unknown | unknown | 12.291 | failed compile: Focusable import plus unused local |
+| url-focused-r4.log | build + test/check (combined) | unknown | unknown | 27.425 | 5 passed/1 failed: test direct row removal stale row render unwrap; guarded lookup |
+| url-focused-r5.log | build + test/check (combined) | unknown | unknown | 26.186 | 6 passed |
+| core-focused.log | build + test/check (combined) | unknown | unknown | 8.392 | passed; native oracle ignored on Linux |
+| editor-boundary.log | build + test/check (combined) | unknown | unknown | 24.845 | 1 passed |
+
+Full source hashes, source URLs, nested job steps and timing limitations are in duration-data.json. Native macOS full logs were unavailable for some Agent runs; verified job/step metadata is retained without a full-log claim. Later source CI may be running and is not silently promoted to success by this snapshot.
+
+### Earlier accounting (unchanged)
+
 ## Checkpoint: 2026-10-09T08:43:00Z
 
 This adds selected newly obtained receipts, including earlier intervals not present in the 08:08 snapshot. Historical records and previous checkpoint coverage remain unchanged. Unknown inference stays unavailable. Source/receipt hashes identify evidence; local observer timing is not independently verified merely by a source commit link.
