@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T15:47:00Z",
+  "as_of_utc": "2026-10-09T16:07:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -66122,6 +66122,544 @@
       "inference_status": "unavailable",
       "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
       "scope": "Evolving HTTP Core source; focused local checks, not published native acceptance"
+    },
+    {
+      "id": "20261009-1607-http-core-clippy-final-r2-0",
+      "repository_assignment": "BelloBox",
+      "activity": "clippy-final-r2",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T15:49:00.669163+00:00",
+      "end_utc": "2026-10-09T15:49:07.224466+00:00",
+      "duration_seconds": 6.555302619934082,
+      "source": [
+        {
+          "receipt_sha256": "584399dec96ab6a973a51d6399df6a28013f3b607ff2cf8cf28815219ebc8eae",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-focused-final-r2-0",
+      "repository_assignment": "BelloBox",
+      "activity": "focused-final-r2",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T15:48:46.589848+00:00",
+      "end_utc": "2026-10-09T15:48:55.318656+00:00",
+      "duration_seconds": 8.728807926177979,
+      "source": [
+        {
+          "receipt_sha256": "2dc79295a97d617c9a7dcdf98d61862bd04ea11a9026b0d31498de07d4a18a35",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-focused-final-0",
+      "repository_assignment": "BelloBox",
+      "activity": "focused-final",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T15:48:25.754048+00:00",
+      "end_utc": "2026-10-09T15:48:26.044685+00:00",
+      "duration_seconds": 0.2906363010406494,
+      "source": [
+        {
+          "receipt_sha256": "632b5c606545602b2118abc3fd7fb915f38b61e81368e16c79fa3e71aee672ee",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "101",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-mutant-changed_decimal_cap-0",
+      "repository_assignment": "BelloBox",
+      "activity": "mutant-changed_decimal_cap",
+      "category": "build + negative-control test (combined)",
+      "start_utc": "2026-10-09T15:48:09.868448+00:00",
+      "end_utc": "2026-10-09T15:48:18.369221+00:00",
+      "duration_seconds": 8.500773191452026,
+      "source": [
+        {
+          "receipt_sha256": "f63d8267f25e42fb560546d05b8eb668e76ec31a042313064a3a4cf2dbce15a4",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Expected negative-control failure; source restored",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-mutant-exact_cap_false_truncation-0",
+      "repository_assignment": "BelloBox",
+      "activity": "mutant-exact_cap_false_truncation",
+      "category": "build + negative-control test (combined)",
+      "start_utc": "2026-10-09T15:47:42.998567+00:00",
+      "end_utc": "2026-10-09T15:47:52.427241+00:00",
+      "duration_seconds": 9.42867374420166,
+      "source": [
+        {
+          "receipt_sha256": "05fbe043da0669a3e89b669cd2e93dde96618460209ed57f3497f7b7acbde5cf",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Expected negative-control failure; source restored",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-mutant-file_body_admission-0",
+      "repository_assignment": "BelloBox",
+      "activity": "mutant-file_body_admission",
+      "category": "build + negative-control test (combined)",
+      "start_utc": "2026-10-09T15:47:24.801909+00:00",
+      "end_utc": "2026-10-09T15:47:33.980085+00:00",
+      "duration_seconds": 9.178175926208496,
+      "source": [
+        {
+          "receipt_sha256": "2ae603f119bd7fb41fb966435d28c065a729235c2a204c623bf4670e131e5705",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Expected negative-control failure; source restored",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-mutant-framing_replay-0",
+      "repository_assignment": "BelloBox",
+      "activity": "mutant-framing_replay",
+      "category": "build + negative-control test (combined)",
+      "start_utc": "2026-10-09T15:47:14.626571+00:00",
+      "end_utc": "2026-10-09T15:47:24.801286+00:00",
+      "duration_seconds": 10.174714803695679,
+      "source": [
+        {
+          "receipt_sha256": "74d5a7e5ae67ddbe948b5ff45254d85271925ee013163ccaf1c7dec36c2c8a44",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Expected negative-control failure; source restored",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-mutant-json_fallback_discards_original-0",
+      "repository_assignment": "BelloBox",
+      "activity": "mutant-json_fallback_discards_original",
+      "category": "build + negative-control test (combined)",
+      "start_utc": "2026-10-09T15:48:01.494468+00:00",
+      "end_utc": "2026-10-09T15:48:09.867666+00:00",
+      "duration_seconds": 8.37319827079773,
+      "source": [
+        {
+          "receipt_sha256": "aad341bf97f072eb28148370ab489943065843c693b26e41f3098176b85cb002",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Expected negative-control failure; source restored",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-mutant-json_join_as_form-0",
+      "repository_assignment": "BelloBox",
+      "activity": "mutant-json_join_as_form",
+      "category": "build + negative-control test (combined)",
+      "start_utc": "2026-10-09T15:47:33.980698+00:00",
+      "end_utc": "2026-10-09T15:47:42.997978+00:00",
+      "duration_seconds": 9.017280101776123,
+      "source": [
+        {
+          "receipt_sha256": "fb8ebf88390ad298a89d6ccbec0a2fe7c4830ff563d673e20ffeefb917d3ff95",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Expected negative-control failure; source restored",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-mutant-lossy_utf8_preview-0",
+      "repository_assignment": "BelloBox",
+      "activity": "mutant-lossy_utf8_preview",
+      "category": "build + negative-control test (combined)",
+      "start_utc": "2026-10-09T15:47:52.428811+00:00",
+      "end_utc": "2026-10-09T15:48:01.493927+00:00",
+      "duration_seconds": 9.065116167068481,
+      "source": [
+        {
+          "receipt_sha256": "ef8469c1fbf0741a6a519c0797d49565c8ff0fbddd10042ae3289c5fba6a7a93",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Expected negative-control failure; source restored",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-oracle-portable-final-r2-0",
+      "repository_assignment": "BelloBox",
+      "activity": "oracle-portable-final-r2",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T15:48:55.319016+00:00",
+      "end_utc": "2026-10-09T15:49:00.668831+00:00",
+      "duration_seconds": 5.3498148918151855,
+      "source": [
+        {
+          "receipt_sha256": "d42a3b30f1458b574403bfacd2076fa966c9138239c9759938b3cd9556242b28",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-owned-format-final-r2-0",
+      "repository_assignment": "BelloBox",
+      "activity": "owned-format-final-r2",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T15:48:46.556110+00:00",
+      "end_utc": "2026-10-09T15:48:46.589447+00:00",
+      "duration_seconds": 0.03333711624145508,
+      "source": [
+        {
+          "receipt_sha256": "468841ce08a9f5cb646bd1b05564861ba773feb5d698040996e37568d92123fc",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-core-owned-format-final-0",
+      "repository_assignment": "BelloBox",
+      "activity": "owned-format-final",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T15:48:25.693290+00:00",
+      "end_utc": "2026-10-09T15:48:25.753648+00:00",
+      "duration_seconds": 0.06035780906677246,
+      "source": [
+        {
+          "receipt_sha256": "65c9ce41d05128749e364174a73c75d9a23edad4e19fad8ff5536b6de8fadaeb",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Focused HTTP Core candidate checks; source and native execution remain separate"
+    },
+    {
+      "id": "20261009-1607-http-app-0",
+      "repository_assignment": "BelloBox",
+      "activity": "focused-initial",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T15:49:50.307476+00:00",
+      "end_utc": "2026-10-09T15:51:31.866749+00:00",
+      "duration_seconds": 101.55927547400643,
+      "source": [
+        {
+          "receipt_sha256": "2d48df5efa0b0c8ca5f3e6c0f0bbca124b803d2deb623a6b58206a172a6a192e",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "101",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Evolving HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1607-http-app-1",
+      "repository_assignment": "BelloBox",
+      "activity": "focused-r2",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T15:52:07.917593+00:00",
+      "end_utc": "2026-10-09T15:53:53.646299+00:00",
+      "duration_seconds": 105.72870890000195,
+      "source": [
+        {
+          "receipt_sha256": "2d48df5efa0b0c8ca5f3e6c0f0bbca124b803d2deb623a6b58206a172a6a192e",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Evolving HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1607-http-app-2",
+      "repository_assignment": "BelloBox",
+      "activity": "focused-final",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T15:58:43.276453+00:00",
+      "end_utc": "2026-10-09T15:59:22.328842+00:00",
+      "duration_seconds": 39.05239071599499,
+      "source": [
+        {
+          "receipt_sha256": "2d48df5efa0b0c8ca5f3e6c0f0bbca124b803d2deb623a6b58206a172a6a192e",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Evolving HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1607-http-app-3",
+      "repository_assignment": "BelloBox",
+      "activity": "strict-final",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T15:59:22.408356+00:00",
+      "end_utc": "2026-10-09T15:59:47.867880+00:00",
+      "duration_seconds": 25.459525564001524,
+      "source": [
+        {
+          "receipt_sha256": "2d48df5efa0b0c8ca5f3e6c0f0bbca124b803d2deb623a6b58206a172a6a192e",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Evolving HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1607-http-app-4",
+      "repository_assignment": "BelloBox",
+      "activity": "ordinary-build",
+      "category": "build",
+      "start_utc": "2026-10-09T15:59:47.914916+00:00",
+      "end_utc": "2026-10-09T16:00:06.740224+00:00",
+      "duration_seconds": 18.825310714004445,
+      "source": [
+        {
+          "receipt_sha256": "2d48df5efa0b0c8ca5f3e6c0f0bbca124b803d2deb623a6b58206a172a6a192e",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Evolving HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1607-http-doc-accounting-unmeasured",
+      "repository_assignment": "BelloBox",
+      "activity": "HTTP documentation and portable LOC/accounting reproduction",
+      "category": "automated accounting validation",
+      "start_utc": null,
+      "end_utc": null,
+      "duration_seconds": null,
+      "source": [
+        {
+          "receipt_sha256": "79a5a5e4cfcdebdfa90b9981535bd3cc2afdf3a27ffce2cbb19b7d8f74ac3f3a",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Verification completed; duration unavailable because no timing interval was recorded",
+      "accounting_group": "unknown",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Verification evidence only; completion observation is not duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1607-http-app-source-verification-unmeasured",
+      "repository_assignment": "BelloBox",
+      "activity": "HTTP App test source verification",
+      "category": "source verification",
+      "start_utc": null,
+      "end_utc": null,
+      "duration_seconds": null,
+      "source": [
+        {
+          "receipt_sha256": "a2a4a8ad18edf3dc9c88b01e848fa5abcb2d18c2c8a9594d4020ec2aa48bee7e",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Source verification recorded; no measured elapsed receipt",
+      "accounting_group": "unknown",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Source hashes establish evidence, not duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1607",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
     }
   ],
   "commit_milestones": [
@@ -66854,28 +67392,28 @@
         }
       },
       "catchup_command": {
-        "count": 215,
-        "known_duration_count": 215,
-        "resource_seconds_sum": 3517.5434781355802,
-        "wall_coverage_seconds": 2771.863339,
+        "count": 233,
+        "known_duration_count": 233,
+        "resource_seconds_sum": 3892.924878373066,
+        "wall_coverage_seconds": 3147.244729,
         "category_seconds": {
-          "automated lint/check": 311.2800002272209,
-          "build + test/check (combined)": 2906.7341796503606,
+          "automated lint/check": 343.38852333646474,
+          "build + test/check (combined)": 3167.443813859398,
           "dependency/environment or verification": 3.5430181499935216,
-          "build": 208.34446281300106,
+          "build": 227.1697735270055,
           "dependency setup + build (combined)": 31.142,
           "repository/dependency setup": 12.327,
           "automated accounting validation": 7.971308260011836,
           "packaging/source validation": 0.24390436300379223,
           "test execution (existing binary)": 1.998498904009466,
           "automated source/binary verification": 0.532835828998941,
-          "build + negative-control test (combined)": 24.18729161299416,
+          "build + negative-control test (combined)": 87.92522381819435,
           "remote repository verification": 8.531452898998396,
           "dependency/environment recovery": 0.6865609619853785,
           "automated source edit": 0.020964465002180077
         },
         "resource_seconds": {
-          "cloud command process": 3517.5434781355802
+          "cloud command process": 3892.924878373066
         }
       },
       "catchup_gui_process": {
@@ -67657,6 +68195,36 @@
       "ci_coverage_within_window_seconds": 0,
       "window_seconds": 600.0,
       "outside_selected_ci_job_intervals_seconds": 600.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1607",
+      "through_utc": "2026-10-09T16:07:00Z",
+      "coverage_window_start_utc": "2026-10-09T15:47:00Z",
+      "new_items": 20,
+      "groups": {
+        "catchup_command": {
+          "count": 18,
+          "known_duration_count": 18,
+          "resource_seconds_sum": 375.38140023748565,
+          "wall_coverage_seconds": 375.38139,
+          "category_seconds": {
+            "automated lint/check": 32.10852310924383,
+            "build + test/check (combined)": 260.7096342090372,
+            "build + negative-control test (combined)": 63.737932205200195,
+            "build": 18.825310714004445
+          },
+          "resource_seconds": {
+            "cloud command process": 375.38140023748565
+          },
+          "known_endpoint_items": 18,
+          "known_endpoint_resource_seconds": 375.38140023748565
+        }
+      },
+      "ci_coverage_within_window_seconds": 0,
+      "window_seconds": 1200.0,
+      "outside_selected_ci_job_intervals_seconds": 1200.0,
       "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
       "nested_ci_step_seconds": {}
     }
