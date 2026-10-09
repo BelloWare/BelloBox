@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T17:23:00Z",
+  "as_of_utc": "2026-10-09T17:33:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -72039,6 +72039,223 @@
       "inference_duration_seconds": null,
       "inference_status": "unavailable",
       "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1733-regex-palette-focused-r1-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette focused-r1",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:22:29.615580+00:00",
+      "end_utc": "2026-10-09T17:23:11.893736+00:00",
+      "duration_seconds": 42.27828873199178,
+      "source": [
+        {
+          "receipt_sha256": "85ee5f07ca885beddd984f5f8501825f9949493826361bc639df890c27984c1c",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Focused tests passed on recorded source",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1733",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "coverage_note": "Late-added earlier evidence, deduplicated against all prior timed intervals.",
+      "scope": "Source-bound evolving local Regex palette candidate; source-edit/coordination duration unavailable, no GUI/native acceptance inferred"
+    },
+    {
+      "id": "20261009-1733-regex-palette-focused-r2-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette focused-r2",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:24:35.585465+00:00",
+      "end_utc": "2026-10-09T17:24:40.358019+00:00",
+      "duration_seconds": 4.772630117004155,
+      "source": [
+        {
+          "receipt_sha256": "d9e53d2d77c78929ba4cc129879885d0ea205b1e198c72725756c33896fdd926",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Compile failure in test fixture; corrected later",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1733",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Source-bound evolving local Regex palette candidate; source-edit/coordination duration unavailable, no GUI/native acceptance inferred"
+    },
+    {
+      "id": "20261009-1733-regex-palette-focused-r3-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette focused-r3",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:25:11.951426+00:00",
+      "end_utc": "2026-10-09T17:25:21.010506+00:00",
+      "duration_seconds": 9.05916929099476,
+      "source": [
+        {
+          "receipt_sha256": "7f9cfe60a2fea481d0fb56b2c13288d2c641fcf1f4656ee1fc57c3ba5cefd6e9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Compile failure in test fixture; corrected later",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1733",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Source-bound evolving local Regex palette candidate; source-edit/coordination duration unavailable, no GUI/native acceptance inferred"
+    },
+    {
+      "id": "20261009-1733-regex-palette-focused-r4-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette focused-r4",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:25:47.902574+00:00",
+      "end_utc": "2026-10-09T17:26:31.126796+00:00",
+      "duration_seconds": 43.224298239991185,
+      "source": [
+        {
+          "receipt_sha256": "3c9d906a638a772d88f62ef0064fcac6fafd32a91e512c2ac854a6d929817736",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Test-fixture assertion failure; later corrected",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1733",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Source-bound evolving local Regex palette candidate; source-edit/coordination duration unavailable, no GUI/native acceptance inferred"
+    },
+    {
+      "id": "20261009-1733-regex-palette-focused-r5-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette focused-r5",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:27:38.008013+00:00",
+      "end_utc": "2026-10-09T17:28:19.806647+00:00",
+      "duration_seconds": 41.79871003900189,
+      "source": [
+        {
+          "receipt_sha256": "b3097e2f5dbe2aafa39738fe62ff1b7f0850ff24dd8a502ee0975c58e4da3c74",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Test-fixture assertion failure; later corrected",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1733",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Source-bound evolving local Regex palette candidate; source-edit/coordination duration unavailable, no GUI/native acceptance inferred"
+    },
+    {
+      "id": "20261009-1733-regex-palette-first-character-negative-r6-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette first-character-negative-r6",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:28:52.105254+00:00",
+      "end_utc": "2026-10-09T17:29:31.804087+00:00",
+      "duration_seconds": 39.69890847800707,
+      "source": [
+        {
+          "receipt_sha256": "c5db0241f2aad9e1bfc3e8a903dacaa0ea6e753d5ff434565a6517500f570702",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Failed regression exposed actual first-character loss before scoped repair",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1733",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Source-bound evolving local Regex palette candidate; source-edit/coordination duration unavailable, no GUI/native acceptance inferred"
+    },
+    {
+      "id": "20261009-1733-regex-palette-focused-r7-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette focused-r7",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:31:05.437270+00:00",
+      "end_utc": "2026-10-09T17:31:15.503544+00:00",
+      "duration_seconds": 10.066349789005471,
+      "source": [
+        {
+          "receipt_sha256": "7b0f73265b1d6248885afd98324bddd5e07abf7e2d74ac1edd20254ee5e87dcf",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Compile failure in test fixture; corrected later",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1733",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Source-bound evolving local Regex palette candidate; source-edit/coordination duration unavailable, no GUI/native acceptance inferred"
+    },
+    {
+      "id": "20261009-1733-regex-palette-focused-r8-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette focused-r8",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:31:42.927613+00:00",
+      "end_utc": "2026-10-09T17:32:26.657984+00:00",
+      "duration_seconds": 43.73044716300501,
+      "source": [
+        {
+          "receipt_sha256": "347cfa1cd86c68970b358281cbdf1fadad1274c66c67bab317ce5856c80156e3",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Focused tests passed on recorded source",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1733",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Source-bound evolving local Regex palette candidate; source-edit/coordination duration unavailable, no GUI/native acceptance inferred"
     }
   ],
   "commit_milestones": [
@@ -72771,13 +72988,13 @@
         }
       },
       "catchup_command": {
-        "count": 275,
-        "known_duration_count": 275,
-        "resource_seconds_sum": 5654.8375889781,
-        "wall_coverage_seconds": 4907.1873,
+        "count": 283,
+        "known_duration_count": 283,
+        "resource_seconds_sum": 5889.466390827101,
+        "wall_coverage_seconds": 5141.815424,
         "category_seconds": {
           "automated lint/check": 483.83826234249256,
-          "build + test/check (combined)": 4643.552791030408,
+          "build + test/check (combined)": 4878.181592879409,
           "dependency/environment or verification": 4.074422403991129,
           "build": 262.57078759199715,
           "dependency setup + build (combined)": 31.142,
@@ -72792,7 +73009,7 @@
           "automated source edit": 0.020964465002180077
         },
         "resource_seconds": {
-          "cloud command process": 5654.8375889781
+          "cloud command process": 5889.466390827101
         }
       },
       "catchup_gui_process": {
@@ -73844,6 +74061,33 @@
       "ci_coverage_within_window_seconds": 0,
       "window_seconds": 780.0,
       "outside_selected_ci_job_intervals_seconds": 780.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1733",
+      "through_utc": "2026-10-09T17:33:00Z",
+      "coverage_window_start_utc": "2026-10-09T17:23:00Z",
+      "new_items": 8,
+      "groups": {
+        "catchup_command": {
+          "count": 8,
+          "known_duration_count": 8,
+          "resource_seconds_sum": 234.62880184900132,
+          "wall_coverage_seconds": 234.62812399999999,
+          "category_seconds": {
+            "build + test/check (combined)": 234.62880184900132
+          },
+          "resource_seconds": {
+            "cloud command process": 234.62880184900132
+          },
+          "known_endpoint_items": 8,
+          "known_endpoint_resource_seconds": 234.62880184900132
+        }
+      },
+      "ci_coverage_within_window_seconds": 0,
+      "window_seconds": 600.0,
+      "outside_selected_ci_job_intervals_seconds": 600.0,
       "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
       "nested_ci_step_seconds": {}
     }
