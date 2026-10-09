@@ -1,5 +1,80 @@
 # BelloBox Rust migration duration audit
 
+## Checkpoint: 2026-10-09T08:43:00Z
+
+This adds selected newly obtained receipts, including earlier intervals not present in the 08:08 snapshot. Historical records and previous checkpoint coverage remain unchanged. Unknown inference stays unavailable. Source/receipt hashes identify evidence; local observer timing is not independently verified merely by a source commit link.
+
+| Group | Timed items | Resource/client seconds | Exact-endpoint items | Endpoint-subset seconds | Endpoint union seconds |
+|---|---:|---:|---:|---:|---:|
+| new_local_command | 25 | 673.614 | 25 | 673.614 | 673.614 |
+| new_reported_phase | 3 | 0.890 | 0 | 0.000 | unavailable |
+
+Resource sums, interval unions, mixed windows and nested Cargo phase subtotals are separate accounting views. Do not add them into a total time budget. Parallel client/API durations include waiting, not server compute. Whole-second 0s means below receipt resolution, not zero effort. Absent endpoints exclude items from wall unions.
+
+| Group / category | Seconds |
+|---|---:|
+| new_local_command: build + test/check (combined) | 375.921 |
+| new_local_command: build + test/lint (combined) | 242.000 |
+| new_local_command: automated lint/check | 36.868 |
+| new_local_command: dependency/environment or source verification | 0.385 |
+| new_local_command: build | 18.440 |
+| new_reported_phase: test-target compilation | 0.570 |
+| new_reported_phase: test execution | 0.020 |
+| new_reported_phase: automated lint/check | 0.300 |
+
+### Per-item observations
+
+| Activity | Category | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---|---:|---|
+| json-r1-gui | interactive validation (mixed) | 2026-10-09T08:20:32.534803+00:00 | 2026-10-09T08:30:33.200141+00:00 | 600.665338 | completed |
+| json-r2-gui | interactive validation (mixed) | 2026-10-09T08:34:37.841199+00:00 | 2026-10-09T08:37:05.316487+00:00 | 147.475288 | completed |
+| cargo test --locked -p bellobox-app json_session:: --no-run | build + test/check (combined) | 2026-10-09T07:51:53Z | 2026-10-09T07:52:01Z | 8.0 | compile failure: GPUI glob-import test macro recursion; fixed explicit import |
+| cargo test --locked -p bellobox-app json_session:: | build + test/check (combined) | 2026-10-09T07:52:14Z | 2026-10-09T07:52:29Z | 15.0 | 2 tests passed; preliminary session source |
+| cargo test --locked -p bellobox-app json_session:: | build + test/check (combined) | 2026-10-09T07:55:15Z | 2026-10-09T07:55:22Z | 7.0 | compile failure: two adapter method visibility errors; fixed |
+| cargo test --locked -p bellobox-app json_session:: | build + test/check (combined) | 2026-10-09T07:55:39Z | 2026-10-09T07:55:54Z | 15.0 | 2 tests passed; integrated source |
+| cargo test --locked -p bellobox-app json -- --test-threads=2 | build + test/check (combined) | 2026-10-09T08:00:35Z | 2026-10-09T08:00:50Z | 15.0 | 11 passed, 1 failed: pre-existing object key order differs from Swift; characterization retained |
+| cargo test --locked -p bellobox-app json -- --test-threads=2 | build + test/check (combined) | 2026-10-09T08:02:50Z | 2026-10-09T08:03:06Z | 16.0 | 15 passed, 0 failed; no local code warnings |
+| cargo fmt --all; cargo test --locked -p bellobox-app -- --test-threads=2 | build + test/lint (combined) | 2026-10-09T08:07:54Z | 2026-10-09T08:09:49Z | 115.0 | 467 passed, 2 existing ignored; historical pre-final ownership review |
+| cargo fmt --all; cargo test --locked -p bellobox-app -- --test-threads=2 | build + test/lint (combined) | 2026-10-09T08:10:11Z | 2026-10-09T08:12:09Z | 118.0 | 468 passed, 2 existing ignored; historical before successful-open latch and pre-clone size guard |
+| cargo fmt --all; cargo test --locked -p bellobox-app json -- --test-threads=2 | build + test/lint (combined) | 2026-10-09T08:13:45Z | 2026-10-09T08:13:54Z | 9.0 | compile failure: missing Focusable import in new test; corrected |
+| cargo test --locked -p bellobox-app json -- --test-threads=2 | build + test/check (combined) | 2026-10-09T08:14:30Z | 2026-10-09T08:14:47Z | 17.0 | 19 passed, 0 failed |
+| cargo fmt --all -- --check; cargo clippy --locked -p bellobox-app --all-targets -- -D warnings | automated lint/check | 2026-10-09T08:15:13Z | 2026-10-09T08:15:23Z | 10.0 | strict failure: unnecessary String conversion in debug selector; mechanically removed |
+| Interleaved source implementation, investigation, review responses and focused command checks; overlaps command durations and is not additive. | implementation/review/validation (mixed) | 2026-10-09T07:48:45Z | 2026-10-09T08:03:18Z | 873.0 | completed |
+| Interleaved source/ownership/key review, focused and broad verification, documentation, ordinary artifact sealing and GUI handoff. Overlaps commands; not additive. Inference duration unavailable. | implementation/review/validation (mixed) | 2026-10-09T08:03:18Z | 2026-10-09T08:19:59Z | 1001.0 | completed |
+| Interleaved immutable artifact handoff, recording-feature checks, source/LOC verification, awaiting GUI acceptance and minimal Validate wording successor checks/seal. Overlaps commands and peer work; not additive. Inference timing unavailable. | implementation/review/validation (mixed) | 2026-10-09T08:19:59Z | 2026-10-09T08:34:25Z | 866.0 | completed |
+| final: format | automated lint/check | 2026-10-09T08:16:28.367107+00:00 | 2026-10-09T08:16:29.966285+00:00 | 1.599 | passed |
+| final: strict | automated lint/check | 2026-10-09T08:16:29.966662+00:00 | 2026-10-09T08:16:36.476497+00:00 | 6.51 | passed |
+| final: full-app | build + test/check (combined) | 2026-10-09T08:16:36.476868+00:00 | 2026-10-09T08:18:31.878999+00:00 | 115.402 | passed |
+| final: minimal | build + test/check (combined) | 2026-10-09T08:18:31.879449+00:00 | 2026-10-09T08:18:37.667035+00:00 | 5.788 | passed |
+| final: clean-app | dependency/environment or source verification | 2026-10-09T08:18:37.667446+00:00 | 2026-10-09T08:18:37.783714+00:00 | 0.116 | passed |
+| final: ordinary-build | build | 2026-10-09T08:18:37.784064+00:00 | 2026-10-09T08:18:47.376246+00:00 | 9.592 | passed |
+| successor: format | automated lint/check | 2026-10-09T08:32:34.388445+00:00 | 2026-10-09T08:32:36.047403+00:00 | 1.659 | passed |
+| successor: core-json | build + test/check (combined) | 2026-10-09T08:32:36.047722+00:00 | 2026-10-09T08:32:42.588437+00:00 | 6.541 | passed |
+| successor: app-json | build + test/check (combined) | 2026-10-09T08:32:42.588795+00:00 | 2026-10-09T08:33:04.550588+00:00 | 21.962 | passed |
+| successor: strict | automated lint/check | 2026-10-09T08:33:04.551118+00:00 | 2026-10-09T08:33:13.841845+00:00 | 9.291 | passed |
+| successor: clean-app | dependency/environment or source verification | 2026-10-09T08:33:13.842233+00:00 | 2026-10-09T08:33:14.111263+00:00 | 0.269 | passed |
+| successor: ordinary-build | build | 2026-10-09T08:33:14.111653+00:00 | 2026-10-09T08:33:22.960038+00:00 | 8.848 | passed |
+| recording: recording-full-app | build + test/check (combined) | 2026-10-09T08:20:18.474436+00:00 | 2026-10-09T08:22:31.702798+00:00 | 133.228 | passed |
+| recording: recording-strict | automated lint/check | 2026-10-09T08:22:31.703737+00:00 | 2026-10-09T08:22:39.512623+00:00 | 7.809 | passed |
+| JSON formatter parity audit | review (mixed) | 2026-10-09T08:02:01+00:00 | 2026-10-09T08:05:08.455401+00:00 | 187.455 | completed |
+| Initial JSON formatter prototype delivery | implementation/validation (mixed) | 2026-10-09T08:29:15+00:00 | 2026-10-09T08:36:14.889260+00:00 | 419.88926 | completed |
+| test-target compilation | test-target compilation | unknown | unknown | 0.57 | completed |
+| test execution | test execution | unknown | unknown | 0.02 | completed |
+| automated lint/check | automated lint/check | unknown | unknown | 0.3 | completed |
+
+### Mixed-window groups (not resource totals)
+
+| Category | Windows | Known-endpoint union seconds |
+|---|---:|---:|
+| implementation/review/validation (mixed) | 3 | 2740.000 |
+| implementation/validation (mixed) | 1 | 419.889 |
+| interactive validation (mixed) | 2 | 748.141 |
+| review (mixed) | 1 | 187.455 |
+
+Mixed work windows overlap commands and each other; no active implementation, review or inference time is inferred. Native final-receipt aggregates duplicate individual results and are excluded. Original failed native ENOSPC attempts and exact retries remain separate; APFS copy-on-write recovery timing is measured where available, but metadata removal lacks a timer and stays unknown. Independently verified delivery is not a new native execution. CI rows here are status observations only. No full native suite or GUI claim is added.
+
+### Earlier checkpoints (preserved)
+
 ## Incremental checkpoint: 2026-10-09T08:08:00Z
 
 Historical audit below and its original CI cutoff remain unchanged. This update covers selected newly recorded work, not every intervening run or task. Unknown durations and inference remain unavailable. Local timing observations below are source records supported by retained receipt hashes; public commit links identify source or outcome, not independent timing verification.

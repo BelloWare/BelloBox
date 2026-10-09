@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T08:08:00Z",
+  "as_of_utc": "2026-10-09T08:43:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -52707,6 +52707,905 @@
       "category": "mixed task window",
       "resource": "mixed task window",
       "duration_basis": "Recorded interval; resource/client wait, not CPU, active labor or inference"
+    },
+    {
+      "id": "20261009-0843-json-r1-gui",
+      "repository_assignment": "BelloBox",
+      "activity": "json-r1-gui",
+      "category": "interactive validation (mixed)",
+      "start_utc": "2026-10-09T08:20:32.534803+00:00",
+      "end_utc": "2026-10-09T08:30:33.200141+00:00",
+      "duration_seconds": 600.665338,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "9d90d7bb4d5dce9ab0ce049465945e7426d7b851f2a0360b94066f66069ab696"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed observation",
+      "duration_basis": "Measured preparation/actions/checks/cleanup workflow window; not app latency, active labor or inference",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-json-r2-gui",
+      "repository_assignment": "BelloBox",
+      "activity": "json-r2-gui",
+      "category": "interactive validation (mixed)",
+      "start_utc": "2026-10-09T08:34:37.841199+00:00",
+      "end_utc": "2026-10-09T08:37:05.316487+00:00",
+      "duration_seconds": 147.475288,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "44aa0d10062fd466982b089997d7ff99f3426be51fd704f92d5f1b641ce517c5"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed observation",
+      "duration_basis": "Measured preparation/actions/checks/cleanup workflow window; not app latency, active labor or inference",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-json-early-command-0",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo test --locked -p bellobox-app json_session:: --no-run",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T07:51:53Z",
+      "end_utc": "2026-10-09T07:52:01Z",
+      "duration_seconds": 8.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "compile failure: GPUI glob-import test macro recursion; fixed explicit import",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-json-early-command-1",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo test --locked -p bellobox-app json_session::",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T07:52:14Z",
+      "end_utc": "2026-10-09T07:52:29Z",
+      "duration_seconds": 15.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "2 tests passed; preliminary session source",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-json-early-command-2",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo test --locked -p bellobox-app json_session::",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T07:55:15Z",
+      "end_utc": "2026-10-09T07:55:22Z",
+      "duration_seconds": 7.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "compile failure: two adapter method visibility errors; fixed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-json-early-command-3",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo test --locked -p bellobox-app json_session::",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T07:55:39Z",
+      "end_utc": "2026-10-09T07:55:54Z",
+      "duration_seconds": 15.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "2 tests passed; integrated source",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-json-early-command-4",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo test --locked -p bellobox-app json -- --test-threads=2",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T08:00:35Z",
+      "end_utc": "2026-10-09T08:00:50Z",
+      "duration_seconds": 15.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "11 passed, 1 failed: pre-existing object key order differs from Swift; characterization retained",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-json-early-command-5",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo test --locked -p bellobox-app json -- --test-threads=2",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T08:02:50Z",
+      "end_utc": "2026-10-09T08:03:06Z",
+      "duration_seconds": 16.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "15 passed, 0 failed; no local code warnings",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-json-early-command-6",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo fmt --all; cargo test --locked -p bellobox-app -- --test-threads=2",
+      "category": "build + test/lint (combined)",
+      "start_utc": "2026-10-09T08:07:54Z",
+      "end_utc": "2026-10-09T08:09:49Z",
+      "duration_seconds": 115.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "467 passed, 2 existing ignored; historical pre-final ownership review",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-json-early-command-7",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo fmt --all; cargo test --locked -p bellobox-app -- --test-threads=2",
+      "category": "build + test/lint (combined)",
+      "start_utc": "2026-10-09T08:10:11Z",
+      "end_utc": "2026-10-09T08:12:09Z",
+      "duration_seconds": 118.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "468 passed, 2 existing ignored; historical before successful-open latch and pre-clone size guard",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-json-early-command-8",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo fmt --all; cargo test --locked -p bellobox-app json -- --test-threads=2",
+      "category": "build + test/lint (combined)",
+      "start_utc": "2026-10-09T08:13:45Z",
+      "end_utc": "2026-10-09T08:13:54Z",
+      "duration_seconds": 9.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "compile failure: missing Focusable import in new test; corrected",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-json-early-command-9",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo test --locked -p bellobox-app json -- --test-threads=2",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T08:14:30Z",
+      "end_utc": "2026-10-09T08:14:47Z",
+      "duration_seconds": 17.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "19 passed, 0 failed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-json-early-command-10",
+      "repository_assignment": "BelloBox",
+      "activity": "cargo fmt --all -- --check; cargo clippy --locked -p bellobox-app --all-targets -- -D warnings",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T08:15:13Z",
+      "end_utc": "2026-10-09T08:15:23Z",
+      "duration_seconds": 10.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "strict failure: unnecessary String conversion in debug selector; mechanically removed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Whole-second observed shell bounds; includes process preparation, compilation and execution",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-json-mixed-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Interleaved source implementation, investigation, review responses and focused command checks; overlaps command durations and is not additive.",
+      "category": "implementation/review/validation (mixed)",
+      "start_utc": "2026-10-09T07:48:45Z",
+      "end_utc": "2026-10-09T08:03:18Z",
+      "duration_seconds": 873.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed observation",
+      "duration_basis": "Observed mixed work interval; overlaps command receipts, GUI and other workers",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-json-mixed-1",
+      "repository_assignment": "BelloBox",
+      "activity": "Interleaved source/ownership/key review, focused and broad verification, documentation, ordinary artifact sealing and GUI handoff. Overlaps commands; not additive. Inference duration unavailable.",
+      "category": "implementation/review/validation (mixed)",
+      "start_utc": "2026-10-09T08:03:18Z",
+      "end_utc": "2026-10-09T08:19:59Z",
+      "duration_seconds": 1001.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed observation",
+      "duration_basis": "Observed mixed work interval; overlaps command receipts, GUI and other workers",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-json-mixed-2",
+      "repository_assignment": "BelloBox",
+      "activity": "Interleaved immutable artifact handoff, recording-feature checks, source/LOC verification, awaiting GUI acceptance and minimal Validate wording successor checks/seal. Overlaps commands and peer work; not additive. Inference timing unavailable.",
+      "category": "implementation/review/validation (mixed)",
+      "start_utc": "2026-10-09T08:19:59Z",
+      "end_utc": "2026-10-09T08:34:25Z",
+      "duration_seconds": 866.0,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "09944601e9ee0082fdce38956cdbcb98c3d079ff9c1e70d5011a0fecf84e4fd5"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed observation",
+      "duration_basis": "Observed mixed work interval; overlaps command receipts, GUI and other workers",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-json-final-0",
+      "repository_assignment": "BelloBox",
+      "activity": "final: format",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T08:16:28.367107+00:00",
+      "end_utc": "2026-10-09T08:16:29.966285+00:00",
+      "duration_seconds": 1.599,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "52b87561ed9ee6437b2e4a01b2a816afb72aad07233ee66f44751f78b2487e49"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r1 prior source"
+    },
+    {
+      "id": "20261009-0843-json-final-1",
+      "repository_assignment": "BelloBox",
+      "activity": "final: strict",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T08:16:29.966662+00:00",
+      "end_utc": "2026-10-09T08:16:36.476497+00:00",
+      "duration_seconds": 6.51,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "52b87561ed9ee6437b2e4a01b2a816afb72aad07233ee66f44751f78b2487e49"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r1 prior source"
+    },
+    {
+      "id": "20261009-0843-json-final-2",
+      "repository_assignment": "BelloBox",
+      "activity": "final: full-app",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T08:16:36.476868+00:00",
+      "end_utc": "2026-10-09T08:18:31.878999+00:00",
+      "duration_seconds": 115.402,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "52b87561ed9ee6437b2e4a01b2a816afb72aad07233ee66f44751f78b2487e49"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r1 prior source"
+    },
+    {
+      "id": "20261009-0843-json-final-3",
+      "repository_assignment": "BelloBox",
+      "activity": "final: minimal",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T08:18:31.879449+00:00",
+      "end_utc": "2026-10-09T08:18:37.667035+00:00",
+      "duration_seconds": 5.788,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "52b87561ed9ee6437b2e4a01b2a816afb72aad07233ee66f44751f78b2487e49"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r1 prior source"
+    },
+    {
+      "id": "20261009-0843-json-final-4",
+      "repository_assignment": "BelloBox",
+      "activity": "final: clean-app",
+      "category": "dependency/environment or source verification",
+      "start_utc": "2026-10-09T08:18:37.667446+00:00",
+      "end_utc": "2026-10-09T08:18:37.783714+00:00",
+      "duration_seconds": 0.116,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "52b87561ed9ee6437b2e4a01b2a816afb72aad07233ee66f44751f78b2487e49"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r1 prior source"
+    },
+    {
+      "id": "20261009-0843-json-final-5",
+      "repository_assignment": "BelloBox",
+      "activity": "final: ordinary-build",
+      "category": "build",
+      "start_utc": "2026-10-09T08:18:37.784064+00:00",
+      "end_utc": "2026-10-09T08:18:47.376246+00:00",
+      "duration_seconds": 9.592,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "52b87561ed9ee6437b2e4a01b2a816afb72aad07233ee66f44751f78b2487e49"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r1 prior source"
+    },
+    {
+      "id": "20261009-0843-json-successor-0",
+      "repository_assignment": "BelloBox",
+      "activity": "successor: format",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T08:32:34.388445+00:00",
+      "end_utc": "2026-10-09T08:32:36.047403+00:00",
+      "duration_seconds": 1.659,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "13def29050b46b96e593ccaacaa0e4bb30d3b34e398080f6de97cf0c86b566e8"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r2 minimal Validate successor"
+    },
+    {
+      "id": "20261009-0843-json-successor-1",
+      "repository_assignment": "BelloBox",
+      "activity": "successor: core-json",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T08:32:36.047722+00:00",
+      "end_utc": "2026-10-09T08:32:42.588437+00:00",
+      "duration_seconds": 6.541,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "13def29050b46b96e593ccaacaa0e4bb30d3b34e398080f6de97cf0c86b566e8"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r2 minimal Validate successor"
+    },
+    {
+      "id": "20261009-0843-json-successor-2",
+      "repository_assignment": "BelloBox",
+      "activity": "successor: app-json",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T08:32:42.588795+00:00",
+      "end_utc": "2026-10-09T08:33:04.550588+00:00",
+      "duration_seconds": 21.962,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "13def29050b46b96e593ccaacaa0e4bb30d3b34e398080f6de97cf0c86b566e8"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r2 minimal Validate successor"
+    },
+    {
+      "id": "20261009-0843-json-successor-3",
+      "repository_assignment": "BelloBox",
+      "activity": "successor: strict",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T08:33:04.551118+00:00",
+      "end_utc": "2026-10-09T08:33:13.841845+00:00",
+      "duration_seconds": 9.291,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "13def29050b46b96e593ccaacaa0e4bb30d3b34e398080f6de97cf0c86b566e8"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r2 minimal Validate successor"
+    },
+    {
+      "id": "20261009-0843-json-successor-4",
+      "repository_assignment": "BelloBox",
+      "activity": "successor: clean-app",
+      "category": "dependency/environment or source verification",
+      "start_utc": "2026-10-09T08:33:13.842233+00:00",
+      "end_utc": "2026-10-09T08:33:14.111263+00:00",
+      "duration_seconds": 0.269,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "13def29050b46b96e593ccaacaa0e4bb30d3b34e398080f6de97cf0c86b566e8"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r2 minimal Validate successor"
+    },
+    {
+      "id": "20261009-0843-json-successor-5",
+      "repository_assignment": "BelloBox",
+      "activity": "successor: ordinary-build",
+      "category": "build",
+      "start_utc": "2026-10-09T08:33:14.111653+00:00",
+      "end_utc": "2026-10-09T08:33:22.960038+00:00",
+      "duration_seconds": 8.848,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "13def29050b46b96e593ccaacaa0e4bb30d3b34e398080f6de97cf0c86b566e8"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r2 minimal Validate successor"
+    },
+    {
+      "id": "20261009-0843-json-recording-0",
+      "repository_assignment": "BelloBox",
+      "activity": "recording: recording-full-app",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T08:20:18.474436+00:00",
+      "end_utc": "2026-10-09T08:22:31.702798+00:00",
+      "duration_seconds": 133.228,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "9e340cb46d2e52cce3b09e389845ecd44a4dbf435eebb508d0fca4d7759cc39a"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r1 prior source"
+    },
+    {
+      "id": "20261009-0843-json-recording-1",
+      "repository_assignment": "BelloBox",
+      "activity": "recording: recording-strict",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T08:22:31.703737+00:00",
+      "end_utc": "2026-10-09T08:22:39.512623+00:00",
+      "duration_seconds": 7.809,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "9e340cb46d2e52cce3b09e389845ecd44a4dbf435eebb508d0fca4d7759cc39a"
+        }
+      ],
+      "outcome": "passed",
+      "accounting_group": "new_local_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Recorded elapsed rounded to milliseconds; independently recorded UTC endpoints",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "source_version": "r1 prior source"
+    },
+    {
+      "id": "20261009-0843-formatter-audit",
+      "repository_assignment": "BelloBox",
+      "activity": "JSON formatter parity audit",
+      "category": "review (mixed)",
+      "start_utc": "2026-10-09T08:02:01+00:00",
+      "end_utc": "2026-10-09T08:05:08.455401+00:00",
+      "duration_seconds": 187.455,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "9543ab6b1bdb027acf894da7c5f5c85e1267262f672a15a8e9b6ca9d0a493e51"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed observation",
+      "duration_basis": "Observed audit window; no native Foundation invocation or product tests in this audit",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget.",
+      "coverage_note": "Late-added evidence of an earlier interval, not previously counted in the 08:08 snapshot."
+    },
+    {
+      "id": "20261009-0843-formatter-prototype",
+      "repository_assignment": "BelloBox",
+      "activity": "Initial JSON formatter prototype delivery",
+      "category": "implementation/validation (mixed)",
+      "start_utc": "2026-10-09T08:29:15+00:00",
+      "end_utc": "2026-10-09T08:36:14.889260+00:00",
+      "duration_seconds": 419.88926,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "b500f35e5b02f7483ca0d0bb99ac03fa0ce40594a994890e97d99d621c6f5378"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed observation",
+      "duration_basis": "Initial delivery only; excludes later literal adjustment/rerun and ongoing native-oracle wait; prototype remains separate from published source",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-formatter-phase-test-target-compilation",
+      "repository_assignment": "BelloBox",
+      "activity": "test-target compilation",
+      "category": "test-target compilation",
+      "start_utc": null,
+      "end_utc": null,
+      "duration_seconds": 0.57,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "978b5dc2c1677826b51dcbd02eb89c609272915d8f42eac03945be33c6a5d1e1"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "new_reported_phase",
+      "include_in_totals": true,
+      "resource": "Cargo-reported phase",
+      "duration_basis": "Cargo-reported rounded nested phase; not exact command wall; no endpoints; do not add to enclosing workflow/command durations",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-formatter-phase-test-execution",
+      "repository_assignment": "BelloBox",
+      "activity": "test execution",
+      "category": "test execution",
+      "start_utc": null,
+      "end_utc": null,
+      "duration_seconds": 0.02,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "978b5dc2c1677826b51dcbd02eb89c609272915d8f42eac03945be33c6a5d1e1"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "new_reported_phase",
+      "include_in_totals": true,
+      "resource": "Cargo-reported phase",
+      "duration_basis": "Cargo-reported rounded nested phase; not exact command wall; no endpoints; do not add to enclosing workflow/command durations",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
+    },
+    {
+      "id": "20261009-0843-formatter-phase-automated-lint-check",
+      "repository_assignment": "BelloBox",
+      "activity": "automated lint/check",
+      "category": "automated lint/check",
+      "start_utc": null,
+      "end_utc": null,
+      "duration_seconds": 0.3,
+      "source": [
+        {
+          "provenance": "Retained timing receipt; public source link, when present, identifies delivered evidence or source outcome, not a new command execution",
+          "receipt_sha256": "7154c14c0e9e2b4cba9d6e504521a0995caa2709ee37b6cd91beb13a72e0260f"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "new_reported_phase",
+      "include_in_totals": true,
+      "resource": "Cargo-reported phase",
+      "duration_basis": "Cargo-reported rounded nested phase; not exact command wall; no endpoints; do not add to enclosing workflow/command durations",
+      "prospective": true,
+      "checkpoint": "20261009-0843",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Separate groups, mixed windows and nested phases may overlap; never sum as a complete time budget."
     }
   ],
   "commit_milestones": [
@@ -53381,6 +54280,36 @@
         "resource_seconds": {
           "CI runner": 1441.0
         }
+      },
+      "new_local_command": {
+        "count": 25,
+        "known_duration_count": 25,
+        "resource_seconds_sum": 673.614,
+        "wall_coverage_seconds": 673.614036,
+        "category_seconds": {
+          "build + test/check (combined)": 375.921,
+          "build + test/lint (combined)": 242.0,
+          "automated lint/check": 36.868,
+          "dependency/environment or source verification": 0.385,
+          "build": 18.44
+        },
+        "resource_seconds": {
+          "cloud command process": 673.614
+        }
+      },
+      "new_reported_phase": {
+        "count": 3,
+        "known_duration_count": 3,
+        "resource_seconds_sum": 0.8899999999999999,
+        "wall_coverage_seconds": 0,
+        "category_seconds": {
+          "test-target compilation": 0.57,
+          "test execution": 0.02,
+          "automated lint/check": 0.3
+        },
+        "resource_seconds": {
+          "Cargo-reported phase": 0.8899999999999999
+        }
       }
     }
   },
@@ -53427,6 +54356,49 @@
       "new_observation_start_utc": "2026-10-09T05:28:43Z",
       "historical_cutoff_unchanged": "2026-10-09T05:45:13Z",
       "scope": "Selected checkpoint receipts, not exhaustive coverage of every intervening CI run or local task. Local receipt hashes identify retained evidence but are not independent public verification."
+    },
+    {
+      "checkpoint": "20261009-0843",
+      "as_of_utc": "2026-10-09T08:43:00Z",
+      "new_items": 35,
+      "groups": {
+        "new_local_command": {
+          "count": 25,
+          "known_duration_count": 25,
+          "resource_seconds_sum": 673.614,
+          "wall_coverage_seconds": 673.614036,
+          "category_seconds": {
+            "build + test/check (combined)": 375.921,
+            "build + test/lint (combined)": 242.0,
+            "automated lint/check": 36.868,
+            "dependency/environment or source verification": 0.385,
+            "build": 18.44
+          },
+          "resource_seconds": {
+            "cloud command process": 673.614
+          },
+          "known_endpoint_items": 25,
+          "known_endpoint_resource_seconds": 673.614
+        },
+        "new_reported_phase": {
+          "count": 3,
+          "known_duration_count": 3,
+          "resource_seconds_sum": 0.8899999999999999,
+          "wall_coverage_seconds": 0,
+          "category_seconds": {
+            "test-target compilation": 0.57,
+            "test execution": 0.02,
+            "automated lint/check": 0.3
+          },
+          "resource_seconds": {
+            "Cargo-reported phase": 0.8899999999999999
+          },
+          "known_endpoint_items": 0,
+          "known_endpoint_resource_seconds": 0
+        }
+      },
+      "late_added_items": 10,
+      "coverage": "Selected new receipts plus explicitly late-added earlier evidence. No complete time-budget or all-intervening-CI claim; original records are unchanged."
     }
   ]
 }
