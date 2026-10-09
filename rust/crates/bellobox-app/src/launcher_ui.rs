@@ -1353,12 +1353,40 @@ mod qr_lifecycle_tests {
     fn search_space_before_qr_creation_survives_focus_change_without_save_replay(
         cx: &mut TestAppContext,
     ) {
+        const NO_MATCH: &str = "__qr_physical_key_fixture_no_results__";
         let view = cx.add_window(|w, cx| Launcher::new("search origin".into(), w, cx));
+        view.update(cx, |v, w, cx| {
+            // Deliberately reproduce prelearned QR ranking in memory, without
+            // relying on or changing the process's persisted settings fixture.
+            v.settings = Default::default();
+            v.settings_writable = false;
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_secs_f64();
+            for _ in 0..4 {
+                v.settings.explicit_open("qr", "text", now);
+            }
+            v.selected = 0;
+            v.refresh_preview(w, cx);
+            assert_eq!(v.commands(cx).first().unwrap().id, "qr");
+            assert!(v.qr.is_some());
+            // Establish an absent session explicitly before observing the hold.
+            v.query.update(cx, |e, cx| e.set_text(NO_MATCH.into(), cx));
+            v.refresh_preview(w, cx);
+            assert!(v.commands(cx).is_empty());
+            v.discard_qr(cx);
+            assert!(v.qr.is_none());
+            v.query.read(cx).focus(w);
+        })
+        .unwrap();
         cx.run_until_parked();
         cx.simulate_keystrokes(view.into(), "space"); // key-down and text, no release
         view.update(cx, |v, w, cx| {
             assert!(v.qr.is_none());
-            assert_eq!(v.query.read(cx).text(), " ");
+            assert!(v.commands(cx).is_empty());
+            assert_eq!(v.query.read(cx).text().trim(), NO_MATCH);
+            assert_eq!(v.query.read(cx).text().len(), NO_MATCH.len() + 1);
             v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
             v.refresh_preview(w, cx);
         })
