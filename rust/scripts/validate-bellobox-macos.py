@@ -8,6 +8,8 @@ from pathlib import Path
 import plistlib
 
 PREVIEW_ID = "com.ainoob.BelloBox.rust.preview"
+NOTICE_FILES = ("swift-comparison-attribution.md", "licenses/swift-runtime-LICENSE.txt")
+SOURCE_NOTICES = Path(__file__).resolve().parent.parent / "docs"
 PRODUCTION_FEED = "https://belloware.com/assets/bello_box.appcast.xml"
 
 
@@ -73,6 +75,17 @@ def validate_bundle(app, require_offline=False):
     executable = app / "Contents/MacOS/bellobox"
     if executable.is_symlink() or not executable.is_file() or not os.access(executable, os.X_OK):
         raise ValueError("Preview executable must be a regular executable file")
+    notices = app / "Contents/Resources/ThirdPartyNotices"
+    for directory in (notices, notices / "licenses"):
+        if directory.is_symlink() or not directory.is_dir():
+            raise ValueError("Preview must include regular third-party notice directories")
+    for relative in NOTICE_FILES:
+        bundled = notices / relative
+        source = SOURCE_NOTICES / relative
+        if bundled.is_symlink() or not bundled.is_file():
+            raise ValueError(f"Missing regular third-party notice: {relative}")
+        if bundled.read_bytes() != source.read_bytes():
+            raise ValueError(f"Third-party notice differs from reviewed source: {relative}")
     framework = app / "Contents/Frameworks/Sparkle.framework"
     feed = info.get("SUFeedURL")
     if require_offline and (feed is not None or "SUPublicEDKey" in info or framework.exists() or framework.is_symlink()):

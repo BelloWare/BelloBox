@@ -608,10 +608,25 @@ impl Launcher {
         }
         let input = self.input.clone();
         let id = command.id.to_string();
+        #[cfg(feature = "developer-tools")]
+        let comparison_cancel = self.jobs.cancellation();
         let task = cx.background_executor().spawn(async move {
             #[cfg(feature = "developer-tools")]
             if id == "numberBase" {
                 return crate::tool_controls::number_base_preview(&input);
+            }
+            #[cfg(feature = "developer-tools")]
+            if id == "compare" {
+                if crate::tool_controls::source_input_is_idle(&input) {
+                    return Ok("Paste or enter text on either side to begin.".into());
+                }
+                return bellobox_core::developer::comparison::compare(
+                    &input,
+                    "",
+                    Default::default(),
+                    &comparison_cancel,
+                )
+                .map(|r| r.copy_text);
             }
             crate::execute(&id, &input, "")
         });

@@ -20,6 +20,11 @@ class PreviewPackagingTests(unittest.TestCase):
         binary = self.app / "Contents/MacOS/bellobox"
         binary.write_bytes(b"fixture, not an application")
         binary.chmod(0o755)
+        notices = self.app / "Contents/Resources/ThirdPartyNotices"
+        for relative in preview.NOTICE_FILES:
+            target = notices / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((preview.SOURCE_NOTICES / relative).read_bytes())
         self.info = preview.preview_info({})
 
     def write(self):
@@ -31,6 +36,34 @@ class PreviewPackagingTests(unittest.TestCase):
         builds = [line for line in script.splitlines() if "cargo build" in line]
         self.assertEqual(len(builds), 2)
         self.assertTrue(all("cargo build --offline --locked" in line for line in builds))
+
+    def test_packaging_includes_notices_before_validation_and_signing(self):
+        script = Path(__file__).with_name("package-bellobox-macos.sh").read_text()
+        for relative in preview.NOTICE_FILES:
+            copy = f'cp "$ROOT/docs/{relative}" "$NOTICES/{relative}"'
+            self.assertIn(copy, script)
+            self.assertLess(script.index(copy), script.index('python3 "$ROOT/scripts/validate-bellobox-macos.py"'))
+            self.assertLess(script.index(copy), script.index("codesign --force"))
+
+    def test_missing_modified_or_symlinked_notice_is_rejected(self):
+        self.write()
+        notices = self.app / "Contents/Resources/ThirdPartyNotices"
+        for relative in preview.NOTICE_FILES:
+            target = notices / relative
+            expected = target.read_bytes()
+            target.unlink()
+            with self.assertRaises(ValueError):
+                preview.validate_bundle(self.app)
+            target.write_bytes(b"incomplete notice")
+            with self.assertRaises(ValueError):
+                preview.validate_bundle(self.app)
+            target.unlink()
+            target.symlink_to(preview.SOURCE_NOTICES / relative)
+            with self.assertRaises(ValueError):
+                preview.validate_bundle(self.app)
+            target.unlink()
+            target.write_bytes(expected)
+            preview.validate_bundle(self.app, require_offline=True)
 
     def test_default_is_isolated_offline(self):
         self.assertEqual(self.info["CFBundleIdentifier"], preview.PREVIEW_ID)

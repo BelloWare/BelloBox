@@ -1,0 +1,304 @@
+Exact command output, concatenated by recorded phase. Failures are retained; see subsequent correction commands.
+
+===== Exact mutation harness: mutations.py =====
+import pathlib,subprocess,json,datetime,time,sys
+root=pathlib.Path('/workspace/shared/box-compare-workflow')
+evidence=pathlib.Path('/workspace/shared/box-comparison-evidence')
+mutants=[
+('empty-second-admission','rust/crates/bellobox-app/src/comparison_session.rs','\n            || !self.inputs[1].is_empty()','', 'bellobox-app','comparison_session::tests::either_side_admission_and_source_blank_idle_gate'),
+('stale-copy-token','rust/crates/bellobox-app/src/compare_ui.rs','            && self.tokens(cx) == self.observed\n','', 'bellobox-app','compare_ui::tests::same_callback_edit_fences_copy_before_changed_subscription'),
+('stale-generation-publication','rust/crates/bellobox-app/src/comparison_session.rs','        if self.desired != Some(token) || !self.jobs.accepts(token) || self.retired || self.rejected\n','        if self.retired || self.rejected\n', 'bellobox-app','comparison_session::tests::options_rejection_cancel_and_close_fence_old_completion'),
+('physical-worker-guard','rust/crates/bellobox-app/src/comparison_session.rs','        if self.running {\n            return;\n        }','', 'bellobox-app','comparison_session::tests::one_physical_worker_coalesces_and_publishes_only_latest'),
+('final-empty-line','rust/crates/bellobox-core/src/developer/comparison.rs',"for line in normalized.split('\\n')",'for line in normalized.lines()', 'bellobox-core','developer::comparison::tests::empty_sides_line_endings_and_final_blank_are_literal'),
+('canonical-match','rust/crates/bellobox-core/src/developer/comparison.rs','token.nfc().enumerate()','token.chars().enumerate()', 'bellobox-core','developer::comparison::tests::canonical_matches_keep_left_spelling_and_do_not_use_compatibility'),
+]
+results=[]
+for name,path,old,new,pkg,test in mutants:
+ file=root/path; original=file.read_text(); assert original.count(old)==1,(name,original.count(old));start=datetime.datetime.now(datetime.timezone.utc).isoformat()
+ try:
+  file.write_text(original.replace(old,new,1))
+  command=f'source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p {pkg} '+('--lib ' if pkg=='bellobox-core' else '')+test+' -- --exact --test-threads=1'
+  process=subprocess.run([sys.executable,str(evidence/'run.py'),'mutant-'+name,command],cwd=root/'rust')
+  output=(evidence/'logs'/('mutant-'+name+'.txt')).read_text()
+  killed=process.returncode!=0 and 'test result: FAILED' in output and 'error[E' not in output
+  results.append({'name':name,'path':path,'test':test,'start_utc':start,'end_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'test_failed':killed,'exit':process.returncode})
+ finally:
+  file.write_text(original)
+  command=f'source /workspace/shared/build-recovery/env.sh; cargo clean -p {pkg}'
+  subprocess.run([sys.executable,str(evidence/'run.py'),'restore-clean-'+name,command],cwd=root/'rust',check=True)
+ (evidence/'mutation-results.json').write_text(json.dumps(results,indent=2)+'\n')
+ if not killed: raise SystemExit('Unkilled or compile-blocked mutation: '+name)
+print(json.dumps(results,indent=2))
+
+===== Exact mutation harness: status-cut-mutations.py =====
+import pathlib,subprocess,json,datetime,time,sys
+root=pathlib.Path('/workspace/shared/box-compare-workflow')
+evidence=pathlib.Path('/workspace/shared/box-comparison-evidence')
+mutants=[
+('stale-cut-capture-with-positive-control','rust/crates/bellobox-app/src/compare_ui.rs','"c" | "x"\n                    if !self.ready(cx)','"c"\n                    if !self.ready(cx)','bellobox-app','compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed'),
+]
+
+results=json.loads((evidence/'status-cut-mutation-results.json').read_text())
+for name,path,old,new,pkg,test in mutants:
+ file=root/path; original=file.read_text(); assert original.count(old)==1,(name,original.count(old));start=datetime.datetime.now(datetime.timezone.utc).isoformat()
+ try:
+  file.write_text(original.replace(old,new,1))
+  command=f'source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p {pkg} '+('--lib ' if pkg=='bellobox-core' else '')+test+' -- --exact --test-threads=1'
+  process=subprocess.run([sys.executable,str(evidence/'run.py'),'mutant-'+name,command],cwd=root/'rust')
+  output=(evidence/'logs'/('mutant-'+name+'.txt')).read_text()
+  killed=process.returncode!=0 and 'test result: FAILED' in output and 'error[E' not in output
+  results.append({'name':name,'path':path,'test':test,'start_utc':start,'end_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'test_failed':killed,'exit':process.returncode})
+ finally:
+  file.write_text(original)
+  command=f'source /workspace/shared/build-recovery/env.sh; cargo clean -p {pkg}'
+  subprocess.run([sys.executable,str(evidence/'run.py'),'restore-clean-'+name,command],cwd=root/'rust',check=True)
+ (evidence/'status-cut-mutation-results.json').write_text(json.dumps(results,indent=2)+'\n')
+ if not killed: raise SystemExit('Unkilled or compile-blocked mutation: '+name)
+print(json.dumps(results,indent=2))
+
+===== {"name": "mutant-empty-second-admission", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session::tests::either_side_admission_and_source_blank_idle_gate -- --exact --test-threads=1", "start_utc": "2026-10-09T12:29:01.689069+00:00", "end_utc": "2026-10-09T12:29:28.360118+00:00", "wall_seconds": 26.671, "exit_code": 101, "log": "logs/mutant-empty-second-admission.txt"} =====
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 26.59s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test comparison_session::tests::either_side_admission_and_source_blank_idle_gate ... FAILED
+
+failures:
+
+---- comparison_session::tests::either_side_admission_and_source_blank_idle_gate stdout ----
+
+thread 'comparison_session::tests::either_side_admission_and_source_blank_idle_gate' (54) panicked at crates/bellobox-app/src/comparison_session/tests.rs:16:9:
+assertion failed: s.can_copy()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    comparison_session::tests::either_side_admission_and_source_blank_idle_gate
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 532 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`
+
+===== {"name": "restore-clean-empty-second-admission", "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app", "start_utc": "2026-10-09T12:29:28.389575+00:00", "end_utc": "2026-10-09T12:29:28.713977+00:00", "wall_seconds": 0.324, "exit_code": 0, "log": "logs/restore-clean-empty-second-admission.txt"} =====
+     Removed 26 files, 412.8MiB total
+
+===== {"name": "mutant-stale-copy-token", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app compare_ui::tests::same_callback_edit_fences_copy_before_changed_subscription -- --exact --test-threads=1", "start_utc": "2026-10-09T12:29:28.741398+00:00", "end_utc": "2026-10-09T12:30:01.527570+00:00", "wall_seconds": 32.786, "exit_code": 101, "log": "logs/mutant-stale-copy-token.txt"} =====
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-core)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 32.69s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test compare_ui::tests::same_callback_edit_fences_copy_before_changed_subscription ... FAILED
+
+failures:
+
+---- compare_ui::tests::same_callback_edit_fences_copy_before_changed_subscription stdout ----
+
+thread 'compare_ui::tests::same_callback_edit_fences_copy_before_changed_subscription' (123) panicked at crates/bellobox-app/src/compare_ui/tests.rs:50:9:
+assertion failed: !s.ready(cx)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    compare_ui::tests::same_callback_edit_fences_copy_before_changed_subscription
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 532 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`
+
+===== {"name": "restore-clean-stale-copy-token", "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app", "start_utc": "2026-10-09T12:30:01.557975+00:00", "end_utc": "2026-10-09T12:30:01.885274+00:00", "wall_seconds": 0.327, "exit_code": 0, "log": "logs/restore-clean-stale-copy-token.txt"} =====
+     Removed 6 files, 131.1MiB total
+
+===== {"name": "mutant-stale-generation-publication", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session::tests::options_rejection_cancel_and_close_fence_old_completion -- --exact --test-threads=1", "start_utc": "2026-10-09T12:30:01.915293+00:00", "end_utc": "2026-10-09T12:30:33.638442+00:00", "wall_seconds": 31.723, "exit_code": 101, "log": "logs/mutant-stale-generation-publication.txt"} =====
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 31.65s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test comparison_session::tests::options_rejection_cancel_and_close_fence_old_completion ... FAILED
+
+failures:
+
+---- comparison_session::tests::options_rejection_cancel_and_close_fence_old_completion stdout ----
+
+thread 'comparison_session::tests::options_rejection_cancel_and_close_fence_old_completion' (170) panicked at crates/bellobox-app/src/comparison_session/tests.rs:99:9:
+assertion failed: s.result.is_none()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    comparison_session::tests::options_rejection_cancel_and_close_fence_old_completion
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 532 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`
+
+===== {"name": "restore-clean-stale-generation-publication", "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app", "start_utc": "2026-10-09T12:30:33.662743+00:00", "end_utc": "2026-10-09T12:30:33.981840+00:00", "wall_seconds": 0.319, "exit_code": 0, "log": "logs/restore-clean-stale-generation-publication.txt"} =====
+     Removed 6 files, 131.1MiB total
+
+===== {"name": "mutant-physical-worker-guard", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session::tests::one_physical_worker_coalesces_and_publishes_only_latest -- --exact --test-threads=1", "start_utc": "2026-10-09T12:30:34.007015+00:00", "end_utc": "2026-10-09T12:31:04.243528+00:00", "wall_seconds": 30.237, "exit_code": 101, "log": "logs/mutant-physical-worker-guard.txt"} =====
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 30.12s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test comparison_session::tests::one_physical_worker_coalesces_and_publishes_only_latest ... FAILED
+
+failures:
+
+---- comparison_session::tests::one_physical_worker_coalesces_and_publishes_only_latest stdout ----
+
+thread 'comparison_session::tests::one_physical_worker_coalesces_and_publishes_only_latest' (217) panicked at crates/bellobox-app/src/comparison_session/tests.rs:65:5:
+assertion `left == right` failed
+  left: 102
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    comparison_session::tests::one_physical_worker_coalesces_and_publishes_only_latest
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 532 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`
+
+===== {"name": "restore-clean-physical-worker-guard", "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app", "start_utc": "2026-10-09T12:31:04.286057+00:00", "end_utc": "2026-10-09T12:31:04.652270+00:00", "wall_seconds": 0.366, "exit_code": 0, "log": "logs/restore-clean-physical-worker-guard.txt"} =====
+     Removed 6 files, 131.1MiB total
+
+===== {"name": "mutant-final-empty-line", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-core --lib developer::comparison::tests::empty_sides_line_endings_and_final_blank_are_literal -- --exact --test-threads=1", "start_utc": "2026-10-09T12:31:04.679632+00:00", "end_utc": "2026-10-09T12:31:12.226407+00:00", "wall_seconds": 7.547, "exit_code": 101, "log": "logs/mutant-final-empty-line.txt"} =====
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 7.50s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73)
+
+running 1 test
+test developer::comparison::tests::empty_sides_line_endings_and_final_blank_are_literal ... FAILED
+
+failures:
+
+---- developer::comparison::tests::empty_sides_line_endings_and_final_blank_are_literal stdout ----
+
+thread 'developer::comparison::tests::empty_sides_line_endings_and_final_blank_are_literal' (265) panicked at crates/bellobox-core/src/developer/comparison_tests.rs:45:5:
+assertion `left == right` failed
+  left: "+ "
+ right: "+ \n+ "
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    developer::comparison::tests::empty_sides_line_endings_and_final_blank_are_literal
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 485 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p bellobox-core --lib`
+
+===== {"name": "restore-clean-final-empty-line", "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-core", "start_utc": "2026-10-09T12:31:12.259277+00:00", "end_utc": "2026-10-09T12:31:12.401159+00:00", "wall_seconds": 0.142, "exit_code": 0, "log": "logs/restore-clean-final-empty-line.txt"} =====
+     Removed 276 files, 249.8MiB total
+
+===== {"name": "mutant-canonical-match", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-core --lib developer::comparison::tests::canonical_matches_keep_left_spelling_and_do_not_use_compatibility -- --exact --test-threads=1", "start_utc": "2026-10-09T12:31:12.425639+00:00", "end_utc": "2026-10-09T12:31:19.900472+00:00", "wall_seconds": 7.475, "exit_code": 101, "log": "logs/mutant-canonical-match.txt"} =====
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-core)
+warning: unused import: `unicode_normalization::UnicodeNormalization`
+  --> crates/bellobox-core/src/developer/comparison.rs:10:5
+   |
+10 | use unicode_normalization::UnicodeNormalization;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `bellobox-core` (lib test) generated 1 warning (run `cargo fix --lib -p bellobox-core --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 7.44s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73)
+
+running 1 test
+test developer::comparison::tests::canonical_matches_keep_left_spelling_and_do_not_use_compatibility ... FAILED
+
+failures:
+
+---- developer::comparison::tests::canonical_matches_keep_left_spelling_and_do_not_use_compatibility stdout ----
+
+thread 'developer::comparison::tests::canonical_matches_keep_left_spelling_and_do_not_use_compatibility' (312) panicked at crates/bellobox-core/src/developer/comparison_tests.rs:56:5:
+assertion `left == right` failed
+  left: "− e\u{301}\n+ é"
+ right: "  e\u{301}"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    developer::comparison::tests::canonical_matches_keep_left_spelling_and_do_not_use_compatibility
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 485 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p bellobox-core --lib`
+
+===== {"name": "restore-clean-canonical-match", "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-core", "start_utc": "2026-10-09T12:31:19.928817+00:00", "end_utc": "2026-10-09T12:31:20.049864+00:00", "wall_seconds": 0.121, "exit_code": 0, "log": "logs/restore-clean-canonical-match.txt"} =====
+     Removed 7 files, 36.3MiB total
+
+===== {"name": "mutant-accepted-error-status", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session::tests::accepted_error_retires_working_status_and_recovers -- --exact --test-threads=1", "start_utc": "2026-10-09T13:01:24.771482+00:00", "end_utc": "2026-10-09T13:01:58.259462+00:00", "wall_seconds": 33.488, "exit_code": 101, "log": "logs/mutant-accepted-error-status.txt"} =====
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 33.40s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test comparison_session::tests::accepted_error_retires_working_status_and_recovers ... FAILED
+
+failures:
+
+---- comparison_session::tests::accepted_error_retires_working_status_and_recovers stdout ----
+
+thread 'comparison_session::tests::accepted_error_retires_working_status_and_recovers' (48) panicked at crates/bellobox-app/src/comparison_session/tests.rs:212:9:
+assertion failed: s.status.is_empty()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    comparison_session::tests::accepted_error_retires_working_status_and_recovers
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 536 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`
+
+===== {"name": "restore-clean-accepted-error-status", "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app", "start_utc": "2026-10-09T13:01:58.288432+00:00", "end_utc": "2026-10-09T13:01:58.644214+00:00", "wall_seconds": 0.356, "exit_code": 0, "log": "logs/restore-clean-accepted-error-status.txt"} =====
+     Removed 20 files, 547.6MiB total
+
+===== {"name": "mutant-stale-cut-capture", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed -- --exact --test-threads=1", "start_utc": "2026-10-09T13:03:15.364398+00:00", "end_utc": "2026-10-09T13:03:50.789446+00:00", "wall_seconds": 35.425, "exit_code": 0, "log": "logs/mutant-stale-cut-capture.txt"} =====
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 35.30s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 536 filtered out; finished in 0.05s
+
+
+===== {"name": "restore-clean-stale-cut-capture", "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app", "start_utc": "2026-10-09T13:03:50.818471+00:00", "end_utc": "2026-10-09T13:03:51.165974+00:00", "wall_seconds": 0.348, "exit_code": 0, "log": "logs/restore-clean-stale-cut-capture.txt"} =====
+     Removed 6 files, 131.4MiB total
+
+===== {"name": "mutant-stale-cut-capture-with-positive-control", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed -- --exact --test-threads=1", "start_utc": "2026-10-09T13:06:27.062726+00:00", "end_utc": "2026-10-09T13:07:00.665493+00:00", "wall_seconds": 33.603, "exit_code": 0, "log": "logs/mutant-stale-cut-capture-with-positive-control.txt"} =====
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 33.45s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 536 filtered out; finished in 0.08s
+
+
+===== {"name": "restore-clean-stale-cut-capture-with-positive-control", "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app", "start_utc": "2026-10-09T13:07:00.694124+00:00", "end_utc": "2026-10-09T13:07:00.963572+00:00", "wall_seconds": 0.269, "exit_code": 0, "log": "logs/restore-clean-stale-cut-capture-with-positive-control.txt"} =====
+     Removed 6 files, 131.4MiB total

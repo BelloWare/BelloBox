@@ -1,5 +1,9 @@
 mod clock_copilot_worker;
 mod clock_preview_session;
+#[cfg(feature = "developer-tools")]
+mod compare_ui;
+#[cfg(feature = "developer-tools")]
+mod comparison_session;
 mod desktop;
 mod gif_converter;
 mod home;

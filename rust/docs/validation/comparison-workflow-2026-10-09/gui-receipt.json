@@ -1,0 +1,128 @@
+{
+  "final_dark": {
+    "binary_sha256": "60e7eb1913bf67c10beb73344cc88015979d56338c4ddf51cf9a4eba118a603b",
+    "compiled_source_manifest_sha256": "bb947687fa7c913c609762fa97167d364b3702e423dd793fb02a803a7f099b78",
+    "compiled_source_files_unchanged": 238,
+    "appearance": "dark",
+    "start_utc": "2026-10-09T13:09:25,948950763+00:00",
+    "end_utc": "2026-10-09T13:15:01,504957888+00:00",
+    "exit_code": 0,
+    "after_close_hash_unchanged": true,
+    "dimensions": [
+      {
+        "width": 1178,
+        "height": 814
+      },
+      {
+        "width": 740,
+        "height": 560
+      }
+    ],
+    "observed": [
+      "Blank initial drafts despite prepared clipboard; process restart has no pinned text",
+      "Lines input2000rows0added2000removed; native Copy Result shortcut copied exact2000 signed rows with accented character and emoji, no extra newline, verified equality of pasted native editor AX text against every expected row",
+      "Readonly result wheel scroll moves from first rows to44through54",
+      "Words6000tokens across47pages; Next reaches page2; complete signed Copy from page2 exactly equals all6000 expected rows in native editor AX",
+      "500001-byte Paste rejects with visible bound error, retains prior draft, disables Copy and pin; Clear and subsequent typing recover",
+      "Both inputs Enter and ShiftEnter form literal multiline drafts,1added1removed result and readable dark highlights",
+      "740x560 outer content scroll reaches entire result while footer stays fixed",
+      "Accepted invalid JSON displays error and blank nonbusy footer, disables Copy; valid{} recovery displays0changes",
+      "CtrlW closes process normally"
+    ],
+    "limitations": [
+      "Cloud Linux lavapipe, no native macOS evidence",
+      "Some emoji glyphs render as fallback outlines in installed cloud font; literal Unicode Copy content verified",
+      "Screen captures local only, not retained in published validation"
+    ],
+    "inference_time": "unavailable"
+  },
+  "final_light": {
+    "binary_sha256": "60e7eb1913bf67c10beb73344cc88015979d56338c4ddf51cf9a4eba118a603b",
+    "appearance": "light",
+    "dimensions": [
+      {
+        "width": 820,
+        "height": 660
+      }
+    ],
+    "start_utc": "2026-10-09T13:16:32,066557276+00:00",
+    "end_utc": "2026-10-09T13:19:11,203493238+00:00",
+    "exit_code": 0,
+    "after_close_hash_unchanged": true,
+    "observed": [
+      "Blank opening without clipboard admission",
+      "Explicit Paste preserves literal tab and newline: native editor AX after complete Copy exactly reads Unicode minus-space one\\ttwo\\nminus-space three",
+      "Readable removal highlights and Words strikethrough at820x660",
+      "Input undo after Lines to Words restores original tab/multiline draft",
+      "Tab moves first input to Pin with visible focus ring; Enter activates Pin, four further Tabs reach Use pinned text, Enter fills only second side,0changes",
+      "ShiftTab leaves button focus toward input; CtrlW closes normally"
+    ],
+    "not_claimed": [
+      "Search popup screenshot acceptance: CtrlK was invoked but no scoped palette capture was made",
+      "Native macOS clipboard/IME/menus"
+    ],
+    "inference_time": "unavailable"
+  },
+  "superseded_initial": {
+    "binary_sha256": "8dd10ffa712b4d4b67ec6f4f5f75e2e2a1d73cc162244cecfaf8a6c2d3db1f44",
+    "status": "superseded after actual GUI discovered a host configuration defect",
+    "observed": [
+      "Home route opens independent blank Compare",
+      "Typing edits triggers local comparison; stale rows clear during work",
+      "Return was incorrectly suppressed because input editor compact=true",
+      "Signed output decorations were too opaque"
+    ],
+    "fix": "Only Compare host: inputs noncompact, output decorations alpha0.10; add actual dispatched Enter test for both fields. Shared editor bytes unchanged.",
+    "final_acceptance": "must rerun on replacement sealed binary",
+    "screenshots_published": false,
+    "exit": 0,
+    "after_close_binary_sha256": "8dd10ffa712b4d4b67ec6f4f5f75e2e2a1d73cc162244cecfaf8a6c2d3db1f44",
+    "replacement_binary_sha256": "1a8fdc42470815871af674e7c03343b9c9210b737ac1984b048fc9d48c95e3d3"
+  },
+  "superseded_status": {
+    "binary_sha256": "1a8fdc42470815871af674e7c03343b9c9210b737ac1984b048fc9d48c95e3d3",
+    "start_utc": "2026-10-09T12:47:32,151927485+00:00",
+    "end_utc": "2026-10-09T12:55:59,364349162+00:00",
+    "exit_code": 0,
+    "after_close_hash_unchanged": true,
+    "appearance": "light",
+    "dimensions": [
+      {
+        "width": 1178,
+        "height": 814
+      },
+      {
+        "width": 819,
+        "height": 660
+      }
+    ],
+    "observed": [
+      "Home quick access opens blank comparison without implicit clipboard",
+      "Both drafts Enter and Shift+Enter insert literal newlines",
+      "Paste preserves three literal lines",
+      "Lines alpha/beta/gamma vs alpha/new/gamma/end yields2added1removed; readable subtle row backgrounds",
+      "Undo after switching Lines to Words restores draft; inline removed text strikethrough and added green visible",
+      "Ctrl+N independent blank window; pin fills only second draft; empty-first comparison3added0removed",
+      "Ctrl+W closes only focused tool; app-global pin survives all comparison windows closed with Home alive",
+      "Readonly Lines Ctrl+A/C copies all five signed rows into second draft; typed q cannot modify result",
+      "Independent Clear/Paste buttons preserve opposite draft",
+      "Ignore whitespace converts1added1removed to0changes preserving literal drafts",
+      "JSON fields show quoted dot key,1E+02 lexeme, empty array, canonical Unicode and reordered keys0changes",
+      "Invalid JSON clears result and disables Copy",
+      "Normal process exit0 and unchanged binary SHA"
+    ],
+    "finding": {
+      "severity": "minor presentation",
+      "description": "Accepted JSON error leaves Working locally footer while not busy",
+      "correction": "status.clear() in accepted error path plus regression; acceptance below is before correction, final reseal pending"
+    },
+    "not_claimed": [
+      "Exact native macOS oracle parity",
+      "Dark or740x560 acceptance",
+      "Large-result Copy or oversized GUI acceptance",
+      "Exact GUI clipboard byte hashes"
+    ],
+    "inference_time": "unavailable"
+  },
+  "capture_scope": "Local cloud test captures only; no screenshots or binaries included in published artifacts. After broad capture restriction, only existing task-window scoped captures and exact BelloBox title/ID lookup were used."
+}

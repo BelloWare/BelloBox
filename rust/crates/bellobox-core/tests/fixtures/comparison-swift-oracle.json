@@ -1,0 +1,807 @@
+[
+  {
+    "id": "empty",
+    "left": "",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "add",
+    "left": "",
+    "right": "one\ntwo",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "remove",
+    "left": "one\ntwo",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "middle",
+    "left": "alpha\nbeta\ngamma",
+    "right": "alpha\nnew\ngamma\nend",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "trailing",
+    "left": "a\n",
+    "right": "a",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "blank",
+    "left": "\n",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "cr",
+    "left": "a\rb\r",
+    "right": "a\nb\n",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "crlf",
+    "left": "a\r\nb\r\n",
+    "right": "a\nb\n",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "canonical",
+    "left": "café\nnext",
+    "right": "café\nnext",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "spelling",
+    "left": "é",
+    "right": "é",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "duplicate",
+    "left": "a\na\nb",
+    "right": "a\nb\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "swap",
+    "left": "a\nb",
+    "right": "b\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "rotation",
+    "left": "a\nb\nc",
+    "right": "c\na\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "repeated",
+    "left": "a\nb\na\nb",
+    "right": "b\na\nb\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "replace",
+    "left": "a\nb",
+    "right": "c\nd",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "blankrows",
+    "left": "a\n\nb\n",
+    "right": "a\nb\n\n",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "nul",
+    "left": "a\u0000b",
+    "right": "a\u0000c",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "ignore_spaces",
+    "left": "a   b\n  c ",
+    "right": "a b\nc",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_0",
+    "left": "one\ttwo",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_0",
+    "left": "one\ttwo",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_1",
+    "left": "one\ntwo",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_1",
+    "left": "one\ntwo",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_2",
+    "left": "one\u000btwo",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_2",
+    "left": "one\u000btwo",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_3",
+    "left": "one\ftwo",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_3",
+    "left": "one\ftwo",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_4",
+    "left": "one\rtwo",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_4",
+    "left": "one\rtwo",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_5",
+    "left": "onetwo",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_5",
+    "left": "onetwo",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_6",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_6",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_7",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_7",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_8",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_8",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_9",
+    "left": "one​two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_9",
+    "left": "one​two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_10",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_10",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_11",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_11",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_12",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_12",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_13",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_13",
+    "left": "one two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_14",
+    "left": "one　two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_14",
+    "left": "one　two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "whitespace_15",
+    "left": "one﻿two",
+    "right": "one two",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "collapse_15",
+    "left": "one﻿two",
+    "right": "one two",
+    "mode": "Lines",
+    "ignoreWhitespace": true
+  },
+  {
+    "id": "words",
+    "left": "one two",
+    "right": "one three",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "words_tie",
+    "left": "a b a",
+    "right": "b a b",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "words_canonical",
+    "left": "café next",
+    "right": "café next",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "words_marks",
+    "left": "á b",
+    "right": "á b",
+    "mode": "Words",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_order",
+    "left": "{\"b\":2,\"a\":1}",
+    "right": "{\"a\":1,\"b\":2}",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_path",
+    "left": "{\"a.b\":1}",
+    "right": "{\"a\":{\"b\":1}}",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_array",
+    "left": "[1,2,3]",
+    "right": "[1,3,2]",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_empty",
+    "left": "{\"a\":{},\"b\":[]}",
+    "right": "{\"a\":[],\"b\":{}}",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_number",
+    "left": "{\"a\":9007199254740993,\"b\":1.0}",
+    "right": "{\"a\":9007199254740993,\"b\":1}",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_exponent",
+    "left": "[1e2,-0,0.0]",
+    "right": "[100,0,0]",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_key",
+    "left": "{\"a\\\"b\": 1, \"x/y\": 2}",
+    "right": "{\"a\\\"b\": 2, \"x/y\": 2}",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_canonical_key",
+    "left": "{\"é\":1}",
+    "right": "{\"e\\u0301\":1}",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_duplicate",
+    "left": "{\"é\":1,\"e\\u0301\":2}",
+    "right": "{}",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_invalid",
+    "left": "{\"a\":",
+    "right": "{}",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_null",
+    "left": "null",
+    "right": "false",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "json_blank",
+    "left": "",
+    "right": "{}",
+    "mode": "JSON fields",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_0_0",
+    "left": "",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_0_1",
+    "left": "",
+    "right": "a",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_0_2",
+    "left": "",
+    "right": "b",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_0_3",
+    "left": "",
+    "right": "a\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_0_4",
+    "left": "",
+    "right": "a\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_0_5",
+    "left": "",
+    "right": "b\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_0_6",
+    "left": "",
+    "right": "b\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_1_0",
+    "left": "a",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_1_1",
+    "left": "a",
+    "right": "a",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_1_2",
+    "left": "a",
+    "right": "b",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_1_3",
+    "left": "a",
+    "right": "a\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_1_4",
+    "left": "a",
+    "right": "a\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_1_5",
+    "left": "a",
+    "right": "b\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_1_6",
+    "left": "a",
+    "right": "b\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_2_0",
+    "left": "b",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_2_1",
+    "left": "b",
+    "right": "a",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_2_2",
+    "left": "b",
+    "right": "b",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_2_3",
+    "left": "b",
+    "right": "a\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_2_4",
+    "left": "b",
+    "right": "a\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_2_5",
+    "left": "b",
+    "right": "b\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_2_6",
+    "left": "b",
+    "right": "b\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_3_0",
+    "left": "a\na",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_3_1",
+    "left": "a\na",
+    "right": "a",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_3_2",
+    "left": "a\na",
+    "right": "b",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_3_3",
+    "left": "a\na",
+    "right": "a\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_3_4",
+    "left": "a\na",
+    "right": "a\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_3_5",
+    "left": "a\na",
+    "right": "b\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_3_6",
+    "left": "a\na",
+    "right": "b\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_4_0",
+    "left": "a\nb",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_4_1",
+    "left": "a\nb",
+    "right": "a",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_4_2",
+    "left": "a\nb",
+    "right": "b",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_4_3",
+    "left": "a\nb",
+    "right": "a\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_4_4",
+    "left": "a\nb",
+    "right": "a\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_4_5",
+    "left": "a\nb",
+    "right": "b\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_4_6",
+    "left": "a\nb",
+    "right": "b\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_5_0",
+    "left": "b\na",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_5_1",
+    "left": "b\na",
+    "right": "a",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_5_2",
+    "left": "b\na",
+    "right": "b",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_5_3",
+    "left": "b\na",
+    "right": "a\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_5_4",
+    "left": "b\na",
+    "right": "a\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_5_5",
+    "left": "b\na",
+    "right": "b\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_5_6",
+    "left": "b\na",
+    "right": "b\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_6_0",
+    "left": "b\nb",
+    "right": "",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_6_1",
+    "left": "b\nb",
+    "right": "a",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_6_2",
+    "left": "b\nb",
+    "right": "b",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_6_3",
+    "left": "b\nb",
+    "right": "a\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_6_4",
+    "left": "b\nb",
+    "right": "a\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_6_5",
+    "left": "b\nb",
+    "right": "b\na",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  },
+  {
+    "id": "tie_6_6",
+    "left": "b\nb",
+    "right": "b\nb",
+    "mode": "Lines",
+    "ignoreWhitespace": false
+  }
+]

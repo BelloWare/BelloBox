@@ -239,7 +239,7 @@ for many tools still need restoration. Sources below are in
 | ID | Swift source | Rust subset / known gap |
 |---|---|---|
 | `json` | `DeveloperJSON.swift` | Bounded pretty/minify/validate; exact number tokens, recursive NFC key ordering and local canonical-duplicate rejection. Recorded native-vector scope only; see [evidence](validation/json-formatter-2026-10-09/README.md). |
-| `compare` | `InspectionTools.swift` | Bounded exact line diff; JSON-specific semantic compare absent |
+| `compare` | `InspectionTools.swift`, `DeveloperJSON.swift`, `UtilityWorkbenchModel/View.swift` | Dedicated full-window Lines/Words/JSON fields with independent literal drafts, per-side Paste/Clear, Lines-only whitespace toggle, memory-only cross-window pin, bounded cancellable single-worker sessions, immediate stale-output/copy fencing, selectable signed line/JSON rows and paged inline struck-through words, complete Copy. Legacy CLI retained. 500,000 combined input bytes / 8,000 tokens / 4,000,000 output bytes. Compact interactive session transfer and native macOS IME/AX/Replace Selection remain absent; exact native oracle status is separate. See [workflow and scoped evidence](comparison-workflow.md). |
 | `jwt` | `InspectionTools.swift` | Local header/claims inspection; signature never verified |
 | `regex` | `InspectionTools.swift` | Linear-time pattern/groups/replacement with i/m/s; no ICU lookarounds/backreferences |
 | `url` | `InspectionTools.swift` | Separate bounded full-window component/ordered-query editor with explicit Inspect/Build, stable paged rows and complete Copy/chain. CLI JSON/options preserved. Compact editor/session handoff and universal Foundation normalization remain gaps; see [URL workflow](url-workflow.md). |

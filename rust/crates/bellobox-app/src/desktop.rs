@@ -2157,6 +2157,12 @@ fn open_tool_with_clock_context(
         let _ = settings.save(&config_dir().join("settings.json"));
     }
 
+    #[cfg(feature = "developer-tools")]
+    if id == "compare" {
+        crate::compare_ui::open(input, cx);
+        return;
+    }
+
     if id == "url" {
         crate::url_ui::open(input, cx);
         return;

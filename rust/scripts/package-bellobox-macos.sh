@@ -19,6 +19,11 @@ esac
 TARGET="${CARGO_TARGET_DIR:-$ROOT/target}"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
 cp "$TARGET/$PROFILE/bellobox" "$APP/Contents/MacOS/bellobox"
+# Preserve adapted Swift comparison attribution and its exact upstream license.
+NOTICES="$APP/Contents/Resources/ThirdPartyNotices"
+mkdir -p "$NOTICES/licenses"
+cp "$ROOT/docs/swift-comparison-attribution.md" "$NOTICES/swift-comparison-attribution.md"
+cp "$ROOT/docs/licenses/swift-runtime-LICENSE.txt" "$NOTICES/licenses/swift-runtime-LICENSE.txt"
 python3 "$ROOT/scripts/validate-bellobox-macos.py" "$APP" --write-info
 if [[ -n "${SPARKLE_FRAMEWORK:-}" ]]; then
   [[ -d "$SPARKLE_FRAMEWORK" && -f "$SPARKLE_FRAMEWORK/Resources/Info.plist" ]] || { echo 'SPARKLE_FRAMEWORK must point to the official Sparkle.framework.' >&2; exit 1; }

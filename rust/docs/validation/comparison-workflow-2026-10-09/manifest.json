@@ -1,0 +1,110 @@
+{
+  "generated_utc": "2026-10-09T13:21:58.893699+00:00",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 4934,
+      "sha256": "ea595f4272d2fc861d9f67f0d8728931bfa61050abb5e5c633dabc6e11996cdf"
+    },
+    {
+      "path": "commands.json",
+      "bytes": 25283,
+      "sha256": "1f7f4ff3adee37c0d713349c5f632321fb6f6d30c1ca5bef1ffcb03c769d0f76"
+    },
+    {
+      "path": "compiled-source-manifest.json",
+      "bytes": 44726,
+      "sha256": "bb947687fa7c913c609762fa97167d364b3702e423dd793fb02a803a7f099b78"
+    },
+    {
+      "path": "gui-receipt.json",
+      "bytes": 6569,
+      "sha256": "940f8f3b1f445f03eccf6559240b8b55ea44e17a885e05d3b5716ce08b85f8be"
+    },
+    {
+      "path": "independent-review-manifest.json",
+      "bytes": 51061,
+      "sha256": "e56b11f06f8c9a743c756b4a38d939c964a7d68169172866ee383fee58525441"
+    },
+    {
+      "path": "independent-review.txt",
+      "bytes": 15454,
+      "sha256": "798cc861d3092af30ee708c69350386931060da9321ec5eeeefdfccca0af01ad"
+    },
+    {
+      "path": "loc/audit.py",
+      "bytes": 6477,
+      "sha256": "b095351468a5a9b66989a873727d413cdf5ad66799cbcd5e345b0d6cf4a6f7bb"
+    },
+    {
+      "path": "loc/ledger.json",
+      "bytes": 70171,
+      "sha256": "07cb14d859901a72223c59a7772910b3c120231c5453835d22ab7a99080660f1"
+    },
+    {
+      "path": "loc/verification.json",
+      "bytes": 580,
+      "sha256": "9db3fdc1ab34285264786fddf4cb6e700f0d40cd3e3e70e64b328bd48fcee68c"
+    },
+    {
+      "path": "mutation-results.json",
+      "bytes": 3178,
+      "sha256": "d2fda8ae6f5afede7b7526ef01ce610f9138eeb772382a82c3fa115571ee498b"
+    },
+    {
+      "path": "packaging-receipt.json",
+      "bytes": 1596,
+      "sha256": "32f42b536dd6d91341f78f8483c640dd92e982f7e608b1ab24c26c8796270862"
+    },
+    {
+      "path": "phase-feature-matrix-01.txt",
+      "bytes": 79970,
+      "sha256": "63187e642d812188e317d72b27b018ff9650c4ef49bf7b5ff0e98bf3f81567b0"
+    },
+    {
+      "path": "phase-feature-matrix-02.txt",
+      "bytes": 79998,
+      "sha256": "ddadb1ba27dcb660842521a6d087ed9cb56fd669a1ef1e74160f4ccd984f664b"
+    },
+    {
+      "path": "phase-feature-matrix-03.txt",
+      "bytes": 79893,
+      "sha256": "008c4576032779008bf8aca1cedd40e29493eb94f41d0f302bb45b6a6964fcc6"
+    },
+    {
+      "path": "phase-feature-matrix-04.txt",
+      "bytes": 32215,
+      "sha256": "58cd246336268bb66a4d8da451b15f34d4c7cee3a4187e23cf78b0ecae0ae033"
+    },
+    {
+      "path": "phase-gui-corrections-01.txt",
+      "bytes": 79968,
+      "sha256": "2bae35771f6e50eacd973ebe22f10c22cfff0fe0b3d575f39fafda6e2d82050e"
+    },
+    {
+      "path": "phase-gui-corrections-02.txt",
+      "bytes": 52903,
+      "sha256": "3acb4d4011d2aa3b9b4ef0b85e9473cbf979e09f35e079683e88ac8e25594b1c"
+    },
+    {
+      "path": "phase-initial-and-core.txt",
+      "bytes": 67778,
+      "sha256": "19408b0d959973ccdd5f604aeae2177092c9cfdbd7ab3fab98514cbf8c301886"
+    },
+    {
+      "path": "phase-mutations.txt",
+      "bytes": 24042,
+      "sha256": "8355157b038c291df0c95a3ab63f354c6fd590ec8d660566124fde1324bb1ece"
+    },
+    {
+      "path": "tested-binary.sha256",
+      "bytes": 124,
+      "sha256": "4a69dddc12054a4cd7b70ac92033b0436981db41c7beae4b5c5a9d3e080b548b"
+    },
+    {
+      "path": "timing.json",
+      "bytes": 28126,
+      "sha256": "90abf82ece986f6e53608bb3b0f4493a20654ba02bf8e8e1a5eaf23044fd913c"
+    }
+  ]
+}

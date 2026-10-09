@@ -1,0 +1,83 @@
+[
+  {
+    "name": "empty-second-admission",
+    "path": "rust/crates/bellobox-app/src/comparison_session.rs",
+    "test": "comparison_session::tests::either_side_admission_and_source_blank_idle_gate",
+    "start_utc": "2026-10-09T12:29:01.669523+00:00",
+    "end_utc": "2026-10-09T12:29:28.367000+00:00",
+    "test_failed": true,
+    "exit": 101
+  },
+  {
+    "name": "stale-copy-token",
+    "path": "rust/crates/bellobox-app/src/compare_ui.rs",
+    "test": "compare_ui::tests::same_callback_edit_fences_copy_before_changed_subscription",
+    "start_utc": "2026-10-09T12:29:28.719363+00:00",
+    "end_utc": "2026-10-09T12:30:01.533289+00:00",
+    "test_failed": true,
+    "exit": 101
+  },
+  {
+    "name": "stale-generation-publication",
+    "path": "rust/crates/bellobox-app/src/comparison_session.rs",
+    "test": "comparison_session::tests::options_rejection_cancel_and_close_fence_old_completion",
+    "start_utc": "2026-10-09T12:30:01.892254+00:00",
+    "end_utc": "2026-10-09T12:30:33.643484+00:00",
+    "test_failed": true,
+    "exit": 101
+  },
+  {
+    "name": "physical-worker-guard",
+    "path": "rust/crates/bellobox-app/src/comparison_session.rs",
+    "test": "comparison_session::tests::one_physical_worker_coalesces_and_publishes_only_latest",
+    "start_utc": "2026-10-09T12:30:33.987029+00:00",
+    "end_utc": "2026-10-09T12:31:04.248754+00:00",
+    "test_failed": true,
+    "exit": 101
+  },
+  {
+    "name": "final-empty-line",
+    "path": "rust/crates/bellobox-core/src/developer/comparison.rs",
+    "test": "developer::comparison::tests::empty_sides_line_endings_and_final_blank_are_literal",
+    "start_utc": "2026-10-09T12:31:04.658967+00:00",
+    "end_utc": "2026-10-09T12:31:12.236869+00:00",
+    "test_failed": true,
+    "exit": 101
+  },
+  {
+    "name": "canonical-match",
+    "path": "rust/crates/bellobox-core/src/developer/comparison.rs",
+    "test": "developer::comparison::tests::canonical_matches_keep_left_spelling_and_do_not_use_compatibility",
+    "start_utc": "2026-10-09T12:31:12.406243+00:00",
+    "end_utc": "2026-10-09T12:31:19.906433+00:00",
+    "test_failed": true,
+    "exit": 101
+  },
+  {
+    "name": "accepted-error-status",
+    "path": "rust/crates/bellobox-app/src/comparison_session.rs",
+    "test": "comparison_session::tests::accepted_error_retires_working_status_and_recovers",
+    "start_utc": "2026-10-09T13:01:24.740018+00:00",
+    "end_utc": "2026-10-09T13:01:58.265209+00:00",
+    "test_failed": true,
+    "exit": 101
+  },
+  {
+    "name": "stale-cut-capture",
+    "path": "rust/crates/bellobox-app/src/compare_ui.rs",
+    "test": "compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed",
+    "start_utc": "2026-10-09T13:03:15.336020+00:00",
+    "end_utc": "2026-10-09T13:03:50.795948+00:00",
+    "test_failed": false,
+    "exit": 0
+  },
+  {
+    "name": "stale-cut-capture-with-positive-control",
+    "path": "rust/crates/bellobox-app/src/compare_ui.rs",
+    "test": "compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed",
+    "start_utc": "2026-10-09T13:06:27.035808+00:00",
+    "end_utc": "2026-10-09T13:07:00.672228+00:00",
+    "test_failed": false,
+    "exit": 0
+  }
+]

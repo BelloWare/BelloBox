@@ -3,6 +3,7 @@
 //! This models the inspected Swift source, not a universal runtime parity claim.
 use std::collections::BTreeMap;
 use std::io::{self, Write};
+use std::sync::atomic::{AtomicBool, Ordering};
 use unicode_normalization::UnicodeNormalization;
 
 const INPUT_LIMIT: usize = 500_000;
@@ -40,9 +41,13 @@ struct Parser<'a> {
     input: &'a str,
     pos: usize,
     nodes: usize,
+    cancelled: Option<&'a AtomicBool>,
 }
 impl<'a> Parser<'a> {
     fn parse(input: &'a str) -> Result<Node<'a>> {
+        Self::parse_cancellable(input, None)
+    }
+    fn parse_cancellable(input: &'a str, cancelled: Option<&'a AtomicBool>) -> Result<Node<'a>> {
         if input.len() > INPUT_LIMIT {
             return Err("JSON exceeds 500,000 UTF-8 bytes.".into());
         }
@@ -50,29 +55,41 @@ impl<'a> Parser<'a> {
             input,
             pos: 0,
             nodes: 0,
+            cancelled,
         };
         let node = p.value(0)?;
-        p.ws();
+        p.ws()?;
+        p.check_cancelled()?;
         if p.pos != input.len() {
             return Err(p.error("Unexpected trailing content"));
         }
         Ok(node)
     }
+    fn check_cancelled(&self) -> Result<()> {
+        if let Some(cancelled) = self.cancelled {
+            check_comparison_cancelled(cancelled)?;
+        }
+        Ok(())
+    }
     fn byte(&self) -> Option<u8> {
         self.input.as_bytes().get(self.pos).copied()
     }
-    fn ws(&mut self) {
+    fn ws(&mut self) -> Result<()> {
         while self.byte().is_some_and(|b| b" \t\r\n".contains(&b)) {
+            if self.pos.is_multiple_of(1024) {
+                self.check_cancelled()?;
+            }
             self.pos += 1;
         }
+        Ok(())
     }
-    fn eat(&mut self, b: u8) -> bool {
-        self.ws();
+    fn eat(&mut self, b: u8) -> Result<bool> {
+        self.ws()?;
         if self.byte() == Some(b) {
             self.pos += 1;
-            true
+            Ok(true)
         } else {
-            false
+            Ok(false)
         }
     }
     fn error(&self, message: &str) -> String {
@@ -87,7 +104,7 @@ impl<'a> Parser<'a> {
         format!("{message} at line {line}, byte column {column}.")
     }
     fn string(&mut self) -> Result<String> {
-        self.ws();
+        self.ws()?;
         let start = self.pos;
         if self.byte() != Some(b'"') {
             return Err(self.error("Expected a quoted property name"));
@@ -95,6 +112,9 @@ impl<'a> Parser<'a> {
         self.pos += 1;
         let mut escaped = false;
         while let Some(b) = self.byte() {
+            if self.pos.is_multiple_of(1024) {
+                self.check_cancelled()?;
+            }
             self.pos += 1;
             if b < 32 {
                 return Err(self.error("Unescaped control character"));
@@ -115,6 +135,9 @@ impl<'a> Parser<'a> {
     fn digits(&mut self) -> Result<()> {
         let start = self.pos;
         while self.byte().is_some_and(|b| b.is_ascii_digit()) {
+            if self.pos.is_multiple_of(1024) {
+                self.check_cancelled()?;
+            }
             self.pos += 1;
         }
         if self.pos == start {
@@ -147,7 +170,8 @@ impl<'a> Parser<'a> {
         Ok(Node::Literal(&self.input[start..self.pos]))
     }
     fn value(&mut self, depth: usize) -> Result<Node<'a>> {
-        self.ws();
+        self.check_cancelled()?;
+        self.ws()?;
         self.nodes += 1;
         if depth >= DEPTH_LIMIT || self.nodes > NODE_LIMIT {
             return Err("JSON exceeds 64 levels or 20,000 values.".into());
@@ -157,24 +181,30 @@ impl<'a> Parser<'a> {
             Some(b'{') => {
                 self.pos += 1;
                 let mut fields = BTreeMap::new();
-                if self.eat(b'}') {
+                if self.eat(b'}')? {
                     return Ok(Node::Object(fields));
                 }
                 loop {
                     let key = self.string()?;
-                    let normalized: String = key.nfc().collect();
+                    let mut normalized = String::new();
+                    for (index, scalar) in key.nfc().enumerate() {
+                        if index.is_multiple_of(1024) {
+                            self.check_cancelled()?;
+                        }
+                        normalized.push(scalar);
+                    }
                     if fields.contains_key(&normalized) {
                         return Err(self.error("Duplicate JSON property"));
                     }
-                    if !self.eat(b':') {
+                    if !self.eat(b':')? {
                         return Err(self.error("Expected ':'"));
                     }
                     let value = self.value(depth + 1)?;
                     fields.insert(normalized, (key, value));
-                    if self.eat(b'}') {
+                    if self.eat(b'}')? {
                         return Ok(Node::Object(fields));
                     }
-                    if !self.eat(b',') {
+                    if !self.eat(b',')? {
                         return Err(self.error("Expected ',' or '}'"));
                     }
                 }
@@ -182,15 +212,15 @@ impl<'a> Parser<'a> {
             Some(b'[') => {
                 self.pos += 1;
                 let mut items = Vec::new();
-                if self.eat(b']') {
+                if self.eat(b']')? {
                     return Ok(Node::Array(items));
                 }
                 loop {
                     items.push(self.value(depth + 1)?);
-                    if self.eat(b']') {
+                    if self.eat(b']')? {
                         return Ok(Node::Array(items));
                     }
-                    if !self.eat(b',') {
+                    if !self.eat(b',')? {
                         return Err(self.error("Expected ',' or ']'"));
                     }
                 }
@@ -309,3 +339,130 @@ fn render(value: &Node<'_>, pretty: bool, limit: usize) -> Result<String> {
 #[cfg(test)]
 #[path = "json_formatter_prototype_tests.rs"]
 mod tests;
+
+fn check_comparison_cancelled(cancelled: &AtomicBool) -> Result<()> {
+    if cancelled.load(Ordering::Relaxed) {
+        Err("Comparison cancelled.".into())
+    } else {
+        Ok(())
+    }
+}
+
+/// Narrow comparison-only projection. The formatter and other JSON routes retain
+/// their existing parse/render contracts. Each side's leaf bytes and path are
+/// bounded before append; repeated long paths cannot expand without a limit.
+pub(super) fn comparison_fields(
+    input: &str,
+    token_limit: usize,
+    output_limit: usize,
+    cancelled: &AtomicBool,
+) -> Result<Vec<String>> {
+    check_comparison_cancelled(cancelled)?;
+    let node = Parser::parse_cancellable(input, Some(cancelled))?;
+    let mut fields = Vec::new();
+    let mut remaining = output_limit;
+    let mut path = BoundedOutput {
+        bytes: Vec::new(),
+        limit: output_limit,
+    };
+    path.text("$").map_err(|e| e.to_string())?;
+    flatten_fields(
+        &node,
+        &mut path,
+        &mut fields,
+        token_limit,
+        &mut remaining,
+        cancelled,
+    )?;
+    Ok(fields)
+}
+fn flatten_fields(
+    node: &Node<'_>,
+    path: &mut BoundedOutput,
+    fields: &mut Vec<String>,
+    token_limit: usize,
+    remaining: &mut usize,
+    cancelled: &AtomicBool,
+) -> Result<()> {
+    check_comparison_cancelled(cancelled)?;
+    let path_length = path.bytes.len();
+    match node {
+        Node::Object(values) if !values.is_empty() => {
+            for (key, value) in values.values() {
+                path.text("[")
+                    .and_then(|()| path.quote(key))
+                    .and_then(|()| path.text("]"))
+                    .map_err(|e| e.to_string())?;
+                flatten_fields(value, path, fields, token_limit, remaining, cancelled)?;
+                path.bytes.truncate(path_length);
+            }
+        }
+        Node::Array(values) if !values.is_empty() => {
+            for (index, value) in values.iter().enumerate() {
+                write!(path, "[{index}]").map_err(|e| e.to_string())?;
+                flatten_fields(value, path, fields, token_limit, remaining, cancelled)?;
+                path.bytes.truncate(path_length);
+            }
+        }
+        _ => {
+            if fields.len() == token_limit {
+                return Err("Compare up to 8,000 combined lines, words, or JSON fields. Narrow the selection first.".into());
+            }
+            let mut output = BoundedOutput {
+                bytes: Vec::new(),
+                limit: *remaining,
+            };
+            output
+                .write_all(&path.bytes)
+                .and_then(|()| output.text(" = "))
+                .and_then(|()| output.node(node, false, 0))
+                .map_err(|e| e.to_string())?;
+            *remaining -= output.bytes.len();
+            fields.push(String::from_utf8(output.bytes).map_err(|e| e.to_string())?);
+        }
+    }
+    check_comparison_cancelled(cancelled)
+}
+
+#[cfg(test)]
+mod comparison_projection_tests {
+    use super::*;
+
+    #[test]
+    fn projection_is_available_to_standalone_formatter_regression_harness() {
+        let cancel = AtomicBool::new(false);
+        assert_eq!(
+            comparison_fields(r#"{"a.b":1E+02,"a":{"b":[]}}"#, 2, 100, &cancel).unwrap(),
+            [r#"$["a"]["b"] = []"#, r#"$["a.b"] = 1E+02"#]
+        );
+        assert!(comparison_fields("[1,2]", 1, 100, &cancel).is_err());
+        assert!(comparison_fields("[1,2]", 2, 1, &cancel).is_err());
+    }
+
+    #[test]
+    fn parser_scan_entries_honor_cancellation() {
+        let cancel = AtomicBool::new(true);
+        for input in [" ", "123"] {
+            let mut parser = Parser {
+                input,
+                pos: 0,
+                nodes: 0,
+                cancelled: Some(&cancel),
+            };
+            let result = if input == " " {
+                parser.ws()
+            } else {
+                parser.digits()
+            };
+            assert_eq!(result.unwrap_err(), "Comparison cancelled.");
+        }
+        let input = format!("\"{}\"", "a".repeat(2048));
+        let mut parser = Parser {
+            input: &input,
+            pos: 0,
+            nodes: 0,
+            cancelled: Some(&cancel),
+        };
+        assert_eq!(parser.string().unwrap_err(), "Comparison cancelled.");
+    }
+}

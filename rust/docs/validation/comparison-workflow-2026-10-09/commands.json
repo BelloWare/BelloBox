@@ -1,0 +1,515 @@
+[
+  {
+    "name": "import-published-base",
+    "command": "GIT_TERMINAL_PROMPT=0 git -c credential.helper= -c core.askPass= -C /workspace/shared/box-compare-workflow fetch --no-tags --no-write-fetch-head https://github.com/BelloWare/BelloBox.git fd434af6056744f26577ad2c78cc2a44f77e7f6a",
+    "start_utc": "2026-10-09T12:17:24.854407+00:00",
+    "end_utc": "2026-10-09T12:17:33.527596+00:00",
+    "wall_seconds": 8.673,
+    "exit_code": 0,
+    "log": "logs/import-published-base.txt"
+  },
+  {
+    "name": "app-format",
+    "command": "/workspace/shared/build-recovery/toolchain/bin/rustfmt --edition 2024 --config skip_children=true rust/crates/bellobox-app/src/compare_ui.rs rust/crates/bellobox-app/src/compare_ui/words.rs rust/crates/bellobox-app/src/compare_ui/tests.rs rust/crates/bellobox-app/src/comparison_session.rs rust/crates/bellobox-app/src/comparison_session/tests.rs rust/crates/bellobox-app/src/launcher_ui.rs",
+    "start_utc": "2026-10-09T12:18:00.268427+00:00",
+    "end_utc": "2026-10-09T12:18:00.419103+00:00",
+    "wall_seconds": 0.151,
+    "exit_code": 0,
+    "log": "logs/app-format.txt"
+  },
+  {
+    "name": "app-first-compile",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app compare --no-run",
+    "start_utc": "2026-10-09T12:22:08.401820+00:00",
+    "end_utc": "2026-10-09T12:22:45.105512+00:00",
+    "wall_seconds": 36.704,
+    "exit_code": 0,
+    "log": "logs/app-first-compile.txt"
+  },
+  {
+    "name": "app-initial-session-tests",
+    "command": "/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530 comparison_session:: --test-threads=2",
+    "start_utc": "2026-10-09T12:23:04.378611+00:00",
+    "end_utc": "2026-10-09T12:23:04.406349+00:00",
+    "wall_seconds": 0.028,
+    "exit_code": 0,
+    "log": "logs/app-initial-session-tests.txt"
+  },
+  {
+    "name": "app-initial-ui-tests",
+    "command": "/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530 compare_ui:: --test-threads=2",
+    "start_utc": "2026-10-09T12:23:04.429956+00:00",
+    "end_utc": "2026-10-09T12:23:04.826785+00:00",
+    "wall_seconds": 0.397,
+    "exit_code": 0,
+    "log": "logs/app-initial-ui-tests.txt"
+  },
+  {
+    "name": "app-focused-final-engine",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app compare -- --test-threads=2 && cargo test --locked --offline -p bellobox-app comparison_session:: -- --test-threads=2",
+    "start_utc": "2026-10-09T12:27:17.924058+00:00",
+    "end_utc": "2026-10-09T12:27:53.658858+00:00",
+    "wall_seconds": 35.735,
+    "exit_code": 0,
+    "log": "logs/app-focused-final-engine.txt"
+  },
+  {
+    "name": "app-strict-initial",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo clippy --locked --offline -p bellobox-app --all-targets --no-deps -- -D warnings",
+    "start_utc": "2026-10-09T12:28:15.148966+00:00",
+    "end_utc": "2026-10-09T12:28:24.183872+00:00",
+    "wall_seconds": 9.035,
+    "exit_code": 101,
+    "log": "logs/app-strict-initial.txt"
+  },
+  {
+    "name": "app-strict",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cd rust; cargo clippy --locked --offline -p bellobox-app --all-targets --no-deps -- -D warnings",
+    "start_utc": "2026-10-09T12:28:35.471122+00:00",
+    "end_utc": "2026-10-09T12:28:42.837841+00:00",
+    "wall_seconds": 7.367,
+    "exit_code": 0,
+    "log": "logs/app-strict.txt"
+  },
+  {
+    "name": "mutant-empty-second-admission",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session::tests::either_side_admission_and_source_blank_idle_gate -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T12:29:01.689069+00:00",
+    "end_utc": "2026-10-09T12:29:28.360118+00:00",
+    "wall_seconds": 26.671,
+    "exit_code": 101,
+    "log": "logs/mutant-empty-second-admission.txt"
+  },
+  {
+    "name": "restore-clean-empty-second-admission",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app",
+    "start_utc": "2026-10-09T12:29:28.389575+00:00",
+    "end_utc": "2026-10-09T12:29:28.713977+00:00",
+    "wall_seconds": 0.324,
+    "exit_code": 0,
+    "log": "logs/restore-clean-empty-second-admission.txt"
+  },
+  {
+    "name": "mutant-stale-copy-token",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app compare_ui::tests::same_callback_edit_fences_copy_before_changed_subscription -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T12:29:28.741398+00:00",
+    "end_utc": "2026-10-09T12:30:01.527570+00:00",
+    "wall_seconds": 32.786,
+    "exit_code": 101,
+    "log": "logs/mutant-stale-copy-token.txt"
+  },
+  {
+    "name": "restore-clean-stale-copy-token",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app",
+    "start_utc": "2026-10-09T12:30:01.557975+00:00",
+    "end_utc": "2026-10-09T12:30:01.885274+00:00",
+    "wall_seconds": 0.327,
+    "exit_code": 0,
+    "log": "logs/restore-clean-stale-copy-token.txt"
+  },
+  {
+    "name": "mutant-stale-generation-publication",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session::tests::options_rejection_cancel_and_close_fence_old_completion -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T12:30:01.915293+00:00",
+    "end_utc": "2026-10-09T12:30:33.638442+00:00",
+    "wall_seconds": 31.723,
+    "exit_code": 101,
+    "log": "logs/mutant-stale-generation-publication.txt"
+  },
+  {
+    "name": "restore-clean-stale-generation-publication",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app",
+    "start_utc": "2026-10-09T12:30:33.662743+00:00",
+    "end_utc": "2026-10-09T12:30:33.981840+00:00",
+    "wall_seconds": 0.319,
+    "exit_code": 0,
+    "log": "logs/restore-clean-stale-generation-publication.txt"
+  },
+  {
+    "name": "mutant-physical-worker-guard",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session::tests::one_physical_worker_coalesces_and_publishes_only_latest -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T12:30:34.007015+00:00",
+    "end_utc": "2026-10-09T12:31:04.243528+00:00",
+    "wall_seconds": 30.237,
+    "exit_code": 101,
+    "log": "logs/mutant-physical-worker-guard.txt"
+  },
+  {
+    "name": "restore-clean-physical-worker-guard",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app",
+    "start_utc": "2026-10-09T12:31:04.286057+00:00",
+    "end_utc": "2026-10-09T12:31:04.652270+00:00",
+    "wall_seconds": 0.366,
+    "exit_code": 0,
+    "log": "logs/restore-clean-physical-worker-guard.txt"
+  },
+  {
+    "name": "mutant-final-empty-line",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-core --lib developer::comparison::tests::empty_sides_line_endings_and_final_blank_are_literal -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T12:31:04.679632+00:00",
+    "end_utc": "2026-10-09T12:31:12.226407+00:00",
+    "wall_seconds": 7.547,
+    "exit_code": 101,
+    "log": "logs/mutant-final-empty-line.txt"
+  },
+  {
+    "name": "restore-clean-final-empty-line",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-core",
+    "start_utc": "2026-10-09T12:31:12.259277+00:00",
+    "end_utc": "2026-10-09T12:31:12.401159+00:00",
+    "wall_seconds": 0.142,
+    "exit_code": 0,
+    "log": "logs/restore-clean-final-empty-line.txt"
+  },
+  {
+    "name": "mutant-canonical-match",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-core --lib developer::comparison::tests::canonical_matches_keep_left_spelling_and_do_not_use_compatibility -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T12:31:12.425639+00:00",
+    "end_utc": "2026-10-09T12:31:19.900472+00:00",
+    "wall_seconds": 7.475,
+    "exit_code": 101,
+    "log": "logs/mutant-canonical-match.txt"
+  },
+  {
+    "name": "restore-clean-canonical-match",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-core",
+    "start_utc": "2026-10-09T12:31:19.928817+00:00",
+    "end_utc": "2026-10-09T12:31:20.049864+00:00",
+    "wall_seconds": 0.121,
+    "exit_code": 0,
+    "log": "logs/restore-clean-canonical-match.txt"
+  },
+  {
+    "name": "final-format",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo fmt --all && cargo fmt --all -- --check",
+    "start_utc": "2026-10-09T12:31:53.117679+00:00",
+    "end_utc": "2026-10-09T12:31:57.101770+00:00",
+    "wall_seconds": 3.984,
+    "exit_code": 0,
+    "log": "logs/final-format.txt"
+  },
+  {
+    "name": "loc-audit",
+    "command": "python3 rust/docs/validation/comparison-workflow-2026-10-09/loc/audit.py",
+    "start_utc": "2026-10-09T12:32:12.833988+00:00",
+    "end_utc": "2026-10-09T12:32:13.875427+00:00",
+    "wall_seconds": 1.041,
+    "exit_code": 0,
+    "log": "logs/loc-audit.txt"
+  },
+  {
+    "name": "core-default",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo test --locked --offline -p bellobox-core",
+    "start_utc": "2026-10-09T12:31:57.130832+00:00",
+    "end_utc": "2026-10-09T12:32:18.827751+00:00",
+    "wall_seconds": 21.697,
+    "exit_code": 0,
+    "log": "logs/core-default.txt"
+  },
+  {
+    "name": "core-minimal",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo test --locked --offline -p bellobox-core --no-default-features",
+    "start_utc": "2026-10-09T12:32:18.855401+00:00",
+    "end_utc": "2026-10-09T12:32:37.507508+00:00",
+    "wall_seconds": 18.652,
+    "exit_code": 0,
+    "log": "logs/core-minimal.txt"
+  },
+  {
+    "name": "app-default",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo test --locked --offline -p bellobox-app",
+    "start_utc": "2026-10-09T12:32:37.532506+00:00",
+    "end_utc": "2026-10-09T12:33:50.249329+00:00",
+    "wall_seconds": 72.717,
+    "exit_code": 0,
+    "log": "logs/app-default.txt"
+  },
+  {
+    "name": "app-minimal",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo test --locked --offline -p bellobox-app --no-default-features",
+    "start_utc": "2026-10-09T12:33:50.275982+00:00",
+    "end_utc": "2026-10-09T12:35:01.188291+00:00",
+    "wall_seconds": 70.912,
+    "exit_code": 0,
+    "log": "logs/app-minimal.txt"
+  },
+  {
+    "name": "app-recording",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo test --locked --offline -p bellobox-app --features recording-fixtures",
+    "start_utc": "2026-10-09T12:35:01.212920+00:00",
+    "end_utc": "2026-10-09T12:36:18.505825+00:00",
+    "wall_seconds": 77.293,
+    "exit_code": 0,
+    "log": "logs/app-recording.txt"
+  },
+  {
+    "name": "editor-core",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo test --locked --offline -p bello-workbench --lib",
+    "start_utc": "2026-10-09T12:36:18.538663+00:00",
+    "end_utc": "2026-10-09T12:36:20.554069+00:00",
+    "wall_seconds": 2.015,
+    "exit_code": 0,
+    "log": "logs/editor-core.txt"
+  },
+  {
+    "name": "editor-ui",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo test --locked --offline -p bello-workbench-ui --lib",
+    "start_utc": "2026-10-09T12:36:20.586290+00:00",
+    "end_utc": "2026-10-09T12:36:28.591054+00:00",
+    "wall_seconds": 8.005,
+    "exit_code": 0,
+    "log": "logs/editor-ui.txt"
+  },
+  {
+    "name": "strict-default",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo clippy --locked --offline -p bellobox-core -p bellobox-app --all-targets --no-deps -- -D warnings",
+    "start_utc": "2026-10-09T12:36:28.617060+00:00",
+    "end_utc": "2026-10-09T12:36:41.453008+00:00",
+    "wall_seconds": 12.836,
+    "exit_code": 0,
+    "log": "logs/strict-default.txt"
+  },
+  {
+    "name": "strict-minimal",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo clippy --locked --offline -p bellobox-core -p bellobox-app --no-default-features --all-targets --no-deps -- -D warnings",
+    "start_utc": "2026-10-09T12:36:41.478299+00:00",
+    "end_utc": "2026-10-09T12:36:51.969986+00:00",
+    "wall_seconds": 10.492,
+    "exit_code": 0,
+    "log": "logs/strict-minimal.txt"
+  },
+  {
+    "name": "strict-recording",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo clippy --locked --offline -p bellobox-app --features recording-fixtures --all-targets --no-deps -- -D warnings",
+    "start_utc": "2026-10-09T12:36:51.995474+00:00",
+    "end_utc": "2026-10-09T12:37:01.258045+00:00",
+    "wall_seconds": 9.263,
+    "exit_code": 0,
+    "log": "logs/strict-recording.txt"
+  },
+  {
+    "name": "ordinary-clean",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo clean -p bellobox-app",
+    "start_utc": "2026-10-09T12:37:01.283185+00:00",
+    "end_utc": "2026-10-09T12:37:01.415936+00:00",
+    "wall_seconds": 0.133,
+    "exit_code": 0,
+    "log": "logs/ordinary-clean.txt"
+  },
+  {
+    "name": "ordinary-build",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo build --locked --offline -p bellobox-app",
+    "start_utc": "2026-10-09T12:37:01.439488+00:00",
+    "end_utc": "2026-10-09T12:37:15.669364+00:00",
+    "wall_seconds": 14.23,
+    "exit_code": 0,
+    "log": "logs/ordinary-build.txt"
+  },
+  {
+    "name": "gui-fix-app-default",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app",
+    "start_utc": "2026-10-09T12:44:21.961590+00:00",
+    "end_utc": "2026-10-09T12:45:33.168710+00:00",
+    "wall_seconds": 71.207,
+    "exit_code": 101,
+    "log": "logs/gui-fix-app-default.txt"
+  },
+  {
+    "name": "gui-fix-focused-recording",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app --features recording-fixtures compare_ui:: -- --test-threads=2",
+    "start_utc": "2026-10-09T12:45:33.199294+00:00",
+    "end_utc": "2026-10-09T12:46:05.112384+00:00",
+    "wall_seconds": 31.913,
+    "exit_code": 101,
+    "log": "logs/gui-fix-focused-recording.txt"
+  },
+  {
+    "name": "editor-invariants",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo test --locked --offline -p bello-workbench --test editor_invariants",
+    "start_utc": "2026-10-09T12:46:05.145235+00:00",
+    "end_utc": "2026-10-09T12:46:05.910690+00:00",
+    "wall_seconds": 0.765,
+    "exit_code": 0,
+    "log": "logs/editor-invariants.txt"
+  },
+  {
+    "name": "gui-fix-strict",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo fmt --all -- --check && cargo clippy --locked --offline -p bellobox-app --all-targets --no-deps -- -D warnings && cargo clippy --locked --offline -p bellobox-app --features recording-fixtures --all-targets --no-deps -- -D warnings && cargo clippy --locked --offline -p bellobox-app --no-default-features --all-targets --no-deps -- -D warnings",
+    "start_utc": "2026-10-09T12:46:05.935048+00:00",
+    "end_utc": "2026-10-09T12:46:30.856604+00:00",
+    "wall_seconds": 24.922,
+    "exit_code": 0,
+    "log": "logs/gui-fix-strict.txt"
+  },
+  {
+    "name": "gui-fix-ordinary-build",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo clean -p bellobox-app && cargo build --locked --offline -p bellobox-app",
+    "start_utc": "2026-10-09T12:46:30.882493+00:00",
+    "end_utc": "2026-10-09T12:46:45.890320+00:00",
+    "wall_seconds": 15.008,
+    "exit_code": 0,
+    "log": "logs/gui-fix-ordinary-build.txt"
+  },
+  {
+    "name": "gui-fix-final-app-default",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app",
+    "start_utc": "2026-10-09T12:47:06.956676+00:00",
+    "end_utc": "2026-10-09T12:48:18.320708+00:00",
+    "wall_seconds": 71.364,
+    "exit_code": 0,
+    "log": "logs/gui-fix-final-app-default.txt"
+  },
+  {
+    "name": "gui-fix-final-recording",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app --features recording-fixtures compare_ui:: -- --test-threads=2",
+    "start_utc": "2026-10-09T12:48:18.352641+00:00",
+    "end_utc": "2026-10-09T12:48:53.823519+00:00",
+    "wall_seconds": 35.471,
+    "exit_code": 0,
+    "log": "logs/gui-fix-final-recording.txt"
+  },
+  {
+    "name": "import-published-oracle-base",
+    "command": "GIT_TERMINAL_PROMPT=0 git -c credential.helper= -c core.askPass= fetch --no-tags --no-write-fetch-head https://github.com/BelloWare/BelloBox.git 60504f2ab29d707d47a56282351fd9f75a1ae7ad",
+    "start_utc": "2026-10-09T12:57:14.126769+00:00",
+    "end_utc": "2026-10-09T12:57:26.453517+00:00",
+    "wall_seconds": 12.327,
+    "exit_code": 0,
+    "log": "logs/import-published-oracle-base.txt"
+  },
+  {
+    "name": "final-loc-audit",
+    "command": "python3 rust/docs/validation/comparison-workflow-2026-10-09/loc/audit.py",
+    "start_utc": "2026-10-09T12:59:28.193117+00:00",
+    "end_utc": "2026-10-09T12:59:29.248761+00:00",
+    "wall_seconds": 1.056,
+    "exit_code": 0,
+    "log": "logs/final-loc-audit.txt"
+  },
+  {
+    "name": "status-cut-focused",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session:: -- --test-threads=2 && cargo test --locked --offline -p bellobox-app compare_ui:: -- --test-threads=2",
+    "start_utc": "2026-10-09T12:59:37.084479+00:00",
+    "end_utc": "2026-10-09T12:59:46.131799+00:00",
+    "wall_seconds": 9.047,
+    "exit_code": 101,
+    "log": "logs/status-cut-focused.txt"
+  },
+  {
+    "name": "status-cut-focused-fixed",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session:: -- --test-threads=2 && cargo test --locked --offline -p bellobox-app compare_ui:: -- --test-threads=2",
+    "start_utc": "2026-10-09T13:00:21.211423+00:00",
+    "end_utc": "2026-10-09T13:00:54.348987+00:00",
+    "wall_seconds": 33.138,
+    "exit_code": 0,
+    "log": "logs/status-cut-focused-fixed.txt"
+  },
+  {
+    "name": "mutant-accepted-error-status",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session::tests::accepted_error_retires_working_status_and_recovers -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T13:01:24.771482+00:00",
+    "end_utc": "2026-10-09T13:01:58.259462+00:00",
+    "wall_seconds": 33.488,
+    "exit_code": 101,
+    "log": "logs/mutant-accepted-error-status.txt"
+  },
+  {
+    "name": "restore-clean-accepted-error-status",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app",
+    "start_utc": "2026-10-09T13:01:58.288432+00:00",
+    "end_utc": "2026-10-09T13:01:58.644214+00:00",
+    "wall_seconds": 0.356,
+    "exit_code": 0,
+    "log": "logs/restore-clean-accepted-error-status.txt"
+  },
+  {
+    "name": "mutant-stale-cut-capture",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T13:03:15.364398+00:00",
+    "end_utc": "2026-10-09T13:03:50.789446+00:00",
+    "wall_seconds": 35.425,
+    "exit_code": 0,
+    "log": "logs/mutant-stale-cut-capture.txt"
+  },
+  {
+    "name": "restore-clean-stale-cut-capture",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app",
+    "start_utc": "2026-10-09T13:03:50.818471+00:00",
+    "end_utc": "2026-10-09T13:03:51.165974+00:00",
+    "wall_seconds": 0.348,
+    "exit_code": 0,
+    "log": "logs/restore-clean-stale-cut-capture.txt"
+  },
+  {
+    "name": "stale-cut-positive",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cd rust; cargo test --locked --offline -p bellobox-app compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T13:05:22.997398+00:00",
+    "end_utc": "2026-10-09T13:05:54.955097+00:00",
+    "wall_seconds": 31.958,
+    "exit_code": 0,
+    "log": "logs/stale-cut-positive.txt"
+  },
+  {
+    "name": "mutant-stale-cut-capture-with-positive-control",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app compare_ui::tests::dispatched_stale_result_copy_and_cut_are_fenced_before_changed -- --exact --test-threads=1",
+    "start_utc": "2026-10-09T13:06:27.062726+00:00",
+    "end_utc": "2026-10-09T13:07:00.665493+00:00",
+    "wall_seconds": 33.603,
+    "exit_code": 0,
+    "log": "logs/mutant-stale-cut-capture-with-positive-control.txt"
+  },
+  {
+    "name": "restore-clean-stale-cut-capture-with-positive-control",
+    "command": "source /workspace/shared/build-recovery/env.sh; cargo clean -p bellobox-app",
+    "start_utc": "2026-10-09T13:07:00.694124+00:00",
+    "end_utc": "2026-10-09T13:07:00.963572+00:00",
+    "wall_seconds": 0.269,
+    "exit_code": 0,
+    "log": "logs/restore-clean-stale-cut-capture-with-positive-control.txt"
+  },
+  {
+    "name": "status-fix-focused",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo test --locked --offline -p bellobox-app comparison_session:: -- --test-threads=2 && cargo test --locked --offline -p bellobox-app compare_ui:: -- --test-threads=2",
+    "start_utc": "2026-10-09T13:07:23.963291+00:00",
+    "end_utc": "2026-10-09T13:07:56.814750+00:00",
+    "wall_seconds": 32.851,
+    "exit_code": 0,
+    "log": "logs/status-fix-focused.txt"
+  },
+  {
+    "name": "frozen-loc-audit",
+    "command": "python3 rust/docs/validation/comparison-workflow-2026-10-09/loc/audit.py",
+    "start_utc": "2026-10-09T13:07:59.088286+00:00",
+    "end_utc": "2026-10-09T13:08:00.095481+00:00",
+    "wall_seconds": 1.007,
+    "exit_code": 0,
+    "log": "logs/frozen-loc-audit.txt"
+  },
+  {
+    "name": "status-fix-strict",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo fmt --all -- --check && cargo clippy --locked --offline -p bellobox-app --all-targets --no-deps -- -D warnings",
+    "start_utc": "2026-10-09T13:07:56.843718+00:00",
+    "end_utc": "2026-10-09T13:08:06.144012+00:00",
+    "wall_seconds": 9.3,
+    "exit_code": 0,
+    "log": "logs/status-fix-strict.txt"
+  },
+  {
+    "name": "status-fix-ordinary-build",
+    "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh; cargo clean -p bellobox-app && cargo build --locked --offline -p bellobox-app",
+    "start_utc": "2026-10-09T13:08:06.169931+00:00",
+    "end_utc": "2026-10-09T13:08:22.303851+00:00",
+    "wall_seconds": 16.134,
+    "exit_code": 0,
+    "log": "logs/status-fix-ordinary-build.txt"
+  },
+  {
+    "name": "final-packaging-and-diff",
+    "command": "python3 -m unittest discover -s rust/scripts -p test_package_bellobox_macos.py && bash -n rust/scripts/package-bellobox-macos.sh && git diff --check",
+    "start_utc": "2026-10-09T13:21:07.439115+00:00",
+    "end_utc": "2026-10-09T13:21:07.582167+00:00",
+    "wall_seconds": 0.143,
+    "exit_code": 0,
+    "log": "logs/final-packaging-and-diff.txt"
+  }
+]

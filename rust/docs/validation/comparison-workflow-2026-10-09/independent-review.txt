@@ -1,0 +1,118 @@
+
+===== review.md =====
+# Independent Text Comparison review
+
+Status: final source review closed. No unresolved blocking source finding in the reviewed scope. Final ordinary-binary GUI acceptance remains the owner's validation; native macOS/Swift acceptance remains pending.
+
+## Findings
+
+- Source-level defense-in-depth observation, NOT a confirmed stale-copy defect: the original Compare capture fence handled C only while the shared read-only EditorView copies for both C and X. The owner added comparison-local C|X symmetry. The first dispatched stale-copy test passed even with the C-only mutant, so it did not establish an X bypass or meaningful sensitivity. Inspection of GPUI 0.2.2 window.rs::dispatch_key_event shows it redraws a dirty window before listener dispatch, allowing CompareWindow::render to synchronize input tokens and clear old output first. A fresh selected-output Ctrl/Cmd+A/C positive control passed; it is a C control, not independent fresh-X execution. Both original and strengthened C-only mutants survived, recorded honestly. No artificial unreachable event ordering is required or accepted as a vulnerability proof.
+- P2, owner-discovered and independently confirmed, resolved in final source with inspected mutation-sensitive regression: accepted computation errors set busy=false but left the footer at Working locally. Err publication now clears status. The added session regression checks invalid JSON, no result/copy, and valid-input recovery. Restoring the missing clear produced the expected status.is_empty assertion failure.
+- No other concrete source defects identified in the reviewed scope. This is not whole-feature or native parity approval.
+
+## Review scope and observations
+
+Read the immutable f1c21ae4f22b14dc10c5a57651499b05cc37ec92 handoff, local AGENTS.md, Rust README and relevant parity/workflow material. Inspected every new comparison engine, session, UI, word-pagination and test file, JSON formatter delta, desktop/palette/module integration, native oracle driver/corpus, license attribution, packaging script/validator/tests and macOS CI inclusion.
+
+- First and second editors are separately owned. The app-global pin is an immutable bounded Arc snapshot with process lifetime. Opening a window does not read the clipboard or persist drafts.
+- Synchronous editor content/rejection tokens, side-specific rejection latches, aggregate-size rejection, cancellation/session tokens, and sticky presentation revision exhaustion block stale result publication and explicit Copy. Other-side edits/options cannot revive a rejected retained draft. Explicit replacement and real edits recover.
+- A single retained session loop owns one physical background comparison at a time; replacements coalesce while an old cancelled worker drains. Close/retire invalidate desired work and its cancellation flag. Debounce is checked again before cloning inputs.
+- Enter fix remains confined to comparison input construction: input editors are noncompact; output remains read-only/compact. Shared editor crates are byte-identical to fd434af6056744f26577ad2c78cc2a44f77e7f6a.
+- Words use 128-span/16,384-byte pages, grapheme boundaries and explicit scalar fallback for an oversized grapheme. Page concatenation preserves bytes, page selection and full signed-result copy are distinct, and all pages remain reachable. No pointer, IME or native usability claim is inferred from these source/model checks.
+- Lines preserve final blanks, normalize CR/CRLF, and distinguish empty text. Unicode word separation follows first-scalar grapheme whitespace; NFC matching preserves left spelling. JSON projection reuses the formatter parser, retains number lexemes/quoted paths/empty containers, rejects canonical duplicate keys, and bounds path amplification before accumulation.
+- Compared the adapted frontiers/regions against the locally retained exact Swift 6.3.3 Diffing.swift, including descending diagonal order, strict tie direction, odd/even overlap, shrinking and left-before-right processing. The independent full-trace test proves minimality/reconstruction, not equality of ambiguous ties. Exact runtime equality still requires the native oracle.
+- Verified the four relevant Swift application files against immutable e43b1c4595c42383e087fe70f38c28d07c31dda0 via local Git. Corpus is exactly 115 uniquely named synthetic cases: 66 Lines, 17 whitespace-collapsing Lines, 20 Words, 12 JSON fields. Hash binding and byte-level row/copy assertions are present. Native runtime execution has not been performed here.
+- Exact license SHA256 770af8291f708538d8ff885a0bbc4e045cd700531741c4f99528d435c14d7f55 and Git blob 61b0c78195f2d00acaf658000eeca6ad406a3a29 match recorded provenance. Preview copies both notice and license before validation/signing; tests reject absent/altered/symlinked notice files. Actual macOS bundle assembly is pending.
+- The existing URL oracle ID correction is carried context, not new comparison implementation. Legacy execute("compare") behavior is unchanged.
+
+## Independently executed checks
+
+No Cargo, source edits, GUI actions or remote writes by this reviewer. Existing owner-built binaries were executed read-only; this does not substitute for a final rebuild after fixes.
+
+- Original-seal comparison core: 12 passed.
+- Original-seal formatter core: 16 passed.
+- Original-seal comparison UI/words: 19 passed.
+- Original-seal session tests: 6 passed.
+- Oracle binding: 1 passed, native oracle explicitly ignored on Linux.
+- Python packaging policy: 11 passed.
+
+Exact commands, start/end UTC, process wall times and executed test-binary hashes are recorded in commands.jsonl. Parent-supplied full-suite and strict-configuration results were inspected separately and are not presented as reviewer executions.
+
+## Hash binding
+
+Initial 238-file source seal verified without differences: 132f5331ed42ebdd7a299d5ebd89115573ee7f1899ca5d928e2411397647c204.
+Initial ordinary GUI binary: 1a8fdc42470815871af674e7c03343b9c9210b737ac1984b048fc9d48c95e3d3.
+That seal predates status/cut-copy corrections and is superseded for final acceptance.
+
+## Timing limits
+
+Task received at 2026-10-09 12:53:12 UTC; first explicit review-time marker is source-review-start.txt. This interval contains source inspection, evidence checks, tool execution, coordination and waiting. Pure inference/editing time is unavailable and is not estimated. Command timings are observed process wall times; they are not added to elapsed review time.
+
+## Final delta and closure
+
+Closed 2026-10-09T13:09:50.279568+00:00. The frozen Compare capture guard now covers stale C|X; accepted-error publication clears status. Exact changed files:
+- compare_ui.rs: fcdb5fa20ad47b6d4f2a97ad343ae0d35712e3bfc1bb840fff4a4b11ec1ed650
+- compare_ui/tests.rs: 5b5f12e52e89dd3553bd0e1ea6d7da35d398d001d113a9450802087c7e77802a
+- comparison_session.rs: ef5b014975e7cde45670f941cae6c7ca46526a59dfec46d38e69261dd8bf84d4
+- comparison_session/tests.rs: 3d3b9843c6ce6c4151f79e081a06f2114dee707714e62965f43fa51af9dca735
+
+Owner logs inspected and copied into owner-final-evidence: final focused session 7/7 and UI/words 20/20 pass; fmt and default all-target strict App Clippy pass; status-clear mutant fails the intended assertion; original and strengthened C-only mutants survive. After restoring source, owner cleaned the App package and rebuilt the ordinary binary successfully. These are owner executions, not additional independent reviewer test runs. Original full-suite/three-configuration evidence predates this tiny delta and is not silently relabeled as a final full rerun.
+
+Final owner source seal: bb947687fa7c913c609762fa97167d364b3702e423dd793fb02a803a7f099b78; all 238 entries independently matched current bytes.
+Final ordinary binary independently hashed: 60e7eb1913bf67c10beb73344cc88015979d56338c4ddf51cf9a4eba118a603b.
+Expanded review manifest (including packaging/docs/license/corpus/Swift references): final-reviewed-manifest.json, 255 files, SHA256 e56b11f06f8c9a743c756b4a38d939c964a7d68169172866ee383fee58525441.
+
+The separately verified source manifest and test-binary hashes in commands.jsonl bind observations, not an independently rebuilt source-to-test-executable attestation. Owner compile logs establish provenance of the original-snapshot executables. Final ordinary binary has its own clean-build receipt and seal above.
+
+Final GUI observations, native clipboard/IME/window behavior, exact native 115-case Swift execution and native bundle assembly were not performed by this reviewer and remain separate acceptance gates. No parity or performance blanket is asserted.
+
+===== commands.jsonl =====
+{"name": "packaging-policy", "command": ["python3", "rust/scripts/test_package_bellobox_macos.py"], "start_utc": "2026-10-09T12:56:24.528458+00:00", "end_utc": "2026-10-09T12:56:24.629351+00:00", "wall_seconds": 0.10090436300379224, "exit_code": 0, "log": "/workspace/shared/comparison-independent-review/packaging-policy.log", "executed_binary_sha256": null, "compilation": null}
+{"name": "core-comparison-existing-binary", "command": ["/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73", "developer::comparison::", "--test-threads=1"], "start_utc": "2026-10-09T12:56:24.629754+00:00", "end_utc": "2026-10-09T12:56:25.680721+00:00", "wall_seconds": 1.0509817620040849, "exit_code": 0, "log": "/workspace/shared/comparison-independent-review/core-comparison-existing-binary.log", "executed_binary_sha256": "1143afd6fcccd6a75c843c0dd178bb7ccd97eb41a6bd1cc397a5fdc14ca537ce", "compilation": "Existing owner-built binary; reviewer did not compile or run Cargo."}
+{"name": "formatter-existing-binary", "command": ["/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73", "developer::json_formatter::", "--test-threads=1"], "start_utc": "2026-10-09T12:56:25.726120+00:00", "end_utc": "2026-10-09T12:56:25.765655+00:00", "wall_seconds": 0.03953721499419771, "exit_code": 0, "log": "/workspace/shared/comparison-independent-review/formatter-existing-binary.log", "executed_binary_sha256": "1143afd6fcccd6a75c843c0dd178bb7ccd97eb41a6bd1cc397a5fdc14ca537ce", "compilation": "Existing owner-built binary; reviewer did not compile or run Cargo."}
+{"name": "oracle-binding-existing-binary", "command": ["/workspace/shared/build-recovery/target/debug/deps/comparison_swift_oracle-5f208607d965174b", "--test-threads=1"], "start_utc": "2026-10-09T12:56:25.809239+00:00", "end_utc": "2026-10-09T12:56:25.816072+00:00", "wall_seconds": 0.006832294006017037, "exit_code": 0, "log": "/workspace/shared/comparison-independent-review/oracle-binding-existing-binary.log", "executed_binary_sha256": "dc290877c4dd0add011006275cfd8f47e0393bb44114e4afa9f638df8ceca308", "compilation": "Existing owner-built binary; reviewer did not compile or run Cargo."}
+{"name": "app-comparison-existing-binary", "command": ["/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530", "compare", "--test-threads=1"], "start_utc": "2026-10-09T12:57:55.936490+00:00", "end_utc": "2026-10-09T12:57:56.788272+00:00", "wall_seconds": 0.8517908010107931, "exit_code": 0, "log": "/workspace/shared/comparison-independent-review/app-comparison-existing-binary.log", "executed_binary_sha256": "8454e5d3396ab0ccf523f9b099285f3dcbf8a6938b192e74e718d959e1a9164d", "compilation": "Existing owner-built original-seal binary; not the pending status/cut fix."}
+{"name": "app-session-existing-binary", "command": ["/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530", "comparison_session::", "--test-threads=1"], "start_utc": "2026-10-09T12:58:10.906847+00:00", "end_utc": "2026-10-09T12:58:10.920771+00:00", "wall_seconds": 0.013933144000475295, "exit_code": 0, "log": "/workspace/shared/comparison-independent-review/app-session-existing-binary.log", "executed_binary_sha256": "8454e5d3396ab0ccf523f9b099285f3dcbf8a6938b192e74e718d959e1a9164d", "compilation": "Existing owner-built original-seal binary; not the pending status/cut fix."}
+
+===== timing.json =====
+{
+  "task_received_utc": "2026-10-09T12:53:12Z",
+  "first_explicit_marker_utc": "2026-10-09T12:53:32Z",
+  "closed_utc": "2026-10-09T13:09:50.279568+00:00",
+  "activity": "Mixed source inspection, independently executed commands, coordination, and waiting for owner corrections/rebuild.",
+  "inference_time": "Unavailable; not inferred.",
+  "independent_commands": "commands.jsonl",
+  "final_owner_evidence": "owner-final-evidence/",
+  "do_not_sum": "Process wall times overlap the review interval and must not be added to it."
+}
+
+===== cut-copy-clarification-final.json =====
+{
+  "recorded_utc": "2026-10-09T13:07:57.663905+00:00",
+  "initial_observation": "CompareWindow capture originally blocks stale C but not X; shared readonly EditorView writes selected text for both C and X. This is a source-level asymmetry, not by itself a reachable stale-copy defect.",
+  "owner_report_utc": "2026-10-09T13:05:37Z",
+  "owner_report": "Initial dispatched stale-C/X regression passed both fixed and C-only mutant. Source restored and package-clean done. Fresh dispatched Ctrl+A/C positive control added; execution result not yet supplied.",
+  "gpui_path": "/workspace/shared/build-recovery/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-0.2.2/src/window.rs",
+  "gpui_sha256": "40d58470971ccd658ead4d4f788219658fb68b9486aff73e143835c09237ab18",
+  "gpui_bytes": 188418,
+  "gpui_excerpt": "3730:     fn dispatch_key_event(&mut self, event: &dyn Any, cx: &mut App) {\n3731:         if self.invalidator.is_dirty() {\n3732:             self.draw(cx).clear();\n3733:         }\n3734: \n3735:         let node_id = self.focus_node_id_in_rendered_frame(self.focus);\n3736:         let dispatch_path = self.rendered_frame.dispatch_tree.dispatch_path(node_id);\n3737: \n3738:         let mut keystroke: Option<Keystroke> = None;\n3739: ",
+  "comparison_render_protection": "CompareWindow::render begins sync_inputs(false,cx) then sync_output(cx); sync_inputs clears signed/inline output whenever observed editor tokens changed. Editor changes notify, allowing dirty-window redraw to clear result before keyboard listeners.",
+  "classification": "Defense-in-depth C|X symmetry. Runtime stale-copy bypass remains unproven; surviving mutant must not be reported as killed.",
+  "positive_control_evidence": "Fresh dispatched Ctrl/Cmd+A/C passed (not X). Owner final focused20 passed. C-only mutant still survived. See owner-final-evidence/logs/stale-cut-positive.txt and mutant-stale-cut-capture-with-positive-control.txt.",
+  "confirmed_separate_defect": "Accepted Err left status Working locally after busy=false. Owner reported its status-clear mutant was killed; exact final logs/seal still pending.",
+  "closed_utc": "2026-10-09T13:09:50.279568+00:00"
+}
+
+===== gpui-key-dispatch-excerpt.txt =====
+/workspace/shared/build-recovery/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-0.2.2/src/window.rs
+sha256 40d58470971ccd658ead4d4f788219658fb68b9486aff73e143835c09237ab18
+3730:     fn dispatch_key_event(&mut self, event: &dyn Any, cx: &mut App) {
+3731:         if self.invalidator.is_dirty() {
+3732:             self.draw(cx).clear();
+3733:         }
+3734: 
+3735:         let node_id = self.focus_node_id_in_rendered_frame(self.focus);
+3736:         let dispatch_path = self.rendered_frame.dispatch_tree.dispatch_path(node_id);
+3737: 
+3738:         let mut keystroke: Option<Keystroke> = None;
+3739: 

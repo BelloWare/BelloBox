@@ -1,0 +1,31 @@
+{
+  "scope": "preview bundle license and attribution inclusion; no signing/release gate change",
+  "observer_start_utc": "2026-10-09T12:36:22Z",
+  "observer_end_utc": "2026-10-09T12:37:05Z",
+  "mixed_window_seconds": 43,
+  "nested_shell_wall_seconds": 0.096246577,
+  "tests": {
+    "command": "python3 -m unittest discover -s rust/scripts -p 'test_package_bellobox_macos.py'",
+    "passed": 11,
+    "test_framework_seconds": 0.013,
+    "note": "Nested within shell time; synthetic files never executed"
+  },
+  "checks": [
+    "bash -n packaging script passed",
+    "git diff --check passed"
+  ],
+  "native_packaging": "not run here; exact macOS CI pending",
+  "inference_duration": null,
+  "sha256": {
+    "rust/scripts/package-bellobox-macos.sh": "6b4e0b83bad19930f5379ea410921e86097ce00d8d3c233ee4f2be9599e0e62b",
+    "rust/scripts/validate-bellobox-macos.py": "f917629e09b218a46380de98484a381ec499d39013eefb4a884fc0260faaafc1",
+    "rust/scripts/test_package_bellobox_macos.py": "b66687995d91892d5b23ad72564458005dd7608e7beb0ddfac0092bc7e6ddb64",
+    "rust/docs/licenses/swift-runtime-LICENSE.txt": "770af8291f708538d8ff885a0bbc4e045cd700531741c4f99528d435c14d7f55",
+    "rust/docs/swift-comparison-attribution.md": "29777f2eff09712dbcdb711f503d0408d03efae39284421309ffc8f0d91a4e33"
+  },
+  "post_receipt_docs_delta": {
+    "path": "rust/docs/swift-comparison-attribution.md",
+    "sha256": "9644e826effb262a70384a4f52d4b73c790a1a95d9e4354bc066c3b0618162c7",
+    "description": "Distribution paragraph now records notice copying/validation and pending native CI; license bytes unchanged"
+  }
+}

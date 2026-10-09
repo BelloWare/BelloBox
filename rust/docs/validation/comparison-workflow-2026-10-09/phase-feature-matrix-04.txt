@@ -1,0 +1,346 @@
+test screenshot_ui::window_workflow::tests::changed_or_missing_fresh_source_never_reaches_the_generator ... ok
+test screenshot_ui::window_workflow::tests::selector_filters_exact_scope_but_raw_occlusion_retains_own_regular_windows ... ok
+test settings_ui::generation::failure_tests::failed_save_preserves_visible_options_and_invalid_file ... ok
+test settings_ui::provider_setup::tests::close_cancels_and_reopen_cannot_receive_old_result ... ok
+test screenshot_ui::window_workflow::tests::unsupported_and_oversized_supplied_sources_fail_closed ... ok
+test settings_ui::provider_setup::tests::editing_cancels_but_does_not_release_physical_ownership_or_accept_late_success ... ok
+test settings_ui::provider_setup::tests::empty_error_and_retry_leave_manual_model_available ... ok
+test settings_ui::provider_setup::tests::provider_endpoint_api_and_model_changes_reject_old_model_lists ... ok
+test settings_ui::provider_setup::tests::closed_view_keeps_physical_lane_until_held_request_retires ... ok
+test settings_ui::generation::tests::thinking_preserves_temperature_and_output_stepper_uses_effective_allowance ... ok
+test settings_ui::generation::tests::edits_switch_reset_reopen_without_network_and_effective_route_snapshot ... ok
+test screenshot_ui::window_workflow::tests::fresh_completion_rejects_changes_while_generator_is_blocked ... ok
+test settings_ui::quit_tests::active_connection_test_blocks_app_quit_through_settings_close ... ok
+test settings_ui::quit_tests::active_model_load_blocks_app_quit_through_settings_close ... ok
+test settings_ui::quit_tests::failed_worker_spawn_releases_both_admission_leases ... ok
+test settings_ui::setup_tests::actual_window_close_fences_retained_entity_and_fresh_reopen ... ok
+test settings_ui::quit_tests::invalid_test_request_leaves_no_app_quit_blocker ... ok
+test screenshot_ui::main_area::selector::window_tests::injected_completion_revalidates_full_evidence_and_dimensions_in_coordinator ... ok
+test settings_ui::tests::categories_and_order_match_swift_source ... ok
+test settings_ui::tests::editor_theme_keeps_plain_chrome_and_prompt_wrap ... ok
+test settings_ui::tests::narrow_edits_preserve_recent_activity_and_do_not_clobber_bad_files ... ok
+test settings_ui::tests::provider_fields_reject_embedded_credentials_and_unbounded_values ... ok
+test screenshot_ui::quit_tests::pointer_quit_notice_never_reflows_empty_error_wrapped_or_rendering_status ... ok
+test shutdown::quit::prompt::tests::background_click_scroll_and_interrupted_drag_do_not_reach_underlay ... ok
+test shutdown::quit::prompt::tests::dismissal_without_prior_focus_refreshes_before_the_next_real_quit_key ... ok
+test shutdown::quit::prompt::tests::default_prompt_builder_is_restored_after_construction_panics ... ok
+test shutdown::quit::prompt::tests::enter_space_escape_consume_held_downs_and_release_before_restoring_focus ... ok
+test shutdown::quit::prompt::tests::focus_loss_abandons_stale_hold_and_next_deliberate_gesture_dismisses ... ok
+test shutdown::quit::prompt::tests::modifier_release_finishes_pending_dismissal_without_key_up ... ok
+test shutdown::quit::prompt::tests::ok_mouse_gesture_is_consumed_and_next_intentional_click_is_not ... ok
+test shutdown::quit::prompt::tests::mouse_dismissal_waits_for_observed_held_key_and_consumes_its_release ... ok
+test shutdown::quit::prompt::tests::pointer_press_started_before_prompt_cannot_complete_an_underlay_click ... ok
+test shutdown::quit::prompt::tests::text_input_and_repeated_quit_are_shielded_then_editor_input_resumes ... ok
+test shutdown::quit::prompt::tests::unrelated_prompt_uses_default_builder_after_owned_prompt_creation ... ok
+test shutdown::quit::tests::live_borrowed_owner_update_failure_refuses_instead_of_waiving_its_guard ... ok
+test shutdown::quit::tests::no_window_refusal_notice_is_single_and_can_close_after_physical_work ... ok
+test shutdown::tests::a_different_last_window_retains_native_lifetime_for_already_retiring_media ... ok
+test shutdown::tests::accepted_completion_handoff_retires_worker_without_destroying_adopted_payload ... ok
+test settings_ui::setup_tests::settings_load_select_persist_test_then_ask_ai_uses_selected_model ... ok
+test shutdown::tests::app_quit_with_inactive_existing_window_still_shows_closing ... ok
+test shutdown::tests::closed_guarded_owner_cannot_veto_and_registry_does_not_retain_it ... ok
+test shutdown::tests::dropped_completion_retains_ticket_until_background_disposes_terminal_payload ... ok
+test shutdown::tests::last_window_close_waits_without_timeout_with_retained_entity_and_held_worker ... ok
+test shutdown::tests::latched_quit_rejects_new_tool_and_launcher_windows ... ok
+test shutdown::tests::physical_nonmedia_guard_survives_host_close_until_every_owner_retires ... ok
+test shutdown::tests::physical_ticket_drop_wakes_the_registered_quit_waiter ... ok
+test shutdown::tests::quit_action_without_an_active_window_waits_for_every_physical_worker ... ok
+test shutdown::tests::quit_shortcut_bubbles_from_focused_editor_without_replacing_edit_shortcuts ... ok
+test screenshot_ui::window_workflow::tests::publication_rechecks_fresh_evidence_session_and_both_original_flags ... ok
+test shutdown::tests::rejected_admission_does_not_construct_or_receive_an_owning_work_closure ... ok
+test shutdown::tests::repeated_quit_action_without_work_calls_final_quit_once ... ok
+test shutdown::tests::refused_quit_keeps_media_and_roots_live_then_rechecks_without_saved_approval ... ok
+test shutdown::tests::request_cancels_once_but_waits_for_each_physical_ticket ... ok
+test shutdown::tests::replacement_window_before_queued_last_close_does_not_request_quit ... ok
+test shutdown::tests::unwinding_worker_wakes_completion_and_releases_ticket_after_owned_capture_cleanup ... ok
+test shutdown::tests::unregistered_root_fails_closed_with_deduplicated_feedback ... ok
+test snippet_library::tests::corrupt_store_blocks_save_and_delete_without_touching_bytes ... ok
+test shutdown::tests::window_quit_action_defers_all_roots_and_vetoes_repeated_mixed_closes ... ok
+test snippet_library::tests::delete_targets_confirmed_id_and_preserves_newer_selection ... ok
+test snippet_library::tests::mount_and_drafts_do_not_write ... ok
+test snippet_library::tests::independent_windows_reload_before_mutating ... ok
+test snippet_library::tests::save_updates_identity_and_new_creates_another ... ok
+test snippet_library::tests::swift_library_is_untouched_and_rust_file_is_private ... ok
+test text_semantics_tests::text_counts_execute_route_preserves_mixed_count_units ... ok
+test text_semantics_tests::text_unique_execute_route_preserves_first_bytes_and_empty_rows ... ok
+test text_tool_state::tests::byte_admission_and_invalid_snapshot_never_reuse_older_input ... ok
+test text_tool_state::tests::cancelled_worker_drains_before_recovery_and_empty_structured_results_work ... ok
+test text_tool_state::tests::current_result_copy_and_primary_chain_guards_preserve_reset ... ok
+test snippet_library::tests::rejected_save_keeps_persisted_and_selected_data ... ok
+test text_tool_state::tests::every_typed_option_has_a_unique_argument_and_retains_its_independent_choice ... ok
+test text_tool_state::tests::held_success_and_error_are_fenced_by_cancel_clear_reset_and_retirement ... ok
+test text_tool_state::tests::late_manual_results_output_overflow_and_retired_mutations_are_rejected ... ok
+test text_tool_state::tests::physical_worker_coalesces_rapid_input_and_option_changes ... ok
+test text_tool_state::tests::snapshot_copies_original_and_choices_into_independent_window_jobs ... ok
+test text_tool_state::tests::structured_hashes_and_counts_do_not_contain_cli_help ... ok
+test text_tool_state::tests::typed_dispatch_preserves_existing_engines_and_rejects_bad_decode ... ok
+test theme::tests::dark_palette_matches_swift_source ... ok
+test theme::tests::fixture_precedes_saved_appearance_then_system ... ok
+test theme::tests::light_palette_matches_swift_source ... ok
+test tool_controls::tests::independent_windows_do_not_share_control_state ... ok
+test tool_controls::tests::plist_direction_and_chaining_follow_source ... ok
+test tool_controls::tests::source_sql_controls_and_literal_mappings ... ok
+test transport::generation_tests::runtime_route_selects_matching_saved_profile_and_snapshots_it ... ok
+test transport::image_ocr::tests::accepted_fixture_stream_normalizes_inherited_nonblocking_flags ... ok
+test transport::image_ocr::tests::ambient_proxy_child ... ok
+test shutdown::tests::actual_home_settings_and_media_roots_are_admitted_before_one_final_quit ... ok
+test settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_test_before_network ... ok
+test text_tool_state::tests::encoded_outputs_and_output_cap_are_complete_and_never_truncated ... ok
+test transport::image_ocr::tests::fixture_accept_waits_for_connection_after_observed_would_block ... ok
+test transport::image_ocr::tests::fixture_accept_without_connection_reports_explicit_bounded_timeout ... ok
+test shutdown::quit::prompt::tests::real_home_cards_do_not_activate_behind_quit_refusal_and_root_is_preserved ... ok
+test settings_ui::setup_tests::actual_close_reopen_cannot_restart_a_held_transport ... ok
+test settings_ui::quit_tests::shutdown_latch_rejects_retained_settings_load_before_network ... ok
+test transport::image_ocr::tests::explicit_revocation_during_successful_read_blocks_publication ... ok
+test transport::image_ocr::tests::ambient_proxy_environment_is_ignored_in_isolated_subprocess ... ok
+test settings_ui::setup_tests::real_configuration_callbacks_reject_delayed_setup_results ... ok
+test transport::image_ocr::tests::logical_cancel_during_blocking_read_waits_for_physical_return_and_cannot_publish ... ok
+test transport::provider_setup::tests::ambient_proxy_child ... ignored, runs only in the environment-cleared proxy test subprocess
+test transport::provider_setup::tests::ambient_proxy_trap_receives_no_setup_requests ... ok
+test transport::provider_setup::tests::bounds_body_and_rejects_malformed ... ok
+test transport::provider_setup::tests::bounds_body_without_content_length ... ok
+test transport::provider_setup::tests::cancellation_after_dispatch_suppresses_success ... ok
+test transport::provider_setup::tests::loads_models_with_exact_get_and_synthetic_auth ... ok
+test transport::provider_setup::tests::pre_cancel_does_not_connect ... ok
+test transport::provider_setup::tests::refuses_redirect_and_never_echoes_body ... ok
+test transport::provider_setup::tests::saved_selection_and_explicit_overrides_resolve_without_environment ... ok
+test transport::image_ocr::tests::ordinary_gate_is_closed_even_for_sealed_fixture_configuration ... ok
+test transport::image_ocr::tests::numeric_ipv6_loopback_uses_same_sealed_transport_when_available ... ok
+test transport::provider_setup::tests::streaming_test_uses_exact_user_text ... ok
+test transport::image_ocr::tests::real_loopback_builders_send_exact_approved_png_model_path_and_headers ... ok
+test transport::provider_setup::tests::stalled_response_has_finite_total_timeout ... ok
+test url_ui::tests::empty_and_failed_inspection_tab_never_focus_hidden_fields ... ok
+test url_ui::tests::aggregate_edits_are_bounded_without_truncation ... ok
+test transport::image_ocr::tests::no_connection_before_explicit_dispatch_or_after_cancel_revoke_wrong_source_owner ... ok
+test url_ui::tests::composing_row_blocks_navigation_build_and_source_replacement ... ok
+test url_ui::tests::all_3001_parameters_survive_paging_last_edit_and_stable_remove ... ok
+test url_ui::tests::full_url_requires_build_and_blocks_same_callback_stale_copy ... ok
+test url_ui::tests::independent_close_reopen_clear_and_chain ... ok
+test url_ui::tests::oversized_mount_is_rejected_with_visible_error_and_no_old_draft ... ok
+test url_ui::tests::mount_does_not_read_clipboard_and_copy_is_complete ... ok
+test world_clock_ui::copilot::tests::adoption_into_busy_destination_keeps_old_physical_close_gate_and_fences_reply ... ok
+test url_ui::tests::focused_editor_build_copy_shortcuts_and_plain_copy_ownership ... ok
+test url_ui::tests::source_typing_is_explicit_inspection_and_rejected_paste_latches ... ok
+test url_ui::tests::page_remount_cannot_aba_a_built_token_before_queued_notifications ... ok
+test screenshot_ui::window_refresh::tests::cancellation_new_generation_topology_and_active_interaction_reject_publication ... ok
+test world_clock_ui::copilot::tests::apply_focus_survives_live_revision_and_disappears_when_not_actionable ... ok
+test world_clock_ui::copilot::tests::app_quit_refuses_held_visible_and_hidden_work_then_fresh_quit_latches ... ok
+test world_clock_ui::copilot::tests::explicit_apply_feedback_and_failed_request_are_both_visible ... ok
+test transport::image_ocr::tests::held_body_read_deadline_fires_before_the_separate_total_deadline ... ok
+test world_clock_ui::copilot::tests::explicit_send_answer_apply_stale_revision_and_persistence ... ok
+test world_clock_ui::copilot::tests::failed_handoff_preserves_target_planner_conversation_draft_and_source ... ok
+test world_clock_ui::copilot::tests::handoff_transfers_partial_apply_draft_and_fences_old_buttons_without_saving ... ok
+test world_clock_ui::copilot::tests::cancel_retains_physical_lane_retry_has_no_duplicate_and_clear_is_ephemeral ... ok
+test world_clock_ui::copilot::tests::clear_during_held_request_discards_late_reply_and_keeps_draft ... ok
+test world_clock_ui::copilot::tests::close_retained_entity_and_reopen_cannot_bypass_held_request ... ok
+test world_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes ... ok
+test world_clock_ui::copilot::tests::plain_reopen_preserves_existing_conversation_and_successful_new_handoff_reveals_it ... ok
+test world_clock_ui::copilot::tests::apply_keeps_memory_change_and_reports_persistence_failure ... ok
+test world_clock_ui::tests::compact_canonical_fields_leave_room_for_editor_caret_reserve ... ok
+test world_clock_ui::tests::consumed_enter_release_does_not_reactivate_restored_focus ... ok
+test world_clock_ui::tests::continuous_pointer_mapping_preserves_source_inset ... ok
+test world_clock_ui::tests::day_arrow_uses_displayed_day_even_at_next_midnight_endpoint ... ok
+test world_clock_ui::tests::delayed_reference_reveal_cannot_reopen_or_scroll_a_newer_menu ... ok
+test world_clock_ui::tests::empty_or_stale_picker_selection_cannot_add_a_location ... ok
+test world_clock_ui::tests::held_activation_cannot_fire_the_restored_control ... ok
+test world_clock_ui::tests::keyboard_stays_on_displayed_day_but_wheel_overflows ... ok
+test world_clock_ui::tests::live_field_refresh_preserves_focus_composition_draft_and_identical_text ... ok
+test world_clock_ui::tests::quality_ink_matches_source_tokens_in_both_appearances ... ok
+test world_clock_ui::tests::reference_outside_dismissal_excludes_menu_and_toggle_anchor ... ok
+test world_clock_ui::tests::source_dimensions_and_picker_wrap ... ok
+test world_clock_ui::tests::source_wheel_direction_threshold_and_vertical_passthrough ... ok
+test world_clock_ui::tests::wrapped_reference_selection_keeps_scroll_target_in_range ... ok
+test transport::image_ocr::tests::response_modes_parse_plain_markdown_and_chunked_literal_results ... ok
+test world_clock_ui::copilot::tests::explicit_suggested_prompt_sends_without_erasing_unsent_draft ... ok
+test world_clock_ui::copilot::tests::hiding_busy_panel_cancels_and_rejects_late_answer ... ok
+test world_clock_ui::copilot::tests::invalid_configuration_keeps_draft_and_transcript_empty ... ok
+test world_clock_ui::copilot::tests::last_window_close_guard_requires_a_fresh_close_after_retirement ... ok
+test world_clock_ui::copilot::tests::local_close_guard_cancels_and_refuses_until_retired_even_with_other_window ... ok
+test world_clock_ui::copilot::tests::transferred_physical_guard_survives_replacement_and_clear_until_retirement ... ok
+test transport::image_ocr::tests::error_redirect_disconnect_oversize_invalid_and_timeouts_never_retry_or_echo_body ... ok
+
+test result: ok. 547 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 45.87s
+
+
+===== {"name": "editor-core", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo test --locked --offline -p bello-workbench --lib", "start_utc": "2026-10-09T12:36:18.538663+00:00", "end_utc": "2026-10-09T12:36:20.554069+00:00", "wall_seconds": 2.015, "exit_code": 0, "log": "logs/editor-core.txt"} =====
+   Compiling bello-workbench v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bello-workbench)
+    Finished `test` profile [unoptimized] target(s) in 1.71s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bello_workbench-59577d9c387a6d66)
+
+running 79 tests
+test diff::tests::numbers_and_headers ... ok
+test diff::tests::cap_is_visible ... ok
+test diff::tests::zero_start_new_file ... ok
+test document::tests::atomic_save_and_dirty ... ok
+test document::tests::invalid_utf8_never_lossy ... ok
+test document::tests::symlink_replacement_refused ... ok
+test editor::tests::change_single_letter_word_does_not_eat_next_word ... ok
+test editor::tests::change_undo_keeps_delete_and_insert_together ... ok
+test document::tests::permissions_preserved ... ok
+test editor::tests::crlf_insert_and_delete ... ok
+test editor::tests::explicit_selection_deletion_is_literal_and_read_only_keeps_caret ... ok
+test editor::tests::delete_to_end_on_empty_line_preserves_newline ... ok
+test editor::tests::counted_delete_and_undo ... ok
+test document::tests::external_write_preserves_both_drafts ... ok
+test editor::tests::incremental_index_matches_rebuild ... ok
+test editor::tests::multiplied_operator_count ... ok
+test editor::tests::lines_yank_delete_paste ... ok
+test editor::tests::newline_deletion_preserves_single_cr_lf_and_document_boundaries ... ok
+test editor::tests::no_panic_on_empty_or_unicode_sequences ... ok
+test editor::tests::ordinary_navigation_preserves_literal_utf16_replacement_and_undo ... ok
+test editor::tests::ordinary_navigation_commits_typing_and_works_read_only ... ok
+test editor::tests::ordinary_arrows_follow_composed_characters_from_every_scalar_boundary ... ok
+test editor::tests::insert_undo_is_transaction ... ok
+test editor::tests::ordinary_selection_collapses_to_requested_side_without_a_step ... ok
+test editor::tests::ordinary_shift_arrows_keep_anchor_when_shrinking_and_crossing ... ok
+test editor::tests::readonly_does_not_mutate ... ok
+test editor::tests::retained_accounting_includes_spare_capacity_and_all_history ... ok
+test editor::tests::ordinary_shift_extends_existing_selection_in_either_direction ... ok
+test editor::tests::search_wrap_and_reverse ... ok
+test editor::tests::vim_horizontal_motions_remain_scalar_based ... ok
+test editor::tests::vertical_column_restores_after_short_line ... ok
+test editor::tests::unicode_boundaries_and_utf16 ... ok
+test editor::tests::unselected_deletion_joins_crlf_atomically_and_undo_restores_bytes ... ok
+test editor::tests::visual_inclusive_unicode ... ok
+test editor::host_limit_tests::bound_is_opt_in_and_rejection_counter_fails_closed ... ok
+test editor::tests::rejected_edit_reports_failure_without_cursor_change ... ok
+test git::tests::malformed_frames_and_metadata_fail_closed ... ok
+test document::tests::large_file_preview_never_editable ... ok
+test git::tests::process_fixture ... ignored, subprocess fixture, invoked by runner tests
+test editor::tests::ordinary_grapheme_lookup_handles_long_lines_and_regional_context ... ok
+test git::tests::drains_both_pipes_and_bounds_diagnostics ... ok
+test editor::tests::insert_transaction_is_memory_bounded ... ok
+test git::tests::status_parser_preserves_non_utf8_paths_without_filesystem_io ... ok
+test git::tests::non_utf8_names_are_lossless_on_disk ... ok
+test git::tests::rejects_overflow_and_cancelled_reads_without_partial_results ... ok
+test git::tests::unsafe_revision_and_path_inputs_fail_before_execution ... ok
+test quick_open::tests::exhausted_ignore_budget_never_masquerades_as_a_successful_nonmatch ... ok
+test git::tests::external_diff_textconv_fsmonitor_and_pager_are_disabled ... ok
+test quick_open::tests::fifo_ignore_files_do_not_hang ... ok
+test quick_open::tests::global_ignore_rules_have_lower_precedence ... ok
+test quick_open::tests::ignore_lines_preserve_escaped_spaces_comments_and_negation ... ok
+test git::tests::separates_staged_unstaged_and_untracked_without_mutating_index ... ok
+test git::tests::literal_magic_spaces_newlines_and_unicode_names ... ok
+test quick_open::tests::non_utf8_paths_parse_and_search_losslessly_without_filesystem_io ... ok
+test git::tests::unborn_history_and_staged_diff_work_without_head ... ok
+test quick_open::tests::non_utf8_paths_remain_lossless_on_disk ... ok
+test quick_open::tests::git_lists_tracked_ignored_and_untracked_existing_files_in_project_scope ... ok
+test quick_open::tests::oversized_ignore_file_is_reported_without_hiding_files ... ok
+test quick_open::tests::source_highlights_include_normalized_graphemes_and_expanding_casefolds ... ok
+test quick_open::tests::plain_folder_uses_nested_ignore_rules_and_keeps_dotfiles ... ok
+test quick_open::tests::source_query_order_case_whitespace_and_line_suffix ... ok
+test quick_open::tests::source_ranking_preserves_names_boundaries_runs_and_ties ... ok
+test quick_open::tests::source_wildmatch_cases ... ok
+test git::tests::history_pagination_and_root_commit_diff ... ok
+test quick_open::tests::listing_limits_are_explicit_even_with_only_directories ... ok
+test tree::tests::bounded_and_rejects_traversal ... ok
+test tree::tests::lazy_single_level_sorted_and_stable_relative_paths ... ok
+test quick_open::tests::symlinks_cannot_escape_cycle_or_supply_ignore_rules ... ok
+test tree::tests::non_utf8_names_are_lossless_on_disk ... ok
+test quick_open::tests::source_ignore_corpus_agrees_with_gits_decisions_without_a_repository ... ok
+test tree::tests::non_utf8_relative_paths_normalize_losslessly_without_filesystem_io ... ok
+test tree::tests::symlinks_cannot_escape_or_form_expansion_cycles ... ok
+test tree::tests::unicode_names_are_lossless_on_disk ... ok
+test quick_open::tests::nested_repositories_keep_their_own_ignore_rules ... ok
+test git::tests::rename_paths_are_lossless_and_first_parent_merges_are_explicit ... ok
+test git::tests::timeout_and_live_cancellation_kill_processes_promptly ... ok
+test quick_open::tests::repository_configuration_cannot_run_file_listing_helpers ... ok
+test quick_open::tests::top_results_equal_full_scoring_and_cancellation_never_returns_partial_results ... ok
+test git::tests::inherited_open_pipes_do_not_hang_after_parent_exit ... ok
+
+test result: ok. 78 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+
+===== {"name": "editor-ui", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo test --locked --offline -p bello-workbench-ui --lib", "start_utc": "2026-10-09T12:36:20.586290+00:00", "end_utc": "2026-10-09T12:36:28.591054+00:00", "wall_seconds": 8.005, "exit_code": 0, "log": "logs/editor-ui.txt"} =====
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bello-workbench-ui)
+    Finished `test` profile [unoptimized] target(s) in 7.79s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bello_workbench_ui-eed38fa1c4895fd0)
+
+running 39 tests
+test appearance::tests::plain_controls_do_not_add_code_editor_chrome ... ok
+test appearance::tests::host_themes_do_not_share_light_ink_in_dark_surfaces ... ok
+test appearance::tests::code_viewer_keeps_native_source_metrics ... ok
+test editor_view::input_tests::composition_owns_mode_until_commit_or_unmark ... ok
+test editor_view::input_tests::empty_commit_removes_only_marked_text_and_unblocks_mode_change ... ok
+test editor_view::input_tests::enter_replaces_selection_instead_of_appending ... ok
+test editor_view::input_tests::enter_preserves_crlf_and_read_only ... ok
+test editor_view::input_tests::rejected_commit_keeps_composition_selection_and_caret_for_retry ... ok
+test editor_view::input_tests::painted_width_wins_over_parent_estimate_without_reflow_ping_pong ... ok
+test editor_view::input_tests::rejected_plain_selection_replacement_keeps_selection ... ok
+test editor_view::input_tests::rejected_state_transfers_leave_both_owners_intact ... ok
+test editor_view::input_tests::retained_vim_register_and_pending_operator_survive ... ok
+test editor_view::input_tests::explicit_platform_range_wins_and_clears_mark_only_on_success ... ok
+test editor_view::input_tests::retained_state_keeps_pending_group_unicode_crlf_and_selection ... ok
+test editor_view::bounded_host_tests::host_byte_limit_tokens_and_ime_rejection_are_atomic ... ok
+test editor_view::presentation_tests::composition_drag_rejection_and_atomic_validation_keep_input ... ok
+test editor_view::presentation_tests::explicit_select_all_is_separate_from_decorations_and_refuses_ime ... ok
+test editor_view::presentation_tests::decorations_preserve_focus_selection_vim_search_and_open_undo_group ... ok
+test editor_view::presentation_tests::replacement_aba_and_newest_request_cancel_transient_state ... ok
+test editor_view::input_tests::oversized_commit_preserves_mark_and_retry_replaces_it_once ... ok
+test telemetry::tests::failed_writer_counts_dropped_records ... ok
+test editor_view::presentation_tests::prepaint_alone_cannot_deliver_a_measurement ... ok
+test telemetry::tests::frame_coalescing_keeps_first_and_last_inputs ... ok
+test telemetry::tests::json_has_durations_batching_and_no_content_fields ... ok
+test telemetry::tests::queue_overflow_is_nonblocking_and_counted ... ok
+test text_presentation::tests::exact_text_unicode_and_order_are_required ... ok
+test text_presentation::tests::intersections_use_original_byte_coordinates ... ok
+test workbench_view::focused_text_tests::only_visible_focused_editable_editor_owns_text_input ... ok
+test wrapping::tests::resize_reflows_and_invalid_boundaries_are_ignored ... ok
+test wrapping::tests::unchanged_paragraphs_reuse_font_measurements ... ok
+test wrapping::tests::wrapped_ranges_preserve_unicode_and_physical_line_numbers ... ok
+test editor_view::presentation_tests::clipped_paint_and_public_engine_replacement_cannot_claim_full_visibility ... ok
+test editor_view::presentation_tests::actual_paint_measures_unicode_without_edit_or_focus ... ok
+test editor_view::presentation_tests::wrapped_multiline_crlf_geometry_uses_drawn_source_fragments ... ok
+test editor_view::token_overflow_tests::edit_token_overflow_is_permanently_unavailable ... ok
+test editor_view::presentation_tests::set_and_clear_redraw_an_otherwise_cached_editor_child ... ok
+test text_presentation::tests::explicit_limits_never_silently_truncate ... ok
+test editor_view::presentation_tests::cancelled_or_offscreen_measurement_never_fabricates_geometry ... ok
+test editor_view::presentation_tests::reveal_keeps_inner_landing_across_redraw_then_input_cancels ... ok
+
+test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+
+===== {"name": "strict-default", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo clippy --locked --offline -p bellobox-core -p bellobox-app --all-targets --no-deps -- -D warnings", "start_utc": "2026-10-09T12:36:28.617060+00:00", "end_utc": "2026-10-09T12:36:41.453008+00:00", "wall_seconds": 12.836, "exit_code": 0, "log": "logs/strict-default.txt"} =====
+    Checking bellobox-core v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-core)
+    Checking bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `dev` profile [unoptimized] target(s) in 12.74s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+
+===== {"name": "strict-minimal", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo clippy --locked --offline -p bellobox-core -p bellobox-app --no-default-features --all-targets --no-deps -- -D warnings", "start_utc": "2026-10-09T12:36:41.478299+00:00", "end_utc": "2026-10-09T12:36:51.969986+00:00", "wall_seconds": 10.492, "exit_code": 0, "log": "logs/strict-minimal.txt"} =====
+    Checking bellobox-core v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-core)
+    Checking bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `dev` profile [unoptimized] target(s) in 10.41s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+
+===== {"name": "strict-recording", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo clippy --locked --offline -p bellobox-app --features recording-fixtures --all-targets --no-deps -- -D warnings", "start_utc": "2026-10-09T12:36:51.995474+00:00", "end_utc": "2026-10-09T12:37:01.258045+00:00", "wall_seconds": 9.263, "exit_code": 0, "log": "logs/strict-recording.txt"} =====
+    Checking bellobox-core v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-core)
+    Checking bello-platform v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bello-platform)
+    Checking bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `dev` profile [unoptimized] target(s) in 9.19s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+
+===== {"name": "ordinary-clean", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo clean -p bellobox-app", "start_utc": "2026-10-09T12:37:01.283185+00:00", "end_utc": "2026-10-09T12:37:01.415936+00:00", "wall_seconds": 0.133, "exit_code": 0, "log": "logs/ordinary-clean.txt"} =====
+     Removed 54 files, 386.1MiB total
+
+===== {"name": "ordinary-build", "command": "source /workspace/shared/build-recovery/env.sh; source /workspace/shared/build-recovery/gpui-env.sh;  cargo build --locked --offline -p bellobox-app", "start_utc": "2026-10-09T12:37:01.439488+00:00", "end_utc": "2026-10-09T12:37:15.669364+00:00", "wall_seconds": 14.23, "exit_code": 0, "log": "logs/ordinary-build.txt"} =====
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bello-workbench-ui)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bellobox-app)
+    Finished `dev` profile [unoptimized] target(s) in 14.14s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+
+===== {"name": "editor-invariants", "command": "source /workspace/shared/build-recovery/env.sh; cargo test --locked --offline -p bello-workbench --test editor_invariants", "start_utc": "2026-10-09T12:46:05.145235+00:00", "end_utc": "2026-10-09T12:46:05.910690+00:00", "wall_seconds": 0.765, "exit_code": 0, "log": "logs/editor-invariants.txt"} =====
+   Compiling bello-workbench v0.1.0 (/workspace/shared/box-compare-workflow/rust/crates/bello-workbench)
+    Finished `test` profile [unoptimized] target(s) in 0.53s
+     Running tests/editor_invariants.rs (/workspace/shared/build-recovery/target/debug/deps/editor_invariants-b13feff562cff105)
+
+running 1 test
+test randomized_modal_edits_keep_unicode_and_line_indexes_valid ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
