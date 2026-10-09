@@ -1,5 +1,89 @@
 # BelloBox Rust migration duration audit
 
+## Current accounting checkpoint: 2026-10-09T12:54:00Z
+
+This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains preserved below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
+
+### At a glance
+
+These top totals cover only this catch-up receipt cohort, including late-added earlier observations; they are not whole-migration cumulative totals. These are overlapping accounting views, not shares of one total. Mixed windows do not measure active labor.
+
+| Where time went | What is actually measured |
+|---|---|
+| Implementation | Active effort unavailable; no isolated implementation timer |
+| Review | Active effort unavailable; only review-focused observations: 0 mixed windows; 0 with endpoints, unavailable union |
+| Mixed implementation/review/validation windows | 1 mixed windows; 1 with endpoints, 11m 40.0s union; scopes overlap resources and do not measure Review alone |
+| Builds | Unavailable separately |
+| Tests | Unavailable separately from compilation in these command receipts |
+| Build + test/check (combined) | 3m 30.7s measured command resource time |
+| CI | 31m 25.0s runner time across 2 completed jobs (0 failed); 17m 46.0s wall union |
+| Dependency/environment setup | 10m 38.0s nested CI phase time (already inside CI jobs); command setup shown separately below |
+| Retries/rework | 1m 43.1s across 2 failed command receipts; total rework effort unavailable |
+| Publication | No isolated API total; 0 mixed windows; 0 with endpoints, unavailable union |
+| Waiting | Unavailable separately; waiting is mixed into recorded workflow windows |
+| Model inference | Unavailable; no timing telemetry |
+
+A concrete delay: the latest [Linux CI job](https://github.com/BelloWare/BelloBox/actions/runs/37930598833/job/113820056896) spent **9m 59s downloading 67.9 MB of official dependencies**, inside its 10m 20s setup phase and 17m 46s total job. The log reports 113 kB/s. These durations are nested; no cause or future speedup is inferred.
+
+### Separate measured resource groups
+
+| Group | Timed items | Resource/client seconds | Known-endpoint items | Endpoint-subset seconds | Endpoint union seconds |
+|---|---:|---:|---:|---:|---:|
+| catchup_command | 7 | 250.650 | 7 | 250.650 | 250.650 |
+| catchup_ci_job | 2 | 1885.000 | 2 | 1885.000 | 1066.000 |
+
+Groups overlap each other and mixed work windows; never add them into project elapsed or active-work time. Derived endpoints are excluded from unions. Monotonic timers and separately recorded UTC clocks can differ slightly. Whole-second 0s means below receipt resolution. CI steps and native subcommands are nested within job durations, not extra runner time.
+
+| Resource group / category | Seconds |
+|---|---:|
+| catchup_command: build + test/check (combined) | 210.720 |
+| catchup_command: automated lint/check | 24.922 |
+| catchup_command: dependency setup + build (combined) | 15.008 |
+| catchup_ci_job: CI runner | 1885.000 |
+
+### Nested CI phases (already included in CI jobs)
+
+| Phase class | Runner step time |
+|---|---:|
+| CI orchestration | 9.0s |
+| dependency/environment setup | 10m 38.0s |
+| build/test/check (combined) | 15m 34.0s |
+| build + automated lint/check | 3m 41.0s |
+| build | 55.0s |
+| packaging/validation | 25.0s |
+| CI reporting | 0.0s |
+
+These conservative phase groups can include compilation and execution together; do not add them to the CI job totals.
+
+Within 2026-10-09T12:40:00Z–2026-10-09T12:54:00Z, the selected CI jobs cover 557.000 overlap-safe wall seconds; 283.000 seconds are outside those jobs. This remainder includes implementation, tests, review, publication, waiting and unknown time; it is neither proven idle nor model inference.
+
+### Mixed workflows and waits (excluded from resource totals)
+
+| Activity | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---:|---|
+| Interactive GUI discovered multiline host configuration bug; local host correction and two regression tests, test debounce correction, strict rebuild and full App revalidation, nested commands and waiting. Not pure coding/inference. | 2026-10-09T12:39:00+00:00 | 2026-10-09T12:50:40+00:00 | 700.0 | completed |
+| Replacement comparison GUI workflow acceptance | unknown | unknown | unknown | ongoing acceptance of replacement binary |
+
+Open task and CI rows retain unknown final duration. Failed source attempts and the original failed native URL job remain in preserved earlier accounting. Mixed windows overlap useful parallel work; they are not pure idle or active-review time.
+
+### Measured items
+
+| Activity | Category | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---|---:|---|
+| gui-fix-app-default | build + test/check (combined) | 2026-10-09T12:44:21.961590+00:00 | 2026-10-09T12:45:33.168710+00:00 | 71.207 | 101 |
+| gui-fix-focused-recording | build + test/check (combined) | 2026-10-09T12:45:33.199294+00:00 | 2026-10-09T12:46:05.112384+00:00 | 31.913 | 101 |
+| editor-invariants | build + test/check (combined) | 2026-10-09T12:46:05.145235+00:00 | 2026-10-09T12:46:05.910690+00:00 | 0.765 | 0 |
+| gui-fix-strict | automated lint/check | 2026-10-09T12:46:05.935048+00:00 | 2026-10-09T12:46:30.856604+00:00 | 24.922 | 0 |
+| gui-fix-ordinary-build | dependency setup + build (combined) | 2026-10-09T12:46:30.882493+00:00 | 2026-10-09T12:46:45.890320+00:00 | 15.008 | 0 |
+| gui-fix-final-app-default | build + test/check (combined) | 2026-10-09T12:47:06.956676+00:00 | 2026-10-09T12:48:18.320708+00:00 | 71.364 | 0 |
+| gui-fix-final-recording | build + test/check (combined) | 2026-10-09T12:48:18.352641+00:00 | 2026-10-09T12:48:53.823519+00:00 | 35.471 | 0 |
+| Rust macOS native checks / apple-silicon | CI runner | 2026-10-09T12:31:35Z | 2026-10-09T12:45:14Z | 819.0 | success |
+| Rust Linux checks / linux | CI runner | 2026-10-09T12:31:31Z | 2026-10-09T12:49:17Z | 1066.0 | success |
+
+Full source hashes, source URLs, nested job steps and timing limitations are in duration-data.json. Native macOS full logs were unavailable for some Agent runs; verified job/step metadata is retained without a full-log claim. Later source CI may be running and is not silently promoted to success by this snapshot.
+
+### Earlier accounting (unchanged)
+
 ## Current accounting checkpoint: 2026-10-09T12:40:00Z
 
 This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains preserved below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
