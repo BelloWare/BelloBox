@@ -1,7 +1,7 @@
 //! Separate source-sized launcher surface; never the application's Home sidebar.
 use crate::clock_copilot_worker::RetirementGuard;
 use crate::launcher_clock_ui::LauncherClockPreview;
-use crate::launcher_qr_ui::LauncherQrPreview;
+use crate::launcher_qr_ui::{LauncherQrPreview, PhysicalActivationKeys};
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
     launcher,
@@ -23,6 +23,7 @@ struct Launcher {
     qr_active: bool,
     qr_sized: bool,
     qr_subscriptions: Vec<Subscription>,
+    physical_activation_keys: PhysicalActivationKeys,
     clock: Option<Entity<LauncherClockPreview>>,
     clock_guards: Rc<RefCell<Vec<RetirementGuard>>>,
     clock_transferred: bool,
@@ -99,6 +100,7 @@ impl Launcher {
             qr_active: false,
             qr_sized: false,
             qr_subscriptions: Vec::new(),
+            physical_activation_keys: PhysicalActivationKeys::default(),
             clock: None,
             clock_guards: Default::default(),
             clock_transferred: false,
@@ -369,7 +371,11 @@ impl Launcher {
         }
         if command.id == "qr" {
             if self.qr.is_none() {
-                let qr = cx.new(|cx| LauncherQrPreview::new(self.input.clone(), window, cx));
+                let qr = cx.new(|cx| {
+                    let mut qr = LauncherQrPreview::new(self.input.clone(), window, cx);
+                    qr.retain_physical_keys(self.physical_activation_keys.clone());
+                    qr
+                });
                 self.qr_subscriptions
                     .push(cx.observe(&qr, |_, _, cx| cx.notify()));
                 self.qr_subscriptions.push(cx.subscribe_in(
@@ -542,6 +548,8 @@ impl Render for Launcher {
             .border_1()
             .border_color(p.separator)
             .capture_key_up(cx.listener(|this, event: &KeyUpEvent, window, cx| {
+                this.physical_activation_keys
+                    .observe(&event.keystroke.key, false);
                 if event.keystroke.key == "escape" {
                     this.suppress_escape = false;
                 }
@@ -562,6 +570,8 @@ impl Render for Launcher {
                 }
             }))
             .capture_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
+                this.physical_activation_keys
+                    .observe(&event.keystroke.key, true);
                 if this.query.read(cx).has_marked_text() {
                     return;
                 }
@@ -1301,5 +1311,133 @@ mod qr_lifecycle_tests {
         });
         view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
             .unwrap();
+    }
+    #[gpui::test]
+    fn editor_return_hold_blocks_mouse_save_after_preview_settles(cx: &mut TestAppContext) {
+        let view = cx.add_window(|w, cx| Launcher::new("editor origin".into(), w, cx));
+        view.update(cx, |v, w, cx| {
+            v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+            v.refresh_preview(w, cx);
+            v.qr.as_ref()
+                .unwrap()
+                .read(cx)
+                .draft_editor()
+                .read(cx)
+                .focus(w);
+        })
+        .unwrap();
+        cx.run_until_parked();
+        let mut visual = gpui::VisualTestContext::from_window(view.into(), cx);
+        visual.simulate_event(key("enter", false));
+        cx.run_until_parked();
+        view.update(cx, |v, _, cx| {
+            assert!(v.tool_input("qr", cx).unwrap().contains('\n'))
+        })
+        .unwrap();
+        let save = visual.debug_bounds("launcher-qr-save").unwrap().center();
+        visual.simulate_click(save, gpui::Modifiers::default());
+        view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
+            .unwrap();
+        visual.simulate_event(gpui::KeyUpEvent {
+            keystroke: Keystroke::parse("enter").unwrap(),
+        });
+        view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
+            .unwrap();
+        visual.simulate_click(save, gpui::Modifiers::default());
+        view.update(cx, |v, _, cx| assert!(v.qr_save_pending(cx)))
+            .unwrap();
+        cx.simulate_new_path_selection(|_| None);
+        cx.run_until_parked();
+    }
+    #[gpui::test]
+    fn search_space_before_qr_creation_survives_focus_change_without_save_replay(
+        cx: &mut TestAppContext,
+    ) {
+        let view = cx.add_window(|w, cx| Launcher::new("search origin".into(), w, cx));
+        cx.run_until_parked();
+        cx.simulate_keystrokes(view.into(), "space"); // key-down and text, no release
+        view.update(cx, |v, w, cx| {
+            assert!(v.qr.is_none());
+            assert_eq!(v.query.read(cx).text(), " ");
+            v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+            v.refresh_preview(w, cx);
+        })
+        .unwrap();
+        cx.run_until_parked();
+        let mut visual = gpui::VisualTestContext::from_window(view.into(), cx);
+        let save = visual.debug_bounds("launcher-qr-save").unwrap().center();
+        visual.simulate_click(save, gpui::Modifiers::default());
+        view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
+            .unwrap();
+        visual.simulate_event(gpui::KeyUpEvent {
+            keystroke: Keystroke::parse("space").unwrap(),
+        });
+        view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
+            .unwrap();
+        visual.simulate_click(save, gpui::Modifiers::default());
+        view.update(cx, |v, _, cx| assert!(v.qr_save_pending(cx)))
+            .unwrap();
+        cx.simulate_new_path_selection(|_| None);
+        cx.run_until_parked();
+    }
+    #[gpui::test]
+    fn composition_observes_physical_keys_without_stealing_ime_or_replaying_save(
+        cx: &mut TestAppContext,
+    ) {
+        for query_composes in [false, true] {
+            let view = cx.add_window(|w, cx| Launcher::new("composition origin".into(), w, cx));
+            view.update(cx, |v, w, cx| {
+                v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+                v.refresh_preview(w, cx);
+                let editor = if query_composes {
+                    v.query.clone()
+                } else {
+                    v.qr.as_ref().unwrap().read(cx).draft_editor()
+                };
+                editor.read(cx).focus(w);
+                editor.update(cx, |e, cx| {
+                    e.replace_and_mark_text_in_range(Some(0..2), "qr", Some(2..2), w, cx)
+                });
+            })
+            .unwrap();
+            cx.run_until_parked();
+            let mut visual = gpui::VisualTestContext::from_window(view.into(), cx);
+            visual.simulate_event(key("enter", false));
+            view.update(cx, |v, w, cx| {
+                let editor = if query_composes {
+                    v.query.clone()
+                } else {
+                    v.qr.as_ref().unwrap().read(cx).draft_editor()
+                };
+                assert!(editor.read(cx).has_marked_text());
+                assert!(editor.read(cx).focus_handle(cx).is_focused(w));
+            })
+            .unwrap();
+            let save = visual.debug_bounds("launcher-qr-save").unwrap().center();
+            visual.simulate_click(save, gpui::Modifiers::default());
+            view.update(cx, |v, _, cx| assert!(!v.qr_save_pending(cx)))
+                .unwrap();
+            visual.simulate_event(gpui::KeyUpEvent {
+                keystroke: Keystroke::parse("enter").unwrap(),
+            });
+            view.update(cx, |v, w, cx| {
+                assert!(!v.qr_save_pending(cx));
+                let editor = if query_composes {
+                    v.query.clone()
+                } else {
+                    v.qr.as_ref().unwrap().read(cx).draft_editor()
+                };
+                editor.update(cx, |e, cx| e.unmark_text(w, cx));
+            })
+            .unwrap();
+            cx.run_until_parked();
+            visual.simulate_click(save, gpui::Modifiers::default());
+            view.update(cx, |v, _, cx| assert!(v.qr_save_pending(cx)))
+                .unwrap();
+            cx.simulate_new_path_selection(|_| None);
+            cx.run_until_parked();
+            view.update(cx, |v, w, cx| v.close(w, cx)).unwrap();
+            cx.run_until_parked();
+        }
     }
 }

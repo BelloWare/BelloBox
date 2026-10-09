@@ -3,7 +3,9 @@ use crate::session::{JobToken, SessionJobs};
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use gpui::{prelude::*, *};
 use std::{
+    cell::Cell,
     collections::HashMap,
+    rc::Rc,
     sync::{Arc, atomic::Ordering},
 };
 
@@ -21,6 +23,25 @@ fn image_copy_notice(compositor: &str, native_macos: bool) -> Option<&'static st
         // must never grant the capability on another/unknown platform.
         "" if native_macos => None,
         _ => Some("Image clipboard is unsupported on this backend. Use Save… to export PNG."),
+    }
+}
+/// Window-owned physical observation, separate from preview-button ownership.
+/// Recording a key never consumes text/IME input and never arms an action.
+#[derive(Clone, Default)]
+pub(crate) struct PhysicalActivationKeys(Rc<Cell<[bool; 2]>>);
+impl PhysicalActivationKeys {
+    pub fn observe(&self, key: &str, down: bool) {
+        let index = match key {
+            "enter" => 0,
+            "space" => 1,
+            _ => return,
+        };
+        let mut keys = self.0.get();
+        keys[index] = down;
+        self.0.set(keys);
+    }
+    fn any_down(&self) -> bool {
+        self.0.get().into_iter().any(|down| down)
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -60,6 +81,7 @@ pub(crate) struct LauncherQrPreview {
     image_copy_notice: Option<&'static str>,
     consume_release: Option<String>,
     activation_keys_down: [bool; 2],
+    physical_keys: PhysicalActivationKeys,
     keyboard_save_armed: bool,
     controls: HashMap<Control, FocusHandle>,
     _subscriptions: Vec<Subscription>,
@@ -102,6 +124,7 @@ impl LauncherQrPreview {
             image_copy_notice,
             consume_release: None,
             activation_keys_down: [false; 2],
+            physical_keys: PhysicalActivationKeys::default(),
             keyboard_save_armed: false,
             controls: [
                 Control::Enlarge,
@@ -131,6 +154,10 @@ impl LauncherQrPreview {
             }));
         this.changed(cx);
         this
+    }
+    pub fn retain_physical_keys(&mut self, keys: PhysicalActivationKeys) {
+        self.keyboard_save_armed = false;
+        self.physical_keys = keys;
     }
     #[cfg(test)]
     pub(crate) fn draft_editor(&self) -> Entity<EditorView> {
@@ -335,7 +362,7 @@ impl LauncherQrPreview {
         self.current(cx).map(|a| a.bytes.clone())
     }
     fn save(&mut self, cx: &mut Context<Self>) {
-        if self.activation_keys_down.iter().any(|down| *down) {
+        if self.physical_keys.any_down() || self.activation_keys_down.iter().any(|down| *down) {
             self.keyboard_save_armed = false;
             self.status = "Release Enter/Space before opening Save.".into();
             cx.notify();
@@ -538,6 +565,7 @@ impl LauncherQrPreview {
         let focus = self.controls[&control].clone();
         div()
             .id(id)
+            .debug_selector(move || id.into())
             .track_focus(&focus)
             .h(px(24.))
             .px(px(7.))
@@ -560,8 +588,13 @@ impl LauncherQrPreview {
                         focus.focus(window);
                         cx.stop_propagation();
                     })
-                    .on_click(cx.listener(move |this, _, window, cx| {
-                        this.act(control, window, cx);
+                    .on_click(cx.listener(move |this, event, window, cx| {
+                        // Save's keyboard path requires a current armed key-down
+                        // and release. Never replay a stale editor/search key-up
+                        // through GPUI's synthetic button click after focus moves.
+                        if control != Control::Save || matches!(event, ClickEvent::Mouse(_)) {
+                            this.act(control, window, cx);
+                        }
                         cx.stop_propagation();
                     }))
             })
