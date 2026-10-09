@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T14:57:00Z",
+  "as_of_utc": "2026-10-09T15:17:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -63146,6 +63146,2049 @@
       "inference_duration_seconds": null,
       "inference_status": "unavailable",
       "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1517-regex-command-22",
+      "repository_assignment": "BelloBox",
+      "activity": "minimal-core-app-r2",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T14:57:25.073340+00:00",
+      "end_utc": "2026-10-09T14:59:07.982661+00:00",
+      "duration_seconds": 102.90933551899798,
+      "source": [
+        {
+          "receipt_sha256": "c2e1273dcfa49a5d83e2c118d5f54f0b6a3a664fdcdc73413dfa412d99d61116",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Completed post-recovery gate on frozen Regex candidate; source publication and native CI separate"
+    },
+    {
+      "id": "20261009-1517-regex-command-23",
+      "repository_assignment": "BelloBox",
+      "activity": "recover-minimal-app-clean",
+      "category": "dependency/environment recovery",
+      "start_utc": "2026-10-09T14:59:08.008506+00:00",
+      "end_utc": "2026-10-09T14:59:08.339956+00:00",
+      "duration_seconds": 0.331454961997224,
+      "source": [
+        {
+          "receipt_sha256": "c2e1273dcfa49a5d83e2c118d5f54f0b6a3a664fdcdc73413dfa412d99d61116",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Completed post-recovery gate on frozen Regex candidate; source publication and native CI separate"
+    },
+    {
+      "id": "20261009-1517-regex-command-24",
+      "repository_assignment": "BelloBox",
+      "activity": "loc-keyboard-update",
+      "category": "automated accounting validation",
+      "start_utc": "2026-10-09T14:59:22.370261+00:00",
+      "end_utc": "2026-10-09T14:59:23.372707+00:00",
+      "duration_seconds": 1.0024502930027666,
+      "source": [
+        {
+          "receipt_sha256": "c2e1273dcfa49a5d83e2c118d5f54f0b6a3a664fdcdc73413dfa412d99d61116",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Completed post-recovery gate on frozen Regex candidate; source publication and native CI separate"
+    },
+    {
+      "id": "20261009-1517-regex-command-25",
+      "repository_assignment": "BelloBox",
+      "activity": "aggregate-app-final",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T15:02:46.293567+00:00",
+      "end_utc": "2026-10-09T15:04:08.235116+00:00",
+      "duration_seconds": 81.94155260699335,
+      "source": [
+        {
+          "receipt_sha256": "c2e1273dcfa49a5d83e2c118d5f54f0b6a3a664fdcdc73413dfa412d99d61116",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Completed post-recovery gate on frozen Regex candidate; source publication and native CI separate"
+    },
+    {
+      "id": "20261009-1517-regex-command-26",
+      "repository_assignment": "BelloBox",
+      "activity": "final-feature-strict",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T15:04:08.266384+00:00",
+      "end_utc": "2026-10-09T15:04:27.286075+00:00",
+      "duration_seconds": 19.01969456099323,
+      "source": [
+        {
+          "receipt_sha256": "c2e1273dcfa49a5d83e2c118d5f54f0b6a3a664fdcdc73413dfa412d99d61116",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Completed post-recovery gate on frozen Regex candidate; source publication and native CI separate"
+    },
+    {
+      "id": "20261009-1517-regex-command-27",
+      "repository_assignment": "BelloBox",
+      "activity": "minimal-strict",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T15:04:27.310597+00:00",
+      "end_utc": "2026-10-09T15:04:40.681043+00:00",
+      "duration_seconds": 13.370450591988629,
+      "source": [
+        {
+          "receipt_sha256": "c2e1273dcfa49a5d83e2c118d5f54f0b6a3a664fdcdc73413dfa412d99d61116",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Completed post-recovery gate on frozen Regex candidate; source publication and native CI separate"
+    },
+    {
+      "id": "20261009-1517-regex-command-28",
+      "repository_assignment": "BelloBox",
+      "activity": "final-format-r2",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T15:04:40.705950+00:00",
+      "end_utc": "2026-10-09T15:04:42.677604+00:00",
+      "duration_seconds": 1.9716592869954184,
+      "source": [
+        {
+          "receipt_sha256": "c2e1273dcfa49a5d83e2c118d5f54f0b6a3a664fdcdc73413dfa412d99d61116",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Completed post-recovery gate on frozen Regex candidate; source publication and native CI separate"
+    },
+    {
+      "id": "20261009-1517-regex-command-29",
+      "repository_assignment": "BelloBox",
+      "activity": "publication-remote",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T15:07:29.822680+00:00",
+      "end_utc": "2026-10-09T15:07:38.813324+00:00",
+      "duration_seconds": 8.990649151994148,
+      "source": [
+        {
+          "receipt_sha256": "c2e1273dcfa49a5d83e2c118d5f54f0b6a3a664fdcdc73413dfa412d99d61116",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Completed post-recovery gate on frozen Regex candidate; source publication and native CI separate"
+    },
+    {
+      "id": "20261009-1517-regex-recovery-workflow",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex disk wait, recovery gates, coordination and packet preparation",
+      "category": "implementation/review/validation (mixed)",
+      "start_utc": "2026-10-09T14:56:04Z",
+      "end_utc": "2026-10-09T15:06:28Z",
+      "duration_seconds": 624,
+      "source": [
+        {
+          "receipt_sha256": "2b789e72c9bcbe6cb5a2ebd2c41a0d6bd8360f5733fef9d04639d618d35e8682",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Owner reported bounded disk wait, coordination, gates and packet preparation; shared obsolete cache cleanup excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "coverage_note": "Late-added earlier evidence, deduplicated against all prior timed intervals."
+    },
+    {
+      "id": "20261009-1517-root-final-loc-bellobox-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Independent final Regex LOC/source reproduction",
+      "category": "automated accounting validation",
+      "start_utc": "2026-10-09T15:07:46.026267+00:00",
+      "end_utc": "2026-10-09T15:07:47.014861+00:00",
+      "duration_seconds": 0.9885964120039716,
+      "source": [
+        {
+          "receipt_sha256": "778bc9ca43e38821e108c564c9212c6da4290737660eb62fd508e59b8d1930b2",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "passed; full ledger/source reproduction match",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1517-regex-candidate-preparation",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex immutable candidate preparation, upload, review wait, retry and verification",
+      "category": "publication (mixed)",
+      "start_utc": "2026-10-09T15:07:15Z",
+      "end_utc": "2026-10-09T15:16:51Z",
+      "duration_seconds": 576.0,
+      "source": [
+        {
+          "receipt_sha256": "1ed570005499bee88eed8c579f41bed25fc1a1e1178aa1cf4b69dda24e8d4778",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Observed mixed task/workflow interval includes tools, coordination and waiting; overlaps command resources and other workers",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1517-metadata-denial",
+      "repository_assignment": "BelloBox",
+      "activity": "Initial metadata blob operation denied",
+      "category": "publication",
+      "start_utc": null,
+      "end_utc": null,
+      "duration_seconds": null,
+      "source": [
+        {
+          "receipt_sha256": "1ed570005499bee88eed8c579f41bed25fc1a1e1178aa1cf4b69dda24e8d4778",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Exact authorized retry later succeeded; initial elapsed unavailable",
+      "accounting_group": "unknown",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Only outcome observation available; duration not inferred",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "observed_utc": "2026-10-09T15:12:13Z"
+    },
+    {
+      "id": "20261009-1517-regex-create-45353021646b43db198390721b6190c06e711cda@2026-10-09T15:10:21.631Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/binary.sha256",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:10:21.631Z",
+      "end_utc": "2026-10-09T15:10:30.692Z",
+      "duration_seconds": 9.061,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-45353021646b43db198390721b6190c06e711cda@2026-10-09T15:10:21.631Z",
+      "git_blob_sha": "45353021646b43db198390721b6190c06e711cda",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/45353021646b43db198390721b6190c06e711cda",
+      "operation_content_hash": "45353021646b43db198390721b6190c06e711cda"
+    },
+    {
+      "id": "20261009-1517-regex-create-3ba4b1059e86ec29d0b8130845a1fd64be1c69e9@2026-10-09T15:10:49.246Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: .github/workflows/rust-macos.yml",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:10:49.246Z",
+      "end_utc": "2026-10-09T15:10:58.182Z",
+      "duration_seconds": 8.936,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-3ba4b1059e86ec29d0b8130845a1fd64be1c69e9@2026-10-09T15:10:49.246Z",
+      "git_blob_sha": "3ba4b1059e86ec29d0b8130845a1fd64be1c69e9",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/3ba4b1059e86ec29d0b8130845a1fd64be1c69e9",
+      "operation_content_hash": "3ba4b1059e86ec29d0b8130845a1fd64be1c69e9"
+    },
+    {
+      "id": "20261009-1517-regex-create-c2a78fb03f46ea87e3c9be04a055bdf6e513c58d@2026-10-09T15:10:49.246Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-app/src/main.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:10:49.246Z",
+      "end_utc": "2026-10-09T15:11:07.046Z",
+      "duration_seconds": 17.8,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-c2a78fb03f46ea87e3c9be04a055bdf6e513c58d@2026-10-09T15:10:49.246Z",
+      "git_blob_sha": "c2a78fb03f46ea87e3c9be04a055bdf6e513c58d",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/c2a78fb03f46ea87e3c9be04a055bdf6e513c58d",
+      "operation_content_hash": "c2a78fb03f46ea87e3c9be04a055bdf6e513c58d"
+    },
+    {
+      "id": "20261009-1517-regex-create-74f843b60b98c8ec7704ef594d283370577b3e40@2026-10-09T15:10:49.246Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-app/src/regex_session.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:10:49.246Z",
+      "end_utc": "2026-10-09T15:11:15.643Z",
+      "duration_seconds": 26.397,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-74f843b60b98c8ec7704ef594d283370577b3e40@2026-10-09T15:10:49.246Z",
+      "git_blob_sha": "74f843b60b98c8ec7704ef594d283370577b3e40",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/74f843b60b98c8ec7704ef594d283370577b3e40",
+      "operation_content_hash": "74f843b60b98c8ec7704ef594d283370577b3e40"
+    },
+    {
+      "id": "20261009-1517-regex-create-181b595794ef38a0c6917d4ef7decd36a96e9a46@2026-10-09T15:10:49.246Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-app/src/regex_ui.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:10:49.246Z",
+      "end_utc": "2026-10-09T15:11:24.194Z",
+      "duration_seconds": 34.948,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-181b595794ef38a0c6917d4ef7decd36a96e9a46@2026-10-09T15:10:49.246Z",
+      "git_blob_sha": "181b595794ef38a0c6917d4ef7decd36a96e9a46",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/181b595794ef38a0c6917d4ef7decd36a96e9a46",
+      "operation_content_hash": "181b595794ef38a0c6917d4ef7decd36a96e9a46"
+    },
+    {
+      "id": "20261009-1517-regex-create-fe109f8ffd43a1147b7b1326bdeed337c62fe33a@2026-10-09T15:10:49.246Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-app/src/desktop.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:10:49.246Z",
+      "end_utc": "2026-10-09T15:11:30.585Z",
+      "duration_seconds": 41.339,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-fe109f8ffd43a1147b7b1326bdeed337c62fe33a@2026-10-09T15:10:49.246Z",
+      "git_blob_sha": "fe109f8ffd43a1147b7b1326bdeed337c62fe33a",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/fe109f8ffd43a1147b7b1326bdeed337c62fe33a",
+      "operation_content_hash": "fe109f8ffd43a1147b7b1326bdeed337c62fe33a"
+    },
+    {
+      "id": "20261009-1517-regex-create-340de45c768ace8f6c496cd65067bee287ce0a0a@2026-10-09T15:11:24.194Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-core/src/developer/regex_inspection_tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:24.194Z",
+      "end_utc": "2026-10-09T15:11:31.808Z",
+      "duration_seconds": 7.614,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-340de45c768ace8f6c496cd65067bee287ce0a0a@2026-10-09T15:11:24.194Z",
+      "git_blob_sha": "340de45c768ace8f6c496cd65067bee287ce0a0a",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/340de45c768ace8f6c496cd65067bee287ce0a0a",
+      "operation_content_hash": "340de45c768ace8f6c496cd65067bee287ce0a0a"
+    },
+    {
+      "id": "20261009-1517-regex-create-76714deb58a4553a8ff7237f3dcd3dab963c9393@2026-10-09T15:10:49.246Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-app/src/regex_session/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:10:49.246Z",
+      "end_utc": "2026-10-09T15:11:35.996Z",
+      "duration_seconds": 46.75,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-76714deb58a4553a8ff7237f3dcd3dab963c9393@2026-10-09T15:10:49.246Z",
+      "git_blob_sha": "76714deb58a4553a8ff7237f3dcd3dab963c9393",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/76714deb58a4553a8ff7237f3dcd3dab963c9393",
+      "operation_content_hash": "76714deb58a4553a8ff7237f3dcd3dab963c9393"
+    },
+    {
+      "id": "20261009-1517-regex-create-0a50a559ae64344ef75c26d85406bd9cfe9638b2@2026-10-09T15:11:30.585Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-core/tests/fixtures/regex-swift-characterization.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:30.585Z",
+      "end_utc": "2026-10-09T15:11:36.721Z",
+      "duration_seconds": 6.136,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-0a50a559ae64344ef75c26d85406bd9cfe9638b2@2026-10-09T15:11:30.585Z",
+      "git_blob_sha": "0a50a559ae64344ef75c26d85406bd9cfe9638b2",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/0a50a559ae64344ef75c26d85406bd9cfe9638b2",
+      "operation_content_hash": "0a50a559ae64344ef75c26d85406bd9cfe9638b2"
+    },
+    {
+      "id": "20261009-1517-regex-create-7d35f377a892c4117a2c6689469a95a28a1ad154@2026-10-09T15:11:31.809Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-core/tests/fixtures/regex-swift-oracle.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:31.809Z",
+      "end_utc": "2026-10-09T15:11:43.895Z",
+      "duration_seconds": 12.086,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-7d35f377a892c4117a2c6689469a95a28a1ad154@2026-10-09T15:11:31.809Z",
+      "git_blob_sha": "7d35f377a892c4117a2c6689469a95a28a1ad154",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/7d35f377a892c4117a2c6689469a95a28a1ad154",
+      "operation_content_hash": "7d35f377a892c4117a2c6689469a95a28a1ad154"
+    },
+    {
+      "id": "20261009-1517-regex-create-d52374d160d3b88fab2e621e704fad4e72ef1f3e@2026-10-09T15:10:58.182Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-app/src/regex_ui/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:10:58.182Z",
+      "end_utc": "2026-10-09T15:11:44.359Z",
+      "duration_seconds": 46.177,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-d52374d160d3b88fab2e621e704fad4e72ef1f3e@2026-10-09T15:10:58.182Z",
+      "git_blob_sha": "d52374d160d3b88fab2e621e704fad4e72ef1f3e",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d52374d160d3b88fab2e621e704fad4e72ef1f3e",
+      "operation_content_hash": "d52374d160d3b88fab2e621e704fad4e72ef1f3e"
+    },
+    {
+      "id": "20261009-1517-regex-create-c91619789ffc52fc14830a3d9e4ca3c0fecece41@2026-10-09T15:11:36.721Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/bellobox-parity.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:36.721Z",
+      "end_utc": "2026-10-09T15:11:44.739Z",
+      "duration_seconds": 8.018,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-c91619789ffc52fc14830a3d9e4ca3c0fecece41@2026-10-09T15:11:36.721Z",
+      "git_blob_sha": "c91619789ffc52fc14830a3d9e4ca3c0fecece41",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/c91619789ffc52fc14830a3d9e4ca3c0fecece41",
+      "operation_content_hash": "c91619789ffc52fc14830a3d9e4ca3c0fecece41"
+    },
+    {
+      "id": "20261009-1517-regex-create-f9f53a5448448e4f938ef27cfb457fdebdc312bf@2026-10-09T15:11:43.895Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/comparison-workflow.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:43.895Z",
+      "end_utc": "2026-10-09T15:11:51.159Z",
+      "duration_seconds": 7.264,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-f9f53a5448448e4f938ef27cfb457fdebdc312bf@2026-10-09T15:11:43.895Z",
+      "git_blob_sha": "f9f53a5448448e4f938ef27cfb457fdebdc312bf",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/f9f53a5448448e4f938ef27cfb457fdebdc312bf",
+      "operation_content_hash": "f9f53a5448448e4f938ef27cfb457fdebdc312bf"
+    },
+    {
+      "id": "20261009-1517-regex-create-1bd6def1fe225cad14cea8ed163a122bc275a4a3@2026-10-09T15:11:35.996Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-core/tests/regex_swift_oracle.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:35.996Z",
+      "end_utc": "2026-10-09T15:11:51.575Z",
+      "duration_seconds": 15.579,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-1bd6def1fe225cad14cea8ed163a122bc275a4a3@2026-10-09T15:11:35.996Z",
+      "git_blob_sha": "1bd6def1fe225cad14cea8ed163a122bc275a4a3",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/1bd6def1fe225cad14cea8ed163a122bc275a4a3",
+      "operation_content_hash": "1bd6def1fe225cad14cea8ed163a122bc275a4a3"
+    },
+    {
+      "id": "20261009-1517-regex-create-b6be5f3c9bb7f0253fe6e810c838e8a0bbf11ef3@2026-10-09T15:11:07.046Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-core/src/developer.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:07.046Z",
+      "end_utc": "2026-10-09T15:11:52.503Z",
+      "duration_seconds": 45.457,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-b6be5f3c9bb7f0253fe6e810c838e8a0bbf11ef3@2026-10-09T15:11:07.046Z",
+      "git_blob_sha": "b6be5f3c9bb7f0253fe6e810c838e8a0bbf11ef3",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/b6be5f3c9bb7f0253fe6e810c838e8a0bbf11ef3",
+      "operation_content_hash": "b6be5f3c9bb7f0253fe6e810c838e8a0bbf11ef3"
+    },
+    {
+      "id": "20261009-1517-regex-create-bc836fb391894888f24f777898bf4171f29ee566@2026-10-09T15:11:44.359Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/regex-workflow.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:44.359Z",
+      "end_utc": "2026-10-09T15:11:57.863Z",
+      "duration_seconds": 13.504,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-bc836fb391894888f24f777898bf4171f29ee566@2026-10-09T15:11:44.359Z",
+      "git_blob_sha": "bc836fb391894888f24f777898bf4171f29ee566",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/bc836fb391894888f24f777898bf4171f29ee566",
+      "operation_content_hash": "bc836fb391894888f24f777898bf4171f29ee566"
+    },
+    {
+      "id": "20261009-1517-regex-create-3ce08f4adbdd7dc73d8c823ed57faaddb8f9c118@2026-10-09T15:11:15.643Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/crates/bellobox-core/src/developer/regex_inspection.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:15.643Z",
+      "end_utc": "2026-10-09T15:11:59.824Z",
+      "duration_seconds": 44.181,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-3ce08f4adbdd7dc73d8c823ed57faaddb8f9c118@2026-10-09T15:11:15.643Z",
+      "git_blob_sha": "3ce08f4adbdd7dc73d8c823ed57faaddb8f9c118",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/3ce08f4adbdd7dc73d8c823ed57faaddb8f9c118",
+      "operation_content_hash": "3ce08f4adbdd7dc73d8c823ed57faaddb8f9c118"
+    },
+    {
+      "id": "20261009-1517-regex-create-16b90e9b00cde47f75c568095a417a65687f74da@2026-10-09T15:11:44.739Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/url-workflow.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:11:44.739Z",
+      "end_utc": "2026-10-09T15:12:05.936Z",
+      "duration_seconds": 21.197,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-16b90e9b00cde47f75c568095a417a65687f74da@2026-10-09T15:11:44.739Z",
+      "git_blob_sha": "16b90e9b00cde47f75c568095a417a65687f74da",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/16b90e9b00cde47f75c568095a417a65687f74da",
+      "operation_content_hash": "16b90e9b00cde47f75c568095a417a65687f74da"
+    },
+    {
+      "id": "20261009-1517-regex-create-390e5ac946f2ce39bd6938a10c8d0e450d7c2505@2026-10-09T15:13:08.366Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/supplemental-build-inputs.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:13:08.366Z",
+      "end_utc": "2026-10-09T15:13:17.081Z",
+      "duration_seconds": 8.715,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created on exact authorized retry",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-390e5ac946f2ce39bd6938a10c8d0e450d7c2505@2026-10-09T15:13:08.366Z",
+      "git_blob_sha": "390e5ac946f2ce39bd6938a10c8d0e450d7c2505",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/390e5ac946f2ce39bd6938a10c8d0e450d7c2505",
+      "operation_content_hash": "390e5ac946f2ce39bd6938a10c8d0e450d7c2505"
+    },
+    {
+      "id": "20261009-1517-regex-create-954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c@2026-10-09T15:14:06.461Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/source-inventory.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:06.461Z",
+      "end_utc": "2026-10-09T15:14:17.032Z",
+      "duration_seconds": 10.571,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c@2026-10-09T15:14:06.461Z",
+      "git_blob_sha": "954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c",
+      "operation_content_hash": "954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c"
+    },
+    {
+      "id": "20261009-1517-regex-create-4300e4b9bc490b3c3c9b0471fb99902d0023e65e@2026-10-09T15:14:06.461Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/local-validation.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:06.461Z",
+      "end_utc": "2026-10-09T15:14:24.926Z",
+      "duration_seconds": 18.465,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-4300e4b9bc490b3c3c9b0471fb99902d0023e65e@2026-10-09T15:14:06.461Z",
+      "git_blob_sha": "4300e4b9bc490b3c3c9b0471fb99902d0023e65e",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/4300e4b9bc490b3c3c9b0471fb99902d0023e65e",
+      "operation_content_hash": "4300e4b9bc490b3c3c9b0471fb99902d0023e65e"
+    },
+    {
+      "id": "20261009-1517-regex-create-a8e99bc36d1be9d7b7a6e1669e73bc2637996209@2026-10-09T15:14:06.461Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/post-gui-source-delta.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:06.461Z",
+      "end_utc": "2026-10-09T15:14:34.582Z",
+      "duration_seconds": 28.121,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-a8e99bc36d1be9d7b7a6e1669e73bc2637996209@2026-10-09T15:14:06.461Z",
+      "git_blob_sha": "a8e99bc36d1be9d7b7a6e1669e73bc2637996209",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/a8e99bc36d1be9d7b7a6e1669e73bc2637996209",
+      "operation_content_hash": "a8e99bc36d1be9d7b7a6e1669e73bc2637996209"
+    },
+    {
+      "id": "20261009-1517-regex-create-bd7f1fa153315d301b82aa123aeb22a90419c4b3@2026-10-09T15:14:06.461Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/final-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:06.461Z",
+      "end_utc": "2026-10-09T15:14:54.621Z",
+      "duration_seconds": 48.16,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-bd7f1fa153315d301b82aa123aeb22a90419c4b3@2026-10-09T15:14:06.461Z",
+      "git_blob_sha": "bd7f1fa153315d301b82aa123aeb22a90419c4b3",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/bd7f1fa153315d301b82aa123aeb22a90419c4b3",
+      "operation_content_hash": "bd7f1fa153315d301b82aa123aeb22a90419c4b3"
+    },
+    {
+      "id": "20261009-1517-regex-create-f6aa9ac86d07122709e7dc92a3065cfc4701d5ac@2026-10-09T15:14:54.621Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/negative-controls.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:54.621Z",
+      "end_utc": "2026-10-09T15:15:02.862Z",
+      "duration_seconds": 8.241,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-f6aa9ac86d07122709e7dc92a3065cfc4701d5ac@2026-10-09T15:14:54.621Z",
+      "git_blob_sha": "f6aa9ac86d07122709e7dc92a3065cfc4701d5ac",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/f6aa9ac86d07122709e7dc92a3065cfc4701d5ac",
+      "operation_content_hash": "f6aa9ac86d07122709e7dc92a3065cfc4701d5ac"
+    },
+    {
+      "id": "20261009-1517-regex-create-b74c82db57000c40ad5db6e3ada61645ce547b13@2026-10-09T15:14:06.461Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/commands.jsonl",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:06.461Z",
+      "end_utc": "2026-10-09T15:15:03.440Z",
+      "duration_seconds": 56.979,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-b74c82db57000c40ad5db6e3ada61645ce547b13@2026-10-09T15:14:06.461Z",
+      "git_blob_sha": "b74c82db57000c40ad5db6e3ada61645ce547b13",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/b74c82db57000c40ad5db6e3ada61645ce547b13",
+      "operation_content_hash": "b74c82db57000c40ad5db6e3ada61645ce547b13"
+    },
+    {
+      "id": "20261009-1517-regex-create-782e0ecd3370a538bc8c089d57f8787af79ed52b@2026-10-09T15:15:02.862Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/output-bound-mutant-excerpt.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:15:02.862Z",
+      "end_utc": "2026-10-09T15:15:11.229Z",
+      "duration_seconds": 8.367,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-782e0ecd3370a538bc8c089d57f8787af79ed52b@2026-10-09T15:15:02.862Z",
+      "git_blob_sha": "782e0ecd3370a538bc8c089d57f8787af79ed52b",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/782e0ecd3370a538bc8c089d57f8787af79ed52b",
+      "operation_content_hash": "782e0ecd3370a538bc8c089d57f8787af79ed52b"
+    },
+    {
+      "id": "20261009-1517-regex-create-a56a3e71a5428d74c2bca5c907e8ed76abdcec23@2026-10-09T15:14:06.461Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/gui-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:06.461Z",
+      "end_utc": "2026-10-09T15:15:12.545Z",
+      "duration_seconds": 66.084,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-a56a3e71a5428d74c2bca5c907e8ed76abdcec23@2026-10-09T15:14:06.461Z",
+      "git_blob_sha": "a56a3e71a5428d74c2bca5c907e8ed76abdcec23",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/a56a3e71a5428d74c2bca5c907e8ed76abdcec23",
+      "operation_content_hash": "a56a3e71a5428d74c2bca5c907e8ed76abdcec23"
+    },
+    {
+      "id": "20261009-1517-regex-create-765e496985c83a4ca7b0ee5133456350a75c32b0@2026-10-09T15:15:03.441Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/sealed-cli-regression.log",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:15:03.441Z",
+      "end_utc": "2026-10-09T15:15:18.002Z",
+      "duration_seconds": 14.561,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-765e496985c83a4ca7b0ee5133456350a75c32b0@2026-10-09T15:15:03.441Z",
+      "git_blob_sha": "765e496985c83a4ca7b0ee5133456350a75c32b0",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/765e496985c83a4ca7b0ee5133456350a75c32b0",
+      "operation_content_hash": "765e496985c83a4ca7b0ee5133456350a75c32b0"
+    },
+    {
+      "id": "20261009-1517-regex-create-373ed1f6a97c784ba33e53dd6bd834496549bac7@2026-10-09T15:14:17.032Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/gui-receipt.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:17.032Z",
+      "end_utc": "2026-10-09T15:15:19.438Z",
+      "duration_seconds": 62.406,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-373ed1f6a97c784ba33e53dd6bd834496549bac7@2026-10-09T15:14:17.032Z",
+      "git_blob_sha": "373ed1f6a97c784ba33e53dd6bd834496549bac7",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/373ed1f6a97c784ba33e53dd6bd834496549bac7",
+      "operation_content_hash": "373ed1f6a97c784ba33e53dd6bd834496549bac7"
+    },
+    {
+      "id": "20261009-1517-regex-create-69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980@2026-10-09T15:15:12.545Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/independent-loc-review.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:15:12.545Z",
+      "end_utc": "2026-10-09T15:15:21.904Z",
+      "duration_seconds": 9.359,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980@2026-10-09T15:15:12.545Z",
+      "git_blob_sha": "69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980",
+      "operation_content_hash": "69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980"
+    },
+    {
+      "id": "20261009-1517-regex-create-56f6456970d3af41e09eac41a037c7f6e7fafd8d@2026-10-09T15:15:11.229Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/refs-before-candidate.txt",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:15:11.229Z",
+      "end_utc": "2026-10-09T15:15:24.863Z",
+      "duration_seconds": 13.634,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-56f6456970d3af41e09eac41a037c7f6e7fafd8d@2026-10-09T15:15:11.229Z",
+      "git_blob_sha": "56f6456970d3af41e09eac41a037c7f6e7fafd8d",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/56f6456970d3af41e09eac41a037c7f6e7fafd8d",
+      "operation_content_hash": "56f6456970d3af41e09eac41a037c7f6e7fafd8d"
+    },
+    {
+      "id": "20261009-1517-regex-create-b3a07ef3347865ed35fc2a566f34d50c6381546a@2026-10-09T15:14:24.926Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/loc/ledger.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:24.926Z",
+      "end_utc": "2026-10-09T15:15:25.858Z",
+      "duration_seconds": 60.932,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-b3a07ef3347865ed35fc2a566f34d50c6381546a@2026-10-09T15:14:24.926Z",
+      "git_blob_sha": "b3a07ef3347865ed35fc2a566f34d50c6381546a",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/b3a07ef3347865ed35fc2a566f34d50c6381546a",
+      "operation_content_hash": "b3a07ef3347865ed35fc2a566f34d50c6381546a"
+    },
+    {
+      "id": "20261009-1517-regex-create-f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e@2026-10-09T15:15:18.002Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/independent-final-review.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:15:18.002Z",
+      "end_utc": "2026-10-09T15:15:29.810Z",
+      "duration_seconds": 11.808,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e@2026-10-09T15:15:18.002Z",
+      "git_blob_sha": "f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e",
+      "operation_content_hash": "f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e"
+    },
+    {
+      "id": "20261009-1517-regex-create-ee55b31b9c3869b85482f45c339949401bb67167@2026-10-09T15:14:34.582Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/loc/verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:14:34.582Z",
+      "end_utc": "2026-10-09T15:15:31.968Z",
+      "duration_seconds": 57.386,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-ee55b31b9c3869b85482f45c339949401bb67167@2026-10-09T15:14:34.582Z",
+      "git_blob_sha": "ee55b31b9c3869b85482f45c339949401bb67167",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/ee55b31b9c3869b85482f45c339949401bb67167",
+      "operation_content_hash": "ee55b31b9c3869b85482f45c339949401bb67167"
+    },
+    {
+      "id": "20261009-1517-regex-create-74dea2c043bdff65fc8655e8a15c39fa2642e451@2026-10-09T15:15:19.438Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/main-verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:15:19.438Z",
+      "end_utc": "2026-10-09T15:15:37.901Z",
+      "duration_seconds": 18.463,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-74dea2c043bdff65fc8655e8a15c39fa2642e451@2026-10-09T15:15:19.438Z",
+      "git_blob_sha": "74dea2c043bdff65fc8655e8a15c39fa2642e451",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/74dea2c043bdff65fc8655e8a15c39fa2642e451",
+      "operation_content_hash": "74dea2c043bdff65fc8655e8a15c39fa2642e451"
+    },
+    {
+      "id": "20261009-1517-regex-create-abd8fa60f11bb1cf457e08b569476ec50610fb31@2026-10-09T15:15:21.904Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex blob: rust/docs/validation/regex-workflow-2026-10-09/README.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:15:21.904Z",
+      "end_utc": "2026-10-09T15:15:44.924Z",
+      "duration_seconds": 23.02,
+      "source": [
+        {
+          "receipt_sha256": "54627ee3134f5c8ade4c12f2439da2f9af7499d037fef892e342df8dbf126ce9",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "created after verified absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval; overlapping resource/client time, not implementation or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-create-abd8fa60f11bb1cf457e08b569476ec50610fb31@2026-10-09T15:15:21.904Z",
+      "git_blob_sha": "abd8fa60f11bb1cf457e08b569476ec50610fb31",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/abd8fa60f11bb1cf457e08b569476ec50610fb31",
+      "operation_content_hash": "abd8fa60f11bb1cf457e08b569476ec50610fb31"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/source-inventory.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.310Z",
+      "duration_seconds": 0.496,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c",
+      "operation_content_hash": "954b489b3e0ea67a28f0cb4a7bfa721a2a307c5c"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-bd7f1fa153315d301b82aa123aeb22a90419c4b3@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/final-source-manifest.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.194Z",
+      "duration_seconds": 0.38,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-bd7f1fa153315d301b82aa123aeb22a90419c4b3@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "bd7f1fa153315d301b82aa123aeb22a90419c4b3",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/bd7f1fa153315d301b82aa123aeb22a90419c4b3",
+      "operation_content_hash": "bd7f1fa153315d301b82aa123aeb22a90419c4b3"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-a56a3e71a5428d74c2bca5c907e8ed76abdcec23@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/gui-source-manifest.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.217Z",
+      "duration_seconds": 0.403,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-a56a3e71a5428d74c2bca5c907e8ed76abdcec23@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "a56a3e71a5428d74c2bca5c907e8ed76abdcec23",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/a56a3e71a5428d74c2bca5c907e8ed76abdcec23",
+      "operation_content_hash": "a56a3e71a5428d74c2bca5c907e8ed76abdcec23"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-a8e99bc36d1be9d7b7a6e1669e73bc2637996209@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/post-gui-source-delta.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.172Z",
+      "duration_seconds": 0.358,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-a8e99bc36d1be9d7b7a6e1669e73bc2637996209@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "a8e99bc36d1be9d7b7a6e1669e73bc2637996209",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/a8e99bc36d1be9d7b7a6e1669e73bc2637996209",
+      "operation_content_hash": "a8e99bc36d1be9d7b7a6e1669e73bc2637996209"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-4300e4b9bc490b3c3c9b0471fb99902d0023e65e@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/local-validation.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.173Z",
+      "duration_seconds": 0.359,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-4300e4b9bc490b3c3c9b0471fb99902d0023e65e@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "4300e4b9bc490b3c3c9b0471fb99902d0023e65e",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/4300e4b9bc490b3c3c9b0471fb99902d0023e65e",
+      "operation_content_hash": "4300e4b9bc490b3c3c9b0471fb99902d0023e65e"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-b74c82db57000c40ad5db6e3ada61645ce547b13@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/commands.jsonl",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.332Z",
+      "duration_seconds": 0.518,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-b74c82db57000c40ad5db6e3ada61645ce547b13@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "b74c82db57000c40ad5db6e3ada61645ce547b13",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/b74c82db57000c40ad5db6e3ada61645ce547b13",
+      "operation_content_hash": "b74c82db57000c40ad5db6e3ada61645ce547b13"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-373ed1f6a97c784ba33e53dd6bd834496549bac7@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/gui-receipt.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.292Z",
+      "duration_seconds": 0.478,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-373ed1f6a97c784ba33e53dd6bd834496549bac7@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "373ed1f6a97c784ba33e53dd6bd834496549bac7",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/373ed1f6a97c784ba33e53dd6bd834496549bac7",
+      "operation_content_hash": "373ed1f6a97c784ba33e53dd6bd834496549bac7"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-b3a07ef3347865ed35fc2a566f34d50c6381546a@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/loc/ledger.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.310Z",
+      "duration_seconds": 0.496,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-b3a07ef3347865ed35fc2a566f34d50c6381546a@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "b3a07ef3347865ed35fc2a566f34d50c6381546a",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/b3a07ef3347865ed35fc2a566f34d50c6381546a",
+      "operation_content_hash": "b3a07ef3347865ed35fc2a566f34d50c6381546a"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-ee55b31b9c3869b85482f45c339949401bb67167@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/loc/verification.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.187Z",
+      "duration_seconds": 0.373,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-ee55b31b9c3869b85482f45c339949401bb67167@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "ee55b31b9c3869b85482f45c339949401bb67167",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/ee55b31b9c3869b85482f45c339949401bb67167",
+      "operation_content_hash": "ee55b31b9c3869b85482f45c339949401bb67167"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-f6aa9ac86d07122709e7dc92a3065cfc4701d5ac@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/negative-controls.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.266Z",
+      "duration_seconds": 0.452,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-f6aa9ac86d07122709e7dc92a3065cfc4701d5ac@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "f6aa9ac86d07122709e7dc92a3065cfc4701d5ac",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/f6aa9ac86d07122709e7dc92a3065cfc4701d5ac",
+      "operation_content_hash": "f6aa9ac86d07122709e7dc92a3065cfc4701d5ac"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-782e0ecd3370a538bc8c089d57f8787af79ed52b@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/output-bound-mutant-excerpt.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.167Z",
+      "duration_seconds": 0.353,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-782e0ecd3370a538bc8c089d57f8787af79ed52b@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "782e0ecd3370a538bc8c089d57f8787af79ed52b",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/782e0ecd3370a538bc8c089d57f8787af79ed52b",
+      "operation_content_hash": "782e0ecd3370a538bc8c089d57f8787af79ed52b"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-765e496985c83a4ca7b0ee5133456350a75c32b0@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/sealed-cli-regression.log",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.283Z",
+      "duration_seconds": 0.469,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-765e496985c83a4ca7b0ee5133456350a75c32b0@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "765e496985c83a4ca7b0ee5133456350a75c32b0",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/765e496985c83a4ca7b0ee5133456350a75c32b0",
+      "operation_content_hash": "765e496985c83a4ca7b0ee5133456350a75c32b0"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-56f6456970d3af41e09eac41a037c7f6e7fafd8d@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/refs-before-candidate.txt",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.217Z",
+      "duration_seconds": 0.403,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-56f6456970d3af41e09eac41a037c7f6e7fafd8d@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "56f6456970d3af41e09eac41a037c7f6e7fafd8d",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/56f6456970d3af41e09eac41a037c7f6e7fafd8d",
+      "operation_content_hash": "56f6456970d3af41e09eac41a037c7f6e7fafd8d"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/independent-loc-review.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.405Z",
+      "duration_seconds": 0.591,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980",
+      "operation_content_hash": "69fa9a7005c6bb932fe3cf71d4d8ba2998fa1980"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/independent-final-review.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.304Z",
+      "duration_seconds": 0.49,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e",
+      "operation_content_hash": "f5caa8ad0b4a5485eb3d484e84a64f1f1babeb6e"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-74dea2c043bdff65fc8655e8a15c39fa2642e451@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/main-verification.json",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.263Z",
+      "duration_seconds": 0.449,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-74dea2c043bdff65fc8655e8a15c39fa2642e451@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "74dea2c043bdff65fc8655e8a15c39fa2642e451",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/74dea2c043bdff65fc8655e8a15c39fa2642e451",
+      "operation_content_hash": "74dea2c043bdff65fc8655e8a15c39fa2642e451"
+    },
+    {
+      "id": "20261009-1517-regex-reconcile-abd8fa60f11bb1cf457e08b569476ec50610fb31@2026-10-09T15:13:53.814Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Reconcile uncertain blob existence: rust/docs/validation/regex-workflow-2026-10-09/README.md",
+      "category": "publication verification",
+      "start_utc": "2026-10-09T15:13:53.814Z",
+      "end_utc": "2026-10-09T15:13:54.321Z",
+      "duration_seconds": 0.507,
+      "source": [
+        {
+          "receipt_sha256": "92ee06340b49c4f0b5f7e263ae4800c2ded10f67ab2bb931c9a2d18291057950",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "verified-absent",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Separate observed read-only request; identical millisecond spans on different targets remain distinct operations",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "regex-reconcile-abd8fa60f11bb1cf457e08b569476ec50610fb31@2026-10-09T15:13:53.814Z",
+      "git_blob_sha": "abd8fa60f11bb1cf457e08b569476ec50610fb31",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/abd8fa60f11bb1cf457e08b569476ec50610fb31",
+      "operation_content_hash": "abd8fa60f11bb1cf457e08b569476ec50610fb31"
+    },
+    {
+      "id": "20261009-1517-regex-tree",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex tree",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:16:09.637Z",
+      "end_utc": "2026-10-09T15:16:20.486Z",
+      "duration_seconds": 10.849,
+      "source": [
+        {
+          "receipt_sha256": "058752e3e89c78456ec15013039eaee4fa2da21d26be99d06b8504a5ff24a788",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Object created; no ref movement",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval, not isolated processing or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1517-regex-commit",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable Regex commit",
+      "category": "publication",
+      "start_utc": "2026-10-09T15:16:20.486Z",
+      "end_utc": "2026-10-09T15:16:32.365Z",
+      "duration_seconds": 11.879,
+      "source": [
+        {
+          "receipt_sha256": "058752e3e89c78456ec15013039eaee4fa2da21d26be99d06b8504a5ff24a788",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Object created; no ref movement",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "pending API/client operation",
+      "duration_basis": "Observed connector interval, not isolated processing or inference",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1517-regex-verification-batch",
+      "repository_assignment": "BelloBox",
+      "activity": "Combined immutable candidate verification read batch",
+      "category": "publication (mixed)",
+      "start_utc": "2026-10-09T15:16:50.401Z",
+      "end_utc": "2026-10-09T15:16:51.618Z",
+      "duration_seconds": 1.217,
+      "source": [
+        {
+          "receipt_sha256": "c7ef816d26dd87f7aaa0ddc5717cac386dc7827be8582fa04cd7a3945b9471a6",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Combined read-batch observer window; individual request resources not exposed, excluded from API resource sum",
+      "parent_id": "20261009-1517-regex-candidate-preparation",
+      "prospective": true,
+      "checkpoint": "20261009-1517",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
     }
   ],
   "commit_milestones": [
@@ -63877,27 +65920,27 @@
         }
       },
       "catchup_command": {
-        "count": 189,
-        "known_duration_count": 189,
-        "resource_seconds_sum": 3252.6118302740147,
-        "wall_coverage_seconds": 2506.931739,
+        "count": 198,
+        "known_duration_count": 198,
+        "resource_seconds_sum": 3483.1376736589814,
+        "wall_coverage_seconds": 2737.457534,
         "category_seconds": {
-          "automated lint/check": 268.8834882410095,
-          "build + test/check (combined)": 2686.5425099070126,
+          "automated lint/check": 303.2452926809868,
+          "build + test/check (combined)": 2880.384047184998,
           "dependency/environment or verification": 3.5430181499935216,
           "build": 208.34446281300106,
           "dependency setup + build (combined)": 31.142,
           "repository/dependency setup": 12.327,
-          "automated accounting validation": 5.9802615550050975,
+          "automated accounting validation": 7.971308260011836,
           "packaging/source validation": 0.24390436300379223,
           "test execution (existing binary)": 1.998498904009466,
           "automated source/binary verification": 0.532835828998941,
           "build + negative-control test (combined)": 24.18729161299416,
           "remote repository verification": 8.531452898998396,
-          "dependency/environment recovery": 0.3551059999881545
+          "dependency/environment recovery": 0.6865609619853785
         },
         "resource_seconds": {
-          "cloud command process": 3252.6118302740147
+          "cloud command process": 3483.1376736589814
         }
       },
       "catchup_gui_process": {
@@ -63910,6 +65953,19 @@
         },
         "resource_seconds": {
           "ordinary GUI process lifetime": 1737.634763
+        }
+      },
+      "catchup_api": {
+        "count": 55,
+        "known_duration_count": 55,
+        "resource_seconds_sum": 968.0189999999999,
+        "wall_coverage_seconds": 216.248,
+        "category_seconds": {
+          "publication": 960.444,
+          "publication verification": 7.575
+        },
+        "resource_seconds": {
+          "pending API/client operation": 968.0189999999999
         }
       }
     }
@@ -64557,6 +66613,51 @@
       "ci_coverage_within_window_seconds": 0,
       "window_seconds": 600.0,
       "outside_selected_ci_job_intervals_seconds": 600.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1517",
+      "through_utc": "2026-10-09T15:17:00Z",
+      "coverage_window_start_utc": "2026-10-09T14:57:00Z",
+      "new_items": 68,
+      "groups": {
+        "catchup_command": {
+          "count": 9,
+          "known_duration_count": 9,
+          "resource_seconds_sum": 230.52584338496672,
+          "wall_coverage_seconds": 230.525795,
+          "category_seconds": {
+            "build + test/check (combined)": 193.84153727798548,
+            "dependency/environment recovery": 0.331454961997224,
+            "automated accounting validation": 1.9910467050067382,
+            "automated lint/check": 34.36180443997728
+          },
+          "resource_seconds": {
+            "cloud command process": 230.52584338496672
+          },
+          "known_endpoint_items": 9,
+          "known_endpoint_resource_seconds": 230.52584338496672
+        },
+        "catchup_api": {
+          "count": 55,
+          "known_duration_count": 55,
+          "resource_seconds_sum": 968.0189999999999,
+          "wall_coverage_seconds": 216.248,
+          "category_seconds": {
+            "publication": 960.444,
+            "publication verification": 7.575
+          },
+          "resource_seconds": {
+            "pending API/client operation": 968.0189999999999
+          },
+          "known_endpoint_items": 55,
+          "known_endpoint_resource_seconds": 968.019
+        }
+      },
+      "ci_coverage_within_window_seconds": 0,
+      "window_seconds": 1200.0,
+      "outside_selected_ci_job_intervals_seconds": 1200.0,
       "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
       "nested_ci_step_seconds": {}
     }
