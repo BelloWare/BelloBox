@@ -5,6 +5,7 @@ mod gif_converter;
 mod home;
 mod image_disposal;
 mod launcher_clock_ui;
+mod launcher_qr_ui;
 mod launcher_ui;
 mod recording_ui;
 mod screenshot_color;

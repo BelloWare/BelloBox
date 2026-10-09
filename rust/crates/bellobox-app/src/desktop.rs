@@ -230,7 +230,7 @@ impl BelloBox {
             let cancellation = self.jobs.cancellation();
             let task = cx
                 .background_executor()
-                .spawn(async move { qr_jobs::generate(&input, false, &cancellation) });
+                .spawn(async move { qr_jobs::generate(&input, &cancellation) });
             cx.spawn(async move |this, cx| {
                 let result = task.await;
                 let _ = this.update(cx, |this, cx| {

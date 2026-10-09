@@ -3,7 +3,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 pub(crate) struct Preview {
     pub png: Vec<u8>,
-    pub terminal: Option<String>,
 }
 
 pub(crate) fn validate(input: &str) -> Result<(), String> {
@@ -16,11 +15,7 @@ pub(crate) fn validate(input: &str) -> Result<(), String> {
 
 /// Cancelled queued requests do no encoding. An already-running encode can finish,
 /// but its result still needs the window's SessionJobs token check before publication.
-pub(crate) fn generate(
-    input: &str,
-    terminal: bool,
-    cancelled: &AtomicBool,
-) -> Option<Result<Preview, String>> {
+pub(crate) fn generate(input: &str, cancelled: &AtomicBool) -> Option<Result<Preview, String>> {
     if cancelled.load(Ordering::Relaxed) {
         return None;
     }
@@ -30,12 +25,7 @@ pub(crate) fn generate(
         if cancelled.load(Ordering::Relaxed) {
             return Ok(None);
         }
-        let terminal = if terminal {
-            Some(bellobox_core::qr::terminal(input)?)
-        } else {
-            None
-        };
-        Ok(Some(Preview { png, terminal }))
+        Ok(Some(Preview { png }))
     })();
     match result {
         Ok(preview) => preview.map(Ok),
@@ -94,7 +84,7 @@ mod tests {
             assert!(validate(&input).is_err());
             publish(&jobs, pending, Ok("old image"), &mut copyable);
             assert!(copyable.is_none());
-            assert!(generate("old", false, &cancelled).is_none());
+            assert!(generate("old", &cancelled).is_none());
         }
     }
 
@@ -109,10 +99,10 @@ mod tests {
             .collect();
         for (token, flag) in &requests[..199] {
             assert!(!jobs.accepts(*token));
-            assert!(generate("queued", true, flag).is_none());
+            assert!(generate("queued", flag).is_none());
         }
         assert!(jobs.accepts(requests[199].0));
-        assert!(generate("latest", true, &requests[199].1).unwrap().is_ok());
+        assert!(generate("latest", &requests[199].1).unwrap().is_ok());
     }
 
     #[test]
@@ -128,7 +118,7 @@ mod tests {
                 jobs.cancellation()
             })
         };
-        assert!(generate("closed", true, &flag).is_none());
+        assert!(generate("closed", &flag).is_none());
         let mut reopened = SessionJobs::default();
         reopened.begin();
         assert!(!reopened.accepts(old));
@@ -168,19 +158,8 @@ mod tests {
             "界🙂".repeat(50),
             "a".repeat(2000),
         ] {
-            let preview = generate(&input, true, &cancelled).unwrap().unwrap();
+            let preview = generate(&input, &cancelled).unwrap().unwrap();
             assert_eq!(preview.png, bellobox_core::qr::png(&input).unwrap());
-            assert_eq!(
-                preview.terminal,
-                Some(bellobox_core::qr::terminal(&input).unwrap())
-            );
-            assert!(
-                generate(&input, false, &cancelled)
-                    .unwrap()
-                    .unwrap()
-                    .terminal
-                    .is_none()
-            );
         }
     }
 }

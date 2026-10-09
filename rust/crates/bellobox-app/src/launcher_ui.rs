@@ -1,13 +1,14 @@
 //! Separate source-sized launcher surface; never the application's Home sidebar.
 use crate::clock_copilot_worker::RetirementGuard;
 use crate::launcher_clock_ui::LauncherClockPreview;
+use crate::launcher_qr_ui::LauncherQrPreview;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
     launcher,
     settings::{Settings, config_dir},
 };
 use gpui::{prelude::*, *};
-use std::{cell::RefCell, rc::Rc, sync::Arc};
+use std::{cell::RefCell, rc::Rc};
 
 struct Launcher {
     query: Entity<EditorView>,
@@ -18,7 +19,10 @@ struct Launcher {
     settings_writable: bool,
     notice: Option<String>,
     jobs: crate::session::SessionJobs,
-    qr: Option<Arc<Image>>,
+    qr: Option<Entity<LauncherQrPreview>>,
+    qr_active: bool,
+    qr_sized: bool,
+    qr_subscriptions: Vec<Subscription>,
     clock: Option<Entity<LauncherClockPreview>>,
     clock_guards: Rc<RefCell<Vec<RetirementGuard>>>,
     clock_transferred: bool,
@@ -69,7 +73,7 @@ impl Launcher {
         let activation = cx.observe_window_activation(window, |this, window, cx| {
             if window.is_window_active() {
                 this.was_active = true;
-            } else if this.was_active && this.clock_active {
+            } else if this.was_active && this.clock_active && !this.qr_save_pending(cx) {
                 // The compact source palette dismisses on deactivation. Limit
                 // this addition to the clock slice; no background preview survives.
                 this.close(window, cx);
@@ -92,6 +96,9 @@ impl Launcher {
             notice,
             jobs: crate::session::SessionJobs::default(),
             qr: None,
+            qr_active: false,
+            qr_sized: false,
+            qr_subscriptions: Vec::new(),
             clock: None,
             clock_guards: Default::default(),
             clock_transferred: false,
@@ -114,6 +121,7 @@ impl Launcher {
             if !cx.windows().contains(&owner) {
                 let _ = weak.update(cx, |this, cx| {
                     this.closed = true;
+                    this.discard_qr(cx);
                     this.discard_clock(cx)
                 });
             }
@@ -199,6 +207,74 @@ impl Launcher {
         }
         false
     }
+    fn qr_save_pending(&self, cx: &App) -> bool {
+        self.qr
+            .as_ref()
+            .is_some_and(|qr| qr.read(cx).pending_dialog())
+    }
+    fn discard_qr(&mut self, cx: &mut Context<Self>) {
+        self.qr_subscriptions.clear();
+        if let Some(qr) = self.qr.take() {
+            qr.update(cx, |qr, cx| qr.retire(cx));
+        }
+        self.qr_active = false;
+    }
+    fn route_qr_key(
+        &mut self,
+        event: &KeyDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> bool {
+        if self.qr_save_pending(cx) {
+            return true;
+        }
+        if !self.qr_active {
+            return false;
+        }
+        let Some(qr) = self.qr.clone() else {
+            return false;
+        };
+        if qr.read(cx).composing(window, cx) {
+            return true;
+        }
+        let key = event.keystroke.key.as_str();
+        let modifiers = event.keystroke.modifiers;
+        if key == "escape"
+            && (self.suppress_escape || qr.read(cx).owns_focus(window, cx))
+            && !modifiers.platform
+            && !modifiers.control
+            && !modifiers.alt
+            && !modifiers.shift
+        {
+            self.suppress_escape = true;
+            self.query.read(cx).focus(window);
+            window.prevent_default();
+            cx.stop_propagation();
+            return true;
+        }
+        if key == "k"
+            && (modifiers.platform || modifiers.control)
+            && !modifiers.alt
+            && !modifiers.shift
+        {
+            self.query.update(cx, |e, cx| e.set_text(String::new(), cx));
+            self.query.read(cx).focus(window);
+            window.prevent_default();
+            cx.stop_propagation();
+            return true;
+        }
+        let search = self.query.read(cx).focus_handle(cx);
+        qr.update(cx, |qr, cx| qr.handle_key(event, &search, window, cx))
+    }
+    fn tool_input(&self, id: &str, cx: &App) -> Result<String, String> {
+        if id == "qr"
+            && let Some(qr) = &self.qr
+        {
+            qr.read(cx).handoff(cx)
+        } else {
+            Ok(self.input.clone())
+        }
+    }
     fn discard_clock(&mut self, cx: &mut Context<Self>) {
         if let Some(clock) = self.clock.take() {
             clock.update(cx, |clock, cx| clock.retire_copilot(cx));
@@ -227,11 +303,12 @@ impl Launcher {
                 Some("Stopping the Copilot request. Close again after it finishes.".into());
             cx.notify();
         }
-        !active
+        !active && !self.qr_save_pending(cx)
     }
     fn close(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.allow_close(cx) {
             self.jobs.cancel();
+            self.discard_qr(cx);
             self.discard_clock(cx);
             crate::shutdown::close_window(window, cx);
         }
@@ -254,11 +331,14 @@ impl Launcher {
             return;
         }
         self.clock_active = false;
+        self.qr_active = false;
+        if let Some(qr) = &self.qr {
+            qr.update(cx, |qr, cx| qr.set_active(false, cx));
+        }
         if let Some(clock) = &self.clock {
             clock.update(cx, |clock, cx| clock.set_active(false, cx));
         }
         let revision = self.jobs.begin();
-        self.qr = None;
         let Some(command) = self.commands(cx).get(self.selected).cloned() else {
             self.preview
                 .update(cx, |e, cx| e.set_text(String::new(), cx));
@@ -287,6 +367,29 @@ impl Launcher {
             cx.notify();
             return;
         }
+        if command.id == "qr" {
+            if self.qr.is_none() {
+                let qr = cx.new(|cx| LauncherQrPreview::new(self.input.clone(), window, cx));
+                self.qr_subscriptions
+                    .push(cx.observe(&qr, |_, _, cx| cx.notify()));
+                self.qr_subscriptions.push(cx.subscribe_in(
+                    &qr,
+                    window,
+                    |this, _, _: &crate::launcher_qr_ui::Open, window, cx| {
+                        if this.qr_active {
+                            this.launch(window, cx);
+                        }
+                    },
+                ));
+                self.qr = Some(qr);
+            }
+            self.qr_active = true;
+            if let Some(qr) = &self.qr {
+                qr.update(cx, |qr, cx| qr.set_active(true, cx));
+            }
+            cx.notify();
+            return;
+        }
         if self.input.is_empty() {
             self.preview.update(cx, |e, cx| {
                 e.set_text(
@@ -294,42 +397,6 @@ impl Launcher {
                     cx,
                 )
             });
-            return;
-        }
-        if command.id == "qr" {
-            if let Err(error) = crate::desktop::qr_jobs::validate(&self.input) {
-                self.preview.update(cx, |e, cx| e.set_text(error, cx));
-                return;
-            }
-            self.preview
-                .update(cx, |e, cx| e.set_text("Generating QR code…".into(), cx));
-            let input = self.input.clone();
-            let cancellation = self.jobs.cancellation();
-            let task = cx.background_executor().spawn(async move {
-                crate::desktop::qr_jobs::generate(&input, true, &cancellation)
-            });
-            cx.spawn(async move |this, cx| {
-                let result = task.await;
-                let _ = this.update(cx, |this, cx| {
-                    if !this.jobs.accepts(revision) {
-                        return;
-                    }
-                    let Some(result) = result else {
-                        return;
-                    };
-                    let text = match result {
-                        Ok(result) => {
-                            this.qr =
-                                Some(Arc::new(Image::from_bytes(ImageFormat::Png, result.png)));
-                            result.terminal.unwrap_or_default()
-                        }
-                        Err(error) => error,
-                    };
-                    this.preview.update(cx, |e, cx| e.set_text(text, cx));
-                    cx.notify();
-                });
-            })
-            .detach();
             return;
         }
         let input = self.input.clone();
@@ -355,7 +422,7 @@ impl Launcher {
         .detach();
     }
     fn launch(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.closed || crate::shutdown::requested(cx) {
+        if self.closed || crate::shutdown::requested(cx) || self.qr_save_pending(cx) {
             return;
         }
         if let Some(c) = self.commands(cx).get(self.selected) {
@@ -396,7 +463,15 @@ impl Launcher {
                 }
                 self.clock_transferred = true;
             } else {
-                crate::desktop::open_tool(c.id, self.input.clone(), cx);
+                let input = match self.tool_input(c.id, cx) {
+                    Ok(input) => input,
+                    Err(error) => {
+                        self.notice = Some(error);
+                        cx.notify();
+                        return;
+                    }
+                };
+                crate::desktop::open_tool(c.id, input, cx);
             }
             self.close(window, cx);
         }
@@ -418,7 +493,7 @@ impl Render for Launcher {
         }
         let commands = self.commands(cx);
         let count = commands.len();
-        if self.clock_active || self.clock_sized {
+        if self.clock_active || self.clock_sized || self.qr_active || self.qr_sized {
             let natural = if self.clock_active {
                 clock_palette_height(count, !self.input.is_empty() || self.notice.is_some())
                     + self
@@ -426,6 +501,20 @@ impl Render for Launcher {
                         .as_ref()
                         .map(|c| c.read(cx).height() - crate::launcher_clock_ui::PREVIEW_HEIGHT)
                         .unwrap_or(0.)
+            } else if self.qr_active {
+                64. + if !self.input.is_empty() || self.notice.is_some() {
+                    48.
+                } else {
+                    0.
+                } + 26.
+                    + count.min(5) as f32 * 42.
+                    + 12.
+                    + 42.
+                    + self
+                        .qr
+                        .as_ref()
+                        .map(|qr| qr.read(cx).height())
+                        .unwrap_or(232.)
             } else {
                 620.
             };
@@ -438,6 +527,7 @@ impl Render for Launcher {
                 window.resize(size(px(680.), px(height)));
             }
             self.clock_sized = self.clock_active;
+            self.qr_sized = self.qr_active;
         }
         self.selected = self.selected.min(count.saturating_sub(1));
         let best = launcher::suggestions(&self.input).first().copied();
@@ -458,6 +548,11 @@ impl Render for Launcher {
                 if this.query.read(cx).has_marked_text() {
                     return;
                 }
+                if let Some(qr) = &this.qr
+                    && qr.update(cx, |qr, cx| qr.handle_key_up(event, window, cx))
+                {
+                    return;
+                }
                 if this.clock_active
                     && let Some(clock) = &this.clock
                 {
@@ -468,6 +563,9 @@ impl Render for Launcher {
             }))
             .capture_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
                 if this.query.read(cx).has_marked_text() {
+                    return;
+                }
+                if this.route_qr_key(event, window, cx) {
                     return;
                 }
                 if this.route_clock_editor_key(event, window, cx) {
@@ -630,7 +728,11 @@ impl Render for Launcher {
                             .text_size(px(12.))
                             .child("×")
                             .on_click(cx.listener(|this, _, window, cx| {
+                                if this.qr_save_pending(cx) {
+                                    return;
+                                }
                                 this.discard_clock(cx);
+                                this.discard_qr(cx);
                                 this.selected = 0;
                                 this.query
                                     .update(cx, |editor, cx| editor.set_text(String::new(), cx));
@@ -758,6 +860,9 @@ impl Render for Launcher {
                                             })),
                                     )
                                     .on_click(cx.listener(move |this, _, window, cx| {
+                                        if this.qr_save_pending(cx) {
+                                            return;
+                                        }
                                         this.selected = i;
                                         this.refresh_preview(window, cx);
                                         this.launch(window, cx);
@@ -766,7 +871,10 @@ impl Render for Launcher {
                             .when(selected && self.clock_active, |s| {
                                 s.child(self.clock.as_ref().expect("active clock session").clone())
                             })
-                            .when(selected && !self.clock_active, |s| {
+                            .when(selected && self.qr_active, |s| {
+                                s.child(self.qr.as_ref().expect("active QR session").clone())
+                            })
+                            .when(selected && !self.clock_active && !self.qr_active, |s| {
                                 s.child(
                                     div()
                                         .px(px(10.))
@@ -774,14 +882,6 @@ impl Render for Launcher {
                                         .flex()
                                         .flex_col()
                                         .gap(px(8.))
-                                        .when_some(self.qr.clone(), |s, image| {
-                                            s.child(
-                                                div()
-                                                    .flex()
-                                                    .justify_center()
-                                                    .child(img(image).size(px(128.))),
-                                            )
-                                        })
                                         .child(
                                             div()
                                                 .h(px(130.))
@@ -835,11 +935,15 @@ impl Render for Launcher {
                             .cursor_pointer()
                             .child("Use Clipboard")
                             .on_click(cx.listener(|this, _, window, cx| {
+                                if this.qr_save_pending(cx) {
+                                    return;
+                                }
                                 if let Some(text) = cx.read_from_clipboard().and_then(|v| v.text())
                                 {
                                     match bellobox_core::validate_input(&text) {
                                         Ok(()) => {
                                             this.discard_clock(cx);
+                                            this.discard_qr(cx);
                                             this.selected = 0;
                                             this.query.update(cx, |editor, cx| {
                                                 editor.set_text(String::new(), cx)
@@ -849,6 +953,7 @@ impl Render for Launcher {
                                         }
                                         Err(e) => {
                                             this.discard_clock(cx);
+                                            this.discard_qr(cx);
                                             this.notice = Some(e);
                                             this.input.clear();
                                         }
@@ -908,3 +1013,174 @@ mod clock_tests {
 
 #[cfg(test)]
 mod copilot_lifecycle_tests;
+
+#[cfg(test)]
+mod qr_lifecycle_tests {
+    use super::Launcher;
+    use gpui::{
+        AppContext, EntityInputHandler, Focusable, KeyDownEvent, Keystroke, TestAppContext,
+    };
+    fn key(name: &str, held: bool) -> KeyDownEvent {
+        KeyDownEvent {
+            keystroke: Keystroke::parse(name).unwrap(),
+            is_held: held,
+        }
+    }
+    #[gpui::test]
+    fn retained_qr_draft_is_exact_and_other_tools_keep_original_selection(cx: &mut TestAppContext) {
+        let view = cx.add_window(|w, cx| Launcher::new("original".into(), w, cx));
+        view.update(cx, |v, w, cx| {
+            v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+            v.refresh_preview(w, cx);
+            let qr = v.qr.as_ref().unwrap().clone();
+            let editor = qr.read(cx).draft_editor();
+            editor.update(cx, |e, cx| e.set_text("edited\n界".into(), cx));
+            v.query.update(cx, |e, cx| e.set_text("json".into(), cx));
+            v.refresh_preview(w, cx);
+            assert!(!v.qr_active);
+            assert_eq!(v.tool_input("json", cx).unwrap(), "original");
+            v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+            v.refresh_preview(w, cx);
+            assert_eq!(v.qr.as_ref().unwrap().entity_id(), qr.entity_id());
+            assert_eq!(v.tool_input("qr", cx).unwrap(), "edited\n界");
+            editor.update(cx, |e, cx| e.set_text(String::new(), cx));
+            assert_eq!(v.tool_input("qr", cx).unwrap(), "");
+            v.discard_qr(cx);
+            v.input = "replacement".into();
+            v.refresh_preview(w, cx);
+            assert_ne!(v.qr.as_ref().unwrap().entity_id(), qr.entity_id());
+            assert_eq!(v.tool_input("qr", cx).unwrap(), "replacement");
+        })
+        .unwrap();
+    }
+    #[gpui::test]
+    fn empty_selection_creates_qr_and_ime_escape_return_route_without_open(
+        cx: &mut TestAppContext,
+    ) {
+        let view = cx.add_window(|w, cx| Launcher::new(String::new(), w, cx));
+        view.update(cx, |v, w, cx| {
+            v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+            v.refresh_preview(w, cx);
+            assert!(v.qr_active);
+            let editor = v.qr.as_ref().unwrap().read(cx).draft_editor();
+            editor.read(cx).focus(w);
+            assert!(v.route_qr_key(&key("enter", false), w, cx));
+            assert!(v.route_qr_key(&key("down", false), w, cx));
+            editor.update(cx, |e, cx| {
+                e.replace_and_mark_text_in_range(None, "に", Some(1..1), w, cx)
+            });
+            assert!(v.route_qr_key(&key("escape", false), w, cx));
+            assert!(editor.read(cx).has_marked_text());
+            assert!(editor.read(cx).focus_handle(cx).is_focused(w));
+            editor.update(cx, |e, cx| e.replace_text_in_range(None, "日", w, cx));
+            assert!(v.route_qr_key(&key("escape", false), w, cx));
+            assert!(v.query.read(cx).focus_handle(cx).is_focused(w));
+            assert!(v.route_qr_key(&key("escape", true), w, cx));
+            assert!(!v.closed);
+            v.suppress_escape = false;
+            assert!(!v.route_qr_key(&key("enter", false), w, cx));
+            v.close(w, cx);
+            assert!(v.qr.is_none());
+        })
+        .unwrap();
+    }
+    #[gpui::test]
+    fn actual_open_popup_receives_edited_and_explicitly_empty_qr(cx: &mut TestAppContext) {
+        for draft in ["edited payload", ""] {
+            let view = cx.add_window(|w, cx| Launcher::new("original must not leak".into(), w, cx));
+            cx.run_until_parked();
+            view.update(cx, |v, w, cx| {
+                v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+                v.refresh_preview(w, cx);
+                let editor = v.qr.as_ref().unwrap().read(cx).draft_editor();
+                editor.update(cx, |e, cx| e.set_text(draft.into(), cx));
+                v.launch(w, cx);
+            })
+            .unwrap();
+            cx.run_until_parked();
+            assert!(view.root(cx).is_err());
+            assert_eq!(cx.windows().len(), 1);
+            let popup = cx.windows()[0];
+            // Typing into the actual popup input makes an empty draft observable
+            // through the editor's real select-all/copy route as well.
+            let mut visual = gpui::VisualTestContext::from_window(popup, cx);
+            visual.simulate_click(
+                gpui::point(gpui::px(150.), gpui::px(450.)),
+                gpui::Modifiers::default(),
+            );
+            cx.simulate_input(popup, "probe");
+            cx.simulate_keystrokes(popup, "ctrl-a ctrl-c");
+            let text = cx.read_from_clipboard().and_then(|c| c.text()).unwrap();
+            assert!(text.contains("probe"));
+            assert!(!text.contains("original must not leak"));
+            assert_eq!(text.replace("probe", ""), draft);
+            cx.update_window(popup, |_, w, cx| crate::shutdown::close_window(w, cx))
+                .unwrap();
+            cx.run_until_parked();
+        }
+    }
+    #[gpui::test]
+    fn dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline(
+        cx: &mut TestAppContext,
+    ) {
+        let view = cx.add_window(|w, cx| Launcher::new("draft".into(), w, cx));
+        view.update(cx, |v, w, cx| {
+            v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+            v.refresh_preview(w, cx);
+            v.query.read(cx).focus(w);
+        })
+        .unwrap();
+        cx.run_until_parked();
+        // Search -> editor -> Enlarge -> Paste -> Clear.
+        cx.simulate_keystrokes(view.into(), "tab tab tab tab");
+        let mut visual = gpui::VisualTestContext::from_window(view.into(), cx);
+        visual.simulate_event(key("enter", false));
+        visual.simulate_event(key("enter", true));
+        visual.simulate_event(gpui::KeyUpEvent {
+            keystroke: Keystroke::parse("enter").unwrap(),
+        });
+        cx.run_until_parked();
+        view.update(cx, |v, _, cx| {
+            assert_eq!(v.tool_input("qr", cx).unwrap(), "")
+        })
+        .unwrap();
+        cx.simulate_keystrokes(view.into(), "enter");
+        view.update(cx, |v, _, cx| {
+            assert_eq!(v.tool_input("qr", cx).unwrap(), "\n")
+        })
+        .unwrap();
+        assert_eq!(cx.windows().len(), 1);
+    }
+    #[gpui::test]
+    fn actual_save_pending_blocks_launcher_open_navigation_and_close(cx: &mut TestAppContext) {
+        let view = cx.add_window(|w, cx| Launcher::new("save owner".into(), w, cx));
+        view.update(cx, |v, w, cx| {
+            v.query.update(cx, |e, cx| e.set_text("qr".into(), cx));
+            v.refresh_preview(w, cx);
+            v.query.read(cx).focus(w);
+        })
+        .unwrap();
+        cx.run_until_parked();
+        // Search -> editor -> Enlarge -> Paste -> Clear -> Save.
+        cx.simulate_keystrokes(view.into(), "tab tab tab tab tab enter");
+        view.update(cx, |v, w, cx| {
+            assert!(v.qr_save_pending(cx));
+            let selected = v.selected;
+            assert!(v.route_qr_key(&key("down", false), w, cx));
+            v.launch(w, cx);
+            v.close(w, cx);
+            assert_eq!(v.selected, selected);
+        })
+        .unwrap();
+        assert_eq!(cx.windows().len(), 1);
+        cx.simulate_new_path_selection(|_| None);
+        cx.run_until_parked();
+        view.update(cx, |v, w, cx| {
+            assert!(!v.qr_save_pending(cx));
+            v.close(w, cx);
+        })
+        .unwrap();
+        cx.run_until_parked();
+        assert!(view.root(cx).is_err());
+    }
+}
