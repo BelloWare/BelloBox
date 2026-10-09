@@ -1,0 +1,80 @@
+{
+  "checked_at": "2026-10-09T02:08:33.352974+00:00",
+  "commands": [
+    {
+      "command": [
+        "/usr/bin/sw_vers"
+      ],
+      "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t14.8\nBuildVersion:\t\t23J21\n",
+      "stderr": "",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/usr/bin/uname",
+        "-m"
+      ],
+      "stdout": "arm64\n",
+      "stderr": "",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/opt/homebrew/bin/rustc",
+        "-vV"
+      ],
+      "stdout": "rustc 1.91.1 (ed61e7d7e 2025-11-07) (Homebrew)\nbinary: rustc\ncommit-hash: ed61e7d7e242494fb7057f2657300d9e77bb4fcb\ncommit-date: 2025-11-07\nhost: aarch64-apple-darwin\nrelease: 1.91.1\nLLVM version: 21.1.5\n",
+      "stderr": "",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "-V"
+      ],
+      "stdout": "cargo 1.91.1 (Homebrew)\n",
+      "stderr": "",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/usr/bin/xcrun",
+        "swiftc",
+        "--version"
+      ],
+      "stdout": "Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)\nTarget: arm64-apple-macosx14.0\n",
+      "stderr": "swift-driver version: 1.115 ",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/usr/bin/xcrun",
+        "--sdk",
+        "macosx",
+        "--show-sdk-version"
+      ],
+      "stdout": "15.1\n",
+      "stderr": "",
+      "exit_code": 0
+    }
+  ],
+  "removed_environment_variable_names": [],
+  "required_unset": [
+    "BELLO_JOURNAL_FIFO_PROBE",
+    "BELLOBOX_AI_PROVIDER",
+    "BELLOBOX_AI_ENDPOINT",
+    "BELLOBOX_AI_MODEL",
+    "BELLOBOX_AI_KEY"
+  ],
+  "build_environment": {
+    "CARGO_TARGET_DIR": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+    "CARGO_BUILD_JOBS": "2",
+    "MACOSX_DEPLOYMENT_TARGET": "14.0",
+    "RUST_BACKTRACE": "1",
+    "RUSTC": null,
+    "RUSTFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "DEVELOPER_DIR": null,
+    "BELLOBOX_CONFIG_DIR": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-rust-kg6qr_fz/isolated-config"
+  }
+}

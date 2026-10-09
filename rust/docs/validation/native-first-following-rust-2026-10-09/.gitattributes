@@ -1,0 +1,2 @@
+# Preserve exact command output, including diagnostic spaces and blank lines.
+*.log -whitespace

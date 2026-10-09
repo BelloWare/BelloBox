@@ -1,0 +1,30 @@
+   Compiling bello-workbench v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bello-workbench)
+   Compiling bello-platform v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bello-platform)
+   Compiling bello-workbench-ui v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bello-workbench-ui)
+   Compiling bellobox-core v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-core)
+   Compiling bellobox-app v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 20.00s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e)
+
+running 3 tests
+test gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing ... IOServiceMatchingfailed for: AppleM2ScalerCSCDriver
+ok
+test gif_converter::native_host_tests::generated_native_host_positive_composition_first_following_seek_and_export ... native host composition trim_start=0 request=0.05 actual=0 exact_full_range_RGBA=true
+native host composition trim_start=0 request=0.25 actual=0.2 exact_full_range_RGBA=true
+native host composition trim_start=0 request=0.3 actual=0.2 exact_full_range_RGBA=true
+native host composition export trim=0..0.3 count=3 size=64x48 delays_cs=[10, 10, 10] one_shot=true
+native host composition trim_start=0.05 request=0.05 actual=0.1 exact_full_range_RGBA=true
+native host composition trim_start=0.05 request=0.25 actual=0.2 exact_full_range_RGBA=true
+native host composition trim_start=0.05 request=0.4 actual=0.3 exact_full_range_RGBA=true
+native host composition export trim=0.05..0.35 count=3 size=64x48 delays_cs=[10, 10, 10] one_shot=true
+native host composition: before-first 0.05 selects real PTS0.1; decoded GIF pair equals exactly; cancellation/identity preserve prior bytes
+ok
+test gif_converter::native_host_tests::generated_native_host_short_sparse_long_and_leading_gap_seek_contract ... native generated full-range trace: Short, PTS=[0.0]
+native generated full-range trace: SparseLong, PTS=[0.0, 130.0, 130.1]
+native sparse bounded seek: request50 returned48 and equals original PTS0 pixels; request130.1 equals original PTS130.1 pixels exactly
+native generated full-range trace: DelayedFirst, PTS=[0.0, 0.1, 0.2, 0.3]
+native leading-gap seek: writer begins0.1, reader begins0; bounded/full-range exact RGBA; leading repeats first=false, opaque black=true
+ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 409 filtered out; finished in 1.99s
+

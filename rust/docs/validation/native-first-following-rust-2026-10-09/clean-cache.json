@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "clean",
+    "--offline",
+    "--locked",
+    "-p",
+    "bello-platform",
+    "-p",
+    "bellobox-app",
+    "--target-dir",
+    "/Users/admin/Library/Caches/BelloRustWork/box-target"
+  ],
+  "exit_code": 0
+}

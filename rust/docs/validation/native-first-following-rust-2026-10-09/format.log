@@ -1,0 +1,109 @@
+Diff in /Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs:5:
+     worker::{Controller, Request, Response},
+ };
+ use bello_platform::movie::{
+-    generated_movie, generated_movie_case, generated_movie_trace, GeneratedOrientation,
+-    GeneratedTiming, MovieAsset, MovieError,
++    GeneratedOrientation, GeneratedTiming, MovieAsset, MovieError, generated_movie,
++    generated_movie_case, generated_movie_trace,
+ };
+ use bellobox_core::recording::gif::ReplacePolicy;
+ 
+Diff in /Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs:116:
+             let rgba = image::load_from_memory(&frame.png).unwrap().to_rgba8();
+             assert_eq!(rgba.dimensions(), (frames[index].1, frames[index].2));
+             assert_eq!(rgba.as_raw(), &frames[index].3);
+-            eprintln!("native host composition trim_start={start} request={request} actual={} exact_full_range_RGBA=true", frame.actual);
++            eprintln!(
++                "native host composition trim_start={start} request={request} actual={} exact_full_range_RGBA=true",
++                frame.actual
++            );
+         }
+         model.options.trim_start = start;
+         model.options.trim_end = Some(end);
+Diff in /Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs:143:
+         assert_eq!(result.size, (64, 48));
+         assert_eq!(result.frame_count, 3);
+         assert_eq!(result.duration, 0.3);
+-        assert!(!std::fs::read(&output)
+-            .unwrap()
+-            .windows(11)
+-            .any(|s| s == b"NETSCAPE2.0"));
++        assert!(
++            !std::fs::read(&output)
++                .unwrap()
++                .windows(11)
++                .any(|s| s == b"NETSCAPE2.0")
++        );
+         let mut preview = super::model::open_preview(&result).unwrap();
+         let mut delays = Vec::new();
+         let mut pixels = Vec::new();
+Diff in /Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs:160:
+             );
+         }
+         assert_eq!(delays, [10, 10, 10]);
+-        eprintln!("native host composition export trim={start}..{end} count=3 size=64x48 delays_cs={delays:?} one_shot=true");
++        eprintln!(
++            "native host composition export trim={start}..{end} count=3 size=64x48 delays_cs={delays:?} one_shot=true"
++        );
+         exported_pixels.push(pixels);
+         let prior = directory.path().join("prior.gif");
+         std::fs::write(&prior, b"prior bytes").unwrap();
+Diff in /Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs:183:
+         std::fs::write(&replacement, &original).unwrap();
+         std::fs::rename(replacement, selected.path()).unwrap();
+         assert_eq!(selected.verify(), Err(MovieError::SourceChanged));
+-        assert!(seek(&mut controller, &model, 0.05)
+-            .unwrap_err()
+-            .contains("changed"));
++        assert!(
++            seek(&mut controller, &model, 0.05)
++                .unwrap_err()
++                .contains("changed")
++        );
+         let changed = model
+             .begin(prior.clone(), ReplacePolicy::ReplaceExistingFile)
+             .unwrap();
+Diff in /Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs:194:
+             Response::Export { result: Err(_), .. }
+         ));
+         assert_eq!(std::fs::read(&prior).unwrap(), b"prior bytes");
+-        assert!(std::fs::read_dir(directory.path()).unwrap().all(|e| !e
+-            .unwrap()
+-            .file_name()
+-            .to_string_lossy()
+-            .starts_with(".BelloBox-export-")));
++        assert!(std::fs::read_dir(directory.path()).unwrap().all(|e| {
++            !e.unwrap()
++                .file_name()
++                .to_string_lossy()
++                .starts_with(".BelloBox-export-")
++        }));
+     }
+     assert_eq!(
+         exported_pixels[0], exported_pixels[1],
+Diff in /Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs:205:
+         "same-host decoded GIF control equality; not pre-encoding or cross-host color parity"
+     );
+-    eprintln!("native host composition: before-first 0.05 selects real PTS0.1; decoded GIF pair equals exactly; cancellation/identity preserve prior bytes");
++    eprintln!(
++        "native host composition: before-first 0.05 selects real PTS0.1; decoded GIF pair equals exactly; cancellation/identity preserve prior bytes"
++    );
+ }
+ 
+ #[test]
+Diff in /Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs:304:
+         let replacement = selected.path().with_extension("replacement.mov");
+         std::fs::write(&replacement, &original).unwrap();
+         std::fs::rename(replacement, selected.path()).unwrap();
+-        assert!(seek(&mut controller, &model, 0.)
+-            .unwrap_err()
+-            .contains("changed"));
++        assert!(
++            seek(&mut controller, &model, 0.)
++                .unwrap_err()
++                .contains("changed")
++        );
+         let output = tempfile::tempdir().unwrap();
+         let work = model
+             .begin(

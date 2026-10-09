@@ -51,6 +51,174 @@ fn seek(
         _ => panic!("wrong worker response"),
     }
 }
+
+#[test]
+fn generated_native_host_positive_composition_first_following_seek_and_export() {
+    let control = generated_movie_case(
+        GeneratedOrientation::Landscape,
+        GeneratedTiming::ZeroOriginComposition,
+    )
+    .unwrap();
+    let positive = generated_movie_case(
+        GeneratedOrientation::Landscape,
+        GeneratedTiming::PositiveComposition,
+    )
+    .unwrap();
+    let trace = |source| {
+        std::thread::spawn(move || generated_movie_trace(source))
+            .join()
+            .unwrap()
+            .unwrap()
+            .into_iter()
+            .map(|f| f.into_parts())
+            .collect::<Vec<_>>()
+    };
+    let zero_frames = trace(control.clone());
+    let positive_frames = trace(positive.clone());
+    assert_eq!(
+        zero_frames.iter().map(|f| f.0).collect::<Vec<_>>(),
+        [0., 0.1, 0.2]
+    );
+    assert_eq!(
+        positive_frames.iter().map(|f| f.0).collect::<Vec<_>>(),
+        [0.1, 0.2, 0.3]
+    );
+    for (zero, positive) in zero_frames.iter().zip(&positive_frames) {
+        assert_eq!(
+            (zero.1, zero.2, &zero.3),
+            (positive.1, positive.2, &positive.3)
+        );
+    }
+    let mut exported_pixels = Vec::new();
+    for (selected, frames, start, end) in [
+        (control, &zero_frames, 0., 0.3),
+        (positive, &positive_frames, 0.05, 0.35),
+    ] {
+        let original = std::fs::read(selected.path()).unwrap();
+        assert!(matches!(
+            MovieAsset::open(selected.path(), Default::default()),
+            Err(MovieError::Unavailable)
+        ));
+        let mut controller = Controller::default();
+        let mut model = Model::default();
+        inspect(
+            &mut controller,
+            &mut model,
+            Source::Generated(selected.clone()),
+        );
+        for (request, index) in [
+            (0.05, 0),
+            (0.25, if start > 0. { 1 } else { 2 }),
+            (model.info.unwrap().duration, 2),
+        ] {
+            let frame = seek(&mut controller, &model, request).unwrap();
+            assert_eq!(frame.actual, frames[index].0);
+            let rgba = image::load_from_memory(&frame.png).unwrap().to_rgba8();
+            assert_eq!(rgba.dimensions(), (frames[index].1, frames[index].2));
+            assert_eq!(rgba.as_raw(), &frames[index].3);
+            eprintln!(
+                "native host composition trim_start={start} request={request} actual={} exact_full_range_RGBA=true",
+                frame.actual
+            );
+        }
+        model.options.trim_start = start;
+        model.options.trim_end = Some(end);
+        model.options.frames_per_second = 10;
+        model.options.max_width = 320;
+        model.options.loops = false;
+        let directory = tempfile::tempdir().unwrap();
+        let output = directory
+            .path()
+            .canonicalize()
+            .unwrap()
+            .join("composition.gif");
+        let work = model
+            .begin(output.clone(), ReplacePolicy::RefuseExisting)
+            .unwrap();
+        match run(&mut controller, Request::Export(work)) {
+            Response::Export { generation, result } => {
+                assert!(result.is_ok(), "{result:?}");
+                model.finished(generation, result);
+            }
+            _ => panic!("wrong worker response"),
+        }
+        let result = model.result.clone().unwrap();
+        assert_eq!(result.size, (64, 48));
+        assert_eq!(result.frame_count, 3);
+        assert_eq!(result.duration, 0.3);
+        assert!(
+            !std::fs::read(&output)
+                .unwrap()
+                .windows(11)
+                .any(|s| s == b"NETSCAPE2.0")
+        );
+        let mut preview = super::model::open_preview(&result).unwrap();
+        let mut delays = Vec::new();
+        let mut pixels = Vec::new();
+        while let Some(frame) = preview.next_frame().unwrap() {
+            delays.push(frame.delay_centiseconds);
+            pixels.push(
+                image::load_from_memory(&frame.png)
+                    .unwrap()
+                    .to_rgba8()
+                    .into_raw(),
+            );
+        }
+        assert_eq!(delays, [10, 10, 10]);
+        eprintln!(
+            "native host composition export trim={start}..{end} count=3 size=64x48 delays_cs={delays:?} one_shot=true"
+        );
+        exported_pixels.push(pixels);
+        let prior = directory.path().join("prior.gif");
+        std::fs::write(&prior, b"prior bytes").unwrap();
+        let cancelled = model
+            .begin(prior.clone(), ReplacePolicy::ReplaceExistingFile)
+            .unwrap();
+        model.cancel();
+        match run(&mut controller, Request::Export(cancelled)) {
+            Response::Export { generation, result } => {
+                assert!(result.is_err());
+                model.finished(generation, result);
+            }
+            _ => panic!("wrong worker response"),
+        }
+        assert_eq!(model.result.as_ref().unwrap().path, output);
+        assert_eq!(std::fs::read(&prior).unwrap(), b"prior bytes");
+        assert_eq!(std::fs::read(selected.path()).unwrap(), original);
+        selected.verify().unwrap();
+        let replacement = selected.path().with_extension("replacement.mov");
+        std::fs::write(&replacement, &original).unwrap();
+        std::fs::rename(replacement, selected.path()).unwrap();
+        assert_eq!(selected.verify(), Err(MovieError::SourceChanged));
+        assert!(
+            seek(&mut controller, &model, 0.05)
+                .unwrap_err()
+                .contains("changed")
+        );
+        let changed = model
+            .begin(prior.clone(), ReplacePolicy::ReplaceExistingFile)
+            .unwrap();
+        assert!(matches!(
+            run(&mut controller, Request::Export(changed)),
+            Response::Export { result: Err(_), .. }
+        ));
+        assert_eq!(std::fs::read(&prior).unwrap(), b"prior bytes");
+        assert!(std::fs::read_dir(directory.path()).unwrap().all(|e| {
+            !e.unwrap()
+                .file_name()
+                .to_string_lossy()
+                .starts_with(".BelloBox-export-")
+        }));
+    }
+    assert_eq!(
+        exported_pixels[0], exported_pixels[1],
+        "same-host decoded GIF control equality; not pre-encoding or cross-host color parity"
+    );
+    eprintln!(
+        "native host composition: before-first 0.05 selects real PTS0.1; decoded GIF pair equals exactly; cancellation/identity preserve prior bytes"
+    );
+}
+
 #[test]
 fn generated_native_host_inspect_seek_trim_export_switch_identity_and_timing() {
     for orientation in [
@@ -188,7 +356,9 @@ fn generated_native_host_short_sparse_long_and_leading_gap_seek_contract() {
             GeneratedTiming::Short => vec![0.],
             GeneratedTiming::SparseLong => vec![0., 130., 130.1],
             GeneratedTiming::DelayedFirst => vec![0., 0.1, 0.2, 0.3],
-            GeneratedTiming::Regular => unreachable!(),
+            GeneratedTiming::Regular
+            | GeneratedTiming::PositiveComposition
+            | GeneratedTiming::ZeroOriginComposition => unreachable!(),
         };
         assert_eq!(original_pts, expected_pts);
         eprintln!("native generated full-range trace: {timing:?}, PTS={original_pts:?}");
@@ -266,7 +436,9 @@ fn generated_native_host_short_sparse_long_and_leading_gap_seek_contract() {
                     "native leading-gap seek: writer begins0.1, reader begins0; bounded/full-range exact RGBA; leading repeats first={repeats_first}, opaque black={opaque_black}"
                 );
             }
-            GeneratedTiming::Regular => unreachable!(),
+            GeneratedTiming::Regular
+            | GeneratedTiming::PositiveComposition
+            | GeneratedTiming::ZeroOriginComposition => unreachable!(),
         }
     }
 }

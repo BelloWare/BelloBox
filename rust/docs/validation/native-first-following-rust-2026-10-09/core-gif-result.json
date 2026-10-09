@@ -1,0 +1,40 @@
+{
+  "name": "core-gif",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-core",
+    "--lib",
+    "recording::gif::",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "expected_passed": 49,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T02:08:43.632338+00:00",
+  "cwd": "/Users/admin/projects/BelloBox-rust-positive-composition/rust",
+  "log": "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-first-following-rust-2026-10-09/core-gif.log",
+  "ended_at": "2026-10-09T02:08:50.520541+00:00",
+  "elapsed_seconds": 6.888090334017761,
+  "exit_code": 0,
+  "log_sha256": "a2105ddb75205649a05a67000ca7cae513e37029ee33672f93c935f14100dd36",
+  "counts": [
+    {
+      "passed": 49,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 397
+    }
+  ],
+  "test_binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823",
+      "sha256": "3d335c471aa2999632d7a60d9d8579208dc75ad0ab9e9e0ba97b84a9ca1253d8"
+    }
+  ]
+}

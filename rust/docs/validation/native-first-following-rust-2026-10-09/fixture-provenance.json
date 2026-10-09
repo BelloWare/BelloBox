@@ -1,0 +1,14 @@
+{
+  "positive-composition.mov": {
+    "source_at_base": "rust/docs/validation/native-positive-composition-2026-10-09/movies/positive-composition.mov",
+    "destination": "rust/crates/bello-platform/src/movie/macos/fixture_media/positive-composition.mov",
+    "bytes": 2308,
+    "sha256": "abd5e23b328507ea0c1c4f894e2d7d34cb5493ae0011b86413cb2821bd5959a8"
+  },
+  "zero-origin.mov": {
+    "source_at_base": "rust/docs/validation/native-positive-composition-2026-10-09/movies/zero-origin.mov",
+    "destination": "rust/crates/bello-platform/src/movie/macos/fixture_media/zero-origin.mov",
+    "bytes": 2308,
+    "sha256": "ef59f7b291b1fbbe16969b65b97d5918e03224527fcbd68f7c984ce4ba7fed16"
+  }
+}

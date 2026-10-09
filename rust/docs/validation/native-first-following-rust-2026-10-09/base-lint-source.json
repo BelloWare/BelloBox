@@ -1,0 +1,9 @@
+{
+  "base": "5934b9897854a4102ef71d6463d4b4f7a3005158",
+  "source": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-rust-kg6qr_fz/base-source",
+  "archive_sha256": "06ee2e12731a0080658c04a7a2ca20aa3863b9b66f776c29908685452fb02e8a",
+  "base_files_verified": 1533,
+  "settings_path": "rust/crates/bellobox-core/src/settings.rs",
+  "settings_sha256": "fc0613d8d844e5ae6947da38d36624d13cf65f60058d331b8c4dec5f9ca11442",
+  "candidate_settings_identical": true
+}

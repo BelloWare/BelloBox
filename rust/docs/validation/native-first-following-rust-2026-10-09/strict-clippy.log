@@ -1,0 +1,47 @@
+    Checking objc2 v0.6.4
+    Checking ring v0.17.14
+    Checking objc2-core-foundation v0.3.2
+    Checking block2 v0.6.2
+    Checking rustls-webpki v0.103.15
+    Checking rustls v0.23.45
+    Checking objc2-foundation v0.3.2
+    Checking objc2-metal v0.3.2
+    Checking tokio-rustls v0.26.6
+    Checking libz-sys v1.1.29
+    Checking hyper-rustls v0.27.10
+    Checking libgit2-sys v0.18.8+1.9.7
+    Checking psm v0.1.32
+    Checking git2 v0.20.4
+    Checking objc2-quartz-core v0.3.2
+    Checking objc2-core-video v0.3.2
+    Checking objc2-app-kit v0.3.2
+    Checking gpui_util v0.2.2
+    Checking blade-graphics v0.7.1
+    Checking zed-reqwest v0.12.15-zed
+    Checking objc2-core-media v0.3.2
+    Checking stacker v0.1.25
+    Checking stacksafe v0.1.4
+    Checking gpui_http_client v0.2.2
+    Checking objc2-av-foundation v0.3.2
+    Checking blade-util v0.3.0
+    Checking objc2-core-graphics v0.3.2
+    Checking gpui v0.2.2
+    Checking bellobox-core v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-core)
+error: unneeded `return` statement
+   --> crates/bellobox-core/src/settings.rs:253:9
+    |
+253 | /         return PathBuf::from(std::env::var_os("HOME").unwrap_or_default())
+254 | |             .join("Library/Application Support/BelloBox/Rust");
+    | |______________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#needless_return
+    = note: `-D clippy::needless-return` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_return)]`
+help: remove `return`
+    |
+253 ~         PathBuf::from(std::env::var_os("HOME").unwrap_or_default())
+254 ~             .join("Library/Application Support/BelloBox/Rust")
+    |
+
+error: could not compile `bellobox-core` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

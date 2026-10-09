@@ -1,0 +1,19 @@
+{
+  "name": "format",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "fmt",
+    "--all",
+    "--",
+    "--check"
+  ],
+  "started_at": "2026-10-09T02:07:26.977001+00:00",
+  "cwd": "/Users/admin/projects/BelloBox-rust-positive-composition/rust",
+  "log": "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-first-following-rust-2026-10-09/format.log",
+  "ended_at": "2026-10-09T02:07:28.768288+00:00",
+  "elapsed_seconds": 1.791121333022602,
+  "exit_code": 1,
+  "log_sha256": "ee2b9a05e430874c96d15ba992d7107f856c6223671979c0e32821cc6819bff9",
+  "counts": [],
+  "test_binaries": []
+}

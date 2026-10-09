@@ -1,0 +1,27 @@
+{
+  "name": "base-scoped-clippy",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "clippy",
+    "--no-deps",
+    "--offline",
+    "--locked",
+    "-p",
+    "bello-platform",
+    "-p",
+    "bellobox-app",
+    "--all-targets",
+    "--features",
+    "movie-fixtures",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-rust-kg6qr_fz/base-source/rust",
+  "started_at": "2026-10-09T02:12:25.700201+00:00",
+  "ended_at": "2026-10-09T02:12:32.081592+00:00",
+  "elapsed_seconds": 6.381216875044629,
+  "exit_code": 101,
+  "log": "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-first-following-rust-2026-10-09/base-scoped-clippy.log",
+  "log_sha256": "7ef593e60720caa7a776c7ded9a9034bc061866062b3c5597e613ba91f8a5c9c"
+}

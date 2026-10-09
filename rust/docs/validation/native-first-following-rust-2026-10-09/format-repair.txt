@@ -1,0 +1,1 @@
+Initial formatter check used the 2021 edition for the App test module; the App workspace edition is 2024. Re-ran rustfmt on that claimed file with edition 2024. Initial diagnostic and receipt retained in format.log/format-result.json. No native tests ran before this formatting-only repair.

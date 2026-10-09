@@ -11,6 +11,76 @@ use std::{fs, path::PathBuf, sync::Mutex};
 // Source admission is deliberately single-job. Keep independent native fixtures
 // serialized even when Cargo's test harness runs other pure tests concurrently.
 static NATIVE_TESTS: Mutex<()> = Mutex::new(());
+
+#[test]
+fn native_positive_composition_before_first_seek_matches_full_range_control() {
+    use sha2::{Digest, Sha256};
+    let _serial = NATIVE_TESTS.lock().unwrap();
+    let dir = TempDir::new();
+    let mut traces = Vec::new();
+    for (positive, expected_hash, expected_pts) in [
+        (
+            false,
+            "ef59f7b291b1fbbe16969b65b97d5918e03224527fcbd68f7c984ce4ba7fed16",
+            [0., 0.1, 0.2],
+        ),
+        (
+            true,
+            "abd5e23b328507ea0c1c4f894e2d7d34cb5493ae0011b86413cb2821bd5959a8",
+            [0.1, 0.2, 0.3],
+        ),
+    ] {
+        let path = dir
+            .0
+            .join(if positive { "positive.mov" } else { "zero.mov" });
+        super::fixtures::write_composition_movie(&path, positive).unwrap();
+        let original = fs::read(&path).unwrap();
+        assert_eq!(format!("{:x}", Sha256::digest(&original)), expected_hash);
+        let asset = open_fixture(&path, Default::default()).unwrap();
+        let duration = asset.info.duration;
+        let mut reader = asset.native.reader(0., duration).unwrap();
+        let mut frames = Vec::new();
+        while let Some(frame) = reader.next_frame(&|| false).unwrap() {
+            assert!(frames.len() < 3, "unexpected extra decoded image");
+            frames.push(frame.into_parts());
+        }
+        reader.finish(&|| false).unwrap();
+        drop(reader);
+        assert!(
+            !JOB_ACTIVE.load(Ordering::Acquire),
+            "full-range reader retired"
+        );
+        assert_eq!(frames.iter().map(|f| f.0).collect::<Vec<_>>(), expected_pts);
+        for (pts, width, height, rgba) in &frames {
+            assert_eq!((*width, *height), (64, 48));
+            eprintln!("composition full range positive={positive} PTS={pts} size={width}x{height} RGBA_SHA256={:x}", Sha256::digest(rgba));
+        }
+        for (request, index) in [
+            (0.05, 0),
+            (0.25, if positive { 1 } else { 2 }),
+            (duration, 2),
+        ] {
+            let actual = open_fixture(&path, Default::default())
+                .unwrap()
+                .seek(MovieSeek::new(request).unwrap())
+                .unwrap()
+                .into_parts();
+            assert_eq!(actual, frames[index], "request {request}");
+            assert!(!JOB_ACTIVE.load(Ordering::Acquire), "seek reader retired");
+            eprintln!("composition seek positive={positive} request={request} actual={} exact_full_range_RGBA=true", actual.0);
+        }
+        assert_eq!(fs::read(&path).unwrap(), original);
+        traces.push(frames);
+    }
+    for (control, positive) in traces[0].iter().zip(&traces[1]) {
+        assert_eq!(
+            (control.1, control.2, &control.3),
+            (positive.1, positive.2, &positive.3)
+        );
+    }
+    eprintln!("composition pair: all three same-host decoded RGBA frames match exactly; positive first image is 0.1, before-first request 0.05 selects it");
+}
+
 struct TempDir(PathBuf);
 impl TempDir {
     fn new() -> Self {

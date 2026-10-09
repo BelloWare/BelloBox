@@ -1,0 +1,16 @@
+    Checking objc2 v0.6.4
+    Checking once_cell v1.21.4
+    Checking read-fonts v0.41.0
+    Checking objc2-core-foundation v0.3.2
+    Checking objc2-core-video v0.3.2
+    Checking objc2-core-media v0.3.2
+    Checking objc2-foundation v0.3.2
+    Checking block2 v0.6.2
+    Checking objc2-av-foundation v0.3.2
+    Checking objc2-core-graphics v0.3.2
+    Checking skrifa v0.44.0
+    Checking bello-platform v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bello-platform)
+    Checking swash v0.2.10
+    Checking cosmic-text v0.14.2
+    Checking bellobox-core v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-core)
+    Finished `dev` profile [unoptimized] target(s) in 8.47s

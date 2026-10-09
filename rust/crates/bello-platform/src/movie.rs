@@ -648,6 +648,10 @@ pub enum GeneratedTiming {
     Short,
     SparseLong,
     DelayedFirst,
+    /// Fixed independently authored MOV, with image PTS 0.1, 0.2, 0.3.
+    PositiveComposition,
+    /// The same encoded samples with image PTS 0, 0.1, 0.2.
+    ZeroOriginComposition,
 }
 #[cfg(all(target_os = "macos", feature = "movie-fixtures"))]
 pub fn generated_movie_case(
@@ -698,13 +702,26 @@ pub fn generated_movie_case(
             ty: 0.,
         },
     };
-    let (times, delay): (&[f64], f64) = match timing {
-        GeneratedTiming::Regular => (&[0., 0.1, 0.2, 0.3], 0.1),
-        GeneratedTiming::Short => (&[0.], 0.02),
-        GeneratedTiming::SparseLong => (&[0., 130., 130.1], 0.1),
-        GeneratedTiming::DelayedFirst => (&[0.1, 0.2, 0.3], 0.1),
+    let schedule: Option<(&[f64], f64)> = match timing {
+        GeneratedTiming::Regular => Some((&[0., 0.1, 0.2, 0.3], 0.1)),
+        GeneratedTiming::Short => Some((&[0.], 0.02)),
+        GeneratedTiming::SparseLong => Some((&[0., 130., 130.1], 0.1)),
+        GeneratedTiming::DelayedFirst => Some((&[0.1, 0.2, 0.3], 0.1)),
+        GeneratedTiming::PositiveComposition | GeneratedTiming::ZeroOriginComposition => None,
     };
-    macos::fixtures::write_movie_times(&path, transform, times, delay);
+    if let Some((times, delay)) = schedule {
+        macos::fixtures::write_movie_times(&path, transform, times, delay);
+    } else {
+        // These sealed bytes have a fixed landscape transform. Do not rewrite
+        // their container, samples or timing to manufacture another case.
+        if !matches!(orientation, GeneratedOrientation::Landscape) {
+            return Err(MovieError::InvalidMetadata);
+        }
+        macos::fixtures::write_composition_movie(
+            &path,
+            matches!(timing, GeneratedTiming::PositiveComposition),
+        )?;
+    }
     let mut selected = SelectedMovie::select(&path)?;
     selected.generated = true;
     selected._fixture = Some(directory);

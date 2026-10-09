@@ -1,0 +1,47 @@
+   Compiling bellobox-core v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bellobox-core)
+   Compiling bello-platform v0.1.0 (/Users/admin/projects/BelloBox-rust-positive-composition/rust/crates/bello-platform)
+    Finished `test` profile [unoptimized] target(s) in 7.23s
+     Running unittests src/lib.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bello_platform-59f875a5f1616394)
+
+running 24 tests
+test movie::macos::tests::native_admission_waits_for_old_converter_lease_and_cancels_own_waiter ... ok
+test movie::macos::tests::native_cancel_and_sample_limit_retire_reader_and_preserve_prior_output ... IOServiceMatchingfailed for: AppleM2ScalerCSCDriver
+ok
+test movie::macos::tests::native_final_validation_checks_late_cancel_source_mutation_and_own_retirement ... ok
+test movie::macos::tests::native_invalid_movie_reports_metadata_error_and_honors_precancel ... ok
+test movie::macos::tests::native_metadata_delivery_rechecks_late_cancel_and_source_after_callback_drain ... ok
+test movie::macos::tests::native_positive_composition_before_first_seek_matches_full_range_control ... composition full range positive=false PTS=0 size=64x48 RGBA_SHA256=7a82ecec7856841f07a8dd33eea2030f57fb8aa4cba0c6354be32e4992f4a430
+composition full range positive=false PTS=0.1 size=64x48 RGBA_SHA256=c0f7e3fe18242c9dbfbef37d8e9dcb3a4308bc52ca06dbc63cd5cf28f0d15134
+composition full range positive=false PTS=0.2 size=64x48 RGBA_SHA256=949e8cd228e4942ba83e16e72ef0651a1a4ab6b401b8e32077b4445e879ecff4
+composition seek positive=false request=0.05 actual=0 exact_full_range_RGBA=true
+composition seek positive=false request=0.25 actual=0.2 exact_full_range_RGBA=true
+composition seek positive=false request=0.3 actual=0.2 exact_full_range_RGBA=true
+composition full range positive=true PTS=0.1 size=64x48 RGBA_SHA256=7a82ecec7856841f07a8dd33eea2030f57fb8aa4cba0c6354be32e4992f4a430
+composition full range positive=true PTS=0.2 size=64x48 RGBA_SHA256=c0f7e3fe18242c9dbfbef37d8e9dcb3a4308bc52ca06dbc63cd5cf28f0d15134
+composition full range positive=true PTS=0.3 size=64x48 RGBA_SHA256=949e8cd228e4942ba83e16e72ef0651a1a4ab6b401b8e32077b4445e879ecff4
+composition seek positive=true request=0.05 actual=0.1 exact_full_range_RGBA=true
+composition seek positive=true request=0.25 actual=0.2 exact_full_range_RGBA=true
+composition seek positive=true request=0.4 actual=0.3 exact_full_range_RGBA=true
+composition pair: all three same-host decoded RGBA frames match exactly; positive first image is 0.1, before-first request 0.05 selects it
+ok
+test movie::macos::tests::native_render_matches_display_orientation_and_coded_size_scaling ... ok
+test movie::macos::tests::native_synthetic_movie_pts_orientation_and_staged_gif_integration ... ok
+test movie::macos::tests::native_time_rejects_invalid_nonfinite_negative_and_epoch_values ... ok
+test movie::macos::tests::nil_sample_status_mapping_never_masks_failure_as_clean_eof ... ok
+test movie::retirement::tests::logical_cancellation_cannot_complete_held_callback_retirement ... ok
+test movie::tests::cancellation_is_shared_atomic_state ... ok
+test movie::tests::frame_transfer_moves_pixels_and_debug_redacts_them ... ok
+test movie::tests::geometry_handles_rotation_mirror_and_origin ... ok
+test movie::tests::geometry_rejects_nonfinite_singular_and_excessive ... ok
+test movie::tests::identity::source_guard_canonicalizes_symlinked_parent_directories ... ok
+test movie::tests::identity::source_guard_rejects_directory_empty_and_replaced_files ... ok
+test movie::tests::identity::source_guard_resolves_symlink_and_detects_edits ... ok
+test movie::tests::pixel_storage_requires_entire_padded_last_row ... ok
+test movie::tests::read_range_preserves_source_pts_and_tolerance ... ok
+test movie::tests::read_range_rejects_invalid_or_unbounded_values ... ok
+test movie::tests::selected_source_is_send_sync_owned_identity_not_equal_metadata ... ok
+test movie::tests::source_seek_has_independent_short_long_end_and_invalid_rules ... ok
+test movie::tests::unavailable_open_never_reads_a_path ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 190 filtered out; finished in 1.02s
+
