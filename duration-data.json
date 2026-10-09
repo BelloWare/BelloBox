@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T14:17:00Z",
+  "as_of_utc": "2026-10-09T14:27:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -62306,6 +62306,86 @@
       "inference_status": "unavailable",
       "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
       "coverage_note": "Late-added earlier evidence, deduplicated against all prior timed intervals."
+    },
+    {
+      "id": "20261009-1427-regex-command-3",
+      "repository_assignment": "BelloBox",
+      "activity": "loc-audit-preliminary",
+      "category": "automated accounting validation",
+      "start_utc": "2026-10-09T14:23:03.356904+00:00",
+      "end_utc": "2026-10-09T14:23:04.306626+00:00",
+      "duration_seconds": 0.9497271569998702,
+      "source": [
+        {
+          "receipt_sha256": "e3a9bd211a666e3f115c3065d988fbd4d7be400f774bd726da11996bf1a8b18c",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1427",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Evolving Regex source; final matrix/GUI/native acceptance separate"
+    },
+    {
+      "id": "20261009-1427-regex-source-window",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex review-driven fixes, validation preparation and build-lane waiting",
+      "category": "implementation/review/validation (mixed)",
+      "start_utc": "2026-10-09T14:16:28Z",
+      "end_utc": "2026-10-09T14:26:40Z",
+      "duration_seconds": 612,
+      "source": [
+        {
+          "receipt_sha256": "5e9a9ab336e295503ec755196c7810ff09c323252ef5239d0675cc5f86b7a5d0",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Focused App rerun started14:26:39; final matrix/build/GUI/native runtime remain pending",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Implementation owner bounded observation reported14:27:02; source/review fixes, tests/oracle/docs/LOC preparation and build-lane waiting",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1427",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "coverage_note": "Late-added earlier evidence, deduplicated against all prior timed intervals."
+    },
+    {
+      "id": "20261009-1427-regex-test-open",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex focused App rerun",
+      "category": "build/test status",
+      "start_utc": "2026-10-09T14:26:39Z",
+      "end_utc": null,
+      "duration_seconds": null,
+      "source": [
+        {
+          "receipt_sha256": "5e9a9ab336e295503ec755196c7810ff09c323252ef5239d0675cc5f86b7a5d0",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Open in owner cutoff observation; final duration/result unknown",
+      "accounting_group": "status_only",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Reported started command; no completion inferred",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1427",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
     }
   ],
   "commit_milestones": [
@@ -63037,10 +63117,10 @@
         }
       },
       "catchup_command": {
-        "count": 168,
-        "known_duration_count": 168,
-        "resource_seconds_sum": 2862.0763412470337,
-        "wall_coverage_seconds": 2116.396336,
+        "count": 169,
+        "known_duration_count": 169,
+        "resource_seconds_sum": 2863.0260684040336,
+        "wall_coverage_seconds": 2117.346058,
         "category_seconds": {
           "automated lint/check": 239.46526756299983,
           "build + test/check (combined)": 2387.853506168016,
@@ -63048,12 +63128,12 @@
           "build": 182.789656,
           "dependency setup + build (combined)": 31.142,
           "repository/dependency setup": 12.327,
-          "automated accounting validation": 2.8923319369986418,
+          "automated accounting validation": 3.842059093998512,
           "packaging/source validation": 0.24390436300379223,
           "test execution (existing binary)": 1.963075216015568
         },
         "resource_seconds": {
-          "cloud command process": 2862.0763412470337
+          "cloud command process": 2863.0260684040336
         }
       },
       "catchup_gui_process": {
@@ -63564,6 +63644,33 @@
           },
           "known_endpoint_items": 3,
           "known_endpoint_resource_seconds": 65.61595136001415
+        }
+      },
+      "ci_coverage_within_window_seconds": 0,
+      "window_seconds": 600.0,
+      "outside_selected_ci_job_intervals_seconds": 600.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1427",
+      "through_utc": "2026-10-09T14:27:00Z",
+      "coverage_window_start_utc": "2026-10-09T14:17:00Z",
+      "new_items": 3,
+      "groups": {
+        "catchup_command": {
+          "count": 1,
+          "known_duration_count": 1,
+          "resource_seconds_sum": 0.9497271569998702,
+          "wall_coverage_seconds": 0.949722,
+          "category_seconds": {
+            "automated accounting validation": 0.9497271569998702
+          },
+          "resource_seconds": {
+            "cloud command process": 0.9497271569998702
+          },
+          "known_endpoint_items": 1,
+          "known_endpoint_resource_seconds": 0.9497271569998702
         }
       },
       "ci_coverage_within_window_seconds": 0,
