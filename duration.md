@@ -1,5 +1,64 @@
 # BelloBox Rust migration duration audit
 
+## Incremental checkpoint: 2026-10-09T08:08:00Z
+
+Historical audit below and its original CI cutoff remain unchanged. This update covers selected newly recorded work, not every intervening run or task. Unknown durations and inference remain unavailable. Local timing observations below are source records supported by retained receipt hashes; public commit links identify source or outcome, not independent timing verification.
+
+### Separate resource totals
+
+| Group | All timed items | All resource/client seconds | Known-endpoint items | Known-endpoint resource seconds | Known-endpoint union seconds |
+|---|---:|---:|---:|---:|---:|
+| incremental_command | 6 | 249.417 | 6 | 249.417 | 249.417 |
+| incremental_ci_job | 2 | 1441.000 | 2 | 1441.000 | 823.000 |
+
+| Resource group / category | Seconds |
+|---|---:|
+| incremental_command: automated lint/check | 9.365 |
+| incremental_command: build + test/check (combined) | 231.242 |
+| incremental_command: build | 8.810 |
+| incremental_ci_job: CI | 1441.000 |
+
+API elapsed sums include overlapping pending calls and client/service waiting; they are not server compute or active work. Command sums include build/test mixtures. Whole-second 0s observations mean below the receipt counter resolution, not zero effort. Missing or arithmetically derived end timestamps are excluded from known-endpoint unions. CI steps are nested and excluded from job sums. These groups must not be added to mixed task windows or treated as project elapsed time.
+
+### Where newly observed task time went
+
+7 mixed task windows; union of closed observed intervals: 2112.000 seconds. This includes overlap and waiting; it is not an active-work, CPU or inference total. Unfinished waits keep an unknown final duration.
+
+| Activity | Category | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---|---:|---|
+| Cumulative popup/palette actual GUI regression including wait for sealed binary | validation (mixed) | 2026-10-09T05:56:59Z | 2026-10-09T06:07:56Z | 657.0 | completed |
+| WorldClock fixture repair and native full-suite validation | implementation/rework + validation (mixed) | 2026-10-09T06:11:04Z | 2026-10-09T06:21:15Z | 611.0 | completed |
+| Final WorldClock successor LOC audit | review/documentation (mixed) | 2026-10-09T06:26:23Z | 2026-10-09T06:28:05Z | 102.0 | completed |
+| Final WorldClock candidate fmt | automated lint/check | 2026-10-09T06:23:01.640321+00:00 | 2026-10-09T06:23:03.179157+00:00 | 1.5388964689991553 | completed |
+| Final WorldClock candidate focused | build + test/check (combined) | 2026-10-09T06:23:03.179689+00:00 | 2026-10-09T06:23:25.546312+00:00 | 22.36665100400569 | completed |
+| Final WorldClock candidate recording-full-app | build + test/check (combined) | 2026-10-09T06:23:25.546699+00:00 | 2026-10-09T06:26:54.264859+00:00 | 208.71817806200124 | completed |
+| Final WorldClock candidate clippy | automated lint/check | 2026-10-09T06:26:54.265559+00:00 | 2026-10-09T06:27:02.091370+00:00 | 7.825826902997505 | completed |
+| Final WorldClock candidate clean | build + test/check (combined) | 2026-10-09T06:27:02.091789+00:00 | 2026-10-09T06:27:02.249420+00:00 | 0.15764934199978597 | completed |
+| Final WorldClock candidate ordinary-build | build | 2026-10-09T06:27:02.249845+00:00 | 2026-10-09T06:27:11.059920+00:00 | 8.810094290995039 | completed |
+| Shared editor native evidence verification and packaging | review/documentation (mixed) | 2026-10-09T05:28:43Z | 2026-10-09T05:37:15Z | 512.0 | completed |
+| Shared editor documentation preparation | review/documentation (mixed) | 2026-10-09T05:37:29Z | 2026-10-09T05:38:37Z | 68.0 | completed |
+| Shared editor immutable documentation upload and verification | publication/preparation (mixed) | 2026-10-09T05:38:49Z | 2026-10-09T05:41:31Z | 162.0 | completed |
+| Validation text artifact GitHub blob publication waiting for platform confirmation | waiting | 2026-10-09T06:35:27Z | unknown | unknown | in_progress |
+| Final Box linux CI job | CI | 2026-10-09T07:00:32Z | 2026-10-09T07:10:56Z | 624.0 | completed |
+| Final Box macos CI job | CI | 2026-10-09T07:00:38Z | 2026-10-09T07:14:15Z | 817.0 | completed |
+| Final Box two-job elapsed coverage | mixed task window | 2026-10-09T07:00:32+00:00 | 2026-10-09T07:14:15+00:00 | 823.0 | completed |
+
+### Mixed-window groups (not resource totals)
+
+| Category | All windows | Closed windows with endpoints | Closed interval union (seconds) |
+|---|---:|---:|---:|
+| implementation/rework + validation (mixed) | 1 | 1 | 611.000 |
+| publication/preparation (mixed) | 1 | 1 | 162.000 |
+| review/documentation (mixed) | 3 | 3 | 682.000 |
+| validation (mixed) | 1 | 1 | 657.000 |
+| waiting | 1 | 0 | unknown / not yet closed |
+
+Categories can overlap each other and include productive parallel work during waits. Do not sum category unions or interpret any category as active labor.
+
+Per-command and API child records, nested CI steps, source hashes and uncertainty are retained in duration-data.json. Nested child resource totals are counted once in their separate group; their parent windows remain excluded. Shared editor work is assigned to BelloBox; shared initial timing-publication wait is represented once in BelloAgent.
+
+## Historical audit (original coverage below)
+
 Report generated 2026-10-09 06:05 UTC; CI evidence cutoff 2026-10-09 05:45:13 UTC. Local candidate receipts are identified separately. Source checkpoint: [`0e13ee6def21`](https://github.com/BelloWare/BelloBox/commit/0e13ee6def214425865759591c37539429530d71). Branch: `rust` (the requested “risk” interpreted as `rust`).
 
 ## What can actually be accounted for

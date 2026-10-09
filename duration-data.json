@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T06:05:00Z",
+  "as_of_utc": "2026-10-09T08:08:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -51768,6 +51768,945 @@
       "uncertainty": "Cannot infer active effort from commit gaps or assign elapsed remainder.",
       "include_in_totals": false,
       "accounting_group": "unknown"
+    },
+    {
+      "id": "box-cumulative-qr-gui-window-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "validation (mixed)",
+      "activity": "Cumulative popup/palette actual GUI regression including wait for sealed binary",
+      "start_utc": "2026-10-09T05:56:59Z",
+      "end_utc": "2026-10-09T06:07:56Z",
+      "duration_seconds": 657.0,
+      "duration_basis": "Observed assignment/request to reported result; mixed elapsed task window, not active labor/inference",
+      "resource": "validation-task-window",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "Bounded GUI acceptance receipt on4df and observed task assignment/result timestamps"
+        }
+      ],
+      "uncertainty": "Observed coordination timestamps; contains tools, waiting and parallel work; does not isolate active execution",
+      "include_in_totals": false,
+      "accounting_group": "task_window",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository."
+    },
+    {
+      "id": "box-worldclock-native-repair-window-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "implementation/rework + validation (mixed)",
+      "activity": "WorldClock fixture repair and native full-suite validation",
+      "start_utc": "2026-10-09T06:11:04Z",
+      "end_utc": "2026-10-09T06:21:15Z",
+      "duration_seconds": 611.0,
+      "duration_basis": "Observed assignment/request to reported result; mixed elapsed task window, not active labor/inference",
+      "resource": "validation-task-window",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "https://github.com/BelloWare/BelloBox/issues/1#issuecomment-6075412134; repaired evidence6075546602/6075547177"
+        }
+      ],
+      "uncertainty": "Observed coordination timestamps; contains tools, waiting and parallel work; does not isolate active execution",
+      "include_in_totals": false,
+      "accounting_group": "task_window",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository."
+    },
+    {
+      "id": "box-final-loc-audit-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "review/documentation (mixed)",
+      "activity": "Final WorldClock successor LOC audit",
+      "start_utc": "2026-10-09T06:26:23Z",
+      "end_utc": "2026-10-09T06:28:05Z",
+      "duration_seconds": 102.0,
+      "duration_basis": "Observed mixed task window; includes tools, coordination and waiting, not active labor or inference",
+      "resource": "task-window",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "03932bef666b9afcfdb7d5e6d97640e6b45e2129834f14c8200681a42adcd90e"
+        },
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "ad6f4e585a3564ec65cdf171eef3342cf938f2a3bd17e32df25807866ed0ce31"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/75cd3609bc053a6869b996706642637fac8536ce",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": false,
+      "accounting_group": "task_window",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "source_commit": "75cd3609bc053a6869b996706642637fac8536ce",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-worldclock-final-fmt-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "automated lint/check",
+      "activity": "Final WorldClock candidate fmt",
+      "start_utc": "2026-10-09T06:23:01.640321+00:00",
+      "end_utc": "2026-10-09T06:23:03.179157+00:00",
+      "duration_seconds": 1.5388964689991553,
+      "duration_basis": "Measured command elapsed resource time; may overlap task windows and other resources",
+      "resource": "command-process",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "30a82df6075f3b74a17c2d2e127b1059a40ac475dee7231275f9f19795e6541c"
+        },
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "6155676a34656bdf70723e642ec705c62f572d1c7a1b434c3c4d35e52fc57e55"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/75cd3609bc053a6869b996706642637fac8536ce",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": true,
+      "accounting_group": "incremental_command",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_commit": "75cd3609bc053a6869b996706642637fac8536ce",
+      "source_manifest_sha256": "4f159ece87a6f79abccf469ba2bbdcbd5406411d5eb066af813aed3b039dfc70",
+      "timing_precision": "Recorded monotonic elapsed float; UTC timestamps independently recorded.",
+      "overlap_note": "Overlaps LOC audit task and other workers. Sum is command resource elapsed, not global wall clock.",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-worldclock-final-focused-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "build + test/check (combined)",
+      "activity": "Final WorldClock candidate focused",
+      "start_utc": "2026-10-09T06:23:03.179689+00:00",
+      "end_utc": "2026-10-09T06:23:25.546312+00:00",
+      "duration_seconds": 22.36665100400569,
+      "duration_basis": "Measured command elapsed resource time; may overlap task windows and other resources",
+      "resource": "command-process",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "30a82df6075f3b74a17c2d2e127b1059a40ac475dee7231275f9f19795e6541c"
+        },
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "6155676a34656bdf70723e642ec705c62f572d1c7a1b434c3c4d35e52fc57e55"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/75cd3609bc053a6869b996706642637fac8536ce",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": true,
+      "accounting_group": "incremental_command",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "world_clock_ui::",
+        "--",
+        "--test-threads=1",
+        "--show-output"
+      ],
+      "exit_code": 0,
+      "log_sha256": "b440bbb1bd67de2f114b04aa634547bf729e093330698938c994dce5182303ba",
+      "source_commit": "75cd3609bc053a6869b996706642637fac8536ce",
+      "source_manifest_sha256": "4f159ece87a6f79abccf469ba2bbdcbd5406411d5eb066af813aed3b039dfc70",
+      "timing_precision": "Recorded monotonic elapsed float; UTC timestamps independently recorded.",
+      "overlap_note": "Overlaps LOC audit task and other workers. Sum is command resource elapsed, not global wall clock.",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-worldclock-final-recording-full-app-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "build + test/check (combined)",
+      "activity": "Final WorldClock candidate recording-full-app",
+      "start_utc": "2026-10-09T06:23:25.546699+00:00",
+      "end_utc": "2026-10-09T06:26:54.264859+00:00",
+      "duration_seconds": 208.71817806200124,
+      "duration_basis": "Measured command elapsed resource time; may overlap task windows and other resources",
+      "resource": "command-process",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "30a82df6075f3b74a17c2d2e127b1059a40ac475dee7231275f9f19795e6541c"
+        },
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "6155676a34656bdf70723e642ec705c62f572d1c7a1b434c3c4d35e52fc57e55"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/75cd3609bc053a6869b996706642637fac8536ce",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": true,
+      "accounting_group": "incremental_command",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "recording-fixtures",
+        "--",
+        "--test-threads=1",
+        "--show-output"
+      ],
+      "exit_code": 0,
+      "log_sha256": "00ae08a5397a68c760204b6447d6cf0eb53cc8f712d50f56dd006922c5b06f8f",
+      "source_commit": "75cd3609bc053a6869b996706642637fac8536ce",
+      "source_manifest_sha256": "4f159ece87a6f79abccf469ba2bbdcbd5406411d5eb066af813aed3b039dfc70",
+      "timing_precision": "Recorded monotonic elapsed float; UTC timestamps independently recorded.",
+      "overlap_note": "Overlaps LOC audit task and other workers. Sum is command resource elapsed, not global wall clock.",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-worldclock-final-clippy-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "automated lint/check",
+      "activity": "Final WorldClock candidate clippy",
+      "start_utc": "2026-10-09T06:26:54.265559+00:00",
+      "end_utc": "2026-10-09T06:27:02.091370+00:00",
+      "duration_seconds": 7.825826902997505,
+      "duration_basis": "Measured command elapsed resource time; may overlap task windows and other resources",
+      "resource": "command-process",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "30a82df6075f3b74a17c2d2e127b1059a40ac475dee7231275f9f19795e6541c"
+        },
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "6155676a34656bdf70723e642ec705c62f572d1c7a1b434c3c4d35e52fc57e55"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/75cd3609bc053a6869b996706642637fac8536ce",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": true,
+      "accounting_group": "incremental_command",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "recording-fixtures",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log_sha256": "dd2405c04e1b855867ab85475e530a29ce2545fd355fa8eeb102c8d5243c88e2",
+      "source_commit": "75cd3609bc053a6869b996706642637fac8536ce",
+      "source_manifest_sha256": "4f159ece87a6f79abccf469ba2bbdcbd5406411d5eb066af813aed3b039dfc70",
+      "timing_precision": "Recorded monotonic elapsed float; UTC timestamps independently recorded.",
+      "overlap_note": "Overlaps LOC audit task and other workers. Sum is command resource elapsed, not global wall clock.",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-worldclock-final-clean-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "build + test/check (combined)",
+      "activity": "Final WorldClock candidate clean",
+      "start_utc": "2026-10-09T06:27:02.091789+00:00",
+      "end_utc": "2026-10-09T06:27:02.249420+00:00",
+      "duration_seconds": 0.15764934199978597,
+      "duration_basis": "Measured command elapsed resource time; may overlap task windows and other resources",
+      "resource": "command-process",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "30a82df6075f3b74a17c2d2e127b1059a40ac475dee7231275f9f19795e6541c"
+        },
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "6155676a34656bdf70723e642ec705c62f572d1c7a1b434c3c4d35e52fc57e55"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/75cd3609bc053a6869b996706642637fac8536ce",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": true,
+      "accounting_group": "incremental_command",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "command": [
+        "cargo",
+        "clean",
+        "-p",
+        "bellobox-app"
+      ],
+      "exit_code": 0,
+      "log_sha256": "5a2e7b0e9df21f6fb6a684a67c70e4fbd406d09c59ecfe9a7c20ba16cb115fa8",
+      "source_commit": "75cd3609bc053a6869b996706642637fac8536ce",
+      "source_manifest_sha256": "4f159ece87a6f79abccf469ba2bbdcbd5406411d5eb066af813aed3b039dfc70",
+      "timing_precision": "Recorded monotonic elapsed float; UTC timestamps independently recorded.",
+      "overlap_note": "Overlaps LOC audit task and other workers. Sum is command resource elapsed, not global wall clock.",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-worldclock-final-ordinary-build-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "build",
+      "activity": "Final WorldClock candidate ordinary-build",
+      "start_utc": "2026-10-09T06:27:02.249845+00:00",
+      "end_utc": "2026-10-09T06:27:11.059920+00:00",
+      "duration_seconds": 8.810094290995039,
+      "duration_basis": "Measured command elapsed resource time; may overlap task windows and other resources",
+      "resource": "command-process",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "30a82df6075f3b74a17c2d2e127b1059a40ac475dee7231275f9f19795e6541c"
+        },
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "6155676a34656bdf70723e642ec705c62f572d1c7a1b434c3c4d35e52fc57e55"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/75cd3609bc053a6869b996706642637fac8536ce",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": true,
+      "accounting_group": "incremental_command",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "bellobox-app"
+      ],
+      "exit_code": 0,
+      "log_sha256": "d64ba6a065d06c85b8bd2c5418147da54c5c657887c315b4ad18d02a8094d2c4",
+      "source_commit": "75cd3609bc053a6869b996706642637fac8536ce",
+      "source_manifest_sha256": "4f159ece87a6f79abccf469ba2bbdcbd5406411d5eb066af813aed3b039dfc70",
+      "timing_precision": "Recorded monotonic elapsed float; UTC timestamps independently recorded.",
+      "overlap_note": "Overlaps LOC audit task and other workers. Sum is command resource elapsed, not global wall clock.",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-shared-native-verification-package-2026-10-09",
+      "repository_assignment": "BelloBox (shared work counted once)",
+      "category": "review/documentation (mixed)",
+      "activity": "Shared editor native evidence verification and packaging",
+      "start_utc": "2026-10-09T05:28:43Z",
+      "end_utc": "2026-10-09T05:37:15Z",
+      "duration_seconds": 512.0,
+      "duration_basis": "Observed mixed task window; includes tools, coordination and waiting, not active labor or inference",
+      "resource": "task-window",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "71f02379a862a306e579bf8c9bd560cd6f9b932bb8e2ce2a16893f69c20adb1a"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": false,
+      "accounting_group": "task_window",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "timestamp_provenance": "Observed task-window bounds supplied by observer; verification receipt binds shared work but is not a process-duration log.",
+      "source_commit": "e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+      "native_standalone_candidate": "2e72ec51bd010a96624ca7326f9a9afcb1057686",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-shared-native-docs-preparation-2026-10-09",
+      "repository_assignment": "BelloBox (shared work counted once)",
+      "category": "review/documentation (mixed)",
+      "activity": "Shared editor documentation preparation",
+      "start_utc": "2026-10-09T05:37:29Z",
+      "end_utc": "2026-10-09T05:38:37Z",
+      "duration_seconds": 68.0,
+      "duration_basis": "Observed mixed task window; includes tools, coordination and waiting, not active labor or inference",
+      "resource": "task-window",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "71f02379a862a306e579bf8c9bd560cd6f9b932bb8e2ce2a16893f69c20adb1a"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": false,
+      "accounting_group": "task_window",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "timestamp_provenance": "Observed task-window bounds supplied by observer; verification receipt binds shared work but is not a process-duration log.",
+      "source_commit": "e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+      "native_standalone_candidate": "2e72ec51bd010a96624ca7326f9a9afcb1057686",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-shared-native-immutable-docs-upload-2026-10-09",
+      "repository_assignment": "BelloBox (shared work counted once)",
+      "category": "publication/preparation (mixed)",
+      "activity": "Shared editor immutable documentation upload and verification",
+      "start_utc": "2026-10-09T05:38:49Z",
+      "end_utc": "2026-10-09T05:41:31Z",
+      "duration_seconds": 162.0,
+      "duration_basis": "Observed mixed task window; includes tools, coordination and waiting, not active labor or inference",
+      "resource": "task-window",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "71f02379a862a306e579bf8c9bd560cd6f9b932bb8e2ce2a16893f69c20adb1a"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "include_in_totals": false,
+      "accounting_group": "task_window",
+      "prospective": true,
+      "tracking_state": "closed",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "timestamp_provenance": "Observed task-window bounds supplied by observer; verification receipt binds shared work but is not a process-duration log.",
+      "source_commit": "e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+      "native_standalone_candidate": "2e72ec51bd010a96624ca7326f9a9afcb1057686",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on"
+    },
+    {
+      "id": "box-validation-publication-approval-2026-10-09",
+      "repository_assignment": "BelloBox",
+      "category": "waiting",
+      "activity": "Validation text artifact GitHub blob publication waiting for platform confirmation",
+      "start_utc": "2026-10-09T06:35:27Z",
+      "end_utc": null,
+      "duration_seconds": null,
+      "duration_basis": "Observed approval request to eventual outcome; mixed elapsed gate window, not active labor or inference",
+      "resource": "publication-gate",
+      "outcome": "in_progress",
+      "source": [
+        {
+          "provenance": "Observed GitHub create_blob approval request; exact upload file remains unconfirmed while call is pending"
+        }
+      ],
+      "uncertainty": "Observation timestamp; does not isolate upload processing from platform wait",
+      "include_in_totals": false,
+      "accounting_group": "task_window",
+      "prospective": true,
+      "tracking_state": "open",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository."
+    },
+    {
+      "id": "box75cd-ci-linux-113709172494",
+      "activity": "Final Box linux CI job",
+      "repository_assignment": "BelloBox",
+      "start_utc": "2026-10-09T07:00:32Z",
+      "end_utc": "2026-10-09T07:10:56Z",
+      "duration_seconds": 624.0,
+      "accounting_group": "incremental_ci_job",
+      "prospective": true,
+      "include_in_totals": true,
+      "tracking_state": "closed",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "7f595ecda96d4099edee32e9228a9c10c2ed92aad638111f99129e9f90651d60"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/actions/runs/37896574277",
+          "provenance": "public workflow record"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/75cd3609bc053a6869b996706642637fac8536ce",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "source_commit": "75cd3609bc053a6869b996706642637fac8536ce",
+      "run_id": 37896574277,
+      "job_id": 113709172494,
+      "url": "https://github.com/BelloWare/BelloBox/actions/runs/37896574277",
+      "nested_steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T07:00:33Z",
+          "completed_at": "2026-10-09T07:00:34Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T07:00:34Z",
+          "completed_at": "2026-10-09T07:00:37Z"
+        },
+        {
+          "name": "Install Linux build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T07:00:37Z",
+          "completed_at": "2026-10-09T07:01:05Z"
+        },
+        {
+          "name": "Install pinned Rust toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-09T07:01:05Z",
+          "completed_at": "2026-10-09T07:01:14Z"
+        },
+        {
+          "name": "Formatting",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-09T07:01:14Z",
+          "completed_at": "2026-10-09T07:01:15Z"
+        },
+        {
+          "name": "Core and integration tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T07:01:15Z",
+          "completed_at": "2026-10-09T07:04:48Z"
+        },
+        {
+          "name": "Test recording feature platform lifecycle with generated media",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-09T07:04:48Z",
+          "completed_at": "2026-10-09T07:04:51Z"
+        },
+        {
+          "name": "Run full App suite with recording and shutdown fixtures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-09T07:04:51Z",
+          "completed_at": "2026-10-09T07:08:09Z"
+        },
+        {
+          "name": "Lint recording fixture paths",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-09T07:08:09Z",
+          "completed_at": "2026-10-09T07:10:07Z"
+        },
+        {
+          "name": "Lints",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-09T07:10:07Z",
+          "completed_at": "2026-10-09T07:10:13Z"
+        },
+        {
+          "name": "Build native applications",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-09T07:10:13Z",
+          "completed_at": "2026-10-09T07:10:39Z"
+        },
+        {
+          "name": "Benchmark harness self-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-09T07:10:39Z",
+          "completed_at": "2026-10-09T07:10:39Z"
+        },
+        {
+          "name": "UI evidence harness self-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-09T07:10:39Z",
+          "completed_at": "2026-10-09T07:10:40Z"
+        },
+        {
+          "name": "Capture current Linux software-rendered UI",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-09T07:10:40Z",
+          "completed_at": "2026-10-09T07:10:53Z"
+        },
+        {
+          "name": "Summarize Linux UI smoke without artifact storage",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-09T07:10:53Z",
+          "completed_at": "2026-10-09T07:10:53Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-10-09T07:10:53Z",
+          "completed_at": "2026-10-09T07:10:53Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-10-09T07:10:53Z",
+          "completed_at": "2026-10-09T07:10:53Z"
+        }
+      ],
+      "steps_added_to_total": false,
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on",
+      "category": "CI",
+      "resource": "CI runner",
+      "duration_basis": "Recorded interval; resource/client wait, not CPU, active labor or inference"
+    },
+    {
+      "id": "box75cd-ci-macos-113709172915",
+      "activity": "Final Box macos CI job",
+      "repository_assignment": "BelloBox",
+      "start_utc": "2026-10-09T07:00:38Z",
+      "end_utc": "2026-10-09T07:14:15Z",
+      "duration_seconds": 817.0,
+      "accounting_group": "incremental_ci_job",
+      "prospective": true,
+      "include_in_totals": true,
+      "tracking_state": "closed",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "7f595ecda96d4099edee32e9228a9c10c2ed92aad638111f99129e9f90651d60"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/actions/runs/37896574314",
+          "provenance": "public workflow record"
+        },
+        {
+          "url": "https://github.com/BelloWare/BelloBox/commit/75cd3609bc053a6869b996706642637fac8536ce",
+          "provenance": "source identity only; does not independently verify local timing"
+        }
+      ],
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "source_commit": "75cd3609bc053a6869b996706642637fac8536ce",
+      "run_id": 37896574314,
+      "job_id": 113709172915,
+      "url": "https://github.com/BelloWare/BelloBox/actions/runs/37896574314",
+      "nested_steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T07:00:39Z",
+          "completed_at": "2026-10-09T07:00:39Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T07:00:39Z",
+          "completed_at": "2026-10-09T07:00:44Z"
+        },
+        {
+          "name": "Verify native Apple toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T07:00:44Z",
+          "completed_at": "2026-10-09T07:00:49Z"
+        },
+        {
+          "name": "Install pinned Rust toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-09T07:00:49Z",
+          "completed_at": "2026-10-09T07:00:59Z"
+        },
+        {
+          "name": "Compile and link all native test targets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-09T07:00:59Z",
+          "completed_at": "2026-10-09T07:04:51Z"
+        },
+        {
+          "name": "Lint normal and synthetic native platform paths",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T07:04:51Z",
+          "completed_at": "2026-10-09T07:05:23Z"
+        },
+        {
+          "name": "Compare raw movie decoding with the independent Swift source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-09T07:05:23Z",
+          "completed_at": "2026-10-09T07:06:02Z"
+        },
+        {
+          "name": "Run pure domain and filesystem tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-09T07:06:02Z",
+          "completed_at": "2026-10-09T07:06:43Z"
+        },
+        {
+          "name": "Characterize synthetic CoreGraphics alpha without capture",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-09T07:06:43Z",
+          "completed_at": "2026-10-09T07:06:45Z"
+        },
+        {
+          "name": "Test supplied-image Window host mask without GPUI launch",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-09T07:06:45Z",
+          "completed_at": "2026-10-09T07:07:05Z"
+        },
+        {
+          "name": "Test generated movie converter host and closed native gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-09T07:07:05Z",
+          "completed_at": "2026-10-09T07:07:27Z"
+        },
+        {
+          "name": "Test generated recording writer and physical callback retirement",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-09T07:07:27Z",
+          "completed_at": "2026-10-09T07:07:39Z"
+        },
+        {
+          "name": "Run full App suite with recording and shutdown fixtures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-09T07:07:39Z",
+          "completed_at": "2026-10-09T07:10:57Z"
+        },
+        {
+          "name": "Lint recording feature App and native platform paths",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-09T07:10:57Z",
+          "completed_at": "2026-10-09T07:12:40Z"
+        },
+        {
+          "name": "Test immutable image OCR on generated pixels and numeric loopback",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-09T07:12:40Z",
+          "completed_at": "2026-10-09T07:12:47Z"
+        },
+        {
+          "name": "Test image OCR consent and inline retirement on the GPUI test platform",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-09T07:12:47Z",
+          "completed_at": "2026-10-09T07:13:09Z"
+        },
+        {
+          "name": "Build native applications without launching",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-09T07:13:09Z",
+          "completed_at": "2026-10-09T07:13:44Z"
+        },
+        {
+          "name": "Test isolated preview packaging policy",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-09T07:13:44Z",
+          "completed_at": "2026-10-09T07:13:44Z"
+        },
+        {
+          "name": "Assemble and verify offline development preview",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-09T07:13:44Z",
+          "completed_at": "2026-10-09T07:14:10Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 38,
+          "started_at": "2026-10-09T07:14:10Z",
+          "completed_at": "2026-10-09T07:14:11Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 39,
+          "started_at": "2026-10-09T07:14:11Z",
+          "completed_at": "2026-10-09T07:14:12Z"
+        }
+      ],
+      "steps_added_to_total": false,
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on",
+      "category": "CI",
+      "resource": "CI runner",
+      "duration_basis": "Recorded interval; resource/client wait, not CPU, active labor or inference"
+    },
+    {
+      "id": "box75cd-ci-union-2026-10-09",
+      "activity": "Final Box two-job elapsed coverage",
+      "repository_assignment": "BelloBox",
+      "start_utc": "2026-10-09T07:00:32+00:00",
+      "end_utc": "2026-10-09T07:14:15+00:00",
+      "duration_seconds": 823.0,
+      "accounting_group": "interval_union",
+      "prospective": true,
+      "include_in_totals": false,
+      "tracking_state": "closed",
+      "outcome": "completed",
+      "source": [
+        {
+          "provenance": "retained local timing receipt; original content is not published here",
+          "sha256": "7f595ecda96d4099edee32e9228a9c10c2ed92aad638111f99129e9f90651d60"
+        }
+      ],
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "aggregation_caveat": "Accounting groups and mixed windows may overlap. Never add parent windows, nested subtotals, resource sums and elapsed unions. Shared work appears in only its assigned repository.",
+      "resource_sum_seconds": 1441,
+      "overlap_seconds": 618.0,
+      "note": "624s Linux +817s macOS -618s overlap =823s union. Job steps remain nested; do not add union to resource sum.",
+      "parent_id": null,
+      "checkpoint": "2026-10-09-follow-on",
+      "category": "mixed task window",
+      "resource": "mixed task window",
+      "duration_basis": "Recorded interval; resource/client wait, not CPU, active labor or inference"
     }
   ],
   "commit_milestones": [
@@ -52383,5 +53322,111 @@
     "Implementation, source review, GUI operation, publication and inference lack complete timers.",
     "Shared workbench source work belongs to BelloBox; BelloAgent consumer CI remains BelloAgent.",
     "CI list covers rust branch runs returned by GitHub, October 4\u20139; all-attempt jobs endpoint was supplemented with explicit attempt-1 endpoint for rerun 37551464607."
+  ],
+  "grouped_current": {
+    "warning": "Separate accounting groups may overlap; never add their totals blindly. Resource sums are not elapsed time, labor or inference. Unknown durations are not zero. Wall coverage includes only items with both timestamps.",
+    "groups": {
+      "ci_job": {
+        "count": 168,
+        "known_duration_count": 168,
+        "resource_seconds_sum": 73147.0,
+        "wall_coverage_seconds": 45253.0,
+        "category_seconds": {
+          "ci": 73147.0
+        },
+        "resource_seconds": {
+          "GitHub linux": 32461.0,
+          "GitHub apple-silicon": 40686.0
+        }
+      },
+      "local_receipt": {
+        "count": 166,
+        "known_duration_count": 166,
+        "resource_seconds_sum": 1389.0315792700276,
+        "wall_coverage_seconds": 1256.241077,
+        "category_seconds": {
+          "build_test_combined": 836.9160266976105,
+          "test": 12.135776416980661,
+          "automated_lint_check": 250.8193637081422,
+          "build": 287.6622496142518,
+          "environment_wait": 1.4981628330424428
+        },
+        "resource_seconds": {
+          "native macOS": 1260.7171669146046,
+          "cloud command": 128.31441235542297
+        }
+      },
+      "incremental_command": {
+        "count": 6,
+        "known_duration_count": 6,
+        "resource_seconds_sum": 249.41729607099842,
+        "wall_coverage_seconds": 249.417136,
+        "category_seconds": {
+          "automated lint/check": 9.36472337199666,
+          "build + test/check (combined)": 231.24247840800672,
+          "build": 8.810094290995039
+        },
+        "resource_seconds": {
+          "command-process": 249.41729607099842
+        }
+      },
+      "incremental_ci_job": {
+        "count": 2,
+        "known_duration_count": 2,
+        "resource_seconds_sum": 1441.0,
+        "wall_coverage_seconds": 823.0,
+        "category_seconds": {
+          "CI": 1441.0
+        },
+        "resource_seconds": {
+          "CI runner": 1441.0
+        }
+      }
+    }
+  },
+  "checkpoint_updates": [
+    {
+      "cutoff_utc": "2026-10-09T08:08:00Z",
+      "source_snapshot_sha256": "4fafecdfc582e6cf707cf433d7d0ca13e9a0a678da94cb5dba886f42309c740c",
+      "new_items": 16,
+      "new_observer_events": 16,
+      "groups": {
+        "incremental_command": {
+          "count": 6,
+          "known_duration_count": 6,
+          "resource_seconds_sum": 249.41729607099842,
+          "wall_coverage_seconds": 249.417136,
+          "category_seconds": {
+            "automated lint/check": 9.36472337199666,
+            "build + test/check (combined)": 231.24247840800672,
+            "build": 8.810094290995039
+          },
+          "resource_seconds": {
+            "command-process": 249.41729607099842
+          },
+          "known_endpoint_items": 6,
+          "known_endpoint_resource_sum_seconds": 249.41729607099842
+        },
+        "incremental_ci_job": {
+          "count": 2,
+          "known_duration_count": 2,
+          "resource_seconds_sum": 1441.0,
+          "wall_coverage_seconds": 823.0,
+          "category_seconds": {
+            "CI": 1441.0
+          },
+          "resource_seconds": {
+            "CI runner": 1441.0
+          },
+          "known_endpoint_items": 2,
+          "known_endpoint_resource_sum_seconds": 1441.0
+        }
+      },
+      "mixed_window_count": 7,
+      "mixed_closed_union_seconds": 2112.0,
+      "new_observation_start_utc": "2026-10-09T05:28:43Z",
+      "historical_cutoff_unchanged": "2026-10-09T05:45:13Z",
+      "scope": "Selected checkpoint receipts, not exhaustive coverage of every intervening CI run or local task. Local receipt hashes identify retained evidence but are not independent public verification."
+    }
   ]
 }
