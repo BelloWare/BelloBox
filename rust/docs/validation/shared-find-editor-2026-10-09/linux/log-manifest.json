@@ -1,0 +1,62 @@
+{
+  "clippy-final.log": {
+    "sha256": "9d824948f59829e0d61c7f37b2aaf34e4a30dda5c3ae356b3c580b7765ae0f05",
+    "bytes": 427
+  },
+  "clippy-r1.log": {
+    "sha256": "4e8451476cb4652e689e17fdbafc9a103baa285c3ab9530a5fcff5d08154580f",
+    "bytes": 3644
+  },
+  "clippy-r2.log": {
+    "sha256": "185bd517b0b1833dc27202bb4b5edd94743bdc115e75339f9123829397e74c72",
+    "bytes": 427
+  },
+  "first-test.log": {
+    "sha256": "1f163287a9e0b9ad01ba9bb534677b665b0be7705c57e8ce3bc76955287e2224",
+    "bytes": 3181
+  },
+  "fmt-final.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  "ordinary-lib-build.log": {
+    "sha256": "ef8dd76f71c90b9e2351fb5ca509796cde96c68763b4907dfdeb619fb34d5a36",
+    "bytes": 563
+  },
+  "presentation-test-r1.log": {
+    "sha256": "5278ddea5a2745c0a2e62a710faa8e8e92ed0d5faa5286be6ae2acb334c40c3c",
+    "bytes": 635
+  },
+  "presentation-test-r2.log": {
+    "sha256": "cdf478ab9da64b43c30aa3fc9375095f3500a70f29aa88baf64292766de9e5ee",
+    "bytes": 3780
+  },
+  "presentation-test-r3.log": {
+    "sha256": "595a3d95f4de5829aab88111e367454357004f5215ee506f128dbc57095d7d47",
+    "bytes": 4726
+  },
+  "presentation-test-r4.log": {
+    "sha256": "1405fd6a5acd16afd41bccd75b31c4c168da56e11057638c512cf7bc4de015e1",
+    "bytes": 4359
+  },
+  "presentation-test-r5.log": {
+    "sha256": "e5f342db25a64eb7ba331087b159a9355ff1bdb3c5792f21deafa897e2630530",
+    "bytes": 3709
+  },
+  "presentation-test-r6.log": {
+    "sha256": "b4a7a4908ed84abddad0e4319cda1a3c50e9b73ff739d6ce2cdcafa93638dea9",
+    "bytes": 3932
+  },
+  "presentation-test-r7.log": {
+    "sha256": "fc2e7b623b39b5b6828c00f48ed6b5429fca2d593851f4adb67dd88d6ecb9ee2",
+    "bytes": 1187
+  },
+  "presentation-test-r8.log": {
+    "sha256": "03466c1f55e6271397900438675edd546dfff7e0411b620266c76bc3258f6a51",
+    "bytes": 4031
+  },
+  "presentation-test-r9.log": {
+    "sha256": "1e49d3aace6d2bdd47f043abe97d960a73b0a08bbd7898d5495c619be0667281",
+    "bytes": 4031
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "ordinary-library",
+  "kind": "build",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "build",
+    "--offline",
+    "--locked",
+    "-p",
+    "bello-workbench-ui",
+    "--lib"
+  ],
+  "started_at": "2026-10-09T05:24:35.785161+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/evidence/ordinary-library.log",
+  "ended_at": "2026-10-09T05:25:00.584008+00:00",
+  "elapsed_seconds": 24.798556207912043,
+  "exit_code": 0,
+  "log_sha256": "5355bdf38284248b4d2252518df8e5dc3567b11b4cf396708fc5c41bb367ee15",
+  "counts": [],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbello_workbench_ui.rlib",
+      "sha256": "08edcdde97332e9ab51d0757b0262f59d3578ab5886dd9afe4b766d1a8610f80",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/libbello_workbench_ui.rlib: current ar archive"
+    }
+  ],
+  "tests": [],
+  "listed_tests": [],
+  "expected_name_set_matches": null
+}

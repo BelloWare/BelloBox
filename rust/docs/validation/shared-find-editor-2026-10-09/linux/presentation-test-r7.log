@@ -1,0 +1,22 @@
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-find-presentation/rust/crates/bello-workbench-ui)
+error[E0425]: cannot find value `replace_after_paint` in this scope
+   --> crates/bello-workbench-ui/src/editor_presentation_tests.rs:393:12
+    |
+393 |         if replace_after_paint {
+    |            ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0599]: no method named `new` found for mutable reference `&mut gpui::Context<'_, _>` in the current scope
+   --> crates/bello-workbench-ui/src/editor_presentation_tests.rs:485:42
+    |
+485 |         .add_window_view(|w, cx| Host(cx.new(|cx| EditorView::new("cached child".into(), w, cx))));
+    |                                          ^^^ method not found in `&mut gpui::Context<'_, _>`
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `AppContext` which provides `new` is implemented but not in scope; perhaps you want to import it
+    |
+  1 + use gpui::AppContext;
+    |
+
+Some errors have detailed explanations: E0425, E0599.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `bello-workbench-ui` (lib test) due to 2 previous errors

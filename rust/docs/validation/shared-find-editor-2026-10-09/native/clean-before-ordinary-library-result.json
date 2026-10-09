@@ -1,0 +1,25 @@
+{
+  "name": "clean-before-ordinary-library",
+  "kind": "clean",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "clean",
+    "--offline",
+    "--locked",
+    "-p",
+    "bello-workbench-ui"
+  ],
+  "started_at": "2026-10-09T05:24:35.060453+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/evidence/clean-before-ordinary-library.log",
+  "ended_at": "2026-10-09T05:24:35.784474+00:00",
+  "elapsed_seconds": 0.7235663330648094,
+  "exit_code": 0,
+  "log_sha256": "f55ba8fc27c51e1c40c9bf02133f1612c9107268894966a66ce80885ae8ff191",
+  "counts": [],
+  "binaries": [],
+  "tests": [],
+  "listed_tests": [],
+  "expected_name_set_matches": null
+}

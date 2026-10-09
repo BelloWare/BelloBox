@@ -2,6 +2,7 @@
 mod appearance;
 mod editor_view;
 mod telemetry;
+mod text_presentation;
 mod workbench_view;
 mod wrapping;
 pub use appearance::{EditorAppearance, WorkbenchAppearance};
@@ -10,3 +11,8 @@ pub use telemetry::{EditorTelemetrySnapshot, editor_telemetry_snapshot};
 pub use workbench_view::{WorkbenchPanel, WorkbenchView};
 /// Views route their keyboard events locally, so there are no global bindings.
 pub fn init(_cx: &mut gpui::App) {}
+
+pub use text_presentation::{
+    MAX_PRESENTATION_BYTES, MAX_TEXT_DECORATIONS, PresentationError, PresentationGeometry,
+    TextDecoration, TextPresentation,
+};

@@ -1,0 +1,32 @@
+[
+  {
+    "control": "source-byte-drift",
+    "rejected": true,
+    "reason": "after SHA256 rust/crates/bello-workbench-ui/src/editor_presentation_tests.rs"
+  },
+  {
+    "control": "support-range-drift",
+    "rejected": true,
+    "reason": "reviewed counts after rust/crates/bello-workbench-ui/src/editor_presentation_tests.rs"
+  },
+  {
+    "control": "omit-source-file",
+    "rejected": true,
+    "reason": "complete repository Rust scope"
+  },
+  {
+    "control": "git-tree-drift",
+    "rejected": true,
+    "reason": "tree object 3a4d1f63a5857a0cf60d37001991f4e59fa61df8"
+  },
+  {
+    "control": "omit-evidence-probe",
+    "rejected": true,
+    "reason": "exact disjoint evidence inventory"
+  },
+  {
+    "control": "modify-candidate-tree",
+    "rejected": true,
+    "reason": "tree object edf8c85509d3885567b2bf09c51ea67766a02c2f"
+  }
+]

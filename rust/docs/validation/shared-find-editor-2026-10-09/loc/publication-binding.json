@@ -1,0 +1,26 @@
+{
+  "source_commit": "e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+  "source_tree": "30709481594d4b63fae8ccfbba3d121c389c4da3",
+  "parent_commit": "0e13ee6def214425865759591c37539429530d71",
+  "parent_tree": "90943e3ccd7fe7841f175c8e74188289d3732d9e",
+  "editor_candidate": "2e72ec51bd010a96624ca7326f9a9afcb1057686",
+  "popup_source_baseline": "80e6d41a68fc0e2bf186272fb788a301f4f9e744",
+  "composition_tree": "edf8c85509d3885567b2bf09c51ea67766a02c2f",
+  "composition_ledger_sha256": "afc8d365f0c41abab978a6d34499ac952aebf7dc32dc1463de6e74c5f1d534ba",
+  "delta": {
+    "production": 476,
+    "support": 574,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 58381,
+    "support": 42181,
+    "benchmark": 105
+  },
+  "product_nonblank": 100667,
+  "product_files": 201,
+  "excluded_evidence_nonblank": 115,
+  "all_tracked_rust_nonblank": 100782,
+  "all_tracked_rust_files": 203,
+  "note": "Final exact immutable source child binding supersedes provisional publication status of historical composition ledger. No source acceptance, native test, merge/ref update or deployment inferred."
+}

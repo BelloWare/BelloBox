@@ -8,3 +8,6 @@ description = "Reusable GPUI folder, Git, and modal editor views for Bello appli
 gpui.workspace = true
 libc.workspace = true
 bello-workbench = { path = "../bello-workbench" }
+
+[dev-dependencies]
+gpui = { workspace = true, features = ["test-support"] }

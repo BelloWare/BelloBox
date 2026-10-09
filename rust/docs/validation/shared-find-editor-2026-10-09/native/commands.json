@@ -1,0 +1,97 @@
+{
+  "target": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+  "steps": [
+    {
+      "name": "format",
+      "kind": "format",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ]
+    },
+    {
+      "name": "inventory",
+      "kind": "inventory",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bello-workbench-ui",
+        "--lib",
+        "--",
+        "--list"
+      ]
+    },
+    {
+      "name": "library-tests",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bello-workbench-ui",
+        "--lib",
+        "--",
+        "--test-threads=2"
+      ],
+      "inventory": "inventory",
+      "selector": "",
+      "ignored_suffixes": [],
+      "expected_selected_count": 37
+    },
+    {
+      "name": "strict-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "bello-workbench-ui",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "clean-before-ordinary-library",
+      "kind": "clean",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clean",
+        "--offline",
+        "--locked",
+        "-p",
+        "bello-workbench-ui"
+      ]
+    },
+    {
+      "name": "ordinary-library",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bello-workbench-ui",
+        "--lib"
+      ]
+    }
+  ]
+}

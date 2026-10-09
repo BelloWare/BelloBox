@@ -1,0 +1,25 @@
+{
+  "verified": true,
+  "source_commit": "e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+  "source_tree": "30709481594d4b63fae8ccfbba3d121c389c4da3",
+  "parent_commit": "0e13ee6def214425865759591c37539429530d71",
+  "composition_ledger_sha256": "afc8d365f0c41abab978a6d34499ac952aebf7dc32dc1463de6e74c5f1d534ba",
+  "delta": {
+    "production": 476,
+    "support": 574,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 58381,
+    "support": 42181,
+    "benchmark": 105
+  },
+  "product_nonblank": 100667,
+  "product_files": 201,
+  "excluded_evidence_nonblank": 115,
+  "all_tracked_rust_nonblank": 100782,
+  "all_tracked_rust_files": 203,
+  "exact_five_postimages": true,
+  "no_overlap": true,
+  "publication_source_binding": "exact immutable source child; no ref publication claim"
+}

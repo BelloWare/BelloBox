@@ -1,0 +1,16 @@
+{
+  "commit": "e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+  "tree": "30709481594d4b63fae8ccfbba3d121c389c4da3",
+  "parent": "0e13ee6def214425865759591c37539429530d71",
+  "source_candidate": "2e72ec51bd010a96624ca7326f9a9afcb1057686",
+  "paths": 5,
+  "all_postimages_byte_equal": true,
+  "exact_changed_path_set": true,
+  "no_overlap_with_popup_changes": true,
+  "all_other_popup_paths_unchanged": true,
+  "rust_ref_moved": false,
+  "checked_at": "2026-10-09T05:33:41.605143+00:00",
+  "compilation_input_equivalence_sha256": "2331df352d4e25b2cd6136732cbc8dde94736685dabb8acb315542b23ff63360",
+  "complete_shared_crate_and_local_dependency_trees_equal": true,
+  "all_workspace_manifests_lockfiles_toolchain_config_equal": true
+}

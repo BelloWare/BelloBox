@@ -1,0 +1,32 @@
+[
+  {
+    "path": "rust/crates/bello-workbench-ui/Cargo.toml",
+    "mode": "100644",
+    "git_blob": "96eada825c1fffe0e2ecf1d2de3c5b1132d55fb8",
+    "sha256": "85551129fcb904d1cd6b36fa5e08a117747037d45d9941bdd5df3872d8609470"
+  },
+  {
+    "path": "rust/crates/bello-workbench-ui/src/editor_presentation_tests.rs",
+    "mode": "100644",
+    "git_blob": "c83083462dc796410cc15a7fd411005756be69b8",
+    "sha256": "b024ad91b362f8b98e23095b6f2d70ede8a889708d953529913a5d522d266736"
+  },
+  {
+    "path": "rust/crates/bello-workbench-ui/src/editor_view.rs",
+    "mode": "100644",
+    "git_blob": "beb257fc9ceb408b4d8b794c2a2df14fe6df7bec",
+    "sha256": "384588661e1e70c66730a7e0318b1a574116d789d6f153a6e8b5139d5621da11"
+  },
+  {
+    "path": "rust/crates/bello-workbench-ui/src/lib.rs",
+    "mode": "100644",
+    "git_blob": "a2db7e0c5c093658d778a945aaaec3a0e2ba8434",
+    "sha256": "23e57b6010a45aa4ca2be0960c396907069a566dd1fa7ea8f535a09c0d050a3e"
+  },
+  {
+    "path": "rust/crates/bello-workbench-ui/src/text_presentation.rs",
+    "mode": "100644",
+    "git_blob": "6cd8c056bd30b1e19a99d752a4a97e77f7ff6b24",
+    "sha256": "ee9ceeb559880cac8f23220d1c13a624fc2c4db88147d4424865ace434549fac"
+  }
+]

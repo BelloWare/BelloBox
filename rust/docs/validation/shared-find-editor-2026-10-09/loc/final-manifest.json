@@ -1,0 +1,11 @@
+{
+  "base": "80e6d41a68fc0e2bf186272fb788a301f4f9e744",
+  "editor_candidate": "2e72ec51bd010a96624ca7326f9a9afcb1057686",
+  "files": {
+    "rust/crates/bello-workbench-ui/Cargo.toml": "85551129fcb904d1cd6b36fa5e08a117747037d45d9941bdd5df3872d8609470",
+    "rust/crates/bello-workbench-ui/src/editor_view.rs": "384588661e1e70c66730a7e0318b1a574116d789d6f153a6e8b5139d5621da11",
+    "rust/crates/bello-workbench-ui/src/editor_presentation_tests.rs": "b024ad91b362f8b98e23095b6f2d70ede8a889708d953529913a5d522d266736",
+    "rust/crates/bello-workbench-ui/src/text_presentation.rs": "ee9ceeb559880cac8f23220d1c13a624fc2c4db88147d4424865ace434549fac",
+    "rust/crates/bello-workbench-ui/src/lib.rs": "23e57b6010a45aa4ca2be0960c396907069a566dd1fa7ea8f535a09c0d050a3e"
+  }
+}

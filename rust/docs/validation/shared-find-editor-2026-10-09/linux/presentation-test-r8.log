@@ -1,0 +1,47 @@
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-find-presentation/rust/crates/bello-workbench-ui)
+    Finished `test` profile [unoptimized] target(s) in 1.86s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bello_workbench_ui-eed38fa1c4895fd0)
+
+running 37 tests
+test appearance::tests::code_viewer_keeps_native_source_metrics ... ok
+test appearance::tests::host_themes_do_not_share_light_ink_in_dark_surfaces ... ok
+test editor_view::input_tests::empty_commit_removes_only_marked_text_and_unblocks_mode_change ... ok
+test appearance::tests::plain_controls_do_not_add_code_editor_chrome ... ok
+test editor_view::input_tests::composition_owns_mode_until_commit_or_unmark ... ok
+test editor_view::input_tests::enter_preserves_crlf_and_read_only ... ok
+test editor_view::input_tests::explicit_platform_range_wins_and_clears_mark_only_on_success ... ok
+test editor_view::input_tests::enter_replaces_selection_instead_of_appending ... ok
+test editor_view::input_tests::painted_width_wins_over_parent_estimate_without_reflow_ping_pong ... ok
+test editor_view::input_tests::rejected_plain_selection_replacement_keeps_selection ... ok
+test editor_view::input_tests::rejected_commit_keeps_composition_selection_and_caret_for_retry ... ok
+test editor_view::input_tests::retained_state_keeps_pending_group_unicode_crlf_and_selection ... ok
+test editor_view::input_tests::rejected_state_transfers_leave_both_owners_intact ... ok
+test editor_view::input_tests::retained_vim_register_and_pending_operator_survive ... ok
+test editor_view::presentation_tests::composition_drag_rejection_and_atomic_validation_keep_input ... ok
+test editor_view::presentation_tests::explicit_select_all_is_separate_from_decorations_and_refuses_ime ... ok
+test editor_view::presentation_tests::prepaint_alone_cannot_deliver_a_measurement ... ok
+test editor_view::presentation_tests::replacement_aba_and_newest_request_cancel_transient_state ... ok
+test editor_view::presentation_tests::actual_paint_measures_unicode_without_edit_or_focus ... ok
+test editor_view::input_tests::oversized_commit_preserves_mark_and_retry_replaces_it_once ... ok
+test telemetry::tests::frame_coalescing_keeps_first_and_last_inputs ... ok
+test telemetry::tests::failed_writer_counts_dropped_records ... ok
+test telemetry::tests::json_has_durations_batching_and_no_content_fields ... ok
+test telemetry::tests::queue_overflow_is_nonblocking_and_counted ... ok
+test text_presentation::tests::exact_text_unicode_and_order_are_required ... ok
+test workbench_view::focused_text_tests::only_visible_focused_editable_editor_owns_text_input ... ok
+test text_presentation::tests::intersections_use_original_byte_coordinates ... ok
+test wrapping::tests::resize_reflows_and_invalid_boundaries_are_ignored ... ok
+test wrapping::tests::unchanged_paragraphs_reuse_font_measurements ... ok
+test wrapping::tests::wrapped_ranges_preserve_unicode_and_physical_line_numbers ... ok
+test editor_view::presentation_tests::decorations_preserve_focus_selection_vim_search_and_open_undo_group ... ok
+test editor_view::presentation_tests::clipped_paint_and_public_engine_replacement_cannot_claim_full_visibility ... ok
+test editor_view::presentation_tests::set_and_clear_redraw_an_otherwise_cached_editor_child ... ok
+test editor_view::presentation_tests::wrapped_multiline_crlf_geometry_uses_drawn_source_fragments ... ok
+test text_presentation::tests::explicit_limits_never_silently_truncate ... ok
+test editor_view::presentation_tests::cancelled_or_offscreen_measurement_never_fabricates_geometry ... ok
+test editor_view::presentation_tests::reveal_keeps_inner_landing_across_redraw_then_input_cancels ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+

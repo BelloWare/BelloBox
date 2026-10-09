@@ -1,0 +1,112 @@
+{
+  "base": "15197a71d81c620bf60da18f0d066505e4c0dc99",
+  "candidate": "2e72ec51bd010a96624ca7326f9a9afcb1057686",
+  "method": "Nonblank physical Rust lines including comments; editor_view/text_presentation trailing positive cfg(test) modules and complete test-only editor_presentation_tests are support; lib.rs production. Narrow four-file delta only, inherited totals need independent full ledger verification. Shared code counted once in BelloBox. Cargo.toml excluded.",
+  "files": [
+    {
+      "path": "rust/crates/bello-workbench-ui/src/editor_view.rs",
+      "counts": {
+        "before": {
+          "production": 1109,
+          "support": 375
+        },
+        "after": {
+          "production": 1503,
+          "support": 378
+        }
+      },
+      "delta": {
+        "production": 394,
+        "support": 3
+      },
+      "support_range_1based": {
+        "before": [
+          1113,
+          1496
+        ],
+        "after": [
+          1508,
+          1895
+        ]
+      }
+    },
+    {
+      "path": "rust/crates/bello-workbench-ui/src/editor_presentation_tests.rs",
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0
+        },
+        "after": {
+          "production": 0,
+          "support": 512
+        }
+      },
+      "delta": {
+        "production": 0,
+        "support": 512
+      },
+      "support_range_1based": {
+        "before": [],
+        "after": [
+          1,
+          524
+        ]
+      }
+    },
+    {
+      "path": "rust/crates/bello-workbench-ui/src/text_presentation.rs",
+      "counts": {
+        "before": {
+          "production": 0,
+          "support": 0
+        },
+        "after": {
+          "production": 77,
+          "support": 59
+        }
+      },
+      "delta": {
+        "production": 77,
+        "support": 59
+      },
+      "support_range_1based": {
+        "before": [],
+        "after": [
+          81,
+          139
+        ]
+      }
+    },
+    {
+      "path": "rust/crates/bello-workbench-ui/src/lib.rs",
+      "counts": {
+        "before": {
+          "production": 12,
+          "support": 0
+        },
+        "after": {
+          "production": 17,
+          "support": 0
+        }
+      },
+      "delta": {
+        "production": 5,
+        "support": 0
+      },
+      "support_range_1based": {
+        "before": [],
+        "after": []
+      }
+    }
+  ],
+  "delta": {
+    "production": 476,
+    "support": 574
+  },
+  "provisional_candidate_totals": {
+    "production": 58257,
+    "support": 41643,
+    "benchmark": 105
+  }
+}

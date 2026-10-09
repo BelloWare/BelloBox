@@ -1,0 +1,91 @@
+    Checking hyper-util v0.1.21
+    Checking tower v0.5.3
+    Checking bello-workbench v0.1.0 (/workspace/shared/box-find-presentation/rust/crates/bello-workbench)
+    Checking hyper-rustls v0.27.10
+    Checking zed-reqwest v0.12.15-zed
+    Checking gpui_http_client v0.2.2
+    Checking gpui v0.2.2
+    Checking bello-workbench-ui v0.1.0 (/workspace/shared/box-find-presentation/rust/crates/bello-workbench-ui)
+error: this `if` statement can be collapsed
+    --> crates/bello-workbench-ui/src/editor_view.rs:1286:9
+     |
+1286 | /         if let Some(range) = self.presentation_reveal.take() {
+1287 | |             if self.marked.is_none() && self.dragging.is_none() && self.presentation.is_some() {
+1288 | |                 self.scroll
+1289 | |                     .scroll_to_item(self.display_row_at(range.start), ScrollStrategy::Center);
+...    |
+1295 | |         }
+     | |_________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+     = note: `-D clippy::collapsible-if` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+     |
+1286 ~         if let Some(range) = self.presentation_reveal.take()
+1287 ~             && self.marked.is_none() && self.dragging.is_none() && self.presentation.is_some() {
+1288 |                 self.scroll
+ ...
+1293 |                 }
+1294 ~             }
+     |
+
+error: could not compile `bello-workbench-ui` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: a `Vec` of `Range` that is only one element
+   --> crates/bello-workbench-ui/src/text_presentation.rs:108:13
+    |
+108 |             vec![2..5],
+    |             ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#single_range_in_vec_init
+    = note: `-D clippy::single-range-in-vec-init` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::single_range_in_vec_init)]`
+help: if you wanted a `Vec` that contains the entire range, try
+    |
+108 -             vec![2..5],
+108 +             (2..5).collect::<std::vec::Vec<usize>>(),
+    |
+help: if you wanted a `Vec` of len 5, try
+    |
+108 -             vec![2..5],
+108 +             vec![2; 5],
+    |
+
+error: a `Vec` of `Range` that is only one element
+   --> crates/bello-workbench-ui/src/text_presentation.rs:109:13
+    |
+109 |             vec![1..1],
+    |             ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#single_range_in_vec_init
+help: if you wanted a `Vec` that contains the entire range, try
+    |
+109 -             vec![1..1],
+109 +             (1..1).collect::<std::vec::Vec<usize>>(),
+    |
+help: if you wanted a `Vec` of len 1, try
+    |
+109 -             vec![1..1],
+109 +             vec![1; 1],
+    |
+
+error: a `Vec` of `Range` that is only one element
+   --> crates/bello-workbench-ui/src/text_presentation.rs:110:13
+    |
+110 |             vec![0..99],
+    |             ^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#single_range_in_vec_init
+help: if you wanted a `Vec` that contains the entire range, try
+    |
+110 -             vec![0..99],
+110 +             (0..99).collect::<std::vec::Vec<usize>>(),
+    |
+help: if you wanted a `Vec` of len 99, try
+    |
+110 -             vec![0..99],
+110 +             vec![0; 99],
+    |
+
+error: could not compile `bello-workbench-ui` (lib test) due to 4 previous errors

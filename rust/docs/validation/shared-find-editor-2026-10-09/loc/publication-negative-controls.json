@@ -1,0 +1,17 @@
+[
+  {
+    "control": "wrong-final-tree",
+    "rejected": true,
+    "reason": "ValueError: commit tree"
+  },
+  {
+    "control": "wrong-parent",
+    "rejected": true,
+    "reason": "ValueError: final identities"
+  },
+  {
+    "control": "incorrect-cumulative-support",
+    "rejected": true,
+    "reason": "ValueError: final cumulative categories"
+  }
+]

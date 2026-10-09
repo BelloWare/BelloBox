@@ -1,0 +1,30 @@
+{
+  "root": "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj",
+  "repo": "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/source",
+  "commit": "2e72ec51bd010a96624ca7326f9a9afcb1057686",
+  "tree": "c3af9d1030f8d65df98cd9ef1b41d7759ca5ea5f",
+  "parent": "15197a71d81c620bf60da18f0d066505e4c0dc99",
+  "original_repo": "/Users/admin/projects/BelloBox-rust-positive-composition",
+  "original_repo_head": "59339af1fa422acea4067207c55344666c3fa4ab",
+  "original_repo_status": "",
+  "changed_paths": [
+    "rust/crates/bello-workbench-ui/Cargo.toml",
+    "rust/crates/bello-workbench-ui/src/editor_presentation_tests.rs",
+    "rust/crates/bello-workbench-ui/src/editor_view.rs",
+    "rust/crates/bello-workbench-ui/src/lib.rs",
+    "rust/crates/bello-workbench-ui/src/text_presentation.rs"
+  ],
+  "postimages": {
+    "rust/crates/bello-workbench-ui/Cargo.toml": "85551129fcb904d1cd6b36fa5e08a117747037d45d9941bdd5df3872d8609470",
+    "rust/crates/bello-workbench-ui/src/editor_view.rs": "384588661e1e70c66730a7e0318b1a574116d789d6f153a6e8b5139d5621da11",
+    "rust/crates/bello-workbench-ui/src/editor_presentation_tests.rs": "b024ad91b362f8b98e23095b6f2d70ede8a889708d953529913a5d522d266736",
+    "rust/crates/bello-workbench-ui/src/text_presentation.rs": "ee9ceeb559880cac8f23220d1c13a624fc2c4db88147d4424865ace434549fac",
+    "rust/crates/bello-workbench-ui/src/lib.rs": "23e57b6010a45aa4ca2be0960c396907069a566dd1fa7ea8f535a09c0d050a3e"
+  },
+  "source_files": 1925,
+  "source_manifest_sha256": "2c23f2d4d99abaf65153245f1095ac994227a1b6d34ec0e63d1a04067d6cb067",
+  "postimages_sha256": "f190b70cf5acce7c2ae02f26c98873918aeed8b3d61eb6aca41b2122cd880aff",
+  "agents_instructions_identical_to_previously_read4589": true,
+  "checked_at": "2026-10-09T05:22:09.738983+00:00",
+  "source_edits_allowed": false
+}

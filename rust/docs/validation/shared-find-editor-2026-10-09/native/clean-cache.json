@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "clean",
+    "--offline",
+    "--locked",
+    "-p",
+    "bello-workbench-ui"
+  ],
+  "exit_code": 0,
+  "log_sha256": "6847631363a81da0953660c4b7913a92892dfd347deaccbbde2ed47448c5042b"
+}

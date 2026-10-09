@@ -1,0 +1,11 @@
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-find-presentation/rust/crates/bello-workbench-ui)
+error: recursion limit reached while expanding `#[test]`
+  --> crates/bello-workbench-ui/src/editor_presentation_tests.rs:25:1
+   |
+25 | #[gpui::test]
+   | ^^^^^^^^^^^^^
+   |
+   = help: consider increasing the recursion limit by adding a `#![recursion_limit = "256"]` attribute to your crate (`bello_workbench_ui`)
+   = note: this error originates in the attribute macro `test` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `bello-workbench-ui` (lib test) due to 1 previous error

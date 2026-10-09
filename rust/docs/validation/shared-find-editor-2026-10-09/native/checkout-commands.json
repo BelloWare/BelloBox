@@ -1,0 +1,41 @@
+[
+  {
+    "command": [
+      "git",
+      "clone",
+      "--shared",
+      "--no-checkout",
+      "/Users/admin/projects/BelloBox-rust-positive-composition",
+      "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/source"
+    ],
+    "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "Cloning into '/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/source'...\ndone.\n"
+  },
+  {
+    "command": [
+      "git",
+      "fetch",
+      "--no-tags",
+      "git@github-bello:BelloWare/BelloBox.git",
+      "2e72ec51bd010a96624ca7326f9a9afcb1057686"
+    ],
+    "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/source",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "From github-bello:BelloWare/BelloBox\n * branch            2e72ec51bd010a96624ca7326f9a9afcb1057686 -> FETCH_HEAD\n"
+  },
+  {
+    "command": [
+      "git",
+      "checkout",
+      "--detach",
+      "2e72ec51bd010a96624ca7326f9a9afcb1057686"
+    ],
+    "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/source",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "HEAD is now at 2e72ec5 feat(workbench): add transient text presentation and measured range geometry\n"
+  }
+]

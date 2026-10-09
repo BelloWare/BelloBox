@@ -1,0 +1,13 @@
+   Compiling bindgen v0.71.1
+   Compiling rust-embed-impl v8.12.0
+   Compiling cbindgen v0.28.0
+   Compiling hyper-rustls v0.27.10
+   Compiling gpui_media v0.2.2
+   Compiling rust-embed v8.12.0
+   Compiling gpui_util v0.2.2
+   Compiling zed-reqwest v0.12.15-zed
+   Compiling gpui v0.2.2
+   Compiling stacksafe v0.1.4
+   Compiling gpui_http_client v0.2.2
+   Compiling bello-workbench-ui v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-2e72-editor-native-i1r0dfvj/source/rust/crates/bello-workbench-ui)
+    Finished `dev` profile [unoptimized] target(s) in 24.72s

@@ -1,0 +1,43 @@
+{
+  "original_native_candidate": "2e72ec51bd010a96624ca7326f9a9afcb1057686",
+  "integrated_candidate": "e6a39466f9bf1722557cf6a350e53bb9f970bc89",
+  "scope": "Complete shared UI crate tree, its only local dependency bello-workbench tree, workspace manifest/lock and all repository Cargo manifests/locks/toolchain/config files",
+  "objects": [
+    {
+      "path": "rust/crates/bello-workbench-ui",
+      "git_object": "966b6e918b7a95bd5e54e241520fa3454c6df103",
+      "type": "tree",
+      "identical": true
+    },
+    {
+      "path": "rust/crates/bello-workbench",
+      "git_object": "1257646a99197dadb0b79f5f4f40ac42e092fe8f",
+      "type": "tree",
+      "identical": true
+    },
+    {
+      "path": "rust/Cargo.toml",
+      "git_object": "826b0ca0c65df079908d934d3c2b82bbd8c62fa7",
+      "type": "blob",
+      "identical": true
+    },
+    {
+      "path": "rust/Cargo.lock",
+      "git_object": "265c12375857e52002ccc51be4d12a11ab8d30fa",
+      "type": "blob",
+      "identical": true
+    }
+  ],
+  "additional_configuration_paths": [
+    "rust/Cargo.lock",
+    "rust/Cargo.toml",
+    "rust/crates/bello-platform/Cargo.toml",
+    "rust/crates/bello-workbench-ui/Cargo.toml",
+    "rust/crates/bello-workbench/Cargo.toml",
+    "rust/crates/bellobox-app/Cargo.toml",
+    "rust/crates/bellobox-core/Cargo.toml"
+  ],
+  "all_configuration_objects_identical": true,
+  "external_registry_sources": "Pinned by unchanged Cargo.lock; no new dependency acquisition or registry-byte verification performed by this source comparison",
+  "limits": "This binds unchanged shared-library compilation inputs; the parent popup app changes are outside this library closure. No whole-workspace runtime or actual GUI acceptance is inferred."
+}

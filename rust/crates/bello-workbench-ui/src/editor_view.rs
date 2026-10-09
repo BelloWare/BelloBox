@@ -1,8 +1,10 @@
 use crate::telemetry::{InputKind, Tracker};
+use crate::text_presentation::{intersection, validate_range};
 use crate::{
     EditorAppearance,
     wrapping::{DisplayRow, WrappedRows},
 };
+use crate::{PresentationError, PresentationGeometry, TextPresentation};
 use bello_workbench::editor::{Editor, Key, Mode, TextBuffer};
 use gpui::{prelude::*, *};
 use std::time::Instant;
@@ -97,6 +99,21 @@ fn restore_edit_state(
     Ok(())
 }
 
+type MeasurementCallback = Box<dyn FnOnce(PresentationGeometry, &mut Window, &mut App)>;
+struct PresentationMeasurement {
+    serial: u64,
+    token: u64,
+    host_generation: u64,
+    range: Range<usize>,
+    callback: MeasurementCallback,
+}
+#[derive(Clone)]
+struct PaintedFragment {
+    range: Range<usize>,
+    bounds: Bounds<Pixels>,
+    unclipped: bool,
+}
+
 pub struct EditorView {
     pub engine: Editor,
     appearance: EditorAppearance,
@@ -116,6 +133,15 @@ pub struct EditorView {
     dragging: Option<usize>,
     compact: bool,
     requested_read_only: bool,
+    presentation: Option<TextPresentation>,
+    validated_paint_text: Option<(usize, usize, u64)>,
+    presentation_reveal: Option<Range<usize>>,
+    presentation_holds_scroll: bool,
+    presentation_measurement: Option<PresentationMeasurement>,
+    measurement_serial: u64,
+    layout_generation: u64,
+    measurement_frame_scheduled: Option<u64>,
+    painted_fragments: BTreeMap<usize, PaintedFragment>,
 }
 impl EventEmitter<EditorEvent> for EditorView {}
 impl Focusable for EditorView {
@@ -144,7 +170,173 @@ impl EditorView {
             dragging: None,
             compact: false,
             requested_read_only: false,
+            presentation: None,
+            validated_paint_text: None,
+            presentation_reveal: None,
+            presentation_holds_scroll: false,
+            presentation_measurement: None,
+            measurement_serial: 0,
+            layout_generation: 0,
+            measurement_frame_scheduled: None,
+            painted_fragments: BTreeMap::new(),
         }
+    }
+    /// Explicit editing-view selection command for hosts such as a Find field.
+    /// Unlike presentation decoration, this intentionally changes selection.
+    /// It never claims focus or alters text/history, and refuses platform-owned
+    /// composition or an active drag rather than discarding either.
+    pub fn select_all(&mut self, cx: &mut Context<Self>) -> Result<(), PresentationError> {
+        if self.marked.is_some() || self.dragging.is_some() {
+            return Err(PresentationError::Busy);
+        }
+        self.abandon_presentation_navigation();
+        self.selection = Some(0..self.text().len());
+        cx.notify();
+        Ok(())
+    }
+    /// Install transient drawing only. Validation is atomic; no text, input,
+    /// selection, focus, undo, or Changed event is touched. Clearing never jumps
+    /// back to the caret. Hosts must bind their document identity in `token`.
+    pub fn set_text_presentation(
+        &mut self,
+        presentation: Option<TextPresentation>,
+        cx: &mut Context<Self>,
+    ) -> Result<(), PresentationError> {
+        if let Some(value) = &presentation {
+            value.validate(self.text())?;
+        }
+        self.presentation = presentation;
+        self.validated_paint_text = self
+            .presentation
+            .as_ref()
+            .map(|_| self.paint_text_identity());
+        self.presentation_reveal = None;
+        self.presentation_measurement = None;
+        self.invalidate_presentation_layout();
+        cx.notify();
+        Ok(())
+    }
+    fn paint_text_identity(&self) -> (usize, usize, u64) {
+        (
+            self.text().as_ptr() as usize,
+            self.text().len(),
+            self.engine.revision(),
+        )
+    }
+    // Exact comparison at installation/render is the authority. These guards
+    // detect ordinary pointer/revision changes between validation and paint,
+    // without rescanning the full document for each row. Allocator reuse is not
+    // document identity: final receipt validation compares exact bytes again,
+    // and the host token/lifetime must fence identical-text document replacement.
+    fn paint_presentation(&self) -> Option<&TextPresentation> {
+        (self.validated_paint_text == Some(self.paint_text_identity()))
+            .then_some(self.presentation.as_ref())
+            .flatten()
+    }
+    fn checked_presentation(&self, token: u64) -> Result<&TextPresentation, PresentationError> {
+        let value = self
+            .presentation
+            .as_ref()
+            .ok_or(PresentationError::StaleToken)?;
+        if value.token != token {
+            return Err(PresentationError::StaleToken);
+        }
+        if value.text.as_ref() != self.text() {
+            return Err(PresentationError::TextChanged);
+        }
+        Ok(value)
+    }
+    /// Scroll only, without editing the caret or claiming keyboard focus.
+    /// Newest accepted request wins. Busy leaves composition/dragging intact.
+    pub fn reveal_presented_range(
+        &mut self,
+        token: u64,
+        range: Range<usize>,
+        cx: &mut Context<Self>,
+    ) -> Result<(), PresentationError> {
+        self.checked_presentation(token)?;
+        validate_range(self.text(), &range)?;
+        if self.marked.is_some() || self.dragging.is_some() {
+            return Err(PresentationError::Busy);
+        }
+        self.presentation_measurement = None;
+        self.presentation_reveal = Some(range);
+        self.presentation_holds_scroll = true;
+        self.reveal_cursor = false;
+        self.invalidate_presentation_layout();
+        cx.notify();
+        Ok(())
+    }
+    /// Cancel pending reveal AND measurement for this token only. This does not
+    /// scroll to a previous position. A newer presentation is left untouched.
+    pub fn cancel_presentation_reveal(&mut self, token: u64, cx: &mut Context<Self>) {
+        if self
+            .presentation
+            .as_ref()
+            .is_some_and(|value| value.token == token)
+        {
+            self.presentation_reveal = None;
+            self.presentation_measurement = None;
+            self.invalidate_presentation_layout();
+            cx.notify();
+        }
+    }
+    /// Arm one measurement. The callback runs once at the end of the paint effect cycle after a fresh frame
+    /// paints a visible fragment, with no EditorView borrow held. There is no
+    /// cached-geometry getter. Offscreen/clipped targets produce no receipt and
+    /// do not schedule animation loops: the host bounds retries/timeouts.
+    ///
+    /// Receipt coordinates belong ONLY to that completed paint. The callback
+    /// must recheck its host navigation/lifetime generation before acting and
+    /// must not retain coordinates across a later outer scroll/layout. Input,
+    /// text replacement, cancellation and newer requests suppress old callbacks.
+    pub fn measure_presented_range(
+        &mut self,
+        token: u64,
+        range: Range<usize>,
+        host_generation: u64,
+        callback: impl FnOnce(PresentationGeometry, &mut Window, &mut App) + 'static,
+        cx: &mut Context<Self>,
+    ) -> Result<(), PresentationError> {
+        self.checked_presentation(token)?;
+        validate_range(self.text(), &range)?;
+        if self.marked.is_some() || self.dragging.is_some() {
+            return Err(PresentationError::Busy);
+        }
+        self.measurement_serial = self.measurement_serial.wrapping_add(1);
+        self.presentation_measurement = Some(PresentationMeasurement {
+            serial: self.measurement_serial,
+            token,
+            host_generation,
+            range,
+            callback: Box::new(callback),
+        });
+        self.invalidate_presentation_layout();
+        cx.notify();
+        Ok(())
+    }
+    /// Hosts call this before changing outer geometry. A fresh armed measurement
+    /// is needed afterwards. It is not a substitute for checking host generation
+    /// inside the one-shot measurement callback.
+    pub fn invalidate_presentation_geometry(&mut self, cx: &mut Context<Self>) {
+        self.presentation_measurement = None;
+        self.invalidate_presentation_layout();
+        cx.notify();
+    }
+    fn invalidate_presentation_layout(&mut self) {
+        self.layout_generation = self.layout_generation.wrapping_add(1);
+        self.painted_fragments.clear();
+        self.measurement_frame_scheduled = None;
+    }
+    fn abandon_presentation_navigation(&mut self) {
+        self.presentation_reveal = None;
+        self.presentation_measurement = None;
+        self.invalidate_presentation_layout();
+    }
+    fn discard_presentation(&mut self) {
+        self.presentation = None;
+        self.validated_paint_text = None;
+        self.abandon_presentation_navigation();
     }
     /// Let virtual hosts keep interacting rows mounted before attempting eviction.
     /// The transfer methods repeat this check immediately before mutation.
@@ -195,6 +387,8 @@ impl EditorView {
         Ok(())
     }
     fn invalidate_edit_state_layout(&mut self) {
+        self.discard_presentation();
+        self.presentation_holds_scroll = false;
         self.layouts.clear();
         self.wrapped.clear();
         self.measured_viewport_width = None;
@@ -202,12 +396,13 @@ impl EditorView {
         self.reveal_cursor = true;
     }
     pub fn set_appearance(&mut self, mut appearance: EditorAppearance, cx: &mut Context<Self>) {
+        self.abandon_presentation_navigation();
         appearance.validate();
         self.appearance = appearance;
         self.measured_viewport_width = None;
         self.style_revision = self.style_revision.wrapping_add(1);
         self.wrapped.clear();
-        self.reveal_cursor = true;
+        self.reveal_cursor = !self.presentation_holds_scroll;
         self.layouts.clear();
         cx.notify();
     }
@@ -266,6 +461,8 @@ impl EditorView {
         self.text()
     }
     pub fn set_text(&mut self, text: String, cx: &mut Context<Self>) {
+        self.discard_presentation();
+        self.presentation_holds_scroll = false;
         let vim = self.engine.vim;
         let read_only = self.requested_read_only;
         self.engine = Editor::new(text);
@@ -282,6 +479,7 @@ impl EditorView {
     }
     pub fn set_vim(&mut self, enabled: bool, cx: &mut Context<Self>) {
         if set_vim_unless_marked(&mut self.engine, &self.marked, &mut self.selection, enabled) {
+            self.abandon_presentation_navigation();
             cx.notify();
         }
     }
@@ -292,6 +490,7 @@ impl EditorView {
         cx.notify();
     }
     pub fn set_compact(&mut self, enabled: bool, cx: &mut Context<Self>) {
+        self.abandon_presentation_navigation();
         self.compact = enabled;
         if enabled {
             self.engine.set_vim(false);
@@ -300,6 +499,8 @@ impl EditorView {
     }
     /// Reveal an explicit 1-based line without replacing text or undo history.
     pub fn reveal_line(&mut self, line: usize, window: &mut Window, cx: &mut Context<Self>) {
+        self.abandon_presentation_navigation();
+        self.presentation_holds_scroll = false;
         let row = line
             .saturating_sub(1)
             .min(self.engine.buffer.line_count().saturating_sub(1));
@@ -326,7 +527,10 @@ impl EditorView {
         self.engine.buffer.byte_offset(r.start)..self.engine.buffer.byte_offset(r.end)
     }
     fn changed(&mut self, before: u64, cx: &mut Context<Self>) {
+        self.abandon_presentation_navigation();
+        self.presentation_holds_scroll = false;
         if self.engine.revision() != before {
+            self.discard_presentation();
             cx.emit(EditorEvent::Changed);
         }
         self.reveal_cursor = true;
@@ -411,9 +615,12 @@ impl EditorView {
         }
     }
     fn trace_scroll(&mut self, _: &ScrollWheelEvent, _: &mut Window, _: &mut Context<Self>) {
+        self.abandon_presentation_navigation();
         self.record_input(InputKind::Scroll, Instant::now());
     }
     fn key_down(&mut self, event: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        self.abandon_presentation_navigation();
+        self.presentation_holds_scroll = false;
         let input_started = Instant::now();
         self.prepare_wrap(window);
         let k = &event.keystroke;
@@ -447,8 +654,7 @@ impl EditorView {
                     return;
                 }
                 "a" => {
-                    self.selection = Some(0..self.text().len());
-                    cx.notify();
+                    let _ = self.select_all(cx);
                     cx.stop_propagation();
                     return;
                 }
@@ -570,6 +776,8 @@ impl EditorView {
         Some(*base + line.closest_index_for_x(p.x - bounds.left()))
     }
     fn mouse_down(&mut self, e: &MouseDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        self.abandon_presentation_navigation();
+        self.presentation_holds_scroll = false;
         self.focus.focus(window);
         if let Some(p) = self.mouse_index(e.position) {
             let old = self.engine.cursor;
@@ -716,6 +924,9 @@ struct LinePaint {
     selection: Option<PaintQuad>,
     cursor: Option<PaintQuad>,
     byte_start: usize,
+    decorations: Vec<PaintQuad>,
+    measured_fragment: Option<PaintedFragment>,
+    layout_generation: u64,
 }
 impl IntoElement for LineElement {
     type Element = Self;
@@ -789,6 +1000,63 @@ impl Element for LineElement {
             .shape_line(text, px(ed.appearance.font_size), &[run], None);
         let start = display.range.start + skipped;
         let end = start + end;
+        let drawn = start..end;
+        let mut decorations = Vec::new();
+        if let Some(presentation) = ed.paint_presentation() {
+            let first = presentation
+                .decorations
+                .partition_point(|value| value.range.end <= start);
+            for decoration in presentation.decorations[first..]
+                .iter()
+                .take_while(|value| value.range.start < end)
+                .chain(presentation.emphasized.iter())
+            {
+                if let Some(range) = intersection(&decoration.range, &drawn) {
+                    decorations.push(fill(
+                        Bounds::from_corners(
+                            point(
+                                bounds.left() + line.x_for_index(range.start - start),
+                                bounds.top(),
+                            ),
+                            point(
+                                bounds.left() + line.x_for_index(range.end - start),
+                                bounds.bottom(),
+                            ),
+                        ),
+                        decoration.color,
+                    ));
+                }
+            }
+        }
+        let measured_fragment = ed
+            .presentation_measurement
+            .as_ref()
+            .and_then(|measurement| {
+                if ed.paint_presentation()?.token != measurement.token {
+                    return None;
+                }
+                let range = intersection(&measurement.range, &drawn)?;
+                let original = Bounds::from_corners(
+                    point(
+                        bounds.left() + line.x_for_index(range.start - start),
+                        bounds.top(),
+                    ),
+                    point(
+                        bounds.left() + line.x_for_index(range.end - start),
+                        bounds.bottom(),
+                    ),
+                );
+                let clipped = original
+                    .intersect(&bounds)
+                    .intersect(&window.content_mask().bounds);
+                (clipped.size.width > px(0.) && clipped.size.height > px(0.)).then_some(
+                    PaintedFragment {
+                        range,
+                        bounds: clipped,
+                        unclipped: original == clipped,
+                    },
+                )
+            });
         let selected = ed.selected();
         let a = selected.start.max(start).min(end) - start;
         let b = selected.end.max(start).min(end) - start;
@@ -834,6 +1102,9 @@ impl Element for LineElement {
             selection,
             cursor,
             byte_start: start,
+            decorations,
+            measured_fragment,
+            layout_generation: ed.layout_generation,
         }
     }
     fn paint(
@@ -859,6 +1130,13 @@ impl Element for LineElement {
                 cx,
             );
         }
+        if state.layout_generation == self.editor.read(cx).layout_generation
+            && self.editor.read(cx).paint_presentation().is_some()
+        {
+            for decoration in state.decorations.drain(..) {
+                window.paint_quad(decoration);
+            }
+        }
         if let Some(s) = state.selection.take() {
             window.paint_quad(s);
         }
@@ -869,6 +1147,8 @@ impl Element for LineElement {
             cx,
         ) {
             eprintln!("Editor text paint failed: {error}");
+            // A shaped/prepainted fragment is not evidence that its text painted.
+            state.measured_fragment = None;
         }
         if focus.is_focused(window)
             && let Some(c) = state.cursor.take()
@@ -885,11 +1165,97 @@ impl Element for LineElement {
             batch.paint();
             window.on_next_frame(move |_, _| batch.following_frame());
         }
+        if let Some(fragment) = state.measured_fragment.as_mut() {
+            let clipped = fragment
+                .bounds
+                .intersect(&bounds)
+                .intersect(&window.content_mask().bounds);
+            fragment.unclipped &= clipped == fragment.bounds;
+            fragment.bounds = clipped;
+            if clipped.size.width <= px(0.) || clipped.size.height <= px(0.) {
+                state.measured_fragment = None;
+            }
+        }
+        let schedule = self.editor.update(cx, |ed, _| {
+            if state.layout_generation != ed.layout_generation {
+                return None;
+            }
+            if let Some(fragment) = state.measured_fragment.take() {
+                ed.painted_fragments.insert(self.row, fragment);
+            }
+            let measurement = ed.presentation_measurement.as_ref()?;
+            if ed.measurement_frame_scheduled == Some(ed.layout_generation) {
+                return None;
+            }
+            ed.measurement_frame_scheduled = Some(ed.layout_generation);
+            Some((
+                ed.layout_generation,
+                measurement.serial,
+                ed.scroll.0.borrow().base_handle.offset(),
+                window.bounds(),
+                window.window_handle().window_id(),
+            ))
+        });
+        if let Some((generation, serial, scroll_offset, window_bounds, window_id)) = schedule {
+            let editor = self.editor.downgrade();
+            window.defer(cx, move |window, cx| {
+                let Some(editor) = editor.upgrade() else {
+                    return;
+                };
+                let receipt = editor.update(cx, |ed, _| {
+                    if generation != ed.layout_generation
+                        || ed.scroll.0.borrow().base_handle.offset() != scroll_offset
+                        || window.bounds() != window_bounds
+                        || window.window_handle().window_id() != window_id
+                    {
+                        return None;
+                    }
+                    let request = ed.presentation_measurement.as_ref()?;
+                    if request.serial != serial || ed.checked_presentation(request.token).is_err() {
+                        return None;
+                    }
+                    let first = ed.painted_fragments.values().next()?;
+                    let first_visible_fragment = first.bounds;
+                    let mut covered = request.range.start;
+                    let mut fully_visible = true;
+                    for fragment in ed.painted_fragments.values() {
+                        if !fragment.unclipped {
+                            fully_visible = false;
+                        }
+                        if fragment.range.start > covered
+                            && !ed.text()[covered..fragment.range.start]
+                                .bytes()
+                                .all(|b| b == b'\r' || b == b'\n')
+                        {
+                            fully_visible = false;
+                        }
+                        covered = covered.max(fragment.range.end);
+                    }
+                    fully_visible &= covered == request.range.end;
+                    let request = ed.presentation_measurement.take()?;
+                    Some((
+                        request.callback,
+                        PresentationGeometry {
+                            token: request.token,
+                            host_generation: request.host_generation,
+                            layout_generation: generation,
+                            window_id,
+                            first_visible_fragment,
+                            fully_visible,
+                        },
+                    ))
+                });
+                if let Some((callback, geometry)) = receipt {
+                    callback(geometry, window, cx);
+                }
+            });
+        }
         self.editor.update(cx, |ed, cx| {
             let width = f32::from(bounds.size.width).max(1.);
             ed.measured_viewport_width = Some(width);
             if ed.wraps() && (ed.viewport_width - width).abs() > 1. {
                 ed.viewport_width = width;
+                ed.invalidate_presentation_layout();
                 cx.notify();
             }
             ed.layouts
@@ -899,10 +1265,37 @@ impl Element for LineElement {
 }
 impl Render for EditorView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if self
+            .presentation
+            .as_ref()
+            .is_some_and(|value| value.text.as_ref() != self.text())
+        {
+            self.discard_presentation();
+            // Public engine replacement can reset its revision: do not reuse an
+            // old wrapping map merely because the new engine has the same number.
+            self.wrapped.clear();
+        }
+        self.validated_paint_text = self
+            .presentation
+            .as_ref()
+            .map(|_| self.paint_text_identity());
+        self.invalidate_presentation_layout();
         let previous_rows = self.display_count();
         self.prepare_wrap(window);
         if previous_rows != self.display_count() {
             cx.emit(EditorEvent::LayoutChanged);
+        }
+        if let Some(range) = self.presentation_reveal.take()
+            && self.marked.is_none()
+            && self.dragging.is_none()
+            && self.presentation.is_some()
+        {
+            self.scroll
+                .scroll_to_item(self.display_row_at(range.start), ScrollStrategy::Center);
+            if !self.wraps() {
+                self.horizontal_column =
+                    self.engine.buffer.position(range.start).1.saturating_sub(4);
+            }
         }
         if self.reveal_cursor {
             self.scroll
@@ -919,9 +1312,11 @@ impl Render for EditorView {
         let cursor_column = self.engine.buffer.position(self.engine.cursor).1;
         if self.wraps() {
             self.horizontal_column = 0;
-        } else if cursor_column < self.horizontal_column {
+        } else if !self.presentation_holds_scroll && cursor_column < self.horizontal_column {
             self.horizontal_column = cursor_column;
-        } else if cursor_column >= self.horizontal_column + visible_columns {
+        } else if !self.presentation_holds_scroll
+            && cursor_column >= self.horizontal_column + visible_columns
+        {
             self.horizontal_column = cursor_column.saturating_sub(visible_columns - 1);
         }
         self.draw_columns = (visible_columns + 16).min(MAX_DRAW_LINE);
@@ -1494,3 +1889,7 @@ mod input_tests {
         assert_eq!(editor.text(), "first\r\n\r\n");
     }
 }
+
+#[cfg(test)]
+#[path = "editor_presentation_tests.rs"]
+mod presentation_tests;
