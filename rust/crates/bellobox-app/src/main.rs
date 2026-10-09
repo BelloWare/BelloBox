@@ -7,6 +7,10 @@ mod comparison_session;
 mod desktop;
 mod gif_converter;
 mod home;
+#[cfg(feature = "developer-tools")]
+mod http_session;
+#[cfg(feature = "developer-tools")]
+mod http_ui;
 mod image_disposal;
 mod json_session;
 mod launcher_clock_ui;

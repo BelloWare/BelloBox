@@ -1,3 +1,5 @@
+#[cfg(feature = "developer-tools")]
+pub mod http_request;
 pub mod image_ocr;
 pub mod provider_setup;
 

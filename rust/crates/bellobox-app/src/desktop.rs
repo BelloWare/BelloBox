@@ -2164,6 +2164,12 @@ fn open_tool_with_clock_context(
     }
 
     #[cfg(feature = "developer-tools")]
+    if id == "http" {
+        crate::http_ui::open(input, cx);
+        return;
+    }
+
+    #[cfg(feature = "developer-tools")]
     if id == "regex" {
         crate::regex_ui::open(input, cx);
         return;

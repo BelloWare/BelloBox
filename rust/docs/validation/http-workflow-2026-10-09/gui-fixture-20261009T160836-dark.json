@@ -1,0 +1,17 @@
+[
+  {
+    "time_ns": 1791562282537263755,
+    "phase": "received",
+    "method": "DELETE",
+    "path": "/held",
+    "body_bytes": 0,
+    "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "synthetic_header": null,
+    "exact_unicode_json": false
+  },
+  {
+    "time_ns": 1791562292035458771,
+    "phase": "socket_closed",
+    "path": "/held"
+  }
+]

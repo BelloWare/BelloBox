@@ -1,0 +1,9 @@
+{
+  "checked_utc": "2026-10-09T16:18:50.042920+00:00",
+  "sealed_manifest_sha256": "c2d912d23e8da8186f89e7a35a6f06d48cffc57c8df9ebc1b9a6800950425c64",
+  "source_files_verified": 245,
+  "changed_source_files": [],
+  "new_source_files": [],
+  "binary_sha256": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+  "scope": "All sealed .rs files and root Rust Cargo.toml/Cargo.lock; documentation supplements are separate."
+}

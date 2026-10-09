@@ -1,0 +1,98 @@
+{
+  "binary_sha256": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+  "source_manifest_sha256": "c2d912d23e8da8186f89e7a35a6f06d48cffc57c8df9ebc1b9a6800950425c64",
+  "renderer": "cloud Linux Mesa lavapipe software",
+  "capture_scope": "Exact task-owned HTTP, Home, Search palette and task terminal windows only; no screenshot files uploaded or published",
+  "sessions": [
+    {
+      "run": "20261009T160053-light",
+      "start_utc": "2026-10-09T16:00:53,374808187+00:00",
+      "end_utc": "2026-10-09T16:08:11,656642558+00:00",
+      "elapsed_seconds": 438.281834,
+      "exit": "exit=0",
+      "binary_before": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+      "binary_after": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+      "request_counts": {
+        "/inspect": 1,
+        "/held": 4,
+        "/error": 1,
+        "/redirect": 1,
+        "/trap": 0
+      },
+      "held_sockets_closed": 4,
+      "fixture_sha256": "d70630d78bcbaf708f0dfa9d75c20f21eb5be4a0d2e5fd92cd72b884511d1228",
+      "measurement": "whole interactive app-session interval including observation and coordination, not pure interaction or inference time"
+    },
+    {
+      "run": "20261009T160836-dark",
+      "start_utc": "2026-10-09T16:08:36,550889828+00:00",
+      "end_utc": "2026-10-09T16:11:32,098727953+00:00",
+      "elapsed_seconds": 175.547838,
+      "exit": "exit=0",
+      "binary_before": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+      "binary_after": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+      "request_counts": {
+        "/inspect": 0,
+        "/held": 1,
+        "/error": 0,
+        "/redirect": 0,
+        "/trap": 0
+      },
+      "held_sockets_closed": 1,
+      "fixture_sha256": "4b2952bff211c263c1444ba0fe178d457c51e7c8624c1dd139d011fafb48486b",
+      "measurement": "whole interactive app-session interval including observation and coordination, not pure interaction or inference time"
+    },
+    {
+      "run": "20261009T161330-light",
+      "start_utc": "2026-10-09T16:13:30,613081454+00:00",
+      "end_utc": "2026-10-09T16:17:43,027655590+00:00",
+      "elapsed_seconds": 252.414574,
+      "exit": "exit=0",
+      "binary_before": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+      "binary_after": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+      "request_counts": {
+        "/inspect": 0,
+        "/held": 0,
+        "/error": 0,
+        "/redirect": 0,
+        "/trap": 0
+      },
+      "held_sockets_closed": 0,
+      "fixture_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "measurement": "whole interactive app-session interval including observation and coordination, not pure interaction or inference time"
+    }
+  ],
+  "verified": [
+    "Initial cURL import and reviewed PATCH fields caused zero fixture connections before explicit Send.",
+    "Ctrl-Shift-Return and Ctrl-Alt-Return caused zero connections and dirtied import text; explicit re-import restored review.",
+    "Visible standard-method panel owned Ctrl-Return with zero connections and Send disabled.",
+    "Explicit Ctrl-Return sent PATCH /inspect with exact39-byte UTF-8 JSON, integer9007199254740993 and snow/emoji; fixture recorded explicit X-Fixture header.",
+    "201 response rendered sorted headers and lossless pretty JSON; native Copy Response pasted beginning status and ending Unicode body into independent empty window. GPUI exact-copy tests separately establish full byte equality and2MB bound.",
+    "New Window started blankGET, and closing it preserved the original response.",
+    "Editing URL cleared old response and Copy availability.",
+    "Two Send shortcuts while one held body was live produced one request. Explicit Cancel closed its socket, withheld partial response and restored Send.",
+    "Editing a second live held request closed its socket without publishing stale output. Explicit retry returned404 with its inspectable body.",
+    "307 response displayed Location and redirect body; trap endpoint received zero requests.",
+    "Closing second window with live heldGET closed only that socket; first window survived.",
+    "Last-window Ctrl-W during live heldPATCH closed socket and exited0.",
+    "Dark-mode process restart with no seed had empty import/URL/headers/body, GET method, no result and zero connections. Isolated settings contained neither loopback URL, large integer/body nor response text.",
+    "Native resize verified740x560. Method choices remained visible below trigger; native Down/Return choseDELETE and restored trigger focus. Escape retained full window.",
+    "At740x560 outer scrolling exposed the footer disclaimer while Send/Cancel/Copy stayed fixed and reachable.",
+    "App-controlled Ctrl-Q during a live heldDELETE closed socket then exited0.",
+    "Search from a completed response preserved that independent HTTP window and its response (first run).",
+    "Home Developer filter http displayed the HTTP & cURL card; clicking it opened an independent blank GET HTTP window (third run).",
+    "Ctrl-K from the Home-opened HTTP window displayed the task-owned palette with HTTP & cURL selected; clicking its Open button created a second independent blank GET HTTP window. Both windows were present; Home navigation and both Open routes produced zero fixture connections.",
+    "Ctrl-Q closed the route-verification app and all its task windows with exit 0; all three normal exits preserved the sealed ordinary binary hash."
+  ],
+  "limits": [
+    "No actual macOS/AppKit, OS-native IME, hardware-GPU or performance/frame-rate claim.",
+    "Native Ctrl-Home in copied multiline editor produced no observed movement; Ctrl-A then Left exposed the beginning. This is not a Ctrl-Home acceptance claim.",
+    "One native text injection failed with unavailable AT-SPI provider; per-character native key input recovered without resetting CUA. Some immediate captures preceded later rendered completion; no frame latency is inferred.",
+    "System DNS cancellation is untested; async60s budget is not a hard physical-runtime disposal bound.",
+    "Session publication-held GPUI fixtures concern post-network adoption, distinct from actual sockets above.",
+    "No screenshots exported; observations are recorded as scoped textual acceptance."
+  ],
+  "inference_time": "unavailable",
+  "prior_two_run_receipt_sha256": "5d8f9ae351dd26b4fd4b80efd741e78bf4ff4f3d53df79b79a29cd4d9f3ad7e6",
+  "source_change_after_seal": "No product-source changes after the sealed ordinary build. GUI launch harness added an existing Home route selector for the third run."
+}

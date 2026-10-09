@@ -1,0 +1,2430 @@
+{
+  "FEATURES.md": {
+    "bytes": 12096,
+    "sha256": "016187e6918c902e57763c8d1d91d12e10693c722b1c2812cbe4d04fafefbe8e"
+  },
+  "duration-track.py": {
+    "bytes": 8140,
+    "sha256": "80d3f91e5b4b4238766408e228327ca0b5fba797b5d7fc4ab37a601f110bd4b8"
+  },
+  "duration-data.json": {
+    "bytes": 2884203,
+    "sha256": "941cdf748c80bb98594be2d6e9a32144b0689695b16bda6b093d90ec58d889c4"
+  },
+  "AGENTS.md": {
+    "bytes": 38554,
+    "sha256": "d0f6ec5edb38feed242af777349c394d7984e8a9237571255407ce8c291dfe73"
+  },
+  ".gitignore": {
+    "bytes": 236,
+    "sha256": "6f95b554986c4f7b14d0538bd62301855f3325e38c94001a82e39a93baa0d33c"
+  },
+  "project.yml": {
+    "bytes": 3335,
+    "sha256": "36d05945cb97b1f679a00e64ac6bfd9164356135ee89a0371cc50795b47fe901"
+  },
+  "README.md": {
+    "bytes": 15236,
+    "sha256": "60a9c116596f82db9a68a5e653305590750b053aaa402d5cc6728eba790e70bb"
+  },
+  "codex-main-audit.md": {
+    "bytes": 34339,
+    "sha256": "ce38d41ff281030b759339bf2fcb69a916834ee74e0b5173040b78a129016b48"
+  },
+  "duration.md": {
+    "bytes": 7559,
+    "sha256": "ee4c7c8ddf99ebc8704b4adef3ed3c3c8840c5906204c2568c0cb97b06ab022c"
+  },
+  "BelloBox/ThirdPartyNotices.txt": {
+    "bytes": 2265,
+    "sha256": "4106a7ff2783d07d995f508a7f7ff72cb2429b9671800ff8e27a78b81b427a99"
+  },
+  "BelloBox/Info.plist": {
+    "bytes": 1802,
+    "sha256": "438d0cad6dd53662898330f7356bed036e3ac95ffde4da1dd3ebe5e0053c2953"
+  },
+  "BelloBox/BelloBox.Debug.entitlements": {
+    "bytes": 300,
+    "sha256": "f466a9d529cd58b04b5f8a9523f35c636fbd32b4f072b36e4179edf40989a87a"
+  },
+  "BelloBox/BelloBoxApp.swift": {
+    "bytes": 17279,
+    "sha256": "f886a9d3184b6b258e3998ce3ba84ee448a2051b2c5c8a6d9cf7783fce176511"
+  },
+  "BelloBox/BelloBox.Release.entitlements": {
+    "bytes": 300,
+    "sha256": "f466a9d529cd58b04b5f8a9523f35c636fbd32b4f072b36e4179edf40989a87a"
+  },
+  "BelloBox.xcodeproj/project.pbxproj": {
+    "bytes": 133862,
+    "sha256": "c7748cb714bb26ce450366f3ebddffd997715c1ffd38ced27b08cbe39dd5fffd"
+  },
+  "rust/Cargo.toml": {
+    "bytes": 592,
+    "sha256": "ef7a02f1a62f27c77e5790548c003e2f8ef6770105b87b9db75dca5ff77d497e"
+  },
+  "rust/Cargo.lock": {
+    "bytes": 193552,
+    "sha256": "222781fafc842dd19d132664d33dfffbd51b1fc3bc9c42932461ce2e90b1c097"
+  },
+  "rust/.gitignore": {
+    "bytes": 43,
+    "sha256": "7483f91346cf5e39790bd17862f85ba768ea51a0b446cc141fba805c8fe4824d"
+  },
+  "rust/README.md": {
+    "bytes": 3472,
+    "sha256": "cf40b022de7da0537678185756958d268b07b9f0efd729663e4cdb980e7c5711"
+  },
+  "BelloBoxTests/TextTransformsTests.swift": {
+    "bytes": 5848,
+    "sha256": "0dbc42a94e1f85fe6d6d245a7ec5c073a4e21164ebee88f64a3558a5a80a1802"
+  },
+  "BelloBoxTests/LLMOCRResponseParserTests.swift": {
+    "bytes": 3658,
+    "sha256": "1b19e4024340a323f4e5b0162885d417bedba88a89551a10384e7c0ebb969df7"
+  },
+  "BelloBoxTests/DisplayCaptureVerificationTests.swift": {
+    "bytes": 6245,
+    "sha256": "d3109e64fd333575e5d56152c705b9950803d4fa4416a946caa03f7e87ad95da"
+  },
+  "BelloBoxTests/WindowMaterialTests.swift": {
+    "bytes": 11949,
+    "sha256": "ada8f29aef0186574131b18486e8cbcb78bbcc3ab733dd7d4d71836c8732fe7a"
+  },
+  "BelloBoxTests/LauncherInteractivePreviewTests.swift": {
+    "bytes": 63559,
+    "sha256": "588123f4e459f2b1122d79770497b9d2c3351edc213cefd081e280a187d67eaa"
+  },
+  "BelloBoxTests/CaptureSelectionResolverTests.swift": {
+    "bytes": 10133,
+    "sha256": "e8ef895fc963eff44411fa0378af299d9d7143e325d2ad5189b94d16bf9ba08b"
+  },
+  "BelloBoxTests/LauncherUsageTests.swift": {
+    "bytes": 7648,
+    "sha256": "96b9db452c2c2c3797dd7168987374b677e2f7ba21cca4421c74e037d278e5e4"
+  },
+  "BelloBoxTests/RecordingOptionsTests.swift": {
+    "bytes": 11340,
+    "sha256": "51344192b123c3e0999d66f8b26d3a43ee4b723901cf8f948715cdf796695858"
+  },
+  "BelloBoxTests/RecordingOutputTransactionTests.swift": {
+    "bytes": 2898,
+    "sha256": "c875323e8a665279ea02a504ba40d1493e05a3afd8de4421717c718c2bafd453"
+  },
+  "BelloBoxTests/AISelectionLayoutTests.swift": {
+    "bytes": 1136,
+    "sha256": "9b963d5139b278c3280e41c17d1451e329375f0eff88047e1a01bbb51405e024"
+  },
+  "BelloBoxTests/AIGenerationTests.swift": {
+    "bytes": 21087,
+    "sha256": "fdf7ef47f6ecf60643f6dc7e3445bb749fb7c556564dc97f7db39ba02c978fea"
+  },
+  "BelloBoxTests/CaptureDiagnosticsTests.swift": {
+    "bytes": 3105,
+    "sha256": "693322fee286f40d7aef4cb7e39474a6fd97b4b33c9efcd05c7b62216df221f4"
+  },
+  "BelloBoxTests/TimestampSummaryTests.swift": {
+    "bytes": 5926,
+    "sha256": "c0a64d778ea576ef37be43fb899728a23336f92bd8d58b89d84a1f45d49ec2c0"
+  },
+  "BelloBoxTests/RecordingAudioMixerTests.swift": {
+    "bytes": 6480,
+    "sha256": "499b4ccdf50dd4f517c70704ddc96e349624713f2e7c84c8eeb2d79d1442a2a7"
+  },
+  "BelloBoxTests/WindowCapturePickerViewModelTests.swift": {
+    "bytes": 4158,
+    "sha256": "dd8c09df4b626d426f487d5ac118ff6c40f2376466fa528be347424dd32b80b3"
+  },
+  "BelloBoxTests/SnapshotDocumentTests.swift": {
+    "bytes": 1672,
+    "sha256": "ce538054a1bf7ea017020995045402cc4a3aef049eff0b5c6f49731a349a7a0c"
+  },
+  "BelloBoxTests/WorldClockTests.swift": {
+    "bytes": 49774,
+    "sha256": "2d18b8531ff93c75845cd946ae5d55b2960b68b81f8b444a195cdf4b22f6bcee"
+  },
+  "BelloBoxTests/ScreenshotSelectionAdjustmentTests.swift": {
+    "bytes": 7922,
+    "sha256": "2618a3b75f6cadc7d1c866fd26d17cd6933f6fa0dac5a124fabfdafdd322bf7b"
+  },
+  "BelloBoxTests/RecordingOverlayEventStoreTests.swift": {
+    "bytes": 3433,
+    "sha256": "613d24feff7bb3bb6d0d169ef67a15bd644f630969db5e3dc8959af6bec6602c"
+  },
+  "BelloBoxTests/DisplayCaptureResolverTests.swift": {
+    "bytes": 3112,
+    "sha256": "efa88b0caeb134af8cf4f39a23b4c87ddfe704985b988cf52b3ca8612accc583"
+  },
+  "BelloBoxTests/ActionPopupViewModelTests.swift": {
+    "bytes": 8717,
+    "sha256": "5c3d02625c0315d7bde1d77106cfcd5330221dab6da369aa8697e7b56d938232"
+  },
+  "BelloBoxTests/ScreenshotTestHelpers.swift": {
+    "bytes": 3151,
+    "sha256": "44422aed3884fe050f63921d870dbaec10200f8a540cb64587cccbd66cff2389"
+  },
+  "BelloBoxTests/SelectionResizeGeometryTests.swift": {
+    "bytes": 4738,
+    "sha256": "2f07e567c43173692b800ff2853287c92e46e01c89c2cba79007fb0570ef4395"
+  },
+  "BelloBoxTests/SelectionCaptureTests.swift": {
+    "bytes": 7440,
+    "sha256": "f4e9ecf9a04a5e4fa17e5b811fff0a9b0c8939b06f94930a015b0a53cfe4e7c8"
+  },
+  "BelloBoxTests/ThemeContrastTests.swift": {
+    "bytes": 5566,
+    "sha256": "0aa00cc9fffebaa985aed662dc7bf54fd49ae80c85167600ad7dde4165e78edc"
+  },
+  "BelloBoxTests/OCRResultFormatterTests.swift": {
+    "bytes": 1023,
+    "sha256": "505539fb37c3ed42617cfafc8491f693f4666976984da4ea9f8a9e5334f3d408"
+  },
+  "BelloBoxTests/DebugInfoCollectorTests.swift": {
+    "bytes": 1935,
+    "sha256": "3143fe518f51dff27e3a9d10e1f917603a73983d5ca82f2458c17266c04af729"
+  },
+  "BelloBoxTests/RecordingFileStoreTests.swift": {
+    "bytes": 3278,
+    "sha256": "35f36b6f2cf55b1113d9d6c25184d67047caef9de978693f9ef7f3bd4f86a731"
+  },
+  "BelloBoxTests/CaptureWindowCatalogTests.swift": {
+    "bytes": 5813,
+    "sha256": "7a2db2b1d8815495816e9a2504db745ec2b4eda021d6f52ab8167843d29bc7d3"
+  },
+  "BelloBoxTests/GlobalHotkeyTests.swift": {
+    "bytes": 4461,
+    "sha256": "730b548aebd4618855663380ce0fd01799473bce73e292eb8bbcfb9913d565e3"
+  },
+  "BelloBoxTests/LLMOCRRequestBuilderTests.swift": {
+    "bytes": 8950,
+    "sha256": "d8a88bab09f60f23d507f8bca59cb7807b3412f4941eb71e1f7326662fd7bbc7"
+  },
+  "BelloBoxTests/OCRBoundingBoxConversionTests.swift": {
+    "bytes": 459,
+    "sha256": "b8a6dc8a9f9bec5e3350114ddb4c0cc5b615502f0a2036f5cb7432dcfb70b0bb"
+  },
+  "BelloBoxTests/OCRImagePreprocessorTests.swift": {
+    "bytes": 7153,
+    "sha256": "3b50d6e4dac055edf35e3674a4ad46a77f982b919ceca611187eae2fbba5d481"
+  },
+  "BelloBoxTests/RecordingReviewViewModelTests.swift": {
+    "bytes": 6602,
+    "sha256": "ae20d40ce16200467a034a7d71ecee29957b8dab4c3b118227af8d5ef1d4d06f"
+  },
+  "BelloBoxTests/OCRTileSegmenterTests.swift": {
+    "bytes": 957,
+    "sha256": "8fe62e6f75ac99e8a8aa0effe3dce8733f28e71da6b54c544405550214ccafbf"
+  },
+  "BelloBoxTests/OverlayTooltipTests.swift": {
+    "bytes": 6058,
+    "sha256": "862b9c0f444306f0623bb540e29b1a05e82fd4b70cecf2ef9a9ed58839a8f649"
+  },
+  "BelloBoxTests/MultiDisplayCapturePipelineTests.swift": {
+    "bytes": 6263,
+    "sha256": "156a1995320b46e042dc82264e51508d2311e5f1b94f2715f853956ebd7469d2"
+  },
+  "BelloBoxTests/ScreenPlacementTests.swift": {
+    "bytes": 4447,
+    "sha256": "e53ddec15840cab8d66cd3c9b2b7a0e7fd358c61d3bf9016be1a3c19850622cd"
+  },
+  "BelloBoxTests/AnnotationEraserTests.swift": {
+    "bytes": 36707,
+    "sha256": "6178ceff6b4723ef2e7ca566826ae51ea884ff4959710cdde3d3b92006b8bfc7"
+  },
+  "BelloBoxTests/LiteralTextEditorTests.swift": {
+    "bytes": 1436,
+    "sha256": "664cacc74ef7583c8670ea592680db195b4e11f0451cf81367b03ec6459f5943"
+  },
+  "BelloBoxTests/RecordingFrameRendererTests.swift": {
+    "bytes": 9775,
+    "sha256": "ea1eed12684a2e43b780e136701ab0b73137ec6cc951cd236fac6a7066af8a57"
+  },
+  "BelloBoxTests/ScreenCoordinateSpaceTests.swift": {
+    "bytes": 8851,
+    "sha256": "6cbbd995112a41546bf22fc74e997a8353b50b29224de46b1c5d7c03e2ed0fbf"
+  },
+  "BelloBoxTests/ScreenshotPopupViewModelOCRTaskTests.swift": {
+    "bytes": 19257,
+    "sha256": "2d2aec36cd48fca67692021cfc7d04f98cec83bf676a5d655bfea27c6b42875c"
+  },
+  "BelloBoxTests/ScrollCaptureEngineTests.swift": {
+    "bytes": 30422,
+    "sha256": "4729c33ac58a001192e400590ddaef753f84ef22a66793a262f41136b6ba1f72"
+  },
+  "BelloBoxTests/OCRBoundingBoxConverterTests.swift": {
+    "bytes": 2077,
+    "sha256": "912c7ba6aec60a37f371098a9f5423953773d1b23c15e07e9951f2c8c0f3deb0"
+  },
+  "BelloBoxTests/AIClientTests.swift": {
+    "bytes": 30354,
+    "sha256": "9e49e8e7d4d685b8b847a4b2e9ad9c6b10b932e30cce1e58c50a6e30d9262abf"
+  },
+  "BelloBoxTests/AnnotationRendererTests.swift": {
+    "bytes": 11456,
+    "sha256": "28c9a3d5f9cdd6352bc59c4dee01e230fe164eb93a71cbcf4d0e2b78947c631f"
+  },
+  "BelloBoxTests/CaptureWindowOcclusionTests.swift": {
+    "bytes": 4669,
+    "sha256": "b05b4747f548e46e621c136d71d5be2826a79b56969acf3451023da52379beec"
+  },
+  "BelloBoxTests/CaptureOverlayAccessoryLayoutTests.swift": {
+    "bytes": 9783,
+    "sha256": "77219bfea6bbb253d0d4b4598b4941254cc2c96b9572ee84762106ff3edb50f8"
+  },
+  "BelloBoxTests/DeveloperUtilityTests.swift": {
+    "bytes": 20677,
+    "sha256": "1e44b76c034f0f51bcdbfdb4b19b1e7b4a037ea8c965831d181f6e5e36332640"
+  },
+  "BelloBoxTests/InlineTextEditingTests.swift": {
+    "bytes": 12070,
+    "sha256": "b23fe677cf615a374401cd83be22fb783008e116866279431c295b622c2772a1"
+  },
+  "BelloBoxTests/RecordingEngineE2ETests.swift": {
+    "bytes": 5404,
+    "sha256": "80e6783d7c11229c1d8bc79e795446c74d5d7bdc75912897af15cd659f092208"
+  },
+  "BelloBoxTests/ScreenCaptureServiceDiagnosticsTests.swift": {
+    "bytes": 2296,
+    "sha256": "023aa105475dadf0b351de008c3a72a951f40427d5fe94c6f68a7737875b06fa"
+  },
+  "BelloBoxTests/ExtendedUtilityTests.swift": {
+    "bytes": 27090,
+    "sha256": "3a958a373cc031aeec4a007ae900050d7194c86df9aafba385d402ae350de78f"
+  },
+  "BelloBoxTests/PrivacyGuardTests.swift": {
+    "bytes": 1977,
+    "sha256": "547f5d3fdfc1c49a50814fb1417458b244920909693d9ba524172c7139f8f62d"
+  },
+  "BelloBoxTests/CaptureOverlayFrozenScreenTests.swift": {
+    "bytes": 7409,
+    "sha256": "642e929adf3f940fadddf32dfef8a2a57bf51df1ed5d2c76838b5f90aa5b21d3"
+  },
+  "BelloBoxTests/WorkspaceNavigationTests.swift": {
+    "bytes": 2751,
+    "sha256": "ea02ab0f9ca7c2660e0ea9801865d4d22aab13b77d78701b898c897b8ed3cc4a"
+  },
+  "BelloBoxTests/RecordingRecoveryTests.swift": {
+    "bytes": 6647,
+    "sha256": "b47771882c3440070c34ee1e65296d9e65f5c8e9a6d151ae85d91e5dd39d8502"
+  },
+  "BelloBoxTests/UtilityWorkbenchWindowTests.swift": {
+    "bytes": 9842,
+    "sha256": "b447f05f6dadb02fb3f6eda4b524a4552932bbc12353b9625bfa99357c160473"
+  },
+  "BelloBoxTests/RecordingPauseTimelineTests.swift": {
+    "bytes": 2227,
+    "sha256": "476035ed28d977d4718b135444855dc9cdcfcdfec36aea5c76cd49b838e74c5b"
+  },
+  "BelloBoxTests/LauncherInteractionTests.swift": {
+    "bytes": 16159,
+    "sha256": "6844ee9eff93c17e46a264f7a25c6768b749b4b5a1a97b060851a42063238fea"
+  },
+  "BelloBoxTests/CaptureDimmingViewTests.swift": {
+    "bytes": 8217,
+    "sha256": "82552c84370526b4ac2ca9bad3f0c9fe5d84c48ec8269af5683ce00a9059b272"
+  },
+  "BelloBoxTests/FeatureWorkflowTests.swift": {
+    "bytes": 7565,
+    "sha256": "09e735572a2161819da514ca4d02e6bbfb780dd6cb646efb21a23ae67f8318df"
+  },
+  "BelloBoxTests/UIUXBehaviorTests.swift": {
+    "bytes": 3766,
+    "sha256": "3a35690ad67f55aa62269e0336bf768a806a8d9020aee937df7ca7619cbe473d"
+  },
+  "BelloBoxTests/RegionCaptureGeometryTests.swift": {
+    "bytes": 2655,
+    "sha256": "cc40d05832a76d170b5a6d573c2af0baa13db41bd725159c35a9c93814227f95"
+  },
+  "BelloBoxTests/RecordingGIFTests.swift": {
+    "bytes": 61240,
+    "sha256": "07a8404f4ba81ec5e4a4010be3c93af73d1c97d3dbadf594d0b2ffbd2c6cac74"
+  },
+  "BelloBoxTests/ImageStitcherTests.swift": {
+    "bytes": 17108,
+    "sha256": "3a5f8230b58b90c72c7ac2d270462f0cdec1885877a4f2e7d51350ac74e1b09d"
+  },
+  "BelloBoxTests/ImageExportServiceTests.swift": {
+    "bytes": 570,
+    "sha256": "f19df7dd7736a7f2814e9dd9ce967893aebc949bf68dc4fb30c41b1874e317ec"
+  },
+  "BelloBoxTests/QRCodeGeneratorTests.swift": {
+    "bytes": 1948,
+    "sha256": "d0cad04a179008fc0d89d25e593e987842d97da743b6e9edca9de511025d39a2"
+  },
+  "BelloBoxTests/LauncherPreviewTests.swift": {
+    "bytes": 38270,
+    "sha256": "b076fe7680c11bec4f421bf63f6e44c7714b0dac0d2a00fdf607e292dedac640"
+  },
+  "BelloBoxTests/RecordingCoordinatorTests.swift": {
+    "bytes": 13025,
+    "sha256": "38e3f06bf8f126ad9283ecabe33ae99a28022e93f44df34acceff4de0a1aac6c"
+  },
+  "BelloBoxTests/AdditionalUtilityTests.swift": {
+    "bytes": 18953,
+    "sha256": "edfc3c4647d17cd1d2efd68723c7cc7bd169d543d1566185f0088841cc843e1a"
+  },
+  "scripts/generate-app-icons.swift": {
+    "bytes": 3709,
+    "sha256": "296d8140bc88c88976d92014bcb6e155fe8aa912837c66cb60d160caf185b619"
+  },
+  "scripts/sparkle-release.sh": {
+    "bytes": 13476,
+    "sha256": "7323556cf3d94e2861c0ac30c326e6c7f4116af2480c1794d11df8eb65d1ccda"
+  },
+  "scripts/e2e-recording-fixture.swift": {
+    "bytes": 3545,
+    "sha256": "e915c0020bf9dca47a0c8bd79fe1cbe267a388f7e00d241909b3271e69ddb9b9"
+  },
+  "scripts/write-dmg-dsstore.py": {
+    "bytes": 3041,
+    "sha256": "27a55ead64da6406ce6f88edd806ad2453acadb6753e68ae9add462656be337a"
+  },
+  "scripts/run-tests.sh": {
+    "bytes": 523,
+    "sha256": "88e5cf1603010144a6a3df73beebd12ad580627267a3b76066b2e5912efcf223"
+  },
+  "scripts/run-hotkey-e2e.sh": {
+    "bytes": 6855,
+    "sha256": "f499d7e838c3b002e45815468ace9c671d513add40e37fa4b10bd804930a9fca"
+  },
+  "scripts/run-world-clock-e2e.sh": {
+    "bytes": 4895,
+    "sha256": "a0f8e90a5dd2f4b503b3721b25cd4d3f485757d7bb16265f192c1bceda68ddd0"
+  },
+  "scripts/request-e2e-permissions.sh": {
+    "bytes": 4891,
+    "sha256": "7262c32f15701b5441a54a04d079221eed19669bc5685711e6869748228c3740"
+  },
+  "scripts/run-capture-recording-e2e.sh": {
+    "bytes": 11508,
+    "sha256": "c5a6659c62f8e134aafa769235907c3f7dffddced988b5741b8994bebe7d75d4"
+  },
+  "scripts/generate-dmg-background.swift": {
+    "bytes": 2318,
+    "sha256": "c191755709694c37f7d3d05c8dabe982cbca37b21494e01e4bd8e503427c3cad"
+  },
+  "scripts/run-e2e.sh": {
+    "bytes": 622,
+    "sha256": "c85071e498b6f222ab62f6bc3a3b4e7e8b44f2d27e64f824709089f22996a629"
+  },
+  "BelloBox/DeveloperTools/CertificateExample.swift": {
+    "bytes": 1462,
+    "sha256": "18f8f52a1ad56a35a0cef8d290967a842f9c9d5f045cf93555e6efc03707dd1b"
+  },
+  "BelloBox/DeveloperTools/SnippetsAndGenerators.swift": {
+    "bytes": 5989,
+    "sha256": "1ff590253fa67aab3cfd59e1331293a3e3e91f638243f536a2ea07905f247837"
+  },
+  "BelloBox/DeveloperTools/QuantTools.swift": {
+    "bytes": 11354,
+    "sha256": "a60506c101d04011a117c521caa4450aa7fb8c10902c1a6f1a571f23942f4bf6"
+  },
+  "BelloBox/DeveloperTools/TextUtilities.swift": {
+    "bytes": 9326,
+    "sha256": "0aacf673909849cbb51dcb1b1ac8c70536051cf2d0c0ca6ae23635d4472d9371"
+  },
+  "BelloBox/DeveloperTools/InspectionTools.swift": {
+    "bytes": 10419,
+    "sha256": "4b74934aa3bdf1bfe88a2d25c5bfd6a63c58b536f7d81f4f03fc9efdab5f2fc7"
+  },
+  "BelloBox/DeveloperTools/PlistTool.swift": {
+    "bytes": 10273,
+    "sha256": "220729aeff57db6510660759b6777179ade0a39c15e6af699adae48bc35f8eb6"
+  },
+  "BelloBox/DeveloperTools/AdditionalUtility.swift": {
+    "bytes": 14104,
+    "sha256": "618e3a009b69c1d23aa3f912a8ad0825cf4afe43e71da650702cedc213b150de"
+  },
+  "BelloBox/DeveloperTools/ProtocolTools.swift": {
+    "bytes": 13441,
+    "sha256": "cf4ccae636f464ca8ad94fce8afc96e284cb2f756da009f7b6b624a2f97a6ec9"
+  },
+  "BelloBox/DeveloperTools/DataConversion.swift": {
+    "bytes": 10417,
+    "sha256": "8cda7a9cadd720fc7c1f0a97f8479e84b8254dc08b8554247bffec747d0a55a0"
+  },
+  "BelloBox/DeveloperTools/MathUtilities.swift": {
+    "bytes": 10228,
+    "sha256": "0570ed1787b8e9d84e781016b5a877e4b453c971b76c3c9f4feeea897c403260"
+  },
+  "BelloBox/DeveloperTools/LayoutTools.swift": {
+    "bytes": 5056,
+    "sha256": "4ec2a70e0cbdb2c55b306260dd09d333c98e92429f2981c910313d90772db5c3"
+  },
+  "BelloBox/DeveloperTools/JSONCodeTool.swift": {
+    "bytes": 8520,
+    "sha256": "a44a0a218943260ada321ab42a685d8f11f788caf79cb023b57d5754f69479de"
+  },
+  "BelloBox/DeveloperTools/DesignUtilities.swift": {
+    "bytes": 12678,
+    "sha256": "ee858780f16f1ed1a5e8642bbb657f210c3c060bc33039e82eba783dac6155ac"
+  },
+  "BelloBox/DeveloperTools/SQLFormatterTool.swift": {
+    "bytes": 8401,
+    "sha256": "0c521de0286e103f20eaea68258d22e1eab8db4988d502d749710fc7d56fd713"
+  },
+  "BelloBox/DeveloperTools/DeveloperTime.swift": {
+    "bytes": 7676,
+    "sha256": "b28fb38e2cd8ef509fd51a9ad43d8bf4352aec5fc798453133898144e9cf73d2"
+  },
+  "BelloBox/DeveloperTools/JSONSchemaTool.swift": {
+    "bytes": 16585,
+    "sha256": "0520fd20af699e5c27e326a6e700ce2098de9db1b17e760b4325e62057a96656"
+  },
+  "BelloBox/DeveloperTools/SecurityUtilities.swift": {
+    "bytes": 5640,
+    "sha256": "bbb4f41ed9d35719ddc360c2f7c333bde897d1843885c73b7dfdc18faa05ad91"
+  },
+  "BelloBox/DeveloperTools/DeveloperJSON.swift": {
+    "bytes": 6805,
+    "sha256": "3dc58c0f68e76a0db3205bef989040b0828c13d589f616bab661e1929639069b"
+  },
+  "BelloBox/DeveloperTools/ExtendedUtilityDefinitions.swift": {
+    "bytes": 12172,
+    "sha256": "c7fd5b03edd7136c48ebdd322858ee43e618eefcfd019a8400f65a720905eb08"
+  },
+  "BelloBox/DeveloperTools/StructuredUtilities.swift": {
+    "bytes": 13804,
+    "sha256": "e4bc52656462f48c422b7422a894ea015a1a9ab8a6064c977dbe6425cd93ce92"
+  },
+  "BelloBox/DeveloperTools/CertificateTool.swift": {
+    "bytes": 5434,
+    "sha256": "d94898ca870ee1c98af3004e093667e8d3ebbcfe75a9ed4e8ed0fac25e21335c"
+  },
+  "BelloBox/DeveloperTools/HTTPRequestTool.swift": {
+    "bytes": 11499,
+    "sha256": "795a4c498292aa3e60cb019d98f62cc5a688c47dbe6a5cdcffaaedf5e3f72d1e"
+  },
+  "BelloBox/DeveloperTools/DataWorkshop.swift": {
+    "bytes": 15174,
+    "sha256": "140329013b3e053c9c5e69f375d5dc360195909e1464c6f23e252ce6115ddf96"
+  },
+  "BelloBox/UI/ScreenshotCaptureChooserView.swift": {
+    "bytes": 5544,
+    "sha256": "877c95df82102c6dbf664c98854c24df3e2d666950b5704a351ae399a1e957be"
+  },
+  "BelloBox/UI/FloatingPanel.swift": {
+    "bytes": 8060,
+    "sha256": "20c849cab3bf57006cd43b3350a1e2f2c4822c0846d784ce0fe3bf6263a6a6d5"
+  },
+  "BelloBox/UI/WindowNavigation.swift": {
+    "bytes": 368,
+    "sha256": "10d0d3609fa641a90717360ba06d7f8fca1b140facd23835be9759809784797c"
+  },
+  "BelloBox/UI/WindowMaterials.swift": {
+    "bytes": 9622,
+    "sha256": "33a961f53b852377c0bb5da9654652f567c497110c97884a5839cb1dcb70b405"
+  },
+  "BelloBox/UI/HotkeyRecorderView.swift": {
+    "bytes": 5390,
+    "sha256": "172aa1f6fc5e3c05e347b77965626ff47a8a30785ddcb91aa55aff9db639c390"
+  },
+  "BelloBox/UI/TextToolsPopupView.swift": {
+    "bytes": 18509,
+    "sha256": "a5aee2cf507fd1a085d1395fcc3120515bb4a7580d335c3a66850baacf9e6527"
+  },
+  "BelloBox/UI/WorldClockComponents.swift": {
+    "bytes": 11385,
+    "sha256": "c7df0a28f4afe19c591b019eb95296f2167aba1df9c6110aad0da76f9d6a8eed"
+  },
+  "BelloBox/UI/WorldClockCopilotView.swift": {
+    "bytes": 11246,
+    "sha256": "d5b573b931c899a0349bf6ebfbf3ffb643c923bf31fff4f31d70f86df2eeace2"
+  },
+  "BelloBox/UI/FloatingButtonView.swift": {
+    "bytes": 5469,
+    "sha256": "f83a3ef7f0251625bc5c8da1f6c494323662bb6f0565ddbd1db22feb1c4c4d7f"
+  },
+  "BelloBox/UI/OCRTextRegionsOverlayView.swift": {
+    "bytes": 1061,
+    "sha256": "b1ef312e1d52e46a330f91ff3fa5cb1ae3d0a25f0e70c60558edc3206b8c9804"
+  },
+  "BelloBox/UI/ScreenshotOverlayEditorController.swift": {
+    "bytes": 10696,
+    "sha256": "5176a73d407fbb4dc3e19d9aa766993bd5dc5284ec355ae06d28255ed7a58b42"
+  },
+  "BelloBox/UI/RecordingPermissionView.swift": {
+    "bytes": 5084,
+    "sha256": "ca77e10a1113c790876b371141ad55c6d85699092cabbf9fc202bd19e2989a12"
+  },
+  "BelloBox/UI/SettingsView.swift": {
+    "bytes": 25753,
+    "sha256": "8493ecf204732a72ce2f6681ba701d5a68582f139763e4c19fe3de861b66670e"
+  },
+  "BelloBox/UI/RecordingOptionsBar.swift": {
+    "bytes": 12654,
+    "sha256": "e4ab17229d1319e40f30daae7088b4d356ffe8cffe6cfebab089c642bb88cb13"
+  },
+  "BelloBox/UI/SelectionOverlayController.swift": {
+    "bytes": 121324,
+    "sha256": "52f0514505e6d9f84c859a1140d055666de81c95410622509ce8b54767a229c1"
+  },
+  "BelloBox/UI/AppWindowChrome.swift": {
+    "bytes": 3161,
+    "sha256": "8da8d4e8aee3b4ac188c21b6f7d7bbadb3c3be7f1349221c2e5fe7f083fc9d5f"
+  },
+  "BelloBox/UI/MainView.swift": {
+    "bytes": 15263,
+    "sha256": "317dfe2f65774ba8aeeed24d8ed3a950e024623c29178dda6faa823b10dd6cf3"
+  },
+  "BelloBox/UI/ScreenshotPopupView.swift": {
+    "bytes": 52103,
+    "sha256": "245cb6efcf3e3f7cc8785ceeca728c5c4930b5adfcb4bc851cd2ab13a9156b05"
+  },
+  "BelloBox/UI/CaptureOverlayController.swift": {
+    "bytes": 76351,
+    "sha256": "592a6a56c5a4331bdc4ded4790b96b82a0cbf6952c58123dd169c57890f265a4"
+  },
+  "BelloBox/UI/AnnotationToolbar.swift": {
+    "bytes": 12902,
+    "sha256": "54adb9b10d02d5f07882c0d89a050ccda8cfc370959308fb1552b44ea95d0336"
+  },
+  "BelloBox/UI/ScrollCaptureHUDView.swift": {
+    "bytes": 15505,
+    "sha256": "399903537917f851e6cf67805fa96d67e91a698049d0f0ac825ff53233b9cfb9"
+  },
+  "BelloBox/UI/SettingsWindowController.swift": {
+    "bytes": 1703,
+    "sha256": "a640a7c41bb10309b6a6864f0293c7e7824435e9713bbbd66aadfbd18a826f77"
+  },
+  "BelloBox/UI/ToolViewport.swift": {
+    "bytes": 2105,
+    "sha256": "2b7a07f022e40ef13e2f6984da72bfa05370100ebb4c80b45c6183024f6b9ec1"
+  },
+  "BelloBox/UI/OnboardingView.swift": {
+    "bytes": 19738,
+    "sha256": "9b105774141ee39bc89682b3dec1dd050bf0ef25b6acbc7eb3fec00cfa4a0320"
+  },
+  "BelloBox/UI/WorldClockWindowController.swift": {
+    "bytes": 4307,
+    "sha256": "afa5a0a3442d66faf8ead950699382bde7f06b39c9833ed8b6a0dfa92d879ba5"
+  },
+  "BelloBox/UI/RecordingHUDView.swift": {
+    "bytes": 13686,
+    "sha256": "92a30ac519cc5c5203e1bf254c0ad31dbf4e5e0791952f6b900db86b7532eae9"
+  },
+  "BelloBox/UI/ActionPopupViewModel.swift": {
+    "bytes": 6686,
+    "sha256": "7b9a6c71ef21177440fe165e1aa8695e33ed512dc1cd186161cb6cb12828f767"
+  },
+  "BelloBox/UI/GIFExportViews.swift": {
+    "bytes": 33354,
+    "sha256": "f9b352a8a79c9525471a0e0cc1ccb23cb4287e36fee2683a74bffa4b6e0fb21a"
+  },
+  "BelloBox/UI/WorldClockView.swift": {
+    "bytes": 17603,
+    "sha256": "af59387d772c83726a6e3bc6c2efa33992e02a7cdbdc2f38fdcbc94dbe51ae90"
+  },
+  "BelloBox/UI/AudioSourcePickerView.swift": {
+    "bytes": 1901,
+    "sha256": "acf0ccc1dc0b28a9eaee400755ce8c1f31d14d7e76da0b3cbac0079c52f4ddff"
+  },
+  "BelloBox/UI/OverlayTooltip.swift": {
+    "bytes": 6854,
+    "sha256": "641422cca3445cac4a645d5c0750df9282b132e6039ae6117040762be7a8144e"
+  },
+  "BelloBox/UI/ActionPopupView.swift": {
+    "bytes": 9976,
+    "sha256": "0234b718124da682490932b0dd47eaca1ff9a2778e466aa54d3a26c92e12d802"
+  },
+  "BelloBox/UI/AnnotationCanvasView.swift": {
+    "bytes": 23644,
+    "sha256": "ff1ec10f97e8e97e4466e8423d55e8f3feb8c8b05e98d091d9db0fe2710cf7ed"
+  },
+  "BelloBox/UI/AppActivation.swift": {
+    "bytes": 238,
+    "sha256": "ba5266a575ff4139078fd2816fee56c543942c532c070e2cba03d698f87edd89"
+  },
+  "BelloBox/UI/RecordingReviewView.swift": {
+    "bytes": 19967,
+    "sha256": "82141959db6335189bc0039d94364603ccf77ad6b3978de73038fedd9ce91e7f"
+  },
+  "BelloBox/UI/Theme.swift": {
+    "bytes": 20701,
+    "sha256": "4a9aa43d10ae4edf502ff04a4ebef9c08c823d1f5887955ba41bd4dd9a4e5572"
+  },
+  "BelloBox/UI/QRCodePopupView.swift": {
+    "bytes": 8915,
+    "sha256": "a370f4bcbdd9a0c1aee6c086cd1a1ada8cb4669f9cd3981092bee85c5265836e"
+  },
+  "BelloBox/UI/OCRPanelView.swift": {
+    "bytes": 7170,
+    "sha256": "8ec17f9480cb25fb0afa4314c4b6318e3807a90b01c2d9c9e8787df74a2059f7"
+  },
+  "BelloBox/UI/OnboardingWindowController.swift": {
+    "bytes": 2092,
+    "sha256": "453e93df0d06c81f740f0d7d4ad7fc271a9432dc65e8ce9703b307c7e0e77a77"
+  },
+  "BelloBox/UI/ProviderConfigView.swift": {
+    "bytes": 15948,
+    "sha256": "31988fb3bc17711218b03793a4dc5c81214b87185e03acabab8890bbd891ded7"
+  },
+  "BelloBox/UI/LiteralTextEditor.swift": {
+    "bytes": 4039,
+    "sha256": "fd30f6913c8fd6439958b39219a37c09a5d6ef28bfa63f3617219f9e1d28234d"
+  },
+  "BelloBox/UI/AIGenerationSettingsView.swift": {
+    "bytes": 10009,
+    "sha256": "76318a5dd72183f96ae836d42034de2077f12107e2276dc85b07c6b7f114b98d"
+  },
+  "BelloBox/UI/MainWindowController.swift": {
+    "bytes": 2747,
+    "sha256": "46725e427cd4254ef00bfdf37a54bc5e9ff7ea53db64e66a7d97b4b6203bc09e"
+  },
+  "BelloBox/AI/CodexAppServerClient.swift": {
+    "bytes": 21551,
+    "sha256": "94ba60a5239b47959f904286bc7ac14e2acc2e02f7c0a5400a223e567391e38c"
+  },
+  "BelloBox/AI/QuickAction.swift": {
+    "bytes": 3820,
+    "sha256": "f6b8ad7cec672f027d221c87ae0ab4e5c150928689a1a78c855f3a2c92b2408b"
+  },
+  "BelloBox/AI/AIConfig.swift": {
+    "bytes": 5903,
+    "sha256": "d43d3ab1585e8edc1bf382bf9020aee907c5c9cc6c84b43e2adc307e5735e06c"
+  },
+  "BelloBox/AI/AIClient.swift": {
+    "bytes": 18564,
+    "sha256": "e24e5c1bfd628b79ca4e2628ef8bde2ae8ecfb7c22e7bb03abb2ce8c7ca73185"
+  },
+  "BelloBox/AI/AIGenerationOptions.swift": {
+    "bytes": 6100,
+    "sha256": "557e8c48aa10244d353181863eefbc6d58748b2fe2e355988ab233570ee0f436"
+  },
+  "BelloBox/Launcher/LauncherPreview.swift": {
+    "bytes": 24195,
+    "sha256": "af631bfd0a662ef2fee3b439b004863c9504e266de8cfa12b7b13e6a513ae237"
+  },
+  "BelloBox/Launcher/LauncherCatalog.swift": {
+    "bytes": 13125,
+    "sha256": "98ed413c8263cd593e2c15ba171eba4f422c69666a4e7de09aa85e38d6fb9486"
+  },
+  "BelloBox/Launcher/LauncherSelectionContext.swift": {
+    "bytes": 1783,
+    "sha256": "971d0bc3e8d9bcb6c778ce0c79c84f423871e59b7fa89180a46c6a2c7fbd775f"
+  },
+  "BelloBox/Launcher/LauncherModel.swift": {
+    "bytes": 25549,
+    "sha256": "ee9cff67aa15bd05f003dbf1c0b978f9debcf759a3c0b709262e279dd2b95b29"
+  },
+  "BelloBox/Launcher/LauncherView.swift": {
+    "bytes": 12248,
+    "sha256": "55cd2956461b65bd1f2747a5785e9751e22ede5eab450a9ac3c4be75a01076f5"
+  },
+  "BelloBox/Launcher/LauncherHandoff.swift": {
+    "bytes": 2453,
+    "sha256": "c4b751713374cfeb201d65d147f32aa7c5135adabbdf0ee2647f027680784052"
+  },
+  "BelloBox/Launcher/ExtendedUtilityVisuals.swift": {
+    "bytes": 10187,
+    "sha256": "5f25fbffbe7d50efa1dd8471e849970f8bdda0c1b918bdcfd20e5ac768f651b5"
+  },
+  "BelloBox/Launcher/LauncherToolPreviews.swift": {
+    "bytes": 29236,
+    "sha256": "2c5a1e039bc0d1414f3bc389e7b332b7ee7c2f01bbd404129fd070afadc3aa18"
+  },
+  "BelloBox/Launcher/LauncherUsageStore.swift": {
+    "bytes": 4790,
+    "sha256": "9030b5a60610bddb37a6f468d06297985203e0d913d4bff7de1bb34c00ddb37b"
+  },
+  "BelloBox/Launcher/AdditionalUtilityViews.swift": {
+    "bytes": 21692,
+    "sha256": "545a01cd9bce1b0e6e469064e02b9189335a0fa11c2f2194c5ac27bb0f281c68"
+  },
+  "BelloBox/Launcher/LauncherPreviewSessions.swift": {
+    "bytes": 18443,
+    "sha256": "20eced3de82d64b3a043f8a552d957bec85ffb404c3045fa9c268260b9015ff7"
+  },
+  "BelloBox/Launcher/UtilityWorkbenchModel.swift": {
+    "bytes": 15587,
+    "sha256": "a77ad5fe5f3d10f0348eb299af81f66833b2323c6e03817cb4fdc52d2650493a"
+  },
+  "BelloBox/Launcher/LauncherInlinePreview.swift": {
+    "bytes": 18696,
+    "sha256": "29f48ae9d729625f8b3490c81a809c3c8474d95df03643e11b9a086840bdfea8"
+  },
+  "BelloBox/Launcher/LauncherSearchField.swift": {
+    "bytes": 5133,
+    "sha256": "52f54a4aee4d0b9a994686bfc733f3ea4eaa87dc66ccd95681c8f41364a76ecf"
+  },
+  "BelloBox/Launcher/UtilityWorkbenchWindowController.swift": {
+    "bytes": 6934,
+    "sha256": "57156ddef29f621a63a9fab276f826d209590d8a3bd582b2f4b026bf590f3a4a"
+  },
+  "BelloBox/Launcher/UtilityWorkbenchView.swift": {
+    "bytes": 27702,
+    "sha256": "5e9d060b6303fbb4a7c7f4c2cd9a30b92802f14f60be1efeca44df159c1cb2f4"
+  },
+  "BelloBox/Launcher/LauncherUtilityPreviews.swift": {
+    "bytes": 29951,
+    "sha256": "1e7fc6efc7fb2e015f528ffa5e38ab3e2c6bb5fc7f196ca337c67a1b88d166e4"
+  },
+  "BelloBox/Launcher/LauncherPreviewComponents.swift": {
+    "bytes": 11486,
+    "sha256": "48cbc594096990632c7b1900cb797674e4e7865d34720326bae216c907cc15e0"
+  },
+  "BelloBox/Launcher/LauncherWindowController.swift": {
+    "bytes": 16900,
+    "sha256": "a3299198dc429b0b1c715f5aedddf3720e021841141c9be4cf75723e7d6919a9"
+  },
+  "BelloBox/Tools/CodexCLI.swift": {
+    "bytes": 3385,
+    "sha256": "9feaa2e08cbde60e2e0906cdc9c8d226008a7a4bdbbeb4403de8b71baf731ae0"
+  },
+  "BelloBox/Tools/TimestampSummary.swift": {
+    "bytes": 7839,
+    "sha256": "09ffcfc3270055203575424a81553c65be028451c72b7e9bc99cb8f9248da2f6"
+  },
+  "BelloBox/Tools/QRCodeGenerator.swift": {
+    "bytes": 3313,
+    "sha256": "d0d18a083f339ac142358a8b968a4b0c49fbec965d98198ba61dc1accee9144e"
+  },
+  "BelloBox/Tools/TextTransforms.swift": {
+    "bytes": 16744,
+    "sha256": "3816ee35e6e135a2040357cd8774450b0bdfa69057a7c037d1e23c3cd7a38b14"
+  },
+  "BelloBox/Tools/TokenEstimator.swift": {
+    "bytes": 2253,
+    "sha256": "7edcffdb01d9fee4bd9b21a63d13510c66c4df2039142b6c6444f970c96091f2"
+  },
+  "BelloBox/Recording/RecordingFileStore.swift": {
+    "bytes": 2034,
+    "sha256": "75c723f85318b18d3095cdaa9616adfeeb0e5bd0145a0737455e56a0961e8bdc"
+  },
+  "BelloBox/Recording/RecordingPermission.swift": {
+    "bytes": 1912,
+    "sha256": "52370cf33a639026fbb36e536534ff350b41d42253da277058a6881a361fff1e"
+  },
+  "BelloBox/Recording/RecordingMicrophoneDevices.swift": {
+    "bytes": 1330,
+    "sha256": "d3c5c71a8498ff1ab05b995837898f22a1ac6f294ad0e5ee16d816d8981ddb6a"
+  },
+  "BelloBox/Recording/RecordingCoordinator.swift": {
+    "bytes": 12383,
+    "sha256": "7b06f6f3f37b8c8e0c2b3c88a5e114b774cc3cb7bb2ffc0ea3577f6cef24073a"
+  },
+  "BelloBox/Recording/RecordingAudioMixer.swift": {
+    "bytes": 5190,
+    "sha256": "ccf3864db8d75bf2039a42af9ed601511dacd0f089e4affe17942f3459118957"
+  },
+  "BelloBox/Recording/RecordingEngine.swift": {
+    "bytes": 39617,
+    "sha256": "cb4dfd55cb7bc0c668af204c2a6f6f4bcc4fb1df4e939a9ad27addd2e0765b4e"
+  },
+  "BelloBox/Recording/RecordingOutputTransaction.swift": {
+    "bytes": 1960,
+    "sha256": "a2345a3b0492fb2216cbfeb29bca17d624df7622779c7b88df7b06f70042693f"
+  },
+  "BelloBox/Recording/RecordingModels.swift": {
+    "bytes": 10102,
+    "sha256": "7ce94550e7692dd493afd265f7797921072e359014e11211ad04e7e31cc068f2"
+  },
+  "BelloBox/Recording/RecordingFrameRenderer.swift": {
+    "bytes": 10314,
+    "sha256": "143a59fc6eb9762d464a4c01a782a8010944aab23ce3c80857d924197a4de183"
+  },
+  "BelloBox/Screenshot/DisplayCaptureResolver.swift": {
+    "bytes": 2813,
+    "sha256": "21dd86829e0b0a4b97dc1db45b8b65c867573264144391a0ba12f46e6a8fa46a"
+  },
+  "BelloBox/Screenshot/ScrollCaptureEngine.swift": {
+    "bytes": 30107,
+    "sha256": "a77e6c22588df34e50929ae40f04aa7c3e0480a1003bc7fd9f68820a8b9d3b46"
+  },
+  "BelloBox/Screenshot/ScreenCapturePermission.swift": {
+    "bytes": 470,
+    "sha256": "e3703e1a97cc40254c615312ef1726e65c3b1a2a748bd220ad61d17ea9ac8a9d"
+  },
+  "BelloBox/Screenshot/CaptureDiagnostics.swift": {
+    "bytes": 5403,
+    "sha256": "69a1654a976b3de1b8c9f867ac74f4b19b745d3d85f802eda362f9fb959de66a"
+  },
+  "BelloBox/Screenshot/CaptureWindowCatalog.swift": {
+    "bytes": 5837,
+    "sha256": "c701195e364c09471ecaa7c8435f72552e7460d82c52b11c3e08c66a7f97a01f"
+  },
+  "BelloBox/Screenshot/RegionCaptureGeometry.swift": {
+    "bytes": 1823,
+    "sha256": "1da73cca59922db4045af330bd9c85fd73723dfca6b05a0ea0beade0099bdf37"
+  },
+  "BelloBox/Screenshot/CaptureOverlayPanelConfiguration.swift": {
+    "bytes": 838,
+    "sha256": "613f29ca862b2b871872e919b30b6f6270f03e639fc64c851f995ddf8295a8fe"
+  },
+  "BelloBox/Screenshot/ImageStitcher.swift": {
+    "bytes": 23425,
+    "sha256": "a3048f37fe94e6a73dd02f2b68fb407d02b3d7a641ad6eb07ab789a3cccfb06e"
+  },
+  "BelloBox/Screenshot/ScreenCaptureFrameGrabber.swift": {
+    "bytes": 3087,
+    "sha256": "d9e3a71fb4e6ac1933469c23b5c9775137cebb5856fcdae192f5bfd2607c707a"
+  },
+  "BelloBox/Screenshot/CaptureSelectionResolver.swift": {
+    "bytes": 2480,
+    "sha256": "23432a1222309cfba722933387aa7817349ba3103821b67b43b3fc784c2f58e2"
+  },
+  "BelloBox/Screenshot/ScreenshotModels.swift": {
+    "bytes": 9157,
+    "sha256": "0dd822581e70b51baf3bc0102670ee62ab5ad19dd1ae98344c209e076448ec51"
+  },
+  "BelloBox/Screenshot/ScreenCaptureService.swift": {
+    "bytes": 46985,
+    "sha256": "5698dc487492846a795de9c81c68cdd9f3d8e43907c27930b817181703a83426"
+  },
+  "BelloBox/Screenshot/DisplayCaptureVerification.swift": {
+    "bytes": 16477,
+    "sha256": "323de0b70a27218511c30ea0a694564b10e486a8a01a4d783d9d86328aad79a6"
+  },
+  "BelloBox/Screenshot/ImageExportService.swift": {
+    "bytes": 2598,
+    "sha256": "5c5d85bd9397cd089601caba07f14e0927e54148ecc19687cb1f0c44a64c7df0"
+  },
+  "BelloBox/Screenshot/AnnotationModel.swift": {
+    "bytes": 17230,
+    "sha256": "3e60bdf6771f1beb946bf5843d63738f05624ea37d23640cbf2e231c2ee4c4ac"
+  },
+  "BelloBox/Screenshot/ImageAlphaMask.swift": {
+    "bytes": 1281,
+    "sha256": "294b146c71c86c906a813d18a9b8c48ff1a52c59bfb0ed53bfcd3cfa57ff903d"
+  },
+  "BelloBox/Screenshot/ScreenCoordinateSpace.swift": {
+    "bytes": 9674,
+    "sha256": "fe3d1c75eb11001da579b5406d514d31dcede90a415c9fee6bf585967d105e7d"
+  },
+  "BelloBox/Screenshot/ScrollSampleAnalyzer.swift": {
+    "bytes": 2747,
+    "sha256": "0eb6fcf8241589d0ac91d622307993cc1f3ce8f9b0ec99faf08d05eb3efed989"
+  },
+  "BelloBox/Screenshot/WindowCapturePicker.swift": {
+    "bytes": 4607,
+    "sha256": "30fa4d363abe5391ff645b7168edbe887960bba2e30bc4ef7f4d331816c8857f"
+  },
+  "BelloBox/Screenshot/CaptureDimmingView.swift": {
+    "bytes": 8126,
+    "sha256": "935374fc3af80326a0aff69ddd05d73a57dea9181b28b23d6cc23af76d0bc1dc"
+  },
+  "BelloBox/Screenshot/AnnotationRenderer.swift": {
+    "bytes": 17450,
+    "sha256": "65ebb19c59a347b79c21925e922a5d9d9a4df718b62182cde70eeec7257e8add"
+  },
+  "BelloBox/Screenshot/SelectionResizeGeometry.swift": {
+    "bytes": 6219,
+    "sha256": "2f5d4e5f061f0d80d7b0621d80ce2ceecfa9ea2b06830aea3f81eb46c8d41d9a"
+  },
+  "BelloBox/WorldClock/WorldClockCopilot.swift": {
+    "bytes": 15734,
+    "sha256": "c83d3ff187de5b9abfbd4c3a031524001e54613f66a6161ae57d533385406689"
+  },
+  "BelloBox/WorldClock/WorldClockAIResolver.swift": {
+    "bytes": 14486,
+    "sha256": "008000441a8622657476679dad0c599513c3ff58c835e8a85625f484d08d74f9"
+  },
+  "BelloBox/WorldClock/WorldClockModels.swift": {
+    "bytes": 9639,
+    "sha256": "929e54aa125c7eaaa0018965f1e2543fa9d1b55f16a96da3f40e6cffc786dfaf"
+  },
+  "BelloBox/WorldClock/WorldClockViewModel.swift": {
+    "bytes": 21758,
+    "sha256": "fdaac6fd30f3c70359b3bc000883dabf4247d8c1b76eefd4fcbdf7f1370f4eb7"
+  },
+  "BelloBox/Assets.xcassets/Contents.json": {
+    "bytes": 63,
+    "sha256": "0fd49ba3c3585c709678e0046a821c3c60685ec7063720d30d3a3448be3a208b"
+  },
+  "BelloBox/Diagnostics/DebugInfoCollector.swift": {
+    "bytes": 9765,
+    "sha256": "6f0fdadffdbee94ad96d8d1168ce120603193996f049e01a1bc79ce9962e594f"
+  },
+  "BelloBox/Selection/SelectionRequest.swift": {
+    "bytes": 1827,
+    "sha256": "84df75845c4b95394056b56f95e3e632cec72c8fe25c45f2ca643450acc57e86"
+  },
+  "BelloBox/Selection/AccessibilityService.swift": {
+    "bytes": 15277,
+    "sha256": "ad4bbe1627ff1343dc34773bc34acda61f9adb6bfd6ad86a91cb81a9075d9c60"
+  },
+  "BelloBox/Selection/SelectionMonitor.swift": {
+    "bytes": 8266,
+    "sha256": "5abc3348b6eeb3d2bf3682cfe6db889fc7cf107b6a582ba79192e63300e65e28"
+  },
+  "BelloBox/Settings/GlobalHotkey.swift": {
+    "bytes": 3740,
+    "sha256": "946e0ff77450bd67d6376a48aff4e17d1df7ba1e8d7a04cf82089cb98222c792"
+  },
+  "BelloBox/Settings/AppSettings.swift": {
+    "bytes": 42077,
+    "sha256": "886e2cb4aae696f0fffbdb62346ca20093fb7076439fbc371c50ee45563ef82e"
+  },
+  "BelloBox/Settings/LaunchAtLoginController.swift": {
+    "bytes": 488,
+    "sha256": "ba63fc62b89dbd3ee73b78c4a092764f57f6d1eae90e5b938b128e8949e127d1"
+  },
+  "BelloBox/Settings/KeychainStore.swift": {
+    "bytes": 2551,
+    "sha256": "7d261a79d11def9f3a6fe05444be2661c99ea6c087766073c4b126b177d2e9c5"
+  },
+  "BelloBox/Recording/Privacy/PrivacyGuard.swift": {
+    "bytes": 2420,
+    "sha256": "f16ff1caffdb1afcac36eee8228f8a4fd32c6b50704aaf9f9298fbc5c55a6ab5"
+  },
+  "BelloBox/Recording/Privacy/PasswordFieldDetector.swift": {
+    "bytes": 4730,
+    "sha256": "859a95031723c631f5e6ebf1b1d1d0801c9182ef7108e787f45e2afa33ce4d33"
+  },
+  "BelloBox/Recording/Input/RecordingInputMonitor.swift": {
+    "bytes": 12379,
+    "sha256": "1839226aa2b14d4572de2830f3119a494b9c625b6db9f1f6dbe894bbf7eb46a5"
+  },
+  "BelloBox/Recording/Input/InputMonitoringPermission.swift": {
+    "bytes": 314,
+    "sha256": "138c1048a69f5aff2b88ef7e1845aa5e58c3a2a26fc84b0e0b5f4932fede94bb"
+  },
+  "BelloBox/Recording/Input/InputOverlayModels.swift": {
+    "bytes": 956,
+    "sha256": "4be314afa054bcb6fa36930234499d37c4a22eade0a5318ec879df9fafa0a0bb"
+  },
+  "BelloBox/Recording/GIF/GIFTranscoder.swift": {
+    "bytes": 27807,
+    "sha256": "7628606696213e100ac9f59cf17c26517132620bf0ff7819c5d94ecc59813fe4"
+  },
+  "BelloBox/Recording/GIF/SyntheticMediaFixture.swift": {
+    "bytes": 9170,
+    "sha256": "ddf90d52d75f094c44fd1cf5b46f63a4df51ed52d2075554b20582f818e94191"
+  },
+  "BelloBox/Screenshot/OCR/OCRPromptTemplates.swift": {
+    "bytes": 1159,
+    "sha256": "4b299a329e70419a19c14b9689b6cbbda8509eddd26af14abee515eee31d4dc0"
+  },
+  "BelloBox/Screenshot/OCR/OCRImagePreprocessor.swift": {
+    "bytes": 7572,
+    "sha256": "d0224c060c4198e8b9fbb235a223915b04dd1501b3a71c6f1cc3d49cae04038c"
+  },
+  "BelloBox/Screenshot/OCR/OCRModels.swift": {
+    "bytes": 4762,
+    "sha256": "1d5799ce85ec70d93d69f4726b756ab21f9227d1b706da02409c1a47e26ecdf2"
+  },
+  "BelloBox/Screenshot/OCR/OCRBoundingBoxConverter.swift": {
+    "bytes": 3379,
+    "sha256": "8b9ef66df54ea4473054f19c12fa4cf2f66e163a7b3b07a771171fe204080a89"
+  },
+  "BelloBox/Screenshot/OCR/AIImageClient.swift": {
+    "bytes": 10927,
+    "sha256": "bf64c3a32b4b8e86f5f88d4929ce2c20099af17ddb189de45f0eec00067f70e6"
+  },
+  "BelloBox/Screenshot/OCR/OCRTileSegmenter.swift": {
+    "bytes": 2604,
+    "sha256": "e5a2bc23ab29a0a4ffa34170c304812ac6c871ab63363ec0350f926d6e4c4c67"
+  },
+  "BelloBox/Screenshot/OCR/OCRService.swift": {
+    "bytes": 121,
+    "sha256": "0d56f1716db756fc7a542bb270f244b17b048d673c20491853f567b13e1d6d79"
+  },
+  "BelloBox/Screenshot/OCR/MacVisionOCRService.swift": {
+    "bytes": 3907,
+    "sha256": "e5dfc1b7eb744582af9346c010dd5775ace34aba1a43c367debc58eaf36fd85f"
+  },
+  "BelloBox/Screenshot/OCR/LLMOCRService.swift": {
+    "bytes": 4107,
+    "sha256": "bb074890b559383c554c870232062dc1a6bbf8b209e8855d3c403cbd57a98180"
+  },
+  "BelloBox/Screenshot/OCR/OCRResultFormatter.swift": {
+    "bytes": 3355,
+    "sha256": "b4bb5d4442bcf4651d46ed6ef2608dcf821e113f2142888985aa573863502228"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_512x512.png": {
+    "bytes": 249663,
+    "sha256": "c97ddf762444e8b09980a41a1ad23e4f1501b4f774894239f06107fbdbc518cf"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_256x256.png": {
+    "bytes": 64779,
+    "sha256": "6805511e9975725ff9fb436d6824b9cda107c13e087ab9ba78b3832d25535a3f"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_512x512@2x.png": {
+    "bytes": 872176,
+    "sha256": "0e5e9016f379ef3900ff802c372f5066c6f48f7e2eeb7c714511b29ab7407145"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_32x32@2x.png": {
+    "bytes": 5743,
+    "sha256": "fcb0b667e2509bc922f53c4e0b513c60a0641a2d967b161baa207d7acdbd786f"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_32x32.png": {
+    "bytes": 2187,
+    "sha256": "a8e2d0e377cf538d897b6188483ea79a05a145001ce6f8474d1bc481612d3afe"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_256x256@2x.png": {
+    "bytes": 249663,
+    "sha256": "c97ddf762444e8b09980a41a1ad23e4f1501b4f774894239f06107fbdbc518cf"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_16x16.png": {
+    "bytes": 849,
+    "sha256": "1779baf9301ae569809bb30ff024a1af7dba0738a9563faf45662d785b177b70"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_128x128.png": {
+    "bytes": 17774,
+    "sha256": "38101e5012faba325359af9f40e481cc338c7a15fbf26fb1590f32d1e2a1dcdc"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_16x16@2x.png": {
+    "bytes": 2187,
+    "sha256": "a8e2d0e377cf538d897b6188483ea79a05a145001ce6f8474d1bc481612d3afe"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/Contents.json": {
+    "bytes": 1010,
+    "sha256": "c15520283c4d25fbe9e0bf871f5e6b8e608ce12c5995f38f82e85af865b1c6ae"
+  },
+  "BelloBox/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png": {
+    "bytes": 64779,
+    "sha256": "6805511e9975725ff9fb436d6824b9cda107c13e087ab9ba78b3832d25535a3f"
+  },
+  "BelloBox.xcodeproj/project.xcworkspace/contents.xcworkspacedata": {
+    "bytes": 135,
+    "sha256": "7f3b00b5c3fdb45242d7b87e1e5c4e25d1fa8129a16c94295ecc4e8ea2235c5f"
+  },
+  "BelloBox.xcodeproj/xcshareddata/xcschemes/BelloBox.xcscheme": {
+    "bytes": 3943,
+    "sha256": "4c52bb8f8f22125034c3166e17cfabbb8d69babdcac9df8d8594ecd0f2414dd7"
+  },
+  "BelloBox.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved": {
+    "bytes": 636,
+    "sha256": "7179a8e2e2547fb53b799efcca2cbeb7ec5fad9c4848e7dcea710566b7b17a14"
+  },
+  "rust/perf/test_measure.py": {
+    "bytes": 1758,
+    "sha256": "15cdbbeee6e49525cf225276c0d83dc2a61b6779736da22e3eebe534f6ab39e3"
+  },
+  "rust/perf/summarize_telemetry.py": {
+    "bytes": 1468,
+    "sha256": "0e16ec4a0c319deb15a52b96aef18420a479b41a5a78f070faa990b564189cb7"
+  },
+  "rust/perf/measure.py": {
+    "bytes": 4212,
+    "sha256": "c56c085f555a95f561ef08e12ef9bb112d40d6e819178d9f6b6b7f3aa5870ae8"
+  },
+  "rust/docs/native-alpha-oracle.md": {
+    "bytes": 8617,
+    "sha256": "9de616ff20e39d0b49702219469d95a118482330e138c39e9c8add3802578abc"
+  },
+  "rust/docs/frozen-area-core-evidence.md": {
+    "bytes": 14212,
+    "sha256": "94dd6129551bb57122094cb0d2cde3133e0a8402dcbdb5fe9d95b285772920c3"
+  },
+  "rust/docs/inline-area-editor-host.md": {
+    "bytes": 7433,
+    "sha256": "775e3b696f046ec24e1d18fa4dad9588933def9b09744903ea08ff2d70351cbb"
+  },
+  "rust/docs/text-count-unique.md": {
+    "bytes": 9042,
+    "sha256": "dcede14e97258aa56e3d21ea9402e3189b05c5919aa3f2778b700c53e0225616"
+  },
+  "rust/docs/native-window-catalog.md": {
+    "bytes": 8011,
+    "sha256": "ff2e9922dc2101c1c56fd3c11c829cfa587872357daf351de2533fe6d1439a80"
+  },
+  "rust/docs/window-capture-policy-evidence.md": {
+    "bytes": 2311,
+    "sha256": "598f371ca3a76627ef39ae119c1dc1ae6be0d07420d7327cd697e6ac7fcd9ecf"
+  },
+  "rust/docs/window-refresh-evidence.md": {
+    "bytes": 3170,
+    "sha256": "b7b4887511a47492ca2fb74eca314a27edeb0e6ad847d646c66d8c9e5bdf4383"
+  },
+  "rust/docs/native-window-capture-evidence.md": {
+    "bytes": 5421,
+    "sha256": "2a00196665893d0dac8726c32435886d55e2177793de4619082cc0e1e3dc246a"
+  },
+  "rust/docs/clock-copilot.md": {
+    "bytes": 4353,
+    "sha256": "0787c1f292ec3658de9c06a2a5328fa5e8ae7bf654003e5064a4643cde3d3f64"
+  },
+  "rust/docs/main-area-caller-reconstruction.md": {
+    "bytes": 8202,
+    "sha256": "7eab20bf2b94fdc68cc3fe205f536721a3b71a042e2736379fbcd06aec1fc4ab"
+  },
+  "rust/docs/window-refresh-host.md": {
+    "bytes": 6016,
+    "sha256": "049873c1f953fe8c3036931a0b3b9018a149154ea30ecf7832f4023bd43f1779"
+  },
+  "rust/docs/recording-output-settings.md": {
+    "bytes": 8610,
+    "sha256": "8872f1f4324adc82c64668519dff167aa75c201f5d1b957dfb89546438719d95"
+  },
+  "rust/docs/MIGRATION_HANDOFF.md": {
+    "bytes": 72570,
+    "sha256": "1d541ab404d809f6bb15d24bdf3af633d267edb886e4c8d66e6be5474beb7f83"
+  },
+  "rust/docs/gif-converter-host.md": {
+    "bytes": 11391,
+    "sha256": "1e655428081aa05cef4001fcc93cb441b01384724692cd4523c54da5c1e52c6a"
+  },
+  "rust/docs/window-overlay-host.md": {
+    "bytes": 7733,
+    "sha256": "dcd1259453a95af0b8d114568fa8742fb1812579e4decd2d4ff008ce3423cf0c"
+  },
+  "rust/docs/regex-workflow.md": {
+    "bytes": 8768,
+    "sha256": "33ba3ce63aab58ddd856ae5fb1c23ea58c2b88fab43c7014efd2ae18929f970e"
+  },
+  "rust/docs/movie-preview-host.md": {
+    "bytes": 11320,
+    "sha256": "a7a5656a2776dcbdc456576125b3990becd039f6fe8dc1e062bc26b26ea8be6f"
+  },
+  "rust/docs/scroll-session-evidence.md": {
+    "bytes": 10742,
+    "sha256": "b8d2ab6e5ad6efa511ff5de89100b3e5aaaafcb69506c67e9e7568dab16a9f8c"
+  },
+  "rust/docs/native-movie-sparse-reader.md": {
+    "bytes": 4767,
+    "sha256": "4b4c35bda0cb4cf790def57d2b23d64b3322a7dc2364961324daa02d9781fd5a"
+  },
+  "rust/docs/qr-responsiveness.md": {
+    "bytes": 5095,
+    "sha256": "4cc054fd83bed07c0aae571c13f7cf783d30006b2feebf5e7774bbf12e611e29"
+  },
+  "rust/docs/native-capture-evidence.md": {
+    "bytes": 14100,
+    "sha256": "8040bd37c6d7a779db1e38d030c248f65053ec70157b617fa86294f904e226e6"
+  },
+  "rust/docs/swift-comparison-attribution.md": {
+    "bytes": 3926,
+    "sha256": "9644e826effb262a70384a4f52d4b73c790a1a95d9e4354bc066c3b0618162c7"
+  },
+  "rust/docs/ui-parity-review.md": {
+    "bytes": 16370,
+    "sha256": "aba94c2eb153481d2f4caddc8a5a53c45e334bebf96f9edf9af67b4d25c0d548"
+  },
+  "rust/docs/recording-owned-host.md": {
+    "bytes": 8036,
+    "sha256": "421deb13a0323eb9e0b9a38ee125ace9ceaf2e045536370da36988e7b656316e"
+  },
+  "rust/docs/gif-portable-pipeline.md": {
+    "bytes": 12892,
+    "sha256": "c9a978410cab46402051d4e1d73647d3759ab7ec00271fb73b081287935a839c"
+  },
+  "rust/docs/generation-preferences.md": {
+    "bytes": 2846,
+    "sha256": "1d5bd67e744e1f7eca5f478e118b6ae795f6b416af7efb4fa0a934ca4d65631d"
+  },
+  "rust/docs/window-backend-host.md": {
+    "bytes": 9251,
+    "sha256": "0f144661d74c960af5c9425b7fd71f6aa3fb9dcb2869b834ba9255bd4f90c600"
+  },
+  "rust/docs/ai-ocr-host.md": {
+    "bytes": 12736,
+    "sha256": "ef57f05d11b48baa2f4b615d68f8e119f273f205528bf258f27bfe396131a90e"
+  },
+  "rust/docs/comparison-workflow.md": {
+    "bytes": 7874,
+    "sha256": "f2fcbdfa3b409b995073389b912706e2c20bf9a627f22582fd6b87a9b175e46b"
+  },
+  "rust/docs/performance.md": {
+    "bytes": 3389,
+    "sha256": "2b6a6cdc9589ce35b7600c129a0b7047cf420dc2174e21543643e0b6463776e8"
+  },
+  "rust/docs/palette-json.md": {
+    "bytes": 9497,
+    "sha256": "3f9465a7e45849bdd7ac767f8900471f99855a07c7ac6be93af48be6b56bc776"
+  },
+  "rust/docs/url-workflow.md": {
+    "bytes": 7731,
+    "sha256": "0b08c8845c8e0080c1cd15749a8612e854516e769d62c8a163f14e573c69fa4a"
+  },
+  "rust/docs/bellobox-parity.md": {
+    "bytes": 85452,
+    "sha256": "ab6261f3e3a96a55141c2cc09e9325682bffe58e088197fe2b9a91b43624fec5"
+  },
+  "rust/docs/palette-clock-copilot.md": {
+    "bytes": 4986,
+    "sha256": "af7bf763ffcc5b415b737beeecfd41b3a196ad9343d05f82aa8dd38f44d5fe4a"
+  },
+  "rust/docs/clock-copilot-plan-evidence.md": {
+    "bytes": 1919,
+    "sha256": "7850eb94fe3d2bd81da454d989fc90efb3b2d52db11212c7e75a0eade8cc21f0"
+  },
+  "rust/docs/frozen-window-selector-evidence.md": {
+    "bytes": 3505,
+    "sha256": "ea8cf3579434f89b5dd95e58236343e8e83277185d967b8e91f141e5aa3b9231"
+  },
+  "rust/docs/linux-build.md": {
+    "bytes": 4860,
+    "sha256": "35c1f9e7de66cec68ad8aa0f2a567e731e9839d308c6a35e17202b6efecd6ed9"
+  },
+  "rust/docs/area-presentation-deactivation-evidence.md": {
+    "bytes": 2394,
+    "sha256": "f8a2b4f46d125286f00083e20a664ef45bbc2f1343e045ff3d4d4bda33dfb111"
+  },
+  "rust/docs/palette-qr.md": {
+    "bytes": 8458,
+    "sha256": "93ad9391f3d02ac3294f7cee8cf04dffcc1deea5ce42c97482da03ca0f08a1fc"
+  },
+  "rust/docs/palette-text-tools.md": {
+    "bytes": 7332,
+    "sha256": "c9ca4cf061c84974e0b46c06033276fd5d13f9fe9f0fb0d334883694f8629b01"
+  },
+  "rust/docs/native-movie-reader-reconstruction.md": {
+    "bytes": 12585,
+    "sha256": "7e9ca8d1464e2a33a5baaa214b2520ac87dc5334380edbfe443034905789dc9f"
+  },
+  "rust/docs/cloud-dialog-acceptance.md": {
+    "bytes": 7787,
+    "sha256": "5f2650808496b7a92d5958bdadca4e7bc886fc3ca2a714c7c751d1daf6c5ce2b"
+  },
+  "rust/docs/palette-clock-copilot-presentation.md": {
+    "bytes": 3696,
+    "sha256": "6c825391210c870f76e5bd88cefbcc4d9da4db3d804798269294387cb3c0eb9d"
+  },
+  "rust/docs/native-capture-encoding-evidence.md": {
+    "bytes": 9168,
+    "sha256": "9c9829c50e607763e4d01a9eabaa0f951635062788596ff732bc1f5ad1990e45"
+  },
+  "rust/docs/owned-area-overlay-evidence.md": {
+    "bytes": 1955,
+    "sha256": "c05e217b6b3db4b2d4924fd4fdfb670ca39d6ca3e68fcd293c8b6ffb3b851712"
+  },
+  "rust/docs/preview-image-retirement.md": {
+    "bytes": 2859,
+    "sha256": "a4f4f94b0e73ba83310b5b37421f0b51cf7fd5a10b9153ea17d9e06ec3de26d2"
+  },
+  "rust/scripts/test_package_bellobox_macos.py": {
+    "bytes": 6651,
+    "sha256": "b66687995d91892d5b23ad72564458005dd7608e7beb0ddfac0092bc7e6ddb64"
+  },
+  "rust/scripts/verify-movie-preview-loc.py": {
+    "bytes": 2992,
+    "sha256": "cb96611d0a214ed7dd009544b998819204f996e79e9f7aba20d9b4110f01ba5c"
+  },
+  "rust/scripts/validate-bellobox-macos.py": {
+    "bytes": 5802,
+    "sha256": "f917629e09b218a46380de98484a381ec499d39013eefb4a884fc0260faaafc1"
+  },
+  "rust/scripts/linux-ui-smoke.py": {
+    "bytes": 13502,
+    "sha256": "0f791ba68831d7ea2c0f33f9a5e7fefa9d3116f6d063713176963b5aec9ff5ee"
+  },
+  "rust/scripts/check.sh": {
+    "bytes": 272,
+    "sha256": "7b38d274711311de8d8bde55a68c8eb24a982747191754fe5c86c3cf6d53a1b9"
+  },
+  "rust/scripts/package-bellobox-macos.sh": {
+    "bytes": 2343,
+    "sha256": "6b4e0b83bad19930f5379ea410921e86097ce00d8d3c233ee4f2be9599e0e62b"
+  },
+  "rust/scripts/test_linux_ui_smoke.py": {
+    "bytes": 8398,
+    "sha256": "6e17d4e2f3ed2b08931a7942798325df3f3fb0760ab6a0a6d1d3a588efd0cc7b"
+  },
+  "rust/docs/handoff-recovery/worktree-audit.json": {
+    "bytes": 6894,
+    "sha256": "10ccbf176c745510e211be7bfdd82827ede4ac386ae02aefdf311ac005e2ea19"
+  },
+  "rust/docs/handoff-recovery/INCOMPLETE-native-alpha-validation.patch": {
+    "bytes": 16085,
+    "sha256": "4378cce0ea315889dab15745530b6ce6d087bcd844a87d0ed331eb88e1057c03"
+  },
+  "rust/docs/handoff-recovery/alpha-wip.json": {
+    "bytes": 543,
+    "sha256": "707e1be6f522b3a160c6d20a5d9ea42ea57464cd043f95998a96becb36252bb2"
+  },
+  "rust/docs/handoff-recovery/historical-variant-2.patch": {
+    "bytes": 2327,
+    "sha256": "3d6dc3679d630ef62cdf021a3ed443bf3e7eb42fdd9482135865e8f6ca13c2c2"
+  },
+  "rust/docs/handoff-recovery/historical-variant-4.patch": {
+    "bytes": 169,
+    "sha256": "3fe5435edc807a807b2020ef7098e65248c67c95bcedf116d6a8d2d5b113f5fd"
+  },
+  "rust/docs/handoff-recovery/historical-variant-3.patch": {
+    "bytes": 292,
+    "sha256": "ecd42fa26d7f54917fab0287f303466b8eb158180e5da53cfefac13bb38eb759"
+  },
+  "rust/docs/handoff-recovery/historical-variant-5.patch": {
+    "bytes": 407,
+    "sha256": "2d0438341912434edfd0470cd7e8a0ac089ba9911ff4a5dba77b93258f873d39"
+  },
+  "rust/docs/handoff-recovery/README.md": {
+    "bytes": 962,
+    "sha256": "f34d8314bb3eacdc63bfa183acb817bb14d4986d2e851aff15356a3b6c190af7"
+  },
+  "rust/docs/handoff-recovery/historical-variant-1.patch": {
+    "bytes": 1586,
+    "sha256": "db9e78beaa373d41a90f96f05fe63be9e53141333590d58563e9330ff64131a3"
+  },
+  "rust/docs/handoff-recovery/source-survival.json": {
+    "bytes": 33353,
+    "sha256": "64f874fb9aa2feff3b03bf1bc48deee56bb939b6bfbcb07b54d0ac3fe9940037"
+  },
+  "rust/docs/licenses/swift-runtime-LICENSE.txt": {
+    "bytes": 11751,
+    "sha256": "770af8291f708538d8ff885a0bbc4e045cd700531741c4f99528d435c14d7f55"
+  },
+  "rust/crates/bello-workbench-ui/Cargo.toml": {
+    "bytes": 349,
+    "sha256": "85551129fcb904d1cd6b36fa5e08a117747037d45d9941bdd5df3872d8609470"
+  },
+  "rust/crates/bello-workbench-ui/README.md": {
+    "bytes": 4420,
+    "sha256": "5c6e375d092fd2c0613fad1b1c8ef6b308276a3aef61c0b33ef841459862801e"
+  },
+  "rust/crates/bellobox-app/Cargo.toml": {
+    "bytes": 1200,
+    "sha256": "75cb430e13046b381c69a2d710c0e08c19b438d87cce270f2b607a376a1bcad4"
+  },
+  "rust/crates/bello-workbench/Cargo.toml": {
+    "bytes": 261,
+    "sha256": "5004dd1a418fef74ba6ff9a772b99945b9221075b9438a682736be6d70f17f16"
+  },
+  "rust/crates/bello-workbench/README.md": {
+    "bytes": 4245,
+    "sha256": "46711470ba57b20e6ef40ca52449ca30d13667f4a0c2ad53c7257f02642ae664"
+  },
+  "rust/crates/bello-platform/Cargo.toml": {
+    "bytes": 2265,
+    "sha256": "cc784f18b679cd60bc63ae4d56f3ba951c05a7db539bade330b00e355f744862"
+  },
+  "rust/crates/bello-platform/README.md": {
+    "bytes": 5672,
+    "sha256": "a316ad405994a8318e108a18a12116e999560dcce5b2128a9b0cd016e9dd8cdb"
+  },
+  "rust/crates/bellobox-core/Cargo.toml": {
+    "bytes": 1170,
+    "sha256": "58394f489beb2c787a4a86b2d4325def9202f04c76858857e738365d6b77661e"
+  },
+  "rust/crates/bello-workbench-ui/src/text_presentation.rs": {
+    "bytes": 4762,
+    "sha256": "ee9ceeb559880cac8f23220d1c13a624fc2c4db88147d4424865ace434549fac"
+  },
+  "rust/crates/bello-workbench-ui/src/editor_view.rs": {
+    "bytes": 75852,
+    "sha256": "dd0a48c8e7e1cfdba17cce57a3c212c6a3efff832fb9fd9588756b1786bed0f9"
+  },
+  "rust/crates/bello-workbench-ui/src/workbench_view.rs": {
+    "bytes": 41637,
+    "sha256": "6eaf346fe8e84037e430e29a2edd6aa7d56568bbc1ff846760455c92890c64ce"
+  },
+  "rust/crates/bello-workbench-ui/src/appearance.rs": {
+    "bytes": 7216,
+    "sha256": "8aac810ff8f066c4848d1d0261aa220317a2ee77faba1ca46a284a652cd93e78"
+  },
+  "rust/crates/bello-workbench-ui/src/wrapping.rs": {
+    "bytes": 5349,
+    "sha256": "36c3ddbe2109f915b0dd5a5f16d7dd275046adb11d44892cc01dcdb8e0d2fd29"
+  },
+  "rust/crates/bello-workbench-ui/src/telemetry.rs": {
+    "bytes": 10250,
+    "sha256": "c6b15582c7948e544645c179810596842d6b9b3678055a420112377f5df931cd"
+  },
+  "rust/crates/bello-workbench-ui/src/lib.rs": {
+    "bytes": 715,
+    "sha256": "23e57b6010a45aa4ca2be0960c396907069a566dd1fa7ea8f535a09c0d050a3e"
+  },
+  "rust/crates/bello-workbench-ui/src/editor_presentation_tests.rs": {
+    "bytes": 20557,
+    "sha256": "b024ad91b362f8b98e23095b6f2d70ede8a889708d953529913a5d522d266736"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui.rs": {
+    "bytes": 143893,
+    "sha256": "ea18ee8a2451999cc32fd5f2283b746c74129bc75e969625fa563ac231999c78"
+  },
+  "rust/crates/bellobox-app/src/compare_ui.rs": {
+    "bytes": 27975,
+    "sha256": "fcdb5fa20ad47b6d4f2a97ad343ae0d35712e3bfc1bb840fff4a4b11ec1ed650"
+  },
+  "rust/crates/bellobox-app/src/launcher_qr_ui.rs": {
+    "bytes": 26483,
+    "sha256": "0e53442ea59b863fbefa8b737201906d05a68425abbb66187bf3196762de8f34"
+  },
+  "rust/crates/bellobox-app/src/desktop.rs": {
+    "bytes": 93850,
+    "sha256": "9d0fb0a7a0c97cb9b6f549f22ad382b66d5527447a3127f90f1f0542b7927dcc"
+  },
+  "rust/crates/bellobox-app/src/launcher_json_ui.rs": {
+    "bytes": 10212,
+    "sha256": "85d8f56c57304e798124e66c3b45b7cf221e842c539610a15747e7e44a9e52e2"
+  },
+  "rust/crates/bellobox-app/src/world_clock_ui.rs": {
+    "bytes": 83106,
+    "sha256": "6ab3809332affc39c29adb895b2ae0de180aec281bf75b8cd9a34941182a5a66"
+  },
+  "rust/crates/bellobox-app/src/http_session.rs": {
+    "bytes": 7358,
+    "sha256": "eea2b0e9b2b083b4f06ba9d0e82d2cf51ee893a3523f607e4d275490ae4ab383"
+  },
+  "rust/crates/bellobox-app/src/http_ui.rs": {
+    "bytes": 30508,
+    "sha256": "653c7e34f1c1fc03101deb14a06cf6e6ba952e652c4f1537dd3dd458548c86fe"
+  },
+  "rust/crates/bellobox-app/src/clock_copilot_worker.rs": {
+    "bytes": 5503,
+    "sha256": "57d2fad53bc9a75068c063a03514c7d619ac348f553c394fcde8026209659563"
+  },
+  "rust/crates/bellobox-app/src/qr_clipboard.rs": {
+    "bytes": 1653,
+    "sha256": "778d881a4dc7a596ddde97f698a6906fad0d0634d607becc601f0af34dd87278"
+  },
+  "rust/crates/bellobox-app/src/launcher_text_ui.rs": {
+    "bytes": 17415,
+    "sha256": "e6d66b9aeea3fa283bb7a4a63e76b622602a44de16b108664f0ce5f01a8d0b39"
+  },
+  "rust/crates/bellobox-app/src/snippet_library.rs": {
+    "bytes": 7008,
+    "sha256": "6e9f958b47e871b7f7b96a64c4f20b3fd77698d4d031bead91ba0045e30c5c5f"
+  },
+  "rust/crates/bellobox-app/src/main.rs": {
+    "bytes": 11240,
+    "sha256": "c85d563ded5076c7a93772d939c3d8e9c22dcff545584fc388c5ef65b5c463f0"
+  },
+  "rust/crates/bellobox-app/src/launcher_clock_ui.rs": {
+    "bytes": 42278,
+    "sha256": "55d3d665985b1ee061f73633abc5e4fcd343e7ea4c5db3320021c4e7d5a10ea2"
+  },
+  "rust/crates/bellobox-app/src/transport.rs": {
+    "bytes": 6312,
+    "sha256": "71345e192075863e3863ea67c18dc1b2f1fd53afe68245d97d2ccf80ecbadb33"
+  },
+  "rust/crates/bellobox-app/src/recording_ui.rs": {
+    "bytes": 11849,
+    "sha256": "1f8d800ade12269fa144cbc46a5e343361bdb07d06046096a0177281a057b8cd"
+  },
+  "rust/crates/bellobox-app/src/comparison_session.rs": {
+    "bytes": 8042,
+    "sha256": "ef5b014975e7cde45670f941cae6c7ca46526a59dfec46d38e69261dd8bf84d4"
+  },
+  "rust/crates/bellobox-app/src/launcher_ui.rs": {
+    "bytes": 75049,
+    "sha256": "c916da2a9dd4b6a51cb493b68ec3a137b7c0e439503a7760002fc70eee5f7de4"
+  },
+  "rust/crates/bellobox-app/src/image_disposal.rs": {
+    "bytes": 1326,
+    "sha256": "7943005ca34ca01b75bb60e920fb09ddf9c7735209f0b42bd3ba9f164a32bfc7"
+  },
+  "rust/crates/bellobox-app/src/text_tool_state.rs": {
+    "bytes": 44421,
+    "sha256": "5056e4fa984ac34bc1c2b4f21e77ef3078c2734e72dabdf4e8a83ebd948633e0"
+  },
+  "rust/crates/bellobox-app/src/gif_converter.rs": {
+    "bytes": 29509,
+    "sha256": "3a49d85b5183cfd7ccf9795b67f2676560e8661cdc329901eadc9fe9beb3a294"
+  },
+  "rust/crates/bellobox-app/src/settings_ui.rs": {
+    "bytes": 63972,
+    "sha256": "3e972cf876a0e2a716878707d5acbfbc2a6c13c88ac78a64738ec399ec9a4169"
+  },
+  "rust/crates/bellobox-app/src/json_session.rs": {
+    "bytes": 16291,
+    "sha256": "ed3593abe87294732b8b29e505346e1c9ab86e1db3b57ed6cf816eb93fcbbe7d"
+  },
+  "rust/crates/bellobox-app/src/regex_session.rs": {
+    "bytes": 9321,
+    "sha256": "6869f9ba8f23d43a41758b06229af2787b99b6938fd8cc8f19b10946320100e5"
+  },
+  "rust/crates/bellobox-app/src/qr_input.rs": {
+    "bytes": 747,
+    "sha256": "a46d82103610456fc5ef68379984ffa8aa73dd869b7c7e11128f0d7d54d9be3e"
+  },
+  "rust/crates/bellobox-app/src/shutdown.rs": {
+    "bytes": 16617,
+    "sha256": "a90f191f5760b618fc61df75de4d844e0c95226407bbd2a3b8dd5f0806be01f7"
+  },
+  "rust/crates/bellobox-app/src/theme.rs": {
+    "bytes": 4417,
+    "sha256": "ca71c7a15f1d159715b86753974998624f83d6e5e527ae01eb0dd43c6b6b0e02"
+  },
+  "rust/crates/bellobox-app/src/clock_preview_session.rs": {
+    "bytes": 19869,
+    "sha256": "5e27f1506b37fa5ab6c7f77874d68c99a3c0915354ed676b0734365c878cce93"
+  },
+  "rust/crates/bellobox-app/src/url_ui.rs": {
+    "bytes": 26484,
+    "sha256": "dedceb94097aca1aaa136192558236de2e4ba8c35688df091f5668001f4fb927"
+  },
+  "rust/crates/bellobox-app/src/screenshot_color.rs": {
+    "bytes": 2989,
+    "sha256": "966178dd37506c780e86e12c0ee76ed5c4dcf441a6438fdd4eb6217e0e57444c"
+  },
+  "rust/crates/bellobox-app/src/tool_controls.rs": {
+    "bytes": 13424,
+    "sha256": "7bfe7a7933a49cb853682dec7d93bce6e1f7df0a3b2af923067881379b0a3072"
+  },
+  "rust/crates/bellobox-app/src/home.rs": {
+    "bytes": 87052,
+    "sha256": "a16096f0553462f671d917d53f130fd5bec697ff2b314f49d0e5f2e535883f28"
+  },
+  "rust/crates/bellobox-app/src/session.rs": {
+    "bytes": 2613,
+    "sha256": "0605bb82284c782622d00b56cac001e615cf3af71b7b685bc7bbce55ba540fa8"
+  },
+  "rust/crates/bellobox-app/src/regex_ui.rs": {
+    "bytes": 29450,
+    "sha256": "6960efee18817b65b680bee8a6d1b40e11da08e162d1a71bff6c87b57e8b1c95"
+  },
+  "rust/crates/bellobox-app/src/launcher_clock_ui/copilot.rs": {
+    "bytes": 21248,
+    "sha256": "353dd08c08580c5f09fb7839574e33cb0941cde99ae4156353c52aa0fa13cc5b"
+  },
+  "rust/crates/bellobox-app/src/regex_ui/tests.rs": {
+    "bytes": 15949,
+    "sha256": "0f0b52c9e703408db3c25bededdd429d35b4804610a1975adb4b9f17cd63808f"
+  },
+  "rust/crates/bellobox-app/src/world_clock_ui/copilot.rs": {
+    "bytes": 19371,
+    "sha256": "2575781429e76e5d4d1ba4d68185a0e03ae81f0bebbcd7b9e21801d39a31946b"
+  },
+  "rust/crates/bellobox-app/src/regex_session/tests.rs": {
+    "bytes": 6476,
+    "sha256": "244535c9f05d1a3c776f2f9334e8f6127d693855458112e3560b9d10e860a2a6"
+  },
+  "rust/crates/bellobox-app/src/http_session/tests.rs": {
+    "bytes": 5849,
+    "sha256": "b033dd4aed1116eb1451f3d4edf77c9acb6e5c12c2f483450d3a847c8128b94e"
+  },
+  "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs": {
+    "bytes": 15296,
+    "sha256": "92f9d1ce762a9f7391f6ff1ef3f154f49cb1daf44d8f885a36b016930758300e"
+  },
+  "rust/crates/bellobox-app/src/launcher_ui/text_tests.rs": {
+    "bytes": 7848,
+    "sha256": "a5e02611fdb9b327db9259602f98ce68298c78096279d7a84fea6fc55f7d1d08"
+  },
+  "rust/crates/bellobox-app/src/launcher_ui/json_tests.rs": {
+    "bytes": 8819,
+    "sha256": "4f9944f48844aa28902b84ee4d55853671fa56c4baeedc23fa48bb686c0b52e9"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/quit_tests.rs": {
+    "bytes": 24358,
+    "sha256": "1e875393b96616419724b66984973a3ab03b6568be2e381ebc05e43fdd99e92c"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr.rs": {
+    "bytes": 39541,
+    "sha256": "f255de436f7b171a1954d56aa9f3bd510ecee5af37b6ed6cad3bb6f720f96093"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/scroll_capture.rs": {
+    "bytes": 17426,
+    "sha256": "92fb7e80978067fc237d76c49e6046e6c00d6df1c56e8644a9cee81f14ce62e8"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/area_transaction.rs": {
+    "bytes": 8990,
+    "sha256": "cb476c815c18152a48b0125dfb6a78b0ccfdd4be33e02111fb1bd0c0349bbd4e"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/inline_area.rs": {
+    "bytes": 23857,
+    "sha256": "787667a9de1c2bb97f07b6d0ae6826f150a5b78fedf123b43de641161c03a47e"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/area_capture.rs": {
+    "bytes": 40319,
+    "sha256": "dc5b0a5565f0ccccda6ff81f5330de4cecba51be275cd24111f6a5c312de9c2a"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/main_area.rs": {
+    "bytes": 33338,
+    "sha256": "f4dcde722d18876cf08183460250d11f77bba9e2c525cfdc8715a0901ba8e76e"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/window_refresh.rs": {
+    "bytes": 14571,
+    "sha256": "38fa834803a0403a7e1119cb7c0e689ef9371cff64c6ccfe14a44122a5626239"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/window_workflow.rs": {
+    "bytes": 29251,
+    "sha256": "52849c319c8dfd502117a9980c52c58c07019a5bc27cf7cd9e4b957511a0d327"
+  },
+  "rust/crates/bellobox-app/src/shutdown/tests.rs": {
+    "bytes": 22392,
+    "sha256": "73237d501205e4aebb77357a6250c122beba2181892dfd36d209cf3ef5e3b1b7"
+  },
+  "rust/crates/bellobox-app/src/shutdown/quit.rs": {
+    "bytes": 11565,
+    "sha256": "2ff12993df0408888ad1eae2c92b98b17b1a567281fe1cc3c864bf1a879a4918"
+  },
+  "rust/crates/bellobox-app/src/desktop/quit_tests.rs": {
+    "bytes": 2519,
+    "sha256": "bda9373462626269ce33cc75dbb721039a2e59ea80f0b69d359d3731942ed8f0"
+  },
+  "rust/crates/bellobox-app/src/desktop/qr_jobs.rs": {
+    "bytes": 5588,
+    "sha256": "bbc0f1e40b246a525c39aa8fbfc3672c200b1aec92abd25e6fc7f42163be5f97"
+  },
+  "rust/crates/bellobox-app/src/desktop/ai_updates.rs": {
+    "bytes": 3462,
+    "sha256": "655605c786161f3d609f11f3bed7da72990dc731d23686fc7fb51059f397ae89"
+  },
+  "rust/crates/bellobox-app/src/desktop/text_tools.rs": {
+    "bytes": 11151,
+    "sha256": "548064b13d90cfcfeb05fc9ac36ffb2d4a0abe9745a3cf14a5ae554b7d69c429"
+  },
+  "rust/crates/bellobox-app/src/desktop/snippets.rs": {
+    "bytes": 13926,
+    "sha256": "78a5b95aed01f6641131e13ddd2c6ee1bafee548e0373cae074997baa40a896e"
+  },
+  "rust/crates/bellobox-app/src/desktop/json.rs": {
+    "bytes": 3836,
+    "sha256": "1191cecc2ef824c397e81f95fb57252991154d1d0a38085b4e17f15b7c6b9dec"
+  },
+  "rust/crates/bellobox-app/src/desktop/qr_clipboard_tests.rs": {
+    "bytes": 17831,
+    "sha256": "94433a6e2ea71a42ecc410cdb13300c91e660c810b7d9b41392d712206520508"
+  },
+  "rust/crates/bellobox-app/src/desktop/permissions.rs": {
+    "bytes": 11641,
+    "sha256": "1dc72d0ed174278d842096992d1137d41094754cda3530fd95364627a706c4d1"
+  },
+  "rust/crates/bellobox-app/src/comparison_session/tests.rs": {
+    "bytes": 7537,
+    "sha256": "3d3b9843c6ce6c4151f79e081a06f2114dee707714e62965f43fa51af9dca735"
+  },
+  "rust/crates/bellobox-app/src/url_ui/tests.rs": {
+    "bytes": 10652,
+    "sha256": "64295c85f02203cd246472777c2d51de218dd2d0e0a8ef49544b815411633a1e"
+  },
+  "rust/crates/bellobox-app/src/recording_ui/controller.rs": {
+    "bytes": 4703,
+    "sha256": "de8726474bfb39187e3d9e6ff82563ad9ebc9a75737ac557e70ab01d49b76cd9"
+  },
+  "rust/crates/bellobox-app/src/recording_ui/tests.rs": {
+    "bytes": 15225,
+    "sha256": "c9633719aaa88f5fe9098cc84d9cedac58740190846c4461b530c1b010513086"
+  },
+  "rust/crates/bellobox-app/src/compare_ui/words.rs": {
+    "bytes": 13226,
+    "sha256": "f8d3a9386d01575715389f1d2897e9b12f4edb5949fdb6f2b2d011c3e1cb5314"
+  },
+  "rust/crates/bellobox-app/src/compare_ui/tests.rs": {
+    "bytes": 19928,
+    "sha256": "5b5f12e52e89dd3553bd0e1ea6d7da35d398d001d113a9450802087c7e77802a"
+  },
+  "rust/crates/bellobox-app/src/gif_converter/source_preview.rs": {
+    "bytes": 8695,
+    "sha256": "c76d8129cc54925a53e80fddfa153346f1d1b325c4dd2c56e15531025463bb21"
+  },
+  "rust/crates/bellobox-app/src/gif_converter/model.rs": {
+    "bytes": 19337,
+    "sha256": "c590fc7458d60fd896a216a04f75e78d631c1a5f7c12949b09ef6a3ae5ad857a"
+  },
+  "rust/crates/bellobox-app/src/gif_converter/disposal_tests.rs": {
+    "bytes": 8114,
+    "sha256": "9c161b5b88708db59a05a6e2e9b5466a59a453318ac53a9dbe7f41da0baefeca"
+  },
+  "rust/crates/bellobox-app/src/gif_converter/recording_tests.rs": {
+    "bytes": 18379,
+    "sha256": "2832651b65766516acbe1c0ed8d2239ee64ae339d093c8b338d6943680c8b2e5"
+  },
+  "rust/crates/bellobox-app/src/gif_converter/preview.rs": {
+    "bytes": 7776,
+    "sha256": "0f19cf930dbfe101dec4c5f82e39a1e6a25da6655945257ba251ff9e84b1c938"
+  },
+  "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs": {
+    "bytes": 18469,
+    "sha256": "1aedf5ae38024df0c86d803bb5f2a47565e35289915cdf6004a8b6c172e19cd5"
+  },
+  "rust/crates/bellobox-app/src/gif_converter/tests.rs": {
+    "bytes": 37045,
+    "sha256": "ad7e667fc2e26051f47a8435a78127d48a3a761f067d8dc1d7579f25c3a973f3"
+  },
+  "rust/crates/bellobox-app/src/gif_converter/recording.rs": {
+    "bytes": 15801,
+    "sha256": "1c8d61ec64c5287236d46aef7fe6d9f27b45b0a65ac9b49d3acd7ac4725096e7"
+  },
+  "rust/crates/bellobox-app/src/gif_converter/worker.rs": {
+    "bytes": 7152,
+    "sha256": "354665aee47fbde2b35b78c1811a69b2619d043d6750f8d7a2c15c9a8a53474a"
+  },
+  "rust/crates/bellobox-app/src/settings_ui/quit_tests.rs": {
+    "bytes": 10898,
+    "sha256": "8d563c9ee244997a5e094d4f0fcc1f25baa9065f34f4ac4da9f8e9e0c1aef18d"
+  },
+  "rust/crates/bellobox-app/src/settings_ui/generation.rs": {
+    "bytes": 18372,
+    "sha256": "63b3a7709f71273bbe590b41e90279147cefd747e13c68e17e6153ea82b5c4d8"
+  },
+  "rust/crates/bellobox-app/src/settings_ui/setup_tests.rs": {
+    "bytes": 13020,
+    "sha256": "d7edcd35430d393fc8a5476a7024c50f74f00d27dea780cb7907fe9bd34008bf"
+  },
+  "rust/crates/bellobox-app/src/settings_ui/provider_setup.rs": {
+    "bytes": 13145,
+    "sha256": "8bad433e50f8af6debbb6afe74859d7e99ff0ee641e16f127420734e80ae8b55"
+  },
+  "rust/crates/bellobox-app/src/http_ui/tests.rs": {
+    "bytes": 10889,
+    "sha256": "a17528dd59e5ee30e04cff114a8c959a7ef31fe95d2902635db18aaa89f67dbe"
+  },
+  "rust/crates/bellobox-app/src/launcher_qr_ui/tests.rs": {
+    "bytes": 18923,
+    "sha256": "f0319f4a442fd21430936aa9b8388ed227172bd5f33e07ac5eaf4c4ec55c3722"
+  },
+  "rust/crates/bellobox-app/src/transport/http_request.rs": {
+    "bytes": 6951,
+    "sha256": "4cb539b89dc43a4c1102f2066f39dd49b037877096838cbff31fa3f1d677095c"
+  },
+  "rust/crates/bellobox-app/src/transport/generation_tests.rs": {
+    "bytes": 2106,
+    "sha256": "6c1e1a248203d0076d3385d90d28361e972fb1bfd0e61875ce6686f2a387547e"
+  },
+  "rust/crates/bellobox-app/src/transport/image_ocr.rs": {
+    "bytes": 7787,
+    "sha256": "944c1383a001c30ac215c6be4a1c0e8085b1610ac47187aadec97d14b5211966"
+  },
+  "rust/crates/bellobox-app/src/transport/provider_setup.rs": {
+    "bytes": 17119,
+    "sha256": "3d8aaa8e5049994bfda8848a592538df1f3ead6b8635d4a0639f372f5ab38327"
+  },
+  "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/presentation_tests.rs": {
+    "bytes": 7614,
+    "sha256": "babaae70c575664af544f6898c493793f73d60afcf1b1c5319fead06abea254b"
+  },
+  "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs": {
+    "bytes": 15648,
+    "sha256": "ba7f979d6be8654678bf4abe10cba4c2ee075db731fad3b86bb514c502276082"
+  },
+  "rust/crates/bellobox-app/src/world_clock_ui/copilot/tests.rs": {
+    "bytes": 46892,
+    "sha256": "068c98eb551954dd49a5655a6887d2bb76321616bfcab1285e285913a370325a"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/window_refresh/tests.rs": {
+    "bytes": 12404,
+    "sha256": "86bf0e6a8ee1bf1725e26b510ba490c9cd285d961a560ecb8120e2ea3c1fa9f2"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector.rs": {
+    "bytes": 30786,
+    "sha256": "379503c6d3155ca4e9918548fc0b43ee194b1c8825e7a5d8338838c8cb058f85"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/main_area/tests.rs": {
+    "bytes": 14165,
+    "sha256": "c92f3e5009df589c8e26aca06c062798e976e1ce032cd2a985d4af9835865a43"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/main_area/native.rs": {
+    "bytes": 2863,
+    "sha256": "c56d396e444b7a6ab5142b456662a3a61332e08d9739f7d4bece0be8a7857a8a"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/fixtures.rs": {
+    "bytes": 18880,
+    "sha256": "1e3fcaa5fdc7045a1bb70c779f95b31adfdf8b9f512e783629d09f574867851e"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/window_workflow/tests.rs": {
+    "bytes": 39100,
+    "sha256": "24c24b83c12b1004e610ff9dc958b26f433ec74edbefc7e13791086ea5f2871e"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/test_support.rs": {
+    "bytes": 4744,
+    "sha256": "01e162c83ca94e12d9afbb4c560716e949d4136445d9944beab6f96ff505ac37"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/ai_ocr/tests.rs": {
+    "bytes": 29634,
+    "sha256": "92a4eb203516fd084ad60252d8a5ebf94e958d94e8547159db0a2ef5e9f0d4f1"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/window_tests.rs": {
+    "bytes": 32407,
+    "sha256": "0d669b95ad5f35d0f7359e42c84d2f9855b82dfc2ed51ac0ee76be2a22593f2c"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/tests.rs": {
+    "bytes": 43318,
+    "sha256": "fb27aeafe9cb0c0437843063ec22524c2247aa139d01f9e58248c5f1c4fa107d"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/ai_fixture.rs": {
+    "bytes": 6529,
+    "sha256": "be74479ab2ecf84c05d0295066b3e53bc60a8714a77b3f443065409220d8a060"
+  },
+  "rust/crates/bellobox-app/src/screenshot_ui/main_area/selector/ai_fixture/tests.rs": {
+    "bytes": 26766,
+    "sha256": "db328ee217c1b00c81bbbee9854a7aa62571d08f5b01b7744b97116041169178"
+  },
+  "rust/crates/bellobox-app/src/shutdown/quit/prompt.rs": {
+    "bytes": 9107,
+    "sha256": "ef66b06f396fe8cf700889ffb7bda6851ba2f9edfa6141a0bccb97069f297dc6"
+  },
+  "rust/crates/bellobox-app/src/shutdown/quit/prompt/tests.rs": {
+    "bytes": 17285,
+    "sha256": "b01ae4962749fcb614ac74364eee1f79dbfd978c272d5a76715bee5c6059f91a"
+  },
+  "rust/crates/bellobox-app/src/desktop/snippets/fields.rs": {
+    "bytes": 26211,
+    "sha256": "f48a902f2b515bdf0901ebdb3bfac3ec135738a2552b0c1df9cd02ed1cc17ff0"
+  },
+  "rust/crates/bellobox-app/src/desktop/json/tests.rs": {
+    "bytes": 6717,
+    "sha256": "fe24e39a34764722044ed44094a731cae87d1c9542bdfde2e68de8f65462ea5b"
+  },
+  "rust/crates/bellobox-app/src/desktop/text_tools/tests.rs": {
+    "bytes": 10766,
+    "sha256": "dfb6bdf85452620043847143c98c55542d28dc83d337e98786754c0ba598cc72"
+  },
+  "rust/crates/bellobox-app/src/transport/image_ocr/fixture.rs": {
+    "bytes": 19016,
+    "sha256": "f7b95f8f9a7e199dbdc0f872a36b90f3d82b0a1514e3a51f0f2e76cb1b52ef85"
+  },
+  "rust/crates/bellobox-app/src/transport/image_ocr/tests.rs": {
+    "bytes": 20397,
+    "sha256": "7c695f02c4a932c22cef3bb61ff6ff45f9186b87cfa5e89d613c1b03f77370a8"
+  },
+  "rust/crates/bellobox-app/src/transport/http_request/tests.rs": {
+    "bytes": 14745,
+    "sha256": "dd62a02c90052792b376ae04af94acb3970772918e4261eb7d28f1410c4782fa"
+  },
+  "rust/crates/bello-workbench/src/git.rs": {
+    "bytes": 46996,
+    "sha256": "456beeff5b4eb5ecda89c9d137ee6e406d768e78a3261046f82c2ee713fea37c"
+  },
+  "rust/crates/bello-workbench/src/quick_open.rs": {
+    "bytes": 69794,
+    "sha256": "ff1427a1e935ed814156280ca2e128f54bf46c5f21a767729d1afe7aa3d5d596"
+  },
+  "rust/crates/bello-workbench/src/tree.rs": {
+    "bytes": 11400,
+    "sha256": "f68c6ae731b65c1278e6a9fa4f35abca88e28f8481d9d1c98876bf2da098c908"
+  },
+  "rust/crates/bello-workbench/src/lib.rs": {
+    "bytes": 250,
+    "sha256": "159825b079a2542845fae5c4b2d722b541b21072ca925cc29fd73329faae2741"
+  },
+  "rust/crates/bello-workbench/src/document.rs": {
+    "bytes": 12426,
+    "sha256": "bc24604c24313ed68c6727000f25c746618347fb2607260f5a15192baad8c6fe"
+  },
+  "rust/crates/bello-workbench/src/diff.rs": {
+    "bytes": 3885,
+    "sha256": "d8f5c3a2d79fa28f234253dae931b29ab243eb595e4f5f8ae924fb6f2cc08b2b"
+  },
+  "rust/crates/bello-workbench/src/editor.rs": {
+    "bytes": 56131,
+    "sha256": "ee3afddc016be63ce618241631580b9c42c50039a78f17ffa8a7f3d58586918c"
+  },
+  "rust/crates/bello-workbench/tests/editor_invariants.rs": {
+    "bytes": 1891,
+    "sha256": "0df10fb0308b80fd83f5003e1bc0ae15b8b9c74448c6ab5bb672f711d2c54ae2"
+  },
+  "rust/crates/bello-workbench/examples/benchmark.rs": {
+    "bytes": 2356,
+    "sha256": "3eb8aca3a05af1e1c6e48396d587400bc79e10183f6f9c559b7e3a71c3584d98"
+  },
+  "rust/crates/bello-platform/src/capture.rs": {
+    "bytes": 13807,
+    "sha256": "aff7ae2fd7bf3868208ed13c025551f725079485e4d99b9f74c50806e12504a3"
+  },
+  "rust/crates/bello-platform/src/native_capture.rs": {
+    "bytes": 19735,
+    "sha256": "c7e657b5eb521242e81ba3d4fe1fd23aa8dcbd776ad5220dc4b7489258b0a7b5"
+  },
+  "rust/crates/bello-platform/src/time_zone.rs": {
+    "bytes": 12572,
+    "sha256": "1e5f36ef7c00f4c86dec60c34f98169a7397690818bddbfaa02b1eafa8955cc9"
+  },
+  "rust/crates/bello-platform/src/process.rs": {
+    "bytes": 10719,
+    "sha256": "b1697cd39f201b5ba9fa3546b78e05027b815cff3d2e333c621ad37153cd2ad9"
+  },
+  "rust/crates/bello-platform/src/backend.rs": {
+    "bytes": 18697,
+    "sha256": "b283e68a29b6f79c9689a77cf503acdf2678c78027bd160655e323a846149a43"
+  },
+  "rust/crates/bello-platform/src/macos_native.rs": {
+    "bytes": 41917,
+    "sha256": "5bb824e6eacb043cb7ed1dbee5855ef566809688d10e78d739ebdb8cf859a18d"
+  },
+  "rust/crates/bello-platform/src/movie.rs": {
+    "bytes": 25321,
+    "sha256": "809cada6b4541f6968b657c650d19508cf2204e25996ce03240c2a731f632adf"
+  },
+  "rust/crates/bello-platform/src/lib.rs": {
+    "bytes": 15323,
+    "sha256": "d5eb68044251d493dee31fbce1cd416db1662c49cd2753246e363133da161860"
+  },
+  "rust/crates/bello-platform/src/recording.rs": {
+    "bytes": 7193,
+    "sha256": "e32b7b1f123b1c9c55703cdef031610d011464c194a1a5965b7cdab6fe32c62f"
+  },
+  "rust/crates/bello-platform/src/macos_capture_overlay.rs": {
+    "bytes": 72366,
+    "sha256": "000fce51ff0b69a141d2e3022e47d55bf0773a27a51e9363fbe68bb121081edc"
+  },
+  "rust/crates/bello-platform/src/window_capture.rs": {
+    "bytes": 21668,
+    "sha256": "8839352acc3fa8fe5553f01b198be9c58f22532ca9b7f41933b466574d59a05e"
+  },
+  "rust/crates/bello-platform/src/recording/validation.rs": {
+    "bytes": 3525,
+    "sha256": "deaf33a3508cad6a8728ef57d63c36959a444388c33541d4a481fefe93b0b58f"
+  },
+  "rust/crates/bello-platform/src/recording/fixture.rs": {
+    "bytes": 7073,
+    "sha256": "1dae9618f636b6af762bdbb3919d4d83b4648c79caa79c5999809d58ebff6482"
+  },
+  "rust/crates/bello-platform/src/recording/control.rs": {
+    "bytes": 8996,
+    "sha256": "a8d55d84d14f212444ecbf23f05eb0c065494e14dfecbcc454dbfeacbd773b72"
+  },
+  "rust/crates/bello-platform/src/recording/tests.rs": {
+    "bytes": 31049,
+    "sha256": "eb4e12e503cb438a1ea86b406a99fce289e53c43e692dd130bfb9ef1e8e159a5"
+  },
+  "rust/crates/bello-platform/src/recording/macos.rs": {
+    "bytes": 13836,
+    "sha256": "116bd6df95cf899885c375006db2bd4b7a7ef964038005d215fa1f33baaea67a"
+  },
+  "rust/crates/bello-platform/src/recording/output.rs": {
+    "bytes": 8178,
+    "sha256": "fafbc9745183e36205c7bebc4227fb57481a37105b7f7c3216f208aa41ca1beb"
+  },
+  "rust/crates/bello-platform/src/native_capture/macos_tests.rs": {
+    "bytes": 7889,
+    "sha256": "e0efc0325f8427e8dfa1c58b86073b55941511473ca9d74187f8731820bc3d81"
+  },
+  "rust/crates/bello-platform/src/native_capture/alpha_mask_tests.rs": {
+    "bytes": 22078,
+    "sha256": "561c8a1b7bae60be46bb45f0cffc4ab047fd019df5f4462f3ba8e03cb7e976b5"
+  },
+  "rust/crates/bello-platform/src/native_capture/alpha_mask.rs": {
+    "bytes": 11690,
+    "sha256": "43ae6341e033d441641f8829f58660451ac027f98ef21a4baed725cb11fabbd9"
+  },
+  "rust/crates/bello-platform/src/native_capture/window_catalog.rs": {
+    "bytes": 6603,
+    "sha256": "81ecbc1cc10204c556224b706cc2f240722767b6fe2575a64afbd619ca009556"
+  },
+  "rust/crates/bello-platform/src/native_capture/alpha_mask_macos.rs": {
+    "bytes": 11018,
+    "sha256": "dceacfd7d809737b40be95ee75ffea95e72f9b12562aee4731ab2aafdd2d5390"
+  },
+  "rust/crates/bello-platform/src/native_capture/tests.rs": {
+    "bytes": 24998,
+    "sha256": "d9ffd9ad90b0368a8a36a2e2674513400b042abefce0a9fecfdef61032c23361"
+  },
+  "rust/crates/bello-platform/src/native_capture/macos.rs": {
+    "bytes": 27291,
+    "sha256": "58326915ef2f4631bd1b224c65135e797836bb3b2fdcf535ad6944d37af59842"
+  },
+  "rust/crates/bello-platform/src/native_capture/completion.rs": {
+    "bytes": 6048,
+    "sha256": "859cd2b7bf378f1783d91e95ee73d7155d784cc34c7c468f81bcce6ce37fa9f7"
+  },
+  "rust/crates/bello-platform/src/movie/retirement.rs": {
+    "bytes": 1626,
+    "sha256": "8d2824c9a9c08b75399ddae508093043cc73bfe8a2614df83d2134829c19da36"
+  },
+  "rust/crates/bello-platform/src/movie/tests.rs": {
+    "bytes": 7710,
+    "sha256": "bb4be3d8d41880a3309f832ab41e1a9c7b8a20f3ccc3d08a4534fbefbba6efc7"
+  },
+  "rust/crates/bello-platform/src/movie/macos.rs": {
+    "bytes": 22329,
+    "sha256": "a80f925d690da68a10e9b8cfcd986e32524d292f1390a41ef77a2afdf027d970"
+  },
+  "rust/crates/bello-platform/src/movie/source_file.rs": {
+    "bytes": 4294,
+    "sha256": "ea4cff9d55e8e428696cce850f233f51f66a510eb4de249bb56cc794dbf41b39"
+  },
+  "rust/crates/bello-platform/src/macos_capture_overlay/deactivation.rs": {
+    "bytes": 9353,
+    "sha256": "0dd45714ee6c09f351fd86738a29d829ae20e39226cce08620eb83d2f858fa2b"
+  },
+  "rust/crates/bello-platform/src/window_capture/tests.rs": {
+    "bytes": 25431,
+    "sha256": "1c2c275a265ab03c181813f4187b278e5a79e0300466105f4999652ca0642354"
+  },
+  "rust/crates/bello-platform/src/recording/assets/README.md": {
+    "bytes": 1847,
+    "sha256": "49dd8781554443aa1d56ffd4cb5f5698e93516a927f5ee50ff8800df62402e97"
+  },
+  "rust/crates/bello-platform/src/recording/assets/known-rgb.mov": {
+    "bytes": 221877,
+    "sha256": "2844659c2ff59e1ab39abf13e46dfbcf0ba3cd51d97fdd1b69ca2c44949d67c9"
+  },
+  "rust/crates/bello-platform/src/recording/tests/swift_reference.swift": {
+    "bytes": 4044,
+    "sha256": "57b407c07f7c6f8bad713bf743eb09b71380c7100539e173b78d9dbf8e034c7c"
+  },
+  "rust/crates/bello-platform/src/recording/tests/swift_reference.rs": {
+    "bytes": 11373,
+    "sha256": "fa5b23a7ff2adfff1693ae1a40f2ded14d413caac86ad30d52e2ceedf426a6be"
+  },
+  "rust/crates/bello-platform/src/recording/tests/raw_oracle.rs": {
+    "bytes": 6135,
+    "sha256": "ebf6243327d22f7a181277e339a093cc64d6a9775caf01843df819b4a778442d"
+  },
+  "rust/crates/bello-platform/src/native_capture/macos/window.rs": {
+    "bytes": 29768,
+    "sha256": "a1a5ec9a4699960be1d9504bdf54add776da2fd87dfe0ac87af6ca5288b23679"
+  },
+  "rust/crates/bello-platform/src/native_capture/macos/window/catalog.rs": {
+    "bytes": 5891,
+    "sha256": "12bfee5c646f442eea0df9c79c1996dbfa2bc7ecee4bb1764a38e304407ab48e"
+  },
+  "rust/crates/bello-platform/src/native_capture/macos/window/tests.rs": {
+    "bytes": 13020,
+    "sha256": "1602ed68adc9aedf7c2b3b777970469be6d7ab73de7083a3f3c60337d48885a6"
+  },
+  "rust/crates/bello-platform/src/native_capture/macos/window/catalog/tests.rs": {
+    "bytes": 10554,
+    "sha256": "5f23539ccf08b01176f9a1428a4afe9382151efdd46e42e5ee691946b03347bf"
+  },
+  "rust/crates/bello-platform/src/movie/macos/fixtures.rs": {
+    "bytes": 7394,
+    "sha256": "1b470e4025dd5551445405111b0de8c4e31fa104886f5fb7e8f06763d71c09f0"
+  },
+  "rust/crates/bello-platform/src/movie/macos/tests.rs": {
+    "bytes": 20224,
+    "sha256": "30bf897c3986d70365f4cefdffb0c8dd82cf4c3f1eb68fee7d7d512bae952010"
+  },
+  "rust/crates/bello-platform/src/movie/macos/fixture_media/positive-composition.mov": {
+    "bytes": 2308,
+    "sha256": "abd5e23b328507ea0c1c4f894e2d7d34cb5493ae0011b86413cb2821bd5959a8"
+  },
+  "rust/crates/bello-platform/src/movie/macos/fixture_media/zero-origin.mov": {
+    "bytes": 2308,
+    "sha256": "ef59f7b291b1fbbe16969b65b97d5918e03224527fcbd68f7c984ce4ba7fed16"
+  },
+  "rust/crates/bellobox-core/src/qr.rs": {
+    "bytes": 9952,
+    "sha256": "eab62a9190c5b7614e57fd1132a39ebd3cca379780f953a2fbb41b1daa07e89c"
+  },
+  "rust/crates/bellobox-core/src/launcher.rs": {
+    "bytes": 10433,
+    "sha256": "aa357fbbb79cee16a913c20f883f10496ec373e376c8726fef6ae42f8ec6a8b7"
+  },
+  "rust/crates/bellobox-core/src/snippets.rs": {
+    "bytes": 7536,
+    "sha256": "b5d51dc121b7fa6be732fa4415bc5b2f771f9e5e9da62f2eea0082b778bb534a"
+  },
+  "rust/crates/bellobox-core/src/text.rs": {
+    "bytes": 14833,
+    "sha256": "eda9ce5e8668fa993195f984863a88d591b4238cf73c46a14f5f5af5f3137878"
+  },
+  "rust/crates/bellobox-core/src/developer.rs": {
+    "bytes": 120201,
+    "sha256": "421407dcd7a5d57c9748b1ec514e53e4587de576f64797d6e869777baeafd9c8"
+  },
+  "rust/crates/bellobox-core/src/settings.rs": {
+    "bytes": 17735,
+    "sha256": "fc0613d8d844e5ae6947da38d36624d13cf65f60058d331b8c4dec5f9ca11442"
+  },
+  "rust/crates/bellobox-core/src/ai.rs": {
+    "bytes": 11211,
+    "sha256": "fa3ba4e853cc6434f73d63ced2d19f0976e8a2bbb62661eb22420232ca07deb0"
+  },
+  "rust/crates/bellobox-core/src/clock.rs": {
+    "bytes": 20862,
+    "sha256": "fd80b4cee1049fcbc0fcc960aed4ab72d9eb1863523cd11a883cd066845e0cb3"
+  },
+  "rust/crates/bellobox-core/src/lib.rs": {
+    "bytes": 745,
+    "sha256": "0109fb28734a14f9a365d58088e0e1bad487c1622cb80ed5f515291c72d84ad4"
+  },
+  "rust/crates/bellobox-core/src/recording.rs": {
+    "bytes": 276,
+    "sha256": "6305355eec3a7cb22e637754c95038c862f840156a14170d722d502324d04b18"
+  },
+  "rust/crates/bellobox-core/src/url_editor.rs": {
+    "bytes": 13016,
+    "sha256": "3ad3ab4c1940847bbb23bd01fba6346bfe485952f37011f124c46e3646c21628"
+  },
+  "rust/crates/bellobox-core/src/screenshot.rs": {
+    "bytes": 41739,
+    "sha256": "56068e6077016a71e996b0fe17ab2b180cc8ddade88ae857103ab1c8e69f1cd8"
+  },
+  "rust/crates/bellobox-core/tests/json_formatter_prototype_vectors.json": {
+    "bytes": 7486,
+    "sha256": "20451a017fc7f7a115d0cbc67ce94ab36f8e3743065f7354bdb58861dcba3291"
+  },
+  "rust/crates/bellobox-core/tests/regex_swift_oracle.rs": {
+    "bytes": 9351,
+    "sha256": "9164ce74007b6b0ee8957dc09311eab6e78edb1ddbe8f34fc4d4acaf0fba63e5"
+  },
+  "rust/crates/bellobox-core/tests/comparison_swift_oracle.rs": {
+    "bytes": 9351,
+    "sha256": "548e20131e216a1118deca8016d41af84e88b089405f41a63fe1786a5c1ee1d2"
+  },
+  "rust/crates/bellobox-core/tests/ui_tool_controls.rs": {
+    "bytes": 14667,
+    "sha256": "6b6a0ff2eea8cfa2524948c94ef478809d50cb3bd5564609be25bfc59af49c68"
+  },
+  "rust/crates/bellobox-core/tests/http_swift_oracle.rs": {
+    "bytes": 17004,
+    "sha256": "4e65627f31005537376a7ae590cd2712b8b12ea0398867472488fea7afa3fd6f"
+  },
+  "rust/crates/bellobox-core/tests/url_swift_oracle.rs": {
+    "bytes": 11707,
+    "sha256": "5d77de39dcb9d9c0cb05c1c1571f0057b54a1adc3c32876169dd96cec441b900"
+  },
+  "rust/crates/bellobox-core/tests/developer_safety.rs": {
+    "bytes": 1786,
+    "sha256": "29a5e9575b190292929411d03f5e7b8d54d111bcbdb24eb1dfe79943a78aea06"
+  },
+  "rust/crates/bellobox-core/tests/text_swift_oracle.rs": {
+    "bytes": 11054,
+    "sha256": "6a79ccec12ca296216a968afcf76dc2f7b4d24c112fd40990207f5e1d3779c48"
+  },
+  "rust/crates/bellobox-core/tests/json_formatter_prototype.rs": {
+    "bytes": 2356,
+    "sha256": "932561fde10d3bc3f33db2ea8147cec2f1e78d37559399812159c63afab048f5"
+  },
+  "rust/crates/bellobox-core/examples/utility_bench.rs": {
+    "bytes": 1814,
+    "sha256": "010a4eedd23f399785cd37534f96bcdb9d9085dae19f258938d49d407f6016e4"
+  },
+  "rust/crates/bellobox-core/src/recording/gif.rs": {
+    "bytes": 14370,
+    "sha256": "cfc628f84cbb7e9834aa335688a5c74873ab291d53b84f7f6746d9b11d7412a9"
+  },
+  "rust/crates/bellobox-core/src/recording/session.rs": {
+    "bytes": 5150,
+    "sha256": "2b8ed45a8f1fb4d9c8bbf4b0aabe8922b1bbdd6a6134f7f8845be21a5f3e1431"
+  },
+  "rust/crates/bellobox-core/src/recording/output_settings.rs": {
+    "bytes": 3939,
+    "sha256": "055854012f442c2b5c53152e16b048ca9bb3bedd754ad6542eb2fa4bbeb41a61"
+  },
+  "rust/crates/bellobox-core/src/screenshot/window.rs": {
+    "bytes": 20694,
+    "sha256": "3efb47e1ced80421950f04d617535ae2952ece79b520abf40dedc3cea6168a90"
+  },
+  "rust/crates/bellobox-core/src/screenshot/text.rs": {
+    "bytes": 5792,
+    "sha256": "b62dd5746b243a8e097a6ad01725357264d0097c4ebe1227458577104331b3aa"
+  },
+  "rust/crates/bellobox-core/src/screenshot/ai_ocr.rs": {
+    "bytes": 7346,
+    "sha256": "5ea3f7ee7238652e29000882523f9552216f44518d52efdd6b19ac5a3f1bf55d"
+  },
+  "rust/crates/bellobox-core/src/screenshot/area.rs": {
+    "bytes": 15215,
+    "sha256": "59c9ed42400ac8d1731809d6a4d4aa19cc5cfbc8eb26c3583833c93b04433e11"
+  },
+  "rust/crates/bellobox-core/src/screenshot/selection.rs": {
+    "bytes": 34264,
+    "sha256": "b1ceae4c43a3667910a682399b8762ef71112db025e9ce6e5ae49644314231a0"
+  },
+  "rust/crates/bellobox-core/src/screenshot/render.rs": {
+    "bytes": 19118,
+    "sha256": "50e75d9bb2fda14d7bc50215098fa7dac947b12982847bd5feee33aae21fc0c3"
+  },
+  "rust/crates/bellobox-core/src/screenshot/tests.rs": {
+    "bytes": 34754,
+    "sha256": "5cd662348cd217c54d4c091285d5d581dc57438fb6c7f80a62dca7aed3649a43"
+  },
+  "rust/crates/bellobox-core/src/screenshot/scroll.rs": {
+    "bytes": 14586,
+    "sha256": "ade93691593c08e8df4df6899deb0356e6977351b7ac836d30723bccd4976bf2"
+  },
+  "rust/crates/bellobox-core/src/screenshot/window_refresh.rs": {
+    "bytes": 15668,
+    "sha256": "f1caf0ac27bb3eb1b3c4f1ebb80b939e5b3583a1c5ca020d570d4b6ad366b14a"
+  },
+  "rust/crates/bellobox-core/src/ai/generation.rs": {
+    "bytes": 15663,
+    "sha256": "7da19ea41c55000b89911dd871a71503fb8d51233095905e5863db7c69589412"
+  },
+  "rust/crates/bellobox-core/src/ai/provider_setup.rs": {
+    "bytes": 8565,
+    "sha256": "370ee7a999c53898e996b1b78dea7791c7b3a207562c3535df639e23ef45a75a"
+  },
+  "rust/crates/bellobox-core/src/clock/copilot.rs": {
+    "bytes": 7464,
+    "sha256": "8519abb17f9d6756ca49f2333f7786eee706bb1b69570882a8ecefd058249b0d"
+  },
+  "rust/crates/bellobox-core/src/clock/tests.rs": {
+    "bytes": 13523,
+    "sha256": "d260942e604845e3f0cb9d562b958a0fea71cf51f1d4deb4893e0b5368211c0f"
+  },
+  "rust/crates/bellobox-core/src/developer/certificate.rs": {
+    "bytes": 8769,
+    "sha256": "a3f630326a33251ae11473af47b19963cba2443b86ca96c2cdf6b8497b9d79a1"
+  },
+  "rust/crates/bellobox-core/src/developer/http_request_tests.rs": {
+    "bytes": 22587,
+    "sha256": "f65a5a3a2b0354c4acecbc0db035c15b418273e1d736054013b242c0ca1b0dd5"
+  },
+  "rust/crates/bellobox-core/src/developer/json_formatter.rs": {
+    "bytes": 15960,
+    "sha256": "ec1d8f7a505b489f7b71b3154652c730c190d99b70daa391feebd8160cb278b8"
+  },
+  "rust/crates/bellobox-core/src/developer/regex_inspection_tests.rs": {
+    "bytes": 7284,
+    "sha256": "d8c2baf993ff7bf85b1e17ca86366a8bcac79341bbb30d1b1815bb84e3b5d434"
+  },
+  "rust/crates/bellobox-core/src/developer/list_set.rs": {
+    "bytes": 6104,
+    "sha256": "ee96d337ef8c760d39a62f7cd5822dbbef51cc013c384527e8253c868b9c834f"
+  },
+  "rust/crates/bellobox-core/src/developer/json_schema.rs": {
+    "bytes": 45145,
+    "sha256": "d89664786eabb20009c3df49bd5dcdd93966f638d931de115764c672bbfb5abf"
+  },
+  "rust/crates/bellobox-core/src/developer/regex_inspection.rs": {
+    "bytes": 9519,
+    "sha256": "a539d60cddabcbe1fb3d2b864a8a36e5d7793f7ded0d369701a4a2d160fd29b9"
+  },
+  "rust/crates/bellobox-core/src/developer/number_base.rs": {
+    "bytes": 11247,
+    "sha256": "85dbdc8271d45f5077e71fab0f60007a5ae3e7d6e5330d7d2f290179d03e9626"
+  },
+  "rust/crates/bellobox-core/src/developer/plist.rs": {
+    "bytes": 14839,
+    "sha256": "d9fcaad3e16346348a4a15c839cfa06bddef975c34e8a301c4ebee153cc24269"
+  },
+  "rust/crates/bellobox-core/src/developer/http_request.rs": {
+    "bytes": 23785,
+    "sha256": "a8619a9a572f2a9328ea4659f8f9f0fbcac4d1bf8b8636399da49da6ff41753d"
+  },
+  "rust/crates/bellobox-core/src/developer/subnet.rs": {
+    "bytes": 7076,
+    "sha256": "c1b11f6e7aba65f778096b7be519c07d7d7b8089e67fb17df5753dd993012460"
+  },
+  "rust/crates/bellobox-core/src/developer/comparison.rs": {
+    "bytes": 16986,
+    "sha256": "d46b759dbe7dd38a36253b0240d48d33ddb0025d87c6c81d24955a313710afd9"
+  },
+  "rust/crates/bellobox-core/src/developer/string_literal.rs": {
+    "bytes": 4781,
+    "sha256": "66e5aeb582428b85925fec9f38155ef7cb69926a909e5bec7af86de6b4bc8548"
+  },
+  "rust/crates/bellobox-core/src/developer/json_formatter_prototype_tests.rs": {
+    "bytes": 5807,
+    "sha256": "096d5231ae3795854d320d57bcc419e9949a670515f302e5fb5924e6cf3b125a"
+  },
+  "rust/crates/bellobox-core/src/developer/comparison_tests.rs": {
+    "bytes": 12468,
+    "sha256": "d839e7efe346f87d0969963e5e603df8ce4eef45f927c75d42c1ae74ecaae21a"
+  },
+  "rust/crates/bellobox-core/src/developer/sql_formatter.rs": {
+    "bytes": 15730,
+    "sha256": "fcbf2ea05f508cf87aabf7b309136f86fecc90c243aa1956eddce35192d08335"
+  },
+  "rust/crates/bellobox-core/src/developer/permissions.rs": {
+    "bytes": 12155,
+    "sha256": "16b35a6a31ad712e8981d33680f35d4003e92bbe7dd7dfcaa236e58d5f2f97e4"
+  },
+  "rust/crates/bellobox-core/src/recording/output_settings/tests.rs": {
+    "bytes": 6087,
+    "sha256": "467cea2ebd3beed2e769bd0704312ec0b3187d32b81b00624be773e99f587c36"
+  },
+  "rust/crates/bellobox-core/src/recording/output_settings/swift_oracle.rs": {
+    "bytes": 6405,
+    "sha256": "fea69cdb7e04542184988f26293f7ae3c51eff58b937ce73ee3630451884467a"
+  },
+  "rust/crates/bellobox-core/src/recording/gif/gif_file.rs": {
+    "bytes": 11365,
+    "sha256": "68af625034babb43ff6777de804ed7b1efb24c5b1ffd843bdf1ec92d28010971"
+  },
+  "rust/crates/bellobox-core/src/recording/gif/gif_encode.rs": {
+    "bytes": 9392,
+    "sha256": "ed1b26ef3f58c89de3bd60463733d9a12ac334491e3d3a48ca28f30dfadd3360"
+  },
+  "rust/crates/bellobox-core/src/recording/gif/gif_structure.rs": {
+    "bytes": 7164,
+    "sha256": "ed11b0226a6186905b1d0afdb335ab6d14cac788fdb70babe98ba91174d66d5b"
+  },
+  "rust/crates/bellobox-core/src/recording/gif/gif_tests.rs": {
+    "bytes": 39970,
+    "sha256": "6cd9197ae29508b66bf97e4784ef4cd5420306ffa9ad294e01ae8adf622536da"
+  },
+  "rust/crates/bellobox-core/src/recording/gif/gif_decode_tests.rs": {
+    "bytes": 21774,
+    "sha256": "d0c518add0d344f46f3de557d43486afaccbf914000aad8f900167f122187900"
+  },
+  "rust/crates/bellobox-core/src/recording/gif/gif_preview.rs": {
+    "bytes": 5346,
+    "sha256": "e12a29da015c378dda2668dcfc0b3a622e76c5f1a1e2cd4c163241b625140d62"
+  },
+  "rust/crates/bellobox-core/src/recording/gif/gif_decode.rs": {
+    "bytes": 4883,
+    "sha256": "643a162698bf3f113cfed4b6c1ec63605121ac5febc0d2d3cc47fd3efc1ca22c"
+  },
+  "rust/crates/bellobox-core/src/screenshot/window_refresh/tests.rs": {
+    "bytes": 28906,
+    "sha256": "a598207bf06f1e60f1371556da1613d57d853f1516a2563cc9ed18b4e8821048"
+  },
+  "rust/crates/bellobox-core/src/screenshot/area/tests.rs": {
+    "bytes": 18224,
+    "sha256": "35c16c1fe40c32b8e285bb62c672500d51075d617b75bf6071772baaa826b074"
+  },
+  "rust/crates/bellobox-core/src/screenshot/scroll/analyze.rs": {
+    "bytes": 3105,
+    "sha256": "713ed299bdbb9df8a61c09fade496841dc9b10614b3ab6de07fd2b864ab5bc89"
+  },
+  "rust/crates/bellobox-core/src/screenshot/scroll/tests.rs": {
+    "bytes": 28477,
+    "sha256": "32cc83031c53ba572d881757e6f058bd180ac9b42eed46a4f3eba94e18492ca3"
+  },
+  "rust/crates/bellobox-core/src/screenshot/scroll/stitch.rs": {
+    "bytes": 13087,
+    "sha256": "ecec8de9bc7ab18aa48791c20355eb9cdea882f7a23da494514c384922214991"
+  },
+  "rust/crates/bellobox-core/src/screenshot/scroll/session.rs": {
+    "bytes": 15775,
+    "sha256": "3741465f368da8e821bc8f927d1859df67440a7e3e57465ffdc243b48dba2662"
+  },
+  "rust/crates/bellobox-core/src/screenshot/ai_ocr/response.rs": {
+    "bytes": 8879,
+    "sha256": "09d07ee7f78e96448a29ff43cdf9a095ece287e09d09fb4ea8a5970fcfa99997"
+  },
+  "rust/crates/bellobox-core/src/screenshot/ai_ocr/request.rs": {
+    "bytes": 13342,
+    "sha256": "e42ecc56b07dd191eec06a76d4de4ac29b815216f0aec1bb611063ca10304190"
+  },
+  "rust/crates/bellobox-core/src/screenshot/ai_ocr/tests.rs": {
+    "bytes": 22875,
+    "sha256": "1e2b295d81dd18908f654f37f60332df244af9f9892a0ece642cae3a915c5325"
+  },
+  "rust/crates/bellobox-core/src/screenshot/window/tests.rs": {
+    "bytes": 16453,
+    "sha256": "e298fff308cd062172f0e1d57216b5b173d5f91a3fa5e395b45b580aab7f07a9"
+  },
+  "rust/crates/bellobox-core/src/clock/copilot/apply.rs": {
+    "bytes": 9479,
+    "sha256": "ee8c814b2e389e139b232bc66d067774d0ef5e7437917995f543367f151bc7cf"
+  },
+  "rust/crates/bellobox-core/src/clock/copilot/protocol.rs": {
+    "bytes": 14151,
+    "sha256": "f404b53a5d7368cf5d093d9d60f28d9ff5d4d80f19a6af1c8884842ec504ef5b"
+  },
+  "rust/crates/bellobox-core/src/clock/copilot/tests.rs": {
+    "bytes": 16904,
+    "sha256": "0539c0ebc1b8fcf7f4705685c7a30820dd8ddbcdfef72a1c11fc8b8b9fbe0008"
+  },
+  "rust/crates/bellobox-core/src/clock/copilot/session.rs": {
+    "bytes": 18382,
+    "sha256": "50bf3df022d0aa12c9ece88d66854dfce37b0658989d8957f1476127df3731b7"
+  },
+  "rust/crates/bellobox-core/src/clock/copilot/protocol/tests.rs": {
+    "bytes": 15194,
+    "sha256": "3f5b8e241f52a762e9983016dd311e280e586f768b05a6c3475e469612c3cc1c"
+  },
+  "rust/crates/bellobox-core/tests/fixtures/regex-swift-oracle.json": {
+    "bytes": 7130,
+    "sha256": "d028e2760f03f888e5b884eb8d9820330e69a0a1425abe85f516e5355481c08b"
+  },
+  "rust/crates/bellobox-core/tests/fixtures/comparison-swift-oracle.json": {
+    "bytes": 14734,
+    "sha256": "6af24b2d1d24e018d084e94427405728cebc55f61c61528900b338d9dedfddfb"
+  },
+  "rust/crates/bellobox-core/tests/fixtures/bellobox-example-cert.pem": {
+    "bytes": 1212,
+    "sha256": "56a4382b41036d9aa4726cf09946cfaa83d6167e2928f73f3e21ffbbe2a588b9"
+  },
+  "rust/crates/bellobox-core/tests/fixtures/regex-swift-characterization.json": {
+    "bytes": 9278,
+    "sha256": "99610c9f3b24ba5e85dc8451573704b833f1b5e0a156e2c1bf4bd9f37e433a76"
+  },
+  "rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json": {
+    "bytes": 1676,
+    "sha256": "38d4a1f7fc530b8223a7fea541ab7c80fc2b9cd54ca7ffb3610996f6af4ac2e4"
+  },
+  "rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json": {
+    "bytes": 13754,
+    "sha256": "b55f277666591fe90cf4d2b9c6abd2e338bce3d7060a14e2a108a5a70cb160a4"
+  },
+  "rust/crates/bellobox-core/tests/fixtures/url-swift-oracle.json": {
+    "bytes": 3362,
+    "sha256": "ce39d52b0f0b268a4631d4e034e07ac0a9284f6925d70759cff5a56e2085bb5c"
+  },
+  "BelloBoxTests/Fixtures/SelectionFocus.html": {
+    "bytes": 1903,
+    "sha256": "29d532b1cc1c408b0336d869f94371722c6704fe9d26fd21f4b54bc10714db26"
+  },
+  ".github/workflows/rust-macos.yml": {
+    "bytes": 7588,
+    "sha256": "499860d3fb972339a2394cabe3d201c10296e1fac78705e459085da83516103e"
+  },
+  ".github/workflows/rust.yml": {
+    "bytes": 3842,
+    "sha256": "8db29cc1fbe7e679b702cbc4503ab3710a0b6593578fedbdfa96d4530960c2be"
+  },
+  "scripts/assets/bellobox-icon-source.png": {
+    "bytes": 648639,
+    "sha256": "9883e117293f0700d7a4f9172f70e3b83e56082ed11275072a885022498bd23b"
+  }
+}

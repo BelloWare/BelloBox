@@ -1,0 +1,125 @@
+{
+  "base_commit": "1943f5d2cddb02ca8fc637850d109c9af11ee2f1",
+  "files": [
+    {
+      "path": ".github/workflows/rust-macos.yml",
+      "before_sha256": "41ffeaa3fde809f381d3fcdb4f2aa43327402f7963e20f621ca0353e7fc25902",
+      "sha256": "499860d3fb972339a2394cabe3d201c10296e1fac78705e459085da83516103e",
+      "git_blob_sha1": "06368eba9acf6a7dee445f2c01262bbd8109006f",
+      "bytes": 7588
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "before_sha256": "c342c7bb2708faeb5d6061be161ea8f5868e54dfd55240ac2c42ffd33f693062",
+      "sha256": "9d0fb0a7a0c97cb9b6f549f22ad382b66d5527447a3127f90f1f0542b7927dcc",
+      "git_blob_sha1": "ef919da4ad07ecc761d1adb68241fd93c4964056",
+      "bytes": 93850
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/http_session.rs",
+      "before_sha256": null,
+      "sha256": "eea2b0e9b2b083b4f06ba9d0e82d2cf51ee893a3523f607e4d275490ae4ab383",
+      "git_blob_sha1": "42ac1963f75cc9a453b8f6dc172f760d09cc9623",
+      "bytes": 7358
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/http_session/tests.rs",
+      "before_sha256": null,
+      "sha256": "b033dd4aed1116eb1451f3d4edf77c9acb6e5c12c2f483450d3a847c8128b94e",
+      "git_blob_sha1": "8d7e558ae76ab5ab6d0ef4f0c0440aad68c7433d",
+      "bytes": 5849
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/http_ui.rs",
+      "before_sha256": null,
+      "sha256": "653c7e34f1c1fc03101deb14a06cf6e6ba952e652c4f1537dd3dd458548c86fe",
+      "git_blob_sha1": "621cf7d9a9667275bd412dc8f6a331c3c7d87b23",
+      "bytes": 30508
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/http_ui/tests.rs",
+      "before_sha256": null,
+      "sha256": "a17528dd59e5ee30e04cff114a8c959a7ef31fe95d2902635db18aaa89f67dbe",
+      "git_blob_sha1": "0bfff1ebad33fccf273c82e0bc9503232576dbd2",
+      "bytes": 10889
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "before_sha256": "dbfbb45dd699beff7072473354c91f2b278eceb56a1acb390cd4ce885d675678",
+      "sha256": "c85d563ded5076c7a93772d939c3d8e9c22dcff545584fc388c5ef65b5c463f0",
+      "git_blob_sha1": "869fd3ab9f17d710bd4499e548e93e780b243fe0",
+      "bytes": 11240
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/shutdown.rs",
+      "before_sha256": "09a3814715d898b85d671c5388bcf1db679c96e0093164bb5ad1ac09de6878f8",
+      "sha256": "a90f191f5760b618fc61df75de4d844e0c95226407bbd2a3b8dd5f0806be01f7",
+      "git_blob_sha1": "1a1bb950a798885fd0f7bfecf9ef528e388f391d",
+      "bytes": 16617
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport.rs",
+      "before_sha256": "7c59d0286ba0ab29aca9586a7ece6a3def8b13af7816523e640f7214b152c79b",
+      "sha256": "71345e192075863e3863ea67c18dc1b2f1fd53afe68245d97d2ccf80ecbadb33",
+      "git_blob_sha1": "07f3c5a6ca7efe5d63822618510a374c34d366af",
+      "bytes": 6312
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/http_request.rs",
+      "before_sha256": null,
+      "sha256": "4cb539b89dc43a4c1102f2066f39dd49b037877096838cbff31fa3f1d677095c",
+      "git_blob_sha1": "7a968aa23a67002f1866d70b0ae2aa9405567734",
+      "bytes": 6951
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/transport/http_request/tests.rs",
+      "before_sha256": null,
+      "sha256": "dd62a02c90052792b376ae04af94acb3970772918e4261eb7d28f1410c4782fa",
+      "git_blob_sha1": "e828d48e82ef6d4951403004e725ccb54b3e6fa7",
+      "bytes": 14745
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer.rs",
+      "before_sha256": "ac25a9dceb0a7bfe6d6fe641f6930da2236093d965615f9e3930aeb07e073758",
+      "sha256": "421407dcd7a5d57c9748b1ec514e53e4587de576f64797d6e869777baeafd9c8",
+      "git_blob_sha1": "03f29aacc4438872af799f21866c5354f7288541",
+      "bytes": 120201
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/http_request.rs",
+      "before_sha256": null,
+      "sha256": "a8619a9a572f2a9328ea4659f8f9f0fbcac4d1bf8b8636399da49da6ff41753d",
+      "git_blob_sha1": "d039b51eb0ddbc6d04bcf237415c13f4660f9598",
+      "bytes": 23785
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/http_request_tests.rs",
+      "before_sha256": null,
+      "sha256": "f65a5a3a2b0354c4acecbc0db035c15b418273e1d736054013b242c0ca1b0dd5",
+      "git_blob_sha1": "fba0f5878b9215bdd7631dd960c4a9c8c9758cdc",
+      "bytes": 22587
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json",
+      "before_sha256": null,
+      "sha256": "38d4a1f7fc530b8223a7fea541ab7c80fc2b9cd54ca7ffb3610996f6af4ac2e4",
+      "git_blob_sha1": "bea497d70bd83af805377b7458d027bf8e8e7785",
+      "bytes": 1676
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json",
+      "before_sha256": null,
+      "sha256": "b55f277666591fe90cf4d2b9c6abd2e338bce3d7060a14e2a108a5a70cb160a4",
+      "git_blob_sha1": "6882f30325517f59f04ceb1346d6f64c3ebb2e2a",
+      "bytes": 13754
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/http_swift_oracle.rs",
+      "before_sha256": null,
+      "sha256": "4e65627f31005537376a7ae590cd2712b8b12ea0398867472488fea7afa3fd6f",
+      "git_blob_sha1": "72ade90ca985b972e506566ec5c028dca225535c",
+      "bytes": 17004
+    }
+  ],
+  "scope": "All changed source, fixture and CI paths relative to predecessor; excludes documentation/evidence and independently owned duration records."
+}

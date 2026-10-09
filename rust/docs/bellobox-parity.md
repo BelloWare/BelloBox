@@ -260,7 +260,7 @@ for many tools still need restoration. Sources below are in
 | `cron` | `DeveloperTime.swift` | Five fields, next five UTC runs within366 days; timezone planner absent |
 | `convert` | `DataConversion.swift` | JSON/YAML/CSV directions; YAML aliases/tags rejected |
 | `snippets` | `SnippetsAndGenerators.swift` | Partial: source placeholder grammar, one-pass missing-field-preserving substitution, selection/date/timestamp/UUID, per-tool UUID stability, dynamic field rows and isolated library controls. Renderer and cache-policy tests pass; large-field virtual viewport differs from Swift outer scrolling; latest field UI/macOS still need QA |
-| `http` | `HTTPRequestTool.swift` | Raw HTTP request inspection only; cURL and sending absent |
+| `http` | `HTTPRequestTool.swift` | Partial: ordinary independent HTTP & cURL window with literal import/review, editable fields, explicit Send/Cancel, bounded response/Copy and physical shutdown ownership. 31 Core tests, 7 negative mutations, 26 App tests and scoped light/dark Linux GUI passed; native oracle and exact published CI pending. Compact palette/session transfer, Foundation/URLSession/locale and native UI parity remain incomplete. Legacy raw CLI unchanged. See [HTTP workflow](http-workflow.md). |
 | `generate` | `SnippetsAndGenerators.swift` | UUID/UUID-derived hex/sample records; not a password generator |
 | `calculator` | `MathUtilities.swift` | Bounded arithmetic and functions; radians |
 | `units` | `MathUtilities.swift` | Documented unit families and temperature conversion |

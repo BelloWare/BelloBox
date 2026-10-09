@@ -1,0 +1,280 @@
+{
+  "baseline_rust_commit": "1943f5d2cddb02ca8fc637850d109c9af11ee2f1",
+  "baseline_rust_tree": "630ecf1c33479c2cb3d17e3db29e5684048500a4",
+  "frozen_utc": "2026-10-09T15:49:47.898485+00:00",
+  "owned_files": [
+    {
+      "path": "rust/crates/bellobox-core/src/developer/http_request.rs",
+      "sha256": "a8619a9a572f2a9328ea4659f8f9f0fbcac4d1bf8b8636399da49da6ff41753d",
+      "bytes": 23785,
+      "nonblank_lines": 663
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/developer/http_request_tests.rs",
+      "sha256": "f65a5a3a2b0354c4acecbc0db035c15b418273e1d736054013b242c0ca1b0dd5",
+      "bytes": 22587,
+      "nonblank_lines": 715
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/http_swift_oracle.rs",
+      "sha256": "4e65627f31005537376a7ae590cd2712b8b12ea0398867472488fea7afa3fd6f",
+      "bytes": 17004,
+      "nonblank_lines": 384
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json",
+      "sha256": "b55f277666591fe90cf4d2b9c6abd2e338bce3d7060a14e2a108a5a70cb160a4",
+      "bytes": 13754,
+      "nonblank_lines": 617
+    },
+    {
+      "path": "rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json",
+      "sha256": "38d4a1f7fc530b8223a7fea541ab7c80fc2b9cd54ca7ffb3610996f6af4ac2e4",
+      "bytes": 1676,
+      "nonblank_lines": 85
+    }
+  ],
+  "final_checks": [
+    {
+      "receipt": "owned-format-final-r2.json",
+      "command": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "crates/bellobox-core/src/developer/http_request.rs",
+        "crates/bellobox-core/src/developer/http_request_tests.rs",
+        "crates/bellobox-core/tests/http_swift_oracle.rs"
+      ],
+      "start_unix_utc": 1791560926.5561104,
+      "end_unix_utc": 1791560926.5894475,
+      "elapsed_s": 0.03333711624145508,
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "receipt": "focused-final-r2.json",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::http_request::",
+        "--",
+        "--test-threads=2"
+      ],
+      "start_unix_utc": 1791560926.5898483,
+      "end_unix_utc": 1791560935.3186562,
+      "elapsed_s": 8.728807926177979,
+      "exit": 0,
+      "log_sha256": "3cbe41a4e0dc64df017bfd41a4dd8280b57bb20684ab5957b29f1dced138b402"
+    },
+    {
+      "receipt": "oracle-portable-final-r2.json",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--test",
+        "http_swift_oracle",
+        "--",
+        "--show-output"
+      ],
+      "start_unix_utc": 1791560935.3190157,
+      "end_unix_utc": 1791560940.6688306,
+      "elapsed_s": 5.3498148918151855,
+      "exit": 0,
+      "log_sha256": "3030f392dc94bf6a6ebc6357c3b5664fb67563dacc1ee12e8f6c6afa0c136a0c"
+    },
+    {
+      "receipt": "clippy-final-r2.json",
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--tests",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_unix_utc": 1791560940.6691632,
+      "end_unix_utc": 1791560947.2244658,
+      "elapsed_s": 6.555302619934082,
+      "exit": 0,
+      "log_sha256": "ddf5a0781974607fc0a5449b242f426c5fc43fb06c632434009ec16378c1a357"
+    }
+  ],
+  "negative_controls": [
+    {
+      "name": "framing_replay",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::http_request::tests::caller_framing_is_always_removed_after_validation",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "start_unix_utc": 1791560834.626571,
+      "end_unix_utc": 1791560844.8012857,
+      "elapsed_s": 10.174714803695679,
+      "exit": 101,
+      "source_sha256": "619ed75fb47b83338005c85d9aae061c7f11d44188f9083dcd77fdaab8fa6c16",
+      "log_sha256": "818246be3d8d0d8a5928e984ffb62887880294c8f2c34c6326ac368ae4395db6",
+      "killed": true
+    },
+    {
+      "name": "file_body_admission",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::http_request::tests::curl_file_imports_shell_operations_and_unsupported_flags_are_rejected",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "start_unix_utc": 1791560844.8019087,
+      "end_unix_utc": 1791560853.9800847,
+      "elapsed_s": 9.178175926208496,
+      "exit": 101,
+      "source_sha256": "d6926ae5b69534b2a74c12f7e55960e50a6a82de38e8faac4bce5ee595250799",
+      "log_sha256": "7959f102aed3fe76c7e0ba1bb2890dcdbd3741133c7f8122f1115b209fe11f4b",
+      "killed": true
+    },
+    {
+      "name": "json_join_as_form",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::http_request::tests::curl_form_json_and_empty_parts_follow_source_joining",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "start_unix_utc": 1791560853.980698,
+      "end_unix_utc": 1791560862.9979782,
+      "elapsed_s": 9.017280101776123,
+      "exit": 101,
+      "source_sha256": "3f1a09227979af5c2de688dc723748b590acf07251c167eb43e9da74d18ce209",
+      "log_sha256": "30553cffe68fcb9079576b8134649c3738025db7a2f5f772e649fc6e3b14ebf5",
+      "killed": true
+    },
+    {
+      "name": "exact_cap_false_truncation",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::http_request::tests::response_cap_requires_an_observed_extra_byte_and_retains_exact_prefix",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "start_unix_utc": 1791560862.9985669,
+      "end_unix_utc": 1791560872.4272406,
+      "elapsed_s": 9.42867374420166,
+      "exit": 101,
+      "source_sha256": "3b3568d6a476b6573a115442b54cd28985a5331ecc2ad2b3caa5939c559a288a",
+      "log_sha256": "2c60a2d9dbad36e3650c030b0d7e14485bb2087b97508b0a783af43e4bdb4b46",
+      "killed": true
+    },
+    {
+      "name": "lossy_utf8_preview",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::http_request::tests::utf8_binary_and_cap_split_multibyte_are_not_lossily_replaced",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "start_unix_utc": 1791560872.4288113,
+      "end_unix_utc": 1791560881.4939275,
+      "elapsed_s": 9.065116167068481,
+      "exit": 101,
+      "source_sha256": "46b245cff7eea3b7de8d112748eb031beacf9081efe166b085bd0340aad084e7",
+      "log_sha256": "fbc5a186f9fa58fbe038fc65eb6b10698586bcf3918b7365673ad5d037e00410",
+      "killed": true
+    },
+    {
+      "name": "json_fallback_discards_original",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::http_request::tests::json_failure_size_depth_node_and_expansion_limits_preserve_original",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "start_unix_utc": 1791560881.4944677,
+      "end_unix_utc": 1791560889.867666,
+      "elapsed_s": 8.37319827079773,
+      "exit": 101,
+      "source_sha256": "8dc1cf0d58ed96830affec5dad5267be8917ba613a6821325f667e6b6664bde3",
+      "log_sha256": "c1e0eb2b2d4b3e78b3413f000f65d9eea4f43461c2699f8ef28a2df8c7c151c4",
+      "killed": true
+    },
+    {
+      "name": "changed_decimal_cap",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "developer::http_request::tests::public_admission_and_preview_limits_are_exact_decimal_bytes",
+        "--",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "start_unix_utc": 1791560889.8684483,
+      "end_unix_utc": 1791560898.3692214,
+      "elapsed_s": 8.500773191452026,
+      "exit": 101,
+      "source_sha256": "235c38c58d828d313eb308c9f3b64751c46d315d8d207b04d674333a628d911f",
+      "log_sha256": "b121118e5283daf68366c8d2a41e71d53388d102b63f095a1bf4694d671e68b9",
+      "killed": true
+    }
+  ],
+  "native_swift_oracle": "Pending macOS execution;95shared+15characterization vectors; Linux source-binding and portable corpus pass"
+}

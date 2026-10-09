@@ -1,0 +1,85 @@
+[
+  {
+    "id": "url_userinfo",
+    "kind": "import",
+    "input": "https://synthetic:example@example.test/"
+  },
+  {
+    "id": "url_empty_userinfo",
+    "kind": "import",
+    "input": "https://@example.test/"
+  },
+  {
+    "id": "url_raw_space",
+    "kind": "import",
+    "input": "https://example.test/a b"
+  },
+  {
+    "id": "url_backslash",
+    "kind": "import",
+    "input": "https://example.test/a\\b"
+  },
+  {
+    "id": "url_invalid_escape",
+    "kind": "import",
+    "input": "https://example.test/%xz"
+  },
+  {
+    "id": "url_empty_authority",
+    "kind": "import",
+    "input": "http:///example.test"
+  },
+  {
+    "id": "url_numeric_shorthand",
+    "kind": "import",
+    "input": "http://127.1/"
+  },
+  {
+    "id": "url_case_default_port",
+    "kind": "import",
+    "input": "HTTP://EXAMPLE.test:80/"
+  },
+  {
+    "id": "url_unicode_idna",
+    "kind": "import",
+    "input": "https://éxample.test/雪"
+  },
+  {
+    "id": "draft_input_500000_body",
+    "kind": "draft",
+    "repeat_body": 500000
+  },
+  {
+    "id": "draft_input_512000_body",
+    "kind": "draft",
+    "repeat_body": 512000
+  },
+  {
+    "id": "draft_input_512001_body",
+    "kind": "draft",
+    "repeat_body": 512001
+  },
+  {
+    "id": "long_method",
+    "kind": "draft",
+    "fields": {
+      "method": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+  },
+  {
+    "id": "unicode_header_whitespace",
+    "kind": "draft",
+    "fields": {
+      "headers": " X-Test : value "
+    }
+  },
+  {
+    "id": "response_json_above_rust_admission",
+    "kind": "response",
+    "status": 200,
+    "prefix": "[",
+    "repeat_byte": 32,
+    "repeat_count": 500000,
+    "suffix": "]"
+  }
+]

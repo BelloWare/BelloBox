@@ -1,0 +1,145 @@
+{
+  "created_utc": "2026-10-09T16:21:02.736990+00:00",
+  "status": "local_validation_only_pending_exact_published_CI_and_native_oracle",
+  "base_commit": "1943f5d2cddb02ca8fc637850d109c9af11ee2f1",
+  "base_tree": "630ecf1c33479c2cb3d17e3db29e5684048500a4",
+  "swift_commit": "e43b1c4595c42383e087fe70f38c28d07c31dda0",
+  "compiled_manifest_entries_verified": 245,
+  "compiled_source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+  "gui_source_manifest_sha256": "c2d912d23e8da8186f89e7a35a6f06d48cffc57c8df9ebc1b9a6800950425c64",
+  "gui_binary_sha256": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+  "gui_receipt_sha256": "033a951f72b52187eb3c441459f0d215435da80281884ec02f6252eaa0dca2fc",
+  "gui_product_source_unchanged": true,
+  "core": {
+    "focused_passed": 31,
+    "negative_mutations_rejected": 7,
+    "portable_oracle_passed": 2,
+    "native_oracle_ignored_on_Linux": 1,
+    "shared_vectors": 95,
+    "shared_accept": 47,
+    "shared_reject": 48,
+    "characterizations": 15
+  },
+  "app_completed_commands": [
+    {
+      "name": "focused-initial",
+      "exit_code": 101,
+      "test_summaries": [],
+      "source_manifest_matches_current": false
+    },
+    {
+      "name": "focused-r2",
+      "exit_code": 0,
+      "test_summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.00s",
+        "test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 554 filtered out; finished in 1.82s"
+      ],
+      "source_manifest_matches_current": false
+    },
+    {
+      "name": "focused-final",
+      "exit_code": 0,
+      "test_summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 579 filtered out; finished in 0.00s",
+        "test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 554 filtered out; finished in 1.97s"
+      ],
+      "source_manifest_matches_current": true
+    },
+    {
+      "name": "strict-final",
+      "exit_code": 0,
+      "test_summaries": [],
+      "source_manifest_matches_current": true
+    },
+    {
+      "name": "ordinary-build",
+      "exit_code": 0,
+      "test_summaries": [],
+      "source_manifest_matches_current": true
+    },
+    {
+      "name": "aggregate-core",
+      "exit_code": 0,
+      "test_summaries": [
+        "test result: ok. 527 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.89s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.20s",
+        "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "source_manifest_matches_current": true
+    },
+    {
+      "name": "aggregate-app",
+      "exit_code": 0,
+      "test_summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 579 filtered out; finished in 0.00s",
+        "test result: ok. 578 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 112.57s"
+      ],
+      "source_manifest_matches_current": true
+    },
+    {
+      "name": "aggregate-recording-app",
+      "exit_code": 0,
+      "test_summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 595 filtered out; finished in 0.00s",
+        "test result: ok. 594 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 129.08s"
+      ],
+      "source_manifest_matches_current": true
+    },
+    {
+      "name": "strict-recording",
+      "exit_code": 0,
+      "test_summaries": [],
+      "source_manifest_matches_current": true
+    },
+    {
+      "name": "aggregate-minimal",
+      "exit_code": 0,
+      "test_summaries": [
+        "test result: ok. 500 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 105.88s",
+        "test result: ok. 376 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.97s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "source_manifest_matches_current": true
+    },
+    {
+      "name": "strict-minimal",
+      "exit_code": 0,
+      "test_summaries": [],
+      "source_manifest_matches_current": true
+    },
+    {
+      "name": "format-all",
+      "exit_code": 0,
+      "test_summaries": [],
+      "source_manifest_matches_current": true
+    }
+  ],
+  "source_changes": 17,
+  "source_manifest_scope": "GUI seal predates documentation/evidence additions. It is preserved verbatim and is not the final publication tree. See documentation-evidence-supplement.json.",
+  "limitations": [
+    "No actual macOS/AppKit, OS-native IME, hardware-GPU or performance/frame-rate claim.",
+    "Native Ctrl-Home in copied multiline editor produced no observed movement; Ctrl-A then Left exposed the beginning. This is not a Ctrl-Home acceptance claim.",
+    "One native text injection failed with unavailable AT-SPI provider; per-character native key input recovered without resetting CUA. Some immediate captures preceded later rendered completion; no frame latency is inferred.",
+    "System DNS cancellation is untested; async60s budget is not a hard physical-runtime disposal bound.",
+    "Session publication-held GPUI fixtures concern post-network adoption, distinct from actual sockets above.",
+    "No screenshots exported; observations are recorded as scoped textual acceptance.",
+    "Native Swift/Foundation oracle execution and exact published-commit Linux/macOS CI remain pending.",
+    "LOC totals are prospective until final publication source is verified."
+  ],
+  "inference_time": "unavailable"
+}

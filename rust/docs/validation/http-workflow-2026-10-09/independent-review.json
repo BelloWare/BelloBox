@@ -1,0 +1,247 @@
+{
+  "kind": "Independent source review with corrected transport wording and sealed App delta/receipt addendum",
+  "created_utc": "2026-10-09T15:59:50.995214+00:00",
+  "original_observation_window_utc": [
+    "2026-10-09T15:40:23Z",
+    "2026-10-09T15:56:18Z"
+  ],
+  "interval_qualification": "Wall interval includes owner waits. No CPU, inference-time, engineering-effort, performance, or parity estimate is inferred.",
+  "correction": {
+    "prior_report_error": "The final chat report incorrectly described the reviewed transport as using Latin-1, carrying forward an intermediate implementation description.",
+    "correct_behavior": "Transport 4cb539b89dc43a4c1102f2066f39dd49b037877096838cbff31fa3f1d677095c preserves valid UTF-8 values. For invalid UTF-8 it displays an explicit [non-UTF-8 bytes] prefix followed by escape_ascii() output. It does not assert or apply Latin-1 decoding. Core bounds the expanded display representation.",
+    "current_source_lines": "rust/crates/bellobox-app/src/transport/http_request.rs:156-164",
+    "intermediate_only_sha256": "9ad26e00e82f468d26c3e4d29b763e0b20d5e7380b0db1ee5e425b85227079c4",
+    "correction_read_utc": "2026-10-09T15:58:36Z/2026-10-09T15:58:51Z"
+  },
+  "disposition": "No unresolved production correctness blocker found in the original reviewed checkpoint plus the exact sealed UI/test delta. Final App receipts substantiate focused tests, strict App Clippy and ordinary App build for the bound source. This is not GUI, native, workspace-wide or final publication acceptance.",
+  "resolved_findings": [
+    "Valid non-UTF-8 HTTP response header bytes no longer discard the status/body; final fallback explicitly escapes opaque bytes.",
+    "Search preserves existing HTTP work and response.",
+    "Send and window shortcuts require exact modifiers; method-menu command shielding and trigger-focus restoration are present.",
+    "Standard method choices are restored immediately after their trigger row; literal editors use monospace.",
+    "Synthetic accepted sockets explicitly set_nonblocking(false) before synchronous timeout operations.",
+    "Latest reviewed UI tests mark identical existing text, retain HttpWindow itself across actual remove_window, and test menu Send suppression/focus restoration."
+  ],
+  "structural_checks": [
+    "Pure cURL import uses literal bounded tokenization, never shell execution, expansion or file reads.",
+    "Only explicit Send dispatches a private immutable prepared snapshot; edited framing headers are stripped and URL userinfo is rejected.",
+    "Dedicated transport inspects non-2xx responses and disables proxy, redirects, retries and implicit credential/cookie lookup.",
+    "Retained response prefix is exactly at most 2,000,000 bytes; truncation requires an observed extra byte. UTF-8/binary and JSON fallback paths are bounded.",
+    "Edit, cancellation, close, composition and session-token checks fence stale output/Copy; shutdown admission is worker-owned through runtime disposal.",
+    "95 shared oracle rows each have expected acceptance (47 accepted, 48 rejected); 15 separate characterizations make no universal Foundation URL/header-wire/locale equivalence claim."
+  ],
+  "pending_acceptance_at_review": [
+    "Exact revised tests, aggregate build/lint checks and native oracle execution remain separately verifiable gates. Earlier owner-reported passes are not transferred to changed hashes.",
+    "Actual minimum-size and keyboard GUI acceptance is not performed by this reviewer.",
+    "Actual live-request close/quit/last-window physical retirement remains separate from publication-held session tests. Live transport header/body cancellation tests are complementary, not equivalent.",
+    "Hyper HTTP/1 100-wire-field behavior is explicitly characterized separately from the Core 256-header upper bound; the added test was read, not run here."
+  ],
+  "reviewer_actions": {
+    "implementation_edits": false,
+    "cargo_or_test_execution": false,
+    "network_requests": false,
+    "desktop_use": false,
+    "publication": false,
+    "review_artifact_write_only": true
+  },
+  "immutable_handoff": {
+    "claimed_source_commit": "f1c21ae4f22b14dc10c5a57651499b05cc37ec92",
+    "sha256": "a0bc6c804247c89aeec7454e8342aace4ce0e8267e6d3534b9f367e501ed7652",
+    "bytes": 24650,
+    "verification": "Complete read; exact prefix of the local continuation document."
+  },
+  "reviewed_sha256": {
+    "rust/crates/bellobox-core/src/developer/http_request.rs": "a8619a9a572f2a9328ea4659f8f9f0fbcac4d1bf8b8636399da49da6ff41753d",
+    "rust/crates/bellobox-app/src/http_ui.rs": "87504f5ecb2269eb1a7728ac92a9b5e9e7dbb41402ce1ba3e54b7a762e8567c3",
+    "rust/crates/bellobox-app/src/http_session.rs": "eea2b0e9b2b083b4f06ba9d0e82d2cf51ee893a3523f607e4d275490ae4ab383",
+    "rust/crates/bellobox-app/src/transport/http_request.rs": "4cb539b89dc43a4c1102f2066f39dd49b037877096838cbff31fa3f1d677095c",
+    "rust/crates/bellobox-app/src/http_ui/tests.rs": "4f5f261cadc747e08236bf562589715ddab70d6134eea002e26e983329c54b7b",
+    "rust/crates/bellobox-app/src/http_session/tests.rs": "b033dd4aed1116eb1451f3d4edf77c9acb6e5c12c2f483450d3a847c8128b94e",
+    "rust/crates/bellobox-app/src/transport/http_request/tests.rs": "cb35fc7eeb792a938ec5c02f809566daf998c1e2b6e146048c06aa059303c010",
+    "rust/crates/bellobox-core/tests/http_swift_oracle.rs": "4e65627f31005537376a7ae590cd2712b8b12ea0398867472488fea7afa3fd6f",
+    "rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json": "b55f277666591fe90cf4d2b9c6abd2e338bce3d7060a14e2a108a5a70cb160a4",
+    "rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json": "38d4a1f7fc530b8223a7fea541ab7c80fc2b9cd54ca7ffb3610996f6af4ac2e4",
+    ".github/workflows/rust-macos.yml": "499860d3fb972339a2394cabe3d201c10296e1fac78705e459085da83516103e",
+    "rust/crates/bellobox-app/src/shutdown.rs": "a90f191f5760b618fc61df75de4d844e0c95226407bbd2a3b8dd5f0806be01f7"
+  },
+  "current_observed_sha256_at_correction": {
+    "rust/crates/bellobox-core/src/developer/http_request.rs": "a8619a9a572f2a9328ea4659f8f9f0fbcac4d1bf8b8636399da49da6ff41753d",
+    "rust/crates/bellobox-app/src/http_ui.rs": "653c7e34f1c1fc03101deb14a06cf6e6ba952e652c4f1537dd3dd458548c86fe",
+    "rust/crates/bellobox-app/src/http_session.rs": "eea2b0e9b2b083b4f06ba9d0e82d2cf51ee893a3523f607e4d275490ae4ab383",
+    "rust/crates/bellobox-app/src/transport/http_request.rs": "4cb539b89dc43a4c1102f2066f39dd49b037877096838cbff31fa3f1d677095c",
+    "rust/crates/bellobox-app/src/http_ui/tests.rs": "a17528dd59e5ee30e04cff114a8c959a7ef31fe95d2902635db18aaa89f67dbe",
+    "rust/crates/bellobox-app/src/http_session/tests.rs": "b033dd4aed1116eb1451f3d4edf77c9acb6e5c12c2f483450d3a847c8128b94e",
+    "rust/crates/bellobox-app/src/transport/http_request/tests.rs": "dd62a02c90052792b376ae04af94acb3970772918e4261eb7d28f1410c4782fa",
+    "rust/crates/bellobox-core/tests/http_swift_oracle.rs": "4e65627f31005537376a7ae590cd2712b8b12ea0398867472488fea7afa3fd6f",
+    "rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json": "b55f277666591fe90cf4d2b9c6abd2e338bce3d7060a14e2a108a5a70cb160a4",
+    "rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json": "38d4a1f7fc530b8223a7fea541ab7c80fc2b9cd54ca7ffb3610996f6af4ac2e4",
+    ".github/workflows/rust-macos.yml": "499860d3fb972339a2394cabe3d201c10296e1fac78705e459085da83516103e",
+    "rust/crates/bellobox-app/src/shutdown.rs": "a90f191f5760b618fc61df75de4d844e0c95226407bbd2a3b8dd5f0806be01f7"
+  },
+  "checkout_qualification": "Exported source tree has no local Git metadata. Review binds file hashes, not an independently verified local commit.",
+  "prior_artifact": {
+    "path": "local-artifact:independent-http-review-20261009-before-delta.json",
+    "sha256": "9642f1afae02973d192d5ceb6c58deec8f527f403dc2f2514c06b686e7a1df9a"
+  },
+  "changed_at_correction_before_delta_review": {
+    "rust/crates/bellobox-app/src/http_ui.rs": {
+      "reviewed": "87504f5ecb2269eb1a7728ac92a9b5e9e7dbb41402ce1ba3e54b7a762e8567c3",
+      "current": "653c7e34f1c1fc03101deb14a06cf6e6ba952e652c4f1537dd3dd458548c86fe"
+    },
+    "rust/crates/bellobox-app/src/http_ui/tests.rs": {
+      "reviewed": "4f5f261cadc747e08236bf562589715ddab70d6134eea002e26e983329c54b7b",
+      "current": "a17528dd59e5ee30e04cff114a8c959a7ef31fe95d2902635db18aaa89f67dbe"
+    },
+    "rust/crates/bellobox-app/src/transport/http_request/tests.rs": {
+      "reviewed": "cb35fc7eeb792a938ec5c02f809566daf998c1e2b6e146048c06aa059303c010",
+      "current": "dd62a02c90052792b376ae04af94acb3970772918e4261eb7d28f1410c4782fa"
+    }
+  },
+  "changed_since_latest_review_not_automatically_approved": {},
+  "latest_reviewed_sha256": {
+    "rust/crates/bellobox-core/src/developer/http_request.rs": "a8619a9a572f2a9328ea4659f8f9f0fbcac4d1bf8b8636399da49da6ff41753d",
+    "rust/crates/bellobox-app/src/http_ui.rs": "653c7e34f1c1fc03101deb14a06cf6e6ba952e652c4f1537dd3dd458548c86fe",
+    "rust/crates/bellobox-app/src/http_session.rs": "eea2b0e9b2b083b4f06ba9d0e82d2cf51ee893a3523f607e4d275490ae4ab383",
+    "rust/crates/bellobox-app/src/transport/http_request.rs": "4cb539b89dc43a4c1102f2066f39dd49b037877096838cbff31fa3f1d677095c",
+    "rust/crates/bellobox-app/src/http_ui/tests.rs": "a17528dd59e5ee30e04cff114a8c959a7ef31fe95d2902635db18aaa89f67dbe",
+    "rust/crates/bellobox-app/src/http_session/tests.rs": "b033dd4aed1116eb1451f3d4edf77c9acb6e5c12c2f483450d3a847c8128b94e",
+    "rust/crates/bellobox-app/src/transport/http_request/tests.rs": "dd62a02c90052792b376ae04af94acb3970772918e4261eb7d28f1410c4782fa",
+    "rust/crates/bellobox-core/tests/http_swift_oracle.rs": "4e65627f31005537376a7ae590cd2712b8b12ea0398867472488fea7afa3fd6f",
+    "rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json": "b55f277666591fe90cf4d2b9c6abd2e338bce3d7060a14e2a108a5a70cb160a4",
+    "rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json": "38d4a1f7fc530b8223a7fea541ab7c80fc2b9cd54ca7ffb3610996f6af4ac2e4",
+    ".github/workflows/rust-macos.yml": "499860d3fb972339a2394cabe3d201c10296e1fac78705e459085da83516103e",
+    "rust/crates/bellobox-app/src/shutdown.rs": "a90f191f5760b618fc61df75de4d844e0c95226407bbd2a3b8dd5f0806be01f7"
+  },
+  "latest_delta_review": {
+    "start_utc": "2026-10-09T16:00:50Z",
+    "end_utc": "2026-10-09T16:03:38.392702+00:00",
+    "scope": "Only UI/test changes since the original reviewed hashes, plus read-only binding to supplied source and command receipts. No implementation edits, Cargo, test execution, desktop or publication actions.",
+    "delta_identification": "Owner identified the small delta. Reviewer reversed those exact changes in memory and independently reproduced all three original SHA-256 hashes, establishing the textual scope without claiming an unavailable historical file snapshot.",
+    "deltas": [
+      {
+        "path": "rust/crates/bellobox-app/src/http_ui.rs",
+        "before_sha256": "87504f5ecb2269eb1a7728ac92a9b5e9e7dbb41402ce1ba3e54b7a762e8567c3",
+        "after_sha256": "653c7e34f1c1fc03101deb14a06cf6e6ba952e652c4f1537dd3dd458548c86fe",
+        "changes": "MethodMenu trigger receives w_full/min_w_0; button labels are placed in min_w_0/truncate wrappers. The complete method value and immutable request are unchanged. Source review found no dispatch/lifecycle/clipboard side effect."
+      },
+      {
+        "path": "rust/crates/bellobox-app/src/http_ui/tests.rs",
+        "before_sha256": "4f5f261cadc747e08236bf562589715ddab70d6134eea002e26e983329c54b7b",
+        "after_sha256": "a17528dd59e5ee30e04cff114a8c959a7ef31fe95d2902635db18aaa89f67dbe",
+        "changes": "Adds a 2,000,001-byte loopback response test asserting exact 2,000,000-byte retention, truncation, complete bounded editor text and complete Copy payload beyond rendered line prefixes. It does not assert every retained glyph was painted."
+      },
+      {
+        "path": "rust/crates/bellobox-app/src/transport/http_request/tests.rs",
+        "before_sha256": "cb35fc7eeb792a938ec5c02f809566daf998c1e2b6e146048c06aa059303c010",
+        "after_sha256": "dd62a02c90052792b376ae04af94acb3970772918e4261eb7d28f1410c4782fa",
+        "changes": "Ambient-proxy child test strips the synthetic request path from the proxy authority. The isolated child must hit the real loopback listener once and the proxy trap zero times."
+      }
+    ],
+    "sealed_manifest": {
+      "path": "local-artifact:source-manifest.json",
+      "sha256": "c2d912d23e8da8186f89e7a35a6f06d48cffc57c8df9ebc1b9a6800950425c64",
+      "entries_verified_against_current_files": 607,
+      "all_paths_present_sizes_and_hashes_match": true
+    },
+    "command_source_binding": {
+      "entries_per_manifest": 245,
+      "manifest_paths": [
+        "local-artifact:focused-final-source.json",
+        "local-artifact:strict-final-source.json",
+        "local-artifact:ordinary-build-source.json"
+      ],
+      "manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+      "all_three_byte_identical": true,
+      "all_entries_match_sealed_manifest": true
+    },
+    "command_receipts_read": [
+      {
+        "name": "focused-final",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "-p",
+          "bellobox-app",
+          "http",
+          "--",
+          "--test-threads=1"
+        ],
+        "cwd": "rust",
+        "start_utc": "2026-10-09T15:58:43.276453+00:00",
+        "end_utc": "2026-10-09T15:59:22.328842+00:00",
+        "elapsed_seconds": 39.05239071599499,
+        "exit_code": 0,
+        "measurement": "observed command interval, not source editing or inference time",
+        "log_path": "local-artifact:focused-final.log",
+        "log_sha256": "cc1ef9276768d562aeed9b268e713406a66fc06be44c399295115732f5aa9e77",
+        "source_manifest_path": "local-artifact:focused-final-source.json",
+        "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec"
+      },
+      {
+        "name": "strict-final",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "bellobox-app",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "cwd": "rust",
+        "start_utc": "2026-10-09T15:59:22.408356+00:00",
+        "end_utc": "2026-10-09T15:59:47.867880+00:00",
+        "elapsed_seconds": 25.459525564001524,
+        "exit_code": 0,
+        "measurement": "observed command interval, not source editing or inference time",
+        "log_path": "local-artifact:strict-final.log",
+        "log_sha256": "8e56ee1c173e50f6786e35b7e33cddfe9b699d3eb3dda7d65f58a4a035f5f4b8",
+        "source_manifest_path": "local-artifact:strict-final-source.json",
+        "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec"
+      },
+      {
+        "name": "ordinary-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "-p",
+          "bellobox-app"
+        ],
+        "cwd": "rust",
+        "start_utc": "2026-10-09T15:59:47.914916+00:00",
+        "end_utc": "2026-10-09T16:00:06.740224+00:00",
+        "elapsed_seconds": 18.825310714004445,
+        "exit_code": 0,
+        "measurement": "observed command interval, not source editing or inference time",
+        "log_path": "local-artifact:ordinary-build.log",
+        "log_sha256": "1d88ae4455a5bb94fce6b77474085e8dc1dd2f1e3222eb55f2530ecc96fdadc4",
+        "source_manifest_path": "local-artifact:ordinary-build-source.json",
+        "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec"
+      }
+    ],
+    "focused_test_result": "26 passed, 0 failed, 0 ignored, 554 filtered out. This is the HTTP-focused App subset, not all 580 App tests. The isolated proxy child also runs its one exact test.",
+    "build_and_lint_result": "Strict App all-target Clippy with -D warnings and ordinary App build both exit 0. Logs retain the pre-existing proc-macro-error2 future-incompatibility notice.",
+    "failures_preserved": "Earlier focused-initial exit 101 and measurement-harness-before-Cargo failure remain in the supplied evidence. This addendum does not relabel those attempts successful.",
+    "binary_binding": {
+      "seal_path": "local-artifact:seal.json",
+      "binary_path": "local-artifact:bellobox",
+      "verified_sha256": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+      "bytes": 149617304,
+      "boundary": "File hash and seal inspected; reviewer did not execute the binary or observe its GUI."
+    },
+    "remaining_acceptance": [
+      "Actual GUI minimum-size, pointer/keyboard, close/reopen and live-request app-controlled/last-window retirement remain separate pending GUI evidence; no observed GUI result is asserted by this addendum.",
+      "Session publication-held tests still establish delayed adoption and terminal-payload ownership, not a live socket stall. Dedicated live transport header/body cancellation and deadline tests passed in the bound focused run but are not equivalent to whole-window shutdown acceptance.",
+      "Native Swift/Foundation oracle execution, native app/platform CI, workspace-wide/minimal-feature/no-debug checks and publication verification remain separately owned; these App receipts are not substitutes.",
+      "OS-native IME, AppKit menus/materials/accessibility, DNS cancellation, hard physical runtime-disposal deadlines and general performance/native parity remain outside this review."
+    ]
+  },
+  "publication_normalization": {
+    "original_sha256": "351a59807a118f7966ae37883e327b9904429471642d824e1e334339182d30d7",
+    "change": "Local absolute paths replaced by artifact labels; labels do not imply the artifact is included. Source/review hashes and findings retained."
+  }
+}

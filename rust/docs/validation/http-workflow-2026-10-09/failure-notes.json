@@ -1,0 +1,30 @@
+{
+  "observed_failures": [
+    {
+      "receipt": "focused-initial.json",
+      "kind": "real product regression",
+      "detail": "Empty raw authority http:///example.test accepted through WHATWG normalization; fixed explicit empty raw authority rejection."
+    },
+    {
+      "receipt": "oracle-portable-initial.json",
+      "kind": "test expectation error",
+      "detail": "Aggregate expected accepted count49 was incorrect; actual47. Replaced with per-vector expected_ok plus verified count47."
+    },
+    {
+      "receipt": "oracle-portable-r2.json",
+      "kind": "unchanged repeat after failed edit",
+      "detail": "First correction script used a redundant rust/ prefix from rust working directory; FileNotFoundError left code unchanged. Corrected script path and passed r3."
+    },
+    {
+      "receipt": "clippy-oracle.json",
+      "kind": "new compiler lint",
+      "detail": "Rust1.99 strict Clippy chunks_exact_to_as_chunks; fixture helper changed to as_chunks::<2>().0.iter(). Passed r2."
+    },
+    {
+      "receipt": "focused-final.json",
+      "kind": "shared Cargo target stale binary after isolated mutation",
+      "detail": "No compile occurred; test harness reported2,000,001 cap although product and restored mutant files both sha256a8619a9a572f2a9328ea4659f8f9f0fbcac4d1bf8b8636399da49da6ff41753d declared2,000,000. Unchanged product source mtime touched; focused-final-r2.log confirms actual recompilation and31passed."
+    }
+  ],
+  "native_swift_status": "Pending actualmacOS; native test ignored on Linux with explicit reason."
+}

@@ -1,0 +1,316 @@
+[
+  {
+    "name": "focused-initial",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "http",
+      "--",
+      "--test-threads=1"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T15:49:50.307476+00:00",
+    "end_utc": "2026-10-09T15:51:31.866749+00:00",
+    "elapsed_seconds": 101.55927547400643,
+    "exit_code": 101,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "23621acd3ef887f01836839b920a8938e7256968f0d72f4ce769a30c28554f01",
+    "original_log_sha256": "5ff7bc2a9c1560b8b2abec7513d086df4201277b0f14fdb2b1756011f0276bed",
+    "source_manifest_matches_current": false,
+    "test_summaries": []
+  },
+  {
+    "name": "focused-r2",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "http",
+      "--",
+      "--test-threads=1"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T15:52:07.917593+00:00",
+    "end_utc": "2026-10-09T15:53:53.646299+00:00",
+    "elapsed_seconds": 105.72870890000195,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "23621acd3ef887f01836839b920a8938e7256968f0d72f4ce769a30c28554f01",
+    "original_log_sha256": "211d4b079351178ad8198aaf6083b9d4672522980fded6dc143e3a584cad15ba",
+    "source_manifest_matches_current": false,
+    "test_summaries": [
+      "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.00s",
+      "test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 554 filtered out; finished in 1.82s"
+    ]
+  },
+  {
+    "name": "focused-final",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "http",
+      "--",
+      "--test-threads=1"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T15:58:43.276453+00:00",
+    "end_utc": "2026-10-09T15:59:22.328842+00:00",
+    "elapsed_seconds": 39.05239071599499,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "cc1ef9276768d562aeed9b268e713406a66fc06be44c399295115732f5aa9e77",
+    "source_manifest_matches_current": true,
+    "test_summaries": [
+      "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 579 filtered out; finished in 0.00s",
+      "test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 554 filtered out; finished in 1.97s"
+    ]
+  },
+  {
+    "name": "strict-final",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T15:59:22.408356+00:00",
+    "end_utc": "2026-10-09T15:59:47.867880+00:00",
+    "elapsed_seconds": 25.459525564001524,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "8e56ee1c173e50f6786e35b7e33cddfe9b699d3eb3dda7d65f58a4a035f5f4b8",
+    "source_manifest_matches_current": true,
+    "test_summaries": []
+  },
+  {
+    "name": "ordinary-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "-p",
+      "bellobox-app"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T15:59:47.914916+00:00",
+    "end_utc": "2026-10-09T16:00:06.740224+00:00",
+    "elapsed_seconds": 18.825310714004445,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "1d88ae4455a5bb94fce6b77474085e8dc1dd2f1e3222eb55f2530ecc96fdadc4",
+    "source_manifest_matches_current": true,
+    "test_summaries": []
+  },
+  {
+    "name": "aggregate-core",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T16:10:22.381342+00:00",
+    "end_utc": "2026-10-09T16:10:41.337726+00:00",
+    "elapsed_seconds": 18.95638676499948,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "57e09d96abfa9c722557048aaed08e55662d4e98adb245327644be644e67afc8",
+    "source_manifest_matches_current": true,
+    "test_summaries": [
+      "test result: ok. 527 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.89s",
+      "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.20s",
+      "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+      "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ]
+  },
+  {
+    "name": "aggregate-app",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "--",
+      "--test-threads=2"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T16:10:41.410809+00:00",
+    "end_utc": "2026-10-09T16:12:35.072478+00:00",
+    "elapsed_seconds": 113.66166974201042,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "2e1ae5e78e2a45e9e7756409d1c6031f7c0ce9b8828a0013baf203a60fab2825",
+    "source_manifest_matches_current": true,
+    "test_summaries": [
+      "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 579 filtered out; finished in 0.00s",
+      "test result: ok. 578 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 112.57s"
+    ]
+  },
+  {
+    "name": "aggregate-recording-app",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "--features",
+      "recording-fixtures",
+      "--",
+      "--test-threads=2"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T16:12:35.116258+00:00",
+    "end_utc": "2026-10-09T16:15:28.158264+00:00",
+    "elapsed_seconds": 173.04200750299788,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "245c9df8588142a44065a0c62c6282be05d1b54a6843140b63e99dcb2398663b",
+    "source_manifest_matches_current": true,
+    "test_summaries": [
+      "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 595 filtered out; finished in 0.00s",
+      "test result: ok. 594 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 129.08s"
+    ]
+  },
+  {
+    "name": "strict-recording",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "-p",
+      "bellobox-app",
+      "--all-targets",
+      "--features",
+      "recording-fixtures",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T16:15:28.202518+00:00",
+    "end_utc": "2026-10-09T16:15:47.871224+00:00",
+    "elapsed_seconds": 19.668708325989428,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "6c3a2aabd8ac027bbe2382d9ff6c8f1f71561f959124d505dbbc5285e1c24da3",
+    "source_manifest_matches_current": true,
+    "test_summaries": []
+  },
+  {
+    "name": "aggregate-minimal",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "-p",
+      "bellobox-app",
+      "--no-default-features",
+      "--",
+      "--test-threads=2"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T16:15:47.921469+00:00",
+    "end_utc": "2026-10-09T16:18:47.256967+00:00",
+    "elapsed_seconds": 179.3354997520073,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "c4fa12b1f2085e4dfafae69c88347c855a147ecc7e4fb9fc913034cb457266e2",
+    "source_manifest_matches_current": true,
+    "test_summaries": [
+      "test result: ok. 500 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 105.88s",
+      "test result: ok. 376 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.97s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ]
+  },
+  {
+    "name": "strict-minimal",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "-p",
+      "bellobox-app",
+      "--all-targets",
+      "--no-default-features",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T16:18:47.334826+00:00",
+    "end_utc": "2026-10-09T16:19:03.030092+00:00",
+    "elapsed_seconds": 15.695266601003823,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "0efe196dd84b3ec0fb981b0611cb5ee6d1d252edd9b74de71a7e69c02ca26218",
+    "source_manifest_matches_current": true,
+    "test_summaries": []
+  },
+  {
+    "name": "format-all",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "cwd": "rust",
+    "start_utc": "2026-10-09T16:19:03.077954+00:00",
+    "end_utc": "2026-10-09T16:19:05.143955+00:00",
+    "elapsed_seconds": 2.066003020008793,
+    "exit_code": 0,
+    "measurement": "observed command interval, not source editing or inference time",
+    "source_manifest_sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+    "original_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source_manifest_matches_current": true,
+    "test_summaries": []
+  }
+]

@@ -16,6 +16,8 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 mod certificate;
 #[path = "developer/comparison.rs"]
 pub mod comparison;
+#[path = "developer/http_request.rs"]
+pub mod http_request;
 #[path = "developer/json_formatter.rs"]
 mod json_formatter;
 #[path = "developer/json_schema.rs"]

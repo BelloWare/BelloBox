@@ -1,0 +1,617 @@
+[
+  {
+    "id": "literal_url",
+    "kind": "import",
+    "input": "  https://example.test/fixture?q=a+b&tag=one&tag=two#frag  ",
+    "expected_ok": true
+  },
+  {
+    "id": "numeric_loopback",
+    "kind": "import",
+    "input": "http://127.0.0.1:8765/fixture?x=1",
+    "expected_ok": true
+  },
+  {
+    "id": "ipv6_loopback",
+    "kind": "import",
+    "input": "http://[::1]:8765/fixture?x=1",
+    "expected_ok": true
+  },
+  {
+    "id": "json_defaults",
+    "kind": "import",
+    "input": "curl 'https://example.test/api?a=1&b=2' -H 'X-Test: a:b' --json '{\"id\":123,\"name\":\"A B\"}' ",
+    "expected_ok": true
+  },
+  {
+    "id": "attached_values",
+    "kind": "import",
+    "input": "curl --url='https://example.test/fixture' -XPOST -H'X-Test: yes' --json='{\"a\":true}' ",
+    "expected_ok": true
+  },
+  {
+    "id": "form_parts",
+    "kind": "import",
+    "input": "curl https://example.test/ -d a=1 --data-binary b=2 --data-raw ''",
+    "expected_ok": true
+  },
+  {
+    "id": "json_parts",
+    "kind": "import",
+    "input": "curl https://example.test/ --json '{' --json '}'",
+    "expected_ok": true
+  },
+  {
+    "id": "explicit_put",
+    "kind": "import",
+    "input": "curl https://example.test/ -X PUT --data-raw '@literal'",
+    "expected_ok": true
+  },
+  {
+    "id": "option_value_0",
+    "kind": "import",
+    "input": "curl https://example.test/ --data-raw '-dhello'",
+    "expected_ok": true
+  },
+  {
+    "id": "option_value_1",
+    "kind": "import",
+    "input": "curl https://example.test/ --data-raw '--json=literal'",
+    "expected_ok": true
+  },
+  {
+    "id": "option_value_2",
+    "kind": "import",
+    "input": "curl https://example.test/ --data-raw '-HContent-Type: example'",
+    "expected_ok": true
+  },
+  {
+    "id": "head_then_request",
+    "kind": "import",
+    "input": "curl https://example.test/ -I -XPOST",
+    "expected_ok": true
+  },
+  {
+    "id": "request_then_head",
+    "kind": "import",
+    "input": "curl https://example.test/ -XPOST --head",
+    "expected_ok": true
+  },
+  {
+    "id": "cosmetic_options",
+    "kind": "import",
+    "input": "curl https://example.test/ --compressed -s --silent -S --show-error --globoff -g",
+    "expected_ok": true
+  },
+  {
+    "id": "empty_form",
+    "kind": "import",
+    "input": "curl https://example.test/ -d ''",
+    "expected_ok": true
+  },
+  {
+    "id": "empty_json",
+    "kind": "import",
+    "input": "curl https://example.test/ --json ''",
+    "expected_ok": true
+  },
+  {
+    "id": "custom_content_headers",
+    "kind": "import",
+    "input": "curl https://example.test/ -H 'content-TYPE: custom/type' -H 'ACCEPT: custom' --json '{}'",
+    "expected_ok": true
+  },
+  {
+    "id": "repeated_headers",
+    "kind": "import",
+    "input": "curl https://example.test/ -H 'X-Test: first' -H 'X-Test: second'",
+    "compare_headers": false,
+    "expected_ok": true
+  },
+  {
+    "id": "get_data",
+    "kind": "import",
+    "input": "curl 'https://example.test/fixture?a=1#f' -G -d 'q=hello%20world' -d 'n=%E9%9B%AA'",
+    "expected_ok": true
+  },
+  {
+    "id": "get_explicit_method",
+    "kind": "import",
+    "input": "curl 'https://example.test/fixture?' --get -XPUT --json 'x=1'",
+    "expected_ok": true
+  },
+  {
+    "id": "get_empty",
+    "kind": "import",
+    "input": "curl https://example.test/ -G -d ''",
+    "expected_ok": true
+  },
+  {
+    "id": "inline_cookies",
+    "kind": "import",
+    "input": "curl https://example.test/ -b 'name=value; other=two' --cookie=a=b",
+    "compare_headers": false,
+    "expected_ok": true
+  },
+  {
+    "id": "synthetic_basic_auth",
+    "kind": "import",
+    "input": "curl https://example.test/ -usynthetic:example",
+    "expected_ok": true
+  },
+  {
+    "id": "drop_framing",
+    "kind": "import",
+    "input": "curl https://example.test/ -H 'Content-Length: 300' -H 'Transfer-Encoding: chunked' -d edited",
+    "expected_ok": true
+  },
+  {
+    "id": "literal_shell_symbols",
+    "kind": "import",
+    "input": "curl 'https://example.test/$literal?x=a&b=c' --data-raw '$(nothing); | & < >'",
+    "expected_ok": true
+  },
+  {
+    "id": "double_quote_escape",
+    "kind": "import",
+    "input": "curl \"https://example.test/\" --data-raw \"a\\nb\"",
+    "expected_ok": true
+  },
+  {
+    "id": "line_continuation",
+    "kind": "import",
+    "input": "curl https://example.test/ \\\n-d x \\\r\n-H 'X: y'",
+    "expected_ok": true
+  },
+  {
+    "id": "rejected_import_00",
+    "kind": "import",
+    "input": "curl https://example.test/ | sh",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_01",
+    "kind": "import",
+    "input": "curl https://example.test/; echo x",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_02",
+    "kind": "import",
+    "input": "curl https://example.test/ && echo x",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_03",
+    "kind": "import",
+    "input": "curl https://example.test/ > out",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_04",
+    "kind": "import",
+    "input": "curl https://example.test/ < in",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_05",
+    "kind": "import",
+    "input": "curl https://example.test/ `pwd`",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_06",
+    "kind": "import",
+    "input": "curl https://example.test/$TOKEN",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_07",
+    "kind": "import",
+    "input": "curl https://example.test/ --data @secret.txt",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_08",
+    "kind": "import",
+    "input": "curl https://example.test/ --data-binary=@secret.txt",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_09",
+    "kind": "import",
+    "input": "curl https://example.test/ --json @secret.txt",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_10",
+    "kind": "import",
+    "input": "curl https://example.test/ -H @headers.txt",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_11",
+    "kind": "import",
+    "input": "curl https://example.test/ --config config",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_12",
+    "kind": "import",
+    "input": "curl https://example.test/ --location",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_13",
+    "kind": "import",
+    "input": "curl https://example.test/ --insecure",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_14",
+    "kind": "import",
+    "input": "curl https://example.test/ --unknown",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_15",
+    "kind": "import",
+    "input": "curl https://example.test/ -sS",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_16",
+    "kind": "import",
+    "input": "curl https://example.test/ --",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_17",
+    "kind": "import",
+    "input": "curl",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_18",
+    "kind": "import",
+    "input": "curl -X",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_19",
+    "kind": "import",
+    "input": "curl -H",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_20",
+    "kind": "import",
+    "input": "curl --url",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_21",
+    "kind": "import",
+    "input": "curl https://example.test/ https://other.test/",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_22",
+    "kind": "import",
+    "input": "curl --url https://example.test/ --url https://other.test/",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_23",
+    "kind": "import",
+    "input": "curl 'https://example.test/",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_24",
+    "kind": "import",
+    "input": "curl https://example.test/ \\",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_25",
+    "kind": "import",
+    "input": "curlish https://example.test/",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_26",
+    "kind": "import",
+    "input": "curl https://example.test/ --json {} -d x",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_27",
+    "kind": "import",
+    "input": "curl https://example.test/ -b cookies.txt",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_28",
+    "kind": "import",
+    "input": "curl https://example.test/ -b 'a=b\ninjected'",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_import_29",
+    "kind": "import",
+    "input": "curl \"https://example.test/$TOKEN\"",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_get_0",
+    "kind": "import",
+    "input": "curl https://example.test/ -G -d 'hello world'",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_get_1",
+    "kind": "import",
+    "input": "curl https://example.test/ -G -d '%'",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_get_2",
+    "kind": "import",
+    "input": "curl https://example.test/ -G -d '%xz'",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_get_3",
+    "kind": "import",
+    "input": "curl https://example.test/ -G -d 'é'",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_get_4",
+    "kind": "import",
+    "input": "curl https://example.test/ -G -d 'x=#f'",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_get_5",
+    "kind": "import",
+    "input": "curl https://example.test/ -G -d 'x=%FF'",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_get_6",
+    "kind": "import",
+    "input": "curl https://example.test/ -G -d 'x=%C3'",
+    "expected_ok": false
+  },
+  {
+    "id": "rejected_get_7",
+    "kind": "import",
+    "input": "curl https://example.test/ -G -d 'x=%ED%A0%80'",
+    "expected_ok": false
+  },
+  {
+    "id": "draft_00",
+    "kind": "draft",
+    "fields": {
+      "method": " post \n",
+      "headers": "X-Test: a:b\nX-Tab: a\tb",
+      "body": "雪🚀"
+    },
+    "expected_ok": true
+  },
+  {
+    "id": "draft_01",
+    "kind": "draft",
+    "fields": {
+      "method": "M-SEARCH"
+    },
+    "expected_ok": true
+  },
+  {
+    "id": "draft_02",
+    "kind": "draft",
+    "fields": {
+      "method": "GET\r\nX"
+    },
+    "expected_ok": false
+  },
+  {
+    "id": "draft_03",
+    "kind": "draft",
+    "fields": {
+      "method": "GET1"
+    },
+    "expected_ok": false
+  },
+  {
+    "id": "draft_04",
+    "kind": "draft",
+    "fields": {
+      "headers": "Bad Name: value"
+    },
+    "expected_ok": false
+  },
+  {
+    "id": "draft_05",
+    "kind": "draft",
+    "fields": {
+      "headers": "X: bad\r\ninjected: yes"
+    },
+    "expected_ok": false
+  },
+  {
+    "id": "draft_06",
+    "kind": "draft",
+    "fields": {
+      "headers": "X: bad\u0000"
+    },
+    "expected_ok": false
+  },
+  {
+    "id": "draft_07",
+    "kind": "draft",
+    "fields": {
+      "headers": "X: bad"
+    },
+    "expected_ok": false
+  },
+  {
+    "id": "draft_08",
+    "kind": "draft",
+    "fields": {
+      "url": "file:///tmp/file"
+    },
+    "expected_ok": false
+  },
+  {
+    "id": "draft_09",
+    "kind": "draft",
+    "fields": {
+      "url": "https://"
+    },
+    "expected_ok": false
+  },
+  {
+    "id": "draft_10",
+    "kind": "draft",
+    "fields": {
+      "headers": "Content-Length: 90\nTransfer-Encoding: chunked",
+      "body": "edited"
+    },
+    "expected_ok": true
+  },
+  {
+    "id": "tokenize_0",
+    "kind": "tokenize",
+    "input": "curl '' a\"b\"'c' \"\\$\\`\\\"\\\\\" '$HOME `literal`' ",
+    "expected_ok": true
+  },
+  {
+    "id": "tokenize_1",
+    "kind": "tokenize",
+    "input": "curl \"a\\nb\" ",
+    "expected_ok": true
+  },
+  {
+    "id": "tokenize_2",
+    "kind": "tokenize",
+    "input": "curl a\\ b",
+    "expected_ok": true
+  },
+  {
+    "id": "tokenize_3",
+    "kind": "tokenize",
+    "input": "curl \"unterminated",
+    "expected_ok": false
+  },
+  {
+    "id": "tokenize_4",
+    "kind": "tokenize",
+    "input": "curl a\\",
+    "expected_ok": false
+  },
+  {
+    "id": "response_0",
+    "kind": "response",
+    "status": 201,
+    "body": "{\"id\":9007199254740993,\"z\":1e400,\"n\":-0.00}",
+    "expected_ok": true
+  },
+  {
+    "id": "response_1",
+    "kind": "response",
+    "status": 302,
+    "body": "redirect body",
+    "expected_ok": true
+  },
+  {
+    "id": "response_2",
+    "kind": "response",
+    "status": 404,
+    "body": "not found",
+    "expected_ok": true
+  },
+  {
+    "id": "response_3",
+    "kind": "response",
+    "status": 500,
+    "body": "{bad json}",
+    "expected_ok": true
+  },
+  {
+    "id": "response_4",
+    "kind": "response",
+    "status": 204,
+    "body": "",
+    "expected_ok": true
+  },
+  {
+    "id": "response_5",
+    "kind": "response",
+    "status": 418,
+    "body": "café 🚀",
+    "expected_ok": true
+  },
+  {
+    "id": "response_6",
+    "kind": "response",
+    "status": 599,
+    "body": "null",
+    "expected_ok": true
+  },
+  {
+    "id": "response_7",
+    "kind": "response",
+    "status": 999,
+    "body": "[true,false]",
+    "expected_ok": true
+  },
+  {
+    "id": "response_invalid_utf8",
+    "kind": "response",
+    "status": 200,
+    "body_hex": "fffe",
+    "expected_ok": true
+  },
+  {
+    "id": "response_nul_utf8",
+    "kind": "response",
+    "status": 200,
+    "body": "a\u0000b",
+    "expected_ok": true
+  },
+  {
+    "id": "response_exact_cap",
+    "kind": "response",
+    "status": 200,
+    "repeat_byte": 97,
+    "repeat_count": 2000000,
+    "expected_ok": true
+  },
+  {
+    "id": "response_over_cap",
+    "kind": "response",
+    "status": 200,
+    "repeat_byte": 97,
+    "repeat_count": 2000001,
+    "expected_ok": true
+  },
+  {
+    "id": "response_split_utf8",
+    "kind": "response",
+    "status": 200,
+    "repeat_byte": 97,
+    "repeat_count": 1999999,
+    "suffix_hex": "f09f9a80",
+    "expected_ok": true
+  },
+  {
+    "id": "response_invalid_json_preserves_whitespace",
+    "kind": "response",
+    "status": 200,
+    "body": "  {bad}\n",
+    "expected_ok": true
+  }
+]

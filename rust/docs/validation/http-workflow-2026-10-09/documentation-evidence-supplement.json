@@ -1,0 +1,146 @@
+{
+  "created_utc": "2026-10-09T16:21:02.738610+00:00",
+  "scope": "Post-GUI-seal documentation/evidence only. No source, binary, ref, or duration modification. Original source seal retained; this supplement does not imply these files were compiled into the GUI binary.",
+  "gui_source_manifest_sha256": "c2d912d23e8da8186f89e7a35a6f06d48cffc57c8df9ebc1b9a6800950425c64",
+  "gui_binary_sha256": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+  "files": [
+    {
+      "path": "rust/docs/http-workflow.md",
+      "sha256": "7ab83cb3fa165f57819d8d62c215b486b45aeb89f69854ed57f2683b65a7ce88",
+      "git_blob_sha1": "e62b7ef3eb9f176650bed9f6eba8d007917bbcd5",
+      "bytes": 12350
+    },
+    {
+      "path": "rust/docs/bellobox-parity.md",
+      "sha256": "aef68c76609023b476b1b83b42090d1b58ee139ba0bc6d5735b83bf9266ad695",
+      "git_blob_sha1": "a984e099778609b720c2304d8b22902605beb5db",
+      "bytes": 85869
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/README.md",
+      "sha256": "b3e6989c9dada0920703d5bf37be242fafbf172d7ef4b9088e909898becbd562",
+      "git_blob_sha1": "a7e8ae93056ba3cd9760c10f881de3eb9de31df8",
+      "bytes": 2988
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/app-commands.json",
+      "sha256": "f8c096ada3d47092eb515ff72b2e96605af9f8b7740b83744fdeff110420ad24",
+      "git_blob_sha1": "3d82e206b0dd8a0d39add336295ccb9e4e5ad3a0",
+      "bytes": 11914
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/app-handoff.md",
+      "sha256": "7d3405fb46c7e0fb7000acb7c74c0ffa4d66b1b469ca760e7fc2f1a0caa0686c",
+      "git_blob_sha1": "8e5af1e724c8f7f2781984d0ba4e27547d09e8ca",
+      "bytes": 7482
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/changed-source.json",
+      "sha256": "254e366cb4cab948e6d728ff8c6c63cf61f0d0f966b7cad73f8bf7d37c7b916d",
+      "git_blob_sha1": "d84e49c8902b1ec0a4fd9ce5125fe841d35f0cd4",
+      "bytes": 5372
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/compiled-source-manifest.json",
+      "sha256": "b0f2bfbc238ff2cf4b1b702380896322e15f682e458d6c67e347c8ae7449e2ec",
+      "git_blob_sha1": "531c621c85b83806ecbda8936e8ee2c859ff3c4d",
+      "bytes": 29640
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/core-checks.json",
+      "sha256": "c8533fbb355214291fa36efe95f679f2af9c01ed4c937d0837a77da63a37cd8d",
+      "git_blob_sha1": "bb23dda17bb9bfc6ea0b7373fb5545598096ce0e",
+      "bytes": 8657
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/failure-notes.json",
+      "sha256": "58922e68b6947255d9a4802507ea0e521db03647475ff08dc1717dddfdfcdd13",
+      "git_blob_sha1": "d94748fdf9b6647457fc3fe8772fb28d4930afb4",
+      "bytes": 1559
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160053-light.json",
+      "sha256": "b947a3a7be6c470efc9d63c751d4b8cc7dfaec13c17536159b38795b6b87dc10",
+      "git_blob_sha1": "d69c081e52af09177cb83f24b05429319ba8ec21",
+      "bytes": 2892
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160836-dark.json",
+      "sha256": "4f425ce48fe2f75e7ca35a8a4cfddff842de094b773dd3d2d5cbb1afc7b5f82f",
+      "git_blob_sha1": "2b245077b29118660ae553a03c3f305006403342",
+      "bytes": 383
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T161330-light.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "git_blob_sha1": "fe51488c7066f6687ef680d6bfaa4f7768ef205c",
+      "bytes": 3
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/gui-receipt.json",
+      "sha256": "033a951f72b52187eb3c441459f0d215435da80281884ec02f6252eaa0dca2fc",
+      "git_blob_sha1": "1f59ad8ba84810c29863506d197672b8ee125950",
+      "bytes": 6693
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/gui-seal.json",
+      "sha256": "86e05989c876daf7803d582dc8ce934dc78de2308286fcd1a6a722708c05dce1",
+      "git_blob_sha1": "b6c773ccdcc348c60be87bbc53704e6d83c7e2b9",
+      "bytes": 403
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/gui-source-manifest.json",
+      "sha256": "c2d912d23e8da8186f89e7a35a6f06d48cffc57c8df9ebc1b9a6800950425c64",
+      "git_blob_sha1": "25867e7c50a5382fdc8890f8e227334dc7f4fc0c",
+      "bytes": 96553
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/gui.md",
+      "sha256": "f1f63d2b82c1ceb5c4c9d52280fcc849d1f35e945c595b408b30d4ffd6a1939c",
+      "git_blob_sha1": "34f1042132f3ddb11ecc471dfaf1bd47dd58a4fe",
+      "bytes": 4400
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/independent-review.json",
+      "sha256": "21885bc628a1edb056a9c60a22ce0654ed6e73aeee63e6a1dd5b1513de5ef355",
+      "git_blob_sha1": "9692c3607d3ecc1b941c005569061b7d3fc9e5f5",
+      "bytes": 17831
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/loc-controls.json",
+      "sha256": "79a5a5e4cfcdebdfa90b9981535bd3cc2afdf3a27ffce2cbb19b7d8f74ac3f3a",
+      "git_blob_sha1": "8e6e858a688cf16e3d306f658351290cf420b453",
+      "bytes": 603
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/loc.json",
+      "sha256": "e17ce8e75257f61165ff6c0729a94343a7ab2d463dc6aa6723c2892fb3a0c8a2",
+      "git_blob_sha1": "0a64b03ab6fc4f95188f0f4676c04f6a0fea4837",
+      "bytes": 75458
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/source-unchanged-final.json",
+      "sha256": "e20f66899b3c3ec61526e3f13535b94b721cb056113cab42ac6670299aad1089",
+      "git_blob_sha1": "6a2e487c37b404fbcce0c9b524c19d8b3b26fcd8",
+      "bytes": 439
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/swift-source-verification.json",
+      "sha256": "279e05313c5100b00dec71e22570af377c53d7bd5de271bbb83e4aa06b2a2f3c",
+      "git_blob_sha1": "908900f4d6cb39b6077fa17f0a8a3a140c28ee2d",
+      "bytes": 1294
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/verification.json",
+      "sha256": "9c9171f3fdcc3f447946deeea8c3556736178793a470a66ff23ae53c083b0f42",
+      "git_blob_sha1": "c49cf788194806adc60d5fa8ab670fc30b629aa0",
+      "bytes": 7148
+    },
+    {
+      "path": "rust/docs/validation/http-workflow-2026-10-09/verify-http-loc.py",
+      "sha256": "a9f221b92510fdbe5bdfbe769bc9540ec739d09395ee514f597d6e94414e2824",
+      "git_blob_sha1": "bc381e4de8c57687e5a0b431666917c015b96935",
+      "bytes": 5636
+    }
+  ]
+}

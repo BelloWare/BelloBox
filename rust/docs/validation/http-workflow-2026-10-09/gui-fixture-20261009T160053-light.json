@@ -1,0 +1,125 @@
+[
+  {
+    "time_ns": 1791561717873791739,
+    "phase": "received",
+    "method": "PATCH",
+    "path": "/inspect",
+    "body_bytes": 39,
+    "body_sha256": "268cfd3ae4357d8cac66c8b5db81934e815bc582fe802bf11488142cc1a3d59a",
+    "synthetic_header": [
+      "synthetic"
+    ],
+    "exact_unicode_json": true
+  },
+  {
+    "time_ns": 1791561717874191199,
+    "phase": "responded",
+    "path": "/inspect",
+    "status": 201,
+    "bytes": 62
+  },
+  {
+    "time_ns": 1791561897416340858,
+    "phase": "received",
+    "method": "PATCH",
+    "path": "/held",
+    "body_bytes": 39,
+    "body_sha256": "268cfd3ae4357d8cac66c8b5db81934e815bc582fe802bf11488142cc1a3d59a",
+    "synthetic_header": [
+      "synthetic"
+    ],
+    "exact_unicode_json": true
+  },
+  {
+    "time_ns": 1791561906765579165,
+    "phase": "socket_closed",
+    "path": "/held"
+  },
+  {
+    "time_ns": 1791561921017579234,
+    "phase": "received",
+    "method": "PATCH",
+    "path": "/held",
+    "body_bytes": 39,
+    "body_sha256": "268cfd3ae4357d8cac66c8b5db81934e815bc582fe802bf11488142cc1a3d59a",
+    "synthetic_header": [
+      "synthetic"
+    ],
+    "exact_unicode_json": true
+  },
+  {
+    "time_ns": 1791561921815458806,
+    "phase": "socket_closed",
+    "path": "/held"
+  },
+  {
+    "time_ns": 1791561931829862830,
+    "phase": "received",
+    "method": "PATCH",
+    "path": "/error",
+    "body_bytes": 39,
+    "body_sha256": "268cfd3ae4357d8cac66c8b5db81934e815bc582fe802bf11488142cc1a3d59a",
+    "synthetic_header": [
+      "synthetic"
+    ],
+    "exact_unicode_json": true
+  },
+  {
+    "time_ns": 1791561931836626824,
+    "phase": "responded",
+    "path": "/error",
+    "status": 404,
+    "bytes": 26
+  },
+  {
+    "time_ns": 1791561982523952164,
+    "phase": "received",
+    "method": "PATCH",
+    "path": "/redirect",
+    "body_bytes": 39,
+    "body_sha256": "268cfd3ae4357d8cac66c8b5db81934e815bc582fe802bf11488142cc1a3d59a",
+    "synthetic_header": [
+      "synthetic"
+    ],
+    "exact_unicode_json": true
+  },
+  {
+    "time_ns": 1791561982524322001,
+    "phase": "responded",
+    "path": "/redirect",
+    "status": 307,
+    "bytes": 23
+  },
+  {
+    "time_ns": 1791562043730322222,
+    "phase": "received",
+    "method": "GET",
+    "path": "/held",
+    "body_bytes": 0,
+    "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "synthetic_header": null,
+    "exact_unicode_json": false
+  },
+  {
+    "time_ns": 1791562053525054345,
+    "phase": "socket_closed",
+    "path": "/held"
+  },
+  {
+    "time_ns": 1791562081443776750,
+    "phase": "received",
+    "method": "PATCH",
+    "path": "/held",
+    "body_bytes": 39,
+    "body_sha256": "268cfd3ae4357d8cac66c8b5db81934e815bc582fe802bf11488142cc1a3d59a",
+    "synthetic_header": [
+      "synthetic"
+    ],
+    "exact_unicode_json": true
+  },
+  {
+    "time_ns": 1791562091483655596,
+    "phase": "socket_closed",
+    "path": "/held"
+  }
+]

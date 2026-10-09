@@ -1,0 +1,36 @@
+{
+  "commit": "e43b1c4595c42383e087fe70f38c28d07c31dda0",
+  "tree": "5ca17248d54fe50c5617d597be7ee6794bde6ea8",
+  "sources": [
+    {
+      "path": "BelloBox/DeveloperTools/HTTPRequestTool.swift",
+      "sha256": "795a4c498292aa3e60cb019d98f62cc5a688c47dbe6a5cdcffaaedf5e3f72d1e",
+      "immutable_verified": true
+    },
+    {
+      "path": "BelloBox/DeveloperTools/DeveloperJSON.swift",
+      "sha256": "3dc58c0f68e76a0db3205bef989040b0828c13d589f616bab661e1929639069b",
+      "immutable_verified": true
+    },
+    {
+      "path": "BelloBox/Launcher/UtilityWorkbenchModel.swift",
+      "sha256": "a77ad5fe5f3d10f0348eb299af81f66833b2323c6e03817cb4fdc52d2650493a",
+      "immutable_verified": true
+    },
+    {
+      "path": "BelloBox/Launcher/UtilityWorkbenchView.swift",
+      "sha256": "5e9d060b6303fbb4a7c7f4c2cd9a30b92802f14f60be1efeca44df159c1cb2f4",
+      "immutable_verified": true
+    },
+    {
+      "path": "BelloBox/Launcher/UtilityWorkbenchWindowController.swift",
+      "sha256": "57156ddef29f621a63a9fab276f826d209590d8a3bd582b2f4b026bf590f3a4a",
+      "immutable_verified": true
+    },
+    {
+      "path": "BelloBoxTests/DeveloperUtilityTests.swift",
+      "sha256": "1e44b76c034f0f51bcdbfdb4b19b1e7b4a037ea8c965831d181f6e5e36332640",
+      "immutable_verified": true
+    }
+  ]
+}

@@ -449,7 +449,7 @@ impl gpui::Render for Closing {
                 div()
                     .text_sm()
                     .text_color(palette.secondary)
-                    .child("Waiting for recording and media cleanup to finish."),
+                    .child("Waiting for active work and cleanup to finish."),
             )
     }
 }
