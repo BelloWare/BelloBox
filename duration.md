@@ -1,5 +1,134 @@
 # BelloBox Rust migration duration audit
 
+## Current accounting checkpoint: 2026-10-09T12:40:00Z
+
+This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains preserved below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
+
+### At a glance
+
+These top totals cover only this catch-up receipt cohort, including late-added earlier observations; they are not whole-migration cumulative totals. These are overlapping accounting views, not shares of one total. Mixed windows do not measure active labor.
+
+| Where time went | What is actually measured |
+|---|---|
+| Implementation | Active effort unavailable; mixed source/test windows recorded below |
+| Review | Active effort unavailable; only review-focused observations: 0 mixed windows; 0 with endpoints, unavailable union |
+| Mixed implementation/review/validation windows | 3 mixed windows; 3 with endpoints, 30m 52.0s union; scopes overlap resources and do not measure Review alone |
+| Builds | 1m 2.9s measured command resource time |
+| Tests | Unavailable separately from compilation in these command receipts |
+| Build + test/check (combined) | 8m 43.7s measured command resource time |
+| CI | 22m 27.0s runner time across 2 completed jobs (1 failed); 13m 56.0s wall union |
+| Dependency/environment setup | 1.7s measured resource time |
+| Retries/rework | 25.0s across 4 failed command receipts; total rework effort unavailable |
+| Publication | No isolated API total; 2 mixed windows; 2 with endpoints, 1m 0.0s union |
+| Waiting | Unavailable separately; waiting is mixed into recorded workflow windows |
+| Model inference | Unavailable; no timing telemetry |
+
+### Separate measured resource groups
+
+| Group | Timed items | Resource/client seconds | Known-endpoint items | Endpoint-subset seconds | Endpoint union seconds |
+|---|---:|---:|---:|---:|---:|
+| catchup_command | 46 | 657.362 | 43 | 649.398 | 648.355 |
+| catchup_ci_job | 2 | 1347.000 | 2 | 1347.000 | 836.000 |
+
+Groups overlap each other and mixed work windows; never add them into project elapsed or active-work time. Derived endpoints are excluded from unions. Monotonic timers and separately recorded UTC clocks can differ slightly. Whole-second 0s means below receipt resolution. CI steps and native subcommands are nested within job durations, not extra runner time.
+
+| Resource group / category | Seconds |
+|---|---:|
+| catchup_command: build + test/check (combined) | 523.689 |
+| catchup_command: automated lint/check | 69.007 |
+| catchup_command: build | 62.934 |
+| catchup_command: dependency/environment or verification | 1.732 |
+| catchup_ci_job: CI runner | 1347.000 |
+
+### Nested CI phases (already included in CI jobs)
+
+| Phase class | Runner step time |
+|---|---:|
+| CI orchestration | 13.0s |
+| dependency/environment setup | 1m 10.0s |
+| build/test/check (combined) | 16m 23.0s |
+| build + automated lint/check | 3m 56.0s |
+| build | 38.0s |
+| packaging/validation | 0.0s |
+| CI reporting | 0.0s |
+
+These conservative phase groups can include compilation and execution together; do not add them to the CI job totals.
+
+Within 2026-10-09T12:20:16Z–2026-10-09T12:40:00Z, the selected CI jobs cover 558.000 overlap-safe wall seconds; 626.000 seconds are outside those jobs. This remainder includes implementation, tests, review, publication, waiting and unknown time; it is neither proven idle nor model inference.
+
+### Mixed workflows and waits (excluded from resource totals)
+
+| Activity | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---:|---|
+| Publish Box catch-up timing checkpoint | 2026-10-09T12:32:38Z | 2026-10-09T12:33:06Z | 28 | completed |
+| Comparison actual GUI acceptance | 2026-10-09T12:38:19.178644258+00:00 | unknown | unknown | ongoing |
+| Source reading, app implementation and tests, review, delegation, overlapping Core work; not pure editing/inference | 2026-10-09T12:08:08+00:00 | 2026-10-09T12:22:08.401820+00:00 | 840.40182 | completed |
+| App compile/test, Swift runtime alignment correction, review fixes, mutations, final feature matrix; commands nested, do not sum with wall interval | 2026-10-09T12:22:08.401820+00:00 | 2026-10-09T12:39:00+00:00 | 1011.59818 | completed |
+| Comparison workflow implementation remains in progress | 2026-10-09T12:08:08+00:00 | unknown | unknown | ongoing, not a completion receipt |
+| Prepare source-bound comparison oracle fixture and native driver | 2026-10-09T12:08:35Z | 2026-10-09T12:11:17Z | 162 | completed |
+| Publish URL native fixture-ID support correction | 2026-10-09T12:30:55Z | 2026-10-09T12:31:27Z | 32 | completed |
+| Rust macOS native checks / apple-silicon | 2026-10-09T12:31:35Z | unknown | unknown | in_progress |
+| Rust Linux checks / linux | 2026-10-09T12:31:31Z | unknown | unknown | in_progress |
+
+Open task and CI rows retain unknown final duration. Failed source attempts and the original failed native URL job remain in this cohort. Mixed windows overlap useful parallel work; they are not pure idle or active-review time.
+
+### Measured items
+
+| Activity | Category | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---|---:|---|
+| import-published-base | build + test/check (combined) | 2026-10-09T12:17:24.854407+00:00 | 2026-10-09T12:17:33.527596+00:00 | 8.673 | 0 |
+| app-format | automated lint/check | 2026-10-09T12:18:00.268427+00:00 | 2026-10-09T12:18:00.419103+00:00 | 0.151 | 0 |
+| app-first-compile | build | 2026-10-09T12:22:08.401820+00:00 | 2026-10-09T12:22:45.105512+00:00 | 36.704 | 0 |
+| app-initial-session-tests | build + test/check (combined) | 2026-10-09T12:23:04.378611+00:00 | 2026-10-09T12:23:04.406349+00:00 | 0.028 | 0 |
+| app-initial-ui-tests | build + test/check (combined) | 2026-10-09T12:23:04.429956+00:00 | 2026-10-09T12:23:04.826785+00:00 | 0.397 | 0 |
+| app-focused-final-engine | build + test/check (combined) | 2026-10-09T12:27:17.924058+00:00 | 2026-10-09T12:27:53.658858+00:00 | 35.735 | 0 |
+| app-strict-initial | automated lint/check | 2026-10-09T12:28:15.148966+00:00 | 2026-10-09T12:28:24.183872+00:00 | 9.035 | 101 |
+| app-strict | automated lint/check | 2026-10-09T12:28:35.471122+00:00 | 2026-10-09T12:28:42.837841+00:00 | 7.367 | 0 |
+| mutant-empty-second-admission | build + test/check (combined) | 2026-10-09T12:29:01.689069+00:00 | 2026-10-09T12:29:28.360118+00:00 | 26.671 | Expected negative-control failure; source restored |
+| restore-clean-empty-second-admission | dependency/environment or verification | 2026-10-09T12:29:28.389575+00:00 | 2026-10-09T12:29:28.713977+00:00 | 0.324 | 0 |
+| mutant-stale-copy-token | build + test/check (combined) | 2026-10-09T12:29:28.741398+00:00 | 2026-10-09T12:30:01.527570+00:00 | 32.786 | Expected negative-control failure; source restored |
+| restore-clean-stale-copy-token | dependency/environment or verification | 2026-10-09T12:30:01.557975+00:00 | 2026-10-09T12:30:01.885274+00:00 | 0.327 | 0 |
+| mutant-stale-generation-publication | build + test/check (combined) | 2026-10-09T12:30:01.915293+00:00 | 2026-10-09T12:30:33.638442+00:00 | 31.723 | Expected negative-control failure; source restored |
+| restore-clean-stale-generation-publication | dependency/environment or verification | 2026-10-09T12:30:33.662743+00:00 | 2026-10-09T12:30:33.981840+00:00 | 0.319 | 0 |
+| mutant-physical-worker-guard | build + test/check (combined) | 2026-10-09T12:30:34.007015+00:00 | 2026-10-09T12:31:04.243528+00:00 | 30.237 | Expected negative-control failure; source restored |
+| restore-clean-physical-worker-guard | dependency/environment or verification | 2026-10-09T12:31:04.286057+00:00 | 2026-10-09T12:31:04.652270+00:00 | 0.366 | 0 |
+| mutant-final-empty-line | build + test/check (combined) | 2026-10-09T12:31:04.679632+00:00 | 2026-10-09T12:31:12.226407+00:00 | 7.547 | Expected negative-control failure; source restored |
+| restore-clean-final-empty-line | dependency/environment or verification | 2026-10-09T12:31:12.259277+00:00 | 2026-10-09T12:31:12.401159+00:00 | 0.142 | 0 |
+| mutant-canonical-match | build + test/check (combined) | 2026-10-09T12:31:12.425639+00:00 | 2026-10-09T12:31:19.900472+00:00 | 7.475 | Expected negative-control failure; source restored |
+| restore-clean-canonical-match | dependency/environment or verification | 2026-10-09T12:31:19.928817+00:00 | 2026-10-09T12:31:20.049864+00:00 | 0.121 | 0 |
+| final-format | automated lint/check | 2026-10-09T12:31:53.117679+00:00 | 2026-10-09T12:31:57.101770+00:00 | 3.984 | 0 |
+| loc-audit | build + test/check (combined) | 2026-10-09T12:32:12.833988+00:00 | 2026-10-09T12:32:13.875427+00:00 | 1.041 | 0 |
+| core-default | build + test/check (combined) | 2026-10-09T12:31:57.130832+00:00 | 2026-10-09T12:32:18.827751+00:00 | 21.697 | 0 |
+| core-minimal | build + test/check (combined) | 2026-10-09T12:32:18.855401+00:00 | 2026-10-09T12:32:37.507508+00:00 | 18.652 | 0 |
+| app-default | build + test/check (combined) | 2026-10-09T12:32:37.532506+00:00 | 2026-10-09T12:33:50.249329+00:00 | 72.717 | 0 |
+| app-minimal | build + test/check (combined) | 2026-10-09T12:33:50.275982+00:00 | 2026-10-09T12:35:01.188291+00:00 | 70.912 | 0 |
+| app-recording | build + test/check (combined) | 2026-10-09T12:35:01.212920+00:00 | 2026-10-09T12:36:18.505825+00:00 | 77.293 | 0 |
+| editor-core | build + test/check (combined) | 2026-10-09T12:36:18.538663+00:00 | 2026-10-09T12:36:20.554069+00:00 | 2.015 | 0 |
+| editor-ui | build + test/check (combined) | 2026-10-09T12:36:20.586290+00:00 | 2026-10-09T12:36:28.591054+00:00 | 8.005 | 0 |
+| strict-default | automated lint/check | 2026-10-09T12:36:28.617060+00:00 | 2026-10-09T12:36:41.453008+00:00 | 12.836 | 0 |
+| strict-minimal | automated lint/check | 2026-10-09T12:36:41.478299+00:00 | 2026-10-09T12:36:51.969986+00:00 | 10.492 | 0 |
+| strict-recording | automated lint/check | 2026-10-09T12:36:51.995474+00:00 | 2026-10-09T12:37:01.258045+00:00 | 9.263 | 0 |
+| ordinary-clean | dependency/environment or verification | 2026-10-09T12:37:01.283185+00:00 | 2026-10-09T12:37:01.415936+00:00 | 0.133 | 0 |
+| ordinary-build | build | 2026-10-09T12:37:01.439488+00:00 | 2026-10-09T12:37:15.669364+00:00 | 14.23 | 0 |
+| focused initial compile | build | 2026-10-09T12:19:07Z | 2026-10-09T12:19:15Z | 8.0 | failed standalone formatter integration seam |
+| focused Core tests | build + test/check (combined) | 2026-10-09T12:19:47Z | 2026-10-09T12:20:00Z | 13.0 | 12 passed |
+| full Core compile | build | 2026-10-09T12:20:33Z | 2026-10-09T12:20:37Z | 4.0 | failed local edit script; source restored |
+| full Core tests provisional runtime alignment | build + test/check (combined) | 2026-10-09T12:21:23Z | 2026-10-09T12:21:45Z | 22.0 | 528 passed,3 native ignored |
+| Core Clippy provisional runtime alignment | automated lint/check | 2026-10-09T12:21:45Z | 2026-10-09T12:21:49Z | 4.0 | passed |
+| corrected6.3.3 focused Core tests | build + test/check (combined) | 2026-10-09T12:25:07Z | 2026-10-09T12:25:17Z | 10.0 | 12 passed |
+| corrected6.3.3 Core Clippy | automated lint/check | 2026-10-09T12:25:17Z | 2026-10-09T12:25:21Z | 4.0 | failed style lint; corrected |
+| corrected6.3.3 full Core tests | build + test/check (combined) | 2026-10-09T12:25:48Z | 2026-10-09T12:26:09Z | 21.0 | 528 passed,3 native ignored |
+| corrected6.3.3 final Core Clippy | automated lint/check | 2026-10-09T12:26:09Z | 2026-10-09T12:26:13Z | 4.0 | passed |
+| test | build + test/check (combined) | unknown | unknown | 4.085 | 0 |
+| strict | automated lint/check | unknown | unknown | 2.146 | 0 |
+| fmt | automated lint/check | unknown | unknown | 1.733 | 0 |
+| Rust macOS native checks / apple-silicon | CI runner | 2026-10-09T12:15:46Z | 2026-10-09T12:24:17Z | 511.0 | failure |
+| Rust Linux checks / linux | CI runner | 2026-10-09T12:15:38Z | 2026-10-09T12:29:34Z | 836.0 | success |
+
+Full source hashes, source URLs, nested job steps and timing limitations are in duration-data.json. Native macOS full logs were unavailable for some Agent runs; verified job/step metadata is retained without a full-log claim. Later source CI may be running and is not silently promoted to success by this snapshot.
+
+### Earlier accounting (unchanged)
+
 ## Current accounting checkpoint: 2026-10-09T12:20:16Z
 
 This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains preserved below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
