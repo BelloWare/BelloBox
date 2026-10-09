@@ -1,0 +1,78 @@
+{
+  "cases": [
+    {
+      "both_readers_completed": true,
+      "compressed_media_dts_exact": [
+        "0",
+        "1/10",
+        "1/5"
+      ],
+      "compressed_media_pts_exact": [
+        "0",
+        "1/10",
+        "1/5"
+      ],
+      "container_and_native_segments_have_no_empty_edit": true,
+      "decoded_dts_and_duration": "invalid in original native trace; not synthesized",
+      "decoded_image_pts_exact": [
+        "0",
+        "1/10",
+        "1/5"
+      ],
+      "decoded_rgba_sha256": [
+        "7a82ecec7856841f07a8dd33eea2030f57fb8aa4cba0c6354be32e4992f4a430",
+        "c0f7e3fe18242c9dbfbef37d8e9dcb3a4308bc52ca06dbc63cd5cf28f0d15134",
+        "949e8cd228e4942ba83e16e72ef0651a1a4ab6b401b8e32077b4445e879ecff4"
+      ],
+      "default_full_range": "0 through positive infinity, unmodified",
+      "first_actual_image_positive": false,
+      "movie_sha256": "ef59f7b291b1fbbe16969b65b97d5918e03224527fcbd68f7c984ce4ba7fed16",
+      "name": "zero-origin",
+      "passthrough_control_records_retained": 4,
+      "passthrough_media_samples": 3,
+      "passthrough_total_records": 7
+    },
+    {
+      "both_readers_completed": true,
+      "compressed_media_dts_exact": [
+        "0",
+        "1/10",
+        "1/5"
+      ],
+      "compressed_media_pts_exact": [
+        "1/10",
+        "1/5",
+        "3/10"
+      ],
+      "container_and_native_segments_have_no_empty_edit": true,
+      "decoded_dts_and_duration": "invalid in original native trace; not synthesized",
+      "decoded_image_pts_exact": [
+        "1/10",
+        "1/5",
+        "3/10"
+      ],
+      "decoded_rgba_sha256": [
+        "7a82ecec7856841f07a8dd33eea2030f57fb8aa4cba0c6354be32e4992f4a430",
+        "c0f7e3fe18242c9dbfbef37d8e9dcb3a4308bc52ca06dbc63cd5cf28f0d15134",
+        "949e8cd228e4942ba83e16e72ef0651a1a4ab6b401b8e32077b4445e879ecff4"
+      ],
+      "default_full_range": "0 through positive infinity, unmodified",
+      "first_actual_image_positive": true,
+      "movie_sha256": "abd5e23b328507ea0c1c4f894e2d7d34cb5493ae0011b86413cb2821bd5959a8",
+      "name": "positive-composition",
+      "passthrough_control_records_retained": 5,
+      "passthrough_media_samples": 3,
+      "passthrough_total_records": 8
+    }
+  ],
+  "decoded_pixel_bytes_identical_between_cases": true,
+  "first_following_rust_seek_or_app_workflow_validated": false,
+  "native_positive_first_image_precondition_demonstrated": true,
+  "original_movies_and_timing_unchanged": true,
+  "rational_records_checked": {
+    "invalid": 26,
+    "numeric": 84,
+    "positive_infinity": 4,
+    "total": 114
+  }
+}

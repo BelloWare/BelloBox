@@ -1,0 +1,1030 @@
+{
+  "cases" : [
+    {
+      "compressed" : {
+        "asset_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.29999999999999999,
+          "timescale" : 600,
+          "value" : 180
+        },
+        "decoded_image_count" : 0,
+        "default_time_range_unmodified" : true,
+        "mode" : "passthrough-nil-settings",
+        "reader_error" : null,
+        "reader_status" : 2,
+        "records" : [
+          {
+            "attachments" : "Optional({\n    EditBoundary = 1;\n})",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "media_subtype" : "none",
+            "ordinal" : 0,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "attachments" : "Optional({\n    ResetDecoderBeforeDecoding = 1;\n})",
+            "block_file" : "zero-origin-passthrough-1.bin",
+            "block_sha256" : "bb170e6fde0b3c846435e76e00f31f099526252e213fab5408c12a67276bf17a",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "media_subtype" : "avc1",
+            "ordinal" : 1,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_attachments" : "Optional(<__NSSingleObjectArrayI 0x142304730>(\n{\n}\n)\n)",
+            "sample_bytes" : 353,
+            "sample_count" : 1
+          },
+          {
+            "attachments" : "nil",
+            "block_file" : "zero-origin-passthrough-2.bin",
+            "block_sha256" : "28e20bfe73a1bb5249bcce6bf51b24725eb58ccff065d54c90a2199630a58949",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "media_subtype" : "avc1",
+            "ordinal" : 2,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "sample_attachments" : "Optional(<__NSSingleObjectArrayI 0x142304260>(\n{\n}\n)\n)",
+            "sample_bytes" : 598,
+            "sample_count" : 1
+          },
+          {
+            "attachments" : "nil",
+            "block_file" : "zero-origin-passthrough-3.bin",
+            "block_sha256" : "7f5c2d2323164aeb6720ef82c8af79fa0150354f503b18a0305480a67a2f93f2",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "media_subtype" : "avc1",
+            "ordinal" : 3,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "sample_attachments" : "Optional(<__NSSingleObjectArrayI 0x142306220>(\n{\n}\n)\n)",
+            "sample_bytes" : 616,
+            "sample_count" : 1
+          },
+          {
+            "attachments" : "Optional({\n    DrainAfterDecoding = 1;\n})",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "media_subtype" : "none",
+            "ordinal" : 4,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "attachments" : "Optional({\n    PostNotificationWhenConsumed =     {\n        EndPresentationTimesStamp =         {\n            epoch = 0;\n            flags = 5;\n            timescale = 0;\n            value = 0;\n        };\n        StartPresentationTimesStamp =         {\n            epoch = 0;\n            flags = 1;\n            timescale = 600;\n            value = 180;\n        };\n    };\n})",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "media_subtype" : "none",
+            "ordinal" : 5,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "attachments" : "Optional({\n    EmptyMedia = 1;\n    PermanentEmptyMedia = 1;\n})",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "media_subtype" : "none",
+            "ordinal" : 6,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          }
+        ],
+        "requested_time_range" : {
+          "duration" : {
+            "epoch" : 0,
+            "flags" : 5,
+            "seconds" : null,
+            "timescale" : 0,
+            "value" : 0
+          },
+          "start" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0,
+            "timescale" : 1,
+            "value" : 0
+          }
+        },
+        "segments" : [
+          {
+            "empty" : false,
+            "source" : {
+              "duration" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0.29999999999999999,
+                "timescale" : 600,
+                "value" : 180
+              },
+              "start" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0,
+                "timescale" : 1,
+                "value" : 0
+              }
+            },
+            "target" : {
+              "duration" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0.29999999999999999,
+                "timescale" : 600,
+                "value" : 180
+              },
+              "start" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0,
+                "timescale" : 1,
+                "value" : 0
+              }
+            }
+          }
+        ],
+        "started" : true,
+        "track_range" : {
+          "duration" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0.29999999999999999,
+            "timescale" : 600,
+            "value" : 180
+          },
+          "start" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0,
+            "timescale" : 1,
+            "value" : 0
+          }
+        }
+      },
+      "decoded" : {
+        "asset_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.29999999999999999,
+          "timescale" : 600,
+          "value" : 180
+        },
+        "decoded_image_count" : 3,
+        "default_time_range_unmodified" : true,
+        "mode" : "decoded-BGRA-to-visible-RGBA",
+        "reader_error" : null,
+        "reader_status" : 2,
+        "records" : [
+          {
+            "attachments" : "nil",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "media_subtype" : "BGRA",
+            "ordinal" : 0,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "rgba_file" : "zero-origin-decoded-0.rgba",
+            "rgba_sha256" : "7a82ecec7856841f07a8dd33eea2030f57fb8aa4cba0c6354be32e4992f4a430",
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "attachments" : "nil",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "media_subtype" : "BGRA",
+            "ordinal" : 1,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "rgba_file" : "zero-origin-decoded-1.rgba",
+            "rgba_sha256" : "c0f7e3fe18242c9dbfbef37d8e9dcb3a4308bc52ca06dbc63cd5cf28f0d15134",
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "attachments" : "nil",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "media_subtype" : "BGRA",
+            "ordinal" : 2,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "rgba_file" : "zero-origin-decoded-2.rgba",
+            "rgba_sha256" : "949e8cd228e4942ba83e16e72ef0651a1a4ab6b401b8e32077b4445e879ecff4",
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          }
+        ],
+        "requested_time_range" : {
+          "duration" : {
+            "epoch" : 0,
+            "flags" : 5,
+            "seconds" : null,
+            "timescale" : 0,
+            "value" : 0
+          },
+          "start" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0,
+            "timescale" : 1,
+            "value" : 0
+          }
+        },
+        "segments" : [
+          {
+            "empty" : false,
+            "source" : {
+              "duration" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0.29999999999999999,
+                "timescale" : 600,
+                "value" : 180
+              },
+              "start" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0,
+                "timescale" : 1,
+                "value" : 0
+              }
+            },
+            "target" : {
+              "duration" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0.29999999999999999,
+                "timescale" : 600,
+                "value" : 180
+              },
+              "start" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0,
+                "timescale" : 1,
+                "value" : 0
+              }
+            }
+          }
+        ],
+        "started" : true,
+        "track_range" : {
+          "duration" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0.29999999999999999,
+            "timescale" : 600,
+            "value" : 180
+          },
+          "start" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0,
+            "timescale" : 1,
+            "value" : 0
+          }
+        }
+      },
+      "file_bytes" : 2308,
+      "name" : "zero-origin",
+      "sha256_after" : "ef59f7b291b1fbbe16969b65b97d5918e03224527fcbd68f7c984ce4ba7fed16",
+      "sha256_before" : "ef59f7b291b1fbbe16969b65b97d5918e03224527fcbd68f7c984ce4ba7fed16",
+      "sha256_between_reads" : "ef59f7b291b1fbbe16969b65b97d5918e03224527fcbd68f7c984ce4ba7fed16",
+      "source_unchanged" : true
+    },
+    {
+      "compressed" : {
+        "asset_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "decoded_image_count" : 0,
+        "default_time_range_unmodified" : true,
+        "mode" : "passthrough-nil-settings",
+        "reader_error" : null,
+        "reader_status" : 2,
+        "records" : [
+          {
+            "attachments" : "Optional({\n    PostNotificationWhenConsumed =     {\n        EndPresentationTimesStamp =         {\n            epoch = 0;\n            flags = 1;\n            timescale = 600;\n            value = 60;\n        };\n        StartPresentationTimesStamp =         {\n            epoch = 0;\n            flags = 1;\n            timescale = 1;\n            value = 0;\n        };\n    };\n})",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "media_subtype" : "none",
+            "ordinal" : 0,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "attachments" : "Optional({\n    EditBoundary = 1;\n})",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "media_subtype" : "none",
+            "ordinal" : 1,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "attachments" : "Optional({\n    ResetDecoderBeforeDecoding = 1;\n})",
+            "block_file" : "positive-composition-passthrough-2.bin",
+            "block_sha256" : "bb170e6fde0b3c846435e76e00f31f099526252e213fab5408c12a67276bf17a",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "media_subtype" : "avc1",
+            "ordinal" : 2,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "sample_attachments" : "Optional(<__NSSingleObjectArrayI 0x141612890>(\n{\n}\n)\n)",
+            "sample_bytes" : 353,
+            "sample_count" : 1
+          },
+          {
+            "attachments" : "nil",
+            "block_file" : "positive-composition-passthrough-3.bin",
+            "block_sha256" : "28e20bfe73a1bb5249bcce6bf51b24725eb58ccff065d54c90a2199630a58949",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "media_subtype" : "avc1",
+            "ordinal" : 3,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "sample_attachments" : "Optional(<__NSSingleObjectArrayI 0x142006600>(\n{\n}\n)\n)",
+            "sample_bytes" : 598,
+            "sample_count" : 1
+          },
+          {
+            "attachments" : "nil",
+            "block_file" : "positive-composition-passthrough-4.bin",
+            "block_sha256" : "7f5c2d2323164aeb6720ef82c8af79fa0150354f503b18a0305480a67a2f93f2",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "media_subtype" : "avc1",
+            "ordinal" : 4,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "sample_attachments" : "Optional(<__NSSingleObjectArrayI 0x142026130>(\n{\n}\n)\n)",
+            "sample_bytes" : 616,
+            "sample_count" : 1
+          },
+          {
+            "attachments" : "Optional({\n    DrainAfterDecoding = 1;\n})",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "media_subtype" : "none",
+            "ordinal" : 5,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "attachments" : "Optional({\n    PostNotificationWhenConsumed =     {\n        EndPresentationTimesStamp =         {\n            epoch = 0;\n            flags = 5;\n            timescale = 0;\n            value = 0;\n        };\n        StartPresentationTimesStamp =         {\n            epoch = 0;\n            flags = 1;\n            timescale = 600;\n            value = 240;\n        };\n    };\n})",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "media_subtype" : "none",
+            "ordinal" : 6,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "attachments" : "Optional({\n    EmptyMedia = 1;\n    PermanentEmptyMedia = 1;\n})",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "media_subtype" : "none",
+            "ordinal" : 7,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.40000000000000002,
+              "timescale" : 600,
+              "value" : 240
+            },
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          }
+        ],
+        "requested_time_range" : {
+          "duration" : {
+            "epoch" : 0,
+            "flags" : 5,
+            "seconds" : null,
+            "timescale" : 0,
+            "value" : 0
+          },
+          "start" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0,
+            "timescale" : 1,
+            "value" : 0
+          }
+        },
+        "segments" : [
+          {
+            "empty" : false,
+            "source" : {
+              "duration" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0.40000000000000002,
+                "timescale" : 600,
+                "value" : 240
+              },
+              "start" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0,
+                "timescale" : 1,
+                "value" : 0
+              }
+            },
+            "target" : {
+              "duration" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0.40000000000000002,
+                "timescale" : 600,
+                "value" : 240
+              },
+              "start" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0,
+                "timescale" : 1,
+                "value" : 0
+              }
+            }
+          }
+        ],
+        "started" : true,
+        "track_range" : {
+          "duration" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0.40000000000000002,
+            "timescale" : 600,
+            "value" : 240
+          },
+          "start" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0,
+            "timescale" : 1,
+            "value" : 0
+          }
+        }
+      },
+      "decoded" : {
+        "asset_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "decoded_image_count" : 3,
+        "default_time_range_unmodified" : true,
+        "mode" : "decoded-BGRA-to-visible-RGBA",
+        "reader_error" : null,
+        "reader_status" : 2,
+        "records" : [
+          {
+            "attachments" : "nil",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "media_subtype" : "BGRA",
+            "ordinal" : 0,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "rgba_file" : "positive-composition-decoded-0.rgba",
+            "rgba_sha256" : "7a82ecec7856841f07a8dd33eea2030f57fb8aa4cba0c6354be32e4992f4a430",
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "attachments" : "nil",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "media_subtype" : "BGRA",
+            "ordinal" : 1,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "rgba_file" : "positive-composition-decoded-1.rgba",
+            "rgba_sha256" : "c0f7e3fe18242c9dbfbef37d8e9dcb3a4308bc52ca06dbc63cd5cf28f0d15134",
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "attachments" : "nil",
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "media_subtype" : "BGRA",
+            "ordinal" : 2,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "rgba_file" : "positive-composition-decoded-2.rgba",
+            "rgba_sha256" : "949e8cd228e4942ba83e16e72ef0651a1a4ab6b401b8e32077b4445e879ecff4",
+            "sample_attachments" : "nil",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          }
+        ],
+        "requested_time_range" : {
+          "duration" : {
+            "epoch" : 0,
+            "flags" : 5,
+            "seconds" : null,
+            "timescale" : 0,
+            "value" : 0
+          },
+          "start" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0,
+            "timescale" : 1,
+            "value" : 0
+          }
+        },
+        "segments" : [
+          {
+            "empty" : false,
+            "source" : {
+              "duration" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0.40000000000000002,
+                "timescale" : 600,
+                "value" : 240
+              },
+              "start" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0,
+                "timescale" : 1,
+                "value" : 0
+              }
+            },
+            "target" : {
+              "duration" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0.40000000000000002,
+                "timescale" : 600,
+                "value" : 240
+              },
+              "start" : {
+                "epoch" : 0,
+                "flags" : 1,
+                "seconds" : 0,
+                "timescale" : 1,
+                "value" : 0
+              }
+            }
+          }
+        ],
+        "started" : true,
+        "track_range" : {
+          "duration" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0.40000000000000002,
+            "timescale" : 600,
+            "value" : 240
+          },
+          "start" : {
+            "epoch" : 0,
+            "flags" : 1,
+            "seconds" : 0,
+            "timescale" : 1,
+            "value" : 0
+          }
+        }
+      },
+      "file_bytes" : 2308,
+      "name" : "positive-composition",
+      "sha256_after" : "abd5e23b328507ea0c1c4f894e2d7d34cb5493ae0011b86413cb2821bd5959a8",
+      "sha256_before" : "abd5e23b328507ea0c1c4f894e2d7d34cb5493ae0011b86413cb2821bd5959a8",
+      "sha256_between_reads" : "abd5e23b328507ea0c1c4f894e2d7d34cb5493ae0011b86413cb2821bd5959a8",
+      "source_unchanged" : true
+    }
+  ]
+}

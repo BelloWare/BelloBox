@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "bytes": 2308,
+      "device": 16777231,
+      "file": "positive-composition.mov",
+      "inode": 138729464,
+      "mode": "0o444",
+      "mtime_ns": 1791509355266633999,
+      "sha256": "abd5e23b328507ea0c1c4f894e2d7d34cb5493ae0011b86413cb2821bd5959a8"
+    },
+    {
+      "bytes": 2308,
+      "device": 16777231,
+      "file": "zero-origin.mov",
+      "inode": 138729463,
+      "mode": "0o444",
+      "mtime_ns": 1791509355266461041,
+      "sha256": "ef59f7b291b1fbbe16969b65b97d5918e03224527fcbd68f7c984ce4ba7fed16"
+    }
+  ],
+  "identical_to_pre_read": true,
+  "recorded": "2026-10-09T01:29:15.609402+00:00"
+}

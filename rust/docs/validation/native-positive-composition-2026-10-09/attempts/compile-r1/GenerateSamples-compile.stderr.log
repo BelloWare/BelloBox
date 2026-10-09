@@ -1,0 +1,7 @@
+/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09/GenerateSamples.swift:83:67: error: extraneous argument labels 'imageBuffer:presentationTimeStamp:duration:frameProperties:infoFlagsOut:' in call
+ 81 |         let duration = CMTime(value: 60, timescale: 600)
+ 82 |         var flags = VTEncodeInfoFlags()
+ 83 |         try check(VTCompressionSessionEncodeFrameWithOutputHandler(encoder,
+    |                                                                   `- error: extraneous argument labels 'imageBuffer:presentationTimeStamp:duration:frameProperties:infoFlagsOut:' in call
+ 84 |             imageBuffer: p, presentationTimeStamp: pts, duration: duration,
+ 85 |             frameProperties: [kVTEncodeFrameOptionKey_ForceKeyFrame: true] as CFDictionary,

@@ -1,0 +1,75 @@
+{
+  "base": "8448568578a8eadd76b0c3ddb5bd7022595e4402",
+  "environment": {
+    "architecture": "arm64",
+    "macOS": "ProductName:\t\tmacOS\nProductVersion:\t\t14.8\nBuildVersion:\t\t23J21",
+    "sdk": "15.1",
+    "swift": "Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)\nTarget: arm64-apple-macosx14.0"
+  },
+  "steps": [
+    {
+      "command": [
+        "/Users/admin/Library/Caches/BelloRustWork/box-positive-composition-88pmcv8v/GenerateSamples",
+        "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09/samples"
+      ],
+      "executable_sha256": "71ac9ebbb458e8376096ebd2ba7564acdc4539a630f969a0c5b4396cb1190c82",
+      "exit_code": 0,
+      "finished": "2026-10-09T01:29:15.229326+00:00",
+      "label": "generate-samples",
+      "started": "2026-10-09T01:29:14.948669+00:00",
+      "stderr": "generate-samples.stderr.log",
+      "stderr_sha256": "f337bd442e4ee4f644bc08cb34c02e9e02781f9bf0ec4526580644f96a879193",
+      "stdout": "encoder-result.json",
+      "stdout_sha256": "909033d51362e2a31162d67ce92d7dc7cda0c7ce6a5c02e5d4be1889864c16c4"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09/author_mov.py",
+        "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09/samples",
+        "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09/movies"
+      ],
+      "executable_sha256": "8ce1c7564d2d7db363f063487a2af507d476a8e584e224d396c418f0aa3686fd",
+      "exit_code": 0,
+      "finished": "2026-10-09T01:29:15.270631+00:00",
+      "label": "author-movies",
+      "started": "2026-10-09T01:29:15.230532+00:00",
+      "stderr": "author-movies.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "author-result.json",
+      "stdout_sha256": "e607926d1f042c4e7601044de5d49f34354e34ce3f1eeb146f651cda97a818c5"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09/verify_container.py",
+        "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09"
+      ],
+      "executable_sha256": "8ce1c7564d2d7db363f063487a2af507d476a8e584e224d396c418f0aa3686fd",
+      "exit_code": 0,
+      "finished": "2026-10-09T01:29:15.307227+00:00",
+      "label": "container-preflight",
+      "started": "2026-10-09T01:29:15.271337+00:00",
+      "stderr": "container-preflight.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "container-preflight.json",
+      "stdout_sha256": "1d071be5769f6a4291dbe0e9dd988eb85d312e2191743ac23130b8dfff5867fc"
+    },
+    {
+      "command": [
+        "/Users/admin/Library/Caches/BelloRustWork/box-positive-composition-88pmcv8v/NativeRead",
+        "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09/movies",
+        "/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09/reader-output"
+      ],
+      "executable_sha256": "32c513f6be959273eae57cebf6050ef201749e89e9ec5f733d3a7a1477ef78f3",
+      "exit_code": 0,
+      "finished": "2026-10-09T01:29:15.608698+00:00",
+      "label": "native-read",
+      "started": "2026-10-09T01:29:15.307827+00:00",
+      "stderr": "native-read.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "native-read.json",
+      "stdout_sha256": "736ff37cf7126add68dbfafb49b66107d3be007f859827798a36ad12a9df965a"
+    }
+  ]
+}

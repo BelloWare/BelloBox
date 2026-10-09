@@ -1,0 +1,14 @@
+{
+  "author_reproduction_exit": 0,
+  "checked_at": "2026-10-09T01:31:33.640115+00:00",
+  "native_verification_sha256": "cc5501a04494a71d3818b200de9ff6d76efe0d4d9452c919f0176c5fe5836534",
+  "native_verifier_exit": 0,
+  "reproduced_both_original_movies_byte_exact": true,
+  "sources_sha256": {
+    "GenerateSamples.swift": "f8a3dcaef9c73770733a7adbcd7b663264d2bc55a10c2f2bde3e4ffd44e73ccb",
+    "NativeRead.swift": "2d863a286bc917d1b1c1a9da34bcf5f463e1add881ad9505434e6f29e57f50cd",
+    "author_mov.py": "4a2455cccfc26e74f86f5a37fa5d4c4615d0b39c3aca2436d60f89f810426a21",
+    "verify_container.py": "fc9bdf584b215bfccff7a050dd50f225fad83b97a9ee0583c346fe66e0bfb63a",
+    "verify_native.py": "8a39a188f011cec65abd8a10316f2e494548549704acaf0cff3830c82266fbf1"
+  }
+}

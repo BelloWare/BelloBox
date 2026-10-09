@@ -1,0 +1,13 @@
+/Users/admin/projects/BelloBox-rust-positive-composition/rust/docs/validation/native-positive-composition-2026-10-09/GenerateSamples.swift:83:19: error: 'VTCompressionSessionEncodeFrameWithOutputHandler' has been renamed to 'VTCompressionSessionEncodeFrame(_:imageBuffer:presentationTimeStamp:duration:frameProperties:infoFlagsOut:outputHandler:)'
+ 81 |         let duration = CMTime(value: 60, timescale: 600)
+ 82 |         var flags = VTEncodeInfoFlags()
+ 83 |         try check(VTCompressionSessionEncodeFrameWithOutputHandler(encoder,
+    |                   `- error: 'VTCompressionSessionEncodeFrameWithOutputHandler' has been renamed to 'VTCompressionSessionEncodeFrame(_:imageBuffer:presentationTimeStamp:duration:frameProperties:infoFlagsOut:outputHandler:)'
+ 84 |             p, pts, duration,
+ 85 |             [kVTEncodeFrameOptionKey_ForceKeyFrame: true] as CFDictionary,
+
+VideoToolbox.VTCompressionSessionEncodeFrameWithOutputHandler:3:13: note: 'VTCompressionSessionEncodeFrameWithOutputHandler' was obsoleted in Swift 4.2
+1 | @available(macOS 10.11, *)
+2 | @available(swift, obsoleted: 4.2, renamed: "VTCompressionSessionEncodeFrame(_:imageBuffer:presentationTimeStamp:duration:frameProperties:infoFlagsOut:outputHandler:)")
+3 | public func VTCompressionSessionEncodeFrameWithOutputHandler(_ session: VTCompressionSession, _ imageBuffer: CVImageBuffer, _ presentationTimeStamp: CMTime, _ duration: CMTime, _ frameProperties: CFDictionary?, _ infoFlagsOut: UnsafeMutablePointer<VTEncodeInfoFlags>?, _ outputHandler: @escaping VTCompressionOutputHandler) -> OSStatus
+  |             `- note: 'VTCompressionSessionEncodeFrameWithOutputHandler' was obsoleted in Swift 4.2

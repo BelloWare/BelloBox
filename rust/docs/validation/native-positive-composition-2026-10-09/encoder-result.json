@@ -1,0 +1,148 @@
+{
+  "all_intra" : true,
+  "codec" : "avc1",
+  "height" : 48,
+  "reordering" : false,
+  "sample_count" : 3,
+  "samples" : [
+    {
+      "attachments" : "Optional([[\"EarlierDisplayTimesAllowed\": 0, \"DependsOnOthers\": 0]])",
+      "avcC_sha256" : "3766f374acb85694ec11cf57999e52f00b48d775244874c8c4ee49ae3f20e9fc",
+      "callback_flags" : 0,
+      "encoded_bytes" : 353,
+      "encoded_sha256" : "bb170e6fde0b3c846435e76e00f31f099526252e213fab5408c12a67276bf17a",
+      "index" : 0,
+      "input_duration" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.10000000000000001,
+        "timescale" : 600,
+        "value" : 60
+      },
+      "input_pts" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0,
+        "timescale" : 600,
+        "value" : 0
+      },
+      "output_dts" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0,
+        "timescale" : 600,
+        "value" : 0
+      },
+      "output_duration" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.10000000000000001,
+        "timescale" : 600,
+        "value" : 60
+      },
+      "output_pts" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0,
+        "timescale" : 600,
+        "value" : 0
+      },
+      "source_rgba_sha256" : "632a6002d65e3dc9174f14ce596e282de86b3eb20294fad0422c93ac82fb0850",
+      "submission_flags" : 1,
+      "sync" : true
+    },
+    {
+      "attachments" : "Optional([[\"DependsOnOthers\": 0, \"EarlierDisplayTimesAllowed\": 0]])",
+      "avcC_sha256" : "3766f374acb85694ec11cf57999e52f00b48d775244874c8c4ee49ae3f20e9fc",
+      "callback_flags" : 0,
+      "encoded_bytes" : 598,
+      "encoded_sha256" : "28e20bfe73a1bb5249bcce6bf51b24725eb58ccff065d54c90a2199630a58949",
+      "index" : 1,
+      "input_duration" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.10000000000000001,
+        "timescale" : 600,
+        "value" : 60
+      },
+      "input_pts" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.10000000000000001,
+        "timescale" : 600,
+        "value" : 60
+      },
+      "output_dts" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.10000000000000001,
+        "timescale" : 600,
+        "value" : 60
+      },
+      "output_duration" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.10000000000000001,
+        "timescale" : 600,
+        "value" : 60
+      },
+      "output_pts" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.10000000000000001,
+        "timescale" : 600,
+        "value" : 60
+      },
+      "source_rgba_sha256" : "9392cb369241d7bfc30dbcc1feb04d1574b8a0a545d196506500ff5474f7f264",
+      "submission_flags" : 1,
+      "sync" : true
+    },
+    {
+      "attachments" : "Optional([[\"EarlierDisplayTimesAllowed\": 0, \"DependsOnOthers\": 0]])",
+      "avcC_sha256" : "3766f374acb85694ec11cf57999e52f00b48d775244874c8c4ee49ae3f20e9fc",
+      "callback_flags" : 0,
+      "encoded_bytes" : 616,
+      "encoded_sha256" : "7f5c2d2323164aeb6720ef82c8af79fa0150354f503b18a0305480a67a2f93f2",
+      "index" : 2,
+      "input_duration" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.10000000000000001,
+        "timescale" : 600,
+        "value" : 60
+      },
+      "input_pts" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.20000000000000001,
+        "timescale" : 600,
+        "value" : 120
+      },
+      "output_dts" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.20000000000000001,
+        "timescale" : 600,
+        "value" : 120
+      },
+      "output_duration" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.10000000000000001,
+        "timescale" : 600,
+        "value" : 60
+      },
+      "output_pts" : {
+        "epoch" : 0,
+        "flags" : 1,
+        "seconds" : 0.20000000000000001,
+        "timescale" : 600,
+        "value" : 120
+      },
+      "source_rgba_sha256" : "254f427c8c7f79257abb8099de949d845613dab350a99774f791be66f7a7f473",
+      "submission_flags" : 1,
+      "sync" : true
+    }
+  ],
+  "width" : 64
+}

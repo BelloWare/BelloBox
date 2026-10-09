@@ -1,0 +1,29 @@
+{
+  "all_base_file_postimages_and_modes_unchanged": true,
+  "base": "8448568578a8eadd76b0c3ddb5bd7022595e4402",
+  "base_files_and_modes_checked": 1475,
+  "base_ls_tree_sha256": "21745cf0effe2a6efe00a00286c037a6a33f7e5184508cebec97d870bcedbdac",
+  "base_tree": "c5fa82a1ce43de5710644fb37a5a5413f89760b0",
+  "changes_limited_to": "rust/docs/validation/native-positive-composition-2026-10-09/",
+  "checked_at": "2026-10-09T01:34:43.220740+00:00",
+  "compiler_source_and_binary_hashes_reverified": true,
+  "final_native_compilations_passed": 2,
+  "final_native_compile_warnings": 0,
+  "git_diff_check_passed": true,
+  "initial_encoder_compilations_failed_and_preserved": 2,
+  "native_precondition_demonstrated": true,
+  "native_reader_passes": {
+    "failed": 0,
+    "passed": 4
+  },
+  "native_verification_sha256": "cc5501a04494a71d3818b200de9ff6d76efe0d4d9452c919f0176c5fe5836534",
+  "rational_records_checked": {
+    "invalid": 26,
+    "numeric": 84,
+    "positive_infinity": 4,
+    "total": 114
+  },
+  "rust_before_first_seek_or_app_acceptance_claimed": false,
+  "rust_test_suites_run": 0,
+  "synthetic_cases": 2
+}
