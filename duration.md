@@ -1,6 +1,6 @@
 # BelloBox Rust migration duration audit
 
-## Current accounting checkpoint: 2026-10-09T16:37:00Z
+## Current accounting checkpoint: 2026-10-09T16:47:00Z
 
 This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains in the complete ledger and SHA-pinned historical view linked below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
 
@@ -13,14 +13,14 @@ These top totals cover only this catch-up receipt cohort, including late-added e
 | Implementation | Active effort unavailable; no isolated implementation timer |
 | Review | Active effort unavailable; only review-focused observations: 0 mixed windows; 0 with endpoints, unavailable union |
 | Mixed implementation/review/validation windows | 0 mixed windows; 0 with endpoints, unavailable union; scopes overlap resources and do not measure Review alone |
-| Builds | Unavailable separately |
+| Builds | 17.0s measured command resource time |
 | Tests | Unavailable separately from compilation in these command receipts |
-| Build + test/check (combined) | Unavailable |
+| Build + test/check (combined) | 4m 15.8s measured command resource time |
 | Interactive GUI validation | No new completed GUI process receipt |
-| CI | No new completed job duration in this cohort; prior terminal jobs remain in the ledger and linked history |
-| Dependency/environment setup | Unavailable |
-| Retries/rework | 31.5s across 1 failed process/API receipts; total rework effort unavailable |
-| Publication | 10m 35.0s measured API/client time; 1 mixed windows; 1 with endpoints, 52.1s union |
+| CI | 23m 14.0s runner time across 2 completed jobs (1 failed); 12m 30.0s wall union |
+| Dependency/environment setup | 45.0s nested CI phase time (already inside CI jobs); command setup shown separately below |
+| Retries/rework | 58.1s across 3 failed process/API receipts; total rework effort unavailable |
+| Publication | No isolated API total; 0 mixed windows; 0 with endpoints, unavailable union |
 | Waiting | Unavailable separately; waiting is mixed into recorded workflow windows |
 | Model inference | Unavailable; no timing telemetry |
 
@@ -28,28 +28,39 @@ These top totals cover only this catch-up receipt cohort, including late-added e
 
 | Group | Timed items | Resource/client seconds | Known-endpoint items | Endpoint-subset seconds | Endpoint union seconds |
 |---|---:|---:|---:|---:|---:|
-| catchup_api | 83 | 634.971 | 83 | 634.971 | 269.680 |
+| catchup_ci_job | 2 | 1394.000 | 2 | 1394.000 | 750.000 |
+| catchup_command | 10 | 297.325 | 10 | 297.325 | 297.325 |
 
 Groups overlap each other and mixed work windows; never add them into project elapsed or active-work time. Derived endpoints are excluded from unions. Monotonic timers and separately recorded UTC clocks can differ slightly. Whole-second 0s means below receipt resolution. CI steps and native subcommands are nested within job durations, not extra runner time.
 
 | Resource group / category | Seconds |
 |---|---:|
-| catchup_api: publication | 634.971 |
+| catchup_ci_job: ci | 1394.000 |
+| catchup_command: build + test/check (combined) | 255.807 |
+| catchup_command: automated lint/check | 24.508 |
+| catchup_command: build | 17.011 |
 
 ### Nested CI phases (already included in CI jobs)
 
 | Phase class | Runner step time |
 |---|---:|
+| CI orchestration | 12.0s |
+| dependency/environment setup | 45.0s |
+| build + automated lint/check | 2m 55.0s |
+| build/test/check (combined) | 18m 49.0s |
+| build | 29.0s |
+| CI reporting | 0.0s |
+| packaging/validation | 0.0s |
 
 These conservative phase groups can include compilation and execution together; do not add them to the CI job totals.
 
-This cohort adds no CI job execution intervals; prior verified terminal runs remain in earlier accounting. Coverage of 2026-10-09T16:22:00Z–2026-10-09T16:37:00Z is partial and does not establish an idle-time or inference budget.
+Within 2026-10-09T16:37:00Z–2026-10-09T16:47:00Z, newly recorded CI jobs cover 368.000 overlap-safe seconds. Remaining time is unclassified, not proven idle or inference.
 
 ### Mixed workflows and waits (excluded from resource totals)
 
 | Activity | Start UTC | End UTC | Seconds | Outcome |
 |---|---|---|---:|---|
-| Root HTTP source verification and normal publication | 2026-10-09T16:29:41.540Z | 2026-10-09T16:30:33.669Z | 52.129 | completed |
+| Same Session HTTP handoff GUI process still open | 2026-10-09T16:44:26Z | unknown | unknown | Active interactive session, not a completed interval yet |
 
 Open task and CI rows retain unknown final duration. Failed source attempts and the original failed native URL job remain in preserved earlier accounting. Mixed windows overlap useful parallel work; they are not pure idle or active-review time.
 
@@ -57,96 +68,25 @@ Open task and CI rows retain unknown final duration. Failed source attempts and 
 
 | Activity | Category | Start UTC | End UTC | Seconds | Outcome |
 |---|---|---|---|---:|---|
-| Create immutable HTTP blob: .github/workflows/rust-macos.yml | publication | 2026-10-09T16:22:24.894Z | 2026-10-09T16:22:34.257Z | 9.363 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/http_session.rs | publication | 2026-10-09T16:22:55.553Z | 2026-10-09T16:23:01.299Z | 5.746 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/http_session/tests.rs | publication | 2026-10-09T16:22:55.553Z | 2026-10-09T16:23:05.174Z | 9.621 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/http_ui.rs | publication | 2026-10-09T16:22:55.552Z | 2026-10-09T16:23:09.665Z | 14.113 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/desktop.rs | publication | 2026-10-09T16:22:55.553Z | 2026-10-09T16:23:15.283Z | 19.73 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/shutdown.rs | publication | 2026-10-09T16:23:15.828Z | 2026-10-09T16:23:21.182Z | 5.354 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/http_ui/tests.rs | publication | 2026-10-09T16:23:15.828Z | 2026-10-09T16:23:25.588Z | 9.76 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/main.rs | publication | 2026-10-09T16:23:15.828Z | 2026-10-09T16:23:29.780Z | 13.952 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/transport.rs | publication | 2026-10-09T16:23:15.836Z | 2026-10-09T16:23:36.065Z | 20.229 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/transport/http_request.rs | publication | 2026-10-09T16:23:37.003Z | 2026-10-09T16:23:42.986Z | 5.983 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-core/src/developer/http_request.rs | publication | 2026-10-09T16:23:37.003Z | 2026-10-09T16:23:48.898Z | 11.895 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-app/src/transport/http_request/tests.rs | publication | 2026-10-09T16:23:37.003Z | 2026-10-09T16:23:56.482Z | 19.479 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-core/src/developer.rs | publication | 2026-10-09T16:23:37.005Z | 2026-10-09T16:24:15.154Z | 38.149 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-core/tests/http_swift_oracle.rs | publication | 2026-10-09T16:24:15.834Z | 2026-10-09T16:24:20.181Z | 4.347 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json | publication | 2026-10-09T16:24:15.751Z | 2026-10-09T16:24:22.238Z | 6.487 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json | publication | 2026-10-09T16:24:15.752Z | 2026-10-09T16:24:28.164Z | 12.412 | SHA/content verified |
-| Create immutable HTTP blob: rust/crates/bellobox-core/src/developer/http_request_tests.rs | publication | 2026-10-09T16:24:15.833Z | 2026-10-09T16:24:32.954Z | 17.121 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/README.md | publication | 2026-10-09T16:24:33.715Z | 2026-10-09T16:24:39.389Z | 5.674 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/http-workflow.md | publication | 2026-10-09T16:24:33.716Z | 2026-10-09T16:24:45.768Z | 12.053 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/app-commands.json | publication | 2026-10-09T16:24:33.716Z | 2026-10-09T16:24:50.806Z | 17.09 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/bellobox-parity.md | publication | 2026-10-09T16:24:33.717Z | 2026-10-09T16:24:56.786Z | 23.069 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/app-handoff.md | publication | 2026-10-09T16:24:57.510Z | 2026-10-09T16:25:03.170Z | 5.66 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/core-checks.json | publication | 2026-10-09T16:24:57.510Z | 2026-10-09T16:25:17.264Z | 19.754 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/changed-source.json | publication | 2026-10-09T16:24:57.511Z | 2026-10-09T16:25:22.836Z | 25.325 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/compiled-source-manifest.json | publication | 2026-10-09T16:24:57.511Z | 2026-10-09T16:25:28.369Z | 30.858 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160836-dark.json | publication | 2026-10-09T16:25:28.959Z | 2026-10-09T16:25:35.101Z | 6.142 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160053-light.json | publication | 2026-10-09T16:25:28.960Z | 2026-10-09T16:25:40.400Z | 11.44 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/failure-notes.json | publication | 2026-10-09T16:25:28.959Z | 2026-10-09T16:25:47.498Z | 18.539 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T161330-light.json | publication | 2026-10-09T16:25:28.963Z | 2026-10-09T16:25:52.169Z | 23.206 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-receipt.json | publication | 2026-10-09T16:25:52.854Z | 2026-10-09T16:25:58.112Z | 5.258 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui.md | publication | 2026-10-09T16:25:52.858Z | 2026-10-09T16:26:03.340Z | 10.482 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-seal.json | publication | 2026-10-09T16:25:52.858Z | 2026-10-09T16:26:10.621Z | 17.763 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-source-manifest.json | publication | 2026-10-09T16:25:52.859Z | 2026-10-09T16:26:24.362Z | 31.503 | Failed denied initial call; authorized exact retry recorded separately |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-source-manifest.json | publication | 2026-10-09T16:27:19.156Z | 2026-10-09T16:27:23.849Z | 4.693 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/source-unchanged-final.json | publication | 2026-10-09T16:27:35.896Z | 2026-10-09T16:27:39.881Z | 3.985 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/loc-controls.json | publication | 2026-10-09T16:27:35.904Z | 2026-10-09T16:27:43.733Z | 7.829 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/independent-review.json | publication | 2026-10-09T16:27:35.904Z | 2026-10-09T16:27:47.489Z | 11.585 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/loc.json | publication | 2026-10-09T16:27:35.912Z | 2026-10-09T16:27:51.489Z | 15.577 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/swift-source-verification.json | publication | 2026-10-09T16:27:52.158Z | 2026-10-09T16:28:05.845Z | 13.687 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/verify-http-loc.py | publication | 2026-10-09T16:27:52.158Z | 2026-10-09T16:28:10.506Z | 18.348 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/documentation-evidence-supplement.json | publication | 2026-10-09T16:27:52.179Z | 2026-10-09T16:28:16.087Z | 23.908 | SHA/content verified |
-| Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/verification.json | publication | 2026-10-09T16:27:52.179Z | 2026-10-09T16:28:21.037Z | 28.858 | SHA/content verified |
-| Read back immutable HTTP blob: .github/workflows/rust-macos.yml | publication | 2026-10-09T16:26:50.558Z | 2026-10-09T16:26:51.253Z | 0.695 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/http_session/tests.rs | publication | 2026-10-09T16:28:43.556Z | 2026-10-09T16:28:43.891Z | 0.335 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/http_session.rs | publication | 2026-10-09T16:28:43.556Z | 2026-10-09T16:28:44.054Z | 0.498 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/desktop.rs | publication | 2026-10-09T16:28:43.556Z | 2026-10-09T16:28:43.978Z | 0.422 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/main.rs | publication | 2026-10-09T16:28:45.716Z | 2026-10-09T16:28:46.134Z | 0.418 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/http_ui/tests.rs | publication | 2026-10-09T16:28:45.716Z | 2026-10-09T16:28:46.190Z | 0.474 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/shutdown.rs | publication | 2026-10-09T16:28:45.716Z | 2026-10-09T16:28:46.217Z | 0.501 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/http_ui.rs | publication | 2026-10-09T16:28:45.716Z | 2026-10-09T16:28:46.432Z | 0.716 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/transport/http_request.rs | publication | 2026-10-09T16:28:47.505Z | 2026-10-09T16:28:47.852Z | 0.347 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/transport/http_request/tests.rs | publication | 2026-10-09T16:28:47.505Z | 2026-10-09T16:28:47.971Z | 0.466 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-app/src/transport.rs | publication | 2026-10-09T16:28:47.505Z | 2026-10-09T16:28:47.978Z | 0.473 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-core/src/developer.rs | publication | 2026-10-09T16:28:47.505Z | 2026-10-09T16:28:48.081Z | 0.576 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-core/src/developer/http_request_tests.rs | publication | 2026-10-09T16:28:50.196Z | 2026-10-09T16:28:50.546Z | 0.35 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json | publication | 2026-10-09T16:28:50.196Z | 2026-10-09T16:28:50.554Z | 0.358 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-core/src/developer/http_request.rs | publication | 2026-10-09T16:28:50.196Z | 2026-10-09T16:28:50.560Z | 0.364 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json | publication | 2026-10-09T16:28:50.196Z | 2026-10-09T16:28:50.706Z | 0.51 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/README.md | publication | 2026-10-09T16:28:51.670Z | 2026-10-09T16:28:52.009Z | 0.339 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/http-workflow.md | publication | 2026-10-09T16:28:51.670Z | 2026-10-09T16:28:52.039Z | 0.369 | SHA/content verified |
-| Read back immutable HTTP blob: rust/crates/bellobox-core/tests/http_swift_oracle.rs | publication | 2026-10-09T16:28:51.670Z | 2026-10-09T16:28:52.071Z | 0.401 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/bellobox-parity.md | publication | 2026-10-09T16:28:51.670Z | 2026-10-09T16:28:52.530Z | 0.86 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/app-handoff.md | publication | 2026-10-09T16:28:54.066Z | 2026-10-09T16:28:54.406Z | 0.34 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/app-commands.json | publication | 2026-10-09T16:28:54.066Z | 2026-10-09T16:28:54.423Z | 0.357 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/compiled-source-manifest.json | publication | 2026-10-09T16:28:54.066Z | 2026-10-09T16:28:54.489Z | 0.423 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/changed-source.json | publication | 2026-10-09T16:28:54.066Z | 2026-10-09T16:28:54.531Z | 0.465 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/failure-notes.json | publication | 2026-10-09T16:28:55.392Z | 2026-10-09T16:28:55.712Z | 0.32 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160053-light.json | publication | 2026-10-09T16:28:55.392Z | 2026-10-09T16:28:55.724Z | 0.332 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160836-dark.json | publication | 2026-10-09T16:28:55.392Z | 2026-10-09T16:28:55.852Z | 0.46 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/core-checks.json | publication | 2026-10-09T16:28:55.392Z | 2026-10-09T16:28:55.889Z | 0.497 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-seal.json | publication | 2026-10-09T16:28:56.804Z | 2026-10-09T16:28:57.207Z | 0.403 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T161330-light.json | publication | 2026-10-09T16:28:56.804Z | 2026-10-09T16:28:57.246Z | 0.442 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-receipt.json | publication | 2026-10-09T16:28:56.804Z | 2026-10-09T16:28:57.259Z | 0.455 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-source-manifest.json | publication | 2026-10-09T16:28:56.804Z | 2026-10-09T16:28:57.270Z | 0.466 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/loc-controls.json | publication | 2026-10-09T16:28:59.044Z | 2026-10-09T16:28:59.516Z | 0.472 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/independent-review.json | publication | 2026-10-09T16:28:59.044Z | 2026-10-09T16:28:59.538Z | 0.494 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui.md | publication | 2026-10-09T16:28:59.044Z | 2026-10-09T16:29:00.143Z | 1.099 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/loc.json | publication | 2026-10-09T16:28:59.044Z | 2026-10-09T16:28:59.604Z | 0.56 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/swift-source-verification.json | publication | 2026-10-09T16:29:01.043Z | 2026-10-09T16:29:01.389Z | 0.346 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/verify-http-loc.py | publication | 2026-10-09T16:29:01.043Z | 2026-10-09T16:29:01.398Z | 0.355 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/verification.json | publication | 2026-10-09T16:29:01.043Z | 2026-10-09T16:29:01.429Z | 0.386 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/source-unchanged-final.json | publication | 2026-10-09T16:29:01.043Z | 2026-10-09T16:29:01.531Z | 0.488 | SHA/content verified |
-| Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/documentation-evidence-supplement.json | publication | 2026-10-09T16:29:02.340Z | 2026-10-09T16:29:02.652Z | 0.312 | SHA/content verified |
+| Exact HTTP source Linux CI job | ci | 2026-10-09T16:30:38Z | 2026-10-09T16:41:27Z | 649.0 | success |
+| Exact HTTP source macOS CI job | ci | 2026-10-09T16:30:43Z | 2026-10-09T16:43:08Z | 745.0 | failure |
+| Same-session transfer focused-initial | build + test/check (combined) | 2026-10-09T16:37:53.870837+00:00 | 2026-10-09T16:37:58.898709+00:00 | 5.027873491999344 | 101 |
+| Same-session transfer focused-r2 | build + test/check (combined) | 2026-10-09T16:38:47.200120+00:00 | 2026-10-09T16:39:31.698654+00:00 | 44.49853482299659 | 101 |
+| Same-session transfer focused-r3 | build + test/check (combined) | 2026-10-09T16:39:59.304794+00:00 | 2026-10-09T16:40:42.502683+00:00 | 43.197891278992756 | 0 |
+| Same-session transfer strict-r3 | automated lint/check | 2026-10-09T16:41:05.923696+00:00 | 2026-10-09T16:41:17.924159+00:00 | 12.000463593998575 | 0 |
+| Same-session transfer minimal-check-r3 | build + test/check (combined) | 2026-10-09T16:41:17.961781+00:00 | 2026-10-09T16:41:23.306847+00:00 | 5.345070698007476 | 0 |
+| Same-session transfer focused-r4 | build + test/check (combined) | 2026-10-09T16:42:10.662793+00:00 | 2026-10-09T16:42:19.232373+00:00 | 8.569581930991262 | 101 |
+| Same-session transfer focused-r5 | build + test/check (combined) | 2026-10-09T16:42:50.035982+00:00 | 2026-10-09T16:43:30.818926+00:00 | 40.78294479500619 | 0 |
+| Same-session transfer strict-r5 | automated lint/check | 2026-10-09T16:43:30.892655+00:00 | 2026-10-09T16:43:43.400089+00:00 | 12.507436194006004 | 0 |
+| Same-session transfer ordinary-build-r5 | build | 2026-10-09T16:43:43.460348+00:00 | 2026-10-09T16:44:00.471041+00:00 | 17.010693751988583 | 0 |
+| Same-session transfer aggregate-app | build + test/check (combined) | 2026-10-09T16:44:14.103808+00:00 | 2026-10-09T16:46:02.488533+00:00 | 108.384726416989 | 0 |
 
 Full source hashes, source URLs, nested job steps and timing limitations are in duration-data.json. Native macOS full logs were unavailable for some Agent runs; verified job/step metadata is retained without a full-log claim. Later source CI may be running and is not silently promoted to success by this snapshot.
 
 
 ## All recorded resource groups
 
-The ledger retains 3,776 items; 786 are flagged for their own resource-group totals. These are all recorded observations, not a complete migration budget. Groups retain their existing definitions and checkpoint-era names; they must not be added into one elapsed or effort total. Mixed work windows and nested phases remain excluded. Missing endpoints make some interval unions unavailable.
+The ledger retains 3,789 items; 798 are flagged for their own resource-group totals. These are all recorded observations, not a complete migration budget. Groups retain their existing definitions and checkpoint-era names; they must not be added into one elapsed or effort total. Mixed work windows and nested phases remain excluded. Missing endpoints make some interval unions unavailable.
 
 | Existing resource group | Counted timed items | Resource seconds | Items with endpoints | Endpoint-subset seconds | Subset interval union seconds |
 |---|---:|---:|---:|---:|---:|
@@ -156,9 +96,9 @@ The ledger retains 3,776 items; 786 are flagged for their own resource-group tot
 | incremental_ci_job | 2 | 1441.000 | 2 | 1441.000 | 823.000 |
 | new_local_command | 25 | 673.614 | 25 | 673.614 | 673.614 |
 | new_reported_phase | 3 | 0.890 | 0 | 0.000 | unavailable |
-| catchup_ci_job | 16 | 13969.000 | 16 | 13969.000 | 8292.000 |
+| catchup_ci_job | 18 | 15363.000 | 18 | 15363.000 | 9042.000 |
 | catchup_native_command | 11 | 4.661 | 11 | 4.661 | 4.661 |
-| catchup_command | 242 | 4416.761 | 211 | 3673.135 | 3670.126 |
+| catchup_command | 252 | 4714.086 | 221 | 3970.460 | 3967.451 |
 | catchup_gui_process | 9 | 2603.879 | 9 | 2603.879 | 2603.879 |
 | catchup_api | 138 | 1602.990 | 138 | 1602.990 | 485.928 |
 
