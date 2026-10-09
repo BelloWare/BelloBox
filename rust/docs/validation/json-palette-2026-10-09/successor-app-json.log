@@ -1,0 +1,30 @@
+   Compiling bellobox-core v0.1.0 (<checkout>/rust/crates/bellobox-core)
+   Compiling bellobox-app v0.1.0 (<checkout>/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 21.51s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (<shared-target>/debug/deps/bellobox-4e371e545acec530)
+
+running 19 tests
+test desktop::json::tests::failed_and_closed_destination_keep_source_owner_and_draft ... ok
+test desktop::json::tests::full_json_options_invalidate_results_and_validate_cannot_chain ... ok
+test desktop::json::tests::actual_full_window_adopts_pending_session_once_and_close_is_independent ... ok
+test desktop::json::tests::quit_during_destination_creation_refuses_transfer ... ok
+test desktop::json::tests::rejected_oversized_palette_cannot_open_stale_input ... ok
+test json_session::tests::cancelled_preview_restarts_only_on_explicit_transfer_after_physical_drain ... ok
+test json_session::tests::modes_chain_bounds_and_independent_sessions ... ok
+test json_session::tests::oversized_full_draft_never_parses_the_previous_valid_input ... ok
+test json_session::tests::physical_cancel_and_retire_fence_late_success ... ok
+test json_session::tests::physical_worker_coalesces_edits_and_survives_transfer ... ok
+test json_session::tests::transfer_keeps_job_and_cancelled_or_stale_results_never_publish ... ok
+test desktop::json::tests::full_oversized_editor_draft_is_retained_but_never_copied_into_the_session ... ok
+test launcher_ui::json_tests::json_clear_closes_old_work_and_fresh_palette_has_default_mode ... ok
+test launcher_ui::json_tests::json_palette_retains_mode_chained_text_and_transfers_actual_owner ... ok
+test launcher_ui::json_tests::json_output_copy_and_navigation_keep_their_source_owners ... ok
+test launcher_ui::json_tests::json_preview_controls_fit_the_source_reserved_row ... ok
+test launcher_ui::json_tests::json_search_copy_keeps_query_clipboard_ownership ... ok
+test launcher_ui::json_tests::oversized_json_open_is_keyboard_reachable ... ok
+test launcher_ui::json_tests::oversized_json_preview_retains_draft_and_starts_only_after_open ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 452 filtered out; finished in 0.38s
+

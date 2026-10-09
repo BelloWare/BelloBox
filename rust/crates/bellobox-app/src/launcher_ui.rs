@@ -19,6 +19,11 @@ struct Launcher {
     settings_writable: bool,
     notice: Option<String>,
     jobs: crate::session::SessionJobs,
+    json: Option<Entity<crate::launcher_json_ui::LauncherJsonPreview>>,
+    json_subscriptions: Vec<Subscription>,
+    json_active: bool,
+    json_sized: bool,
+    json_opening: bool,
     qr: Option<Entity<LauncherQrPreview>>,
     qr_active: bool,
     qr_sized: bool,
@@ -74,9 +79,13 @@ impl Launcher {
         let activation = cx.observe_window_activation(window, |this, window, cx| {
             if window.is_window_active() {
                 this.was_active = true;
-            } else if this.was_active && this.clock_active && !this.qr_save_pending(cx) {
+            } else if this.was_active
+                && (this.clock_active || this.json_active)
+                && !this.json_opening
+                && !this.qr_save_pending(cx)
+            {
                 // The compact source palette dismisses on deactivation. Limit
-                // this addition to the clock slice; no background preview survives.
+                // this addition to Clock/JSON; QR retains its separate Save guard.
                 this.close(window, cx);
                 cx.notify();
             }
@@ -96,6 +105,11 @@ impl Launcher {
             settings_writable,
             notice,
             jobs: crate::session::SessionJobs::default(),
+            json: None,
+            json_subscriptions: Vec::new(),
+            json_active: false,
+            json_sized: false,
+            json_opening: false,
             qr: None,
             qr_active: false,
             qr_sized: false,
@@ -124,6 +138,7 @@ impl Launcher {
                 let _ = weak.update(cx, |this, cx| {
                     this.closed = true;
                     this.discard_qr(cx);
+                    this.discard_json(cx);
                     this.discard_clock(cx)
                 });
             }
@@ -221,6 +236,57 @@ impl Launcher {
         }
         self.qr_active = false;
     }
+    fn discard_json(&mut self, cx: &mut Context<Self>) {
+        self.json_subscriptions.clear();
+        if let Some(json) = self.json.take() {
+            json.update(cx, |j, cx| j.retire(cx));
+        }
+        self.json_active = false;
+    }
+    fn route_json_key(
+        &mut self,
+        event: &KeyDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> bool {
+        if !self.json_active {
+            return false;
+        }
+        let Some(json) = self.json.clone() else {
+            return false;
+        };
+        let key = event.keystroke.key.as_str();
+        let m = event.keystroke.modifiers;
+        if key == "escape"
+            && (self.suppress_escape || json.read(cx).owns_focus(window, cx))
+            && !m.platform
+            && !m.control
+            && !m.alt
+            && !m.shift
+        {
+            self.suppress_escape = true;
+            self.query.read(cx).focus(window);
+            window.prevent_default();
+            cx.stop_propagation();
+            return true;
+        }
+        if key == "k" && (m.platform || m.control) && !m.alt && !m.shift {
+            self.query.update(cx, |e, cx| e.set_text(String::new(), cx));
+            self.query.read(cx).focus(window);
+            window.prevent_default();
+            cx.stop_propagation();
+            return true;
+        }
+        if json.read(cx).output_focused(window, cx)
+            && !m.platform
+            && !m.control
+            && (key.chars().count() == 1 || key == "space")
+        {
+            self.query.read(cx).focus(window);
+        }
+        let search = self.query.read(cx).focus_handle(cx);
+        json.update(cx, |j, cx| j.handle_key(event, &search, window, cx))
+    }
     fn route_qr_key(
         &mut self,
         event: &KeyDownEvent,
@@ -311,6 +377,7 @@ impl Launcher {
         if self.allow_close(cx) {
             self.jobs.cancel();
             self.discard_qr(cx);
+            self.discard_json(cx);
             self.discard_clock(cx);
             crate::shutdown::close_window(window, cx);
         }
@@ -333,6 +400,10 @@ impl Launcher {
             return;
         }
         self.clock_active = false;
+        self.json_active = false;
+        if let Some(json) = &self.json {
+            json.update(cx, |j, _| j.set_active(false));
+        }
         self.qr_active = false;
         if let Some(qr) = &self.qr {
             qr.update(cx, |qr, cx| qr.set_active(false, cx));
@@ -346,6 +417,35 @@ impl Launcher {
                 .update(cx, |e, cx| e.set_text(String::new(), cx));
             return;
         };
+        if command.id == "json" {
+            if self.json.is_none() {
+                let json = cx.new(|cx| {
+                    crate::launcher_json_ui::LauncherJsonPreview::new(
+                        self.input.clone(),
+                        window,
+                        cx,
+                    )
+                });
+                self.json_subscriptions
+                    .push(cx.observe(&json, |_, _, cx| cx.notify()));
+                self.json_subscriptions.push(cx.subscribe_in(
+                    &json,
+                    window,
+                    |this, _, _: &crate::launcher_json_ui::Open, window, cx| {
+                        if this.json_active {
+                            this.launch(window, cx);
+                        }
+                    },
+                ));
+                self.json = Some(json);
+            }
+            self.json_active = true;
+            if let Some(json) = &self.json {
+                json.update(cx, |j, _| j.set_active(true));
+            }
+            cx.notify();
+            return;
+        }
         if self.input.len() > bellobox_core::MAX_PREVIEW_BYTES {
             self.preview.update(cx,|e,cx|e.set_text("Selection exceeds the 64 KB preview limit. Open to work with the complete text.".into(),cx));
             return;
@@ -431,7 +531,32 @@ impl Launcher {
         if self.closed || crate::shutdown::requested(cx) || self.qr_save_pending(cx) {
             return;
         }
-        if let Some(c) = self.commands(cx).get(self.selected) {
+        if let Some(c) = self.commands(cx).get(self.selected).cloned() {
+            if c.id == "json" && self.json_active {
+                if !self.allow_close(cx) {
+                    return;
+                }
+                let Some(json) = &self.json else {
+                    return;
+                };
+                let session = json.read(cx).session.clone();
+                self.json_opening = true;
+                let result = crate::desktop::open_json_handoff(session, cx);
+                self.json_opening = false;
+                if let Err(error) = result {
+                    self.notice = Some(error);
+                    cx.notify();
+                    return;
+                }
+                self.json_subscriptions.clear();
+                self.json.take();
+                self.json_active = false;
+                // Retained/same-turn callbacks must not fall through to the
+                // generic original-input route while native Close is pending.
+                self.closed = true;
+                self.close(window, cx);
+                return;
+            }
             let handoff = if c.id == "worldClock" && self.clock_active {
                 match self
                     .clock
@@ -499,7 +624,13 @@ impl Render for Launcher {
         }
         let commands = self.commands(cx);
         let count = commands.len();
-        if self.clock_active || self.clock_sized || self.qr_active || self.qr_sized {
+        if self.clock_active
+            || self.clock_sized
+            || self.qr_active
+            || self.qr_sized
+            || self.json_active
+            || self.json_sized
+        {
             let natural = if self.clock_active {
                 clock_palette_height(count, !self.input.is_empty() || self.notice.is_some())
                     + self
@@ -507,6 +638,16 @@ impl Render for Launcher {
                         .as_ref()
                         .map(|c| c.read(cx).height() - crate::launcher_clock_ui::PREVIEW_HEIGHT)
                         .unwrap_or(0.)
+            } else if self.json_active {
+                64. + if !self.input.is_empty() || self.notice.is_some() {
+                    48.
+                } else {
+                    0.
+                } + 26.
+                    + count.min(5) as f32 * 42.
+                    + 12.
+                    + 42.
+                    + 224.
             } else if self.qr_active {
                 64. + if !self.input.is_empty() || self.notice.is_some() {
                     48.
@@ -534,6 +675,7 @@ impl Render for Launcher {
             }
             self.clock_sized = self.clock_active;
             self.qr_sized = self.qr_active;
+            self.json_sized = self.json_active;
         }
         self.selected = self.selected.min(count.saturating_sub(1));
         let best = launcher::suggestions(&self.input).first().copied();
@@ -556,6 +698,11 @@ impl Render for Launcher {
                 if this.query.read(cx).has_marked_text() {
                     return;
                 }
+                if let Some(json) = &this.json
+                    && json.update(cx, |j, cx| j.handle_key_up(event, window, cx))
+                {
+                    return;
+                }
                 if let Some(qr) = &this.qr
                     && qr.update(cx, |qr, cx| qr.handle_key_up(event, window, cx))
                 {
@@ -573,6 +720,9 @@ impl Render for Launcher {
                 this.physical_activation_keys
                     .observe(&event.keystroke.key, true);
                 if this.query.read(cx).has_marked_text() {
+                    return;
+                }
+                if this.route_json_key(event, window, cx) {
                     return;
                 }
                 if this.route_qr_key(event, window, cx) {
@@ -743,6 +893,7 @@ impl Render for Launcher {
                                 }
                                 this.discard_clock(cx);
                                 this.discard_qr(cx);
+                                this.discard_json(cx);
                                 this.selected = 0;
                                 this.query
                                     .update(cx, |editor, cx| editor.set_text(String::new(), cx));
@@ -884,44 +1035,53 @@ impl Render for Launcher {
                             .when(selected && self.qr_active, |s| {
                                 s.child(self.qr.as_ref().expect("active QR session").clone())
                             })
-                            .when(selected && !self.clock_active && !self.qr_active, |s| {
-                                s.child(
-                                    div()
-                                        .px(px(10.))
-                                        .pb(px(10.))
-                                        .flex()
-                                        .flex_col()
-                                        .gap(px(8.))
-                                        .child(
-                                            div()
-                                                .h(px(130.))
-                                                .p(px(8.))
-                                                .rounded(px(7.))
-                                                .bg(p.surface)
-                                                .overflow_hidden()
-                                                .child(self.preview.clone()),
-                                        )
-                                        .child(
-                                            div().flex().justify_end().child(
-                                                div()
-                                                    .id("open-selected")
-                                                    .px(px(10.))
-                                                    .py(px(5.))
-                                                    .rounded(px(6.))
-                                                    .bg(p.surface)
-                                                    .text_size(px(11.))
-                                                    .text_color(p.accent)
-                                                    .cursor_pointer()
-                                                    .child("Open")
-                                                    .on_click(cx.listener(
-                                                        |this, _, window, cx| {
-                                                            this.launch(window, cx)
-                                                        },
-                                                    )),
-                                            ),
-                                        ),
-                                )
+                            .when(selected && self.json_active, |s| {
+                                s.child(self.json.as_ref().expect("active JSON session").clone())
                             })
+                            .when(
+                                selected
+                                    && !self.clock_active
+                                    && !self.qr_active
+                                    && !self.json_active,
+                                |s| {
+                                    s.child(
+                                        div()
+                                            .px(px(10.))
+                                            .pb(px(10.))
+                                            .flex()
+                                            .flex_col()
+                                            .gap(px(8.))
+                                            .child(
+                                                div()
+                                                    .h(px(130.))
+                                                    .p(px(8.))
+                                                    .rounded(px(7.))
+                                                    .bg(p.surface)
+                                                    .overflow_hidden()
+                                                    .child(self.preview.clone()),
+                                            )
+                                            .child(
+                                                div().flex().justify_end().child(
+                                                    div()
+                                                        .id("open-selected")
+                                                        .px(px(10.))
+                                                        .py(px(5.))
+                                                        .rounded(px(6.))
+                                                        .bg(p.surface)
+                                                        .text_size(px(11.))
+                                                        .text_color(p.accent)
+                                                        .cursor_pointer()
+                                                        .child("Open")
+                                                        .on_click(cx.listener(
+                                                            |this, _, window, cx| {
+                                                                this.launch(window, cx)
+                                                            },
+                                                        )),
+                                                ),
+                                            ),
+                                    )
+                                },
+                            )
                     })),
             )
             .child(
@@ -954,6 +1114,7 @@ impl Render for Launcher {
                                         Ok(()) => {
                                             this.discard_clock(cx);
                                             this.discard_qr(cx);
+                                            this.discard_json(cx);
                                             this.selected = 0;
                                             this.query.update(cx, |editor, cx| {
                                                 editor.set_text(String::new(), cx)
@@ -964,6 +1125,7 @@ impl Render for Launcher {
                                         Err(e) => {
                                             this.discard_clock(cx);
                                             this.discard_qr(cx);
+                                            this.discard_json(cx);
                                             this.notice = Some(e);
                                             this.input.clear();
                                         }
@@ -1469,3 +1631,6 @@ mod qr_lifecycle_tests {
         }
     }
 }
+
+#[cfg(test)]
+mod json_tests;

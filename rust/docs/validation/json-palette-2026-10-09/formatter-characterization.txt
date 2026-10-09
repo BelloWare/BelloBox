@@ -1,0 +1,18 @@
+Pre-existing JSON formatter difference observed 2026-10-09T08:00:50Z
+
+Source Rust baseline: 75cd3609bc053a6869b996706642637fac8536ce
+Source Swift specification: e43b1c4595c42383e087fe70f38c28d07c31dda0
+Input: {"z":2,"a":1}
+Mode: Minify
+Expected by Swift-derived ordering assertion: {"a":1,"z":2}
+Actual existing Rust engine output: {"z":2,"a":1}
+
+Initial integration test failed that ordering assertion; 11 other focused tests
+passed. No assertion tolerance or parser change was introduced. The final
+ownership test uses whitespace-changing Minify, keeps Rust's observed ordering,
+and does not claim formatter parity. Original failure is an ordering
+characterization, not evidence that the session transfer was broken.
+
+Swift custom DeveloperJSON additionally retains raw numeric lexemes and compares
+keys with Swift String semantics. Do not generalize successful large-integer
+precision examples to exponent spelling, negative zero or canonical Unicode keys.

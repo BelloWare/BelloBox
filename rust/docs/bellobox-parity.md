@@ -44,7 +44,7 @@ No claim of complete visual or interaction parity is made.
 
 | Swift source / capability | Rust implementation | Status and remaining work |
 |---|---|---|
-| `Launcher/LauncherCatalog.swift`, 61 commands including 51 developer tools | `bellobox-core::launcher`, source Home and separate GPUI palette | Partial: all IDs/titles, title-weighted search, basic selection suggestions, favorites/recents, coarse learning. Independent per-tool windows and New Window sessions are implemented. Separate 680px search palette has keyboard navigation and one expanded row. World Clock now has an offline interactive preview and explicit value-snapshot handoff; other previews remain read-only. Global shortcut/nonactivation, other tools’ interactive session transfer, and complete suggestion classifier remain absent. |
+| `Launcher/LauncherCatalog.swift`, 61 commands including 51 developer tools | `bellobox-core::launcher`, source Home and separate GPUI palette | Partial: all IDs/titles, title-weighted search, basic selection suggestions, favorites/recents, coarse learning. Independent per-tool windows and New Window sessions are implemented. Separate 680px search palette has keyboard navigation and one expanded row. World Clock has an interactive preview and explicit value-snapshot handoff; QR retains its compact draft and JSON now has source mode/Copy/Cancel/chaining controls with same-session transfer into an independent window. Other developer previews remain read-only. See [JSON workflow scope](palette-json.md); its unchanged formatter still differs from Swift ordering/raw-number/key semantics. Global shortcut/nonactivation, other tools’ interactive session transfer, and complete suggestion classifier remain absent. |
 | `Launcher/LauncherUsageStore.swift` | `launcher::Usage`, `settings::Settings` | Implemented portable 30-day decaying, bounded category/tool counters. Tests cover cap/decay/title precedence. Only explicit tool opens learn. Selection, text, URL, app identity and fingerprints never persisted. |
 | `Selection/AccessibilityService.swift`, `SelectionRequest.swift`, `SelectionMonitor.swift` | Explicit GPUI clipboard import; permission preflight | Partial: cfg-gated direct AXSelectedText reader with protected-ancestor/range/source/window checks and 160 ms budget, exposed through explicit macOS --selection CLI; Apple-target type-checked, not runtime-tested. No marker-range fallback, retries, global hotkey/floating toolbar, replacement or UI selection handoff. Clipboard import is not selection capture. |
 | `Tools/TextTransforms.swift` | `bellobox-core::text` | Partial: nine case conversions, four encodings/manual decoders and auto detect, four hashes, six line operations, counts and heuristic tokens implemented/tests. GUI restores category bar and choice controls; hash/count specialized result cards still differ; Swift pretty auto-detection and per-model persisted token choices absent. Counts label Unicode scalars, not grapheme clusters. |
@@ -893,3 +893,24 @@ Exact native-mask code checkpoint `c41ce17a` subsequently passed Linux3757528723
 and macOS37575287155, including strict normalized RGBA oracle, mask lifecycle and
 actual host worker tests. Portable alpha/RGB discrepancies remain explicit, not
 silently accepted as native equivalence; see the updated native-alpha evidence.
+
+## JSON palette session transfer — 2026-10-09
+
+The source compact JSON row now owns Pretty/Minify/Validate, complete output,
+Cancel, guarded Copy and eligible Use as Input. It intentionally has no primary
+input editor, matching Swift. One bounded calculation session survives the
+palette-to-independent-window handoff, including in-flight work; failed opens
+preserve the source owner. Query/row changes retain drafts, selection replacement
+retires them, and independent close/New Window do not cross session ownership.
+Validate reports cannot be chained into JSON input. Nineteen focused GPUI tests
+and the r1 default app suite (469 passed, two existing ignored), strict Clippy,
+minimal-feature check, formatting and package-clean ordinary build passed.
+Recording-fixtures app tests (485 passed, two existing ignored) and their strict
+Clippy also passed on r1. Its observed Linux GUI matrix passed. A minimal successor
+replaces a false Validate preservation claim with `Valid JSON.`; 22 Core/19 App
+JSON tests, strict Clippy and a clean ordinary build passed. Full matrices remain
+prior-r1 evidence. Successor focused Linux Validate GUI passed; exact-commit CI
+and native runtime acceptance remain separate gates.
+See [scope and current evidence](palette-json.md). This does not fix the existing
+Rust formatter's source differences in key ordering, raw number spelling or
+canonical Unicode key equality, and is not complete JSON or macOS parity.

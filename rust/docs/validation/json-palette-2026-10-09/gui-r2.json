@@ -1,0 +1,32 @@
+{
+  "result": "PASS focused R2 Validate wording GUI recheck",
+  "binary_sha256": "fd9e9ce44114b774d93e75beccc7ecff8d0165eaffacdca6a2e210a2707d1df1",
+  "manifest_sha256": "17b184af0932a089e0284923454e9ce5864bc95627becb9e496b87ad5e165a39",
+  "observed": [
+    "Full window Validate result exactly Valid JSON.; no Use as Input",
+    "Full Copy Result pasted exactly Valid JSON. into palette query",
+    "Compact Validate result exactly Valid JSON.; no Use as Input",
+    "Compact Copy pasted exactly Valid JSON. into query",
+    "Return Open preserves original spaced JSON input and Validate mode in independent window; report never chained",
+    "Closing adopted window preserves original input/report; both close normally"
+  ],
+  "input": "{ \"z\": 2, \"a\": 1, \"integer\": 9007199254740993 }",
+  "binary_manifest_product_sources_unchanged": true,
+  "app_exit": 0,
+  "all_owned_windows_closed": true,
+  "desktop_released": true,
+  "provider_actions": 0,
+  "network_qualification": "No credentials/provider configured or network actions; no packet-count instrument",
+  "timing": {
+    "start_utc": "2026-10-09T08:34:37.841199+00:00",
+    "end_utc": "2026-10-09T08:37:05.316487+00:00",
+    "workflow_wall_seconds": 147.475288
+  },
+  "scope_limits": [
+    "R1 full matrix retained separately, not rerun or relabeled R2",
+    "Formatter insertion-order/raw-number/Unicode semantics unchanged",
+    "Existing generic Numbers preserved label remains; only Validate result literal changed",
+    "No native macOS claim, no parser timing claim",
+    "Local screenshots only, none published"
+  ]
+}

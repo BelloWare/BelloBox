@@ -112,9 +112,7 @@ pub fn execute(id: &str, input: &str, second: &str) -> R<String> {
             match second.trim() {
                 "" | "pretty" => pretty(&v),
                 "minify" => compact(&v),
-                "validate" => Ok(
-                    "Valid JSON · duplicate keys rejected · exact number lexemes preserved".into(),
-                ),
+                "validate" => Ok("Valid JSON.".into()),
                 _ => Err("Use pretty, minify, or validate in the second field.".into()),
             }
         }
@@ -2814,6 +2812,13 @@ mod tests {
         ] {
             assert!(execute("json", s, "").is_err(), "{s}")
         }
+    }
+    #[test]
+    fn json_validate_reports_validity_without_number_lexeme_claims() {
+        for input in ["-0", "1E2", r#"{"integer":9007199254740993}"#] {
+            assert_eq!(run("json", input, "validate"), "Valid JSON.");
+        }
+        assert!(execute("json", "[1,]", "validate").is_err());
     }
     #[test]
     fn json_depth_and_input_limits() {

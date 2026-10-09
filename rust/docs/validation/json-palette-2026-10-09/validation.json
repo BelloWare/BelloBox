@@ -1,0 +1,388 @@
+{
+  "baseline": "75cd3609bc053a6869b996706642637fac8536ce",
+  "observed_date_utc": "2026-10-09",
+  "scope": "App-owned JSON palette/session/full-window workflow plus truthful Core Validate status; unchanged parsing/formatting semantics",
+  "commands": [
+    {
+      "command": "cargo test --locked -p bellobox-app json_session:: --no-run",
+      "start_utc": "2026-10-09T07:51:53Z",
+      "end_utc": "2026-10-09T07:52:01Z",
+      "result": "compile failure: GPUI glob-import test macro recursion; fixed explicit import"
+    },
+    {
+      "command": "cargo test --locked -p bellobox-app json_session::",
+      "start_utc": "2026-10-09T07:52:14Z",
+      "end_utc": "2026-10-09T07:52:29Z",
+      "result": "2 tests passed; preliminary session source"
+    },
+    {
+      "command": "cargo test --locked -p bellobox-app json_session::",
+      "start_utc": "2026-10-09T07:55:15Z",
+      "end_utc": "2026-10-09T07:55:22Z",
+      "result": "compile failure: two adapter method visibility errors; fixed"
+    },
+    {
+      "command": "cargo test --locked -p bellobox-app json_session::",
+      "start_utc": "2026-10-09T07:55:39Z",
+      "end_utc": "2026-10-09T07:55:54Z",
+      "result": "2 tests passed; integrated source"
+    },
+    {
+      "command": "cargo test --locked -p bellobox-app json -- --test-threads=2",
+      "start_utc": "2026-10-09T08:00:35Z",
+      "end_utc": "2026-10-09T08:00:50Z",
+      "result": "11 passed, 1 failed: pre-existing object key order differs from Swift; characterization retained"
+    },
+    {
+      "command": "cargo test --locked -p bellobox-app json -- --test-threads=2",
+      "start_utc": "2026-10-09T08:02:50Z",
+      "end_utc": "2026-10-09T08:03:06Z",
+      "result": "15 passed, 0 failed; no local code warnings"
+    },
+    {
+      "command": "cargo fmt --all; cargo test --locked -p bellobox-app -- --test-threads=2",
+      "start_utc": "2026-10-09T08:07:54Z",
+      "end_utc": "2026-10-09T08:09:49Z",
+      "result": "467 passed, 2 existing ignored; historical pre-final ownership review"
+    },
+    {
+      "command": "cargo fmt --all; cargo test --locked -p bellobox-app -- --test-threads=2",
+      "start_utc": "2026-10-09T08:10:11Z",
+      "end_utc": "2026-10-09T08:12:09Z",
+      "result": "468 passed, 2 existing ignored; historical before successful-open latch and pre-clone size guard"
+    },
+    {
+      "command": "cargo fmt --all; cargo test --locked -p bellobox-app json -- --test-threads=2",
+      "start_utc": "2026-10-09T08:13:45Z",
+      "end_utc": "2026-10-09T08:13:54Z",
+      "result": "compile failure: missing Focusable import in new test; corrected"
+    },
+    {
+      "command": "cargo test --locked -p bellobox-app json -- --test-threads=2",
+      "start_utc": "2026-10-09T08:14:30Z",
+      "end_utc": "2026-10-09T08:14:47Z",
+      "result": "19 passed, 0 failed"
+    },
+    {
+      "command": "cargo fmt --all -- --check; cargo clippy --locked -p bellobox-app --all-targets -- -D warnings",
+      "start_utc": "2026-10-09T08:15:13Z",
+      "end_utc": "2026-10-09T08:15:23Z",
+      "result": "strict failure: unnecessary String conversion in debug selector; mechanically removed"
+    }
+  ],
+  "timing_note": "Observed shell UTC bounds only; includes process preparation, compilation and test execution. No model inference timing or overall completion estimate available.",
+  "mixed_work": [
+    {
+      "start_utc": "2026-10-09T07:48:45Z",
+      "end_utc": "2026-10-09T08:03:18Z",
+      "description": "Interleaved source implementation, investigation, review responses and focused command checks; overlaps command durations and is not additive."
+    },
+    {
+      "start_utc": "2026-10-09T08:03:18Z",
+      "end_utc": "2026-10-09T08:19:59Z",
+      "description": "Interleaved source/ownership/key review, focused and broad verification, documentation, ordinary artifact sealing and GUI handoff. Overlaps commands; not additive. Inference duration unavailable."
+    },
+    {
+      "start_utc": "2026-10-09T08:19:59Z",
+      "end_utc": "2026-10-09T08:34:25Z",
+      "description": "Interleaved immutable artifact handoff, recording-feature checks, source/LOC verification, awaiting GUI acceptance and minimal Validate wording successor checks/seal. Overlaps commands and peer work; not additive. Inference timing unavailable."
+    }
+  ],
+  "pending": [
+    "exact published SHA Linux/macOS CI",
+    "authorized macOS runtime acceptance"
+  ],
+  "unchanged": [
+    "core JSON parsing/formatting semantics",
+    "shared editor",
+    "dependencies and lockfile",
+    "production capture/tool/vault gates",
+    "credentials/provider permissions",
+    "release pipeline"
+  ],
+  "prior_r1_final_ordinary_checks": [
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "start_utc": "2026-10-09T08:16:28.367107+00:00",
+      "end_utc": "2026-10-09T08:16:29.966285+00:00",
+      "observed_elapsed_seconds": 1.599,
+      "exit_code": 0,
+      "log": "final-format.log"
+    },
+    {
+      "name": "strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_utc": "2026-10-09T08:16:29.966662+00:00",
+      "end_utc": "2026-10-09T08:16:36.476497+00:00",
+      "observed_elapsed_seconds": 6.51,
+      "exit_code": 0,
+      "log": "final-strict.log"
+    },
+    {
+      "name": "full-app",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--",
+        "--test-threads=2"
+      ],
+      "start_utc": "2026-10-09T08:16:36.476868+00:00",
+      "end_utc": "2026-10-09T08:18:31.878999+00:00",
+      "observed_elapsed_seconds": 115.402,
+      "exit_code": 0,
+      "log": "final-full-app.log"
+    },
+    {
+      "name": "minimal",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features"
+      ],
+      "start_utc": "2026-10-09T08:18:31.879449+00:00",
+      "end_utc": "2026-10-09T08:18:37.667035+00:00",
+      "observed_elapsed_seconds": 5.788,
+      "exit_code": 0,
+      "log": "final-minimal.log"
+    },
+    {
+      "name": "clean-app",
+      "command": [
+        "cargo",
+        "clean",
+        "-p",
+        "bellobox-app"
+      ],
+      "start_utc": "2026-10-09T08:18:37.667446+00:00",
+      "end_utc": "2026-10-09T08:18:37.783714+00:00",
+      "observed_elapsed_seconds": 0.116,
+      "exit_code": 0,
+      "log": "final-clean-app.log"
+    },
+    {
+      "name": "ordinary-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "bellobox-app"
+      ],
+      "start_utc": "2026-10-09T08:18:37.784064+00:00",
+      "end_utc": "2026-10-09T08:18:47.376246+00:00",
+      "observed_elapsed_seconds": 9.592,
+      "exit_code": 0,
+      "log": "final-ordinary-build.log"
+    }
+  ],
+  "prior_r1_final_default_app_result": {
+    "passed": 469,
+    "failed": 0,
+    "ignored_existing": 2,
+    "new_json_tests": 19
+  },
+  "prior_r1_ordinary_binary": {
+    "binary_sha256": "619e13f1c9a922d50de2b8362539070b97819dcc9cfdbba0edcf8ba0109b83ca",
+    "binary_bytes": 146329200,
+    "source_manifest_sha256": "db8da6913413b6d0a5b1ab59ac4c10c0be8cb2e6ec0de4c7240cd65748ebdbe3",
+    "sealed_utc": "2026-10-09T08:19:51.036061+00:00",
+    "configuration": "ordinary default features; no movie-fixtures or recording-fixtures flags; non-test binary"
+  },
+  "prior_r1_recording_feature_checks": [
+    {
+      "name": "recording-full-app",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "recording-fixtures",
+        "--",
+        "--test-threads=2"
+      ],
+      "start_utc": "2026-10-09T08:20:18.474436+00:00",
+      "end_utc": "2026-10-09T08:22:31.702798+00:00",
+      "observed_elapsed_seconds": 133.228,
+      "exit_code": 0,
+      "log": "final-recording-full-app.log"
+    },
+    {
+      "name": "recording-strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "recording-fixtures",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_utc": "2026-10-09T08:22:31.703737+00:00",
+      "end_utc": "2026-10-09T08:22:39.512623+00:00",
+      "observed_elapsed_seconds": 7.809,
+      "exit_code": 0,
+      "log": "final-recording-strict.log"
+    }
+  ],
+  "prior_r1_recording_app_result": {
+    "features": [
+      "recording-fixtures"
+    ],
+    "passed": 485,
+    "failed": 0,
+    "ignored_existing": 2
+  },
+  "prior_r1_source_integrity_after_feature_checks": "All eight product postimages, Cargo.lock and immutable ordinary binary rechecked unchanged at 2026-10-09T08:23:05Z",
+  "successor_checks": [
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "start_utc": "2026-10-09T08:32:34.388445+00:00",
+      "end_utc": "2026-10-09T08:32:36.047403+00:00",
+      "observed_elapsed_seconds": 1.659,
+      "exit_code": 0,
+      "log": "successor-format.log"
+    },
+    {
+      "name": "core-json",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "json",
+        "--",
+        "--test-threads=2"
+      ],
+      "start_utc": "2026-10-09T08:32:36.047722+00:00",
+      "end_utc": "2026-10-09T08:32:42.588437+00:00",
+      "observed_elapsed_seconds": 6.541,
+      "exit_code": 0,
+      "log": "successor-core-json.log"
+    },
+    {
+      "name": "app-json",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "json",
+        "--",
+        "--test-threads=2"
+      ],
+      "start_utc": "2026-10-09T08:32:42.588795+00:00",
+      "end_utc": "2026-10-09T08:33:04.550588+00:00",
+      "observed_elapsed_seconds": 21.962,
+      "exit_code": 0,
+      "log": "successor-app-json.log"
+    },
+    {
+      "name": "strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_utc": "2026-10-09T08:33:04.551118+00:00",
+      "end_utc": "2026-10-09T08:33:13.841845+00:00",
+      "observed_elapsed_seconds": 9.291,
+      "exit_code": 0,
+      "log": "successor-strict.log"
+    },
+    {
+      "name": "clean-app",
+      "command": [
+        "cargo",
+        "clean",
+        "-p",
+        "bellobox-app"
+      ],
+      "start_utc": "2026-10-09T08:33:13.842233+00:00",
+      "end_utc": "2026-10-09T08:33:14.111263+00:00",
+      "observed_elapsed_seconds": 0.269,
+      "exit_code": 0,
+      "log": "successor-clean-app.log"
+    },
+    {
+      "name": "ordinary-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "bellobox-app"
+      ],
+      "start_utc": "2026-10-09T08:33:14.111653+00:00",
+      "end_utc": "2026-10-09T08:33:22.960038+00:00",
+      "observed_elapsed_seconds": 8.848,
+      "exit_code": 0,
+      "log": "successor-ordinary-build.log"
+    }
+  ],
+  "successor_results": {
+    "core_json": 22,
+    "app_json": 19,
+    "strict_core_app": "passed",
+    "format": "passed",
+    "package_clean_ordinary_build": "passed",
+    "full_matrices": "prior r1 source only; final exact-commit CI pending"
+  },
+  "ordinary_binary": {
+    "binary_sha256": "fd9e9ce44114b774d93e75beccc7ecff8d0165eaffacdca6a2e210a2707d1df1",
+    "binary_bytes": 146329200,
+    "source_manifest_sha256": "17b184af0932a089e0284923454e9ce5864bc95627becb9e496b87ad5e165a39",
+    "sealed_utc": "2026-10-09T08:34:09.186384+00:00",
+    "configuration": "ordinary default features; package-clean; no fixture features; non-test binary"
+  },
+  "successor_change": "Only Core Validate status becomes Valid JSON. and one regression; no parser/format semantics change.",
+  "gui_acceptance": {
+    "r1": "Passed observed full Linux matrix; gui-r1.json",
+    "r2": "Passed focused Validate Linux recheck; gui-r2.json"
+  }
+}

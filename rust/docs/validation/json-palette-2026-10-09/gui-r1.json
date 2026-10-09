@@ -1,0 +1,59 @@
+{
+  "result": "PASS within observed R1 ordinary Linux JSON session workflow scope, with known false Validate wording preserved as pre-existing gap",
+  "observed_passes": [
+    "Compact Pretty/Minify/Validate, no primary input editor, output and footer readable",
+    "Minify explicit Copy pasted complete exact text into query; query Ctrl+A,C owns query; read-only output Ctrl+A,C owns complete output",
+    "Use as Input changes only palette draft; Clock/query away/back retains mode/output; unchanged output hides chaining",
+    "Validate report copied but Use as Input absent; keyboard Open adopts minified draft and Validate mode without replacing input by report",
+    "Original full window remains open and retains original spaced input/Pretty result after all child operations",
+    "Three independent full windows observed; child edits/close do not alter others; New Window and later reopening start empty Pretty",
+    "Malformed input removes stale output, exposes error and disabled Copy; copy-result shortcut leaves query clipboard sentinel unchanged; closing brace repair restores result",
+    "Minimum full client740x560 measured; empty placeholder and Example result/buttons readable; full Copy/Clear/Paste roundtrip works",
+    "Tab reaches mode controls, output, Use as Input and Copy;700ms held Space/Return stable intended mode without opening window;1000ms held Escape returns query without closing; fresh Escape closes",
+    "Local Clock view and empty QR preview navigate/close; QR X11 Copy Image limitation visible and unchanged"
+  ],
+  "environment": {
+    "desktop": [
+      1364,
+      1024
+    ],
+    "full_initial_client": [
+      1178,
+      814
+    ],
+    "minimum_client": [
+      740,
+      560
+    ],
+    "palette_client_observed": "about680px wide, content-clamped height",
+    "appearance": "light",
+    "renderer": "Mesa lavapipe software"
+  },
+  "known_gaps": [
+    "R1 Validate falsely says exact number lexemes preserved; successor requested separately",
+    "Existing insertion-order keys, raw-number spelling normalization, canonical Unicode key equality differences remain",
+    "Titlebar dash displayed mojibake on Linux; outside this session slice"
+  ],
+  "unexercised": [
+    "Dark appearance",
+    "Interactive >64000-byte and500000-byte boundaries",
+    "Busy-copy timing race, delayed worker cancellation and failed destination injection",
+    "Exact physical parser activation counts; stable held-key GUI state only",
+    "Native macOS focus/IME/accessibility"
+  ],
+  "cleanup": {
+    "all_owned_windows_closed": true,
+    "app_exit": "0",
+    "desktop_released": true
+  },
+  "timing": {
+    "start_utc": "2026-10-09T08:20:32.534803+00:00",
+    "end_utc": "2026-10-09T08:30:33.200141+00:00",
+    "workflow_wall_seconds": 600.665338,
+    "qualification": "Elapsed workflow, no latency/FPS/inference claim"
+  },
+  "capture_policy": "Local only; no screenshots published",
+  "binary_sha256": "619e13f1c9a922d50de2b8362539070b97819dcc9cfdbba0edcf8ba0109b83ca",
+  "source_manifest_sha256": "db8da6913413b6d0a5b1ab59ac4c10c0be8cb2e6ec0de4c7240cd65748ebdbe3",
+  "original_receipt_sha256": "9d90d7bb4d5dce9ab0ce049465945e7426d7b851f2a0360b94066f66069ab696"
+}

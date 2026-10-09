@@ -1,4 +1,5 @@
 mod ai_updates;
+mod json;
 mod permissions;
 pub(crate) mod qr_jobs;
 mod snippets;
@@ -17,6 +18,7 @@ use std::{
 };
 
 struct BelloBox {
+    json: Option<Entity<crate::json_session::JsonSession>>,
     selected: String,
     snippets: Option<snippets::SnippetUi>,
     permissions: Option<permissions::PermissionUi>,
@@ -116,11 +118,41 @@ fn qr_image_element(image: gpui::ImageSource) -> gpui::AnyElement {
 
 impl BelloBox {
     fn new_for(command: String, text: String, window: &mut Window, cx: &mut Context<Self>) -> Self {
+        Self::new_for_with_json(command, text, None, window, cx)
+    }
+    fn new_for_with_json(
+        command: String,
+        text: String,
+        json: Option<Entity<crate::json_session::JsonSession>>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
         let fixture = command;
-        let initial_text = text.clone();
+        let json = json.or_else(|| {
+            (fixture == "json").then(|| {
+                cx.new(|cx| match bellobox_core::validate_input(&text) {
+                    Ok(()) => crate::json_session::JsonSession::new(text.clone(), false, cx),
+                    Err(error) => {
+                        let mut session =
+                            crate::json_session::JsonSession::new(String::new(), false, cx);
+                        session.reject_input(error, crate::json_session::Mode::Pretty, cx);
+                        session
+                    }
+                })
+            })
+        });
+        let mode = json
+            .as_ref()
+            .map(|session| session.read(cx).mode.argument().to_owned())
+            .unwrap_or_default();
+        let initial_text = if fixture == "json" {
+            String::new()
+        } else {
+            text.clone()
+        };
         let controls = crate::tool_controls::ToolControls::new(&fixture, &text);
         let input = cx.new(|cx| EditorView::new(text, window, cx));
-        let second = cx.new(|cx| EditorView::new(String::new(), window, cx));
+        let second = cx.new(|cx| EditorView::new(mode, window, cx));
         let output = cx.new(|cx| {
             let mut editor = EditorView::new(String::new(), window, cx);
             editor.set_read_only(true, cx);
@@ -142,6 +174,7 @@ impl BelloBox {
         });
         let status = String::new();
         let mut app = Self {
+            json,
             selected: fixture,
             snippets: None,
             permissions: None,
@@ -219,9 +252,13 @@ impl BelloBox {
                 crate::shutdown::QuitAdmission::Ready
             }
         });
+        app.init_json(window, cx);
         app.init_snippets(window, cx);
         app.init_permissions(window, cx);
-        if matches!(app.selected.as_str(), "subnet" | "chmod" | "numberBase") {
+        if matches!(
+            app.selected.as_str(),
+            "json" | "subnet" | "chmod" | "numberBase"
+        ) {
             app.input.read(cx).focus(window);
         }
         if app.selected == "ai" {
@@ -243,6 +280,19 @@ impl BelloBox {
         app
     }
     fn run_tool(&mut self, cx: &mut Context<Self>) {
+        if let Some(session) = &self.json {
+            let mode = crate::json_session::Mode::parse(self.second.read(cx).text());
+            let input = self.input.read(cx).text();
+            if let Err(error) = bellobox_core::validate_input(input) {
+                session.update(cx, |session, cx| session.reject_input(error, mode, cx));
+                self.sync_json(cx);
+                return;
+            }
+            let input = input.to_owned();
+            session.update(cx, |session, cx| session.set_draft(input, mode, cx));
+            self.sync_json(cx);
+            return;
+        }
         let revision = self.jobs.begin();
         self.clear_permission_preview(cx);
         self.qr_saves.cancel();
@@ -1548,10 +1598,20 @@ impl BelloBox {
                         !matches!(
                             self.selected.as_str(),
                             "listSet" | "stringEscape" | "subnet" | "chmod" | "numberBase"
-                        ),
+                        ) && self
+                            .json
+                            .as_ref()
+                            .is_none_or(|session| session.read(cx).can_chain()),
                         |s| {
                             s.child(button("use-input", "Use as Input", p).on_click(cx.listener(
                                 |this, _, _, cx| {
+                                    if let Some(session) = &this.json {
+                                        if session.update(cx, |s, cx| s.chain(cx)) {
+                                            let input = session.read(cx).input().to_owned();
+                                            this.input.update(cx, |e, cx| e.set_text(input, cx));
+                                        }
+                                        return;
+                                    }
                                     let text = this.output.read(cx).text().to_string();
                                     if this.busy || this.error.is_some() || text.is_empty() {
                                         return;
@@ -1562,12 +1622,36 @@ impl BelloBox {
                             )))
                         },
                     )
+                    .when(self.json.is_some() && self.busy, |s| {
+                        s.child(button("json-cancel", "Cancel", p).on_click(cx.listener(
+                            |this, _, _, cx| {
+                                if let Some(session) = &this.json {
+                                    session.update(cx, |s, cx| s.cancel(cx));
+                                }
+                            },
+                        )))
+                    })
+                    .when(
+                        self.json.is_some()
+                            && !self.busy
+                            && self.output.read(cx).text().is_empty()
+                            && !self.input.read(cx).text().is_empty(),
+                        |s| {
+                            s.child(button("json-refresh", "Refresh", p).on_click(cx.listener(
+                                |this, _, _, cx| {
+                                    if let Some(session) = &this.json {
+                                        session.update(cx, |s, cx| s.refresh(cx));
+                                    }
+                                },
+                            )))
+                        },
+                    )
                     .child(
                         button("copy-result", "Copy Result", p)
                             .when(
                                 matches!(
                                     self.selected.as_str(),
-                                    "stringEscape" | "subnet" | "chmod" | "numberBase"
+                                    "json" | "stringEscape" | "subnet" | "chmod" | "numberBase"
                                 ) && !crate::tool_controls::source_copy_enabled(
                                     self.busy,
                                     self.error.is_some(),
@@ -1576,9 +1660,24 @@ impl BelloBox {
                                 |s| s.opacity(0.45).cursor_default(),
                             )
                             .on_click(cx.listener(|this, _, _, cx| {
+                                if let Some(session) = &this.json {
+                                    if session.read(cx).can_copy() {
+                                        cx.write_to_clipboard(ClipboardItem::new_string(
+                                            session.read(cx).output.clone(),
+                                        ));
+                                        this.status = "Result copied.".into();
+                                        cx.notify();
+                                    }
+                                    return;
+                                }
                                 if matches!(
                                     this.selected.as_str(),
-                                    "listSet" | "stringEscape" | "subnet" | "chmod" | "numberBase"
+                                    "json"
+                                        | "listSet"
+                                        | "stringEscape"
+                                        | "subnet"
+                                        | "chmod"
+                                        | "numberBase"
                                 ) && !crate::tool_controls::source_copy_enabled(
                                     this.busy,
                                     this.error.is_some(),
@@ -1955,8 +2054,24 @@ impl Render for BelloBox {
                 }
             }))
             .on_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, window, cx| {
+                if this.json.is_some() && this.input.read(cx).has_marked_text() {
+                    return;
+                }
                 let command = event.keystroke.modifiers.platform
                     || cfg!(target_os = "linux") && event.keystroke.modifiers.control;
+                if command
+                    && event.keystroke.modifiers.shift
+                    && event.keystroke.key == "c"
+                    && let Some(session) = &this.json
+                {
+                    if session.read(cx).can_copy() {
+                        cx.write_to_clipboard(ClipboardItem::new_string(
+                            session.read(cx).output.clone(),
+                        ));
+                    }
+                    cx.stop_propagation();
+                    return;
+                }
                 if command {
                     match event.keystroke.key.as_str() {
                         "w" => crate::shutdown::close_window(window, cx),
@@ -1971,6 +2086,12 @@ impl Render for BelloBox {
         perf("render_cpu", start.elapsed().as_micros());
         view
     }
+}
+pub(crate) fn open_json_handoff(
+    session: Entity<crate::json_session::JsonSession>,
+    cx: &mut App,
+) -> Result<(), String> {
+    json::open(session, cx)
 }
 pub fn open_tool(id: &str, input: String, cx: &mut App) {
     open_tool_with_clock_context(id, input, None, cx);
