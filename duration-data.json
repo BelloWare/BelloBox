@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T16:07:00Z",
+  "as_of_utc": "2026-10-09T16:22:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -66660,6 +66660,330 @@
       "inference_duration_seconds": null,
       "inference_status": "unavailable",
       "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1622-http-app-5",
+      "repository_assignment": "BelloBox",
+      "activity": "aggregate-core",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T16:10:22.381342+00:00",
+      "end_utc": "2026-10-09T16:10:41.337726+00:00",
+      "duration_seconds": 18.95638676499948,
+      "source": [
+        {
+          "receipt_sha256": "e3fa19e56a06dcfcec77346ccf81dc3e192f43c00bd1daafb5d60a1eb6ee85b1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1622-http-app-6",
+      "repository_assignment": "BelloBox",
+      "activity": "aggregate-app",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T16:10:41.410809+00:00",
+      "end_utc": "2026-10-09T16:12:35.072478+00:00",
+      "duration_seconds": 113.66166974201042,
+      "source": [
+        {
+          "receipt_sha256": "e3fa19e56a06dcfcec77346ccf81dc3e192f43c00bd1daafb5d60a1eb6ee85b1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1622-http-app-7",
+      "repository_assignment": "BelloBox",
+      "activity": "aggregate-recording-app",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T16:12:35.116258+00:00",
+      "end_utc": "2026-10-09T16:15:28.158264+00:00",
+      "duration_seconds": 173.04200750299788,
+      "source": [
+        {
+          "receipt_sha256": "e3fa19e56a06dcfcec77346ccf81dc3e192f43c00bd1daafb5d60a1eb6ee85b1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1622-http-app-8",
+      "repository_assignment": "BelloBox",
+      "activity": "strict-recording",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T16:15:28.202518+00:00",
+      "end_utc": "2026-10-09T16:15:47.871224+00:00",
+      "duration_seconds": 19.668708325989428,
+      "source": [
+        {
+          "receipt_sha256": "e3fa19e56a06dcfcec77346ccf81dc3e192f43c00bd1daafb5d60a1eb6ee85b1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1622-http-app-9",
+      "repository_assignment": "BelloBox",
+      "activity": "aggregate-minimal",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T16:15:47.921469+00:00",
+      "end_utc": "2026-10-09T16:18:47.256967+00:00",
+      "duration_seconds": 179.3354997520073,
+      "source": [
+        {
+          "receipt_sha256": "e3fa19e56a06dcfcec77346ccf81dc3e192f43c00bd1daafb5d60a1eb6ee85b1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1622-http-app-10",
+      "repository_assignment": "BelloBox",
+      "activity": "strict-minimal",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T16:18:47.334826+00:00",
+      "end_utc": "2026-10-09T16:19:03.030092+00:00",
+      "duration_seconds": 15.695266601003823,
+      "source": [
+        {
+          "receipt_sha256": "e3fa19e56a06dcfcec77346ccf81dc3e192f43c00bd1daafb5d60a1eb6ee85b1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1622-http-app-11",
+      "repository_assignment": "BelloBox",
+      "activity": "format-all",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T16:19:03.077954+00:00",
+      "end_utc": "2026-10-09T16:19:05.143955+00:00",
+      "duration_seconds": 2.066003020008793,
+      "source": [
+        {
+          "receipt_sha256": "e3fa19e56a06dcfcec77346ccf81dc3e192f43c00bd1daafb5d60a1eb6ee85b1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "HTTP App local validation/build; actual GUI and native CI separate"
+    },
+    {
+      "id": "20261009-1622-http-gui-20261009T160053-light",
+      "repository_assignment": "BelloBox",
+      "activity": "HTTP interactive GUI 20261009T160053-light",
+      "category": "interactive GUI validation",
+      "start_utc": "2026-10-09T16:00:53.374808187+00:00",
+      "end_utc": "2026-10-09T16:08:11.656642558+00:00",
+      "duration_seconds": 438.281834,
+      "source": [
+        {
+          "receipt_sha256": "033a951f72b52187eb3c441459f0d215435da80281884ec02f6252eaa0dca2fc",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "exit=0; scoped local fixture interactions completed",
+      "accounting_group": "catchup_gui_process",
+      "include_in_totals": true,
+      "resource": "GUI process lifetime",
+      "duration_basis": "whole interactive app-session interval including observation and coordination, not pure interaction or inference time",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "binary_sha256": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92",
+      "coverage_note": "Late-added earlier evidence, deduplicated against all prior timed intervals."
+    },
+    {
+      "id": "20261009-1622-http-gui-20261009T160836-dark",
+      "repository_assignment": "BelloBox",
+      "activity": "HTTP interactive GUI 20261009T160836-dark",
+      "category": "interactive GUI validation",
+      "start_utc": "2026-10-09T16:08:36.550889828+00:00",
+      "end_utc": "2026-10-09T16:11:32.098727953+00:00",
+      "duration_seconds": 175.547838,
+      "source": [
+        {
+          "receipt_sha256": "033a951f72b52187eb3c441459f0d215435da80281884ec02f6252eaa0dca2fc",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "exit=0; scoped local fixture interactions completed",
+      "accounting_group": "catchup_gui_process",
+      "include_in_totals": true,
+      "resource": "GUI process lifetime",
+      "duration_basis": "whole interactive app-session interval including observation and coordination, not pure interaction or inference time",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "binary_sha256": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92"
+    },
+    {
+      "id": "20261009-1622-http-gui-20261009T161330-light",
+      "repository_assignment": "BelloBox",
+      "activity": "HTTP interactive GUI 20261009T161330-light",
+      "category": "interactive GUI validation",
+      "start_utc": "2026-10-09T16:13:30.613081454+00:00",
+      "end_utc": "2026-10-09T16:17:43.027655590+00:00",
+      "duration_seconds": 252.414574,
+      "source": [
+        {
+          "receipt_sha256": "033a951f72b52187eb3c441459f0d215435da80281884ec02f6252eaa0dca2fc",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "exit=0; scoped local fixture interactions completed",
+      "accounting_group": "catchup_gui_process",
+      "include_in_totals": true,
+      "resource": "GUI process lifetime",
+      "duration_basis": "whole interactive app-session interval including observation and coordination, not pure interaction or inference time",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "binary_sha256": "e3ff82259f3652a8c590db13835028017e498173c16a82e8bd80e9c67268ea92"
+    },
+    {
+      "id": "20261009-1622-root-http-loc-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Independent root HTTP LOC reproduction",
+      "category": "automated accounting validation",
+      "start_utc": "2026-10-09T16:14:44.516455+00:00",
+      "end_utc": "2026-10-09T16:14:45.471284+00:00",
+      "duration_seconds": 0.9548299419984687,
+      "source": [
+        {
+          "receipt_sha256": "510cb7b01e9217c14f73b20423f34888156c7d42cf775b6efceb5f81648b130f",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Separate newly measured reproduction; original documentation audit duration remains unknown"
+    },
+    {
+      "id": "20261009-1622-http-package-audit-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Root HTTP publication package verification",
+      "category": "packaging/source validation",
+      "start_utc": "2026-10-09T16:21:53.149831+00:00",
+      "end_utc": "2026-10-09T16:21:53.605522+00:00",
+      "duration_seconds": 0.45570019200386014,
+      "source": [
+        {
+          "receipt_sha256": "c9b57f35094ade5ea349fb167ed2f24913de269daef48740019c3923443b21fd",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "passed;41 paths and all hashes verified",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1622",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
     }
   ],
   "commit_milestones": [
@@ -67392,19 +67716,19 @@
         }
       },
       "catchup_command": {
-        "count": 233,
-        "known_duration_count": 233,
-        "resource_seconds_sum": 3892.924878373066,
-        "wall_coverage_seconds": 3147.244729,
+        "count": 242,
+        "known_duration_count": 242,
+        "resource_seconds_sum": 4416.760950216085,
+        "wall_coverage_seconds": 3670.12595,
         "category_seconds": {
-          "automated lint/check": 343.38852333646474,
-          "build + test/check (combined)": 3167.443813859398,
+          "automated lint/check": 380.8185012834668,
+          "build + test/check (combined)": 3652.439377621413,
           "dependency/environment or verification": 3.5430181499935216,
           "build": 227.1697735270055,
           "dependency setup + build (combined)": 31.142,
           "repository/dependency setup": 12.327,
-          "automated accounting validation": 7.971308260011836,
-          "packaging/source validation": 0.24390436300379223,
+          "automated accounting validation": 8.926138202010304,
+          "packaging/source validation": 0.6996045550076524,
           "test execution (existing binary)": 1.998498904009466,
           "automated source/binary verification": 0.532835828998941,
           "build + negative-control test (combined)": 87.92522381819435,
@@ -67413,19 +67737,20 @@
           "automated source edit": 0.020964465002180077
         },
         "resource_seconds": {
-          "cloud command process": 3892.924878373066
+          "cloud command process": 4416.760950216085
         }
       },
       "catchup_gui_process": {
-        "count": 6,
-        "known_duration_count": 6,
-        "resource_seconds_sum": 1737.634763,
-        "wall_coverage_seconds": 1737.634763,
+        "count": 9,
+        "known_duration_count": 9,
+        "resource_seconds_sum": 2603.8790089999998,
+        "wall_coverage_seconds": 2603.879009,
         "category_seconds": {
-          "interactive GUI validation": 1737.634763
+          "interactive GUI validation": 2603.8790089999998
         },
         "resource_seconds": {
-          "ordinary GUI process lifetime": 1737.634763
+          "ordinary GUI process lifetime": 1737.634763,
+          "GUI process lifetime": 866.2442460000001
         }
       },
       "catchup_api": {
@@ -68225,6 +68550,50 @@
       "ci_coverage_within_window_seconds": 0,
       "window_seconds": 1200.0,
       "outside_selected_ci_job_intervals_seconds": 1200.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1622",
+      "through_utc": "2026-10-09T16:22:00Z",
+      "coverage_window_start_utc": "2026-10-09T16:07:00Z",
+      "new_items": 12,
+      "groups": {
+        "catchup_command": {
+          "count": 9,
+          "known_duration_count": 9,
+          "resource_seconds_sum": 523.8360718430195,
+          "wall_coverage_seconds": 522.881221,
+          "category_seconds": {
+            "build + test/check (combined)": 484.9955637620151,
+            "automated lint/check": 37.429977947002044,
+            "automated accounting validation": 0.9548299419984687,
+            "packaging/source validation": 0.45570019200386014
+          },
+          "resource_seconds": {
+            "cloud command process": 523.8360718430195
+          },
+          "known_endpoint_items": 9,
+          "known_endpoint_resource_seconds": 523.8360718430195
+        },
+        "catchup_gui_process": {
+          "count": 3,
+          "known_duration_count": 3,
+          "resource_seconds_sum": 866.2442460000001,
+          "wall_coverage_seconds": 866.244246,
+          "category_seconds": {
+            "interactive GUI validation": 866.2442460000001
+          },
+          "resource_seconds": {
+            "GUI process lifetime": 866.2442460000001
+          },
+          "known_endpoint_items": 3,
+          "known_endpoint_resource_seconds": 866.244246
+        }
+      },
+      "ci_coverage_within_window_seconds": 0,
+      "window_seconds": 900.0,
+      "outside_selected_ci_job_intervals_seconds": 900.0,
       "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
       "nested_ci_step_seconds": {}
     }

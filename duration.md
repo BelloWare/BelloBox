@@ -1,6 +1,6 @@
 # BelloBox Rust migration duration audit
 
-## Current accounting checkpoint: 2026-10-09T16:07:00Z
+## Current accounting checkpoint: 2026-10-09T16:22:00Z
 
 This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains in the complete ledger and SHA-pinned historical view linked below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
 
@@ -13,14 +13,13 @@ These top totals cover only this catch-up receipt cohort, including late-added e
 | Implementation | Active effort unavailable; no isolated implementation timer |
 | Review | Active effort unavailable; only review-focused observations: 0 mixed windows; 0 with endpoints, unavailable union |
 | Mixed implementation/review/validation windows | 0 mixed windows; 0 with endpoints, unavailable union; scopes overlap resources and do not measure Review alone |
-| Builds | 18.8s measured command resource time |
+| Builds | Unavailable separately |
 | Tests | Unavailable separately from compilation in these command receipts |
-| Build + test/check (combined) | 4m 20.7s measured command resource time |
-| Build + negative-control tests | 1m 3.7s measured command resource time; expected caught failures are not implementation failures |
-| Interactive GUI validation | No new completed GUI process receipt |
+| Build + test/check (combined) | 8m 5.0s measured command resource time |
+| Interactive GUI validation | 14m 26.2s observed process lifetime; overlaps workflow windows, limited acceptance only |
 | CI | No new completed job duration in this cohort; prior terminal jobs remain in the ledger and linked history |
 | Dependency/environment setup | Unavailable |
-| Retries/rework | 1m 41.8s across 2 failed process/API receipts; total rework effort unavailable |
+| Retries/rework | Unavailable separately; retained successful checks do not establish zero rework |
 | Publication | No isolated API total; 0 mixed windows; 0 with endpoints, unavailable union |
 | Waiting | Unavailable separately; waiting is mixed into recorded workflow windows |
 | Model inference | Unavailable; no timing telemetry |
@@ -29,16 +28,18 @@ These top totals cover only this catch-up receipt cohort, including late-added e
 
 | Group | Timed items | Resource/client seconds | Known-endpoint items | Endpoint-subset seconds | Endpoint union seconds |
 |---|---:|---:|---:|---:|---:|
-| catchup_command | 18 | 375.381 | 18 | 375.381 | 375.381 |
+| catchup_command | 9 | 523.836 | 9 | 523.836 | 522.881 |
+| catchup_gui_process | 3 | 866.244 | 3 | 866.244 | 866.244 |
 
 Groups overlap each other and mixed work windows; never add them into project elapsed or active-work time. Derived endpoints are excluded from unions. Monotonic timers and separately recorded UTC clocks can differ slightly. Whole-second 0s means below receipt resolution. CI steps and native subcommands are nested within job durations, not extra runner time.
 
 | Resource group / category | Seconds |
 |---|---:|
-| catchup_command: automated lint/check | 32.109 |
-| catchup_command: build + test/check (combined) | 260.710 |
-| catchup_command: build + negative-control test (combined) | 63.738 |
-| catchup_command: build | 18.825 |
+| catchup_command: build + test/check (combined) | 484.996 |
+| catchup_command: automated lint/check | 37.430 |
+| catchup_command: automated accounting validation | 0.955 |
+| catchup_command: packaging/source validation | 0.456 |
+| catchup_gui_process: interactive GUI validation | 866.244 |
 
 ### Nested CI phases (already included in CI jobs)
 
@@ -47,14 +48,12 @@ Groups overlap each other and mixed work windows; never add them into project el
 
 These conservative phase groups can include compilation and execution together; do not add them to the CI job totals.
 
-This cohort adds no CI job execution intervals; prior verified terminal runs remain in earlier accounting. Coverage of 2026-10-09T15:47:00Z–2026-10-09T16:07:00Z is partial and does not establish an idle-time or inference budget.
+This cohort adds no CI job execution intervals; prior verified terminal runs remain in earlier accounting. Coverage of 2026-10-09T16:07:00Z–2026-10-09T16:22:00Z is partial and does not establish an idle-time or inference budget.
 
 ### Mixed workflows and waits (excluded from resource totals)
 
 | Activity | Start UTC | End UTC | Seconds | Outcome |
 |---|---|---|---:|---|
-| HTTP documentation and portable LOC/accounting reproduction | unknown | unknown | unknown | Verification completed; duration unavailable because no timing interval was recorded |
-| HTTP App test source verification | unknown | unknown | unknown | Source verification recorded; no measured elapsed receipt |
 
 Open task and CI rows retain unknown final duration. Failed source attempts and the original failed native URL job remain in preserved earlier accounting. Mixed windows overlap useful parallel work; they are not pure idle or active-review time.
 
@@ -62,31 +61,25 @@ Open task and CI rows retain unknown final duration. Failed source attempts and 
 
 | Activity | Category | Start UTC | End UTC | Seconds | Outcome |
 |---|---|---|---|---:|---|
-| clippy-final-r2 | automated lint/check | 2026-10-09T15:49:00.669163+00:00 | 2026-10-09T15:49:07.224466+00:00 | 6.555302619934082 | 0 |
-| focused-final-r2 | build + test/check (combined) | 2026-10-09T15:48:46.589848+00:00 | 2026-10-09T15:48:55.318656+00:00 | 8.728807926177979 | 0 |
-| focused-final | build + test/check (combined) | 2026-10-09T15:48:25.754048+00:00 | 2026-10-09T15:48:26.044685+00:00 | 0.2906363010406494 | 101 |
-| mutant-changed_decimal_cap | build + negative-control test (combined) | 2026-10-09T15:48:09.868448+00:00 | 2026-10-09T15:48:18.369221+00:00 | 8.500773191452026 | Expected negative-control failure; source restored |
-| mutant-exact_cap_false_truncation | build + negative-control test (combined) | 2026-10-09T15:47:42.998567+00:00 | 2026-10-09T15:47:52.427241+00:00 | 9.42867374420166 | Expected negative-control failure; source restored |
-| mutant-file_body_admission | build + negative-control test (combined) | 2026-10-09T15:47:24.801909+00:00 | 2026-10-09T15:47:33.980085+00:00 | 9.178175926208496 | Expected negative-control failure; source restored |
-| mutant-framing_replay | build + negative-control test (combined) | 2026-10-09T15:47:14.626571+00:00 | 2026-10-09T15:47:24.801286+00:00 | 10.174714803695679 | Expected negative-control failure; source restored |
-| mutant-json_fallback_discards_original | build + negative-control test (combined) | 2026-10-09T15:48:01.494468+00:00 | 2026-10-09T15:48:09.867666+00:00 | 8.37319827079773 | Expected negative-control failure; source restored |
-| mutant-json_join_as_form | build + negative-control test (combined) | 2026-10-09T15:47:33.980698+00:00 | 2026-10-09T15:47:42.997978+00:00 | 9.017280101776123 | Expected negative-control failure; source restored |
-| mutant-lossy_utf8_preview | build + negative-control test (combined) | 2026-10-09T15:47:52.428811+00:00 | 2026-10-09T15:48:01.493927+00:00 | 9.065116167068481 | Expected negative-control failure; source restored |
-| oracle-portable-final-r2 | build + test/check (combined) | 2026-10-09T15:48:55.319016+00:00 | 2026-10-09T15:49:00.668831+00:00 | 5.3498148918151855 | 0 |
-| owned-format-final-r2 | automated lint/check | 2026-10-09T15:48:46.556110+00:00 | 2026-10-09T15:48:46.589447+00:00 | 0.03333711624145508 | 0 |
-| owned-format-final | automated lint/check | 2026-10-09T15:48:25.693290+00:00 | 2026-10-09T15:48:25.753648+00:00 | 0.06035780906677246 | 0 |
-| focused-initial | build + test/check (combined) | 2026-10-09T15:49:50.307476+00:00 | 2026-10-09T15:51:31.866749+00:00 | 101.55927547400643 | 101 |
-| focused-r2 | build + test/check (combined) | 2026-10-09T15:52:07.917593+00:00 | 2026-10-09T15:53:53.646299+00:00 | 105.72870890000195 | 0 |
-| focused-final | build + test/check (combined) | 2026-10-09T15:58:43.276453+00:00 | 2026-10-09T15:59:22.328842+00:00 | 39.05239071599499 | 0 |
-| strict-final | automated lint/check | 2026-10-09T15:59:22.408356+00:00 | 2026-10-09T15:59:47.867880+00:00 | 25.459525564001524 | 0 |
-| ordinary-build | build | 2026-10-09T15:59:47.914916+00:00 | 2026-10-09T16:00:06.740224+00:00 | 18.825310714004445 | 0 |
+| aggregate-core | build + test/check (combined) | 2026-10-09T16:10:22.381342+00:00 | 2026-10-09T16:10:41.337726+00:00 | 18.95638676499948 | 0 |
+| aggregate-app | build + test/check (combined) | 2026-10-09T16:10:41.410809+00:00 | 2026-10-09T16:12:35.072478+00:00 | 113.66166974201042 | 0 |
+| aggregate-recording-app | build + test/check (combined) | 2026-10-09T16:12:35.116258+00:00 | 2026-10-09T16:15:28.158264+00:00 | 173.04200750299788 | 0 |
+| strict-recording | automated lint/check | 2026-10-09T16:15:28.202518+00:00 | 2026-10-09T16:15:47.871224+00:00 | 19.668708325989428 | 0 |
+| aggregate-minimal | build + test/check (combined) | 2026-10-09T16:15:47.921469+00:00 | 2026-10-09T16:18:47.256967+00:00 | 179.3354997520073 | 0 |
+| strict-minimal | automated lint/check | 2026-10-09T16:18:47.334826+00:00 | 2026-10-09T16:19:03.030092+00:00 | 15.695266601003823 | 0 |
+| format-all | automated lint/check | 2026-10-09T16:19:03.077954+00:00 | 2026-10-09T16:19:05.143955+00:00 | 2.066003020008793 | 0 |
+| HTTP interactive GUI 20261009T160053-light | interactive GUI validation | 2026-10-09T16:00:53.374808187+00:00 | 2026-10-09T16:08:11.656642558+00:00 | 438.281834 | exit=0; scoped local fixture interactions completed |
+| HTTP interactive GUI 20261009T160836-dark | interactive GUI validation | 2026-10-09T16:08:36.550889828+00:00 | 2026-10-09T16:11:32.098727953+00:00 | 175.547838 | exit=0; scoped local fixture interactions completed |
+| HTTP interactive GUI 20261009T161330-light | interactive GUI validation | 2026-10-09T16:13:30.613081454+00:00 | 2026-10-09T16:17:43.027655590+00:00 | 252.414574 | exit=0; scoped local fixture interactions completed |
+| Independent root HTTP LOC reproduction | automated accounting validation | 2026-10-09T16:14:44.516455+00:00 | 2026-10-09T16:14:45.471284+00:00 | 0.9548299419984687 | 0 |
+| Root HTTP publication package verification | packaging/source validation | 2026-10-09T16:21:53.149831+00:00 | 2026-10-09T16:21:53.605522+00:00 | 0.45570019200386014 | passed;41 paths and all hashes verified |
 
 Full source hashes, source URLs, nested job steps and timing limitations are in duration-data.json. Native macOS full logs were unavailable for some Agent runs; verified job/step metadata is retained without a full-log claim. Later source CI may be running and is not silently promoted to success by this snapshot.
 
 
 ## All recorded resource groups
 
-The ledger retains 3,680 items; 691 are flagged for their own resource-group totals. These are all recorded observations, not a complete migration budget. Groups retain their existing definitions and checkpoint-era names; they must not be added into one elapsed or effort total. Mixed work windows and nested phases remain excluded. Missing endpoints make some interval unions unavailable.
+The ledger retains 3,692 items; 703 are flagged for their own resource-group totals. These are all recorded observations, not a complete migration budget. Groups retain their existing definitions and checkpoint-era names; they must not be added into one elapsed or effort total. Mixed work windows and nested phases remain excluded. Missing endpoints make some interval unions unavailable.
 
 | Existing resource group | Counted timed items | Resource seconds | Items with endpoints | Endpoint-subset seconds | Subset interval union seconds |
 |---|---:|---:|---:|---:|---:|
@@ -98,8 +91,8 @@ The ledger retains 3,680 items; 691 are flagged for their own resource-group tot
 | new_reported_phase | 3 | 0.890 | 0 | 0.000 | unavailable |
 | catchup_ci_job | 16 | 13969.000 | 16 | 13969.000 | 8292.000 |
 | catchup_native_command | 11 | 4.661 | 11 | 4.661 | 4.661 |
-| catchup_command | 233 | 3892.925 | 202 | 3149.299 | 3147.245 |
-| catchup_gui_process | 6 | 1737.635 | 6 | 1737.635 | 1737.635 |
+| catchup_command | 242 | 4416.761 | 211 | 3673.135 | 3670.126 |
+| catchup_gui_process | 9 | 2603.879 | 9 | 2603.879 | 2603.879 |
 | catchup_api | 55 | 968.019 | 55 | 968.019 | 216.248 |
 
 ## Complete detail and immutable history
