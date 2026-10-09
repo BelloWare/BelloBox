@@ -1,0 +1,40 @@
+    Finished `test` profile [unoptimized] target(s) in 1.35s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04)
+
+running 5 tests
+test launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr ... FAILED
+test launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close ... ok
+test launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline ... ok
+test launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open ... ok
+test launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection ... ok
+
+failures:
+
+---- launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr stdout ----
+
+thread 'launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr' (56418355) panicked at crates/bellobox-app/src/launcher_ui.rs:1113:72:
+called `Option::unwrap()` on a `None` value
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::panic
+   3: core::option::unwrap_failed
+   4: bellobox::launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr::__actual_open_popup_receives_edited_and_explicitly_empty_qr
+   5: bellobox::launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr::{{closure}}
+   6: gpui::test::run_test::{{closure}}
+   7: std::panicking::catch_unwind::do_call
+   8: ___rust_try
+   9: std::panic::catch_unwind
+  10: gpui::test::run_test
+  11: bellobox::launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr
+  12: bellobox::launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr::{{closure}}
+  13: core::ops::function::FnOnce::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 420 filtered out; finished in 0.45s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

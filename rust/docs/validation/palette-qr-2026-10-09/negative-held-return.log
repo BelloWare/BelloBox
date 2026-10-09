@@ -1,0 +1,26 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-qr-negative-0d203d9/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 12.32s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline ... FAILED
+
+failures:
+
+---- launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline stdout ----
+
+thread 'launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline' (46) panicked at crates/bellobox-app/src/launcher_ui.rs:1144:13:
+assertion `left == right` failed
+  left: "\n"
+ right: ""
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 423 filtered out; finished in 0.11s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

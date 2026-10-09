@@ -1,0 +1,33 @@
+{
+  "source": "311a5717665308e3390cbc84aeb057ac5344d5a1",
+  "binary": "/workspace/shared/box-palette-qr-sealed/bellobox-311a57176653",
+  "binary_sha256": "d68fa99b81d6b00a7801b5d06137bedee5e4be6bef5a1cbd3da30507c61ea618",
+  "export": {
+    "path": "/workspace/shared/palette-qr-gui/exports/final-qr.png",
+    "bytes": 2841,
+    "sha256": "7bf7318e905390d8ea1925f90a027b730fdcce8b53634ccc4dc1ca3b37f4031a",
+    "dimensions": [
+      522,
+      522
+    ],
+    "mode": "L",
+    "colors": [
+      [
+        75168,
+        0
+      ],
+      [
+        197316,
+        255
+      ]
+    ],
+    "input_utf8_bytes": 9,
+    "observed_input": "final-qr\n"
+  },
+  "preserved_exports": {
+    "snapshot.png": "168af36df347fd8652022bd3a1f3032ba626bf109810271552b486ab813ba5a4",
+    "release-save.png": "4d7f2e90a3defa3205ed6501b272540f1bc0a0c686f4665f3c01669e37f11818",
+    "BelloBox QR.png": "168af36df347fd8652022bd3a1f3032ba626bf109810271552b486ab813ba5a4"
+  },
+  "desktop_cleanup_probe": "/workspace/shared/palette-qr-gui/evidence/desktop-after-311a.txt"
+}

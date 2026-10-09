@@ -1,0 +1,30 @@
+[
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-app/src/launcher_qr_ui.rs",
+    "mode": "100644",
+    "git_blob": "2a84991d8e3add2eb927c1449e5231fc9bb45cb0",
+    "sha256": "9a6ffc8265f5a45ed6c4ed1747fe5be16fb4ab7564a14c95c14d3c1a8c4150fe"
+  },
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-app/src/launcher_qr_ui/tests.rs",
+    "mode": "100644",
+    "git_blob": "f89eda07c120db5f39241413cb56659d5d3aa4fa",
+    "sha256": "cce9d1b25342b40751c621aabc801e220312393820f7156d3df701a89b8f9c98"
+  },
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+    "mode": "100644",
+    "git_blob": "15a7c1565873e828f60a76b4cbeb2e35fe045a67",
+    "sha256": "310c54714d8fb764feb40f76ecd05bfb069cce49395763de975ee3752d16e4b5"
+  },
+  {
+    "status": "M",
+    "path": "rust/docs/palette-qr.md",
+    "mode": "100644",
+    "git_blob": "dbf11e9ab284937a90fdec66f0ed9e3415059ba7",
+    "sha256": "c31b3a21a8598dea818db244c4e5d15333789e4514e778f93bd5fcde7316ac99"
+  }
+]

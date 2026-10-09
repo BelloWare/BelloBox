@@ -1,0 +1,1803 @@
+{
+  "identity": {
+    "repo": "/Users/admin/projects/BelloBox-rust-positive-composition",
+    "repository_head": "59339af1fa422acea4067207c55344666c3fa4ab",
+    "repository_status": "",
+    "root": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3",
+    "evidence": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence",
+    "commit": "45d5e841e89d8062816dc9df24789cf603be22c9",
+    "tree": "d5649f40822d55a6494b9f47bd8ca62cc7c94c1f",
+    "parent": "83ae8b0b589506faa95b6894cc042f642a5a4b24",
+    "lint_baseline": "25e78766d2463c186e7dbdf4d85029401290d062",
+    "checked_at": "2026-10-09T03:51:12.828456+00:00",
+    "snapshots": [
+      {
+        "label": "source",
+        "commit": "45d5e841e89d8062816dc9df24789cf603be22c9",
+        "tree": "d5649f40822d55a6494b9f47bd8ca62cc7c94c1f",
+        "source": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source",
+        "tracked_files": 1594,
+        "source_manifest_sha256": "3806ec8a5e9426fbfa5e7f76d4ce48778226f725232fb8197cf57409acb39941",
+        "archive_sha256": "d476652efc7c90142e9d1c715ddfac62eeadbaedd58cdf4844440a03f8a05486",
+        "exact_source_verified": true
+      },
+      {
+        "label": "parent-source",
+        "commit": "25e78766d2463c186e7dbdf4d85029401290d062",
+        "tree": "bd280f85af2bf2c365d18df3ba1b09c0100477e2",
+        "source": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/parent-source",
+        "tracked_files": 1591,
+        "source_manifest_sha256": "8693f9574d54869f413e2c26e71d7aaa58c38019fa6e1e7c16fbb1cda0eaabfa",
+        "archive_sha256": "e5ddd4bf572113cf818beaf566f086e3b1d49068a8810c1be32c34c45d8d227d",
+        "exact_source_verified": true
+      }
+    ]
+  },
+  "verified_at": "2026-10-09T03:54:11.024012+00:00",
+  "source_snapshots": [
+    {
+      "source": "source",
+      "files_and_modes_unchanged": 1594,
+      "manifest_sha256": "3806ec8a5e9426fbfa5e7f76d4ce48778226f725232fb8197cf57409acb39941"
+    },
+    {
+      "source": "parent-source",
+      "files_and_modes_unchanged": 1591,
+      "manifest_sha256": "8693f9574d54869f413e2c26e71d7aaa58c38019fa6e1e7c16fbb1cda0eaabfa"
+    }
+  ],
+  "source_postimages": [
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+      "mode": "100644",
+      "git_blob": "d9bd2f549c74831c1e005ee04d593b18d38c3705",
+      "sha256": "17dd997f6b7f828fbe5cac46849ef8e49deec98d937b2b97fe9957fdfa84dd9b"
+    }
+  ],
+  "postimages_sha256": "f15823c37bd907efb5c395f9d6ac1d82b8f0cfb27adced7e224829bb4768d815",
+  "original_repository_head_unchanged": "59339af1fa422acea4067207c55344666c3fa4ab",
+  "original_repository_status_unchanged": "",
+  "host": {
+    "checked_at": "2026-10-09T03:51:43.744848+00:00",
+    "commands": [
+      {
+        "command": [
+          "/usr/bin/sw_vers"
+        ],
+        "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t14.8\nBuildVersion:\t\t23J21\n",
+        "stderr": "",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/usr/bin/uname",
+          "-m"
+        ],
+        "stdout": "arm64\n",
+        "stderr": "",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/opt/homebrew/bin/rustc",
+          "-vV"
+        ],
+        "stdout": "rustc 1.91.1 (ed61e7d7e 2025-11-07) (Homebrew)\nbinary: rustc\ncommit-hash: ed61e7d7e242494fb7057f2657300d9e77bb4fcb\ncommit-date: 2025-11-07\nhost: aarch64-apple-darwin\nrelease: 1.91.1\nLLVM version: 21.1.5\n",
+        "stderr": "",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/opt/homebrew/bin/rustc",
+          "--print",
+          "cfg"
+        ],
+        "stdout": "debug_assertions\npanic=\"unwind\"\ntarget_abi=\"\"\ntarget_arch=\"aarch64\"\ntarget_endian=\"little\"\ntarget_env=\"\"\ntarget_family=\"unix\"\ntarget_feature=\"aes\"\ntarget_feature=\"crc\"\ntarget_feature=\"dit\"\ntarget_feature=\"dotprod\"\ntarget_feature=\"dpb\"\ntarget_feature=\"dpb2\"\ntarget_feature=\"fcma\"\ntarget_feature=\"fhm\"\ntarget_feature=\"flagm\"\ntarget_feature=\"fp16\"\ntarget_feature=\"frintts\"\ntarget_feature=\"jsconv\"\ntarget_feature=\"lor\"\ntarget_feature=\"lse\"\ntarget_feature=\"neon\"\ntarget_feature=\"paca\"\ntarget_feature=\"pacg\"\ntarget_feature=\"pan\"\ntarget_feature=\"pmuv3\"\ntarget_feature=\"ras\"\ntarget_feature=\"rcpc\"\ntarget_feature=\"rcpc2\"\ntarget_feature=\"rdm\"\ntarget_feature=\"sb\"\ntarget_feature=\"sha2\"\ntarget_feature=\"sha3\"\ntarget_feature=\"ssbs\"\ntarget_feature=\"vh\"\ntarget_has_atomic=\"128\"\ntarget_has_atomic=\"16\"\ntarget_has_atomic=\"32\"\ntarget_has_atomic=\"64\"\ntarget_has_atomic=\"8\"\ntarget_has_atomic=\"ptr\"\ntarget_os=\"macos\"\ntarget_pointer_width=\"64\"\ntarget_vendor=\"apple\"\nunix\n",
+        "stderr": "",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/opt/homebrew/bin/cargo",
+          "-V"
+        ],
+        "stdout": "cargo 1.91.1 (Homebrew)\n",
+        "stderr": "",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/usr/bin/xcrun",
+          "swiftc",
+          "--version"
+        ],
+        "stdout": "Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)\nTarget: arm64-apple-macosx14.0\n",
+        "stderr": "swift-driver version: 1.115 ",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/usr/bin/xcrun",
+          "--sdk",
+          "macosx",
+          "--show-sdk-version"
+        ],
+        "stdout": "15.1\n",
+        "stderr": "",
+        "exit_code": 0
+      }
+    ],
+    "removed_environment_variable_names": [],
+    "build_environment": {
+      "CARGO_TARGET_DIR": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_BUILD_TARGET": null,
+      "MACOSX_DEPLOYMENT_TARGET": "14.0",
+      "RUST_BACKTRACE": "1",
+      "RUSTC": null,
+      "RUSTFLAGS": null,
+      "CARGO_ENCODED_RUSTFLAGS": null,
+      "DEVELOPER_DIR": null,
+      "BELLOBOX_CONFIG_DIR": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/isolated-config"
+    }
+  },
+  "builds_passed": 3,
+  "builds_failed": 0,
+  "passed_test_executions": 106,
+  "failed_test_executions": 0,
+  "ignored_selected_test_executions": 0,
+  "unique_selected_test_names": [
+    "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+    "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+    "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+    "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+    "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+    "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly",
+    "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+    "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+    "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+    "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+    "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+    "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+    "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+    "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+    "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+    "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+    "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+    "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+    "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+    "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+    "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+    "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success",
+    "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+    "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+    "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+    "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+    "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+    "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+    "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+    "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+    "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+    "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+    "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+    "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+    "qr::tests::limits_are_bytes_not_characters",
+    "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+    "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+    "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+    "qr::tests::png_is_crisp_with_white_quiet_zone",
+    "qr::tests::svg_has_real_geometry_and_quiet_zone"
+  ],
+  "test_command_failures": [],
+  "format_passed": true,
+  "strict_clippy_passed": false,
+  "lint_comparison_sha256": "b3349c6290e72825da305dec98e0d7fee7ab3b0ce6718f5409e652c5c9c0c070",
+  "lint_comparisons": [
+    {
+      "scope": "strict",
+      "candidate_exit_code": 101,
+      "parent_exit_code": 101,
+      "candidate": [
+        {
+          "code": null,
+          "message": "unneeded `return` statement",
+          "file": "crates/bellobox-core/src/settings.rs",
+          "line": 253,
+          "column": 9,
+          "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+        }
+      ],
+      "parent": [
+        {
+          "code": null,
+          "message": "unneeded `return` statement",
+          "file": "crates/bellobox-core/src/settings.rs",
+          "line": 253,
+          "column": 9,
+          "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+        }
+      ],
+      "same_error_source_anchors_and_multiplicities": true,
+      "candidate_additional": [],
+      "parent_only": []
+    },
+    {
+      "scope": "app-scoped",
+      "candidate_exit_code": 101,
+      "parent_exit_code": 101,
+      "candidate": [
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/desktop.rs",
+          "line": 208,
+          "column": 16,
+          "source_anchor": "|| input.is_empty()"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/desktop.rs",
+          "line": 210,
+          "column": 20,
+          "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+          "line": 129,
+          "column": 17,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+          "line": 166,
+          "column": 9,
+          "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 525,
+          "column": 9,
+          "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 582,
+          "column": 13,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 648,
+          "column": 13,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        }
+      ],
+      "parent": [
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/desktop.rs",
+          "line": 208,
+          "column": 16,
+          "source_anchor": "|| input.is_empty()"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/desktop.rs",
+          "line": 210,
+          "column": 20,
+          "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+          "line": 129,
+          "column": 17,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+          "line": 166,
+          "column": 9,
+          "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 525,
+          "column": 9,
+          "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 582,
+          "column": 13,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 648,
+          "column": 13,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        }
+      ],
+      "same_error_source_anchors_and_multiplicities": true,
+      "candidate_additional": [],
+      "parent_only": []
+    }
+  ],
+  "results": [
+    {
+      "name": "build-default",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox"
+      ],
+      "started_at": "2026-10-09T03:51:46.597646+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/build-default.log",
+      "ended_at": "2026-10-09T03:52:03.874075+00:00",
+      "elapsed_seconds": 17.27625254204031,
+      "exit_code": 0,
+      "log_sha256": "ae0b6d4da9724a13bc05f6e81b2168d9cad3166922d75ae6cd702ece57002ca9",
+      "counts": [],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+          "sha256": "90093d321353f74ef722ac6e82fe688c7f7c8a9cc7d000a6a27de52e145e5d38",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [],
+      "expected_name_set_matches": null,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "build-minimal",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox"
+      ],
+      "started_at": "2026-10-09T03:52:03.874745+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/build-minimal.log",
+      "ended_at": "2026-10-09T03:52:14.047508+00:00",
+      "elapsed_seconds": 10.172672540997155,
+      "exit_code": 0,
+      "log_sha256": "9dd4cda643b74a79227f32494c264c7675e0b46fcf9963c6a430ee1b89583b22",
+      "counts": [],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+          "sha256": "126dd6dbe772da3662b4a1e9fd8875aaa6a6707ab06fc7cb9e8f72f29b2510fb",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [],
+      "expected_name_set_matches": null,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "build-movie-fixtures",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox"
+      ],
+      "started_at": "2026-10-09T03:52:14.048220+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/build-movie-fixtures.log",
+      "ended_at": "2026-10-09T03:52:22.766789+00:00",
+      "elapsed_seconds": 8.71818974998314,
+      "exit_code": 0,
+      "log_sha256": "f5b2121bb45c5b152af8f38ad64e04e1805096836ab8f13e8b3f80a20bc358d8",
+      "counts": [],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+          "sha256": "e0a28cf032d780b1016b4dbbc2d52899d038862ba2567c860afb3defba565768",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [],
+      "expected_name_set_matches": null,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "core-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "qr::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+        "qr::tests::limits_are_bytes_not_characters",
+        "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+        "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+        "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+        "qr::tests::png_is_crisp_with_white_quiet_zone",
+        "qr::tests::svg_has_real_geometry_and_quiet_zone"
+      ],
+      "expected_passed": 7,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:52:22.767456+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/core-qr.log",
+      "ended_at": "2026-10-09T03:52:31.644285+00:00",
+      "elapsed_seconds": 8.876695874962024,
+      "exit_code": 0,
+      "log_sha256": "7c9c5544a0d73148a6a03d6eb309eaf595be0307429a6b6b1f3e44ec80fefd29",
+      "counts": [
+        {
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 443
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823",
+          "sha256": "00e6f945ba28fb13ced93a689448b6a6b2778fc4c45383e9e73b79e879cbcfac",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+          "ok"
+        ],
+        [
+          "qr::tests::limits_are_bytes_not_characters",
+          "ok"
+        ],
+        [
+          "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+          "ok"
+        ],
+        [
+          "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+          "ok"
+        ],
+        [
+          "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+          "ok"
+        ],
+        [
+          "qr::tests::png_is_crisp_with_white_quiet_zone",
+          "ok"
+        ],
+        [
+          "qr::tests::svg_has_real_geometry_and_quiet_zone",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "default-qr-preview",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "launcher_qr_ui::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+        "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+        "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+        "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+        "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+        "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+        "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+        "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+        "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+        "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+        "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+        "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+        "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+        "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+        "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+        "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success"
+      ],
+      "expected_passed": 16,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:52:31.644953+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/default-qr-preview.log",
+      "ended_at": "2026-10-09T03:52:47.222089+00:00",
+      "elapsed_seconds": 15.576431417022832,
+      "exit_code": 0,
+      "log_sha256": "bda8836b80e36925904f90bcac2d03f2213094702e675e6eb2236ccde6725d12",
+      "counts": [
+        {
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 420
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+          "sha256": "43346da1e4b78f8364bdb58f5cb1d075f6ca28fffd78ab651069a979cafdd1db",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "default-launcher-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "launcher_ui::qr_lifecycle_tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+        "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+        "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+        "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+        "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+        "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+        "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+        "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+        "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+        "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+        "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay"
+      ],
+      "expected_passed": 11,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:52:47.222839+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/default-launcher-qr.log",
+      "ended_at": "2026-10-09T03:52:49.678917+00:00",
+      "elapsed_seconds": 2.455632625031285,
+      "exit_code": 0,
+      "log_sha256": "136620bb5f19cf93bfb97b97192bb9d4c45cb05d639174a1d54a41103abdfe8f",
+      "counts": [
+        {
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 425
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+          "sha256": "43346da1e4b78f8364bdb58f5cb1d075f6ca28fffd78ab651069a979cafdd1db",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "default-qr-jobs",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "desktop::qr_jobs::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+        "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+        "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+        "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+        "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+        "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly"
+      ],
+      "expected_passed": 6,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:52:49.679575+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/default-qr-jobs.log",
+      "ended_at": "2026-10-09T03:52:50.709571+00:00",
+      "elapsed_seconds": 1.0294504590565339,
+      "exit_code": 0,
+      "log_sha256": "0a6104b5592fd49da5c80ac826534283f08a381a6ec16238d22b30cd9b8333f4",
+      "counts": [
+        {
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 430
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+          "sha256": "43346da1e4b78f8364bdb58f5cb1d075f6ca28fffd78ab651069a979cafdd1db",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "minimal-qr-preview",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox",
+        "launcher_qr_ui::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+        "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+        "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+        "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+        "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+        "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+        "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+        "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+        "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+        "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+        "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+        "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+        "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+        "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+        "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+        "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success"
+      ],
+      "expected_passed": 16,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:52:50.710277+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/minimal-qr-preview.log",
+      "ended_at": "2026-10-09T03:53:04.034183+00:00",
+      "elapsed_seconds": 13.32365870801732,
+      "exit_code": 0,
+      "log_sha256": "2d3e71877651b050011f692a593ff1af594213ee1fa72e1b6583c191acabde23",
+      "counts": [
+        {
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 420
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04",
+          "sha256": "379a288f4b6b5f7339ccfb94356f92a0ec973173d0ae1e09f3d53be57a448aa8",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "minimal-launcher-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox",
+        "launcher_ui::qr_lifecycle_tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+        "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+        "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+        "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+        "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+        "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+        "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+        "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+        "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+        "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+        "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay"
+      ],
+      "expected_passed": 11,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:53:04.035120+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/minimal-launcher-qr.log",
+      "ended_at": "2026-10-09T03:53:07.085843+00:00",
+      "elapsed_seconds": 3.0503663329873234,
+      "exit_code": 0,
+      "log_sha256": "8bcdf5ce0214872538928a7931c6b1b87937174282a339608d373d25daa2daf5",
+      "counts": [
+        {
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 425
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04",
+          "sha256": "379a288f4b6b5f7339ccfb94356f92a0ec973173d0ae1e09f3d53be57a448aa8",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "minimal-qr-jobs",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox",
+        "desktop::qr_jobs::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+        "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+        "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+        "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+        "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+        "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly"
+      ],
+      "expected_passed": 6,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:53:07.086641+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/minimal-qr-jobs.log",
+      "ended_at": "2026-10-09T03:53:08.098273+00:00",
+      "elapsed_seconds": 1.0114630829775706,
+      "exit_code": 0,
+      "log_sha256": "ce4df8b3176426c7aaa321fac279685d7d7b964fb2f61e1cd2877b5ad7c37c3a",
+      "counts": [
+        {
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 430
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04",
+          "sha256": "379a288f4b6b5f7339ccfb94356f92a0ec973173d0ae1e09f3d53be57a448aa8",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "movie-fixtures-qr-preview",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "launcher_qr_ui::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+        "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+        "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+        "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+        "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+        "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+        "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+        "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+        "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+        "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+        "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+        "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+        "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+        "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+        "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+        "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success"
+      ],
+      "expected_passed": 16,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:53:08.098937+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/movie-fixtures-qr-preview.log",
+      "ended_at": "2026-10-09T03:53:21.767662+00:00",
+      "elapsed_seconds": 13.668205291964114,
+      "exit_code": 0,
+      "log_sha256": "2e7839ac0c3b0a3c00fb7b5ef5d7d2aca476ac273ab32e2c00f845f9e9568dea",
+      "counts": [
+        {
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 423
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+          "sha256": "19eec0ea74af30fe5b16a1d79962518848f69adc0b47717a67e1012d08966b00",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+          "ok"
+        ],
+        [
+          "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "movie-fixtures-launcher-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "launcher_ui::qr_lifecycle_tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+        "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+        "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+        "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+        "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+        "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+        "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+        "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+        "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+        "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+        "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay"
+      ],
+      "expected_passed": 11,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:53:21.768470+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/movie-fixtures-launcher-qr.log",
+      "ended_at": "2026-10-09T03:53:24.680415+00:00",
+      "elapsed_seconds": 2.9117068329360336,
+      "exit_code": 0,
+      "log_sha256": "cd6172c38e9d59bdef7fe37789a9a974ce167d786ee1ca22c0f2ec689f91bdcb",
+      "counts": [
+        {
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 428
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+          "sha256": "19eec0ea74af30fe5b16a1d79962518848f69adc0b47717a67e1012d08966b00",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+          "ok"
+        ],
+        [
+          "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "movie-fixtures-qr-jobs",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "desktop::qr_jobs::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+        "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+        "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+        "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+        "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+        "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly"
+      ],
+      "expected_passed": 6,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T03:53:24.681083+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/movie-fixtures-qr-jobs.log",
+      "ended_at": "2026-10-09T03:53:25.683077+00:00",
+      "elapsed_seconds": 1.0017490000464022,
+      "exit_code": 0,
+      "log_sha256": "798db3c73aee30dd1cd0492fd233a6834941af572c06d9753f1287a5067c76e1",
+      "counts": [
+        {
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 433
+        }
+      ],
+      "binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+          "sha256": "19eec0ea74af30fe5b16a1d79962518848f69adc0b47717a67e1012d08966b00",
+          "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e: Mach-O 64-bit executable arm64"
+        }
+      ],
+      "tests": [
+        [
+          "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+          "ok"
+        ],
+        [
+          "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly",
+          "ok"
+        ]
+      ],
+      "expected_name_set_matches": true,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "format",
+      "kind": "format",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "started_at": "2026-10-09T03:53:25.683839+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/format.log",
+      "ended_at": "2026-10-09T03:53:27.655572+00:00",
+      "elapsed_seconds": 1.9714684169739485,
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "counts": [],
+      "binaries": [],
+      "tests": [],
+      "expected_name_set_matches": null,
+      "warnings": [],
+      "errors": []
+    },
+    {
+      "name": "candidate-strict-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-10-09T03:53:27.656394+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/candidate-strict-clippy.log",
+      "ended_at": "2026-10-09T03:53:30.832005+00:00",
+      "elapsed_seconds": 3.1754128750180826,
+      "exit_code": 101,
+      "log_sha256": "a58ff782a69f2a9c0d83668fbb081eae1f791c1f1db1ddefc818f8ddfe7a1f9e",
+      "counts": [],
+      "binaries": [],
+      "tests": [],
+      "expected_name_set_matches": null,
+      "warnings": [],
+      "errors": [
+        {
+          "code": null,
+          "message": "unneeded `return` statement",
+          "file": "crates/bellobox-core/src/settings.rs",
+          "line": 253,
+          "column": 9,
+          "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+        }
+      ]
+    },
+    {
+      "name": "candidate-app-scoped-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--no-deps",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-10-09T03:53:30.832637+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/candidate-app-scoped-clippy.log",
+      "ended_at": "2026-10-09T03:53:37.305288+00:00",
+      "elapsed_seconds": 6.472217333037406,
+      "exit_code": 101,
+      "log_sha256": "4d64f015bc50b18bee9669f1f45cddad6608519edf253a4c57f94f5e23bddace",
+      "counts": [],
+      "binaries": [],
+      "tests": [],
+      "expected_name_set_matches": null,
+      "warnings": [],
+      "errors": [
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/desktop.rs",
+          "line": 208,
+          "column": 16,
+          "source_anchor": "|| input.is_empty()"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/desktop.rs",
+          "line": 210,
+          "column": 20,
+          "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+          "line": 129,
+          "column": 17,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+          "line": 166,
+          "column": 9,
+          "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 525,
+          "column": 9,
+          "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 582,
+          "column": 13,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 648,
+          "column": 13,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        }
+      ]
+    },
+    {
+      "name": "parent-strict-clippy",
+      "kind": "lint",
+      "source": "parent-source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-10-09T03:53:37.305903+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/parent-source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/parent-strict-clippy.log",
+      "ended_at": "2026-10-09T03:53:39.504519+00:00",
+      "elapsed_seconds": 2.198521584039554,
+      "exit_code": 101,
+      "log_sha256": "0490c211b118a753f9991b8ebd975b794dd787a3cd714744014065c5ccc4e8cf",
+      "counts": [],
+      "binaries": [],
+      "tests": [],
+      "expected_name_set_matches": null,
+      "warnings": [],
+      "errors": [
+        {
+          "code": null,
+          "message": "unneeded `return` statement",
+          "file": "crates/bellobox-core/src/settings.rs",
+          "line": 253,
+          "column": 9,
+          "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+        }
+      ]
+    },
+    {
+      "name": "parent-app-scoped-clippy",
+      "kind": "lint",
+      "source": "parent-source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--no-deps",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-10-09T03:53:39.505110+00:00",
+      "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/parent-source/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/parent-app-scoped-clippy.log",
+      "ended_at": "2026-10-09T03:53:45.720204+00:00",
+      "elapsed_seconds": 6.214783040923066,
+      "exit_code": 101,
+      "log_sha256": "3692521f863d7f71c90e8f4b1f7ea5888950cc1c1e37e3bf5f06c35a5ddd2169",
+      "counts": [],
+      "binaries": [],
+      "tests": [],
+      "expected_name_set_matches": null,
+      "warnings": [],
+      "errors": [
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/desktop.rs",
+          "line": 208,
+          "column": 16,
+          "source_anchor": "|| input.is_empty()"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/desktop.rs",
+          "line": 210,
+          "column": 20,
+          "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+          "line": 129,
+          "column": 17,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+          "line": 166,
+          "column": 9,
+          "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 525,
+          "column": 9,
+          "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 582,
+          "column": 13,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        },
+        {
+          "code": null,
+          "message": "this boolean expression can be simplified",
+          "file": "crates/bellobox-app/src/shutdown/tests.rs",
+          "line": 648,
+          "column": 13,
+          "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+        }
+      ]
+    }
+  ],
+  "scope": "Actual native macOS cfg compilation of default/minimal/movie-fixtures App; selected generated-data/core and synthetic GPUI clipboard/dialog/helper tests, with core QR once and 33 App tests in each of three configurations. No actual NSSavePanel/sheet/focus/IME/clipboard/Retina/scanner acceptance, screenshots, user data, capture/TCC/AX, provider/key/vault, source or permission edits, signing, installation, release or spending. Existing app-modal versus attached-sheet gap and no-overwrite policy remain explicit.",
+  "ranking_replay_sha256": "35d8b017bffdfa422ea8249cc7648a91dc5a5e8bbf86c80e83ee5a9ef1c33a1e",
+  "separately_counted_ranking_replay": {
+    "passed": 9,
+    "failed": 0,
+    "ignored": 0,
+    "original_fixture_sha256": "709cfdd6de2109fd3da2799e0a001cdb1ed4a94dbb8e1c5f8a2bd9ac320379b1",
+    "original_evidence_and_config_unchanged": true,
+    "same_binary_as_matrix_per_variant": true
+  },
+  "production_provenance": {
+    "commit": "45d5e841e89d8062816dc9df24789cf603be22c9",
+    "parent": "83ae8b0b589506faa95b6894cc042f642a5a4b24",
+    "only_changed_path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+    "test_only_delta": true,
+    "test_module_marker": "#[cfg(test)]\nmod qr_lifecycle_tests",
+    "production_prefix_bytes": 42354,
+    "production_prefix_sha256": "e873c8d293f7311f5f573f2183b6a77e17c5b29049d3d8e48447c57faeee359c",
+    "production_prefix_identical_to_parent": true,
+    "all_other_git_paths_unchanged": true,
+    "binary_equality_to_linux_gui_receipt_not_claimed": true
+  }
+}

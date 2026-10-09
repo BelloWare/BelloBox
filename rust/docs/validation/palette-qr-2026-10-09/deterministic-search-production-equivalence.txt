@@ -1,0 +1,5 @@
+Source: 3cd1404b20afa0f47ffd392abe83a8cd88d9364e
+All changes are inside final #[cfg(test)] mod qr_lifecycle_tests.
+Entire preceding launcher_ui.rs region is byte-identical to 311a5717665308e3390cbc84aeb057ac5344d5a1.
+Clean ordinary build cmp against sealed 311a binary: exit 0 (identical).
+SHA256: d68fa99b81d6b00a7801b5d06137bedee5e4be6bef5a1cbd3da30507c61ea618

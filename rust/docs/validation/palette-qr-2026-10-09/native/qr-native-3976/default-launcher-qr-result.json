@@ -1,0 +1,73 @@
+{
+  "name": "default-launcher-qr",
+  "kind": "test",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--bin",
+    "bellobox",
+    "launcher_ui::qr_lifecycle_tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "expected_tests": [
+    "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+    "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+    "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+    "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+    "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection"
+  ],
+  "expected_passed": 5,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T03:03:16.163137+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/evidence/default-launcher-qr.log",
+  "ended_at": "2026-10-09T03:03:18.305589+00:00",
+  "elapsed_seconds": 2.142326541012153,
+  "exit_code": 101,
+  "log_sha256": "9c367dd1631d1687830f0a005af2137dcffca805779aeef838dd64eef5da9453",
+  "counts": [
+    {
+      "passed": 4,
+      "failed": 1,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 420
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+      "sha256": "79f61db0bad78141856184504adeb0018d399c90711da13e0ce6660590e2125d",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+      "FAILED"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+      "ok"
+    ]
+  ],
+  "expected_name_set_matches": false
+}

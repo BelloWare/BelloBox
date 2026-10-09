@@ -1,0 +1,88 @@
+{
+  "source_commit": "83ae8b0b589506faa95b6894cc042f642a5a4b24",
+  "same_movie_fixture_binary": true,
+  "binary_sha256": "4cedc154c42a2020e637b93d27f31946f1e337b417ea9c78ce903b917131eabe",
+  "original_generated_config_unchanged": {
+    "settings.json": "709cfdd6de2109fd3da2799e0a001cdb1ed4a94dbb8e1c5f8a2bd9ac320379b1"
+  },
+  "results": [
+    {
+      "name": "diagnostic-learned-config",
+      "purpose": "separate diagnostic; original validation counts unchanged",
+      "command": [
+        "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+        "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "started_at": "2026-10-09T03:41:41.820960+00:00",
+      "ended_at": "2026-10-09T03:41:41.972319+00:00",
+      "exit_code": 101,
+      "binary_sha256": "4cedc154c42a2020e637b93d27f31946f1e337b417ea9c78ce903b917131eabe",
+      "config_dir": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/diagnostic-learned-config",
+      "initial_settings": {
+        "sha256": "709cfdd6de2109fd3da2799e0a001cdb1ed4a94dbb8e1c5f8a2bd9ac320379b1",
+        "ranking": {
+          "favorites": [],
+          "recents": [
+            "qr"
+          ],
+          "usage": {
+            "entries": {
+              "empty": {
+                "qr": {
+                  "weight": 2.9999849636878544,
+                  "last_used": 1791517171.275394
+                }
+              },
+              "text": {
+                "qr": {
+                  "weight": 2.999985001965472,
+                  "last_used": 1791517171.046183
+                }
+              }
+            }
+          }
+        }
+      },
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/evidence/diagnostic-learned-config.log",
+      "log_sha256": "50f704035a30b518e994031cefb42a1db970b3aa85de2a2dd47670c5224a670e",
+      "counts": [
+        {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 438
+        }
+      ]
+    },
+    {
+      "name": "diagnostic-fresh-config",
+      "purpose": "separate diagnostic; original validation counts unchanged",
+      "command": [
+        "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+        "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+        "--exact",
+        "--test-threads=1"
+      ],
+      "started_at": "2026-10-09T03:41:42.047652+00:00",
+      "ended_at": "2026-10-09T03:41:42.245042+00:00",
+      "exit_code": 0,
+      "binary_sha256": "4cedc154c42a2020e637b93d27f31946f1e337b417ea9c78ce903b917131eabe",
+      "config_dir": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/diagnostic-fresh-config",
+      "initial_settings": null,
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/evidence/diagnostic-fresh-config.log",
+      "log_sha256": "6154310a0c26dfd039a784cbe07121b49d9bfba442c54102f9903601583133fe",
+      "counts": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 438
+        }
+      ]
+    }
+  ]
+}

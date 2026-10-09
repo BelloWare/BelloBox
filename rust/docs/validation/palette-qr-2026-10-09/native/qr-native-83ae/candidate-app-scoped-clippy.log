@@ -1,0 +1,69 @@
+    Checking bello-workbench v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/source/rust/crates/bello-workbench)
+    Checking bellobox-core v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/source/rust/crates/bellobox-core)
+    Checking bello-workbench-ui v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/source/rust/crates/bello-workbench-ui)
+    Checking bello-platform v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/source/rust/crates/bello-platform)
+    Checking bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/source/rust/crates/bellobox-app)
+error: this boolean expression can be simplified
+   --> crates/bellobox-app/src/desktop.rs:208:16
+    |
+208 |               || input.is_empty()
+    |  ________________^
+209 | |                 && !["worldClock", "textTools", "generate", "screenshot"].contains(&id.as_str())
+210 | |                 && !(id == "listSet" && !second.is_empty())
+    | |___________________________________________________________^ help: try: `(second.is_empty() || id != "listSet") && !["worldClock", "textTools", "generate", "screenshot"].contains(&id.as_str()) && input.is_empty()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#nonminimal_bool
+    = note: `-D clippy::nonminimal-bool` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::nonminimal_bool)]`
+
+error: this boolean expression can be simplified
+   --> crates/bellobox-app/src/desktop.rs:210:20
+    |
+210 |                 && !(id == "listSet" && !second.is_empty())
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `id != "listSet" || second.is_empty()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#nonminimal_bool
+
+error: could not compile `bellobox-app` (bin "bellobox") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: this boolean expression can be simplified
+   --> crates/bellobox-app/src/screenshot_ui/quit_tests.rs:129:17
+    |
+129 |         assert!(!crate::shutdown::pending_refusal(cx).is_some());
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `crate::shutdown::pending_refusal(cx).is_none()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#nonminimal_bool
+
+error: this boolean expression can be simplified
+   --> crates/bellobox-app/src/screenshot_ui/quit_tests.rs:166:9
+    |
+166 |         !crate::shutdown::pending_refusal(cx).is_some(),
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `crate::shutdown::pending_refusal(cx).is_none()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#nonminimal_bool
+
+error: this boolean expression can be simplified
+   --> crates/bellobox-app/src/shutdown/tests.rs:525:9
+    |
+525 |         !crate::shutdown::pending_refusal(cx).is_some(),
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `crate::shutdown::pending_refusal(cx).is_none()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#nonminimal_bool
+
+error: this boolean expression can be simplified
+   --> crates/bellobox-app/src/shutdown/tests.rs:582:13
+    |
+582 |     assert!(!crate::shutdown::pending_refusal(cx).is_some());
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `crate::shutdown::pending_refusal(cx).is_none()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#nonminimal_bool
+
+error: this boolean expression can be simplified
+   --> crates/bellobox-app/src/shutdown/tests.rs:648:13
+    |
+648 |     assert!(!crate::shutdown::pending_refusal(cx).is_some());
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `crate::shutdown::pending_refusal(cx).is_none()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#nonminimal_bool
+
+error: could not compile `bellobox-app` (bin "bellobox" test) due to 7 previous errors

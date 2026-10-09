@@ -1,0 +1,45 @@
+
+running 1 test
+test launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay ... FAILED
+
+failures:
+
+---- launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay stdout ----
+
+thread 'launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay' (56756803) panicked at crates/bellobox-app/src/launcher_ui.rs:1360:13:
+assertion failed: v.qr.is_none()
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::panic
+   3: bellobox::launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay::__search_space_before_qr_creation_survives_focus_change_without_save_replay::{{closure}}
+   4: gpui::window::WindowHandle<V>::update::{{closure}}::{{closure}}
+   5: <gpui::app::App as gpui::AppContext>::update_entity::{{closure}}
+   6: gpui::app::App::update
+   7: <gpui::app::App as gpui::AppContext>::update_entity
+   8: gpui::app::entity_map::Entity<T>::update
+   9: gpui::window::WindowHandle<V>::update::{{closure}}
+  10: gpui::app::App::update_window_id::{{closure}}
+  11: gpui::app::App::update
+  12: gpui::app::App::update_window_id
+  13: <gpui::app::App as gpui::AppContext>::update_window
+  14: <gpui::app::test_context::TestAppContext as gpui::AppContext>::update_window
+  15: gpui::window::WindowHandle<V>::update
+  16: bellobox::launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay::__search_space_before_qr_creation_survives_focus_change_without_save_replay
+  17: bellobox::launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay::{{closure}}
+  18: gpui::test::run_test::{{closure}}
+  19: std::panicking::catch_unwind::do_call
+  20: ___rust_try
+  21: std::panic::catch_unwind
+  22: gpui::test::run_test
+  23: bellobox::launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay
+  24: bellobox::launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay::{{closure}}
+  25: core::ops::function::FnOnce::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 438 filtered out; finished in 0.11s
+

@@ -1,0 +1,30 @@
+{
+  "name": "candidate-strict-clippy",
+  "kind": "lint",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "clippy",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--all-targets",
+    "--features",
+    "movie-fixtures",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "started_at": "2026-10-09T03:03:54.245585+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/evidence/candidate-strict-clippy.log",
+  "ended_at": "2026-10-09T03:03:57.678392+00:00",
+  "elapsed_seconds": 3.4325760420178995,
+  "exit_code": 101,
+  "log_sha256": "bc0f6a620dccd37b67a30d5798acc09bec80b4ec7af1c58c5e3c38087fb1215f",
+  "counts": [],
+  "binaries": [],
+  "tests": [],
+  "expected_name_set_matches": null
+}

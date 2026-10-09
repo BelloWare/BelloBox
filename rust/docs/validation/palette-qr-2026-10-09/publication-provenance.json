@@ -1,0 +1,74 @@
+{
+  "candidate_commit": "45d5e841e89d8062816dc9df24789cf603be22c9",
+  "candidate_tree": "d5649f40822d55a6494b9f47bd8ca62cc7c94c1f",
+  "candidate_parent": "83ae8b0b589506faa95b6894cc042f642a5a4b24",
+  "local_doc_head": "f17b26f249f5d525f1a78c88d1907c0ba1d3bac8",
+  "local_source_commit": "3cd1404b20afa0f47ffd392abe83a8cd88d9364e",
+  "local_source_tree": "c37b8b64a7b00d7ece522561a2b30427439df5c2",
+  "published_baseline": "25e78766d2463c186e7dbdf4d85029401290d062",
+  "ordinary_binary_sha256": "d68fa99b81d6b00a7801b5d06137bedee5e4be6bef5a1cbd3da30507c61ea618",
+  "postimages": [
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "size": 81074,
+      "sha256": "93cfd900831beb768d1d96fb1cef42d976518b30f97159b11e1569eb464b61c1",
+      "matches_sealed_manifest": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/qr_jobs.rs",
+      "size": 5588,
+      "sha256": "bbc0f1e40b246a525c39aa8fbfc3672c200b1aec92abd25e6fc7f42163be5f97",
+      "matches_sealed_manifest": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_qr_ui.rs",
+      "size": 28363,
+      "sha256": "eabc812c8b04100fda10296e3390bef306f288275e442c7abc168a7826943e91",
+      "matches_sealed_manifest": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_qr_ui/tests.rs",
+      "size": 18534,
+      "sha256": "cce9d1b25342b40751c621aabc801e220312393820f7156d3df701a89b8f9c98",
+      "matches_sealed_manifest": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+      "size": 62105,
+      "sha256": "17dd997f6b7f828fbe5cac46849ef8e49deec98d937b2b97fe9957fdfa84dd9b",
+      "matches_sealed_manifest": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "size": 10004,
+      "sha256": "780498a297318cc11e396be8d20cd4a7918ab938e1e8693e22ede9624a14a36f",
+      "matches_sealed_manifest": true
+    },
+    {
+      "path": "rust/crates/bellobox-core/src/qr.rs",
+      "size": 9952,
+      "sha256": "eab62a9190c5b7614e57fd1132a39ebd3cca379780f953a2fbb41b1daa07e89c",
+      "matches_sealed_manifest": true
+    },
+    {
+      "path": "rust/docs/palette-qr.md",
+      "size": 6553,
+      "sha256": "c31b3a21a8598dea818db244c4e5d15333789e4514e778f93bd5fcde7316ac99",
+      "matches_sealed_manifest": true
+    }
+  ],
+  "status": "Final native builds and focused tests passed; strict native lint failed at unchanged baseline sites; actual GUI acceptance limited as documented.",
+  "native_final": {
+    "receipt_url": "https://github.com/BelloWare/BelloBox/issues/1#issuecomment-6073931609",
+    "commit": "45d5e841e89d8062816dc9df24789cf603be22c9",
+    "builds_passed": 3,
+    "matrix_passed": 106,
+    "matrix_failed": 0,
+    "matrix_ignored": 0,
+    "matrix_distinct_tests": 40,
+    "separate_ranking_replay_passed": 9,
+    "compiler_warnings": 0,
+    "strict_clippy_passed": false,
+    "receipt_file_hashes_verified": 72
+  }
+}

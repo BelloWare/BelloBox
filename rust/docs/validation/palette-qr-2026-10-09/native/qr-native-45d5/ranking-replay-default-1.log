@@ -1,0 +1,6 @@
+
+running 1 test
+test launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 435 filtered out; finished in 0.09s
+

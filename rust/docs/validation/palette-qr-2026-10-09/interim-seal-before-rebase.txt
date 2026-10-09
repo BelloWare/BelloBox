@@ -1,0 +1,19 @@
+source_commit=0d203d98ad2753c1c5b74358289c6a3725e7eae3
+source_tree=c58f53395cb34fe063661728995c05be9902f75c
+baseline_commit=5934b9897854a4102ef71d6463d4b4f7a3005158
+swift_spec_commit=e43b1c4595c42383e087fe70f38c28d07c31dda0
+ordinary_default_binary_sha256=bb19654a902e447b6b2368c163bc132b07b0af819a28e885161e67ecba761647
+31dd280db41518a381a9af42a7f53a72597b813769c4fed8c3e54474cc885c59  rust/crates/bellobox-app/src/launcher_qr_ui.rs
+96796c5695cccb1fbb39d8a87bc2e3548e90520484e5ad9a44cc4fd811bf5ced  rust/crates/bellobox-app/src/launcher_qr_ui/tests.rs
+b562bfb3e952a088ea8426931be573ea32969ad5fb37fd0d978dbbe440cb3f15  rust/crates/bellobox-app/src/launcher_ui.rs
+780498a297318cc11e396be8d20cd4a7918ab938e1e8693e22ede9624a14a36f  rust/crates/bellobox-app/src/main.rs
+bbc0f1e40b246a525c39aa8fbfc3672c200b1aec92abd25e6fc7f42163be5f97  rust/crates/bellobox-app/src/desktop/qr_jobs.rs
+93cfd900831beb768d1d96fb1cef42d976518b30f97159b11e1569eb464b61c1  rust/crates/bellobox-app/src/desktop.rs
+eab62a9190c5b7614e57fd1132a39ebd3cca379780f953a2fbb41b1daa07e89c  rust/crates/bellobox-core/src/qr.rs
+rustc 1.99.0 (b940084d7 2026-09-28)
+binary: rustc
+commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+commit-date: 2026-09-28
+host: x86_64-unknown-linux-gnu
+release: 1.99.0
+LLVM version: 23.1.1

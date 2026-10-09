@@ -1,0 +1,8 @@
+{
+  "commit": "45d5e841e89d8062816dc9df24789cf603be22c9",
+  "tree": "d5649f40822d55a6494b9f47bd8ca62cc7c94c1f",
+  "parent": "83ae8b0b589506faa95b6894cc042f642a5a4b24",
+  "delta_paths": 1,
+  "all_eight_final_source_bytes_match_local3cd": true,
+  "rust_not_moved": true
+}

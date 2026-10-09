@@ -1,0 +1,18 @@
+   Compiling ring v0.17.14
+   Compiling psm v0.1.32
+   Compiling stacker v0.1.25
+   Compiling stacksafe v0.1.4
+   Compiling bello-workbench v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/source/rust/crates/bello-workbench)
+   Compiling rustls v0.23.45
+   Compiling bello-platform v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/source/rust/crates/bello-platform)
+   Compiling rustls-webpki v0.103.15
+   Compiling bellobox-core v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/source/rust/crates/bellobox-core)
+   Compiling tokio-rustls v0.26.6
+   Compiling hyper-rustls v0.27.10
+   Compiling zed-reqwest v0.12.15-zed
+   Compiling gpui_http_client v0.2.2
+   Compiling reqwest v0.12.28
+   Compiling gpui v0.2.2
+   Compiling bello-workbench-ui v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/source/rust/crates/bello-workbench-ui)
+   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/source/rust/crates/bellobox-app)
+    Finished `dev` profile [unoptimized] target(s) in 31.45s

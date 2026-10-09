@@ -1,0 +1,27 @@
+{
+  "verified": true,
+  "candidate_commit": "45d5e841e89d8062816dc9df24789cf603be22c9",
+  "excluded_evidence_nonblank": 115,
+  "all_tracked_rust_physical_sum": 99070,
+  "baseline_commit": "25e78766d2463c186e7dbdf4d85029401290d062",
+  "reviewed_changed_rust_paths": 7,
+  "unchanged_rust_paths": 189,
+  "delta": {
+    "production": 915,
+    "support": 1060,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 57781,
+    "support": 41069,
+    "benchmark": 105
+  },
+  "physical_totals": {
+    "before": 96980,
+    "after": 98955,
+    "before_files": 194,
+    "after_files": 196
+  },
+  "final_manifest_paths": 8,
+  "live_repository_verified": true
+}

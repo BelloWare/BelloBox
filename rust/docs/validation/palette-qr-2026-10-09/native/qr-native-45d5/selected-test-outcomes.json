@@ -1,0 +1,72 @@
+[
+  {
+    "name": "core-qr",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0
+  },
+  {
+    "name": "default-qr-preview",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 16,
+    "failed": 0,
+    "ignored": 0
+  },
+  {
+    "name": "default-launcher-qr",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 11,
+    "failed": 0,
+    "ignored": 0
+  },
+  {
+    "name": "default-qr-jobs",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 6,
+    "failed": 0,
+    "ignored": 0
+  },
+  {
+    "name": "minimal-qr-preview",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 16,
+    "failed": 0,
+    "ignored": 0
+  },
+  {
+    "name": "minimal-launcher-qr",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 11,
+    "failed": 0,
+    "ignored": 0
+  },
+  {
+    "name": "minimal-qr-jobs",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 6,
+    "failed": 0,
+    "ignored": 0
+  },
+  {
+    "name": "movie-fixtures-qr-preview",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 16,
+    "failed": 0,
+    "ignored": 0
+  },
+  {
+    "name": "movie-fixtures-launcher-qr",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 11,
+    "failed": 0,
+    "ignored": 0
+  },
+  {
+    "name": "movie-fixtures-qr-jobs",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 6,
+    "failed": 0,
+    "ignored": 0
+  }
+]

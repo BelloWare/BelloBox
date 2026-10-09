@@ -1,0 +1,20 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-palette-qr/rust/crates/bellobox-app)
+error[E0599]: no method named `capture_mouse_down` found for struct `gpui::Stateful<E>` in the current scope
+   --> crates/bellobox-app/src/launcher_qr_ui.rs:692:14
+    |
+690 | /         div()
+691 | |             .id("launcher-qr-preview")
+692 | |             .capture_mouse_down(
+    | |_____________-^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `capture_any_mouse_down` with a similar name, but with different arguments
+   --> /workspace/shared/build-recovery/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-0.2.2/src/elements/div.rs:727:5
+    |
+727 | /     fn capture_any_mouse_down(
+728 | |         mut self,
+729 | |         listener: impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static,
+730 | |     ) -> Self {
+    | |_____________^
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `bellobox-app` (bin "bellobox" test) due to 1 previous error

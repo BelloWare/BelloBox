@@ -1,0 +1,477 @@
+{
+  "target": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+  "steps": [
+    {
+      "name": "build-default",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox"
+      ]
+    },
+    {
+      "name": "build-minimal",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox"
+      ]
+    },
+    {
+      "name": "build-movie-fixtures",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox"
+      ]
+    },
+    {
+      "name": "core-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "qr::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+        "qr::tests::limits_are_bytes_not_characters",
+        "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+        "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+        "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+        "qr::tests::png_is_crisp_with_white_quiet_zone",
+        "qr::tests::svg_has_real_geometry_and_quiet_zone"
+      ],
+      "expected_passed": 7,
+      "expected_ignored": 0
+    },
+    {
+      "name": "default-qr-preview",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "launcher_qr_ui::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+        "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+        "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+        "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+        "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+        "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+        "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+        "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+        "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+        "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+        "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+        "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+        "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+        "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+        "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+        "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success"
+      ],
+      "expected_passed": 16,
+      "expected_ignored": 0
+    },
+    {
+      "name": "default-launcher-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "launcher_ui::qr_lifecycle_tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+        "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+        "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+        "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+        "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+        "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+        "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+        "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+        "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+        "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+        "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay"
+      ],
+      "expected_passed": 11,
+      "expected_ignored": 0
+    },
+    {
+      "name": "default-qr-jobs",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "desktop::qr_jobs::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+        "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+        "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+        "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+        "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+        "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly"
+      ],
+      "expected_passed": 6,
+      "expected_ignored": 0
+    },
+    {
+      "name": "minimal-qr-preview",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox",
+        "launcher_qr_ui::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+        "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+        "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+        "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+        "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+        "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+        "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+        "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+        "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+        "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+        "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+        "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+        "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+        "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+        "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+        "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success"
+      ],
+      "expected_passed": 16,
+      "expected_ignored": 0
+    },
+    {
+      "name": "minimal-launcher-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox",
+        "launcher_ui::qr_lifecycle_tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+        "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+        "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+        "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+        "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+        "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+        "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+        "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+        "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+        "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+        "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay"
+      ],
+      "expected_passed": 11,
+      "expected_ignored": 0
+    },
+    {
+      "name": "minimal-qr-jobs",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox",
+        "desktop::qr_jobs::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+        "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+        "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+        "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+        "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+        "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly"
+      ],
+      "expected_passed": 6,
+      "expected_ignored": 0
+    },
+    {
+      "name": "movie-fixtures-qr-preview",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "launcher_qr_ui::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+        "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+        "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+        "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+        "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+        "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+        "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+        "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+        "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+        "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+        "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+        "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+        "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+        "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+        "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+        "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success"
+      ],
+      "expected_passed": 16,
+      "expected_ignored": 0
+    },
+    {
+      "name": "movie-fixtures-launcher-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "launcher_ui::qr_lifecycle_tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+        "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+        "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+        "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+        "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+        "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+        "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+        "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+        "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+        "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+        "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay"
+      ],
+      "expected_passed": 11,
+      "expected_ignored": 0
+    },
+    {
+      "name": "movie-fixtures-qr-jobs",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "desktop::qr_jobs::tests::",
+        "--",
+        "--test-threads=1"
+      ],
+      "expected_tests": [
+        "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+        "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+        "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+        "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+        "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+        "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly"
+      ],
+      "expected_passed": 6,
+      "expected_ignored": 0
+    },
+    {
+      "name": "format",
+      "kind": "format",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ]
+    },
+    {
+      "name": "candidate-strict-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "candidate-app-scoped-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--no-deps",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "parent-strict-clippy",
+      "kind": "lint",
+      "source": "parent-source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "parent-app-scoped-clippy",
+      "kind": "lint",
+      "source": "parent-source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--no-deps",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+[
+  {
+    "name": "core-qr",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 7,
+    "failed": 0,
+    "failures": []
+  },
+  {
+    "name": "default-qr-preview",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 10,
+    "failed": 1,
+    "failures": [
+      "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo"
+    ]
+  },
+  {
+    "name": "default-launcher-qr",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 4,
+    "failed": 1,
+    "failures": [
+      "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr"
+    ]
+  },
+  {
+    "name": "default-qr-jobs",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 6,
+    "failed": 0,
+    "failures": []
+  },
+  {
+    "name": "minimal-qr-preview",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 10,
+    "failed": 1,
+    "failures": [
+      "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo"
+    ]
+  },
+  {
+    "name": "minimal-launcher-qr",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 4,
+    "failed": 1,
+    "failures": [
+      "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr"
+    ]
+  },
+  {
+    "name": "minimal-qr-jobs",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 6,
+    "failed": 0,
+    "failures": []
+  },
+  {
+    "name": "movie-fixtures-qr-preview",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 10,
+    "failed": 1,
+    "failures": [
+      "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo"
+    ]
+  },
+  {
+    "name": "movie-fixtures-launcher-qr",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 4,
+    "failed": 1,
+    "failures": [
+      "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr"
+    ]
+  },
+  {
+    "name": "movie-fixtures-qr-jobs",
+    "all_selected_names_executed_exactly_once": true,
+    "passed": 6,
+    "failed": 0,
+    "failures": []
+  }
+]

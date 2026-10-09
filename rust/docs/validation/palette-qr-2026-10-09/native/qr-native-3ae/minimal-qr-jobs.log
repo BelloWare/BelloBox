@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized] target(s) in 0.46s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04)
+
+running 6 tests
+test desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results ... ok
+test desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy ... ok
+test desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes ... ok
+test desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation ... ok
+test desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded ... ok
+test desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 427 filtered out; finished in 0.48s
+

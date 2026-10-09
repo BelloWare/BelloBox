@@ -1,0 +1,80 @@
+{
+  "name": "movie-fixtures-qr-jobs",
+  "kind": "test",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--features",
+    "movie-fixtures",
+    "--bin",
+    "bellobox",
+    "desktop::qr_jobs::tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "expected_tests": [
+    "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+    "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+    "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+    "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+    "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+    "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly"
+  ],
+  "expected_passed": 6,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T03:27:32.471677+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-3ae-qr-retry-p4lff2u0/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-3ae-qr-retry-p4lff2u0/evidence/movie-fixtures-qr-jobs.log",
+  "ended_at": "2026-10-09T03:27:33.447573+00:00",
+  "elapsed_seconds": 0.9757911670021713,
+  "exit_code": 0,
+  "log_sha256": "75514e26669a34dce744270a37256f3c62bc26de3f92b829deb10ab4be2d55de",
+  "counts": [
+    {
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 430
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+      "sha256": "10305589f17cac28e8e3562055eaf45cd88ebeaf926514030861a413d8d98107",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly",
+      "ok"
+    ]
+  ],
+  "expected_name_set_matches": true
+}

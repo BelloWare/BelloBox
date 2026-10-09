@@ -1,0 +1,82 @@
+{
+  "name": "core-qr",
+  "kind": "test",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-core",
+    "--lib",
+    "qr::tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "expected_tests": [
+    "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+    "qr::tests::limits_are_bytes_not_characters",
+    "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+    "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+    "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+    "qr::tests::png_is_crisp_with_white_quiet_zone",
+    "qr::tests::svg_has_real_geometry_and_quiet_zone"
+  ],
+  "expected_passed": 7,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T03:38:28.173471+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/evidence/core-qr.log",
+  "ended_at": "2026-10-09T03:38:36.852423+00:00",
+  "elapsed_seconds": 8.678680625045672,
+  "exit_code": 0,
+  "log_sha256": "dddcd7d64161f7807965914153fa32c41e9f16c84018d56e3349e3618b2b4396",
+  "counts": [
+    {
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 443
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823",
+      "sha256": "a8e51a88d16b2e171764fc120400dc3012828c1c82fc26708a538e395df37f39",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+      "ok"
+    ],
+    [
+      "qr::tests::limits_are_bytes_not_characters",
+      "ok"
+    ],
+    [
+      "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+      "ok"
+    ],
+    [
+      "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+      "ok"
+    ],
+    [
+      "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+      "ok"
+    ],
+    [
+      "qr::tests::png_is_crisp_with_white_quiet_zone",
+      "ok"
+    ],
+    [
+      "qr::tests::svg_has_real_geometry_and_quiet_zone",
+      "ok"
+    ]
+  ],
+  "expected_name_set_matches": true
+}

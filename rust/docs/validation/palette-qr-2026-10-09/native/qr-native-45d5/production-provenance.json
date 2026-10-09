@@ -1,0 +1,12 @@
+{
+  "commit": "45d5e841e89d8062816dc9df24789cf603be22c9",
+  "parent": "83ae8b0b589506faa95b6894cc042f642a5a4b24",
+  "only_changed_path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+  "test_only_delta": true,
+  "test_module_marker": "#[cfg(test)]\nmod qr_lifecycle_tests",
+  "production_prefix_bytes": 42354,
+  "production_prefix_sha256": "e873c8d293f7311f5f573f2183b6a77e17c5b29049d3d8e48447c57faeee359c",
+  "production_prefix_identical_to_parent": true,
+  "all_other_git_paths_unchanged": true,
+  "binary_equality_to_linux_gui_receipt_not_claimed": true
+}

@@ -1,0 +1,34 @@
+{
+  "name": "build-movie-fixtures",
+  "kind": "build",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "build",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--features",
+    "movie-fixtures",
+    "--bin",
+    "bellobox"
+  ],
+  "started_at": "2026-10-09T03:26:08.796164+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-3ae-qr-retry-p4lff2u0/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-3ae-qr-retry-p4lff2u0/evidence/build-movie-fixtures.log",
+  "ended_at": "2026-10-09T03:26:17.926987+00:00",
+  "elapsed_seconds": 9.130574582959525,
+  "exit_code": 0,
+  "log_sha256": "e9158acf66944f78e51f379be93169b4957cc95824a08ad1fd919f5cd6c3b50f",
+  "counts": [],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+      "sha256": "72a195cdf1dce6ffe34314e4d8bc6829b6701c6cef352414928a4929bf26bfc1",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [],
+  "expected_name_set_matches": null
+}

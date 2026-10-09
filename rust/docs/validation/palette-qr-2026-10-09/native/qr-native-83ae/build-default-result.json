@@ -1,0 +1,32 @@
+{
+  "name": "build-default",
+  "kind": "build",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "build",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--bin",
+    "bellobox"
+  ],
+  "started_at": "2026-10-09T03:37:50.432428+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/evidence/build-default.log",
+  "ended_at": "2026-10-09T03:38:08.898560+00:00",
+  "elapsed_seconds": 18.46599437505938,
+  "exit_code": 0,
+  "log_sha256": "8257f3482c28f8e45e83beba42a7623c1151e0798e434fe73ec7b4490a62ce3c",
+  "counts": [],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+      "sha256": "9e0783d52b0fadb1a07ac23a2af3ee205bf3fdfaa7040e18fb6113b340541d21",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [],
+  "expected_name_set_matches": null
+}

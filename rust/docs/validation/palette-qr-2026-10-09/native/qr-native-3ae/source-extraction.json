@@ -1,0 +1,5 @@
+{
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "tar: Failed to set default locale\n"
+}

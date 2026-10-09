@@ -1,0 +1,20 @@
+{
+  "source_commit": "c301cc213784c3725436e2316da2196e05f6ff49",
+  "source_tree": "8242b8ad027ad046755c6d6e70819e07828e9e87",
+  "base_commit": "25e78766d2463c186e7dbdf4d85029401290d062",
+  "original_review_commit": "0d203d98ad2753c1c5b74358289c6a3725e7eae3",
+  "swift_spec_commit": "e43b1c4595c42383e087fe70f38c28d07c31dda0",
+  "binary_path": "/workspace/shared/box-palette-qr-sealed/bellobox-c301cc213784",
+  "binary_sha256": "53382eb395d15f54c5689a7a4e661659e01efe4829e85beb8c4396b8d71d8bb6",
+  "build_features": "default (ordinary; no movie-fixtures/recording-fixtures)",
+  "sha256": {
+    "rust/crates/bellobox-app/src/desktop.rs": "93cfd900831beb768d1d96fb1cef42d976518b30f97159b11e1569eb464b61c1",
+    "rust/crates/bellobox-app/src/desktop/qr_jobs.rs": "bbc0f1e40b246a525c39aa8fbfc3672c200b1aec92abd25e6fc7f42163be5f97",
+    "rust/crates/bellobox-app/src/launcher_qr_ui.rs": "a8aa06ce1dc598a82beb2e6be9e2b3361c3000d9d48699da605a53a515b85855",
+    "rust/crates/bellobox-app/src/launcher_qr_ui/tests.rs": "83a4f44a6e1192a0d6c3d8ef7775e9a1a3c171ad8fca8563e3095790c7f1fe7d",
+    "rust/crates/bellobox-app/src/launcher_ui.rs": "b562bfb3e952a088ea8426931be573ea32969ad5fb37fd0d978dbbe440cb3f15",
+    "rust/crates/bellobox-app/src/main.rs": "780498a297318cc11e396be8d20cd4a7918ab938e1e8693e22ede9624a14a36f",
+    "rust/crates/bellobox-core/src/qr.rs": "eab62a9190c5b7614e57fd1132a39ebd3cca379780f953a2fbb41b1daa07e89c",
+    "rust/docs/palette-qr.md": "37bce06d72501af2dfbc5a9d1cfd295722c7942cc2d277009c45a13d4ecc46c9"
+  }
+}

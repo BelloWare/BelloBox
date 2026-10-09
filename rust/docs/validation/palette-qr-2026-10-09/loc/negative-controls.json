@@ -1,0 +1,32 @@
+[
+  {
+    "control": "source-byte-drift",
+    "rejected": true,
+    "reason": "after SHA256 rust/crates/bellobox-app/src/desktop.rs"
+  },
+  {
+    "control": "support-range-drift",
+    "rejected": true,
+    "reason": "reviewed counts after rust/crates/bellobox-app/src/desktop.rs"
+  },
+  {
+    "control": "omit-source-file",
+    "rejected": true,
+    "reason": "complete repository Rust scope"
+  },
+  {
+    "control": "git-tree-drift",
+    "rejected": true,
+    "reason": "tree object bd280f85af2bf2c365d18df3ba1b09c0100477e2"
+  },
+  {
+    "control": "omit-evidence-probe",
+    "rejected": true,
+    "reason": "exact disjoint evidence inventory"
+  },
+  {
+    "control": "modify-candidate-tree",
+    "rejected": true,
+    "reason": "tree object d5649f40822d55a6494b9f47bd8ca62cc7c94c1f"
+  }
+]

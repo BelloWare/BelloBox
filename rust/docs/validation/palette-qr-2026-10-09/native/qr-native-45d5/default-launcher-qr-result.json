@@ -1,0 +1,103 @@
+{
+  "name": "default-launcher-qr",
+  "kind": "test",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--bin",
+    "bellobox",
+    "launcher_ui::qr_lifecycle_tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "expected_tests": [
+    "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+    "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+    "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+    "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+    "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+    "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+    "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+    "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+    "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+    "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+    "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay"
+  ],
+  "expected_passed": 11,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T03:52:47.222839+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/default-launcher-qr.log",
+  "ended_at": "2026-10-09T03:52:49.678917+00:00",
+  "elapsed_seconds": 2.455632625031285,
+  "exit_code": 0,
+  "log_sha256": "136620bb5f19cf93bfb97b97192bb9d4c45cb05d639174a1d54a41103abdfe8f",
+  "counts": [
+    {
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 425
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+      "sha256": "43346da1e4b78f8364bdb58f5cb1d075f6ca28fffd78ab651069a979cafdd1db",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+      "ok"
+    ]
+  ],
+  "expected_name_set_matches": true
+}

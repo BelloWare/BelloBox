@@ -1,0 +1,170 @@
+[
+  {
+    "commit": "3976bd8632d8ecfaba9350b750f46e6e457b68d3",
+    "handoff_comment": 6073460364,
+    "passed": 67,
+    "failed": 6,
+    "unchanged_receipts": {
+      "validation.json": "f903a90be36d90f81aa76f955cb358989873078c0e670bbd97ae61824d60ac8b",
+      "handoff.md": "28dee9a4c142f5e480c130f10f93e1349e427d3a479e225ac2cf188c7d8f5dc7"
+    },
+    "unchanged_logs": [
+      {
+        "name": "build-default.log",
+        "sha256": "1552f1d0616d3c104df29d7d5cc79d0bf2fa34f57d30510a96494670fbe87f10"
+      },
+      {
+        "name": "build-minimal.log",
+        "sha256": "d41ab577a4d8463d905dae900f1c1a4afef7bd03980fd2a24b14360913649202"
+      },
+      {
+        "name": "build-movie-fixtures.log",
+        "sha256": "3c25c361d84e38a391de2187e5e73b27754c035a0209299ae8c0ad86f71e3015"
+      },
+      {
+        "name": "core-qr.log",
+        "sha256": "b5d27460857e6d54a8df43b54bc72e7f6ac38bda34a59a7c2c5e421bacf70b29"
+      },
+      {
+        "name": "default-qr-preview.log",
+        "sha256": "e200b24d16fbb2e6120fc19921d714aacdedbfa41ef467e0567a0f479b5fbe34"
+      },
+      {
+        "name": "default-launcher-qr.log",
+        "sha256": "9c367dd1631d1687830f0a005af2137dcffca805779aeef838dd64eef5da9453"
+      },
+      {
+        "name": "default-qr-jobs.log",
+        "sha256": "fb97e682c060143790699762da06a728c73c1b49c771cbf3afd071c296cd517b"
+      },
+      {
+        "name": "minimal-qr-preview.log",
+        "sha256": "2981e66b8524e8da3b0ef6d4fda9eceb3a70e714c71792b3c60068a2e137ec82"
+      },
+      {
+        "name": "minimal-launcher-qr.log",
+        "sha256": "d22fd59968a8a335569fd17548e4a8567fe6ede32232f3831f127d2c5ae08024"
+      },
+      {
+        "name": "minimal-qr-jobs.log",
+        "sha256": "312fd2bb7b30168e98c128f1d0350f3591e9ec3811d4c335198f95584aee6d80"
+      },
+      {
+        "name": "movie-fixtures-qr-preview.log",
+        "sha256": "76d136b4a1180d7058f7eb7f4a56910c293ad245dcfddb7f64e7cb7472b24782"
+      },
+      {
+        "name": "movie-fixtures-launcher-qr.log",
+        "sha256": "d096e63a5e7ac95f4fbc63236d0064ba5c5e92f80fe413baa01d4a5a7914d3a9"
+      },
+      {
+        "name": "movie-fixtures-qr-jobs.log",
+        "sha256": "7659e7e7acfba44baac4c9027045273b0fadad1688a7f2352d82590ee0cb34e7"
+      },
+      {
+        "name": "format.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "candidate-strict-clippy.log",
+        "sha256": "bc0f6a620dccd37b67a30d5798acc09bec80b4ec7af1c58c5e3c38087fb1215f"
+      },
+      {
+        "name": "candidate-app-scoped-clippy.log",
+        "sha256": "58ca27b8b7e44b0028aeb739327ddd55fe8c9cab5d83a380b15b1baf674f7ced"
+      },
+      {
+        "name": "parent-strict-clippy.log",
+        "sha256": "8d78390bfe686db60932221710e5a8024d35df21ff20770e1e30416c2254050d"
+      },
+      {
+        "name": "parent-app-scoped-clippy.log",
+        "sha256": "bf1295085e8f2e2a3614386fe994ebc42a8ef4af15b2bad2d4241ef38d6b9b31"
+      }
+    ]
+  },
+  {
+    "commit": "3ae7349bd76d4d0c86b368c3fee21ab2ca531ace",
+    "handoff_comment": 6073676525,
+    "passed": 97,
+    "failed": 0,
+    "unchanged_receipts": {
+      "validation.json": "8caf0780df00d0029798af3eae85d62ee41b857e42d95dd768a0ffe2ae853de3",
+      "handoff.md": "06c470ac4da5bfcc407239c0a3c72bff612e8f77a02cc525473aeca0c7ada1fc"
+    },
+    "unchanged_logs": [
+      {
+        "name": "build-default.log",
+        "sha256": "9ddbdedf95895d079bd94f5b8d501d4ef5d3d2591f29f250579f2cd8fe58663e"
+      },
+      {
+        "name": "build-minimal.log",
+        "sha256": "1674ad1d141e800f151dd17227470ddbcae70889503d8070d686ad42bf29a991"
+      },
+      {
+        "name": "build-movie-fixtures.log",
+        "sha256": "e9158acf66944f78e51f379be93169b4957cc95824a08ad1fd919f5cd6c3b50f"
+      },
+      {
+        "name": "core-qr.log",
+        "sha256": "7322d51ea222379aa4c5db1d75363a779eb82f5384244216a59a5220982d0cf9"
+      },
+      {
+        "name": "default-qr-preview.log",
+        "sha256": "9317ba2dd14a9066831408ece7e83a8b8a4e0424dbc6e5051621fc0d6f915ea9"
+      },
+      {
+        "name": "default-launcher-qr.log",
+        "sha256": "d16e958c4f66b3100620350acef532a5bbfb6f7d8d28267f940fed12bd617269"
+      },
+      {
+        "name": "default-qr-jobs.log",
+        "sha256": "58d6f7f06c3a10f9ca2065a849db67f9d595de3f876e6089a9f487a34c8c6309"
+      },
+      {
+        "name": "minimal-qr-preview.log",
+        "sha256": "3baa004402771769d9420be2a0b7b94a2b1788d5e81d5fb63c4761c6f1fb3a8a"
+      },
+      {
+        "name": "minimal-launcher-qr.log",
+        "sha256": "8f112268b7bf597afde9ea117995dc9ae8e34d6736e6ce39d2fb3a2df7f8f09f"
+      },
+      {
+        "name": "minimal-qr-jobs.log",
+        "sha256": "2954e8e6cfbbaea798f370ee2aeded9111b64687d9113584d84196340956db07"
+      },
+      {
+        "name": "movie-fixtures-qr-preview.log",
+        "sha256": "c65c44cb3d1b499198b1e36a8be4dbd56b8924906d4bcbb70aebbe430a0cc42e"
+      },
+      {
+        "name": "movie-fixtures-launcher-qr.log",
+        "sha256": "99f68550f6e64b7706a83d0b04d6f2537751e5a64f2da794e48cba1a4291677f"
+      },
+      {
+        "name": "movie-fixtures-qr-jobs.log",
+        "sha256": "75514e26669a34dce744270a37256f3c62bc26de3f92b829deb10ab4be2d55de"
+      },
+      {
+        "name": "format.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "candidate-strict-clippy.log",
+        "sha256": "f537bec14dc678044348a55d158d914f67f809ad2f8bbee424de81fd46c6dc35"
+      },
+      {
+        "name": "candidate-app-scoped-clippy.log",
+        "sha256": "56254566efb318be47f20e6aeed577bb8cdface423977432366310cd8320178d"
+      },
+      {
+        "name": "parent-strict-clippy.log",
+        "sha256": "283228efa879d6d742309a7375a18ef104e2b2771e9b133ddeaa309eb99954a5"
+      },
+      {
+        "name": "parent-app-scoped-clippy.log",
+        "sha256": "debf6cce604cde599f0bc05d87252a0b9588f7b3f9f004d1d60a967cdca012bc"
+      }
+    ]
+  }
+]

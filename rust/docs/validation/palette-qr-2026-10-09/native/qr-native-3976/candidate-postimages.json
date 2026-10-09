@@ -1,0 +1,58 @@
+[
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-app/src/desktop.rs",
+    "mode": "100644",
+    "git_blob": "7e455095a15b2ec60e8576a15c90056276313c56",
+    "sha256": "93cfd900831beb768d1d96fb1cef42d976518b30f97159b11e1569eb464b61c1"
+  },
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-app/src/desktop/qr_jobs.rs",
+    "mode": "100644",
+    "git_blob": "4605d65cebb26dbd1ecc90c01d78977f6e598a07",
+    "sha256": "bbc0f1e40b246a525c39aa8fbfc3672c200b1aec92abd25e6fc7f42163be5f97"
+  },
+  {
+    "status": "A",
+    "path": "rust/crates/bellobox-app/src/launcher_qr_ui.rs",
+    "mode": "100644",
+    "git_blob": "e502be4b7029fc1d762cb8c37ac531cd8c613830",
+    "sha256": "a8aa06ce1dc598a82beb2e6be9e2b3361c3000d9d48699da605a53a515b85855"
+  },
+  {
+    "status": "A",
+    "path": "rust/crates/bellobox-app/src/launcher_qr_ui/tests.rs",
+    "mode": "100644",
+    "git_blob": "945ee037f2b12d2e6b63fd67d7e5c4648d170426",
+    "sha256": "83a4f44a6e1192a0d6c3d8ef7775e9a1a3c171ad8fca8563e3095790c7f1fe7d"
+  },
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+    "mode": "100644",
+    "git_blob": "0df47afe9fa355c638604037683c4f8fb93743fa",
+    "sha256": "b562bfb3e952a088ea8426931be573ea32969ad5fb37fd0d978dbbe440cb3f15"
+  },
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-app/src/main.rs",
+    "mode": "100644",
+    "git_blob": "b55423042641f044770d4d3d7818b78d7f2b77f0",
+    "sha256": "780498a297318cc11e396be8d20cd4a7918ab938e1e8693e22ede9624a14a36f"
+  },
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-core/src/qr.rs",
+    "mode": "100644",
+    "git_blob": "c93f563681138b56b24100f149595713771076b8",
+    "sha256": "eab62a9190c5b7614e57fd1132a39ebd3cca379780f953a2fbb41b1daa07e89c"
+  },
+  {
+    "status": "A",
+    "path": "rust/docs/palette-qr.md",
+    "mode": "100644",
+    "git_blob": "4141ce6ce0b43bb4b9d6be83c1604093bfae2192",
+    "sha256": "37bce06d72501af2dfbc5a9d1cfd295722c7942cc2d277009c45a13d4ecc46c9"
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "source_commit": "3cd1404b20afa0f47ffd392abe83a8cd88d9364e",
+  "source_tree": "c37b8b64a7b00d7ece522561a2b30427439df5c2",
+  "base_commit": "25e78766d2463c186e7dbdf4d85029401290d062",
+  "original_review_commit": "0d203d98ad2753c1c5b74358289c6a3725e7eae3",
+  "swift_spec_commit": "e43b1c4595c42383e087fe70f38c28d07c31dda0",
+  "binary_path": "/workspace/shared/box-palette-qr-sealed/bellobox-311a57176653",
+  "binary_sha256": "d68fa99b81d6b00a7801b5d06137bedee5e4be6bef5a1cbd3da30507c61ea618",
+  "build_features": "default (ordinary; no movie-fixtures/recording-fixtures)",
+  "sha256": {
+    "rust/crates/bellobox-app/src/desktop.rs": "93cfd900831beb768d1d96fb1cef42d976518b30f97159b11e1569eb464b61c1",
+    "rust/crates/bellobox-app/src/desktop/qr_jobs.rs": "bbc0f1e40b246a525c39aa8fbfc3672c200b1aec92abd25e6fc7f42163be5f97",
+    "rust/crates/bellobox-app/src/launcher_qr_ui.rs": "eabc812c8b04100fda10296e3390bef306f288275e442c7abc168a7826943e91",
+    "rust/crates/bellobox-app/src/launcher_qr_ui/tests.rs": "cce9d1b25342b40751c621aabc801e220312393820f7156d3df701a89b8f9c98",
+    "rust/crates/bellobox-app/src/launcher_ui.rs": "17dd997f6b7f828fbe5cac46849ef8e49deec98d937b2b97fe9957fdfa84dd9b",
+    "rust/crates/bellobox-app/src/main.rs": "780498a297318cc11e396be8d20cd4a7918ab938e1e8693e22ede9624a14a36f",
+    "rust/crates/bellobox-core/src/qr.rs": "eab62a9190c5b7614e57fd1132a39ebd3cca379780f953a2fbb41b1daa07e89c",
+    "rust/docs/palette-qr.md": "c31b3a21a8598dea818db244c4e5d15333789e4514e778f93bd5fcde7316ac99"
+  },
+  "superseded_source_commit": "311a5717665308e3390cbc84aeb057ac5344d5a1",
+  "delta_scope": "test-only deterministic QR search fixture; production region byte-identical",
+  "ordinary_binary_comparison": "Clean default build compared byte-for-byte equal using cmp to sealed 311a binary"
+}

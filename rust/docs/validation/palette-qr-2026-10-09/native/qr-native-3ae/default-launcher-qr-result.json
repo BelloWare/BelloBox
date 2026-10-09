@@ -1,0 +1,88 @@
+{
+  "name": "default-launcher-qr",
+  "kind": "test",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--bin",
+    "bellobox",
+    "launcher_ui::qr_lifecycle_tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "expected_tests": [
+    "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+    "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+    "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+    "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+    "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+    "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+    "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+    "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection"
+  ],
+  "expected_passed": 8,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T03:26:48.449246+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-3ae-qr-retry-p4lff2u0/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-3ae-qr-retry-p4lff2u0/evidence/default-launcher-qr.log",
+  "ended_at": "2026-10-09T03:26:52.302777+00:00",
+  "elapsed_seconds": 3.853271957952529,
+  "exit_code": 0,
+  "log_sha256": "d16e958c4f66b3100620350acef532a5bbfb6f7d8d28267f940fed12bd617269",
+  "counts": [
+    {
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 425
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+      "sha256": "8276c1f71111afcb49a9e0dc963732064342a261db915cd4ecfd399fc0c593d7",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+      "ok"
+    ]
+  ],
+  "expected_name_set_matches": true
+}

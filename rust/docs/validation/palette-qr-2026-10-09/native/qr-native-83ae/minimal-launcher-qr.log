@@ -1,0 +1,18 @@
+    Finished `test` profile [unoptimized] target(s) in 1.33s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04)
+
+running 11 tests
+test launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr ... ok
+test launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close ... ok
+test launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save ... ok
+test launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline ... ok
+test launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles ... ok
+test launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open ... ok
+test launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release ... ok
+test launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release ... ok
+test launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases ... ok
+test launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection ... ok
+test launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 425 filtered out; finished in 1.34s
+

@@ -1,0 +1,45 @@
+{
+  "name": "ranking-replay-movie-fixtures-2",
+  "variant": "movie-fixtures",
+  "repeat": 2,
+  "command": [
+    "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+    "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+    "--exact",
+    "--test-threads=1"
+  ],
+  "started_at": "2026-10-09T03:53:59.750906+00:00",
+  "ended_at": "2026-10-09T03:53:59.893905+00:00",
+  "exit_code": 0,
+  "binary": {
+    "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+    "sha256": "19eec0ea74af30fe5b16a1d79962518848f69adc0b47717a67e1012d08966b00",
+    "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e: Mach-O 64-bit executable arm64"
+  },
+  "binary_hash_unchanged": true,
+  "config_dir": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/replay-accumulated-movie-fixtures",
+  "config_hashes_before": {
+    "settings.json": "709cfdd6de2109fd3da2799e0a001cdb1ed4a94dbb8e1c5f8a2bd9ac320379b1"
+  },
+  "config_hashes_after": {
+    "settings.json": "709cfdd6de2109fd3da2799e0a001cdb1ed4a94dbb8e1c5f8a2bd9ac320379b1"
+  },
+  "config_unchanged": true,
+  "counts": [
+    {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 438
+    }
+  ],
+  "tests": [
+    [
+      "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+      "ok"
+    ]
+  ],
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/ranking-replay-movie-fixtures-2.log",
+  "log_sha256": "82c6079f32a01024dee0ebfda46791994fabf3742a8462dd458af409e6314f6e"
+}

@@ -1,0 +1,38 @@
+{
+  "commit": "3976bd8632d8ecfaba9350b750f46e6e457b68d3",
+  "handoff_comment": 6073460364,
+  "passed": 67,
+  "failed": 6,
+  "unchanged_receipts": {
+    "validation.json": "f903a90be36d90f81aa76f955cb358989873078c0e670bbd97ae61824d60ac8b",
+    "lint-comparison.json": "b3349c6290e72825da305dec98e0d7fee7ab3b0ce6718f5409e652c5c9c0c070",
+    "candidate-postimages.json": "4c964458361e54e2a03abfc48d67e8c174e3cc4b8f15011dd2f30f2c3a9f4896",
+    "handoff.md": "28dee9a4c142f5e480c130f10f93e1349e427d3a479e225ac2cf188c7d8f5dc7"
+  },
+  "unchanged_failure_logs": [
+    {
+      "name": "default-qr-preview.log",
+      "sha256": "e200b24d16fbb2e6120fc19921d714aacdedbfa41ef467e0567a0f479b5fbe34"
+    },
+    {
+      "name": "default-launcher-qr.log",
+      "sha256": "9c367dd1631d1687830f0a005af2137dcffca805779aeef838dd64eef5da9453"
+    },
+    {
+      "name": "minimal-qr-preview.log",
+      "sha256": "2981e66b8524e8da3b0ef6d4fda9eceb3a70e714c71792b3c60068a2e137ec82"
+    },
+    {
+      "name": "minimal-launcher-qr.log",
+      "sha256": "d22fd59968a8a335569fd17548e4a8567fe6ede32232f3831f127d2c5ae08024"
+    },
+    {
+      "name": "movie-fixtures-qr-preview.log",
+      "sha256": "76d136b4a1180d7058f7eb7f4a56910c293ad245dcfddb7f64e7cb7472b24782"
+    },
+    {
+      "name": "movie-fixtures-launcher-qr.log",
+      "sha256": "d096e63a5e7ac95f4fbc63236d0064ba5c5e92f80fe413baa01d4a5a7914d3a9"
+    }
+  ]
+}

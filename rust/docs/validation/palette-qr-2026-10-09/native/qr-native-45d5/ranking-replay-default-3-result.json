@@ -1,0 +1,45 @@
+{
+  "name": "ranking-replay-default-3",
+  "variant": "default",
+  "repeat": 3,
+  "command": [
+    "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+    "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+    "--exact",
+    "--test-threads=1"
+  ],
+  "started_at": "2026-10-09T03:53:58.617339+00:00",
+  "ended_at": "2026-10-09T03:53:58.764176+00:00",
+  "exit_code": 0,
+  "binary": {
+    "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+    "sha256": "43346da1e4b78f8364bdb58f5cb1d075f6ca28fffd78ab651069a979cafdd1db",
+    "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+  },
+  "binary_hash_unchanged": true,
+  "config_dir": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/replay-accumulated-default",
+  "config_hashes_before": {
+    "settings.json": "709cfdd6de2109fd3da2799e0a001cdb1ed4a94dbb8e1c5f8a2bd9ac320379b1"
+  },
+  "config_hashes_after": {
+    "settings.json": "709cfdd6de2109fd3da2799e0a001cdb1ed4a94dbb8e1c5f8a2bd9ac320379b1"
+  },
+  "config_unchanged": true,
+  "counts": [
+    {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 435
+    }
+  ],
+  "tests": [
+    [
+      "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+      "ok"
+    ]
+  ],
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-45d5-qr-ranking-j0l75wq3/evidence/ranking-replay-default-3.log",
+  "log_sha256": "6df9ea22fea2a860807d27512723698aa645c81850845d3039059155269125e3"
+}

@@ -1,0 +1,33 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-qr-negative-0d203d9/rust/crates/bellobox-app)
+warning: unused variable: `token`
+   --> crates/bellobox-app/src/launcher_qr_ui.rs:191:9
+    |
+191 |         token: JobToken,
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_token`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `bellobox-app` (bin "bellobox" test) generated 1 warning (run `cargo fix --bin "bellobox" -p bellobox-app --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 12.78s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+test launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit ... FAILED
+
+failures:
+
+---- launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit stdout ----
+
+thread 'launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit' (46) panicked at crates/bellobox-app/src/launcher_qr_ui/tests.rs:264:34:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 423 filtered out; finished in 0.04s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

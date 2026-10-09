@@ -1,0 +1,129 @@
+{
+  "name": "minimal-qr-preview",
+  "kind": "test",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--no-default-features",
+    "--bin",
+    "bellobox",
+    "launcher_qr_ui::tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "expected_tests": [
+    "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+    "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+    "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+    "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+    "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+    "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+    "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+    "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+    "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+    "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+    "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+    "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+    "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+    "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+    "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+    "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success"
+  ],
+  "expected_passed": 16,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T03:26:53.473077+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-3ae-qr-retry-p4lff2u0/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-3ae-qr-retry-p4lff2u0/evidence/minimal-qr-preview.log",
+  "ended_at": "2026-10-09T03:27:09.697165+00:00",
+  "elapsed_seconds": 16.223672082996927,
+  "exit_code": 0,
+  "log_sha256": "3baa004402771769d9420be2a0b7b94a2b1788d5e81d5fb63c4761c6f1fb3a8a",
+  "counts": [
+    {
+      "passed": 16,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 417
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04",
+      "sha256": "7d38fe46e1ea4b4def2f03479e883378587a50cef19d1adc40e2f68912eca5cf",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success",
+      "ok"
+    ]
+  ],
+  "expected_name_set_matches": true
+}

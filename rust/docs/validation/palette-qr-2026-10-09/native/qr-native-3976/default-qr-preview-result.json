@@ -1,0 +1,103 @@
+{
+  "name": "default-qr-preview",
+  "kind": "test",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--bin",
+    "bellobox",
+    "launcher_qr_ui::tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "expected_tests": [
+    "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+    "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+    "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+    "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+    "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+    "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+    "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+    "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+    "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+    "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+    "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite"
+  ],
+  "expected_passed": 11,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T03:03:01.188941+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/evidence/default-qr-preview.log",
+  "ended_at": "2026-10-09T03:03:16.162373+00:00",
+  "elapsed_seconds": 14.973179958062246,
+  "exit_code": 101,
+  "log_sha256": "e200b24d16fbb2e6120fc19921d714aacdedbfa41ef467e0567a0f479b5fbe34",
+  "counts": [
+    {
+      "passed": 10,
+      "failed": 1,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 414
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+      "sha256": "79f61db0bad78141856184504adeb0018d399c90711da13e0ce6660590e2125d",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+      "FAILED"
+    ],
+    [
+      "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+      "ok"
+    ]
+  ],
+  "expected_name_set_matches": false
+}

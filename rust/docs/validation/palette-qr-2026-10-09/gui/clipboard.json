@@ -1,0 +1,2 @@
+targets: (True, targets=[Gdk.Atom.intern("TARGETS", False), Gdk.Atom.intern("SAVE_TARGETS", False), Gdk.Atom.intern("UTF8_STRING", False), Gdk.Atom.intern("text/plain;charset=utf-8", False), Gdk.Atom.intern("text/plain;charset=UTF-8", False)])
+image/png unavailable

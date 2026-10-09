@@ -1,0 +1,30 @@
+{
+  "source": "a78203800a1c5d462814991da4cf65e60141a672",
+  "source_tree": "5415e0154fdf369f28e83a89a8f56e5436135449",
+  "binary": "/workspace/shared/box-palette-qr-sealed/bellobox-a78203800a1c",
+  "binary_sha256": "d4702add5fe9b03b38ce71f98d6993d1adf9514559f8c6dd57ee88588be82069",
+  "new_export": {
+    "path": "/workspace/shared/palette-qr-gui/exports/release-save.png",
+    "sha256": "4d7f2e90a3defa3205ed6501b272540f1bc0a0c686f4665f3c01669e37f11818",
+    "bytes": 2847,
+    "dimensions": [
+      522,
+      522
+    ],
+    "mode": "L",
+    "colors": [
+      [
+        79056,
+        0
+      ],
+      [
+        193428,
+        255
+      ]
+    ]
+  },
+  "preserved_outputs": {
+    "snapshot.png": "168af36df347fd8652022bd3a1f3032ba626bf109810271552b486ab813ba5a4",
+    "BelloBox QR.png": "168af36df347fd8652022bd3a1f3032ba626bf109810271552b486ab813ba5a4"
+  }
+}

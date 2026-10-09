@@ -1,0 +1,24 @@
+   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/source/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 12.16s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04)
+
+running 16 tests
+test launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release ... ok
+test launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement ... ok
+test launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff ... ok
+test launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot ... ok
+test launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo ... ok
+test launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only ... ok
+test launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft ... ok
+test launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor ... ok
+test launcher_qr_ui::tests::image_copy_capability_matches_pinned_actual_backend_contract ... ok
+test launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor ... ok
+test launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay ... ok
+test launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning ... ok
+test launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations ... ok
+test launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit ... ok
+test launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite ... ok
+test launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 420 filtered out; finished in 1.59s
+

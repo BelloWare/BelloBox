@@ -1,0 +1,34 @@
+{
+  "repo": "/Users/admin/projects/BelloBox-rust-positive-composition",
+  "repository_head": "59339af1fa422acea4067207c55344666c3fa4ab",
+  "repository_status": "",
+  "root": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0",
+  "evidence": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/evidence",
+  "commit": "83ae8b0b589506faa95b6894cc042f642a5a4b24",
+  "tree": "02aafc044aa5b705a29f6ec0a23bb15e4d390778",
+  "parent": "3ae7349bd76d4d0c86b368c3fee21ab2ca531ace",
+  "lint_baseline": "25e78766d2463c186e7dbdf4d85029401290d062",
+  "checked_at": "2026-10-09T03:37:34.908791+00:00",
+  "snapshots": [
+    {
+      "label": "source",
+      "commit": "83ae8b0b589506faa95b6894cc042f642a5a4b24",
+      "tree": "02aafc044aa5b705a29f6ec0a23bb15e4d390778",
+      "source": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/source",
+      "tracked_files": 1594,
+      "source_manifest_sha256": "39ce68a008945305a6039d29d79d0fbbc897c831e29892ee4e03e82cff849806",
+      "archive_sha256": "af63187750234bd7c6cf58fc4d08fab82c0e01bc7dda2dc17408927fea755fb8",
+      "exact_source_verified": true
+    },
+    {
+      "label": "parent-source",
+      "commit": "25e78766d2463c186e7dbdf4d85029401290d062",
+      "tree": "bd280f85af2bf2c365d18df3ba1b09c0100477e2",
+      "source": "/Users/admin/Library/Caches/BelloRustWork/box-83ae-qr-final-k56avwv0/parent-source",
+      "tracked_files": 1591,
+      "source_manifest_sha256": "8693f9574d54869f413e2c26e71d7aaa58c38019fa6e1e7c16fbb1cda0eaabfa",
+      "archive_sha256": "e5ddd4bf572113cf818beaf566f086e3b1d49068a8810c1be32c34c45d8d227d",
+      "exact_source_verified": true
+    }
+  ]
+}

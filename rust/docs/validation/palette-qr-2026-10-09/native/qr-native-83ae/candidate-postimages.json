@@ -1,0 +1,16 @@
+[
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-app/src/launcher_qr_ui.rs",
+    "mode": "100644",
+    "git_blob": "9a74e8257bcfe7e2d666e1445f0e51a8832b7b66",
+    "sha256": "eabc812c8b04100fda10296e3390bef306f288275e442c7abc168a7826943e91"
+  },
+  {
+    "status": "M",
+    "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+    "mode": "100644",
+    "git_blob": "0191d92a506c596d5f3384cd0db97fba3ecac441",
+    "sha256": "6b24c8df37d9faaa6db01e2abc17c8bdafde57f0c7ad4ddf0c152967316f9d18"
+  }
+]

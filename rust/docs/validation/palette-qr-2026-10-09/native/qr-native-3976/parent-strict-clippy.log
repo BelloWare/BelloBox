@@ -1,0 +1,21 @@
+    Checking bello-workbench v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/parent-source/rust/crates/bello-workbench)
+    Checking bellobox-core v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/parent-source/rust/crates/bellobox-core)
+    Checking bello-workbench-ui v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/parent-source/rust/crates/bello-workbench-ui)
+    Checking bello-platform v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/parent-source/rust/crates/bello-platform)
+error: unneeded `return` statement
+   --> crates/bellobox-core/src/settings.rs:253:9
+    |
+253 | /         return PathBuf::from(std::env::var_os("HOME").unwrap_or_default())
+254 | |             .join("Library/Application Support/BelloBox/Rust");
+    | |______________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#needless_return
+    = note: `-D clippy::needless-return` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_return)]`
+help: remove `return`
+    |
+253 ~         PathBuf::from(std::env::var_os("HOME").unwrap_or_default())
+254 ~             .join("Library/Application Support/BelloBox/Rust")
+    |
+
+error: could not compile `bellobox-core` (lib) due to 1 previous error

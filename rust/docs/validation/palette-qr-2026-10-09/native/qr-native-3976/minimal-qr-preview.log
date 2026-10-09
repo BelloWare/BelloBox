@@ -1,0 +1,62 @@
+   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-3976-qr-jd12_aes/source/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 11.58s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04)
+
+running 11 tests
+test launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff ... ok
+test launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot ... ok
+test launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo ... FAILED
+test launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only ... ok
+test launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft ... ok
+test launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor ... ok
+test launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor ... ok
+test launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning ... ok
+test launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations ... ok
+test launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit ... ok
+test launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite ... ok
+
+failures:
+
+---- launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo stdout ----
+
+thread 'launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo' (56418151) panicked at crates/bellobox-app/src/launcher_qr_ui/tests.rs:303:32:
+assertion `left == right` failed
+  left: "Xdraft"
+ right: "draft"
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed
+   4: bellobox::launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo::__density_toggle_retains_editor_identity_and_real_undo::{{closure}}
+   5: gpui::window::WindowHandle<V>::update::{{closure}}::{{closure}}
+   6: <gpui::app::App as gpui::AppContext>::update_entity::{{closure}}
+   7: gpui::app::App::update
+   8: <gpui::app::App as gpui::AppContext>::update_entity
+   9: gpui::app::entity_map::Entity<T>::update
+  10: gpui::window::WindowHandle<V>::update::{{closure}}
+  11: gpui::app::App::update_window_id::{{closure}}
+  12: gpui::app::App::update
+  13: gpui::app::App::update_window_id
+  14: <gpui::app::App as gpui::AppContext>::update_window
+  15: <gpui::app::test_context::TestAppContext as gpui::AppContext>::update_window
+  16: gpui::window::WindowHandle<V>::update
+  17: bellobox::launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo::__density_toggle_retains_editor_identity_and_real_undo
+  18: bellobox::launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo::{{closure}}
+  19: gpui::test::run_test::{{closure}}
+  20: std::panicking::catch_unwind::do_call
+  21: ___rust_try
+  22: std::panic::catch_unwind
+  23: gpui::test::run_test
+  24: bellobox::launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo
+  25: bellobox::launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo::{{closure}}
+  26: core::ops::function::FnOnce::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 414 filtered out; finished in 1.41s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`
