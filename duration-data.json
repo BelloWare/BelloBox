@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T17:33:00Z",
+  "as_of_utc": "2026-10-09T17:43:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -72256,6 +72256,287 @@
       "inference_status": "unavailable",
       "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
       "scope": "Source-bound evolving local Regex palette candidate; source-edit/coordination duration unavailable, no GUI/native acceptance inferred"
+    },
+    {
+      "id": "20261009-1743-regex-palette-default-app-r9-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette default-app-r9",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:34:03.860856+00:00",
+      "end_utc": "2026-10-09T17:36:26.827040+00:00",
+      "duration_seconds": 142.96626280999044,
+      "source": [
+        {
+          "receipt_sha256": "ea51465b6d975c77f1a2715b3f32ec91e004f8c91cfa4de6d2a90ec98c6a6558",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "af3e6c2689dbbfec397ca0416b377dce565c85d76cd2b4c654c1d9f97da1f317"
+    },
+    {
+      "id": "20261009-1743-regex-palette-focused-r10-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette focused-r10",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:40:19.647710+00:00",
+      "end_utc": "2026-10-09T17:41:03.439817+00:00",
+      "duration_seconds": 43.792205395991914,
+      "source": [
+        {
+          "receipt_sha256": "1d00ea823a3879f3e7f5568917f8705d42d8a3cba84363836f5aec1e3ad96bea",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "6cdb40277e10f324e5e231f33b3a1469090a5b8179af86b6abb3c8fcfc75ffc8"
+    },
+    {
+      "id": "20261009-1743-regex-palette-format-r9-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette format-r9",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T17:39:27.677324+00:00",
+      "end_utc": "2026-10-09T17:39:29.607458+00:00",
+      "duration_seconds": 1.9302140030049486,
+      "source": [
+        {
+          "receipt_sha256": "d66f96ebca07e356ae6649c9d604436d7cf153d748911a7666ac390407cbcdef",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "af3e6c2689dbbfec397ca0416b377dce565c85d76cd2b4c654c1d9f97da1f317"
+    },
+    {
+      "id": "20261009-1743-regex-palette-ordinary-build-r9-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette ordinary-build-r9",
+      "category": "build",
+      "start_utc": "2026-10-09T17:39:29.637896+00:00",
+      "end_utc": "2026-10-09T17:39:45.824797+00:00",
+      "duration_seconds": 16.186980092999875,
+      "source": [
+        {
+          "receipt_sha256": "4d5283fe891a3a1971dc5a0525342cc327d7e5b33e61eb0688e32be3fbc8ec89",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "af3e6c2689dbbfec397ca0416b377dce565c85d76cd2b4c654c1d9f97da1f317"
+    },
+    {
+      "id": "20261009-1743-regex-palette-recording-app-r9-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette recording-app-r9",
+      "category": "build + test/check (combined)",
+      "start_utc": "2026-10-09T17:36:26.861088+00:00",
+      "end_utc": "2026-10-09T17:39:06.281348+00:00",
+      "duration_seconds": 159.42034018300183,
+      "source": [
+        {
+          "receipt_sha256": "fd0f60875403d244f55e83add797b78a72108434c5edf568d08b61e527d373bf",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "af3e6c2689dbbfec397ca0416b377dce565c85d76cd2b4c654c1d9f97da1f317"
+    },
+    {
+      "id": "20261009-1743-regex-palette-strict-default-r10-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette strict-default-r10",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T17:41:29.879620+00:00",
+      "end_utc": "2026-10-09T17:41:42.852004+00:00",
+      "duration_seconds": 12.972467034007423,
+      "source": [
+        {
+          "receipt_sha256": "9c9c88e76954e1f5fd9b62fb2bb63c976541a1918c961f8079ac6acc96476cd6",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "6cdb40277e10f324e5e231f33b3a1469090a5b8179af86b6abb3c8fcfc75ffc8"
+    },
+    {
+      "id": "20261009-1743-regex-palette-strict-default-r8-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette strict-default-r8",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T17:32:56.506381+00:00",
+      "end_utc": "2026-10-09T17:33:01.515854+00:00",
+      "duration_seconds": 5.009549725000397,
+      "source": [
+        {
+          "receipt_sha256": "7a70b1b62ca4229ca2816530d69adc382532851a66e7b0685e6548a33165237f",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "101",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "coverage_note": "Late-added earlier evidence, deduplicated against all prior timed intervals.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "ce3b408c4f092f2f3e8a48a3e0383e58b417f6f7b1f2178456557f9b9e337e65"
+    },
+    {
+      "id": "20261009-1743-regex-palette-strict-default-r9-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette strict-default-r9",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T17:33:52.775052+00:00",
+      "end_utc": "2026-10-09T17:34:03.819739+00:00",
+      "duration_seconds": 11.044762369987438,
+      "source": [
+        {
+          "receipt_sha256": "28b3ded73eea2e7991c453835e1727610580f09b389e7bb574c4395b7e318489",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "af3e6c2689dbbfec397ca0416b377dce565c85d76cd2b4c654c1d9f97da1f317"
+    },
+    {
+      "id": "20261009-1743-regex-palette-strict-minimal-r9-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette strict-minimal-r9",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T17:39:18.170113+00:00",
+      "end_utc": "2026-10-09T17:39:27.645231+00:00",
+      "duration_seconds": 9.47519594100595,
+      "source": [
+        {
+          "receipt_sha256": "f918205ee7b315b694c2a5d3d4048e16782d9579c8e8fbf66433b2a636b40186",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "af3e6c2689dbbfec397ca0416b377dce565c85d76cd2b4c654c1d9f97da1f317"
+    },
+    {
+      "id": "20261009-1743-regex-palette-strict-recording-r9-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Regex palette strict-recording-r9",
+      "category": "automated lint/check",
+      "start_utc": "2026-10-09T17:39:06.318996+00:00",
+      "end_utc": "2026-10-09T17:39:18.133219+00:00",
+      "duration_seconds": 11.814299122997909,
+      "source": [
+        {
+          "receipt_sha256": "238106d769424bc6b7ec54890562aa71c2f7d30acd82a5dee2274ca6a4236234",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "0",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1743",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "scope": "Gate applies only to exact source inventory in this receipt; earlier r9 gates do not establish later r10 successor acceptance; GUI/native acceptance separate",
+      "source_inventory_sha256": "af3e6c2689dbbfec397ca0416b377dce565c85d76cd2b4c654c1d9f97da1f317"
     }
   ],
   "commit_milestones": [
@@ -72988,15 +73269,15 @@
         }
       },
       "catchup_command": {
-        "count": 283,
-        "known_duration_count": 283,
-        "resource_seconds_sum": 5889.466390827101,
-        "wall_coverage_seconds": 5141.815424,
+        "count": 293,
+        "known_duration_count": 293,
+        "resource_seconds_sum": 6304.0786675050895,
+        "wall_coverage_seconds": 5556.426895,
         "category_seconds": {
-          "automated lint/check": 483.83826234249256,
-          "build + test/check (combined)": 4878.181592879409,
+          "automated lint/check": 536.0847505384966,
+          "build + test/check (combined)": 5224.360401268394,
           "dependency/environment or verification": 4.074422403991129,
-          "build": 262.57078759199715,
+          "build": 278.757767684997,
           "dependency setup + build (combined)": 31.142,
           "repository/dependency setup": 12.327,
           "automated accounting validation": 9.941363248010303,
@@ -73009,7 +73290,7 @@
           "automated source edit": 0.020964465002180077
         },
         "resource_seconds": {
-          "cloud command process": 5889.466390827101
+          "cloud command process": 6304.0786675050895
         }
       },
       "catchup_gui_process": {
@@ -74083,6 +74364,35 @@
           },
           "known_endpoint_items": 8,
           "known_endpoint_resource_seconds": 234.62880184900132
+        }
+      },
+      "ci_coverage_within_window_seconds": 0,
+      "window_seconds": 600.0,
+      "outside_selected_ci_job_intervals_seconds": 600.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1743",
+      "through_utc": "2026-10-09T17:43:00Z",
+      "coverage_window_start_utc": "2026-10-09T17:33:00Z",
+      "new_items": 10,
+      "groups": {
+        "catchup_command": {
+          "count": 10,
+          "known_duration_count": 10,
+          "resource_seconds_sum": 414.6122766779881,
+          "wall_coverage_seconds": 414.611471,
+          "category_seconds": {
+            "build + test/check (combined)": 346.1788083889842,
+            "automated lint/check": 52.246488196004066,
+            "build": 16.186980092999875
+          },
+          "resource_seconds": {
+            "cloud command process": 414.6122766779881
+          },
+          "known_endpoint_items": 10,
+          "known_endpoint_resource_seconds": 414.6122766779881
         }
       },
       "ci_coverage_within_window_seconds": 0,
