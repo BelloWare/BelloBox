@@ -1,5 +1,75 @@
 # BelloBox Rust migration duration audit
 
+## Current accounting checkpoint: 2026-10-09T13:27:00Z
+
+This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains preserved below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
+
+### At a glance
+
+These top totals cover only this catch-up receipt cohort, including late-added earlier observations; they are not whole-migration cumulative totals. These are overlapping accounting views, not shares of one total. Mixed windows do not measure active labor.
+
+| Where time went | What is actually measured |
+|---|---|
+| Implementation | Active effort unavailable; no isolated implementation timer |
+| Review | Active effort unavailable; only review-focused observations: 0 mixed windows; 0 with endpoints, unavailable union |
+| Mixed implementation/review/validation windows | 1 mixed windows; 1 with endpoints, 13m 36.6s union; scopes overlap resources and do not measure Review alone |
+| Builds | Unavailable separately |
+| Tests | Unavailable separately from compilation in these command receipts |
+| Build + test/check (combined) | Unavailable |
+| Interactive GUI validation | 2m 39.1s observed process lifetime; overlaps workflow windows, limited acceptance only |
+| CI | No new completed job duration in this cohort; prior terminal jobs are preserved below |
+| Dependency/environment setup | Unavailable |
+| Retries/rework | Unavailable separately; retained successful checks do not establish zero rework |
+| Publication | No isolated API total; 0 mixed windows; 0 with endpoints, unavailable union |
+| Waiting | Unavailable separately; waiting is mixed into recorded workflow windows |
+| Model inference | Unavailable; no timing telemetry |
+
+### Separate measured resource groups
+
+| Group | Timed items | Resource/client seconds | Known-endpoint items | Endpoint-subset seconds | Endpoint union seconds |
+|---|---:|---:|---:|---:|---:|
+| catchup_command | 2 | 0.972 | 2 | 0.972 | 0.972 |
+| catchup_gui_process | 1 | 159.137 | 1 | 159.137 | 159.137 |
+
+Groups overlap each other and mixed work windows; never add them into project elapsed or active-work time. Derived endpoints are excluded from unions. Monotonic timers and separately recorded UTC clocks can differ slightly. Whole-second 0s means below receipt resolution. CI steps and native subcommands are nested within job durations, not extra runner time.
+
+| Resource group / category | Seconds |
+|---|---:|
+| catchup_command: packaging/source validation | 0.143 |
+| catchup_command: automated accounting validation | 0.829 |
+| catchup_gui_process: interactive GUI validation | 159.137 |
+
+### Nested CI phases (already included in CI jobs)
+
+| Phase class | Runner step time |
+|---|---:|
+
+These conservative phase groups can include compilation and execution together; do not add them to the CI job totals.
+
+This cohort adds no CI job execution intervals; prior verified terminal runs remain in earlier accounting. Coverage of 2026-10-09T13:17:00Z–2026-10-09T13:27:00Z is partial and does not establish an idle-time or inference budget.
+
+### Mixed workflows and waits (excluded from resource totals)
+
+| Activity | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---:|---|
+| Final dark/light task-window interactive acceptance, full Copy validation, evidence bundling; commands nested, do not sum intervals with process times | 2026-10-09T13:08:22.303851+00:00 | 2026-10-09T13:21:58.893699+00:00 | 816.589848 | completed |
+| Comparison source and GUI checkpoint | unknown | unknown | unknown | implementation, tests, final GUI complete; Git object publication preparation pending |
+| Comparison immutable object preparation | 2026-10-09T13:22:56.880486+00:00 | unknown | unknown | immutable object upload/readback ongoing; no worker ref publication |
+
+Open task and CI rows retain unknown final duration. Failed source attempts and the original failed native URL job remain in preserved earlier accounting. Mixed windows overlap useful parallel work; they are not pure idle or active-review time.
+
+### Measured items
+
+| Activity | Category | Start UTC | End UTC | Seconds | Outcome |
+|---|---|---|---|---:|---|
+| final-packaging-and-diff | packaging/source validation | 2026-10-09T13:21:07.439115+00:00 | 2026-10-09T13:21:07.582167+00:00 | 0.143 | 0 |
+| Final light comparison GUI process lifetime | interactive GUI validation | 2026-10-09T13:16:32.066557276+00:00 | 2026-10-09T13:19:11.203493238+00:00 | 159.136936 | Normal exit 0; final scoped GUI acceptance completed |
+| Independent final LOC read-only reproduction | automated accounting validation | 2026-10-09T13:24:47.492062+00:00 | 2026-10-09T13:24:48.321386+00:00 | 0.829331936998642 | passed; five accounting controls rejected |
+
+Full source hashes, source URLs, nested job steps and timing limitations are in duration-data.json. Native macOS full logs were unavailable for some Agent runs; verified job/step metadata is retained without a full-log claim. Later source CI may be running and is not silently promoted to success by this snapshot.
+
+### Earlier accounting (unchanged)
+
 ## Current accounting checkpoint: 2026-10-09T13:17:00Z
 
 This catch-up incorporates selected verified receipts through the stated cutoff, including late-added earlier observations. Every earlier item and checkpoint remains preserved below. It is not a complete timesheet. Model inference duration remains unavailable, not zero. Shared coordination/publication appears once; local receipt hashes establish provenance without claiming independent public timing verification.
