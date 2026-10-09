@@ -1,0 +1,29 @@
+{
+  "core_full": {
+    "unit": 464,
+    "integration_suites": [
+      3,
+      17,
+      17
+    ],
+    "total": 501,
+    "failed": 0
+  },
+  "app_json": {
+    "passed": 19,
+    "failed": 0
+  },
+  "core_json": {
+    "unit": 36,
+    "integration": 16
+  },
+  "strict_core_app_all_targets": "passed",
+  "minimal_app": "passed",
+  "source_mutants": "2 detected; expected exit101; source restored by hash",
+  "ordinary_build": "package-clean default features; no fixtures",
+  "native_comparison": "51 acceptance outcomes and16 formatting byte outputs match on recorded host only",
+  "gui": "focused ordinary Linux GUI passed; textual receipt included; screenshots local only",
+  "exact_commit_ci": "not published/run",
+  "full_app_suite": "not rerun; focused JSON regressions only",
+  "recording_fixture_suite": "not rerun; no recording changes"
+}

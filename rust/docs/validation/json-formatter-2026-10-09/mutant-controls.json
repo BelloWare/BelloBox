@@ -1,0 +1,22 @@
+{
+  "original_sha256": "4aa8f4c6433e2d9ed121c37a15ced917340dce90f3563381fa32ac5f8a1865fe",
+  "restored_sha256": "4aa8f4c6433e2d9ed121c37a15ced917340dce90f3563381fa32ac5f8a1865fe",
+  "controls": [
+    {
+      "name": "mutant-numeric-lexemes",
+      "replacement_before": "Node::Literal(s) => self.text(s),",
+      "replacement_after": "Node::Literal(s) => self.text(&serde_json::from_str::<serde_json::Value>(s).unwrap().to_string()),",
+      "mutant_source_sha256": "034ff5d1ef03c60a773778b1b6b0392a59ecb736dab45bd04fcb7320c7d7a9d8",
+      "test": "numeric_lexemes_are_byte_exact",
+      "expected_failed": true
+    },
+    {
+      "name": "mutant-canonical-duplicates",
+      "replacement_before": "let normalized: String = key.nfc().collect();",
+      "replacement_after": "let normalized: String = key.clone();",
+      "mutant_source_sha256": "c58a1971308f2c7a17b1eb3cb9afc7ba15158a25da6d203e11532489625d0f9c",
+      "test": "duplicates_use_nfc_but_not_compatibility_normalization",
+      "expected_failed": true
+    }
+  ]
+}

@@ -1,0 +1,359 @@
+[
+  {
+    "id": "nested_ascii",
+    "input": "{\"z\":{\"b\":1,\"a\":2},\"a\":[{\"y\":3,\"x\":4},{}]}",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": true,
+        "output": "{\n  \"a\": [\n    {\n      \"x\": 4,\n      \"y\": 3\n    },\n    {}\n  ],\n  \"z\": {\n    \"a\": 2,\n    \"b\": 1\n  }\n}"
+      },
+      {
+        "mode": "minify",
+        "accepted": true,
+        "output": "{\"a\":[{\"x\":4,\"y\":3},{}],\"z\":{\"a\":2,\"b\":1}}"
+      },
+      {
+        "mode": "validate",
+        "accepted": true,
+        "output": "Valid JSON."
+      }
+    ]
+  },
+  {
+    "id": "number_lexemes",
+    "input": "[-0,-0.0,1E2,1e2,1E+02,1E-02,1.2300,900719925474099312345678901234567890,1e999999]",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": true,
+        "output": "[\n  -0,\n  -0.0,\n  1E2,\n  1e2,\n  1E+02,\n  1E-02,\n  1.2300,\n  900719925474099312345678901234567890,\n  1e999999\n]"
+      },
+      {
+        "mode": "minify",
+        "accepted": true,
+        "output": "[-0,-0.0,1E2,1e2,1E+02,1E-02,1.2300,900719925474099312345678901234567890,1e999999]"
+      },
+      {
+        "mode": "validate",
+        "accepted": true,
+        "output": "Valid JSON."
+      }
+    ]
+  },
+  {
+    "id": "exact_duplicate",
+    "input": "{\"x\":1,\"x\":2}",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": false,
+        "error": "Duplicate JSON property at line 1, byte column 11."
+      },
+      {
+        "mode": "minify",
+        "accepted": false,
+        "error": "Duplicate JSON property at line 1, byte column 11."
+      },
+      {
+        "mode": "validate",
+        "accepted": false,
+        "error": "Duplicate JSON property at line 1, byte column 11."
+      }
+    ]
+  },
+  {
+    "id": "escaped_duplicate",
+    "input": "{\"a\":1,\"\\u0061\":2}",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": false,
+        "error": "Duplicate JSON property at line 1, byte column 16."
+      },
+      {
+        "mode": "minify",
+        "accepted": false,
+        "error": "Duplicate JSON property at line 1, byte column 16."
+      },
+      {
+        "mode": "validate",
+        "accepted": false,
+        "error": "Duplicate JSON property at line 1, byte column 16."
+      }
+    ]
+  },
+  {
+    "id": "canonical_duplicate",
+    "input": "{\"\\u00e9\":1,\"e\\u0301\":2}",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": false,
+        "error": "Duplicate JSON property at line 1, byte column 22."
+      },
+      {
+        "mode": "minify",
+        "accepted": false,
+        "error": "Duplicate JSON property at line 1, byte column 22."
+      },
+      {
+        "mode": "validate",
+        "accepted": false,
+        "error": "Duplicate JSON property at line 1, byte column 22."
+      }
+    ]
+  },
+  {
+    "id": "normalization_order",
+    "input": "{\"e\\u0301\":1,\"f\":2}",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": true,
+        "output": "{\n  \"f\": 2,\n  \"e\u0301\": 1\n}"
+      },
+      {
+        "mode": "minify",
+        "accepted": true,
+        "output": "{\"f\":2,\"e\u0301\":1}"
+      },
+      {
+        "mode": "validate",
+        "accepted": true,
+        "output": "Valid JSON."
+      }
+    ]
+  },
+  {
+    "id": "case_numeric_order",
+    "input": "{\"a10\":1,\"a2\":2,\"A\":3,\"a\":4}",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": true,
+        "output": "{\n  \"A\": 3,\n  \"a\": 4,\n  \"a10\": 1,\n  \"a2\": 2\n}"
+      },
+      {
+        "mode": "minify",
+        "accepted": true,
+        "output": "{\"A\":3,\"a\":4,\"a10\":1,\"a2\":2}"
+      },
+      {
+        "mode": "validate",
+        "accepted": true,
+        "output": "Valid JSON."
+      }
+    ]
+  },
+  {
+    "id": "supplementary_order",
+    "input": "{\"\\ud800\\udc00\":1,\"\\ue000\":2}",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": true,
+        "output": "{\n  \"\ue000\": 2,\n  \"\ud800\udc00\": 1\n}"
+      },
+      {
+        "mode": "minify",
+        "accepted": true,
+        "output": "{\"\ue000\":2,\"\ud800\udc00\":1}"
+      },
+      {
+        "mode": "validate",
+        "accepted": true,
+        "output": "Valid JSON."
+      }
+    ]
+  },
+  {
+    "id": "string_escapes",
+    "input": "[\"\\/\",\"\\u0061\",\"\\u00e9\",\"e\\u0301\",\"\\ud83d\\ude80\",\"\\b\\f\\n\\r\\t\",\"\\u0000\\u001f\",\"\\u2028\\u2029\",\"\\u007f\",\"\\uffff\"]",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": true,
+        "output": "[\n  \"/\",\n  \"a\",\n  \"\u00e9\",\n  \"e\u0301\",\n  \"\ud83d\ude80\",\n  \"\\b\\f\\n\\r\\t\",\n  \"\\u0000\\u001f\",\n  \"\u2028\u2029\",\n  \"\u007f\",\n  \"\uffff\"\n]"
+      },
+      {
+        "mode": "minify",
+        "accepted": true,
+        "output": "[\"/\",\"a\",\"\u00e9\",\"e\u0301\",\"\ud83d\ude80\",\"\\b\\f\\n\\r\\t\",\"\\u0000\\u001f\",\"\u2028\u2029\",\"\u007f\",\"\uffff\"]"
+      },
+      {
+        "mode": "validate",
+        "accepted": true,
+        "output": "Valid JSON."
+      }
+    ]
+  },
+  {
+    "id": "unpaired_high",
+    "input": "\"\\ud800\"",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": false,
+        "error": "Invalid JSON string or escape at line 1, byte column 9."
+      },
+      {
+        "mode": "minify",
+        "accepted": false,
+        "error": "Invalid JSON string or escape at line 1, byte column 9."
+      },
+      {
+        "mode": "validate",
+        "accepted": false,
+        "error": "Invalid JSON string or escape at line 1, byte column 9."
+      }
+    ]
+  },
+  {
+    "id": "unpaired_low",
+    "input": "\"\\udc00\"",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": false,
+        "error": "Invalid JSON string or escape at line 1, byte column 9."
+      },
+      {
+        "mode": "minify",
+        "accepted": false,
+        "error": "Invalid JSON string or escape at line 1, byte column 9."
+      },
+      {
+        "mode": "validate",
+        "accepted": false,
+        "error": "Invalid JSON string or escape at line 1, byte column 9."
+      }
+    ]
+  },
+  {
+    "id": "unknown_escape",
+    "input": "\"\\q\"",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": false,
+        "error": "Invalid JSON string or escape at line 1, byte column 5."
+      },
+      {
+        "mode": "minify",
+        "accepted": false,
+        "error": "Invalid JSON string or escape at line 1, byte column 5."
+      },
+      {
+        "mode": "validate",
+        "accepted": false,
+        "error": "Invalid JSON string or escape at line 1, byte column 5."
+      }
+    ]
+  },
+  {
+    "id": "leading_zero",
+    "input": "01",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": false,
+        "error": "Unexpected trailing content at line 1, byte column 2."
+      },
+      {
+        "mode": "minify",
+        "accepted": false,
+        "error": "Unexpected trailing content at line 1, byte column 2."
+      },
+      {
+        "mode": "validate",
+        "accepted": false,
+        "error": "Unexpected trailing content at line 1, byte column 2."
+      }
+    ]
+  },
+  {
+    "id": "trailing_comma",
+    "input": "[1,]",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": false,
+        "error": "Expected a JSON value at line 1, byte column 4."
+      },
+      {
+        "mode": "minify",
+        "accepted": false,
+        "error": "Expected a JSON value at line 1, byte column 4."
+      },
+      {
+        "mode": "validate",
+        "accepted": false,
+        "error": "Expected a JSON value at line 1, byte column 4."
+      }
+    ]
+  },
+  {
+    "id": "trailing_content",
+    "input": "true false",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": false,
+        "error": "Unexpected trailing content at line 1, byte column 6."
+      },
+      {
+        "mode": "minify",
+        "accepted": false,
+        "error": "Unexpected trailing content at line 1, byte column 6."
+      },
+      {
+        "mode": "validate",
+        "accepted": false,
+        "error": "Unexpected trailing content at line 1, byte column 6."
+      }
+    ]
+  },
+  {
+    "id": "scalar_root",
+    "input": "-0",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": true,
+        "output": "-0"
+      },
+      {
+        "mode": "minify",
+        "accepted": true,
+        "output": "-0"
+      },
+      {
+        "mode": "validate",
+        "accepted": true,
+        "output": "Valid JSON."
+      }
+    ]
+  },
+  {
+    "id": "empty_pretty",
+    "input": "[{},[]]",
+    "results": [
+      {
+        "mode": "pretty",
+        "accepted": true,
+        "output": "[\n  {},\n  []\n]"
+      },
+      {
+        "mode": "minify",
+        "accepted": true,
+        "output": "[{},[]]"
+      },
+      {
+        "mode": "validate",
+        "accepted": true,
+        "output": "Valid JSON."
+      }
+    ]
+  }
+]

@@ -1,0 +1,61 @@
+[
+  {
+    "name": "format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "start_utc": "2026-10-09T08:51:07.091207+00:00",
+    "end_utc": "2026-10-09T08:51:08.666651+00:00",
+    "observed_elapsed_seconds": 1.575458,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "format.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "core-json",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "json",
+      "--",
+      "--test-threads=2"
+    ],
+    "start_utc": "2026-10-09T08:51:08.667024+00:00",
+    "end_utc": "2026-10-09T08:51:15.847381+00:00",
+    "observed_elapsed_seconds": 7.180376,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "core-json.log",
+    "log_sha256": "5ae88a8687055275bb67222826f62a08be5ee16efb0a7f16ad6f1cf6d11f3535"
+  },
+  {
+    "name": "app-json",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "json",
+      "--",
+      "--test-threads=2"
+    ],
+    "start_utc": "2026-10-09T08:51:15.847989+00:00",
+    "end_utc": "2026-10-09T08:51:37.173524+00:00",
+    "observed_elapsed_seconds": 21.325551,
+    "exit_code": 101,
+    "expected_exit_code": 0,
+    "log": "app-json.log",
+    "log_sha256": "15561a594c9e0ad80d1e592a8510adf2911ad228481c8f789f80922123283bc9"
+  }
+]

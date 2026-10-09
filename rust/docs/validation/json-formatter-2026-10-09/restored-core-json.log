@@ -1,0 +1,78 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-json-formatter-integrated/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 6.78s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox_core-f9fa3ffa1e960a73)
+
+running 36 tests
+test developer::json_formatter::tests::ascii_sort_is_case_sensitive_and_not_natural_numeric_order ... ok
+test ai::tests::preserves_endpoint_prefix_and_json_escape ... ok
+test developer::json_formatter::tests::depth_limit_counts_root_and_nested_values ... ok
+test developer::json_formatter::tests::duplicates_use_nfc_but_not_compatibility_normalization ... ok
+test developer::json_formatter::tests::exact_node_budget_includes_root ... ok
+test developer::json_formatter::tests::malformed_inputs_are_rejected_without_panics ... ok
+test developer::json_formatter::tests::nested_objects_sort_and_array_order_survives ... ok
+test developer::json_formatter::tests::normalized_order_retains_original_key_spelling ... ok
+test developer::json_formatter::tests::numeric_lexemes_are_byte_exact ... ok
+test developer::json_formatter::tests::output_writer_enforces_cap_before_appending ... ok
+test developer::json_formatter::tests::root_scalars_and_json_whitespace_are_accepted ... ok
+test developer::json_formatter::tests::strings_are_decoded_then_encoded_without_normalizing_values ... ok
+test developer::json_formatter::tests::supplementary_keys_follow_scalar_not_utf16_order ... ok
+test developer::json_formatter::tests::validate_parses_and_rejects_unknown_options ... ok
+test developer::json_schema::tests::all_supported_type_names_and_unions_are_exact ... ok
+test developer::json_schema::tests::annotations_are_opaque_until_referenced_and_all_ref_targets_are_linted ... ok
+test developer::json_schema::tests::canonical_equality_is_typed_order_independent_and_decimal_exact ... ok
+test developer::json_schema::tests::cycles_and_excessive_recursion_fail_but_finite_recursive_data_works ... ok
+test developer::json_schema::tests::exact_number_order_matches_small_rational_arithmetic ... ok
+test developer::json_schema::tests::exact_number_signs_exponents_and_boundaries ... ok
+test developer::json_schema::tests::local_pointer_escaping_percent_decoding_and_reference_siblings ... ok
+test developer::json_schema::tests::preflight_rejects_constraints_and_malformed_schemas_in_unused_locations ... ok
+test developer::json_schema::tests::scalar_object_and_array_bounds_match_the_subset ... ok
+test developer::json_schema::tests::source_exact_numbers_and_code_point_lengths ... ok
+test developer::json_schema::tests::source_local_references_composition_and_tuple_items ... ok
+test developer::json_formatter::tests::input_budget_includes_untrimmed_option_bytes ... ok
+test developer::json_schema::tests::source_types_required_escaped_paths_and_booleans ... ok
+test developer::json_schema::tests::strict_parser_rejects_duplicate_keys_and_empty_documents ... ok
+test developer::string_literal::tests::string_literal_json_roundtrip_exact_encoding_and_surrogates ... ok
+test developer::tests::json_depth_and_input_limits ... ok
+test developer::tests::json_is_lossless_and_duplicate_strict ... ok
+test developer::tests::json_validate_reports_validity_without_number_lexeme_claims ... ok
+test developer::tests::ndjson_roundtrip ... ok
+test screenshot::ai_ocr::tests::fenced_json_alias_markdown_only_and_literal_fallback_match_source ... ok
+test settings::clock_raw_patch_tests::clock_patch_changes_only_two_keys_in_original_ordered_json ... ok
+test developer::json_schema::tests::work_diagnostics_input_and_output_are_bounded ... ok
+
+test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 428 filtered out; finished in 0.07s
+
+     Running tests/developer_safety.rs (/workspace/shared/build-recovery/target/debug/deps/developer_safety-e97c7b1f6a88f09e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/json_formatter_prototype.rs (/workspace/shared/build-recovery/target/debug/deps/json_formatter_prototype-68cfd9ece45edfb7)
+
+running 16 tests
+test json_formatter::tests::ascii_sort_is_case_sensitive_and_not_natural_numeric_order ... ok
+test json_formatter::tests::depth_limit_counts_root_and_nested_values ... ok
+test json_formatter::tests::duplicates_use_nfc_but_not_compatibility_normalization ... ok
+test integrated_json_route_matches_formatter_for_all_oracle_vectors ... ok
+test json_formatter::tests::exact_node_budget_includes_root ... ok
+test json_formatter::tests::malformed_inputs_are_rejected_without_panics ... ok
+test json_formatter::tests::nested_objects_sort_and_array_order_survives ... ok
+test json_formatter::tests::normalized_order_retains_original_key_spelling ... ok
+test json_formatter::tests::numeric_lexemes_are_byte_exact ... ok
+test json_formatter::tests::output_writer_enforces_cap_before_appending ... ok
+test json_formatter::tests::root_scalars_and_json_whitespace_are_accepted ... ok
+test json_formatter::tests::strings_are_decoded_then_encoded_without_normalizing_values ... ok
+test json_formatter::tests::supplementary_keys_follow_scalar_not_utf16_order ... ok
+test json_formatter::tests::validate_parses_and_rejects_unknown_options ... ok
+test shared_json_pointer_retains_its_existing_distinct_key_contract ... ok
+test json_formatter::tests::input_budget_includes_untrimmed_option_bytes ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.02s
+
+     Running tests/ui_tool_controls.rs (/workspace/shared/build-recovery/target/debug/deps/ui_tool_controls-2450bb5cabac794b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s
+

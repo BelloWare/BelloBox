@@ -1,0 +1,353 @@
+{
+  "vectors": 17,
+  "operations": 51,
+  "acceptance_matches": 51,
+  "pretty_minify_byte_matches": 16,
+  "native_results_sha256": "afb0d9b9326de1193b315680eb78f7ea7a53e7d28fd3209731155a74fba9af06",
+  "rust_results_sha256": "dccdc96e25bdc3f7476e7ccad10402a6dcde8037b360647b8cb1f287bd27ed45",
+  "source_swift_commit": "e43b1c4595c42383e087fe70f38c28d07c31dda0",
+  "rust_prototype_base": "75cd3609bc053a6869b996706642637fac8536ce",
+  "host_scope": "macOS 14.8 arm64; Swift 6.0.2; Foundation 6.9/build 2602.0.902 loaded 2602.0",
+  "exclusions": [
+    "deployed-runtime equivalence",
+    "universal Unicode equivalence",
+    "error text parity",
+    "Swift workbench validation text/count parity",
+    "global jsonPointer policy"
+  ],
+  "checks": [
+    {
+      "id": "nested_ascii",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "nested_ascii",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "nested_ascii",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "validation_text_compared": false
+    },
+    {
+      "id": "number_lexemes",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "number_lexemes",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "number_lexemes",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "validation_text_compared": false
+    },
+    {
+      "id": "exact_duplicate",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "exact_duplicate",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "exact_duplicate",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "escaped_duplicate",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "escaped_duplicate",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "escaped_duplicate",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "canonical_duplicate",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "canonical_duplicate",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "canonical_duplicate",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "normalization_order",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "normalization_order",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "normalization_order",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "validation_text_compared": false
+    },
+    {
+      "id": "case_numeric_order",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "case_numeric_order",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "case_numeric_order",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "validation_text_compared": false
+    },
+    {
+      "id": "supplementary_order",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "supplementary_order",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "supplementary_order",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "validation_text_compared": false
+    },
+    {
+      "id": "string_escapes",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "string_escapes",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "string_escapes",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "validation_text_compared": false
+    },
+    {
+      "id": "unpaired_high",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "unpaired_high",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "unpaired_high",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "unpaired_low",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "unpaired_low",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "unpaired_low",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "unknown_escape",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "unknown_escape",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "unknown_escape",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "leading_zero",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "leading_zero",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "leading_zero",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "trailing_comma",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "trailing_comma",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "trailing_comma",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "error_text_equal": true,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "trailing_content",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "trailing_content",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "trailing_content",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "error_text_equal": false,
+      "error_text_in_scope": false
+    },
+    {
+      "id": "scalar_root",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "scalar_root",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "scalar_root",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "validation_text_compared": false
+    },
+    {
+      "id": "empty_pretty",
+      "mode": "pretty",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "empty_pretty",
+      "mode": "minify",
+      "acceptance_equal": true,
+      "output_byte_equal": true
+    },
+    {
+      "id": "empty_pretty",
+      "mode": "validate",
+      "acceptance_equal": true,
+      "validation_text_compared": false
+    }
+  ]
+}

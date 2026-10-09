@@ -66,7 +66,12 @@ calculation session does not duplicate or parse it. The unchanged core engine al
 bounds combined input/options and output (4,000,000 bytes), so a draft near its
 maximum can receive an explicit core limit error. Nothing is truncated.
 
-## Deliberately unchanged formatter differences
+## Historical formatter differences at the original palette slice
+
+The following describes the earlier palette-only implementation at `0c80343`
+and its predecessor. It is historical, not the current formatter contract.
+The bounded formatter successor below supersedes these differences for the JSON
+Formatter route only; other developer tools retain their existing semantics.
 
 This slice reuses the existing Rust JSON engine at
 [developer.rs](https://github.com/BelloWare/BelloBox/blob/75cd3609bc053a6869b996706642637fac8536ce/rust/crates/bellobox-core/src/developer.rs#L104-L125).
@@ -85,6 +90,25 @@ record. The final transfer test deliberately uses whitespace-changing Minify to
 prove state preservation without asserting sorting. The tested integer
 9007199254740993 is preserved; this isolated precision example does not establish
 universal raw numeric spelling or complete JSON semantic parity.
+
+## Current bounded formatter successor
+
+The JSON Formatter now uses a separate bounded parser that preserves raw number
+substrings, recursively orders keys using NFC comparison while retaining emitted
+key spelling, and rejects canonical-equivalent duplicates locally. Arrays retain
+order; `jsonPointer` keeps its pre-existing distinct-key semantics. Successful
+Validate remains exactly `Valid JSON.`. No dependency, lockfile, or session-owner
+change is involved. The existing 500,000-byte input/options, 4,000,000-byte output,
+20,000-value and depth-64 guards remain; output is checked while streaming.
+
+[Formatter scope and evidence](validation/json-formatter-2026-10-09/README.md)
+records 501 Core tests, 19 App JSON regressions, strict/minimal checks, two real
+source-mutant controls, and focused ordinary Linux GUI acceptance. A pinned Swift
+oracle matched all 51 acceptance outcomes and all 16 accepted Pretty/Minify byte
+outputs across 17 vectors on macOS 14.8 arm64 / Swift 6.0.2 / the recorded Foundation
+build. This is bounded host/vector evidence, not deployed-runtime, universal
+Unicode, error-text or Workbench validation-count parity. Complete native UI
+acceptance and broader feature parity remain separate gates.
 
 ## Validation and remaining gates
 

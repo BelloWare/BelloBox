@@ -1,0 +1,245 @@
+[
+  {
+    "name": "format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "start_utc": "2026-10-09T08:52:20.450204+00:00",
+    "end_utc": "2026-10-09T08:52:22.186792+00:00",
+    "observed_elapsed_seconds": 1.7366,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "format.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "core-json",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "json",
+      "--",
+      "--test-threads=2"
+    ],
+    "start_utc": "2026-10-09T08:52:22.187232+00:00",
+    "end_utc": "2026-10-09T08:52:22.919547+00:00",
+    "observed_elapsed_seconds": 0.732334,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "core-json.log",
+    "log_sha256": "cd1be90005d8c4bd2afd96bf5a9864375d23e20f033626e6f5d28e54bb8fbb1a"
+  },
+  {
+    "name": "app-json",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "json",
+      "--",
+      "--test-threads=2"
+    ],
+    "start_utc": "2026-10-09T08:52:22.919957+00:00",
+    "end_utc": "2026-10-09T08:52:40.556242+00:00",
+    "observed_elapsed_seconds": 17.636304,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "app-json.log",
+    "log_sha256": "8e0886b1042f6aeb453377c28be8d2a7926f2602b13bd6e96465e9709eefe137"
+  },
+  {
+    "name": "core-full",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "--",
+      "--test-threads=2"
+    ],
+    "start_utc": "2026-10-09T08:52:40.556960+00:00",
+    "end_utc": "2026-10-09T08:53:03.373983+00:00",
+    "observed_elapsed_seconds": 22.817046,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "core-full.log",
+    "log_sha256": "e70ced6175893a28ea89d0a68b5789cd87f4fc9b90df8eda0f0c3a13fc0dd06d"
+  },
+  {
+    "name": "strict",
+    "command": [
+      "cargo",
+      "clippy",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "-p",
+      "bellobox-app",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start_utc": "2026-10-09T08:53:03.374464+00:00",
+    "end_utc": "2026-10-09T08:53:15.008558+00:00",
+    "observed_elapsed_seconds": 11.634115,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "strict.log",
+    "log_sha256": "b749c025dc0f984bd56d0594b9b5f0f2dd0e53328ab541d57006b3d8900e5ea8"
+  },
+  {
+    "name": "minimal",
+    "command": [
+      "cargo",
+      "check",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-app",
+      "--no-default-features"
+    ],
+    "start_utc": "2026-10-09T08:53:15.008982+00:00",
+    "end_utc": "2026-10-09T08:53:19.012041+00:00",
+    "observed_elapsed_seconds": 4.003079,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "minimal.log",
+    "log_sha256": "d5b778132ded59a9c7ae803b7a93f9e46aeacbeb53a68bdf75d326a6e34b7193"
+  },
+  {
+    "name": "mutant-numeric-lexemes",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "--test",
+      "json_formatter_prototype",
+      "numeric_lexemes_are_byte_exact"
+    ],
+    "start_utc": "2026-10-09T08:53:19.012734+00:00",
+    "end_utc": "2026-10-09T08:53:23.093650+00:00",
+    "observed_elapsed_seconds": 4.080932,
+    "exit_code": 101,
+    "expected_exit_code": 101,
+    "log": "mutant-numeric-lexemes.log",
+    "log_sha256": "83d4c2f62ac877019e36f6d932cc1b3bd41ad3354ea0fa232ef72342834b5335"
+  },
+  {
+    "name": "mutant-canonical-duplicates",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "--test",
+      "json_formatter_prototype",
+      "duplicates_use_nfc_but_not_compatibility_normalization"
+    ],
+    "start_utc": "2026-10-09T08:53:23.094386+00:00",
+    "end_utc": "2026-10-09T08:53:27.134037+00:00",
+    "observed_elapsed_seconds": 4.039671,
+    "exit_code": 101,
+    "expected_exit_code": 101,
+    "log": "mutant-canonical-duplicates.log",
+    "log_sha256": "1e7c8ca003d760253a78a69eaf7fb5814202a3b0f823ae9216cacc0d44043c38"
+  },
+  {
+    "name": "restored-core-json",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "json",
+      "--",
+      "--test-threads=2"
+    ],
+    "start_utc": "2026-10-09T08:53:27.135618+00:00",
+    "end_utc": "2026-10-09T08:53:34.051779+00:00",
+    "observed_elapsed_seconds": 6.916178,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "restored-core-json.log",
+    "log_sha256": "d48e89740983d0312b54413ce0a69f50fc4b418b18809a603eeeda4696b4a2d0"
+  },
+  {
+    "name": "restored-strict",
+    "command": [
+      "cargo",
+      "clippy",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-core",
+      "-p",
+      "bellobox-app",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start_utc": "2026-10-09T08:53:34.052375+00:00",
+    "end_utc": "2026-10-09T08:53:42.593081+00:00",
+    "observed_elapsed_seconds": 8.540728,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "restored-strict.log",
+    "log_sha256": "618fc717ab1910bf1705acfd94890916ea37196d3b904a314cd505f710d56158"
+  },
+  {
+    "name": "clean-app",
+    "command": [
+      "cargo",
+      "clean",
+      "-p",
+      "bellobox-app"
+    ],
+    "start_utc": "2026-10-09T08:53:42.593609+00:00",
+    "end_utc": "2026-10-09T08:53:42.732166+00:00",
+    "observed_elapsed_seconds": 0.1386,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "clean-app.log",
+    "log_sha256": "fa1694647e7cc4b6a1f3d7de7c9a8630a9a8666dc3835679f1e71357ee359276"
+  },
+  {
+    "name": "ordinary-build",
+    "command": [
+      "cargo",
+      "build",
+      "--offline",
+      "--locked",
+      "-p",
+      "bellobox-app"
+    ],
+    "start_utc": "2026-10-09T08:53:42.732718+00:00",
+    "end_utc": "2026-10-09T08:53:55.224353+00:00",
+    "observed_elapsed_seconds": 12.491656,
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "log": "ordinary-build.log",
+    "log_sha256": "f7def0c9b3d6a07b88f7ed787672ac5260b963e2fe9a8de1002949ca0c4f4627"
+  }
+]

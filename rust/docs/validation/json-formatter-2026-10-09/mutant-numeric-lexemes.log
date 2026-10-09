@@ -1,0 +1,24 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-json-formatter-integrated/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 4.05s
+     Running tests/json_formatter_prototype.rs (/workspace/shared/build-recovery/target/debug/deps/json_formatter_prototype-68cfd9ece45edfb7)
+
+running 1 test
+test json_formatter::tests::numeric_lexemes_are_byte_exact ... FAILED
+
+failures:
+
+---- json_formatter::tests::numeric_lexemes_are_byte_exact stdout ----
+
+thread 'json_formatter::tests::numeric_lexemes_are_byte_exact' (1035) panicked at crates/bellobox-core/tests/../src/developer/json_formatter_prototype_tests.rs:7:5:
+assertion `left == right` failed
+  left: "[0,-0.0,1e+2,1e+2,1e+02,1e-02,1.2300,900719925474099312345678901234567890,1e+999999]"
+ right: "[-0,-0.0,1E2,1e2,1E+02,1E-02,1.2300,900719925474099312345678901234567890,1e999999]"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    json_formatter::tests::numeric_lexemes_are_byte_exact
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p bellobox-core --test json_formatter_prototype`

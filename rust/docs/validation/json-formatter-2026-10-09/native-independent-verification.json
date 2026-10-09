@@ -1,0 +1,74 @@
+{
+  "verified_utc": "2026-10-09T08:45:51.134551+00:00",
+  "records": 71,
+  "vector_count": 17,
+  "operation_count": 51,
+  "accepted": [
+    "nested_ascii",
+    "number_lexemes",
+    "normalization_order",
+    "case_numeric_order",
+    "supplementary_order",
+    "string_escapes",
+    "scalar_root",
+    "empty_pretty"
+  ],
+  "rejected": [
+    "exact_duplicate",
+    "escaped_duplicate",
+    "canonical_duplicate",
+    "unpaired_high",
+    "unpaired_low",
+    "unknown_escape",
+    "leading_zero",
+    "trailing_comma",
+    "trailing_content"
+  ],
+  "source_remote_blob_byte_equal": true,
+  "source_sha256": "3dc58c0f68e76a0db3205bef989040b0828c13d589f616bab661e1929639069b",
+  "outputs": {
+    "nested_ascii": {
+      "pretty": "{\n  \"a\": [\n    {\n      \"x\": 4,\n      \"y\": 3\n    },\n    {}\n  ],\n  \"z\": {\n    \"a\": 2,\n    \"b\": 1\n  }\n}",
+      "minify": "{\"a\":[{\"x\":4,\"y\":3},{}],\"z\":{\"a\":2,\"b\":1}}"
+    },
+    "number_lexemes": {
+      "pretty": "[\n  -0,\n  -0.0,\n  1E2,\n  1e2,\n  1E+02,\n  1E-02,\n  1.2300,\n  900719925474099312345678901234567890,\n  1e999999\n]",
+      "minify": "[-0,-0.0,1E2,1e2,1E+02,1E-02,1.2300,900719925474099312345678901234567890,1e999999]"
+    },
+    "exact_duplicate": {},
+    "escaped_duplicate": {},
+    "canonical_duplicate": {},
+    "normalization_order": {
+      "pretty": "{\n  \"f\": 2,\n  \"é\": 1\n}",
+      "minify": "{\"f\":2,\"é\":1}"
+    },
+    "case_numeric_order": {
+      "pretty": "{\n  \"A\": 3,\n  \"a\": 4,\n  \"a10\": 1,\n  \"a2\": 2\n}",
+      "minify": "{\"A\":3,\"a\":4,\"a10\":1,\"a2\":2}"
+    },
+    "supplementary_order": {
+      "pretty": "{\n  \"\": 2,\n  \"𐀀\": 1\n}",
+      "minify": "{\"\":2,\"𐀀\":1}"
+    },
+    "string_escapes": {
+      "pretty": "[\n  \"/\",\n  \"a\",\n  \"é\",\n  \"é\",\n  \"🚀\",\n  \"\\b\\f\\n\\r\\t\",\n  \"\\u0000\\u001f\",\n  \"  \",\n  \"\",\n  \"￿\"\n]",
+      "minify": "[\"/\",\"a\",\"é\",\"é\",\"🚀\",\"\\b\\f\\n\\r\\t\",\"\\u0000\\u001f\",\"  \",\"\",\"￿\"]"
+    },
+    "unpaired_high": {},
+    "unpaired_low": {},
+    "unknown_escape": {},
+    "leading_zero": {},
+    "trailing_comma": {},
+    "trailing_content": {},
+    "scalar_root": {
+      "pretty": "-0",
+      "minify": "-0"
+    },
+    "empty_pretty": {
+      "pretty": "[\n  {},\n  []\n]",
+      "minify": "[{},[]]"
+    }
+  },
+  "host_scope": "macOS14.8 arm64; Swift6.0.2; Foundation6.9/build2602.0.902, loaded2602.0. Host observation only, not deployed target parity.",
+  "verification_basis": "Independent input/output byte-envelope checks, original vector equality, received command records and direct GitHub source blob equality; not native command reexecution."
+}

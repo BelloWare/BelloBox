@@ -1,0 +1,206 @@
+{
+  "result": "PASS within observed incremental ordinary Linux GUI scope",
+  "binary_sha256": "45d32a1aeebd4b84124636b793dee3997b01677dbad3b5f6ea01953ea53a31ac",
+  "source_manifest_sha256": "e4b32434a399d4242f7717ad9fe63895ddcc968cce815199df5d76459ed2fd67",
+  "base_commit": "0c80343a6d540aba3123825790f194d5817664fa",
+  "environment": "cloud Linux X11 desktop via supported CUA/Sky; isolated synthetic app configuration; default-feature non-test sealed binary",
+  "observed_checks": [
+    {
+      "case": "nested Pretty sorting and raw numbers",
+      "evidence": [
+        "pretty-sorted-numbers.png"
+      ],
+      "observed": "a before nest before z; nested a before b; uppercase1E2 and -0 retained"
+    },
+    {
+      "case": "Minify and Copy",
+      "evidence": [
+        "minify-sorted-numbers.png",
+        "copy-minify-back-to-input.png"
+      ],
+      "observed": "Minified sorted output with 1E2 and -0 copied through button and pasted into input via Ctrl+V; visible exact source"
+    },
+    {
+      "case": "Validate",
+      "evidence": [
+        "validate-literal.png"
+      ],
+      "observed": "Result exactly Valid JSON.; Use as Input absent for report"
+    },
+    {
+      "case": "Use as Input",
+      "evidence": [
+        "pretty-restored.png",
+        "use-as-input.png"
+      ],
+      "observed": "Pretty formatted text replaces input and recomputes"
+    },
+    {
+      "case": "malformed recovery",
+      "evidence": [
+        "malformed-rejected.png",
+        "recovered-minify.png"
+      ],
+      "observed": "Trailing comma rejected, result copy disabled, valid replacement recovers"
+    },
+    {
+      "case": "canonical duplicate rejection",
+      "evidence": [
+        "canonical-duplicate-rejected.png",
+        "duplicate-validate-rejected.png"
+      ],
+      "observed": "ASCII JSON escapes for composed/decomposed e-acute reject in Pretty and Validate with Duplicate JSON property; no direct Unicode keyboard-entry claim"
+    },
+    {
+      "case": "palette source and mode transfer",
+      "evidence": [
+        "palette-state.png",
+        "palette-minify-selected.png",
+        "transferred-original-input-mode.png"
+      ],
+      "observed": "Palette captured original unsorted {\"z\":-0,\"a\":1E2}; Minify output sorted; Return opened a new JSON window with original input and Minify mode; palette closed"
+    },
+    {
+      "case": "other-window independence",
+      "evidence": [
+        "second-window-result.png",
+        "original-window-independent.png"
+      ],
+      "observed": "Transferred window edited to {\"only\":3} and closed; original retained {\"z\":-0,\"a\":1E2} and sorted Minify output"
+    },
+    {
+      "case": "normal close",
+      "evidence": [
+        "normal-close.png"
+      ],
+      "observed": "Closed final app window via titlebar; process exit0, empty app log, app windows gone"
+    }
+  ],
+  "known_limits": [
+    "CUA type_text/Paste action unavailable; used supported individual keyboard events and UI clipboard paste instead.",
+    "Direct non-ASCII typing not exercised; Unicode duplicate behavior was exercised using ASCII JSON escapes.",
+    "Initial uppercase E key request emitted lowercase e; corrected with explicit Shift+e and verified uppercase input before relevant transfer check.",
+    "No user Mac, deployed-runtime claim, provider traffic, source upload, or external clipboard exfiltration.",
+    "Full historical session matrix and oversized/cancel paths not rerun in GUI; focused App regressions cover lifecycle paths separately.",
+    "Screenshots are local only and are not copied into source-publication package."
+  ],
+  "timing": {
+    "application_start_utc": "2026-10-09T08:56:15+00:00",
+    "normal_exit_utc": "2026-10-09T08:59:21+00:00",
+    "observed_application_wall_seconds": 186.0,
+    "inference_time": "unavailable",
+    "scope": "app lifetime; excludes earlier setup; included in enclosing integration task window"
+  },
+  "cleanup": {
+    "exit_code": 0,
+    "empty_app_log": true,
+    "app_windows_closed": true,
+    "binary_and_source_manifest_hashes_reverified": true
+  },
+  "screenshots": [
+    {
+      "name": "canonical-duplicate-entered.png",
+      "sha256": "867ebd5124f2a706b0b95bb8f6a4380f61958ca9b343b0347968d15d44fad089"
+    },
+    {
+      "name": "canonical-duplicate-rejected.png",
+      "sha256": "4cd2b6b132c4c7484143df96ed6f506af05e7268398bd1916b3e427ec703f76f"
+    },
+    {
+      "name": "copy-minify-back-to-input.png",
+      "sha256": "9d18dae403235986c16e8493e712e2a715666f023228d62fd4dafffcb2b91ad9"
+    },
+    {
+      "name": "duplicate-validate-rejected.png",
+      "sha256": "fc09e95469b310fc692fde4fd73f8f858f2d01249b5aac66f72afa79bbc1fde8"
+    },
+    {
+      "name": "duplicate-validate-running.png",
+      "sha256": "a983ef5bd22941a1242e53d658e590bf40da1c2f0bb419532168e5da891df1c6"
+    },
+    {
+      "name": "malformed-entered.png",
+      "sha256": "a46f28986ebd42fce4d1d1a4b1b8d9c7d53399a6bacd0f7b5added889f2703ae"
+    },
+    {
+      "name": "malformed-rejected.png",
+      "sha256": "6129b4bc780a7c87b16366dd1e8ff33e5eab4439c2d8a04c89b5c8b66c19f6e7"
+    },
+    {
+      "name": "minify-sorted-numbers.png",
+      "sha256": "37bcb3d20c2d8c3e2ee89e8d80805dea7c201f11aec924510d0b350705c07b9f"
+    },
+    {
+      "name": "normal-close.png",
+      "sha256": "072bdb01b802cb7caf6c2c9d5511cc336352b75c80bbba3622d1a9a63413e6f3"
+    },
+    {
+      "name": "original-window-independent.png",
+      "sha256": "57cca677c9e5ceeb36efe32849e6e4e4a0fe77f613ffa3bb0e6cc1a55866d028"
+    },
+    {
+      "name": "palette-minify-selected.png",
+      "sha256": "6fb626926c964367ffb316153be48b4155e2616131e6281ab7aed54711b75822"
+    },
+    {
+      "name": "palette-opened.png",
+      "sha256": "e8665eae0474fce861127ded37a4895b24562d5f04117338e2a1e5409320c173"
+    },
+    {
+      "name": "palette-state.png",
+      "sha256": "4059a47af6335f68d98c5c7d62b3afded8396c4467f9680a56e24a9432027de8"
+    },
+    {
+      "name": "palette-transfer-start.png",
+      "sha256": "57cb6f49aa047adeedbffda554a51aa99d5f760e8c003cfd0feab2618941d274"
+    },
+    {
+      "name": "pretty-restored.png",
+      "sha256": "d5e4d4c3d6b2569882776b012a6c6dce60cff2582bced784a08f4771f2229f17"
+    },
+    {
+      "name": "pretty-sorted-numbers.png",
+      "sha256": "a1307e8b7de511dc3e4c2fae160e628ee6b7d208b58b7bd106a5c1a1553ebe37"
+    },
+    {
+      "name": "pretty-switch.png",
+      "sha256": "721c5cdc18141914b4462d15616093e773893b39caffe1507f0b70fd444e1974"
+    },
+    {
+      "name": "recovered-minify.png",
+      "sha256": "87d5ddd6b03ec2df43d0b5a8c810de90d4ffa2854e29fc7d9075afef1d45da2f"
+    },
+    {
+      "name": "recovery-entered.png",
+      "sha256": "ba8a3020d1333ef29d44694c68aa360ed1079da0b34a5b7bc0edd94602f21b88"
+    },
+    {
+      "name": "recovery-uppercase-entered.png",
+      "sha256": "752a6daf3d06b8c5a0777666550dae06af4cfb7def469329e2b5f4d8e89e5323"
+    },
+    {
+      "name": "second-window-edited.png",
+      "sha256": "d97d0d011c293675adefdf3c58be7795d64d3c9c10f02d7132b94a4886844ae4"
+    },
+    {
+      "name": "second-window-result.png",
+      "sha256": "209aa5f990fb3df4f2002119a4caf341fbcc861bb7fa7750b6c3c01f4d84dccb"
+    },
+    {
+      "name": "transferred-original-input-mode.png",
+      "sha256": "252166691eb26dd507d3c46ae092964e2b835a253a30389c6ac22c8713a1595c"
+    },
+    {
+      "name": "use-as-input.png",
+      "sha256": "6f0f17546ecaa301949de80a8f1a2a16bf6ae6f6832f30978896c4f875fd0ee1"
+    },
+    {
+      "name": "validate-literal.png",
+      "sha256": "764e51d80e0d6536c6e2abc1e419a538b3e331d8c9cdd927e76ef323cee7a6f8"
+    },
+    {
+      "name": "validate-running.png",
+      "sha256": "383293113a6a80270be2818274a44859af31d51149591282a1c55fd459ec37bc"
+    }
+  ]
+}

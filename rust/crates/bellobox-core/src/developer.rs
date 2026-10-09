@@ -14,6 +14,8 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 #[path = "developer/certificate.rs"]
 mod certificate;
+#[path = "developer/json_formatter.rs"]
+mod json_formatter;
 #[path = "developer/json_schema.rs"]
 mod json_schema;
 #[path = "developer/list_set.rs"]
@@ -107,15 +109,7 @@ pub fn execute(id: &str, input: &str, second: &str) -> R<String> {
         return Err("Inputs exceed 500,000 UTF-8 bytes; nothing was truncated.".into());
     }
     let out = match id {
-        "json" => {
-            let v = parse_json(input)?;
-            match second.trim() {
-                "" | "pretty" => pretty(&v),
-                "minify" => compact(&v),
-                "validate" => Ok("Valid JSON.".into()),
-                _ => Err("Use pretty, minify, or validate in the second field.".into()),
-            }
-        }
+        "json" => json_formatter::execute(input, second),
         "compare" => compare(input, second),
         "jwt" => jwt(input),
         "regex" => regex_tool(input, second),

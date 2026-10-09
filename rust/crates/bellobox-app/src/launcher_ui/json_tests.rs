@@ -28,7 +28,7 @@ fn json_palette_retains_mode_chained_text_and_transfers_actual_owner(cx: &mut Te
     session.update(cx, |s, cx| s.set_mode(Mode::Minify, cx));
     tick(cx);
     session.update(cx, |s, cx| {
-        assert_eq!(s.output, "{\"z\":2,\"a\":1}");
+        assert_eq!(s.output, "{\"a\":1,\"z\":2}");
         assert!(s.chain(cx));
     });
     tick(cx);
@@ -60,7 +60,7 @@ fn json_palette_retains_mode_chained_text_and_transfers_actual_owner(cx: &mut Te
         assert!(!s.can_transfer());
         assert!(s.can_copy());
         assert_eq!(s.mode, Mode::Minify);
-        assert_eq!(s.input(), "{\"z\":2,\"a\":1}");
+        assert_eq!(s.input(), "{\"a\":1,\"z\":2}");
     });
 }
 #[gpui::test]

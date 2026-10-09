@@ -44,7 +44,7 @@ No claim of complete visual or interaction parity is made.
 
 | Swift source / capability | Rust implementation | Status and remaining work |
 |---|---|---|
-| `Launcher/LauncherCatalog.swift`, 61 commands including 51 developer tools | `bellobox-core::launcher`, source Home and separate GPUI palette | Partial: all IDs/titles, title-weighted search, basic selection suggestions, favorites/recents, coarse learning. Independent per-tool windows and New Window sessions are implemented. Separate 680px search palette has keyboard navigation and one expanded row. World Clock has an interactive preview and explicit value-snapshot handoff; QR retains its compact draft and JSON now has source mode/Copy/Cancel/chaining controls with same-session transfer into an independent window. Other developer previews remain read-only. See [JSON workflow scope](palette-json.md); its unchanged formatter still differs from Swift ordering/raw-number/key semantics. Global shortcut/nonactivation, other tools’ interactive session transfer, and complete suggestion classifier remain absent. |
+| `Launcher/LauncherCatalog.swift`, 61 commands including 51 developer tools | `bellobox-core::launcher`, source Home and separate GPUI palette | Partial: all IDs/titles, title-weighted search, basic selection suggestions, favorites/recents, coarse learning. Independent per-tool windows and New Window sessions are implemented. Separate 680px search palette has keyboard navigation and one expanded row. World Clock has an interactive preview and explicit value-snapshot handoff; QR retains its compact draft and JSON now has source mode/Copy/Cancel/chaining controls with same-session transfer into an independent window. Other developer previews remain read-only. See [JSON workflow scope](palette-json.md); its formatter now has bounded raw-number/NFC-key behavior with [source, native-vector and Linux GUI evidence](validation/json-formatter-2026-10-09/README.md), not complete JSON/native-runtime parity. Global shortcut/nonactivation, other tools’ interactive session transfer, and complete suggestion classifier remain absent. |
 | `Launcher/LauncherUsageStore.swift` | `launcher::Usage`, `settings::Settings` | Implemented portable 30-day decaying, bounded category/tool counters. Tests cover cap/decay/title precedence. Only explicit tool opens learn. Selection, text, URL, app identity and fingerprints never persisted. |
 | `Selection/AccessibilityService.swift`, `SelectionRequest.swift`, `SelectionMonitor.swift` | Explicit GPUI clipboard import; permission preflight | Partial: cfg-gated direct AXSelectedText reader with protected-ancestor/range/source/window checks and 160 ms budget, exposed through explicit macOS --selection CLI; Apple-target type-checked, not runtime-tested. No marker-range fallback, retries, global hotkey/floating toolbar, replacement or UI selection handoff. Clipboard import is not selection capture. |
 | `Tools/TextTransforms.swift` | `bellobox-core::text` | Partial: nine case conversions, four encodings/manual decoders and auto detect, four hashes, six line operations, counts and heuristic tokens implemented/tests. GUI restores category bar and choice controls; hash/count specialized result cards still differ; Swift pretty auto-detection and per-model persisted token choices absent. Counts label Unicode scalars, not grapheme clusters. |
@@ -238,7 +238,7 @@ for many tools still need restoration. Sources below are in
 
 | ID | Swift source | Rust subset / known gap |
 |---|---|---|
-| `json` | `DeveloperJSON.swift` | Lossless pretty/minify/validate; duplicate keys rejected |
+| `json` | `DeveloperJSON.swift` | Bounded pretty/minify/validate; exact number tokens, recursive NFC key ordering and local canonical-duplicate rejection. Recorded native-vector scope only; see [evidence](validation/json-formatter-2026-10-09/README.md). |
 | `compare` | `InspectionTools.swift` | Bounded exact line diff; JSON-specific semantic compare absent |
 | `jwt` | `InspectionTools.swift` | Local header/claims inspection; signature never verified |
 | `regex` | `InspectionTools.swift` | Linear-time pattern/groups/replacement with i/m/s; no ICU lookarounds/backreferences |
@@ -911,6 +911,20 @@ replaces a false Validate preservation claim with `Valid JSON.`; 22 Core/19 App
 JSON tests, strict Clippy and a clean ordinary build passed. Full matrices remain
 prior-r1 evidence. Successor focused Linux Validate GUI passed; exact-commit CI
 and native runtime acceptance remain separate gates.
-See [scope and current evidence](palette-json.md). This does not fix the existing
-Rust formatter's source differences in key ordering, raw number spelling or
-canonical Unicode key equality, and is not complete JSON or macOS parity.
+Historical scope: that palette-only slice did not fix formatter key ordering, raw
+number spelling or canonical Unicode key equality. The formatter successor below
+supersedes those particular gaps within its recorded scope. See [current evidence](palette-json.md);
+complete JSON and macOS parity remain unclaimed.
+
+
+## Bounded JSON formatter successor (2026-10-09)
+
+The palette-only formatter differences in [palette-json.md](palette-json.md) are
+explicitly historical. The current JSON Formatter route uses exact borrowed
+number tokens, NFC key ordering and local canonical-duplicate rejection, with
+streaming output bounds and the existing session ownership/gates unchanged.
+Other JSON tool routes, including the distinct-key JSON Pointer contract, are
+not changed. See the [formatter validation record](validation/json-formatter-2026-10-09/README.md)
+for tests, actual source-mutant controls, native host/vector scope and incremental
+ordinary Linux GUI acceptance. Native deployed-runtime equivalence, every Unicode
+edge/version, error strings and Workbench validation-count parity remain open.

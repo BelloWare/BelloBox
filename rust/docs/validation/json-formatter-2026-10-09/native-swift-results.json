@@ -1,0 +1,541 @@
+{
+  "operationCount" : 51,
+  "runtime" : {
+    "foundationBundlePath" : "/usr/lib",
+    "operatingSystem" : "Version 14.8 (Build 23J21)"
+  },
+  "vectorCount" : 17,
+  "vectors" : [
+    {
+      "id" : "nested_ascii",
+      "input" : {
+        "base64" : "eyJ6Ijp7ImIiOjEsImEiOjJ9LCJhIjpbeyJ5IjozLCJ4Ijo0fSx7fV19",
+        "decoded" : "{\"z\":{\"b\":1,\"a\":2},\"a\":[{\"y\":3,\"x\":4},{}]}",
+        "hex" : "7b227a223a7b2262223a312c2261223a327d2c2261223a5b7b2279223a332c2278223a347d2c7b7d5d7d",
+        "utf8ByteCount" : 42
+      },
+      "operations" : [
+        {
+          "accepted" : true,
+          "operation" : "pretty",
+          "output" : {
+            "base64" : "ewogICJhIjogWwogICAgewogICAgICAieCI6IDQsCiAgICAgICJ5IjogMwogICAgfSwKICAgIHt9CiAgXSwKICAieiI6IHsKICAgICJhIjogMiwKICAgICJiIjogMQogIH0KfQ==",
+            "decoded" : "{\n  \"a\": [\n    {\n      \"x\": 4,\n      \"y\": 3\n    },\n    {}\n  ],\n  \"z\": {\n    \"a\": 2,\n    \"b\": 1\n  }\n}",
+            "hex" : "7b0a20202261223a205b0a202020207b0a2020202020202278223a20342c0a2020202020202279223a20330a202020207d2c0a202020207b7d0a20205d2c0a2020227a223a207b0a202020202261223a20322c0a202020202262223a20310a20207d0a7d",
+            "utf8ByteCount" : 100
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "minify",
+          "output" : {
+            "base64" : "eyJhIjpbeyJ4Ijo0LCJ5IjozfSx7fV0sInoiOnsiYSI6MiwiYiI6MX19",
+            "decoded" : "{\"a\":[{\"x\":4,\"y\":3},{}],\"z\":{\"a\":2,\"b\":1}}",
+            "hex" : "7b2261223a5b7b2278223a342c2279223a337d2c7b7d5d2c227a223a7b2261223a322c2262223a317d7d",
+            "utf8ByteCount" : 42
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Recurse through arrays; leave array order intact"
+    },
+    {
+      "id" : "number_lexemes",
+      "input" : {
+        "base64" : "Wy0wLC0wLjAsMUUyLDFlMiwxRSswMiwxRS0wMiwxLjIzMDAsOTAwNzE5OTI1NDc0MDk5MzEyMzQ1Njc4OTAxMjM0NTY3ODkwLDFlOTk5OTk5XQ==",
+        "decoded" : "[-0,-0.0,1E2,1e2,1E+02,1E-02,1.2300,900719925474099312345678901234567890,1e999999]",
+        "hex" : "5b2d302c2d302e302c3145322c3165322c31452b30322c31452d30322c312e323330302c3930303731393932353437343039393331323334353637383930313233343536373839302c31653939393939395d",
+        "utf8ByteCount" : 82
+      },
+      "operations" : [
+        {
+          "accepted" : true,
+          "operation" : "pretty",
+          "output" : {
+            "base64" : "WwogIC0wLAogIC0wLjAsCiAgMUUyLAogIDFlMiwKICAxRSswMiwKICAxRS0wMiwKICAxLjIzMDAsCiAgOTAwNzE5OTI1NDc0MDk5MzEyMzQ1Njc4OTAxMjM0NTY3ODkwLAogIDFlOTk5OTk5Cl0=",
+            "decoded" : "[\n  -0,\n  -0.0,\n  1E2,\n  1e2,\n  1E+02,\n  1E-02,\n  1.2300,\n  900719925474099312345678901234567890,\n  1e999999\n]",
+            "hex" : "5b0a20202d302c0a20202d302e302c0a20203145322c0a20203165322c0a202031452b30322c0a202031452d30322c0a2020312e323330302c0a20203930303731393932353437343039393331323334353637383930313233343536373839302c0a202031653939393939390a5d",
+            "utf8ByteCount" : 110
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "minify",
+          "output" : {
+            "base64" : "Wy0wLC0wLjAsMUUyLDFlMiwxRSswMiwxRS0wMiwxLjIzMDAsOTAwNzE5OTI1NDc0MDk5MzEyMzQ1Njc4OTAxMjM0NTY3ODkwLDFlOTk5OTk5XQ==",
+            "decoded" : "[-0,-0.0,1E2,1e2,1E+02,1E-02,1.2300,900719925474099312345678901234567890,1e999999]",
+            "hex" : "5b2d302c2d302e302c3145322c3165322c31452b30322c31452d30322c312e323330302c3930303731393932353437343039393331323334353637383930313233343536373839302c31653939393939395d",
+            "utf8ByteCount" : 82
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "No f64 rounding; exponent spelling and negative integer zero loss"
+    },
+    {
+      "id" : "exact_duplicate",
+      "input" : {
+        "base64" : "eyJ4IjoxLCJ4IjoyfQ==",
+        "decoded" : "{\"x\":1,\"x\":2}",
+        "hex" : "7b2278223a312c2278223a327d",
+        "utf8ByteCount" : 13
+      },
+      "operations" : [
+        {
+          "accepted" : false,
+          "error" : "Duplicate property x at line 1, byte column 11.",
+          "operation" : "pretty"
+        },
+        {
+          "accepted" : false,
+          "error" : "Duplicate property x at line 1, byte column 11.",
+          "operation" : "minify"
+        },
+        {
+          "accepted" : false,
+          "error" : "Duplicate property x at line 1, byte column 11.",
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Reject before overwrite"
+    },
+    {
+      "id" : "escaped_duplicate",
+      "input" : {
+        "base64" : "eyJhIjoxLCJcdTAwNjEiOjJ9",
+        "decoded" : "{\"a\":1,\"\\u0061\":2}",
+        "hex" : "7b2261223a312c225c7530303631223a327d",
+        "utf8ByteCount" : 18
+      },
+      "operations" : [
+        {
+          "accepted" : false,
+          "error" : "Duplicate property a at line 1, byte column 16.",
+          "operation" : "pretty"
+        },
+        {
+          "accepted" : false,
+          "error" : "Duplicate property a at line 1, byte column 16.",
+          "operation" : "minify"
+        },
+        {
+          "accepted" : false,
+          "error" : "Duplicate property a at line 1, byte column 16.",
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Compare decoded keys"
+    },
+    {
+      "id" : "canonical_duplicate",
+      "input" : {
+        "base64" : "eyJcdTAwZTkiOjEsImVcdTAzMDEiOjJ9",
+        "decoded" : "{\"\\u00e9\":1,\"e\\u0301\":2}",
+        "hex" : "7b225c7530306539223a312c22655c7530333031223a327d",
+        "utf8ByteCount" : 24
+      },
+      "operations" : [
+        {
+          "accepted" : false,
+          "error" : "Duplicate property é at line 1, byte column 22.",
+          "operation" : "pretty"
+        },
+        {
+          "accepted" : false,
+          "error" : "Duplicate property é at line 1, byte column 22.",
+          "operation" : "minify"
+        },
+        {
+          "accepted" : false,
+          "error" : "Duplicate property é at line 1, byte column 22.",
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Cannot globally change without pointer regression decision"
+    },
+    {
+      "id" : "normalization_order",
+      "input" : {
+        "base64" : "eyJlXHUwMzAxIjoxLCJmIjoyfQ==",
+        "decoded" : "{\"e\\u0301\":1,\"f\":2}",
+        "hex" : "7b22655c7530333031223a312c2266223a327d",
+        "utf8ByteCount" : 19
+      },
+      "operations" : [
+        {
+          "accepted" : true,
+          "operation" : "pretty",
+          "output" : {
+            "base64" : "ewogICJmIjogMiwKICAiZcyBIjogMQp9",
+            "decoded" : "{\n  \"f\": 2,\n  \"é\": 1\n}",
+            "hex" : "7b0a20202266223a20322c0a20202265cc81223a20310a7d",
+            "utf8ByteCount" : 24
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "minify",
+          "output" : {
+            "base64" : "eyJmIjoyLCJlzIEiOjF9",
+            "decoded" : "{\"f\":2,\"é\":1}",
+            "hex" : "7b2266223a322c2265cc81223a317d",
+            "utf8ByteCount" : 15
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Native exact order pending target runtime oracle"
+    },
+    {
+      "id" : "case_numeric_order",
+      "input" : {
+        "base64" : "eyJhMTAiOjEsImEyIjoyLCJBIjozLCJhIjo0fQ==",
+        "decoded" : "{\"a10\":1,\"a2\":2,\"A\":3,\"a\":4}",
+        "hex" : "7b22613130223a312c226132223a322c2241223a332c2261223a347d",
+        "utf8ByteCount" : 28
+      },
+      "operations" : [
+        {
+          "accepted" : true,
+          "operation" : "pretty",
+          "output" : {
+            "base64" : "ewogICJBIjogMywKICAiYSI6IDQsCiAgImExMCI6IDEsCiAgImEyIjogMgp9",
+            "decoded" : "{\n  \"A\": 3,\n  \"a\": 4,\n  \"a10\": 1,\n  \"a2\": 2\n}",
+            "hex" : "7b0a20202241223a20332c0a20202261223a20342c0a202022613130223a20312c0a2020226132223a20320a7d",
+            "utf8ByteCount" : 45
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "minify",
+          "output" : {
+            "base64" : "eyJBIjozLCJhIjo0LCJhMTAiOjEsImEyIjoyfQ==",
+            "decoded" : "{\"A\":3,\"a\":4,\"a10\":1,\"a2\":2}",
+            "hex" : "7b2241223a332c2261223a342c22613130223a312c226132223a327d",
+            "utf8ByteCount" : 28
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "No natural numeric or case-insensitive sorting"
+    },
+    {
+      "id" : "supplementary_order",
+      "input" : {
+        "base64" : "eyJcdWQ4MDBcdWRjMDAiOjEsIlx1ZTAwMCI6Mn0=",
+        "decoded" : "{\"\\ud800\\udc00\":1,\"\\ue000\":2}",
+        "hex" : "7b225c75643830305c7564633030223a312c225c7565303030223a327d",
+        "utf8ByteCount" : 29
+      },
+      "operations" : [
+        {
+          "accepted" : true,
+          "operation" : "pretty",
+          "output" : {
+            "base64" : "ewogICLugIAiOiAyLAogICLwkICAIjogMQp9",
+            "decoded" : "{\n  \"\": 2,\n  \"𐀀\": 1\n}",
+            "hex" : "7b0a202022ee8080223a20322c0a202022f0908080223a20310a7d",
+            "utf8ByteCount" : 27
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "minify",
+          "output" : {
+            "base64" : "eyLugIAiOjIsIvCQgIAiOjF9",
+            "decoded" : "{\"\":2,\"𐀀\":1}",
+            "hex" : "7b22ee8080223a322c22f0908080223a317d",
+            "utf8ByteCount" : 18
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Catch UTF-16 comparator substitution"
+    },
+    {
+      "id" : "string_escapes",
+      "input" : {
+        "base64" : "WyJcLyIsIlx1MDA2MSIsIlx1MDBlOSIsImVcdTAzMDEiLCJcdWQ4M2RcdWRlODAiLCJcYlxmXG5cclx0IiwiXHUwMDAwXHUwMDFmIiwiXHUyMDI4XHUyMDI5IiwiXHUwMDdmIiwiXHVmZmZmIl0=",
+        "decoded" : "[\"\\/\",\"\\u0061\",\"\\u00e9\",\"e\\u0301\",\"\\ud83d\\ude80\",\"\\b\\f\\n\\r\\t\",\"\\u0000\\u001f\",\"\\u2028\\u2029\",\"\\u007f\",\"\\uffff\"]",
+        "hex" : "5b225c2f222c225c7530303631222c225c7530306539222c22655c7530333031222c225c75643833645c7564653830222c225c625c665c6e5c725c74222c225c75303030305c7530303166222c225c75323032385c7532303239222c225c7530303766222c225c7566666666225d",
+        "utf8ByteCount" : 110
+      },
+      "operations" : [
+        {
+          "accepted" : true,
+          "operation" : "pretty",
+          "output" : {
+            "base64" : "WwogICIvIiwKICAiYSIsCiAgIsOpIiwKICAiZcyBIiwKICAi8J+agCIsCiAgIlxiXGZcblxyXHQiLAogICJcdTAwMDBcdTAwMWYiLAogICLigKjigKkiLAogICJ/IiwKICAi77+/Igpd",
+            "decoded" : "[\n  \"/\",\n  \"a\",\n  \"é\",\n  \"é\",\n  \"🚀\",\n  \"\\b\\f\\n\\r\\t\",\n  \"\\u0000\\u001f\",\n  \"  \",\n  \"\",\n  \"￿\"\n]",
+            "hex" : "5b0a2020222f222c0a20202261222c0a202022c3a9222c0a20202265cc81222c0a202022f09f9a80222c0a2020225c625c665c6e5c725c74222c0a2020225c75303030305c7530303166222c0a202022e280a8e280a9222c0a2020227f222c0a202022efbfbf220a5d",
+            "utf8ByteCount" : 105
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "minify",
+          "output" : {
+            "base64" : "WyIvIiwiYSIsIsOpIiwiZcyBIiwi8J+agCIsIlxiXGZcblxyXHQiLCJcdTAwMDBcdTAwMWYiLCLigKjigKkiLCJ/Iiwi77+/Il0=",
+            "decoded" : "[\"/\",\"a\",\"é\",\"é\",\"🚀\",\"\\b\\f\\n\\r\\t\",\"\\u0000\\u001f\",\"  \",\"\",\"￿\"]",
+            "hex" : "5b222f222c2261222c22c3a9222c2265cc81222c22f09f9a80222c225c625c665c6e5c725c74222c225c75303030305c7530303166222c22e280a8e280a9222c227f222c22efbfbf225d",
+            "utf8ByteCount" : 74
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Foundation oracle required; no claim escape spellings retained"
+    },
+    {
+      "id" : "unpaired_high",
+      "input" : {
+        "base64" : "Ilx1ZDgwMCI=",
+        "decoded" : "\"\\ud800\"",
+        "hex" : "225c756438303022",
+        "utf8ByteCount" : 8
+      },
+      "operations" : [
+        {
+          "accepted" : false,
+          "error" : "Invalid JSON string or escape at line 1, byte column 9.",
+          "operation" : "pretty"
+        },
+        {
+          "accepted" : false,
+          "error" : "Invalid JSON string or escape at line 1, byte column 9.",
+          "operation" : "minify"
+        },
+        {
+          "accepted" : false,
+          "error" : "Invalid JSON string or escape at line 1, byte column 9.",
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Validation acceptance and diagnostics"
+    },
+    {
+      "id" : "unpaired_low",
+      "input" : {
+        "base64" : "Ilx1ZGMwMCI=",
+        "decoded" : "\"\\udc00\"",
+        "hex" : "225c756463303022",
+        "utf8ByteCount" : 8
+      },
+      "operations" : [
+        {
+          "accepted" : false,
+          "error" : "Invalid JSON string or escape at line 1, byte column 9.",
+          "operation" : "pretty"
+        },
+        {
+          "accepted" : false,
+          "error" : "Invalid JSON string or escape at line 1, byte column 9.",
+          "operation" : "minify"
+        },
+        {
+          "accepted" : false,
+          "error" : "Invalid JSON string or escape at line 1, byte column 9.",
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Validation acceptance and diagnostics"
+    },
+    {
+      "id" : "unknown_escape",
+      "input" : {
+        "base64" : "IlxxIg==",
+        "decoded" : "\"\\q\"",
+        "hex" : "225c7122",
+        "utf8ByteCount" : 4
+      },
+      "operations" : [
+        {
+          "accepted" : false,
+          "error" : "Invalid JSON string or escape at line 1, byte column 5.",
+          "operation" : "pretty"
+        },
+        {
+          "accepted" : false,
+          "error" : "Invalid JSON string or escape at line 1, byte column 5.",
+          "operation" : "minify"
+        },
+        {
+          "accepted" : false,
+          "error" : "Invalid JSON string or escape at line 1, byte column 5.",
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Validation acceptance and diagnostics"
+    },
+    {
+      "id" : "leading_zero",
+      "input" : {
+        "base64" : "MDE=",
+        "decoded" : "01",
+        "hex" : "3031",
+        "utf8ByteCount" : 2
+      },
+      "operations" : [
+        {
+          "accepted" : false,
+          "error" : "Unexpected content after JSON at line 1, byte column 2.",
+          "operation" : "pretty"
+        },
+        {
+          "accepted" : false,
+          "error" : "Unexpected content after JSON at line 1, byte column 2.",
+          "operation" : "minify"
+        },
+        {
+          "accepted" : false,
+          "error" : "Unexpected content after JSON at line 1, byte column 2.",
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Validation acceptance and diagnostics"
+    },
+    {
+      "id" : "trailing_comma",
+      "input" : {
+        "base64" : "WzEsXQ==",
+        "decoded" : "[1,]",
+        "hex" : "5b312c5d",
+        "utf8ByteCount" : 4
+      },
+      "operations" : [
+        {
+          "accepted" : false,
+          "error" : "Expected a JSON value at line 1, byte column 4.",
+          "operation" : "pretty"
+        },
+        {
+          "accepted" : false,
+          "error" : "Expected a JSON value at line 1, byte column 4.",
+          "operation" : "minify"
+        },
+        {
+          "accepted" : false,
+          "error" : "Expected a JSON value at line 1, byte column 4.",
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Validation acceptance and diagnostics"
+    },
+    {
+      "id" : "trailing_content",
+      "input" : {
+        "base64" : "dHJ1ZSBmYWxzZQ==",
+        "decoded" : "true false",
+        "hex" : "747275652066616c7365",
+        "utf8ByteCount" : 10
+      },
+      "operations" : [
+        {
+          "accepted" : false,
+          "error" : "Unexpected content after JSON at line 1, byte column 6.",
+          "operation" : "pretty"
+        },
+        {
+          "accepted" : false,
+          "error" : "Unexpected content after JSON at line 1, byte column 6.",
+          "operation" : "minify"
+        },
+        {
+          "accepted" : false,
+          "error" : "Unexpected content after JSON at line 1, byte column 6.",
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Validation acceptance and diagnostics"
+    },
+    {
+      "id" : "scalar_root",
+      "input" : {
+        "base64" : "LTA=",
+        "decoded" : "-0",
+        "hex" : "2d30",
+        "utf8ByteCount" : 2
+      },
+      "operations" : [
+        {
+          "accepted" : true,
+          "operation" : "pretty",
+          "output" : {
+            "base64" : "LTA=",
+            "decoded" : "-0",
+            "hex" : "2d30",
+            "utf8ByteCount" : 2
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "minify",
+          "output" : {
+            "base64" : "LTA=",
+            "decoded" : "-0",
+            "hex" : "2d30",
+            "utf8ByteCount" : 2
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Root need not be object/array"
+    },
+    {
+      "id" : "empty_pretty",
+      "input" : {
+        "base64" : "W3t9LFtdXQ==",
+        "decoded" : "[{},[]]",
+        "hex" : "5b7b7d2c5b5d5d",
+        "utf8ByteCount" : 7
+      },
+      "operations" : [
+        {
+          "accepted" : true,
+          "operation" : "pretty",
+          "output" : {
+            "base64" : "WwogIHt9LAogIFtdCl0=",
+            "decoded" : "[\n  {},\n  []\n]",
+            "hex" : "5b0a20207b7d2c0a20205b5d0a5d",
+            "utf8ByteCount" : 14
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "minify",
+          "output" : {
+            "base64" : "W3t9LFtdXQ==",
+            "decoded" : "[{},[]]",
+            "hex" : "5b7b7d2c5b5d5d",
+            "utf8ByteCount" : 7
+          }
+        },
+        {
+          "accepted" : true,
+          "operation" : "validate"
+        }
+      ],
+      "purpose" : "Indentation, empty containers, no final newline"
+    }
+  ]
+}
