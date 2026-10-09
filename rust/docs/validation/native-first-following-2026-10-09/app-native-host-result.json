@@ -1,0 +1,43 @@
+{
+  "name": "app-native-host",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--features",
+    "movie-fixtures",
+    "--bin",
+    "bellobox",
+    "gif_converter::native_host_tests::",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "expected_passed": 2,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T00:02:42.911341+00:00",
+  "cwd": "/Users/admin/projects/BelloBox-rust-first-following/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence/app-native-host.log",
+  "ended_at": "2026-10-09T00:03:02.922210+00:00",
+  "elapsed_seconds": 20.010578333050944,
+  "exit_code": 0,
+  "log_sha256": "889efa79c11af25951c579d9b09cbe74935aac7a3c2c165d76df3a7034dc700d",
+  "counts": [
+    {
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 409
+    }
+  ],
+  "test_binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+      "sha256": "6627249990ca6ab65a474e11725f6c320697060b4d8088a911f306e89e13604c"
+    }
+  ]
+}

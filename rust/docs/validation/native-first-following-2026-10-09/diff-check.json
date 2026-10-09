@@ -1,0 +1,7 @@
+{
+  "full_check_exit": 2,
+  "full_check_stdout": "rust/docs/validation/native-first-following-2026-10-09/app-native-host.log:20: new blank line at EOF.\nrust/docs/validation/native-first-following-2026-10-09/core-gif.log:40: trailing whitespace.\n+test recording::gif::gif_tests::publication_claim_is_not_success_and_errors_or_panics_are_terminal ... \nrust/docs/validation/native-first-following-2026-10-09/core-gif.log:60: trailing whitespace.\n+test recording::gif::gif_tests::source_failure_and_panics_preserve_prior_destination_and_cleanup ... \nrust/docs/validation/native-first-following-2026-10-09/core-gif.log:81: trailing whitespace.\n+test recording::gif::gif_tests::source_finalization_failure_cancel_mutation_and_panic_never_publish ... \nrust/docs/validation/native-first-following-2026-10-09/core-gif.log:112: new blank line at EOF.\nrust/docs/validation/native-first-following-2026-10-09/platform-movie.log:33: new blank line at EOF.\n",
+  "non_log_check_exit": 0,
+  "non_log_check_stdout": "",
+  "interpretation": "Only original Rust raw logs contain diagnostic trailing spaces or blank EOF lines. Preserve those bytes; all non-log additions pass the whitespace check."
+}

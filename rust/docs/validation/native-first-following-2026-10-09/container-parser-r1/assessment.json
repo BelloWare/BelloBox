@@ -1,0 +1,553 @@
+{
+  "result": "verified limitation for these six generated cases",
+  "native_first_following_coverage": false,
+  "opaque_black_rgba_sha256": "5e9d5b686a0c4122c77d69144a5874dcbbcd05c1b4717bb11d8d730cc17a6659",
+  "cases": [
+    {
+      "case": "regular",
+      "movie_sha256": "baa82d584bce0fea290339b8b3ebf4d85eebab575d7b1ce91e4be661bbdc5198",
+      "decoded_pts": [
+        0,
+        0.1,
+        0.2,
+        0.3
+      ],
+      "encoded_sample_count": 4,
+      "leading_empty_container_edit": false,
+      "first_decoded_frame_is_opaque_black": false,
+      "positive_gap_precondition": false,
+      "raw_container": {
+        "atoms": {
+          "moov/mvhd": {
+            "timescale": 600,
+            "duration": 240
+          },
+          "moov/trak/edts/elst": {
+            "version": 0,
+            "entries": [
+              {
+                "movie_duration": 240,
+                "media_time": 0,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              }
+            ]
+          },
+          "moov/trak/mdia/mdhd": {
+            "timescale": 600,
+            "duration": 240
+          },
+          "moov/trak/mdia/minf/stbl/stts": {
+            "version": 0,
+            "entries": [
+              [
+                4,
+                60
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/ctts": {
+            "version": 0,
+            "entries": [
+              [
+                1,
+                0
+              ],
+              [
+                1,
+                60
+              ],
+              [
+                1,
+                4294967236
+              ],
+              [
+                1,
+                0
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/stsz": {
+            "sample_size": 0,
+            "sample_count": 4
+          }
+        },
+        "physical_sample_timing": [
+          {
+            "dts_media_ticks": 0,
+            "pts_media_ticks": 0,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 60,
+            "pts_media_ticks": 120,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 120,
+            "pts_media_ticks": 4294967356,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 180,
+            "pts_media_ticks": 180,
+            "duration_media_ticks": 60
+          }
+        ]
+      }
+    },
+    {
+      "case": "delayed-first-control",
+      "movie_sha256": "2226d6f2a5154592f68a233a0bbd124af2fc10e77670e90516f0d8c7718bca1d",
+      "decoded_pts": [
+        0,
+        0.1,
+        0.2,
+        0.3
+      ],
+      "encoded_sample_count": 3,
+      "leading_empty_container_edit": true,
+      "first_decoded_frame_is_opaque_black": true,
+      "positive_gap_precondition": false,
+      "raw_container": {
+        "atoms": {
+          "moov/mvhd": {
+            "timescale": 600,
+            "duration": 240
+          },
+          "moov/trak/edts/elst": {
+            "version": 0,
+            "entries": [
+              {
+                "movie_duration": 60,
+                "media_time": -1,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              },
+              {
+                "movie_duration": 180,
+                "media_time": 0,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              }
+            ]
+          },
+          "moov/trak/mdia/mdhd": {
+            "timescale": 600,
+            "duration": 180
+          },
+          "moov/trak/mdia/minf/stbl/stts": {
+            "version": 0,
+            "entries": [
+              [
+                3,
+                60
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/ctts": {
+            "version": 0,
+            "entries": [
+              [
+                1,
+                0
+              ],
+              [
+                1,
+                60
+              ],
+              [
+                1,
+                4294967236
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/stsz": {
+            "sample_size": 0,
+            "sample_count": 3
+          }
+        },
+        "physical_sample_timing": [
+          {
+            "dts_media_ticks": 0,
+            "pts_media_ticks": 0,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 60,
+            "pts_media_ticks": 120,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 120,
+            "pts_media_ticks": 4294967356,
+            "duration_media_ticks": 60
+          }
+        ]
+      }
+    },
+    {
+      "case": "session-at-first",
+      "movie_sha256": "fb117ca9bade8bf97cea0ea8c07ef4b7aef04981990c83789f9be18bbc059442",
+      "decoded_pts": [
+        0,
+        0.1,
+        0.2
+      ],
+      "encoded_sample_count": 3,
+      "leading_empty_container_edit": false,
+      "first_decoded_frame_is_opaque_black": false,
+      "positive_gap_precondition": false,
+      "raw_container": {
+        "atoms": {
+          "moov/mvhd": {
+            "timescale": 600,
+            "duration": 180
+          },
+          "moov/trak/edts/elst": {
+            "version": 0,
+            "entries": [
+              {
+                "movie_duration": 180,
+                "media_time": 0,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              }
+            ]
+          },
+          "moov/trak/mdia/mdhd": {
+            "timescale": 600,
+            "duration": 180
+          },
+          "moov/trak/mdia/minf/stbl/stts": {
+            "version": 0,
+            "entries": [
+              [
+                3,
+                60
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/ctts": {
+            "version": 0,
+            "entries": [
+              [
+                1,
+                0
+              ],
+              [
+                1,
+                60
+              ],
+              [
+                1,
+                4294967236
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/stsz": {
+            "sample_size": 0,
+            "sample_count": 3
+          }
+        },
+        "physical_sample_timing": [
+          {
+            "dts_media_ticks": 0,
+            "pts_media_ticks": 0,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 60,
+            "pts_media_ticks": 120,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 120,
+            "pts_media_ticks": 4294967356,
+            "duration_media_ticks": 60
+          }
+        ]
+      }
+    },
+    {
+      "case": "negative-session",
+      "movie_sha256": "2226d6f2a5154592f68a233a0bbd124af2fc10e77670e90516f0d8c7718bca1d",
+      "decoded_pts": [
+        0,
+        0.1,
+        0.2,
+        0.3
+      ],
+      "encoded_sample_count": 3,
+      "leading_empty_container_edit": true,
+      "first_decoded_frame_is_opaque_black": true,
+      "positive_gap_precondition": false,
+      "raw_container": {
+        "atoms": {
+          "moov/mvhd": {
+            "timescale": 600,
+            "duration": 240
+          },
+          "moov/trak/edts/elst": {
+            "version": 0,
+            "entries": [
+              {
+                "movie_duration": 60,
+                "media_time": -1,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              },
+              {
+                "movie_duration": 180,
+                "media_time": 0,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              }
+            ]
+          },
+          "moov/trak/mdia/mdhd": {
+            "timescale": 600,
+            "duration": 180
+          },
+          "moov/trak/mdia/minf/stbl/stts": {
+            "version": 0,
+            "entries": [
+              [
+                3,
+                60
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/ctts": {
+            "version": 0,
+            "entries": [
+              [
+                1,
+                0
+              ],
+              [
+                1,
+                60
+              ],
+              [
+                1,
+                4294967236
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/stsz": {
+            "sample_size": 0,
+            "sample_count": 3
+          }
+        },
+        "physical_sample_timing": [
+          {
+            "dts_media_ticks": 0,
+            "pts_media_ticks": 0,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 60,
+            "pts_media_ticks": 120,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 120,
+            "pts_media_ticks": 4294967356,
+            "duration_media_ticks": 60
+          }
+        ]
+      }
+    },
+    {
+      "case": "long-leading-gap",
+      "movie_sha256": "96438c03db5d47d711d6f808cd5f2345e14512ce987e2d0e40f729a33652abb5",
+      "decoded_pts": [
+        0,
+        3.1,
+        3.2,
+        3.3
+      ],
+      "encoded_sample_count": 3,
+      "leading_empty_container_edit": true,
+      "first_decoded_frame_is_opaque_black": true,
+      "positive_gap_precondition": false,
+      "raw_container": {
+        "atoms": {
+          "moov/mvhd": {
+            "timescale": 600,
+            "duration": 2040
+          },
+          "moov/trak/edts/elst": {
+            "version": 0,
+            "entries": [
+              {
+                "movie_duration": 1860,
+                "media_time": -1,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              },
+              {
+                "movie_duration": 180,
+                "media_time": 0,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              }
+            ]
+          },
+          "moov/trak/mdia/mdhd": {
+            "timescale": 600,
+            "duration": 180
+          },
+          "moov/trak/mdia/minf/stbl/stts": {
+            "version": 0,
+            "entries": [
+              [
+                3,
+                60
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/ctts": {
+            "version": 0,
+            "entries": [
+              [
+                1,
+                0
+              ],
+              [
+                1,
+                60
+              ],
+              [
+                1,
+                4294967236
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/stsz": {
+            "sample_size": 0,
+            "sample_count": 3
+          }
+        },
+        "physical_sample_timing": [
+          {
+            "dts_media_ticks": 0,
+            "pts_media_ticks": 0,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 60,
+            "pts_media_ticks": 120,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 120,
+            "pts_media_ticks": 4294967356,
+            "duration_media_ticks": 60
+          }
+        ]
+      }
+    },
+    {
+      "case": "explicit-empty-edit",
+      "movie_sha256": "10c57403b389d7afce5c602480909dba22be0a52812717d1632db0d9a0634f32",
+      "decoded_pts": [
+        0,
+        0.1,
+        0.2,
+        0.3,
+        0.4
+      ],
+      "encoded_sample_count": 4,
+      "leading_empty_container_edit": true,
+      "first_decoded_frame_is_opaque_black": true,
+      "positive_gap_precondition": false,
+      "raw_container": {
+        "atoms": {
+          "moov/mvhd": {
+            "timescale": 600,
+            "duration": 300
+          },
+          "moov/trak/edts/elst": {
+            "version": 0,
+            "entries": [
+              {
+                "movie_duration": 60,
+                "media_time": -1,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              },
+              {
+                "movie_duration": 240,
+                "media_time": 0,
+                "rate_integer": 1,
+                "rate_fraction": 0
+              }
+            ]
+          },
+          "moov/trak/mdia/mdhd": {
+            "timescale": 600,
+            "duration": 240
+          },
+          "moov/trak/mdia/minf/stbl/stts": {
+            "version": 0,
+            "entries": [
+              [
+                4,
+                60
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/ctts": {
+            "version": 0,
+            "entries": [
+              [
+                1,
+                0
+              ],
+              [
+                1,
+                60
+              ],
+              [
+                1,
+                4294967236
+              ],
+              [
+                1,
+                0
+              ]
+            ]
+          },
+          "moov/trak/mdia/minf/stbl/stsz": {
+            "sample_size": 0,
+            "sample_count": 4
+          }
+        },
+        "physical_sample_timing": [
+          {
+            "dts_media_ticks": 0,
+            "pts_media_ticks": 0,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 60,
+            "pts_media_ticks": 120,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 120,
+            "pts_media_ticks": 4294967356,
+            "duration_media_ticks": 60
+          },
+          {
+            "dts_media_ticks": 180,
+            "pts_media_ticks": 180,
+            "duration_media_ticks": 60
+          }
+        ]
+      }
+    }
+  ]
+}

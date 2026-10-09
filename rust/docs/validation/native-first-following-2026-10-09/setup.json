@@ -1,0 +1,11 @@
+{
+  "base": "2d9b170ed81b33ed3adfa080dfbadc89b2f21f2f",
+  "base_tree": "5e63d54223d869606f40be48715c865727c69441",
+  "repo": "/Users/admin/projects/BelloBox-rust-first-following",
+  "root": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja",
+  "evidence": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence",
+  "branch": "work/rust-first-following",
+  "created_at": "2026-10-08T23:55:40.997388+00:00",
+  "tracked_files": 1415,
+  "base_manifest_sha256": "e863e5bb7487b441fafb1fca34fbe66b05a50debb44261e9e950096172b42867"
+}

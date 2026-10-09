@@ -1,0 +1,55 @@
+/Users/admin/projects/BelloBox-rust-first-following/rust/docs/validation/native-first-following-2026-10-09/TimingProbe.swift:152:25: warning: no calls to throwing functions occur within 'try' expression
+150 |             // This is generated fixture construction, before any admission/read.
+151 |             // The unedited writer output remains a separate immutable receipt.
+152 |             let movie = try AVMutableMovie(url: url, options: nil)
+    |                         `- warning: no calls to throwing functions occur within 'try' expression
+153 |             movie.insertEmptyTimeRange(CMTimeRange(start: .zero, duration: time(0.1)))
+154 |             try movie.writeHeader(to: url, fileType: .mov, options: .addMovieHeaderToDestination)
+
+/Users/admin/projects/BelloBox-rust-first-following/rust/docs/validation/native-first-following-2026-10-09/TimingProbe.swift:77:24: warning: 'tracks(withMediaType:)' was deprecated in macOS 13.0: Use loadTracks(withMediaType:) instead
+ 75 | func read(_ url: URL, decoded: Bool, start: Double = 0) throws -> [String: Any] {
+ 76 |     let asset = AVURLAsset(url: url)
+ 77 |     let tracks = asset.tracks(withMediaType: .video)
+    |                        `- warning: 'tracks(withMediaType:)' was deprecated in macOS 13.0: Use loadTracks(withMediaType:) instead
+ 78 |     try require(tracks.count == 1, "expected one video track")
+ 79 |     let track = tracks[0]
+
+/Users/admin/projects/BelloBox-rust-first-following/rust/docs/validation/native-first-following-2026-10-09/TimingProbe.swift:81:26: warning: 'duration' was deprecated in macOS 13.0: Use load(.duration) instead
+ 79 |     let track = tracks[0]
+ 80 |     let reader = try AVAssetReader(asset: asset)
+ 81 |     let duration = asset.duration.seconds
+    |                          `- warning: 'duration' was deprecated in macOS 13.0: Use load(.duration) instead
+ 82 |     reader.timeRange = CMTimeRange(start: time(start), duration: time(duration - start))
+ 83 |     let settings: [String: Any]? = decoded
+
+/Users/admin/projects/BelloBox-rust-first-following/rust/docs/validation/native-first-following-2026-10-09/TimingProbe.swift:120:84: warning: 'duration' was deprecated in macOS 13.0: Use load(.duration) instead
+118 |     }
+119 |     try require(reader.status == .completed, "reader final: \(String(describing: reader.error))")
+120 |     return ["decoded": decoded, "requested_start": start, "duration": timing(asset.duration),
+    |                                                                                    `- warning: 'duration' was deprecated in macOS 13.0: Use load(.duration) instead
+121 |             "track_start": timing(track.timeRange.start), "track_duration": timing(track.timeRange.duration),
+122 |             "segments": track.segments.map { ["empty": $0.isEmpty,
+
+/Users/admin/projects/BelloBox-rust-first-following/rust/docs/validation/native-first-following-2026-10-09/TimingProbe.swift:121:41: warning: 'timeRange' was deprecated in macOS 13.0: Use load(.timeRange) instead
+119 |     try require(reader.status == .completed, "reader final: \(String(describing: reader.error))")
+120 |     return ["decoded": decoded, "requested_start": start, "duration": timing(asset.duration),
+121 |             "track_start": timing(track.timeRange.start), "track_duration": timing(track.timeRange.duration),
+    |                                         `- warning: 'timeRange' was deprecated in macOS 13.0: Use load(.timeRange) instead
+122 |             "segments": track.segments.map { ["empty": $0.isEmpty,
+123 |                 "source_start": timing($0.timeMapping.source.start),
+
+/Users/admin/projects/BelloBox-rust-first-following/rust/docs/validation/native-first-following-2026-10-09/TimingProbe.swift:121:90: warning: 'timeRange' was deprecated in macOS 13.0: Use load(.timeRange) instead
+119 |     try require(reader.status == .completed, "reader final: \(String(describing: reader.error))")
+120 |     return ["decoded": decoded, "requested_start": start, "duration": timing(asset.duration),
+121 |             "track_start": timing(track.timeRange.start), "track_duration": timing(track.timeRange.duration),
+    |                                                                                          `- warning: 'timeRange' was deprecated in macOS 13.0: Use load(.timeRange) instead
+122 |             "segments": track.segments.map { ["empty": $0.isEmpty,
+123 |                 "source_start": timing($0.timeMapping.source.start),
+
+/Users/admin/projects/BelloBox-rust-first-following/rust/docs/validation/native-first-following-2026-10-09/TimingProbe.swift:122:31: warning: 'segments' was deprecated in macOS 13.0: Use load(.segments) instead
+120 |     return ["decoded": decoded, "requested_start": start, "duration": timing(asset.duration),
+121 |             "track_start": timing(track.timeRange.start), "track_duration": timing(track.timeRange.duration),
+122 |             "segments": track.segments.map { ["empty": $0.isEmpty,
+    |                               `- warning: 'segments' was deprecated in macOS 13.0: Use load(.segments) instead
+123 |                 "source_start": timing($0.timeMapping.source.start),
+124 |                 "source_duration": timing($0.timeMapping.source.duration),

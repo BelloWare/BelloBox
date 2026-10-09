@@ -1,0 +1,42 @@
+{
+  "name": "platform-movie",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bello-platform",
+    "--features",
+    "movie-fixtures",
+    "--lib",
+    "movie::",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "expected_passed": 23,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T00:02:28.515350+00:00",
+  "cwd": "/Users/admin/projects/BelloBox-rust-first-following/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence/platform-movie.log",
+  "ended_at": "2026-10-09T00:02:36.842278+00:00",
+  "elapsed_seconds": 8.326807790901512,
+  "exit_code": 0,
+  "log_sha256": "9205806be6d88c3086e64d11302218f923c7d0d9efd72c0e7331a91e443c1fa1",
+  "counts": [
+    {
+      "passed": 23,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 190
+    }
+  ],
+  "test_binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bello_platform-59f875a5f1616394",
+      "sha256": "6eb7576c0ae8f97a2afe34c666585b8de198c3820400230aad658d325a3a2046"
+    }
+  ]
+}

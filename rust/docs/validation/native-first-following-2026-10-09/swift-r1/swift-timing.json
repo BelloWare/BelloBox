@@ -1,0 +1,2442 @@
+{
+  "cases_completed" : [
+    {
+      "case" : "regular",
+      "compressed" : {
+        "decoded" : false,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 131,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "sample_bytes" : 89,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "sample_bytes" : 48,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "sample_bytes" : 93,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.40000000000000002,
+              "timescale" : 600,
+              "value" : 240
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.40000000000000002,
+              "timescale" : 600,
+              "value" : 240
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.40000000000000002,
+              "timescale" : 600,
+              "value" : 240
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "decoded" : {
+        "decoded" : true,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "rgba_sha256" : "1886dff2dd386d791950e0bdda6bb17efb7f08325b542d361d33613bff4334f2",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "rgba_sha256" : "89b01a04bc49c4cd7bddb2438f8371227db6d52112e1e510f459cdc2d51f5149",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "rgba_sha256" : "cc0ef2cd429d65fcec82123a6ceb5e72b7abd4778bb20dfd60933911c0661bac",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "rgba_sha256" : "70f353d1f084f4724ac16260e6006444b62a22253bf1654bb8e586992a7b86eb",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.40000000000000002,
+              "timescale" : 600,
+              "value" : 240
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.40000000000000002,
+              "timescale" : 600,
+              "value" : 240
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "explicit_container_gap" : false,
+      "file_bytes" : 1322,
+      "file_sha256" : "60e3e29911e1b475399e42f84d6b2fd9c4da02c89885f863ba33007d100add89",
+      "source_unchanged_after_read" : true,
+      "submitted_duration" : 0.10000000000000001,
+      "submitted_pts" : [
+        0,
+        0.10000000000000001,
+        0.20000000000000001,
+        0.29999999999999999
+      ],
+      "submitted_session" : 0,
+      "writer_sha256" : "60e3e29911e1b475399e42f84d6b2fd9c4da02c89885f863ba33007d100add89"
+    },
+    {
+      "case" : "delayed-first-control",
+      "compressed" : {
+        "decoded" : false,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 131,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "sample_bytes" : 106,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "sample_bytes" : 92,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.40000000000000002,
+              "timescale" : 600,
+              "value" : 240
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : true,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          },
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "decoded" : {
+        "decoded" : true,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "rgba_sha256" : "5e9d5b686a0c4122c77d69144a5874dcbbcd05c1b4717bb11d8d730cc17a6659",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "rgba_sha256" : "1886dff2dd386d791950e0bdda6bb17efb7f08325b542d361d33613bff4334f2",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "rgba_sha256" : "32881ba076a1d1a5d27a9e8870097ac67127f8597446a1b3e454bbe15b41152a",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "rgba_sha256" : "f867fc1343b8e02e1cdb9bee3f233b4c076d868a0ebdcaed3020464ad2dec407",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : true,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          },
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "explicit_container_gap" : false,
+      "file_bytes" : 1289,
+      "file_sha256" : "d9855f3860f7c05be0bdd9f381d6cb0e49e45b2e44c433039eabeaa15e8df558",
+      "source_unchanged_after_read" : true,
+      "submitted_duration" : 0.10000000000000001,
+      "submitted_pts" : [
+        0.10000000000000001,
+        0.20000000000000001,
+        0.29999999999999999
+      ],
+      "submitted_session" : 0,
+      "writer_sha256" : "d9855f3860f7c05be0bdd9f381d6cb0e49e45b2e44c433039eabeaa15e8df558"
+    },
+    {
+      "case" : "session-at-first",
+      "compressed" : {
+        "decoded" : false,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.29999999999999999,
+          "timescale" : 600,
+          "value" : 180
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 131,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "sample_bytes" : 106,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "sample_bytes" : 92,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.29999999999999999,
+          "timescale" : 600,
+          "value" : 180
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "decoded" : {
+        "decoded" : true,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.29999999999999999,
+          "timescale" : 600,
+          "value" : 180
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "rgba_sha256" : "1886dff2dd386d791950e0bdda6bb17efb7f08325b542d361d33613bff4334f2",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "rgba_sha256" : "32881ba076a1d1a5d27a9e8870097ac67127f8597446a1b3e454bbe15b41152a",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "rgba_sha256" : "f867fc1343b8e02e1cdb9bee3f233b4c076d868a0ebdcaed3020464ad2dec407",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.29999999999999999,
+          "timescale" : 600,
+          "value" : 180
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "explicit_container_gap" : false,
+      "file_bytes" : 1277,
+      "file_sha256" : "c49ee3bdb15bf7c94c08d0757d5b02ce9153ae35a0f646f672e397086536fa16",
+      "source_unchanged_after_read" : true,
+      "submitted_duration" : 0.10000000000000001,
+      "submitted_pts" : [
+        0.10000000000000001,
+        0.20000000000000001,
+        0.29999999999999999
+      ],
+      "submitted_session" : 0.10000000000000001,
+      "writer_sha256" : "c49ee3bdb15bf7c94c08d0757d5b02ce9153ae35a0f646f672e397086536fa16"
+    },
+    {
+      "case" : "negative-session",
+      "compressed" : {
+        "decoded" : false,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 131,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "sample_bytes" : 106,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "sample_bytes" : 92,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.40000000000000002,
+              "timescale" : 600,
+              "value" : 240
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : true,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          },
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "decoded" : {
+        "decoded" : true,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "rgba_sha256" : "5e9d5b686a0c4122c77d69144a5874dcbbcd05c1b4717bb11d8d730cc17a6659",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "rgba_sha256" : "1886dff2dd386d791950e0bdda6bb17efb7f08325b542d361d33613bff4334f2",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "rgba_sha256" : "32881ba076a1d1a5d27a9e8870097ac67127f8597446a1b3e454bbe15b41152a",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "rgba_sha256" : "f867fc1343b8e02e1cdb9bee3f233b4c076d868a0ebdcaed3020464ad2dec407",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : true,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          },
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0.40000000000000002,
+          "timescale" : 600,
+          "value" : 240
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "explicit_container_gap" : false,
+      "file_bytes" : 1289,
+      "file_sha256" : "d9855f3860f7c05be0bdd9f381d6cb0e49e45b2e44c433039eabeaa15e8df558",
+      "source_unchanged_after_read" : true,
+      "submitted_duration" : 0.10000000000000001,
+      "submitted_pts" : [
+        0,
+        0.10000000000000001,
+        0.20000000000000001
+      ],
+      "submitted_session" : -0.10000000000000001,
+      "writer_sha256" : "d9855f3860f7c05be0bdd9f381d6cb0e49e45b2e44c433039eabeaa15e8df558"
+    },
+    {
+      "case" : "long-leading-gap",
+      "compressed" : {
+        "decoded" : false,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 3.3999999999999999,
+          "timescale" : 600,
+          "value" : 2040
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "sample_bytes" : 131,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "sample_bytes" : 106,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.20000000000000001,
+              "timescale" : 600,
+              "value" : 120
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.10000000000000001,
+              "timescale" : 600,
+              "value" : 60
+            },
+            "sample_bytes" : 92,
+            "sample_count" : 1
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 1,
+              "value" : 0
+            },
+            "has_image" : false,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.3999999999999999,
+              "timescale" : 600,
+              "value" : 2040
+            },
+            "sample_bytes" : 0,
+            "sample_count" : 0
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : true,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.1000000000000001,
+              "timescale" : 600,
+              "value" : 1860
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.1000000000000001,
+              "timescale" : 600,
+              "value" : 1860
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          },
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.1000000000000001,
+              "timescale" : 600,
+              "value" : 1860
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 3.3999999999999999,
+          "timescale" : 600,
+          "value" : 2040
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "decoded" : {
+        "decoded" : true,
+        "duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 3.3999999999999999,
+          "timescale" : 600,
+          "value" : 2040
+        },
+        "reader_status" : 2,
+        "requested_start" : 0,
+        "samples" : [
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "rgba_sha256" : "5e9d5b686a0c4122c77d69144a5874dcbbcd05c1b4717bb11d8d730cc17a6659",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.1000000000000001,
+              "timescale" : 600,
+              "value" : 1860
+            },
+            "rgba_sha256" : "1886dff2dd386d791950e0bdda6bb17efb7f08325b542d361d33613bff4334f2",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.2000000000000002,
+              "timescale" : 600,
+              "value" : 1920
+            },
+            "rgba_sha256" : "32881ba076a1d1a5d27a9e8870097ac67127f8597446a1b3e454bbe15b41152a",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          },
+          {
+            "dts" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "duration" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "has_image" : true,
+            "height" : 48,
+            "pts" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.2999999999999998,
+              "timescale" : 600,
+              "value" : 1980
+            },
+            "rgba_sha256" : "f867fc1343b8e02e1cdb9bee3f233b4c076d868a0ebdcaed3020464ad2dec407",
+            "sample_bytes" : 0,
+            "sample_count" : 1,
+            "width" : 64
+          }
+        ],
+        "segments" : [
+          {
+            "empty" : true,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.1000000000000001,
+              "timescale" : 600,
+              "value" : 1860
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 0,
+              "seconds" : null,
+              "timescale" : 0,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.1000000000000001,
+              "timescale" : 600,
+              "value" : 1860
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            }
+          },
+          {
+            "empty" : false,
+            "source_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "source_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0,
+              "timescale" : 600,
+              "value" : 0
+            },
+            "target_duration" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 0.29999999999999999,
+              "timescale" : 600,
+              "value" : 180
+            },
+            "target_start" : {
+              "epoch" : 0,
+              "flags" : 1,
+              "seconds" : 3.1000000000000001,
+              "timescale" : 600,
+              "value" : 1860
+            }
+          }
+        ],
+        "track_duration" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 3.3999999999999999,
+          "timescale" : 600,
+          "value" : 2040
+        },
+        "track_start" : {
+          "epoch" : 0,
+          "flags" : 1,
+          "seconds" : 0,
+          "timescale" : 1,
+          "value" : 0
+        }
+      },
+      "explicit_container_gap" : false,
+      "file_bytes" : 1289,
+      "file_sha256" : "5a6a38613085f9c27bdfb0da57cae8e546db7b1344e848ad44fb57d6b207c1c1",
+      "source_unchanged_after_read" : true,
+      "submitted_duration" : 0.10000000000000001,
+      "submitted_pts" : [
+        3.1000000000000001,
+        3.2000000000000002,
+        3.2999999999999998
+      ],
+      "submitted_session" : 0,
+      "writer_sha256" : "5a6a38613085f9c27bdfb0da57cae8e546db7b1344e848ad44fb57d6b207c1c1"
+    }
+  ],
+  "error" : "Error Domain=TimingProbe Code=1 \"diagnostic sample bound\" UserInfo={NSLocalizedDescription=diagnostic sample bound}"
+}

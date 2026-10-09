@@ -1,0 +1,226 @@
+{
+  "checked_at": "2026-10-09T00:04:28.761801+00:00",
+  "base": "2d9b170ed81b33ed3adfa080dfbadc89b2f21f2f",
+  "base_tree": "5e63d54223d869606f40be48715c865727c69441",
+  "all_1415_base_files_and_modes_unchanged": true,
+  "changes_only_under": "rust/docs/validation/native-first-following-2026-10-09/",
+  "base_manifest_sha256": "e863e5bb7487b441fafb1fca34fbe66b05a50debb44261e9e950096172b42867",
+  "results": [
+    {
+      "name": "platform-movie",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bello-platform",
+        "--features",
+        "movie-fixtures",
+        "--lib",
+        "movie::",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "expected_passed": 23,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T00:02:28.515350+00:00",
+      "cwd": "/Users/admin/projects/BelloBox-rust-first-following/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence/platform-movie.log",
+      "ended_at": "2026-10-09T00:02:36.842278+00:00",
+      "elapsed_seconds": 8.326807790901512,
+      "exit_code": 0,
+      "log_sha256": "9205806be6d88c3086e64d11302218f923c7d0d9efd72c0e7331a91e443c1fa1",
+      "counts": [
+        {
+          "passed": 23,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 190
+        }
+      ],
+      "test_binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bello_platform-59f875a5f1616394",
+          "sha256": "6eb7576c0ae8f97a2afe34c666585b8de198c3820400230aad658d325a3a2046"
+        }
+      ],
+      "announced_test_identities": [
+        "movie::macos::tests::native_admission_waits_for_old_converter_lease_and_cancels_own_waiter",
+        "movie::macos::tests::native_cancel_and_sample_limit_retire_reader_and_preserve_prior_output",
+        "movie::macos::tests::native_final_validation_checks_late_cancel_source_mutation_and_own_retirement",
+        "movie::macos::tests::native_invalid_movie_reports_metadata_error_and_honors_precancel",
+        "movie::macos::tests::native_metadata_delivery_rechecks_late_cancel_and_source_after_callback_drain",
+        "movie::macos::tests::native_render_matches_display_orientation_and_coded_size_scaling",
+        "movie::macos::tests::native_synthetic_movie_pts_orientation_and_staged_gif_integration",
+        "movie::macos::tests::native_time_rejects_invalid_nonfinite_negative_and_epoch_values",
+        "movie::macos::tests::nil_sample_status_mapping_never_masks_failure_as_clean_eof",
+        "movie::retirement::tests::logical_cancellation_cannot_complete_held_callback_retirement",
+        "movie::tests::cancellation_is_shared_atomic_state",
+        "movie::tests::frame_transfer_moves_pixels_and_debug_redacts_them",
+        "movie::tests::geometry_handles_rotation_mirror_and_origin",
+        "movie::tests::geometry_rejects_nonfinite_singular_and_excessive",
+        "movie::tests::identity::source_guard_canonicalizes_symlinked_parent_directories",
+        "movie::tests::identity::source_guard_rejects_directory_empty_and_replaced_files",
+        "movie::tests::identity::source_guard_resolves_symlink_and_detects_edits",
+        "movie::tests::pixel_storage_requires_entire_padded_last_row",
+        "movie::tests::read_range_preserves_source_pts_and_tolerance",
+        "movie::tests::read_range_rejects_invalid_or_unbounded_values",
+        "movie::tests::selected_source_is_send_sync_owned_identity_not_equal_metadata",
+        "movie::tests::source_seek_has_independent_short_long_end_and_invalid_rules",
+        "movie::tests::unavailable_open_never_reads_a_path"
+      ]
+    },
+    {
+      "name": "core-gif",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "recording::gif::",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "expected_passed": 49,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T00:02:36.843045+00:00",
+      "cwd": "/Users/admin/projects/BelloBox-rust-first-following/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence/core-gif.log",
+      "ended_at": "2026-10-09T00:02:42.910743+00:00",
+      "elapsed_seconds": 6.067558499984443,
+      "exit_code": 0,
+      "log_sha256": "eac7a7a9c4ab59f1802265fdf82258b5d9d0a5a32d4f5f079a09bb343ea52ece",
+      "counts": [
+        {
+          "passed": 49,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 397
+        }
+      ],
+      "test_binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823",
+          "sha256": "c8910e7b0cc7fa7dde86bb48302689c84805e70eeb65b51289e326454b8598fe"
+        }
+      ],
+      "announced_test_identities": [
+        "recording::gif::gif_decode_tests::additional_pixels_and_invalid_palette_references_are_rejected",
+        "recording::gif::gif_decode_tests::bounds_and_failure_are_checked_before_later_frames_can_be_admitted",
+        "recording::gif::gif_decode_tests::cancellation_during_decoding_is_preserved_and_cannot_resume",
+        "recording::gif::gif_decode_tests::completion_io_failure_and_cancellation_preserve_prior_output_and_remove_stage",
+        "recording::gif::gif_decode_tests::dictionary_growth_decodes_without_losing_pixels",
+        "recording::gif::gif_decode_tests::exact_fixture_passes_full_readback_and_owned_preview_rewind",
+        "recording::gif::gif_decode_tests::export_and_preview_reject_first_and_last_frame_completion_failures",
+        "recording::gif::gif_decode_tests::export_and_preview_require_trailer_and_exact_eof",
+        "recording::gif::gif_decode_tests::full_readback_still_rejects_trailing_bytes_frame_count_timing_and_loop_changes",
+        "recording::gif::gif_decode_tests::injected_completion_failures_occur_after_exact_pixel_output",
+        "recording::gif::gif_decode_tests::legal_reblocking_and_fragmented_reads_preserve_eoi_pixels_and_timing",
+        "recording::gif::gif_decode_tests::strict_eoi_is_required_even_after_all_expected_pixels_have_arrived",
+        "recording::gif::gif_decode_tests::truncated_frames_and_missing_trailer_never_become_clean_eof",
+        "recording::gif::gif_decode_tests::unchanged_mirrored_payload_reproduces_legacy_eoi_failure_and_strict_drain_preserves_pixels",
+        "recording::gif::gif_tests::accepted_cancellation_and_publication_claim_have_exactly_one_winner",
+        "recording::gif::gif_tests::cancellation_before_during_and_after_encoding_prevents_publication",
+        "recording::gif::gif_tests::cancellation_during_held_publication_returns_claimed_without_waiting",
+        "recording::gif::gif_tests::competing_exports_do_not_clobber_and_new_destination_race_is_safe",
+        "recording::gif::gif_tests::counting_writer_rejects_output_overflow_and_reports_underlying_failure",
+        "recording::gif::gif_tests::delays_use_cumulative_budget_and_borrow_for_partial_last_frame",
+        "recording::gif::gif_tests::encoder_trailer_failure_is_observable",
+        "recording::gif::gif_tests::failed_staged_readback_never_replaces_the_previous_file",
+        "recording::gif::gif_tests::fallback_first_frame_and_eof_hold_keep_planned_count",
+        "recording::gif::gif_tests::filesystem_support_gate_matches_the_platform_contract",
+        "recording::gif::gif_tests::final_publication_failure_preserves_source_destination_and_cleans_owned_stage",
+        "recording::gif::gif_tests::frame_validation_and_debug_never_expose_pixels",
+        "recording::gif::gif_tests::loop_markers_in_comment_payload_are_not_repeat_blocks",
+        "recording::gif::gif_tests::malformed_gif_readbacks_are_rejected_without_loading_full_output",
+        "recording::gif::gif_tests::no_overwrite_default_and_explicit_replace_success",
+        "recording::gif::gif_tests::once_omits_repeat_block_forever_emits_zero_and_validates",
+        "recording::gif::gif_tests::options_defaults_normalize_and_deserialize_missing_fields",
+        "recording::gif::gif_tests::orientation_is_display_input_and_alpha_is_black_composited",
+        "recording::gif::gif_tests::planning_clamps_trim_and_rejects_bad_metadata",
+        "recording::gif::gif_tests::planning_preserves_source_caps_portrait_and_no_upscale",
+        "recording::gif::gif_tests::publication_claim_is_not_success_and_errors_or_panics_are_terminal",
+        "recording::gif::gif_tests::rejects_empty_after_cut_wrong_size_and_backward_frames",
+        "recording::gif::gif_tests::replaced_stage_is_neither_published_nor_removed",
+        "recording::gif::gif_tests::sequential_sampling_tolerance_trim_end_and_hold_match_source",
+        "recording::gif::gif_tests::source_failure_and_panics_preserve_prior_destination_and_cleanup",
+        "recording::gif::gif_tests::source_finalization_failure_cancel_mutation_and_panic_never_publish",
+        "recording::gif::gif_tests::source_finalization_runs_once_without_requiring_trimmed_stream_eof",
+        "recording::gif::gif_tests::source_same_path_is_never_replaced_even_with_replace_permission",
+        "recording::gif::gif_tests::source_sample_cap_stops_pathological_equal_timestamp_stream",
+        "recording::gif::gif_tests::source_symlinks_hardlinks_and_late_aliases_are_protected",
+        "recording::gif::gif_tests::source_wire_null_defaults_and_signed_64_bit_bounds",
+        "recording::gif::gif_tests::staged_and_published_files_are_owner_only_and_other_symlinks_rejected",
+        "recording::gif::gif_tests::successful_publication_is_terminal_and_late_cancel_preserves_it",
+        "recording::gif::gif_tests::timing_invariants_cover_all_rates_and_partial_endings",
+        "recording::gif::gif_tests::truncated_lzw_payload_fails_full_readback"
+      ]
+    },
+    {
+      "name": "app-native-host",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "gif_converter::native_host_tests::",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "expected_passed": 2,
+      "expected_ignored": 0,
+      "started_at": "2026-10-09T00:02:42.911341+00:00",
+      "cwd": "/Users/admin/projects/BelloBox-rust-first-following/rust",
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence/app-native-host.log",
+      "ended_at": "2026-10-09T00:03:02.922210+00:00",
+      "elapsed_seconds": 20.010578333050944,
+      "exit_code": 0,
+      "log_sha256": "889efa79c11af25951c579d9b09cbe74935aac7a3c2c165d76df3a7034dc700d",
+      "counts": [
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 409
+        }
+      ],
+      "test_binaries": [
+        {
+          "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+          "sha256": "6627249990ca6ab65a474e11725f6c320697060b4d8088a911f306e89e13604c"
+        }
+      ],
+      "announced_test_identities": [
+        "gif_converter::native_host_tests::generated_native_host_inspect_seek_trim_export_switch_identity_and_timing",
+        "gif_converter::native_host_tests::generated_native_host_short_sparse_long_and_leading_gap_seek_contract"
+      ]
+    }
+  ],
+  "rust_tests_passed": 74,
+  "rust_tests_failed": 0,
+  "rust_tests_ignored": 0,
+  "swift_source_sha256": "4a36942f9ef5c19e2953653fc82aafffd686b86dda56ace7956dfac53ceb6f8e",
+  "swift_binary_sha256": "3367b854cc159267f6415d52e11b4ffd0950d75473ddf364350b0ac8d23dd074",
+  "swift_trace_sha256": "d55d733a9d6719daaadfe10ff3873f2a8861f72cafa6470816e5c9b2a73cd5dc",
+  "assessment_sha256": "ce367d0e33e8b5e13fa14e374c6b292e3f1c146a1cbed41be3b98dc1f64e9c3d",
+  "verified_generated_cases": 6,
+  "positive_first_decoded_pts_cases": 0,
+  "native_first_following_coverage": false,
+  "scope": "Generated fixtures only; no production, test-suite, dependency, admission, seek/decoder policy or security changes. No interactive UI, capture, TCC/AX, real provider/key/vault, signing or installation."
+}

@@ -1,0 +1,64 @@
+{
+  "target": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+  "steps": [
+    {
+      "name": "platform-movie",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bello-platform",
+        "--features",
+        "movie-fixtures",
+        "--lib",
+        "movie::",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "expected_passed": 23,
+      "expected_ignored": 0
+    },
+    {
+      "name": "core-gif",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "recording::gif::",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "expected_passed": 49,
+      "expected_ignored": 0
+    },
+    {
+      "name": "app-native-host",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "gif_converter::native_host_tests::",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "expected_passed": 2,
+      "expected_ignored": 0
+    }
+  ]
+}

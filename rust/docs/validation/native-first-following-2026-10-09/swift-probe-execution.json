@@ -1,0 +1,39 @@
+{
+  "source_sha256": "4a36942f9ef5c19e2953653fc82aafffd686b86dda56ace7956dfac53ceb6f8e",
+  "steps": [
+    {
+      "name": "swift-compile",
+      "command": [
+        "xcrun",
+        "swiftc",
+        "-target",
+        "arm64-apple-macosx14.0",
+        "/Users/admin/projects/BelloBox-rust-first-following/rust/docs/validation/native-first-following-2026-10-09/TimingProbe.swift",
+        "-o",
+        "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence/TimingProbe"
+      ],
+      "started_at": "2026-10-08T23:59:32.411855+00:00",
+      "elapsed_seconds": 0.6434230409795418,
+      "exit_code": 0,
+      "stdout": "swift-compile.stdout",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "swift-compile.stderr",
+      "stderr_sha256": "ec454c6a5fad08362d734f107f3eedc2ceb2d1b5991ab05ddbe2430eff9bbd7d"
+    },
+    {
+      "name": "swift-timing",
+      "command": [
+        "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence/TimingProbe",
+        "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence/generated-movies"
+      ],
+      "started_at": "2026-10-08T23:59:33.055980+00:00",
+      "elapsed_seconds": 0.630632666987367,
+      "exit_code": 0,
+      "stdout": "swift-timing.json",
+      "stdout_sha256": "d55d733a9d6719daaadfe10ff3873f2a8861f72cafa6470816e5c9b2a73cd5dc",
+      "stderr": "swift-timing.stderr",
+      "stderr_sha256": "f337bd442e4ee4f644bc08cb34c02e9e02781f9bf0ec4526580644f96a879193"
+    }
+  ],
+  "binary_sha256": "3367b854cc159267f6415d52e11b4ffd0950d75473ddf364350b0ac8d23dd074"
+}

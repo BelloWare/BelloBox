@@ -1,0 +1,17 @@
+{
+  "result": "failed diagnostic interpretation check",
+  "cause": "Adding the stored cslg offset_shift=60 to the already signed ctts sums disagreed with independent compressed media PTS by +60 ticks.",
+  "expected_regular_media_pts_seconds": [
+    0,
+    0.2,
+    0.1,
+    0.3
+  ],
+  "derived_with_extra_shift": [
+    0.1,
+    0.3,
+    0.2,
+    0.4
+  ],
+  "native_trace_and_movie_bytes_unchanged": true
+}

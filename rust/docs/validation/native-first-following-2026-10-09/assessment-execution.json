@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python3",
+    "rust/docs/validation/native-first-following-2026-10-09/verify_assessment.py",
+    "/Users/admin/Library/Caches/BelloRustWork/box-first-following-4y0xlkja/evidence"
+  ],
+  "checked_at": "2026-10-09T00:03:55.160918+00:00",
+  "source_sha256": "db67521aa8b09a42142dd301950ff35d7862041d091c04ef46cc1041753e59d3",
+  "exit_code": 0,
+  "stdout_sha256": "ce367d0e33e8b5e13fa14e374c6b292e3f1c146a1cbed41be3b98dc1f64e9c3d",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
