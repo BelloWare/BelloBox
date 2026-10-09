@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T13:47:00Z",
+  "as_of_utc": "2026-10-09T13:57:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -61770,6 +61770,406 @@
       "observed_utc": "2026-10-09T13:44:38.395Z",
       "job_id": 113845366946,
       "source_commit": "41bccf467b40daacd2d715c759165aaf0b84ddf9"
+    },
+    {
+      "id": "20261009-1357-ci-113845367841",
+      "repository_assignment": "BelloBox",
+      "activity": "Rust macOS native checks / apple-silicon",
+      "category": "CI runner",
+      "start_utc": "2026-10-09T13:37:30Z",
+      "end_utc": "2026-10-09T13:56:42Z",
+      "duration_seconds": 1152.0,
+      "source": [
+        {
+          "receipt_sha256": "62a0aa23a5672b81843a554766ce65f1555a0d871cbec5a4005e1868d05b6b88",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated",
+          "url": "https://github.com/BelloWare/BelloBox/actions/runs/37938156317/job/113845367841"
+        }
+      ],
+      "outcome": "success",
+      "accounting_group": "catchup_ci_job",
+      "include_in_totals": true,
+      "resource": "CI runner",
+      "duration_basis": "GitHub job endpoints; steps nested, no model timing",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1357",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "job_id": 113845367841,
+      "run_id": 37938156317,
+      "source_commit": "41bccf467b40daacd2d715c759165aaf0b84ddf9",
+      "coverage_note": "Late-added earlier evidence, deduplicated against all prior timed intervals.",
+      "nested_steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T13:37:30Z",
+          "completed_at": "2026-10-09T13:37:31Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T13:37:31Z",
+          "completed_at": "2026-10-09T13:37:35Z"
+        },
+        {
+          "name": "Verify native Apple toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T13:37:35Z",
+          "completed_at": "2026-10-09T13:37:39Z"
+        },
+        {
+          "name": "Install pinned Rust toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-09T13:37:39Z",
+          "completed_at": "2026-10-09T13:37:49Z"
+        },
+        {
+          "name": "Compile and link all native test targets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-09T13:37:49Z",
+          "completed_at": "2026-10-09T13:43:21Z"
+        },
+        {
+          "name": "Lint normal and synthetic native platform paths",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T13:43:21Z",
+          "completed_at": "2026-10-09T13:44:27Z"
+        },
+        {
+          "name": "Compare raw movie decoding with the independent Swift source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-09T13:44:27Z",
+          "completed_at": "2026-10-09T13:45:19Z"
+        },
+        {
+          "name": "Verify bounded Swift text oracle is present",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-09T13:45:19Z",
+          "completed_at": "2026-10-09T13:45:38Z"
+        },
+        {
+          "name": "Verify bounded Swift URL oracle is present",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-09T13:45:38Z",
+          "completed_at": "2026-10-09T13:45:40Z"
+        },
+        {
+          "name": "Verify bounded Swift comparison oracle is present",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-09T13:45:40Z",
+          "completed_at": "2026-10-09T13:45:41Z"
+        },
+        {
+          "name": "Run pure domain and filesystem tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-09T13:45:41Z",
+          "completed_at": "2026-10-09T13:46:45Z"
+        },
+        {
+          "name": "Characterize synthetic CoreGraphics alpha without capture",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-09T13:46:45Z",
+          "completed_at": "2026-10-09T13:46:47Z"
+        },
+        {
+          "name": "Test supplied-image Window host mask without GPUI launch",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-09T13:46:47Z",
+          "completed_at": "2026-10-09T13:47:21Z"
+        },
+        {
+          "name": "Test generated movie converter host and closed native gate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-09T13:47:21Z",
+          "completed_at": "2026-10-09T13:48:04Z"
+        },
+        {
+          "name": "Test generated recording writer and physical callback retirement",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-09T13:48:04Z",
+          "completed_at": "2026-10-09T13:48:15Z"
+        },
+        {
+          "name": "Run full App suite with recording and shutdown fixtures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-09T13:48:15Z",
+          "completed_at": "2026-10-09T13:51:59Z"
+        },
+        {
+          "name": "Lint recording feature App and native platform paths",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-09T13:51:59Z",
+          "completed_at": "2026-10-09T13:54:18Z"
+        },
+        {
+          "name": "Test immutable image OCR on generated pixels and numeric loopback",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-09T13:54:18Z",
+          "completed_at": "2026-10-09T13:54:27Z"
+        },
+        {
+          "name": "Test image OCR consent and inline retirement on the GPUI test platform",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-09T13:54:27Z",
+          "completed_at": "2026-10-09T13:54:54Z"
+        },
+        {
+          "name": "Build native applications without launching",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-09T13:54:54Z",
+          "completed_at": "2026-10-09T13:55:51Z"
+        },
+        {
+          "name": "Test isolated preview packaging policy",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-09T13:55:51Z",
+          "completed_at": "2026-10-09T13:55:52Z"
+        },
+        {
+          "name": "Assemble and verify offline development preview",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-10-09T13:55:52Z",
+          "completed_at": "2026-10-09T13:56:36Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 44,
+          "started_at": "2026-10-09T13:56:36Z",
+          "completed_at": "2026-10-09T13:56:38Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 45,
+          "started_at": "2026-10-09T13:56:38Z",
+          "completed_at": "2026-10-09T13:56:40Z"
+        }
+      ],
+      "steps_added_to_total": false,
+      "receipt_observed_utc": "2026-10-09T13:58:01.237Z",
+      "receipt_note": "Terminal job completed within cutoff; evidence may be observed afterward"
+    },
+    {
+      "id": "20261009-1357-ci-113845366946",
+      "repository_assignment": "BelloBox",
+      "activity": "Rust Linux checks / linux",
+      "category": "CI runner",
+      "start_utc": "2026-10-09T13:37:26Z",
+      "end_utc": "2026-10-09T13:50:25Z",
+      "duration_seconds": 779.0,
+      "source": [
+        {
+          "receipt_sha256": "62a0aa23a5672b81843a554766ce65f1555a0d871cbec5a4005e1868d05b6b88",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated",
+          "url": "https://github.com/BelloWare/BelloBox/actions/runs/37938156319/job/113845366946"
+        }
+      ],
+      "outcome": "success",
+      "accounting_group": "catchup_ci_job",
+      "include_in_totals": true,
+      "resource": "CI runner",
+      "duration_basis": "GitHub job endpoints; steps nested, no model timing",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1357",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "job_id": 113845366946,
+      "run_id": 37938156319,
+      "source_commit": "41bccf467b40daacd2d715c759165aaf0b84ddf9",
+      "coverage_note": "Late-added earlier evidence, deduplicated against all prior timed intervals.",
+      "nested_steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T13:37:26Z",
+          "completed_at": "2026-10-09T13:37:27Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T13:37:27Z",
+          "completed_at": "2026-10-09T13:37:29Z"
+        },
+        {
+          "name": "Install Linux build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T13:37:29Z",
+          "completed_at": "2026-10-09T13:37:52Z"
+        },
+        {
+          "name": "Install pinned Rust toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-09T13:37:52Z",
+          "completed_at": "2026-10-09T13:38:01Z"
+        },
+        {
+          "name": "Formatting",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-09T13:38:01Z",
+          "completed_at": "2026-10-09T13:38:03Z"
+        },
+        {
+          "name": "Core and integration tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T13:38:03Z",
+          "completed_at": "2026-10-09T13:42:44Z"
+        },
+        {
+          "name": "Test recording feature platform lifecycle with generated media",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-09T13:42:44Z",
+          "completed_at": "2026-10-09T13:42:48Z"
+        },
+        {
+          "name": "Run full App suite with recording and shutdown fixtures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-09T13:42:48Z",
+          "completed_at": "2026-10-09T13:46:52Z"
+        },
+        {
+          "name": "Lint recording fixture paths",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-09T13:46:52Z",
+          "completed_at": "2026-10-09T13:49:24Z"
+        },
+        {
+          "name": "Lints",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-09T13:49:24Z",
+          "completed_at": "2026-10-09T13:49:34Z"
+        },
+        {
+          "name": "Build native applications",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-09T13:49:34Z",
+          "completed_at": "2026-10-09T13:50:08Z"
+        },
+        {
+          "name": "Benchmark harness self-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-09T13:50:08Z",
+          "completed_at": "2026-10-09T13:50:09Z"
+        },
+        {
+          "name": "UI evidence harness self-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-09T13:50:09Z",
+          "completed_at": "2026-10-09T13:50:09Z"
+        },
+        {
+          "name": "Capture current Linux software-rendered UI",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-09T13:50:09Z",
+          "completed_at": "2026-10-09T13:50:24Z"
+        },
+        {
+          "name": "Summarize Linux UI smoke without artifact storage",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-09T13:50:24Z",
+          "completed_at": "2026-10-09T13:50:24Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-10-09T13:50:24Z",
+          "completed_at": "2026-10-09T13:50:24Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-10-09T13:50:24Z",
+          "completed_at": "2026-10-09T13:50:24Z"
+        }
+      ],
+      "steps_added_to_total": false,
+      "receipt_observed_utc": "2026-10-09T13:50:31.376Z",
+      "receipt_note": "Terminal job completed within cutoff; evidence may be observed afterward"
     }
   ],
   "commit_milestones": [
@@ -62476,15 +62876,15 @@
         }
       },
       "catchup_ci_job": {
-        "count": 12,
-        "known_duration_count": 12,
-        "resource_seconds_sum": 10158.0,
-        "wall_coverage_seconds": 6022.0,
+        "count": 14,
+        "known_duration_count": 14,
+        "resource_seconds_sum": 12089.0,
+        "wall_coverage_seconds": 7178.0,
         "category_seconds": {
-          "CI runner": 10158.0
+          "CI runner": 12089.0
         },
         "resource_seconds": {
-          "CI runner": 10158.0
+          "CI runner": 12089.0
         }
       },
       "catchup_native_command": {
@@ -62961,6 +63361,41 @@
       "outside_selected_ci_job_intervals_seconds": 600.0,
       "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
       "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1357",
+      "through_utc": "2026-10-09T13:57:00Z",
+      "coverage_window_start_utc": "2026-10-09T13:47:00Z",
+      "new_items": 2,
+      "groups": {
+        "catchup_ci_job": {
+          "count": 2,
+          "known_duration_count": 2,
+          "resource_seconds_sum": 1931.0,
+          "wall_coverage_seconds": 1156.0,
+          "category_seconds": {
+            "CI runner": 1931.0
+          },
+          "resource_seconds": {
+            "CI runner": 1931.0
+          },
+          "known_endpoint_items": 2,
+          "known_endpoint_resource_seconds": 1931.0
+        }
+      },
+      "ci_coverage_within_window_seconds": 582.0,
+      "window_seconds": 600.0,
+      "outside_selected_ci_job_intervals_seconds": 18.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {
+        "CI orchestration": 12.0,
+        "dependency/environment setup": 46.0,
+        "build/test/check (combined)": 1365.0,
+        "build + automated lint/check": 369.0,
+        "build": 91.0,
+        "packaging/validation": 45.0,
+        "CI reporting": 0.0
+      }
     }
   ],
   "later_status_observations": [
