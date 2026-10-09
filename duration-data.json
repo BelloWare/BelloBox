@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T13:37:00Z",
+  "as_of_utc": "2026-10-09T13:47:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -61683,6 +61683,93 @@
       "files": 44,
       "bytes": 1333190,
       "ref_updated_by_preparer": false
+    },
+    {
+      "id": "20261009-1347-source-publication",
+      "repository_assignment": "BelloBox",
+      "activity": "Publish comparison source and verify branch",
+      "category": "publication (mixed)",
+      "start_utc": "2026-10-09T13:36:52.376Z",
+      "end_utc": "2026-10-09T13:37:21.854Z",
+      "duration_seconds": 29.478,
+      "source": [
+        {
+          "receipt_sha256": "77973caaf1e254d50091037ca906898f502e101e9e02dbc261e53b9ea07f28c1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Observed mixed task/workflow interval includes tools, coordination and waiting; overlaps command resources and other workers",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1347",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "coverage_note": "Late-added earlier evidence, deduplicated against all prior timed intervals."
+    },
+    {
+      "id": "20261009-1347-ci-open-113845367841",
+      "repository_assignment": "BelloBox",
+      "activity": "Rust macOS native checks / apple-silicon",
+      "category": "CI status",
+      "start_utc": "2026-10-09T13:37:30Z",
+      "end_utc": null,
+      "duration_seconds": null,
+      "source": [
+        {
+          "receipt_sha256": "de7af07a1d9ba22950bd30d9f322a58ad7067f3809838234257c4216cae1927c",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated",
+          "url": "https://github.com/BelloWare/BelloBox/actions/runs/37938156317/job/113845367841"
+        }
+      ],
+      "outcome": "in_progress",
+      "accounting_group": "status_only",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Open job final duration/result unavailable",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1347",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "observed_utc": "2026-10-09T13:44:37.842Z",
+      "job_id": 113845367841,
+      "source_commit": "41bccf467b40daacd2d715c759165aaf0b84ddf9"
+    },
+    {
+      "id": "20261009-1347-ci-open-113845366946",
+      "repository_assignment": "BelloBox",
+      "activity": "Rust Linux checks / linux",
+      "category": "CI status",
+      "start_utc": "2026-10-09T13:37:26Z",
+      "end_utc": null,
+      "duration_seconds": null,
+      "source": [
+        {
+          "receipt_sha256": "de7af07a1d9ba22950bd30d9f322a58ad7067f3809838234257c4216cae1927c",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated",
+          "url": "https://github.com/BelloWare/BelloBox/actions/runs/37938156319/job/113845366946"
+        }
+      ],
+      "outcome": "in_progress",
+      "accounting_group": "status_only",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Open job final duration/result unavailable",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1347",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "observed_utc": "2026-10-09T13:44:38.395Z",
+      "job_id": 113845366946,
+      "source_commit": "41bccf467b40daacd2d715c759165aaf0b84ddf9"
     }
   ],
   "commit_milestones": [
@@ -62857,6 +62944,18 @@
           "known_endpoint_resource_seconds": 2.0639795790193602
         }
       },
+      "ci_coverage_within_window_seconds": 0,
+      "window_seconds": 600.0,
+      "outside_selected_ci_job_intervals_seconds": 600.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1347",
+      "through_utc": "2026-10-09T13:47:00Z",
+      "coverage_window_start_utc": "2026-10-09T13:37:00Z",
+      "new_items": 3,
+      "groups": {},
       "ci_coverage_within_window_seconds": 0,
       "window_seconds": 600.0,
       "outside_selected_ci_job_intervals_seconds": 600.0,
