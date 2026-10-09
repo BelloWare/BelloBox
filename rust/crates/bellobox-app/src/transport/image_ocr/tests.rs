@@ -471,6 +471,84 @@ fn held_body_read_deadline_fires_before_the_separate_total_deadline() {
     assert_eq!(fixture::request_count(&session.permit), 1);
 }
 
+// Test-only admission: a successful connect does not guarantee that a
+// nonblocking listener already has an accept-ready connection on every OS.
+#[cfg(unix)]
+fn accept_fixture_when_ready(
+    listener: &TcpListener,
+    timeout: Duration,
+    mut waiting: impl FnMut(),
+) -> std::io::Result<std::net::TcpStream> {
+    let deadline = Instant::now() + timeout;
+    loop {
+        match listener.accept() {
+            Ok((stream, address)) => {
+                assert!(address.ip().is_loopback());
+                return Ok(stream);
+            }
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    std::io::ErrorKind::WouldBlock | std::io::ErrorKind::Interrupted
+                ) =>
+            {
+                let remaining = deadline.saturating_duration_since(Instant::now());
+                if remaining.is_zero() {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::TimedOut,
+                        "Fixture connection did not become accept-ready before its deadline.",
+                    ));
+                }
+                waiting();
+                thread::sleep(remaining.min(Duration::from_millis(5)));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn fixture_accept_waits_for_connection_after_observed_would_block() {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let address = listener.local_addr().unwrap();
+    let (waiting, observed) = mpsc::channel();
+    let (finished, result) = mpsc::channel();
+    let server = thread::spawn(move || {
+        let mut waiting = Some(waiting);
+        let stream = accept_fixture_when_ready(&listener, Duration::from_secs(5), || {
+            if let Some(waiting) = waiting.take() {
+                waiting.send(()).unwrap();
+            }
+        });
+        finished.send(stream).unwrap();
+    });
+    // The connection is not created until the helper has observed not-ready.
+    observed.recv_timeout(Duration::from_secs(5)).unwrap();
+    assert!(matches!(result.try_recv(), Err(mpsc::TryRecvError::Empty)));
+    let client = std::net::TcpStream::connect(address).unwrap();
+    let accepted = result
+        .recv_timeout(Duration::from_secs(5))
+        .unwrap()
+        .unwrap();
+    assert_eq!(accepted.peer_addr().unwrap(), client.local_addr().unwrap());
+    server.join().unwrap();
+}
+
+#[cfg(unix)]
+#[test]
+fn fixture_accept_without_connection_reports_explicit_bounded_timeout() {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let timeout = Duration::from_millis(20);
+    let started = Instant::now();
+    let error = accept_fixture_when_ready(&listener, timeout, || {}).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::TimedOut);
+    assert!(error.to_string().contains("accept-ready"));
+    assert!(started.elapsed() >= timeout);
+}
+
 #[cfg(unix)]
 #[test]
 fn accepted_fixture_stream_normalizes_inherited_nonblocking_flags() {
@@ -478,7 +556,7 @@ fn accepted_fixture_stream_normalizes_inherited_nonblocking_flags() {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     listener.set_nonblocking(true).unwrap();
     let _client = std::net::TcpStream::connect(listener.local_addr().unwrap()).unwrap();
-    let (stream, _) = listener.accept().unwrap();
+    let stream = accept_fixture_when_ready(&listener, Duration::from_secs(5), || {}).unwrap();
     // Compare the kernel's canonical timeout values, which can be rounded to
     // timer ticks (this Linux host reports52ms for a requested50ms).
     stream
