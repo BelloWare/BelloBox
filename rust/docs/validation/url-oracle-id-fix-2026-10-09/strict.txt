@@ -1,0 +1,2 @@
+    Checking bellobox-core v0.1.0 (/workspace/shared/box-url-oracle-fix/rust/crates/bellobox-core)
+    Finished `dev` profile [unoptimized] target(s) in 2.10s

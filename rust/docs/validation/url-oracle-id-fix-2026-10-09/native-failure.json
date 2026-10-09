@@ -1,0 +1,209 @@
+{
+  "head_sha": "fd434af6056744f26577ad2c78cc2a44f77e7f6a",
+  "run_id": 37928860545,
+  "job_id": 113814324423,
+  "conclusion": "failure",
+  "started_at": "2026-10-09T12:15:46Z",
+  "completed_at": "2026-10-09T12:24:17Z",
+  "steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-10-09T12:15:47Z",
+      "completed_at": "2026-10-09T12:15:49Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-10-09T12:15:49Z",
+      "completed_at": "2026-10-09T12:15:53Z"
+    },
+    {
+      "name": "Verify native Apple toolchain",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-10-09T12:15:53Z",
+      "completed_at": "2026-10-09T12:16:00Z"
+    },
+    {
+      "name": "Install pinned Rust toolchain",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-10-09T12:16:00Z",
+      "completed_at": "2026-10-09T12:16:14Z"
+    },
+    {
+      "name": "Compile and link all native test targets",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5,
+      "started_at": "2026-10-09T12:16:14Z",
+      "completed_at": "2026-10-09T12:21:14Z"
+    },
+    {
+      "name": "Lint normal and synthetic native platform paths",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-10-09T12:21:14Z",
+      "completed_at": "2026-10-09T12:22:09Z"
+    },
+    {
+      "name": "Compare raw movie decoding with the independent Swift source",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 7,
+      "started_at": "2026-10-09T12:22:09Z",
+      "completed_at": "2026-10-09T12:23:09Z"
+    },
+    {
+      "name": "Verify bounded Swift text oracle is present",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 8,
+      "started_at": "2026-10-09T12:23:09Z",
+      "completed_at": "2026-10-09T12:23:29Z"
+    },
+    {
+      "name": "Verify bounded Swift URL oracle is present",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 9,
+      "started_at": "2026-10-09T12:23:29Z",
+      "completed_at": "2026-10-09T12:23:30Z"
+    },
+    {
+      "name": "Run pure domain and filesystem tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "number": 10,
+      "started_at": "2026-10-09T12:23:30Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Characterize synthetic CoreGraphics alpha without capture",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 11,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Test supplied-image Window host mask without GPUI launch",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 12,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Test generated movie converter host and closed native gate",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 13,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Test generated recording writer and physical callback retirement",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 14,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Run full App suite with recording and shutdown fixtures",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 15,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Lint recording feature App and native platform paths",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 16,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Test immutable image OCR on generated pixels and numeric loopback",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 17,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Test image OCR consent and inline retirement on the GPUI test platform",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 18,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Build native applications without launching",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 19,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Test isolated preview packaging policy",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 20,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Assemble and verify offline development preview",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 21,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:13Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 42,
+      "started_at": "2026-10-09T12:24:13Z",
+      "completed_at": "2026-10-09T12:24:14Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 43,
+      "started_at": "2026-10-09T12:24:14Z",
+      "completed_at": "2026-10-09T12:24:15Z"
+    }
+  ],
+  "failure": "Native URL oracle test-support ID predicate rejected valid ipv6 fixture after 8 vectors; no product mismatch observed before failure.",
+  "native_environment": {
+    "swift": "6.3.3",
+    "macos": "26.6.2",
+    "build": "25G83",
+    "sdk": "26.5",
+    "foundation": "5026.6000000000004",
+    "locale": "en_US"
+  },
+  "oracle_compile_seconds": 0.474929375,
+  "oracle_completed_vectors": 8,
+  "native_vectors_pending": 21,
+  "native_exact_subset_completed": 4,
+  "native_exact_subset_pending": 8,
+  "full_job_log_sha256": "cd9b5f86c4c5618ee2a019a5a3071c0f7234e0c0733f207b70fb26cce5cf4327"
+}

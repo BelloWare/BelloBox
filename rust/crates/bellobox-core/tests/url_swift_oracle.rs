@@ -67,6 +67,23 @@ fn swift_source() -> String {
     );
     format!("import Foundation\n{excerpt}\n{DRIVER}")
 }
+fn valid_fixture_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 64
+        && id
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_')
+}
+#[test]
+fn fixture_ids_are_bounded_safe_names() {
+    for id in ["ipv6", "port_one", "a", "row_29"] {
+        assert!(valid_fixture_id(id), "{id}");
+    }
+    for id in ["", ".", "..", "../ipv6", "a/b", "a\\b", "Upper", "é", "a b"] {
+        assert!(!valid_fixture_id(id), "{id}");
+    }
+    assert!(!valid_fixture_id(&"a".repeat(65)));
+}
 #[test]
 fn url_oracle_source_and_fixture_binding() {
     assert!(swift_source().contains("struct URLInspection"));
@@ -77,6 +94,12 @@ fn url_oracle_source_and_fixture_binding() {
     let rows: Vec<serde_json::Value> = serde_json::from_str(FIXTURES).unwrap();
     assert_eq!(rows.len(), 29);
     assert!(FIXTURES.len() < 16384);
+    let mut ids = std::collections::HashSet::new();
+    for row in &rows {
+        let id = row["id"].as_str().expect("fixture ID must be a string");
+        assert!(valid_fixture_id(id), "unsafe fixture ID: {id}");
+        assert!(ids.insert(id), "duplicate fixture ID: {id}");
+    }
 }
 #[cfg(unix)]
 mod native {
@@ -226,7 +249,7 @@ mod native {
         let mut checked = 0;
         for row in rows {
             let id = row["id"].as_str().unwrap();
-            assert!(id.bytes().all(|b| b.is_ascii_lowercase() || b == b'_'));
+            assert!(valid_fixture_id(id));
             let fixture = dir.path().join(format!("{id}.json"));
             fs::write(&fixture, serde_json::to_vec(&vec![row.clone()]).unwrap()).unwrap();
             // Separate bounded processes isolate Foundation failures to named vectors.

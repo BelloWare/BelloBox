@@ -1,0 +1,25 @@
+{
+  "base": "9f7be6dd544c3d35c7ce3c61bfb365839158937f",
+  "failed_source": "fd434af6056744f26577ad2c78cc2a44f77e7f6a",
+  "scope": "Test-support identifier validation only; no product/shared editor changes.",
+  "file": "rust/crates/bellobox-core/tests/url_swift_oracle.rs",
+  "before_sha256": "3cd970ce02a30c7415086a2d645cd05a9981013c8edd3b33e898a64da31a52a4",
+  "after_sha256": "5d77de39dcb9d9c0cb05c1c1571f0057b54a1adc3c32876169dd96cec441b900",
+  "preserved_fixture_count": 29,
+  "preserved_exact_native_assertion_vectors": 12,
+  "linux_tests": "2 passed, native oracle ignored; strict target and fmt passed",
+  "native_fix_result": "pending exact fix CI; prior failure retained",
+  "loc_delta": {
+    "production": 0,
+    "support": 23,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 62050,
+    "support": 45658,
+    "benchmark": 105
+  },
+  "loc_method": "Nonblank physical Rust lines including comments; entire tests/url_swift_oracle.rs is test support; baseline prior URL ledger preserved.",
+  "inference_time": "unavailable",
+  "accounting_attempt": "Initial assumed24 support delta assertion failed; measured nonblank count used here, no source changes."
+}

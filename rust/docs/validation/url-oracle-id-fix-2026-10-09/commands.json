@@ -1,0 +1,20 @@
+[
+  {
+    "name": "test",
+    "command": "cargo test -p bellobox-core --test url_swift_oracle --locked --offline",
+    "seconds": 4.085,
+    "exit": 0
+  },
+  {
+    "name": "strict",
+    "command": "cargo clippy -p bellobox-core --test url_swift_oracle --locked --offline -- -D warnings",
+    "seconds": 2.146,
+    "exit": 0
+  },
+  {
+    "name": "fmt",
+    "command": "cargo fmt --all -- --check",
+    "seconds": 1.733,
+    "exit": 0
+  }
+]

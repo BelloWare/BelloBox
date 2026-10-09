@@ -1,0 +1,10 @@
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-url-oracle-fix/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 4.05s
+     Running tests/url_swift_oracle.rs (/workspace/shared/build-recovery/target/debug/deps/url_swift_oracle-a35203809e74216d)
+
+running 3 tests
+test native::native_swift_url_bounded_vectors_and_diagnostics ... ignored, requires native Swift/Foundation; Linux validates only binding and Rust compilation
+test fixture_ids_are_bounded_safe_names ... ok
+test url_oracle_source_and_fixture_binding ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
