@@ -7,6 +7,8 @@ mod image_disposal;
 mod launcher_clock_ui;
 mod launcher_qr_ui;
 mod launcher_ui;
+mod qr_clipboard;
+mod qr_input;
 mod recording_ui;
 mod screenshot_color;
 mod screenshot_ui;

@@ -34,6 +34,9 @@ struct BelloBox {
     busy: bool,
     jobs: crate::session::SessionJobs,
     qr: Option<Arc<Image>>,
+    qr_copy_notice: Option<&'static str>,
+    qr_activation_keys: crate::qr_input::PhysicalActivationKeys,
+    qr_save_focus: gpui::FocusHandle,
     qr_saves: crate::session::SessionJobs,
     qr_save_status: bool,
     _subscriptions: Vec<Subscription>,
@@ -62,6 +65,55 @@ fn now() -> f64 {
         .unwrap_or_default()
         .as_secs_f64()
 }
+// The image is laid out only after its host has its final allocated size.
+fn qr_image_element(image: gpui::ImageSource) -> gpui::AnyElement {
+    gpui::canvas(
+        move |bounds, window, cx| {
+            // Resolve from final allocated bounds. Percentage image
+            // sizing can regain intrinsic aspect-ratio dimensions
+            // after asynchronous decoding and overflow a short host.
+            let side = bounds.size.width.min(bounds.size.height).min(px(296.));
+            // Hidden/initial tiny hosts cannot accommodate the quiet outer padding.
+            // Skip this frame rather than let padding force a larger layout.
+            if side <= px(28.) {
+                return None;
+            }
+            let image_side = side - px(28.);
+            let mut card = div()
+                .debug_selector(|| "qr-image".into())
+                .size(side)
+                .p(px(14.))
+                .bg(rgb(0xffffff))
+                .rounded(px(8.))
+                .child(
+                    img(image)
+                        .debug_selector(|| "qr-image-pixels".into())
+                        .size(image_side)
+                        .object_fit(gpui::ObjectFit::Contain),
+                )
+                .into_any_element();
+            let origin = bounds.center() - gpui::point(side / 2., side / 2.);
+            card.prepaint_as_root(
+                origin,
+                gpui::size(
+                    gpui::AvailableSpace::Definite(side),
+                    gpui::AvailableSpace::Definite(side),
+                ),
+                window,
+                cx,
+            );
+            Some(card)
+        },
+        |_, card, window, cx| {
+            if let Some(mut card) = card {
+                card.paint(window, cx);
+            }
+        },
+    )
+    .size_full()
+    .into_any_element()
+}
+
 impl BelloBox {
     fn new_for(command: String, text: String, window: &mut Window, cx: &mut Context<Self>) -> Self {
         let fixture = command;
@@ -107,6 +159,9 @@ impl BelloBox {
             busy: false,
             jobs: crate::session::SessionJobs::default(),
             qr: None,
+            qr_copy_notice: crate::qr_clipboard::for_app(cx),
+            qr_activation_keys: crate::qr_input::PhysicalActivationKeys::default(),
+            qr_save_focus: cx.focus_handle(),
             qr_saves: crate::session::SessionJobs::default(),
             qr_save_status: false,
             _subscriptions: vec![subscription, options_subscription],
@@ -537,7 +592,28 @@ impl BelloBox {
         }
         cx.notify();
     }
+    fn can_copy_qr(&self) -> bool {
+        self.qr_copy_notice.is_none() && self.qr.is_some()
+    }
+    fn copy_qr(&mut self, cx: &mut Context<Self>) {
+        if let Some(notice) = self.qr_copy_notice {
+            self.status = notice.into();
+        } else if let Some(image) = &self.qr {
+            cx.write_to_clipboard(ClipboardItem::new_image(image));
+            self.status = "Copied QR image.".into();
+        } else {
+            self.status = "There is no QR image to copy.".into();
+        }
+        cx.notify();
+    }
     fn save_qr(&mut self, cx: &mut Context<Self>) {
+        // Never open a native dialog under a known held activation key. A release
+        // only updates evidence; the user must make a fresh Save action afterward.
+        if self.qr_activation_keys.any_down() {
+            self.status = "Release Enter/Space, then click Save… again. If already released, press and release it on the focused Save button first.".into();
+            cx.notify();
+            return;
+        }
         // The dialog and worker retain exactly the text present at this click.
         // Editing cancels only publication of the save status, never retargets
         // an explicit save to different text or silently cancels its disk write.
@@ -993,10 +1069,23 @@ impl BelloBox {
                 }),
         )
     }
-    fn render_qr(&self, p: crate::theme::Palette, cx: &mut Context<Self>) -> gpui::AnyElement {
+    fn render_qr(
+        &self,
+        p: crate::theme::Palette,
+        window: &Window,
+        cx: &mut Context<Self>,
+    ) -> gpui::AnyElement {
+        // Reserve the existing QR minimum (160), editor block (160), header
+        // (56), scrollable status (40), footer (30), and outer padding (24).
+        // Only the four inter-block gaps yield at short heights; preferred-size
+        // spacing stays 12 px and the generated/export PNG bytes are unchanged.
+        let minimum_content_height = 160. + 160. + 56. + 40. + 30. + 24.;
+        let gap = ((f32::from(window.viewport_size().height) - minimum_content_height) / 4.)
+            .clamp(0., 12.);
         let bytes = self.input.read(cx).text().len();
         let remaining = 2000_i64 - bytes as i64;
         let qr_card = div()
+            .debug_selector(|| "qr-preview".into())
             .w_full()
             .h_full()
             .min_h(px(160.))
@@ -1007,13 +1096,7 @@ impl BelloBox {
             .items_center()
             .justify_center()
             .when_some(self.qr.clone(), |s, image| {
-                s.child(
-                    div().p(px(14.)).bg(rgb(0xffffff)).rounded(px(8.)).child(
-                        img(image)
-                            .size(px(268.))
-                            .object_fit(gpui::ObjectFit::Contain),
-                    ),
-                )
+                s.child(qr_image_element(image.into()))
             })
             .when(self.qr.is_none(), |s| {
                 s.child(
@@ -1031,7 +1114,7 @@ impl BelloBox {
             .size_full()
             .flex()
             .flex_col()
-            .gap(px(12.))
+            .gap(px(gap))
             .p(px(12.))
             .bg(p.bg)
             .text_color(p.primary)
@@ -1078,7 +1161,10 @@ impl BelloBox {
                                 },
                             ))),
                     )
-                    .child(editor_card(self.input.clone(), 116., p))
+                    .child(
+                        editor_card(self.input.clone(), 116., p)
+                            .debug_selector(|| "qr-editor".into()),
+                    )
                     .child(
                         div()
                             .flex()
@@ -1095,11 +1181,20 @@ impl BelloBox {
             )
             .child(
                 div()
+                    .id("qr-status")
+                    .debug_selector(|| "qr-status".into())
+                    .overflow_y_scroll()
                     .min_h(px(20.))
                     .max_h(px(40.))
                     .text_size(px(11.))
                     .text_color(p.secondary)
-                    .child(self.status.clone()),
+                    .child(match self.qr_copy_notice {
+                        Some(notice) if self.status.is_empty() || self.status == notice => {
+                            notice.into()
+                        }
+                        Some(notice) => format!("{notice}\n{}", self.status),
+                        None => self.status.clone(),
+                    }),
             )
             .child(
                 div()
@@ -1108,19 +1203,37 @@ impl BelloBox {
                     .gap(px(8.))
                     .child(
                         button("qr-save", "Save…", p)
-                            .on_click(cx.listener(|this, _, _, cx| this.save_qr(cx))),
+                            .debug_selector(|| "qr-save".into())
+                            .track_focus(&self.qr_save_focus)
+                            .focus(move |style| style.border_color(p.accent))
+                            // A refused pointer Save leaves a non-editing focus
+                            // target for a fresh key press/release if key-up was
+                            // missed outside this window. It never replays Save.
+                            .on_mouse_down(
+                                gpui::MouseButton::Left,
+                                cx.listener(|this, _, window, _| {
+                                    this.qr_save_focus.focus(window);
+                                }),
+                            )
+                            .on_click(cx.listener(|this, event, _, cx| {
+                                // GPUI synthesizes keyboard clicks on key-up for
+                                // focused Divs. Recovery releases must never Save.
+                                if matches!(event, gpui::ClickEvent::Mouse(_)) {
+                                    this.save_qr(cx);
+                                }
+                            })),
                     )
                     .child(
                         button("qr-copy", "Copy Image", p)
+                            .debug_selector(|| "qr-copy".into())
                             .bg(p.accent_fill)
                             .text_color(rgb(0xffffff))
-                            .on_click(cx.listener(|this, _, _, cx| {
-                                if let Some(image) = &this.qr {
-                                    cx.write_to_clipboard(ClipboardItem::new_image(image));
-                                    this.status = "Copied QR image.".into();
-                                    cx.notify();
-                                }
-                            })),
+                            .when(!self.can_copy_qr(), |button| {
+                                button.opacity(0.45).cursor_default()
+                            })
+                            .when(self.can_copy_qr(), |button| {
+                                button.on_click(cx.listener(|this, _, _, cx| this.copy_qr(cx)))
+                            }),
                     ),
             )
             .into_any_element()
@@ -1766,7 +1879,7 @@ impl Render for BelloBox {
         self.permission_appearance(p, cx);
         self.sync_snippet_fields(window, cx);
         let content = match self.selected.as_str() {
-            "qr" => self.render_qr(p, cx),
+            "qr" => self.render_qr(p, window, cx),
             "textTools" => self.render_text(p, cx),
             "ai" => self.render_ai(p, cx),
             "settings" | "setup" | "updates" => div()
@@ -1800,6 +1913,9 @@ impl Render for BelloBox {
         let view = div()
             .size_full()
             .capture_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, window, cx| {
+                if this.selected == "qr" {
+                    this.qr_activation_keys.observe(&event.keystroke.key, true);
+                }
                 if this.permission_tab(event, window, cx) {
                     return;
                 }
@@ -1831,6 +1947,11 @@ impl Render for BelloBox {
                     }
                     cx.stop_propagation();
                     cx.notify();
+                }
+            }))
+            .capture_key_up(cx.listener(|this, event: &gpui::KeyUpEvent, _, _| {
+                if this.selected == "qr" {
+                    this.qr_activation_keys.observe(&event.keystroke.key, false);
                 }
             }))
             .on_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, window, cx| {
@@ -1994,3 +2115,6 @@ pub fn run() {
 
 #[cfg(test)]
 mod quit_tests;
+
+#[cfg(test)]
+mod qr_clipboard_tests;

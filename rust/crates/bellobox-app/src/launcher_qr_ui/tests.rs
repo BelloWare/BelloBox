@@ -1,5 +1,16 @@
 use super::{Control, LauncherQrPreview};
 use gpui::{EntityInputHandler, KeyDownEvent, Keystroke, TestAppContext};
+// Explicit TestPlatform fixture only. An ordinary constructor must retain the
+// real backend policy even in test builds; cache round-trips are not OS proof.
+fn synthetic_preview(
+    input: String,
+    window: &mut gpui::Window,
+    cx: &mut gpui::Context<LauncherQrPreview>,
+) -> LauncherQrPreview {
+    let mut preview = LauncherQrPreview::new(input, window, cx);
+    preview.image_copy_notice = None;
+    preview
+}
 fn key(name: &str) -> KeyDownEvent {
     KeyDownEvent {
         keystroke: Keystroke::parse(name).unwrap(),
@@ -8,7 +19,7 @@ fn key(name: &str) -> KeyDownEvent {
 }
 #[gpui::test]
 fn current_generation_alone_can_publish_copy_and_snapshot(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("original".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("original".into(), w, cx));
     view.update(cx, |v, _, cx| {
         let old = v.jobs.begin();
         let new = v.jobs.begin();
@@ -42,7 +53,7 @@ fn current_generation_alone_can_publish_copy_and_snapshot(cx: &mut TestAppContex
 }
 #[gpui::test]
 fn retire_and_reactivate_cancel_pending_generations(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("retained".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("retained".into(), w, cx));
     view.update(cx, |v, _, cx| {
         let old = v.jobs.begin();
         v.set_active(false, cx);
@@ -70,7 +81,7 @@ fn retire_and_reactivate_cancel_pending_generations(cx: &mut TestAppContext) {
 }
 #[gpui::test]
 fn ime_arrows_return_and_tab_belong_to_retained_editor(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("draft".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("draft".into(), w, cx));
     view.update(cx, |v, w, cx| {
         let search = cx.focus_handle();
         v.editor.read(cx).focus(w);
@@ -95,7 +106,7 @@ fn ime_arrows_return_and_tab_belong_to_retained_editor(cx: &mut TestAppContext) 
 }
 #[gpui::test]
 fn byte_limits_clear_copyability_without_truncating_handoff(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new(String::new(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview(String::new(), w, cx));
     view.update(cx, |v, _, cx| {
         for text in [
             "x".repeat(2001),
@@ -116,7 +127,7 @@ fn byte_limits_clear_copyability_without_truncating_handoff(cx: &mut TestAppCont
 fn save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite(cx: &mut TestAppContext) {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("qr.png");
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("click-time".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("click-time".into(), w, cx));
     cx.run_until_parked();
     view.update(cx, |v, _, cx| {
         let token = v.jobs.begin();
@@ -174,7 +185,7 @@ fn save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite(cx: &mut
 }
 #[gpui::test]
 fn explicit_copy_and_empty_paste_use_current_image_only(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("current".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("current".into(), w, cx));
     view.update(cx, |v, w, cx| {
         let token = v.jobs.begin();
         v.publish(
@@ -203,7 +214,7 @@ fn explicit_copy_and_empty_paste_use_current_image_only(cx: &mut TestAppContext)
 }
 #[gpui::test]
 fn held_clear_activation_cannot_type_into_newly_focused_editor(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("draft".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("draft".into(), w, cx));
     view.update(cx, |v, w, cx| {
         let search = cx.focus_handle();
         for name in ["enter", "space"] {
@@ -231,7 +242,7 @@ fn held_clear_activation_cannot_type_into_newly_focused_editor(cx: &mut TestAppC
 }
 #[gpui::test]
 fn global_input_limit_explains_disabled_open_and_preserves_draft(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new(String::new(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview(String::new(), w, cx));
     view.update(cx, |v, _, cx| {
         let text = "x".repeat(bellobox_core::MAX_INPUT_BYTES + 1);
         v.editor.update(cx, |e, cx| e.set_text(text.clone(), cx));
@@ -248,7 +259,7 @@ fn global_input_limit_explains_disabled_open_and_preserves_draft(cx: &mut TestAp
 fn same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit(
     cx: &mut TestAppContext,
 ) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("A".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("A".into(), w, cx));
     view.update(cx, |v, _, cx| {
         let first = v.jobs.begin();
         v.editor.update(cx, |e, cx| e.set_text("B".into(), cx));
@@ -281,7 +292,7 @@ fn same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit(
 }
 #[gpui::test]
 fn density_toggle_retains_editor_identity_and_real_undo(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("draft".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("draft".into(), w, cx));
     view.update(cx, |v, w, cx| v.editor.read(cx).focus(w))
         .unwrap();
     cx.run_until_parked();
@@ -312,7 +323,7 @@ fn density_toggle_retains_editor_identity_and_real_undo(cx: &mut TestAppContext)
 }
 #[gpui::test]
 fn oversized_whitespace_heading_uses_byte_admission_before_scanning(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new(String::new(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview(String::new(), w, cx));
     view.update(cx, |v, _, cx| {
         assert_eq!(v.title(cx), "Enter text to encode");
         for bytes in [
@@ -339,29 +350,12 @@ fn oversized_whitespace_heading_uses_byte_admission_before_scanning(cx: &mut Tes
     .unwrap();
 }
 
-#[test]
-fn image_copy_capability_matches_pinned_actual_backend_contract() {
-    for compositor in ["X11", "Wayland", "headless"] {
-        assert!(
-            super::image_copy_notice(compositor, false)
-                .unwrap()
-                .contains("Save…")
-        );
-    }
-    // An empty name only enables the source-supported native macOS route.
-    assert!(super::image_copy_notice("", true).is_none());
-    assert!(super::image_copy_notice("", false).is_some());
-    for native_macos in [false, true] {
-        assert!(super::image_copy_notice("unknown compositor", native_macos).is_some());
-    }
-}
-
 #[gpui::test]
 fn unsupported_image_copy_never_changes_clipboard_or_claims_success(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("current".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("current".into(), w, cx));
     view.update(cx, |v, w, cx| {
         for compositor in ["X11", "Wayland", "headless"] {
-            v.image_copy_notice = super::image_copy_notice(compositor, false);
+            v.image_copy_notice = crate::qr_clipboard::image_copy_notice(compositor, false);
             let token = v.jobs.begin();
             v.publish(
                 token,
@@ -390,7 +384,7 @@ fn unsupported_image_copy_never_changes_clipboard_or_claims_success(cx: &mut Tes
 }
 #[gpui::test]
 fn armed_save_is_cancelled_by_focus_or_row_change_before_release(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("save release".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("save release".into(), w, cx));
     view.update(cx, |v, w, cx| {
         let token = v.jobs.begin();
         v.publish(
@@ -433,7 +427,7 @@ fn armed_save_is_cancelled_by_focus_or_row_change_before_release(cx: &mut TestAp
 }
 #[gpui::test]
 fn armed_save_rejects_edit_aba_and_retirement(cx: &mut TestAppContext) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("A".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("A".into(), w, cx));
     view.update(cx, |v, w, cx| {
         let search = cx.focus_handle();
         let token = v.jobs.begin();
@@ -475,7 +469,7 @@ fn armed_save_rejects_edit_aba_and_retirement(cx: &mut TestAppContext) {
 fn mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay(
     cx: &mut TestAppContext,
 ) {
-    let view = cx.add_window(|w, cx| LauncherQrPreview::new("mixed activation".into(), w, cx));
+    let view = cx.add_window(|w, cx| synthetic_preview("mixed activation".into(), w, cx));
     view.update(cx, |v, w, cx| {
         let token = v.jobs.begin();
         v.publish(
@@ -513,4 +507,24 @@ fn mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay(
     cx.simulate_new_path_selection(|_| None);
     cx.run_until_parked();
     view.update(cx, |v, _, _| assert!(!v.save_pending)).unwrap();
+}
+
+#[gpui::test]
+fn ordinary_constructor_keeps_actual_backend_policy_even_in_test_builds(cx: &mut TestAppContext) {
+    let view = cx.add_window(|w, cx| LauncherQrPreview::new("ordinary".into(), w, cx));
+    view.update(cx, |v, _, cx| {
+        assert_eq!(v.image_copy_notice, crate::qr_clipboard::for_app(cx));
+        let token = v.jobs.begin();
+        v.publish(
+            token,
+            "ordinary".into(),
+            bellobox_core::qr::palette("ordinary"),
+            cx,
+        );
+        assert_eq!(
+            v.enabled(Control::Copy, cx),
+            crate::qr_clipboard::for_app(cx).is_none()
+        );
+    })
+    .unwrap();
 }

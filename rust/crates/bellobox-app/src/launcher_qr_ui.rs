@@ -3,47 +3,14 @@ use crate::session::{JobToken, SessionJobs};
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use gpui::{prelude::*, *};
 use std::{
-    cell::Cell,
     collections::HashMap,
-    rc::Rc,
     sync::{Arc, atomic::Ordering},
 };
 
 const COMPACT_SIDE: f32 = 128.;
 const CHROME_HEIGHT: f32 = 104.;
 
-/// GPUI 0.2.2 Linux backends publish text/private cache data, not external PNG.
-/// Read the actual backend from App, never infer it from environment variables.
-fn image_copy_notice(compositor: &str, native_macos: bool) -> Option<&'static str> {
-    match compositor {
-        "X11" => Some("Copy Image is unavailable on X11. Use Save… to export PNG."),
-        "Wayland" => Some("Copy Image is unavailable on Wayland. Use Save… to export PNG."),
-        "headless" => Some("Image clipboard is unavailable. Use Save… to export PNG."),
-        // macOS writes the image UTType to NSPasteboard; an empty name alone
-        // must never grant the capability on another/unknown platform.
-        "" if native_macos => None,
-        _ => Some("Image clipboard is unsupported on this backend. Use Save… to export PNG."),
-    }
-}
-/// Window-owned physical observation, separate from preview-button ownership.
-/// Recording a key never consumes text/IME input and never arms an action.
-#[derive(Clone, Default)]
-pub(crate) struct PhysicalActivationKeys(Rc<Cell<[bool; 2]>>);
-impl PhysicalActivationKeys {
-    pub fn observe(&self, key: &str, down: bool) {
-        let index = match key {
-            "enter" => 0,
-            "space" => 1,
-            _ => return,
-        };
-        let mut keys = self.0.get();
-        keys[index] = down;
-        self.0.set(keys);
-    }
-    fn any_down(&self) -> bool {
-        self.0.get().into_iter().any(|down| down)
-    }
-}
+pub(crate) use crate::qr_input::PhysicalActivationKeys;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Control {
     Enlarge,
@@ -101,16 +68,7 @@ impl LauncherQrPreview {
                 this.changed(cx);
             }
         });
-        let image_copy_notice = image_copy_notice(cx.compositor_name(), cfg!(target_os = "macos"));
-        // TestPlatform's empty-name in-memory image store is a synthetic fixture,
-        // not evidence of external Linux clipboard support. Never enable this in
-        // an ordinary binary, including an unknown/empty-name Linux backend.
-        #[cfg(test)]
-        let image_copy_notice = if cx.compositor_name().is_empty() {
-            None
-        } else {
-            image_copy_notice
-        };
+        let image_copy_notice = crate::qr_clipboard::for_app(cx);
         let mut this = Self {
             editor,
             jobs: SessionJobs::default(),
