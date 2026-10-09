@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T17:10:00Z",
+  "as_of_utc": "2026-10-09T17:23:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -71001,6 +71001,1044 @@
       "inference_duration_seconds": null,
       "inference_status": "unavailable",
       "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1723-http-package-review-0",
+      "repository_assignment": "BelloBox",
+      "activity": "Independent46-path HTTP package review",
+      "category": "packaging/source validation",
+      "start_utc": "2026-10-09T17:11:57.356819+00:00",
+      "end_utc": "2026-10-09T17:11:57.780281+00:00",
+      "duration_seconds": 0.42347022400645074,
+      "source": [
+        {
+          "receipt_sha256": "917bc89311798bcfa7bb561eb0f7b343d125817a1c52345d7e62e83fd261fe2d",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "all planned paths/hashes verified",
+      "accounting_group": "catchup_command",
+      "include_in_totals": true,
+      "resource": "cloud command process",
+      "duration_basis": "Measured command/resource elapsed; not active labor or inference",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-909f64bbebe5c085641cf69f146eecc63c800c04@2026-10-09T17:12:34.381Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/crates/bellobox-app/src/http_session.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:12:34.381Z",
+      "end_utc": "2026-10-09T17:12:39.167Z",
+      "duration_seconds": 4.786,
+      "source": [
+        {
+          "receipt_sha256": "424cfee8a805fcd7aaba609e23bd6461f3823150be9bdf9044fb26f6dbef3228",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-909f64bbebe5c085641cf69f146eecc63c800c04@2026-10-09T17:12:34.381Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/909f64bbebe5c085641cf69f146eecc63c800c04",
+      "operation_content_hash": "909f64bbebe5c085641cf69f146eecc63c800c04"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-909f64bbebe5c085641cf69f146eecc63c800c04@2026-10-09T17:12:42.612Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/crates/bellobox-app/src/http_session.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:12:42.612Z",
+      "end_utc": "2026-10-09T17:12:42.964Z",
+      "duration_seconds": 0.352,
+      "source": [
+        {
+          "receipt_sha256": "424cfee8a805fcd7aaba609e23bd6461f3823150be9bdf9044fb26f6dbef3228",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-909f64bbebe5c085641cf69f146eecc63c800c04@2026-10-09T17:12:42.612Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/909f64bbebe5c085641cf69f146eecc63c800c04",
+      "operation_content_hash": "909f64bbebe5c085641cf69f146eecc63c800c04"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-43e507f0d4dd47ad816d38a3f882f942ab10d101@2026-10-09T17:13:47.712Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/crates/bellobox-app/src/http_ui/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:13:47.712Z",
+      "end_utc": "2026-10-09T17:13:52.659Z",
+      "duration_seconds": 4.947,
+      "source": [
+        {
+          "receipt_sha256": "e26749c109ddf458bc5c930071cb9ea3e8c120c68e04d33309344262ec51ab9f",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-43e507f0d4dd47ad816d38a3f882f942ab10d101@2026-10-09T17:13:47.712Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/43e507f0d4dd47ad816d38a3f882f942ab10d101",
+      "operation_content_hash": "43e507f0d4dd47ad816d38a3f882f942ab10d101"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-43e507f0d4dd47ad816d38a3f882f942ab10d101@2026-10-09T17:13:52.659Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/crates/bellobox-app/src/http_ui/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:13:52.659Z",
+      "end_utc": "2026-10-09T17:13:53.071Z",
+      "duration_seconds": 0.412,
+      "source": [
+        {
+          "receipt_sha256": "e26749c109ddf458bc5c930071cb9ea3e8c120c68e04d33309344262ec51ab9f",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-43e507f0d4dd47ad816d38a3f882f942ab10d101@2026-10-09T17:13:52.659Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/43e507f0d4dd47ad816d38a3f882f942ab10d101",
+      "operation_content_hash": "43e507f0d4dd47ad816d38a3f882f942ab10d101"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-68a2e18201d9afffa9025b80bfe45897789bf27d@2026-10-09T17:13:47.978Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/crates/bellobox-app/src/http_ui.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:13:47.978Z",
+      "end_utc": "2026-10-09T17:13:56.774Z",
+      "duration_seconds": 8.796,
+      "source": [
+        {
+          "receipt_sha256": "d420866e8c2406022e47d5329f43cdb79f32ce9bed65923013c05cd56d9be80a",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-68a2e18201d9afffa9025b80bfe45897789bf27d@2026-10-09T17:13:47.978Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/68a2e18201d9afffa9025b80bfe45897789bf27d",
+      "operation_content_hash": "68a2e18201d9afffa9025b80bfe45897789bf27d"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-68a2e18201d9afffa9025b80bfe45897789bf27d@2026-10-09T17:13:56.775Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/crates/bellobox-app/src/http_ui.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:13:56.775Z",
+      "end_utc": "2026-10-09T17:13:57.200Z",
+      "duration_seconds": 0.425,
+      "source": [
+        {
+          "receipt_sha256": "d420866e8c2406022e47d5329f43cdb79f32ce9bed65923013c05cd56d9be80a",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-68a2e18201d9afffa9025b80bfe45897789bf27d@2026-10-09T17:13:56.775Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/68a2e18201d9afffa9025b80bfe45897789bf27d",
+      "operation_content_hash": "68a2e18201d9afffa9025b80bfe45897789bf27d"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-8aaf320241efb313956276d8698e230b78308b9a@2026-10-09T17:13:53.596Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:13:53.596Z",
+      "end_utc": "2026-10-09T17:13:57.751Z",
+      "duration_seconds": 4.155,
+      "source": [
+        {
+          "receipt_sha256": "cc3b199ceae69d1bfa4799f195776ae699be1d83a8f34032e37b8ae6b84ebfab",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-8aaf320241efb313956276d8698e230b78308b9a@2026-10-09T17:13:53.596Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8aaf320241efb313956276d8698e230b78308b9a",
+      "operation_content_hash": "8aaf320241efb313956276d8698e230b78308b9a"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-8aaf320241efb313956276d8698e230b78308b9a@2026-10-09T17:13:57.751Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:13:57.751Z",
+      "end_utc": "2026-10-09T17:13:58.210Z",
+      "duration_seconds": 0.459,
+      "source": [
+        {
+          "receipt_sha256": "cc3b199ceae69d1bfa4799f195776ae699be1d83a8f34032e37b8ae6b84ebfab",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-8aaf320241efb313956276d8698e230b78308b9a@2026-10-09T17:13:57.751Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8aaf320241efb313956276d8698e230b78308b9a",
+      "operation_content_hash": "8aaf320241efb313956276d8698e230b78308b9a"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-8bea4d0b8f4928d6a6ccb5f244b8a974b200eb74@2026-10-09T17:13:58.646Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/crates/bellobox-app/src/launcher_ui.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:13:58.646Z",
+      "end_utc": "2026-10-09T17:14:02.917Z",
+      "duration_seconds": 4.271,
+      "source": [
+        {
+          "receipt_sha256": "9c0fb9eaa8e38f9529f6ea5804a71cbcea3f04925535f6fbcd3ff4940671daa1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-8bea4d0b8f4928d6a6ccb5f244b8a974b200eb74@2026-10-09T17:13:58.646Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8bea4d0b8f4928d6a6ccb5f244b8a974b200eb74",
+      "operation_content_hash": "8bea4d0b8f4928d6a6ccb5f244b8a974b200eb74"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-8bea4d0b8f4928d6a6ccb5f244b8a974b200eb74@2026-10-09T17:14:02.917Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/crates/bellobox-app/src/launcher_ui.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:02.917Z",
+      "end_utc": "2026-10-09T17:14:03.490Z",
+      "duration_seconds": 0.573,
+      "source": [
+        {
+          "receipt_sha256": "9c0fb9eaa8e38f9529f6ea5804a71cbcea3f04925535f6fbcd3ff4940671daa1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-8bea4d0b8f4928d6a6ccb5f244b8a974b200eb74@2026-10-09T17:14:02.917Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8bea4d0b8f4928d6a6ccb5f244b8a974b200eb74",
+      "operation_content_hash": "8bea4d0b8f4928d6a6ccb5f244b8a974b200eb74"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-3c8358c06d8dcbcf376ef966bc21cab6c57c5e20@2026-10-09T17:13:58.794Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/crates/bellobox-app/src/transport/http_request/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:13:58.794Z",
+      "end_utc": "2026-10-09T17:14:06.645Z",
+      "duration_seconds": 7.851,
+      "source": [
+        {
+          "receipt_sha256": "ed67a5b861474d5558a4ae17a60dad3e341f9f1488ac5f3499fca40c16020c56",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-3c8358c06d8dcbcf376ef966bc21cab6c57c5e20@2026-10-09T17:13:58.794Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/3c8358c06d8dcbcf376ef966bc21cab6c57c5e20",
+      "operation_content_hash": "3c8358c06d8dcbcf376ef966bc21cab6c57c5e20"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-3c8358c06d8dcbcf376ef966bc21cab6c57c5e20@2026-10-09T17:14:06.645Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/crates/bellobox-app/src/transport/http_request/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:06.645Z",
+      "end_utc": "2026-10-09T17:14:09.052Z",
+      "duration_seconds": 2.407,
+      "source": [
+        {
+          "receipt_sha256": "ed67a5b861474d5558a4ae17a60dad3e341f9f1488ac5f3499fca40c16020c56",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-3c8358c06d8dcbcf376ef966bc21cab6c57c5e20@2026-10-09T17:14:06.645Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/3c8358c06d8dcbcf376ef966bc21cab6c57c5e20",
+      "operation_content_hash": "3c8358c06d8dcbcf376ef966bc21cab6c57c5e20"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-2d6d1be4c5e8f2c8837518b91909c3648cd8e812@2026-10-09T17:14:04.846Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/bellobox-parity.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:04.846Z",
+      "end_utc": "2026-10-09T17:14:08.568Z",
+      "duration_seconds": 3.722,
+      "source": [
+        {
+          "receipt_sha256": "c9d010fe6f5f12a0bf0b0e60f6e5328644ff1604a42b217b120a5967fbf14e42",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-2d6d1be4c5e8f2c8837518b91909c3648cd8e812@2026-10-09T17:14:04.846Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/2d6d1be4c5e8f2c8837518b91909c3648cd8e812",
+      "operation_content_hash": "2d6d1be4c5e8f2c8837518b91909c3648cd8e812"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-2d6d1be4c5e8f2c8837518b91909c3648cd8e812@2026-10-09T17:14:08.568Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/bellobox-parity.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:08.568Z",
+      "end_utc": "2026-10-09T17:14:09.775Z",
+      "duration_seconds": 1.207,
+      "source": [
+        {
+          "receipt_sha256": "c9d010fe6f5f12a0bf0b0e60f6e5328644ff1604a42b217b120a5967fbf14e42",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-2d6d1be4c5e8f2c8837518b91909c3648cd8e812@2026-10-09T17:14:08.568Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/2d6d1be4c5e8f2c8837518b91909c3648cd8e812",
+      "operation_content_hash": "2d6d1be4c5e8f2c8837518b91909c3648cd8e812"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-62afc02d70688e1a748140cdc1bdf81446fad1b3@2026-10-09T17:14:09.601Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/http-workflow.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:09.601Z",
+      "end_utc": "2026-10-09T17:14:14.673Z",
+      "duration_seconds": 5.072,
+      "source": [
+        {
+          "receipt_sha256": "f47a050a4ff57e66aabd3f7ab9a019bec14fc2bdf344a15820e7cca8528a1d71",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-62afc02d70688e1a748140cdc1bdf81446fad1b3@2026-10-09T17:14:09.601Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/62afc02d70688e1a748140cdc1bdf81446fad1b3",
+      "operation_content_hash": "62afc02d70688e1a748140cdc1bdf81446fad1b3"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-62afc02d70688e1a748140cdc1bdf81446fad1b3@2026-10-09T17:14:14.673Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/http-workflow.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:14.673Z",
+      "end_utc": "2026-10-09T17:14:15.098Z",
+      "duration_seconds": 0.425,
+      "source": [
+        {
+          "receipt_sha256": "f47a050a4ff57e66aabd3f7ab9a019bec14fc2bdf344a15820e7cca8528a1d71",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-62afc02d70688e1a748140cdc1bdf81446fad1b3@2026-10-09T17:14:14.673Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/62afc02d70688e1a748140cdc1bdf81446fad1b3",
+      "operation_content_hash": "62afc02d70688e1a748140cdc1bdf81446fad1b3"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-b2f675544f354e2310e06bf626bad92a402451a6@2026-10-09T17:14:15.194Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/README.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:15.194Z",
+      "end_utc": "2026-10-09T17:14:19.695Z",
+      "duration_seconds": 4.501,
+      "source": [
+        {
+          "receipt_sha256": "4a0120a693fdf6e1613763306b4a43b7702635521c739aef41a92e3c239dcf8c",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-b2f675544f354e2310e06bf626bad92a402451a6@2026-10-09T17:14:15.194Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/b2f675544f354e2310e06bf626bad92a402451a6",
+      "operation_content_hash": "b2f675544f354e2310e06bf626bad92a402451a6"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-b2f675544f354e2310e06bf626bad92a402451a6@2026-10-09T17:14:19.695Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/README.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:19.695Z",
+      "end_utc": "2026-10-09T17:14:20.155Z",
+      "duration_seconds": 0.46,
+      "source": [
+        {
+          "receipt_sha256": "4a0120a693fdf6e1613763306b4a43b7702635521c739aef41a92e3c239dcf8c",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-b2f675544f354e2310e06bf626bad92a402451a6@2026-10-09T17:14:19.695Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/b2f675544f354e2310e06bf626bad92a402451a6",
+      "operation_content_hash": "b2f675544f354e2310e06bf626bad92a402451a6"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-7212668ca697e96866f5ac1ec399d44a9dd94fd2@2026-10-09T17:14:19.974Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/baseline-commit.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:19.974Z",
+      "end_utc": "2026-10-09T17:14:24.870Z",
+      "duration_seconds": 4.896,
+      "source": [
+        {
+          "receipt_sha256": "fad2c4c2b5f66bb5f6cf1e487f7afb66f9a7d91628ede074db3a787461beb2b6",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-7212668ca697e96866f5ac1ec399d44a9dd94fd2@2026-10-09T17:14:19.974Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/7212668ca697e96866f5ac1ec399d44a9dd94fd2",
+      "operation_content_hash": "7212668ca697e96866f5ac1ec399d44a9dd94fd2"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-7212668ca697e96866f5ac1ec399d44a9dd94fd2@2026-10-09T17:14:24.870Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/baseline-commit.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:24.870Z",
+      "end_utc": "2026-10-09T17:14:25.240Z",
+      "duration_seconds": 0.37,
+      "source": [
+        {
+          "receipt_sha256": "fad2c4c2b5f66bb5f6cf1e487f7afb66f9a7d91628ede074db3a787461beb2b6",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-7212668ca697e96866f5ac1ec399d44a9dd94fd2@2026-10-09T17:14:24.870Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/7212668ca697e96866f5ac1ec399d44a9dd94fd2",
+      "operation_content_hash": "7212668ca697e96866f5ac1ec399d44a9dd94fd2"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-be6c11deeb2cf8786fa75ad8a3ad5e8622510d83@2026-10-09T17:14:26.084Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/combined-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:26.084Z",
+      "end_utc": "2026-10-09T17:14:31.095Z",
+      "duration_seconds": 5.011,
+      "source": [
+        {
+          "receipt_sha256": "f24acbd527b4bf43f90cc9f7aa80219d5f9090b3f81ec9212436f7cb18000f14",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-be6c11deeb2cf8786fa75ad8a3ad5e8622510d83@2026-10-09T17:14:26.084Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/be6c11deeb2cf8786fa75ad8a3ad5e8622510d83",
+      "operation_content_hash": "be6c11deeb2cf8786fa75ad8a3ad5e8622510d83"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-be6c11deeb2cf8786fa75ad8a3ad5e8622510d83@2026-10-09T17:14:31.096Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/combined-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:31.096Z",
+      "end_utc": "2026-10-09T17:14:31.475Z",
+      "duration_seconds": 0.379,
+      "source": [
+        {
+          "receipt_sha256": "f24acbd527b4bf43f90cc9f7aa80219d5f9090b3f81ec9212436f7cb18000f14",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-be6c11deeb2cf8786fa75ad8a3ad5e8622510d83@2026-10-09T17:14:31.096Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/be6c11deeb2cf8786fa75ad8a3ad5e8622510d83",
+      "operation_content_hash": "be6c11deeb2cf8786fa75ad8a3ad5e8622510d83"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-4ae10b886833c5338f54946b001fd70ead3410f6@2026-10-09T17:14:31.984Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/combined-verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:31.984Z",
+      "end_utc": "2026-10-09T17:14:35.925Z",
+      "duration_seconds": 3.941,
+      "source": [
+        {
+          "receipt_sha256": "25c73210a3f1578276d37866ce10d4a00b8cca6979f78a096a9ca77d1bcb8a97",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-4ae10b886833c5338f54946b001fd70ead3410f6@2026-10-09T17:14:31.984Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/4ae10b886833c5338f54946b001fd70ead3410f6",
+      "operation_content_hash": "4ae10b886833c5338f54946b001fd70ead3410f6"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-4ae10b886833c5338f54946b001fd70ead3410f6@2026-10-09T17:14:35.926Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/combined-verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:35.926Z",
+      "end_utc": "2026-10-09T17:14:36.440Z",
+      "duration_seconds": 0.514,
+      "source": [
+        {
+          "receipt_sha256": "25c73210a3f1578276d37866ce10d4a00b8cca6979f78a096a9ca77d1bcb8a97",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-4ae10b886833c5338f54946b001fd70ead3410f6@2026-10-09T17:14:35.926Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/4ae10b886833c5338f54946b001fd70ead3410f6",
+      "operation_content_hash": "4ae10b886833c5338f54946b001fd70ead3410f6"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-0acdf6688e982af2c7a2742630319b4c74be93a6@2026-10-09T17:14:36.984Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/commands.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:36.984Z",
+      "end_utc": "2026-10-09T17:14:41.752Z",
+      "duration_seconds": 4.768,
+      "source": [
+        {
+          "receipt_sha256": "4c2d378424c762f73bb25010794888055cb15f98db13809b347b2e2781726971",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-0acdf6688e982af2c7a2742630319b4c74be93a6@2026-10-09T17:14:36.984Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/0acdf6688e982af2c7a2742630319b4c74be93a6",
+      "operation_content_hash": "0acdf6688e982af2c7a2742630319b4c74be93a6"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-0acdf6688e982af2c7a2742630319b4c74be93a6@2026-10-09T17:14:41.753Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/commands.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:41.753Z",
+      "end_utc": "2026-10-09T17:14:42.255Z",
+      "duration_seconds": 0.502,
+      "source": [
+        {
+          "receipt_sha256": "4c2d378424c762f73bb25010794888055cb15f98db13809b347b2e2781726971",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-0acdf6688e982af2c7a2742630319b4c74be93a6@2026-10-09T17:14:41.753Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/0acdf6688e982af2c7a2742630319b4c74be93a6",
+      "operation_content_hash": "0acdf6688e982af2c7a2742630319b4c74be93a6"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-8bb1d3e3b6d648d21fe5d4be37aca28fa2b27086@2026-10-09T17:14:42.786Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/deadline-correction/base-verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:42.786Z",
+      "end_utc": "2026-10-09T17:14:47.148Z",
+      "duration_seconds": 4.362,
+      "source": [
+        {
+          "receipt_sha256": "c47bcee6c53c4f0aad2b786b2aef86e7b73aed848cbaa0cbdab128006216b971",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-8bb1d3e3b6d648d21fe5d4be37aca28fa2b27086@2026-10-09T17:14:42.786Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8bb1d3e3b6d648d21fe5d4be37aca28fa2b27086",
+      "operation_content_hash": "8bb1d3e3b6d648d21fe5d4be37aca28fa2b27086"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-8bb1d3e3b6d648d21fe5d4be37aca28fa2b27086@2026-10-09T17:14:47.149Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/deadline-correction/base-verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:47.149Z",
+      "end_utc": "2026-10-09T17:14:47.595Z",
+      "duration_seconds": 0.446,
+      "source": [
+        {
+          "receipt_sha256": "c47bcee6c53c4f0aad2b786b2aef86e7b73aed848cbaa0cbdab128006216b971",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-8bb1d3e3b6d648d21fe5d4be37aca28fa2b27086@2026-10-09T17:14:47.149Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8bb1d3e3b6d648d21fe5d4be37aca28fa2b27086",
+      "operation_content_hash": "8bb1d3e3b6d648d21fe5d4be37aca28fa2b27086"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-6c6c971fb4b40c2929a4b5d292d016eead7b58ab@2026-10-09T17:14:48.154Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/deadline-correction/candidate-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:48.154Z",
+      "end_utc": "2026-10-09T17:14:51.937Z",
+      "duration_seconds": 3.783,
+      "source": [
+        {
+          "receipt_sha256": "b04e0cba67d2da5d3e6d77eb85ef8970f4d8a4f7b2bfedeafda87ba46a8376d1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-6c6c971fb4b40c2929a4b5d292d016eead7b58ab@2026-10-09T17:14:48.154Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/6c6c971fb4b40c2929a4b5d292d016eead7b58ab",
+      "operation_content_hash": "6c6c971fb4b40c2929a4b5d292d016eead7b58ab"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-6c6c971fb4b40c2929a4b5d292d016eead7b58ab@2026-10-09T17:14:51.937Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/deadline-correction/candidate-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:51.937Z",
+      "end_utc": "2026-10-09T17:14:52.420Z",
+      "duration_seconds": 0.483,
+      "source": [
+        {
+          "receipt_sha256": "b04e0cba67d2da5d3e6d77eb85ef8970f4d8a4f7b2bfedeafda87ba46a8376d1",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-6c6c971fb4b40c2929a4b5d292d016eead7b58ab@2026-10-09T17:14:51.937Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/6c6c971fb4b40c2929a4b5d292d016eead7b58ab",
+      "operation_content_hash": "6c6c971fb4b40c2929a4b5d292d016eead7b58ab"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-create-d4b41c6262514e5137c1f688e55b6c7b3f887014@2026-10-09T17:14:53.030Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/deadline-correction/commands.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:53.030Z",
+      "end_utc": "2026-10-09T17:14:57.021Z",
+      "duration_seconds": 3.991,
+      "source": [
+        {
+          "receipt_sha256": "6d3b23d629749944e007f9150e0d1f40cecb44bccdaa1a28c906fd9f2a23b870",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-create-d4b41c6262514e5137c1f688e55b6c7b3f887014@2026-10-09T17:14:53.030Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d4b41c6262514e5137c1f688e55b6c7b3f887014",
+      "operation_content_hash": "d4b41c6262514e5137c1f688e55b6c7b3f887014"
+    },
+    {
+      "id": "20261009-1723-box-http-palette-readback-d4b41c6262514e5137c1f688e55b6c7b3f887014@2026-10-09T17:14:57.021Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back completed HTTP handoff blob: rust/docs/validation/http-palette-transfer-2026-10-09/deadline-correction/commands.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T17:14:57.021Z",
+      "end_utc": "2026-10-09T17:14:57.347Z",
+      "duration_seconds": 0.326,
+      "source": [
+        {
+          "receipt_sha256": "6d3b23d629749944e007f9150e0d1f40cecb44bccdaa1a28c906fd9f2a23b870",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Blob SHA/full-byte readback verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Completed observed connector interval only; pending calls excluded",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-palette-readback-d4b41c6262514e5137c1f688e55b6c7b3f887014@2026-10-09T17:14:57.021Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d4b41c6262514e5137c1f688e55b6c7b3f887014",
+      "operation_content_hash": "d4b41c6262514e5137c1f688e55b6c7b3f887014"
+    },
+    {
+      "id": "20261009-1723-handoff-upload-pending",
+      "repository_assignment": "BelloBox",
+      "activity": "Remaining HTTP handoff source upload awaiting mandatory approval",
+      "category": "publication/waiting",
+      "start_utc": null,
+      "end_utc": null,
+      "duration_seconds": null,
+      "source": [
+        {
+          "receipt_sha256": "e6cc58f9ce899f9e01d001503161f6f305edfa0bebf7e92ac1095133dd17180e",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Source package upload awaiting attached mandatory approval; completed operations are recorded separately; pending call duration/outcome unavailable",
+      "accounting_group": "unknown",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Coordinator and task-owner status observations; no authoritative elapsed timer or call outcome for these open operations",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1723-regex-local-work-open",
+      "repository_assignment": "BelloBox",
+      "activity": "New local Regex palette handoff implementation and focused run",
+      "category": "implementation/build (mixed)",
+      "start_utc": null,
+      "end_utc": null,
+      "duration_seconds": null,
+      "source": [
+        {
+          "receipt_sha256": "e6cc58f9ce899f9e01d001503161f6f305edfa0bebf7e92ac1095133dd17180e",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "First source-bound focused Cargo run active at cutoff; no completed reliable command timer yet. Source-edit duration and initial formatter UTC start unavailable.",
+      "accounting_group": "unknown",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Open task status; implementation and inference duration unavailable",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1723",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
     }
   ],
   "commit_milestones": [
@@ -71733,10 +72771,10 @@
         }
       },
       "catchup_command": {
-        "count": 274,
-        "known_duration_count": 274,
-        "resource_seconds_sum": 5654.414118754094,
-        "wall_coverage_seconds": 4906.763838,
+        "count": 275,
+        "known_duration_count": 275,
+        "resource_seconds_sum": 5654.8375889781,
+        "wall_coverage_seconds": 4907.1873,
         "category_seconds": {
           "automated lint/check": 483.83826234249256,
           "build + test/check (combined)": 4643.552791030408,
@@ -71745,7 +72783,7 @@
           "dependency setup + build (combined)": 31.142,
           "repository/dependency setup": 12.327,
           "automated accounting validation": 9.941363248010303,
-          "packaging/source validation": 0.6996045550076524,
+          "packaging/source validation": 1.1230747790141031,
           "test execution (existing binary)": 1.998498904009466,
           "automated source/binary verification": 0.532835828998941,
           "build + negative-control test (combined)": 194.49757452319318,
@@ -71754,7 +72792,7 @@
           "automated source edit": 0.020964465002180077
         },
         "resource_seconds": {
-          "cloud command process": 5654.414118754094
+          "cloud command process": 5654.8375889781
         }
       },
       "catchup_gui_process": {
@@ -71771,17 +72809,17 @@
         }
       },
       "catchup_api": {
-        "count": 138,
-        "known_duration_count": 138,
-        "resource_seconds_sum": 1602.9899999999984,
-        "wall_coverage_seconds": 485.928,
+        "count": 170,
+        "known_duration_count": 170,
+        "resource_seconds_sum": 1691.582999999998,
+        "wall_coverage_seconds": 556.568,
         "category_seconds": {
-          "publication": 1595.4149999999986,
+          "publication": 1684.0079999999982,
           "publication verification": 7.575
         },
         "resource_seconds": {
           "pending API/client operation": 968.0189999999999,
-          "observed API/client operation": 634.9710000000003
+          "observed API/client operation": 723.5640000000001
         }
       }
     }
@@ -72760,6 +73798,47 @@
           },
           "known_endpoint_items": 12,
           "known_endpoint_resource_seconds": 423.87391470103466
+        }
+      },
+      "ci_coverage_within_window_seconds": 0,
+      "window_seconds": 780.0,
+      "outside_selected_ci_job_intervals_seconds": 780.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1723",
+      "through_utc": "2026-10-09T17:23:00Z",
+      "coverage_window_start_utc": "2026-10-09T17:10:00Z",
+      "new_items": 35,
+      "groups": {
+        "catchup_command": {
+          "count": 1,
+          "known_duration_count": 1,
+          "resource_seconds_sum": 0.42347022400645074,
+          "wall_coverage_seconds": 0.423462,
+          "category_seconds": {
+            "packaging/source validation": 0.42347022400645074
+          },
+          "resource_seconds": {
+            "cloud command process": 0.42347022400645074
+          },
+          "known_endpoint_items": 1,
+          "known_endpoint_resource_seconds": 0.42347022400645074
+        },
+        "catchup_api": {
+          "count": 32,
+          "known_duration_count": 32,
+          "resource_seconds_sum": 88.59299999999999,
+          "wall_coverage_seconds": 70.64,
+          "category_seconds": {
+            "publication": 88.59299999999999
+          },
+          "resource_seconds": {
+            "observed API/client operation": 88.59299999999999
+          },
+          "known_endpoint_items": 32,
+          "known_endpoint_resource_seconds": 88.593
         }
       },
       "ci_coverage_within_window_seconds": 0,
