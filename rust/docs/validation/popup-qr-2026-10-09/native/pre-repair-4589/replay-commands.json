@@ -1,0 +1,24 @@
+{
+  "target": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+  "steps": [
+    {
+      "name": "reconstruct-candidate-inventory",
+      "source": "source",
+      "kind": "inventory",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "--",
+        "--list"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "first_result_sha256": "d27663a4e602557423f7fcbe0bb09c1202bbf64b0a702a8d8d6657235303482a",
+  "first_log_sha256": "f79f334e313b1b2a4bad444f7d76b9cb9090b8d00b134d40a7fecb745e161205",
+  "original_binary_sha256": "79eeaa809ef7ac873ae7288617c8297aff438e5c4513d8b4314b99ce7c010abc",
+  "binary_available": false,
+  "config_snapshot": {
+    "settings.json": "87aaf8cd2ccf6479493b130d7e16488a013998ae3220308cc5e3ffc5e750a171"
+  }
+}

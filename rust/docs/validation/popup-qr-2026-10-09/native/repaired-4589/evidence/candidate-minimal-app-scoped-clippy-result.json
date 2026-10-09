@@ -1,0 +1,33 @@
+{
+  "name": "candidate-minimal-app-scoped-clippy",
+  "kind": "lint",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "clippy",
+    "--no-deps",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--all-targets",
+    "--no-default-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "variant": "minimal",
+  "app_scoped": true,
+  "started_at": "2026-10-09T05:15:39.767410+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/evidence/candidate-minimal-app-scoped-clippy.log",
+  "ended_at": "2026-10-09T05:15:46.055283+00:00",
+  "elapsed_seconds": 6.287651291000657,
+  "exit_code": 101,
+  "log_sha256": "2bfa9344c0f587496204f4c25dcb8011bcb7b44dccb8527a712d5bf1c1d82347",
+  "counts": [],
+  "binaries": [],
+  "tests": [],
+  "listed_tests": [],
+  "expected_name_set_matches": null
+}

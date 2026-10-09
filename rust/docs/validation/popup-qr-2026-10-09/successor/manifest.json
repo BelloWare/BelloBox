@@ -1,0 +1,18 @@
+{
+  "parent": "4589e0280844df4a070533c7babb9d01cf430905",
+  "parent_tree": "294c99a7847757d2c41217834b8dc87eab9e4765",
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+      "local": "/workspace/shared/popup-qr-fixture-repair/source/rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+      "size": 15648,
+      "sha256": "ba7f979d6be8654678bf4abe10cba4c2ee075db731fad3b86bb514c502276082"
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "local": "/workspace/shared/popup-qr-fixture-repair/source/rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "size": 15296,
+      "sha256": "92f9d1ce762a9f7391f6ff1ef3f154f49cb1daf44d8f885a36b016930758300e"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "name": "build-minimal",
+  "kind": "build",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "build",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--no-default-features",
+    "--bin",
+    "bellobox"
+  ],
+  "started_at": "2026-10-09T04:56:54.219822+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/evidence/build-minimal.log",
+  "ended_at": "2026-10-09T04:57:04.136241+00:00",
+  "elapsed_seconds": 9.916343834018335,
+  "exit_code": 0,
+  "log_sha256": "21cec0fa925947b9a7f886b0292b43128f7401d7a57eabd7a81e9beccafbc2df",
+  "counts": [],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+      "sha256": "fc280fb7aeec58bb1ee2dd45a2e0dd6f67a72d29d52557407705598c3233730c",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [],
+  "listed_tests": [],
+  "expected_name_set_matches": null
+}

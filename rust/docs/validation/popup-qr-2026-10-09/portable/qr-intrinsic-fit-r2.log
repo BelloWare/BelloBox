@@ -1,0 +1,25 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 14.51s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 10 tests
+test desktop::qr_clipboard_tests::popup_decoded_intrinsic_image_uses_exact_final_square_bounds ... ok
+test desktop::qr_clipboard_tests::popup_disabled_copy_pointer_never_writes_or_claims_success ... ok
+test desktop::qr_clipboard_tests::popup_synthetic_image_fixture_copies_only_current_generation ... ok
+520x620: preview=Bounds { origin: Point { x: 12px, y: 81.5px }, size: Size { 496px × 279.5px } }, image=Bounds { origin: Point { x: 120.25px, y: 81.5px }, size: Size { 279.5px × 279.5px } }, editor=Bounds { origin: Point { x: 12px, y: 396.5px }, size: Size { 496px × 116px } }
+400x480: preview=Bounds { origin: Point { x: 12px, y: 72px }, size: Size { 376px × 161.5px } }, image=Bounds { origin: Point { x: 119.25px, y: 72px }, size: Size { 161.5px × 161.5px } }, editor=Bounds { origin: Point { x: 12px, y: 259.5px }, size: Size { 376px × 116px } }
+520x700: preview=Bounds { origin: Point { x: 12px, y: 111px }, size: Size { 496px × 300px } }, image=Bounds { origin: Point { x: 112px, y: 113px }, size: Size { 296px × 296px } }, editor=Bounds { origin: Point { x: 12px, y: 476.5px }, size: Size { 496px × 116px } }
+test desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows ... ok
+test desktop::qr_clipboard_tests::popup_refused_copy_preserves_sentinel_and_save_stays_available ... ok
+400x480: preview=Bounds { origin: Point { x: 12px, y: 72px }, size: Size { 376px × 161.5px } }, image=Bounds { origin: Point { x: 119.25px, y: 72px }, size: Size { 161.5px × 161.5px } }, editor=Bounds { origin: Point { x: 12px, y: 259.5px }, size: Size { 376px × 116px } }
+520x620: preview=Bounds { origin: Point { x: 12px, y: 81.5px }, size: Size { 496px × 279.5px } }, image=Bounds { origin: Point { x: 120.25px, y: 81.5px }, size: Size { 279.5px × 279.5px } }, editor=Bounds { origin: Point { x: 12px, y: 396.5px }, size: Size { 496px × 116px } }
+test desktop::qr_clipboard_tests::popup_qr_preview_fits_without_overlapping_editor_at_supported_sizes ... ok
+test desktop::qr_clipboard_tests::popup_refused_save_focus_supports_missed_release_recovery_without_editing ... ok
+test desktop::qr_clipboard_tests::popup_activation_evidence_is_per_window_and_requires_both_releases ... ok
+test launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr ... ok
+test desktop::qr_clipboard_tests::popup_editor_activation_keys_block_pointer_save_without_consuming_input_or_replay ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 436 filtered out; finished in 0.52s
+

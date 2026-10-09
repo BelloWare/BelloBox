@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-10-09T05:05:02.699907+00:00",
+  "first_matrix_validation_sha256": "afd809d783a78161ae4667fcbe97e51aa967093cd83ca41ef39c75442cecbe5d",
+  "first_failure_log_sha256": "f79f334e313b1b2a4bad444f7d76b9cb9090b8d00b134d40a7fecb745e161205",
+  "first_failure_unchanged": true,
+  "source_verification": [
+    {
+      "label": "source",
+      "files_modes_verified_after_diagnostics": 1926,
+      "manifest_sha256": "91f6d24f76721aabc2a64fa0395606c0a2a39ded9256fe917452d47909ec2353"
+    },
+    {
+      "label": "parent-source",
+      "files_modes_verified_after_diagnostics": 1923,
+      "manifest_sha256": "f4b934c5b8beb9b4288f2ddc10eb41015295e21332212c361c581ebc74a40efd"
+    }
+  ],
+  "original_feature_checkout_head_unchanged": "59339af1fa422acea4067207c55344666c3fa4ab",
+  "original_feature_checkout_status_unchanged": "",
+  "prior_3976_83ae_45d5_evidence_unchanged": true,
+  "same_binary_sha256_as_original": "79eeaa809ef7ac873ae7288617c8297aff438e5c4513d8b4314b99ce7c010abc",
+  "diagnostic_replay_counts": [
+    {
+      "condition": "fresh",
+      "passed": 52,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 397
+    },
+    {
+      "condition": "learned",
+      "passed": 52,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 397
+    }
+  ],
+  "socket_probe_sha256": "a6df3bffaefcfb53bd50724ab880ea541fa50a951b07f35e5cf1eb85667b1375",
+  "initial_diagnosis_sha256": "bf0bc13b9c05c163eb606dc476f0d76f23cbe7a7d4e1e71a7eb1ec6d299d48d7",
+  "diagnostic_candidate_sha256": "b8e5a323bb91b0f318f16e0d5d63d73ec44aefb30e42a521379a5422076046cb",
+  "conclusion": "Original first preflight remains 296 passed/5 failed/3 ignored. Exact same binary fresh and learned launcher replays both passed52/0/1. Candidate failure did not recur in the bounded two replays. A separate 3/3 macOS accept/read probe establishes immediate WouldBlock with inherited nonblocking mode and success after explicit blocking reset; fixture source is identical to15197. Evidence supports a pre-existing fixture timing issue, not an established candidate production regression. No fixture edit, timeout change, or green substitution.",
+  "baseline_runtime_replay_performed": false,
+  "baseline_runtime_replay_reason": "The initial candidate failure did not reproduce in either requested fresh/learned same-binary replay; matching baseline Clippy/source comparisons are separately complete."
+}

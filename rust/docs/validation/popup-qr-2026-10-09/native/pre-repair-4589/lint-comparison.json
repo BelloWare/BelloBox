@@ -1,0 +1,464 @@
+[
+  {
+    "variant": "default",
+    "scope": "strict",
+    "candidate_exit_code": 101,
+    "baseline_exit_code": 101,
+    "candidate": [
+      {
+        "code": null,
+        "message": "unneeded `return` statement",
+        "file": "crates/bellobox-core/src/settings.rs",
+        "line": 253,
+        "column": 9,
+        "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+      }
+    ],
+    "baseline": [
+      {
+        "code": null,
+        "message": "unneeded `return` statement",
+        "file": "crates/bellobox-core/src/settings.rs",
+        "line": 253,
+        "column": 9,
+        "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+      }
+    ],
+    "same_error_source_anchor_multiset": true,
+    "additional_candidate_errors": [],
+    "baseline_only_errors": []
+  },
+  {
+    "variant": "default",
+    "scope": "app-scoped",
+    "candidate_exit_code": 101,
+    "baseline_exit_code": 101,
+    "candidate": [
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 263,
+        "column": 16,
+        "source_anchor": "|| input.is_empty()"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 265,
+        "column": 20,
+        "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 129,
+        "column": 17,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 166,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 525,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 582,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 648,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      }
+    ],
+    "baseline": [
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 208,
+        "column": 16,
+        "source_anchor": "|| input.is_empty()"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 210,
+        "column": 20,
+        "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 129,
+        "column": 17,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 166,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 525,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 582,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 648,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      }
+    ],
+    "same_error_source_anchor_multiset": true,
+    "additional_candidate_errors": [],
+    "baseline_only_errors": []
+  },
+  {
+    "variant": "minimal",
+    "scope": "strict",
+    "candidate_exit_code": 101,
+    "baseline_exit_code": 101,
+    "candidate": [
+      {
+        "code": null,
+        "message": "unneeded `return` statement",
+        "file": "crates/bellobox-core/src/settings.rs",
+        "line": 253,
+        "column": 9,
+        "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+      }
+    ],
+    "baseline": [
+      {
+        "code": null,
+        "message": "unneeded `return` statement",
+        "file": "crates/bellobox-core/src/settings.rs",
+        "line": 253,
+        "column": 9,
+        "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+      }
+    ],
+    "same_error_source_anchor_multiset": true,
+    "additional_candidate_errors": [],
+    "baseline_only_errors": []
+  },
+  {
+    "variant": "minimal",
+    "scope": "app-scoped",
+    "candidate_exit_code": 101,
+    "baseline_exit_code": 101,
+    "candidate": [
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 263,
+        "column": 16,
+        "source_anchor": "|| input.is_empty()"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 265,
+        "column": 20,
+        "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 129,
+        "column": 17,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 166,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 525,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 582,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 648,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      }
+    ],
+    "baseline": [
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 208,
+        "column": 16,
+        "source_anchor": "|| input.is_empty()"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 210,
+        "column": 20,
+        "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 129,
+        "column": 17,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 166,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 525,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 582,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 648,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      }
+    ],
+    "same_error_source_anchor_multiset": true,
+    "additional_candidate_errors": [],
+    "baseline_only_errors": []
+  },
+  {
+    "variant": "movie-fixtures",
+    "scope": "strict",
+    "candidate_exit_code": 101,
+    "baseline_exit_code": 101,
+    "candidate": [
+      {
+        "code": null,
+        "message": "unneeded `return` statement",
+        "file": "crates/bellobox-core/src/settings.rs",
+        "line": 253,
+        "column": 9,
+        "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+      }
+    ],
+    "baseline": [
+      {
+        "code": null,
+        "message": "unneeded `return` statement",
+        "file": "crates/bellobox-core/src/settings.rs",
+        "line": 253,
+        "column": 9,
+        "source_anchor": "return PathBuf::from(std::env::var_os(\"HOME\").unwrap_or_default())"
+      }
+    ],
+    "same_error_source_anchor_multiset": true,
+    "additional_candidate_errors": [],
+    "baseline_only_errors": []
+  },
+  {
+    "variant": "movie-fixtures",
+    "scope": "app-scoped",
+    "candidate_exit_code": 101,
+    "baseline_exit_code": 101,
+    "candidate": [
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 263,
+        "column": 16,
+        "source_anchor": "|| input.is_empty()"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 265,
+        "column": 20,
+        "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 129,
+        "column": 17,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 166,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 525,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 582,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 648,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      }
+    ],
+    "baseline": [
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 208,
+        "column": 16,
+        "source_anchor": "|| input.is_empty()"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/desktop.rs",
+        "line": 210,
+        "column": 20,
+        "source_anchor": "&& !(id == \"listSet\" && !second.is_empty())"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 129,
+        "column": 17,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/screenshot_ui/quit_tests.rs",
+        "line": 166,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 525,
+        "column": 9,
+        "source_anchor": "!crate::shutdown::pending_refusal(cx).is_some(),"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 582,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      },
+      {
+        "code": null,
+        "message": "this boolean expression can be simplified",
+        "file": "crates/bellobox-app/src/shutdown/tests.rs",
+        "line": 648,
+        "column": 13,
+        "source_anchor": "assert!(!crate::shutdown::pending_refusal(cx).is_some());"
+      }
+    ],
+    "same_error_source_anchor_multiset": true,
+    "additional_candidate_errors": [],
+    "baseline_only_errors": []
+  }
+]

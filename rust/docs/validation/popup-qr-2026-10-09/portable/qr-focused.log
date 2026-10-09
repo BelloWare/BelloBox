@@ -1,0 +1,19 @@
+   Compiling bello-workbench v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bello-workbench)
+   Compiling bellobox-core v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bellobox-core)
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bello-workbench-ui)
+   Compiling bello-platform v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bello-platform)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bellobox-app)
+error[E0599]: no method named `focus_handle` found for reference `&bello_workbench_ui::EditorView` in the current scope
+   --> crates/bellobox-app/src/desktop/qr_clipboard_tests.rs:133:42
+    |
+133 |                 assert!(v.input.read(cx).focus_handle(cx).is_focused(w));
+    |                                          ^^^^^^^^^^^^ method not found in `&bello_workbench_ui::EditorView`
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `Focusable` which provides `focus_handle` is implemented but not in scope; perhaps you want to import it
+    |
+  1 + use gpui::Focusable;
+    |
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `bellobox-app` (bin "bellobox" test) due to 1 previous error

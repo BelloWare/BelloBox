@@ -1,0 +1,60 @@
+    Finished `test` profile [unoptimized] target(s) in 0.42s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f)
+
+running 53 tests
+test launcher_clock_ui::copilot::presentation_tests::already_present_location_is_not_deferred ... ok
+test launcher_clock_ui::copilot::presentation_tests::compact_input_bounds_and_placeholder_click_focus_at_small_width ... ok
+test launcher_clock_ui::copilot::presentation_tests::fully_effective_suggestion_has_applied_label_but_intervening_edit_reopens_it ... ok
+test launcher_clock_ui::copilot::presentation_tests::placeholder_never_covers_text_or_ime_composition ... ok
+test launcher_clock_ui::copilot::presentation_tests::readiness_cache_child ... ignored, executed by isolated parent with temporary configuration
+test launcher_clock_ui::copilot::presentation_tests::readiness_cache_isolated_configuration_invalidation ... ok
+test launcher_clock_ui::copilot::presentation_tests::remaining_locations_win_over_time_applied_history ... ok
+test launcher_clock_ui::copilot::tests::discarded_palette_retains_physical_guard_and_rejects_late_actions ... ok
+test launcher_clock_ui::copilot::tests::palette_apply_focus_survives_revision_and_tab_reaches_send ... ok
+test launcher_clock_ui::copilot::tests::palette_send_time_apply_handoff_preserves_deferred_locations_and_draft ... ok
+test launcher_clock_ui::copilot::tests::secondary_editor_owns_enter_arrows_and_escape_never_handoffs ... ok
+test launcher_clock_ui::copilot::tests::stale_apply_clear_and_row_switch_preserve_only_current_conversation ... ok
+test launcher_clock_ui::tests::compact_offsets_preserve_non_hour_zones ... ok
+test launcher_clock_ui::tests::menu_navigation_wraps_at_the_bounded_locations ... ok
+test launcher_clock_ui::tests::preview_regions_fit_the_original_reserved_height ... ok
+test launcher_clock_ui::tests::scrubber_clamps_both_endpoints_and_keeps_fractional_positions ... ok
+test launcher_clock_ui::tests::tab_enters_from_search_and_releases_to_search_at_both_ends ... ok
+test launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release ... ok
+test launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement ... ok
+test launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff ... ok
+test launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot ... ok
+test launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo ... ok
+test launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only ... ok
+test launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft ... ok
+test launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor ... ok
+test launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor ... ok
+test launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay ... ok
+test launcher_qr_ui::tests::ordinary_constructor_keeps_actual_backend_policy_even_in_test_builds ... ok
+test launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning ... ok
+test launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations ... ok
+test launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit ... ok
+test launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite ... ok
+test launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success ... ok
+test launcher_ui::clock_tests::clock_height_reserves_source_interactive_row_synchronously ... ok
+test launcher_ui::clock_tests::ordinary_clock_control_escape_belongs_to_launcher_close ... ok
+test launcher_ui::copilot_lifecycle_tests::actual_launch_failure_preserves_source_then_success_transfers_orphaned_guard ... ok
+test launcher_ui::copilot_lifecycle_tests::actual_launcher_ime_escape_and_held_escape_do_not_close_or_steal_composition ... ok
+test launcher_ui::copilot_lifecycle_tests::command_k_returns_to_search_without_sending_or_losing_draft ... ok
+test launcher_ui::copilot_lifecycle_tests::deactivation_uses_launcher_close_gate_instead_of_dropping_live_worker ... ok
+test launcher_ui::copilot_lifecycle_tests::launcher_handoff_draft_limit_counts_utf8_bytes_without_truncating_source ... ok
+test launcher_ui::copilot_lifecycle_tests::native_close_keeps_guard_across_discard_replacement_and_non_clock_selection ... ok
+test launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr ... ok
+test launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close ... ok
+test launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save ... ok
+test launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline ... ok
+test launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles ... ok
+test launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open ... ok
+test launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release ... ok
+test launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release ... ok
+test launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases ... ok
+test launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection ... ok
+test launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay ... ok
+test shutdown::tests::latched_quit_rejects_new_tool_and_launcher_windows ... ok
+
+test result: ok. 52 passed; 0 failed; 1 ignored; 0 measured; 394 filtered out; finished in 3.75s
+

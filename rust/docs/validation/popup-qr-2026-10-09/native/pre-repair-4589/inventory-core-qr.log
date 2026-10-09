@@ -1,0 +1,12 @@
+   Compiling bellobox-core v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-core)
+    Finished `test` profile [unoptimized] target(s) in 6.98s
+     Running unittests src/lib.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823)
+qr::tests::enlarged_card_rounds_up_and_clamps_both_ends: test
+qr::tests::limits_are_bytes_not_characters: test
+qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads: test
+qr::tests::palette_limits_reject_blank_and_oversize_without_truncation: test
+qr::tests::palette_rasters_preserve_modules_and_fit_both_cards: test
+qr::tests::png_is_crisp_with_white_quiet_zone: test
+qr::tests::svg_has_real_geometry_and_quiet_zone: test
+
+7 tests, 0 benchmarks

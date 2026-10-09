@@ -1,0 +1,43 @@
+{
+  "name": "inventory-core-qr",
+  "kind": "inventory",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-core",
+    "--lib",
+    "qr::tests::",
+    "--",
+    "--list"
+  ],
+  "started_at": "2026-10-09T05:15:17.426761+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/evidence/inventory-core-qr.log",
+  "ended_at": "2026-10-09T05:15:23.635092+00:00",
+  "elapsed_seconds": 6.207479750039056,
+  "exit_code": 0,
+  "log_sha256": "4e21b7ac47a36008815b0bded41b6fb7cce774937e99fbf1b55bd6adac58729f",
+  "counts": [],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823",
+      "sha256": "b1ff03ddb583d664be60418b90e82da47d776b0f2b75066b42b8369af84c4d68",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [],
+  "listed_tests": [
+    "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+    "qr::tests::limits_are_bytes_not_characters",
+    "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+    "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+    "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+    "qr::tests::png_is_crisp_with_white_quiet_zone",
+    "qr::tests::svg_has_real_geometry_and_quiet_zone"
+  ],
+  "expected_name_set_matches": null
+}

@@ -1,0 +1,13 @@
+{
+  "base": "15197a71d81c620bf60da18f0d066505e4c0dc99",
+  "base_tree": "1ca9979fab6bff4f20d3abee773b411104b029ad",
+  "files": {
+    "rust/crates/bellobox-app/src/desktop.rs": "6511451942389175c1b0bf0c5585f1a1fca91b635b240f776ade7163808c1385",
+    "rust/crates/bellobox-app/src/desktop/qr_clipboard_tests.rs": "a1a920228a7d1e10348a34987b3a052647b367cb5840d89c376f97413499923a",
+    "rust/crates/bellobox-app/src/launcher_qr_ui.rs": "0e53442ea59b863fbefa8b737201906d05a68425abbb66187bf3196762de8f34",
+    "rust/crates/bellobox-app/src/launcher_qr_ui/tests.rs": "f0319f4a442fd21430936aa9b8388ed227172bd5f33e07ac5eaf4c4ec55c3722",
+    "rust/crates/bellobox-app/src/main.rs": "ddd0738ec0fef03d2d60c84d1bd49ac8c6b6d2f4bcfa95e23787f92c835ae8b9",
+    "rust/crates/bellobox-app/src/qr_clipboard.rs": "778d881a4dc7a596ddde97f698a6906fad0d0634d607becc601f0af34dd87278",
+    "rust/crates/bellobox-app/src/qr_input.rs": "a46d82103610456fc5ef68379984ffa8aa73dd869b7c7e11128f0d7d54d9be3e"
+  }
+}

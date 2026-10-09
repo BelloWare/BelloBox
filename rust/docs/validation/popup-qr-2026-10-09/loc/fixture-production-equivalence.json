@@ -1,0 +1,50 @@
+{
+  "commit": "80e6d41a68fc0e2bf186272fb788a301f4f9e744",
+  "tree": "3a4d1f63a5857a0cf60d37001991f4e59fa61df8",
+  "parent": "4589e0280844df4a070533c7babb9d01cf430905",
+  "exact_two_test_only_paths": true,
+  "all_other_git_paths_unchanged": true,
+  "all_eight_prior_source_doc_postimages_unchanged": true,
+  "source_after_checks_unchanged": true,
+  "package_clean_build_exit": 0,
+  "ordinary_binary_sha256": "fe662658648c356888745ab72aaf0b8c9df85252f7b559680b7bc803ace7c174",
+  "v3_gui_binary_sha256": "fe662658648c356888745ab72aaf0b8c9df85252f7b559680b7bc803ace7c174",
+  "binary_byte_equality": true,
+  "checks": {
+    "fmt": {
+      "exit": 0
+    },
+    "delayed_readers": {
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    "launcher_default": {
+      "exit": 0,
+      "passed": 54,
+      "failed": 0,
+      "ignored": 1
+    },
+    "launcher_minimal": {
+      "exit": 0,
+      "passed": 54,
+      "failed": 0,
+      "ignored": 1
+    }
+  },
+  "logs": {
+    "delayed-readers.log": "4c93391f0c69c7c5938e5320f0e590c8146a0902fb05c15f62c026fd263ffb3f",
+    "build.log": "8a3d836420786d62cc1e358313d305033f83cb6d21e04e28830ecbf53c2244a3",
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "launcher-default.log": "7dd968f18be11276980fb06e3d5ff433592bc41537a2c4c0a9631bf1f55f736a",
+    "clean.log": "f7f810cca09932bdb675bc53680094fd8ff50cba67f3ec7ffc56887d0a6fcdfb",
+    "launcher-minimal.log": "74e7554b4e91ba6147f3c1fb31b3e719a9d0001ff7118a17d38e297763629887"
+  },
+  "verified_utc": "2026-10-09T05:21:14.819775+00:00",
+  "limits": [
+    "Native fixture receipts separately attributed to peer; no native GUI established.",
+    "No shared rust ref publication performed.",
+    "Strict Clippy was not rerun locally for these two test-only additions; v3 earlier strict/default/minimal passes remain separately attributed."
+  ]
+}

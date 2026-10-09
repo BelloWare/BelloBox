@@ -1,0 +1,11 @@
+{
+  "base": "15197a71d81c620bf60da18f0d066505e4c0dc99",
+  "candidate": "4589e0280844df4a070533c7babb9d01cf430905",
+  "paths": [
+    "rust/crates/bellobox-core",
+    "rust/crates/bellobox-platform",
+    "rust/Cargo.lock",
+    "rust/Cargo.toml"
+  ],
+  "all_identical": true
+}

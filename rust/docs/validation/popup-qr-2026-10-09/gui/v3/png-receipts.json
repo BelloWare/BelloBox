@@ -1,0 +1,32 @@
+[
+  {
+    "file": "v3-original-retained.png",
+    "size": [
+      528,
+      528
+    ],
+    "bytes": 3353,
+    "mode": "L",
+    "sha256": "3ae3d4a72c51418e5abb57d19da7b9db514ee398ac051850be6eb47ef8209c74"
+  },
+  {
+    "file": "v3-dense-long-status-long-status-long-status-long-status-long-status-long-status-long-status-long-status-long-status-long-status-long-status-long-status-long-status-long-status-end.png",
+    "size": [
+      708,
+      708
+    ],
+    "bytes": 27421,
+    "mode": "L",
+    "sha256": "9b7145b1a27e5eccc99a1cbe312edb543f0bfa2ad39ebbc40c5c00fac84bb049"
+  },
+  {
+    "file": "v3-original.png",
+    "size": [
+      528,
+      528
+    ],
+    "bytes": 3353,
+    "mode": "L",
+    "sha256": "3ae3d4a72c51418e5abb57d19da7b9db514ee398ac051850be6eb47ef8209c74"
+  }
+]

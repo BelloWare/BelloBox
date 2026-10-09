@@ -1,0 +1,64 @@
+    Finished `test` profile [unoptimized] target(s) in 1.35s
+     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f)
+
+running 2 tests
+test launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes ... 
+thread '<unnamed>' (57141443) panicked at crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs:55:43:
+called `Result::unwrap()` on an `Err` value: Os { code: 35, kind: WouldBlock, message: "Resource temporarily unavailable" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::result::unwrap_failed
+   3: bellobox::launcher_clock_ui::copilot::tests::read_request
+   4: bellobox::launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes::{{closure}}
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+thread 'launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes' (57141442) panicked at crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs:94:5:
+assertion `left == right` failed
+  left: Err(Disconnected)
+ right: Err(Timeout)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed
+   4: bellobox::launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes
+   5: bellobox::launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes::{{closure}}
+   6: core::ops::function::FnOnce::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+FAILED
+test launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes ... 
+thread '<unnamed>' (57141445) panicked at crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs:89:43:
+called `Result::unwrap()` on an `Err` value: Os { code: 35, kind: WouldBlock, message: "Resource temporarily unavailable" }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::result::unwrap_failed
+   3: bellobox::launcher_ui::copilot_lifecycle_tests::read_request
+   4: bellobox::launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes::{{closure}}
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+thread 'launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes' (57141444) panicked at crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs:128:5:
+assertion `left == right` failed
+  left: Err(Disconnected)
+ right: Err(Timeout)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed
+   4: bellobox::launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes
+   5: bellobox::launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes::{{closure}}
+   6: core::ops::function::FnOnce::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+FAILED
+
+failures:
+
+failures:
+    launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes
+    launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 447 filtered out; finished in 0.04s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

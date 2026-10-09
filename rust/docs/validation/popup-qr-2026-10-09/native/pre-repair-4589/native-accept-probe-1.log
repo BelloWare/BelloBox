@@ -1,0 +1,6 @@
+sample=1 inherited_socket_read=Err(Os { code: 35, kind: WouldBlock, message: "Resource temporarily unavailable" }) elapsed_us=1
+sample=1 explicit_blocking_socket_read=Ok(1) elapsed_us=258687
+sample=2 inherited_socket_read=Err(Os { code: 35, kind: WouldBlock, message: "Resource temporarily unavailable" }) elapsed_us=1
+sample=2 explicit_blocking_socket_read=Ok(1) elapsed_us=254759
+sample=3 inherited_socket_read=Err(Os { code: 35, kind: WouldBlock, message: "Resource temporarily unavailable" }) elapsed_us=1
+sample=3 explicit_blocking_socket_read=Ok(1) elapsed_us=257984

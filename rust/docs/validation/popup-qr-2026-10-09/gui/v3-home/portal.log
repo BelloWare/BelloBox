@@ -1,0 +1,53 @@
+XDP: Looking for portals configuration in '/workspace/shared/palette-qr-gui/portal-sysroot/usr/share/xdg-desktop-portal/portals/xfce-portals.conf'
+XDP: Looking for portals configuration in '/workspace/shared/palette-qr-gui/portal-sysroot/usr/share/xdg-desktop-portal/portals/portals.conf'
+XDP: Preferred portals for interface 'default': none
+XDP: Preferred portals for interface 'org.freedesktop.impl.portal.FileChooser': gtk
+XDP: Using portal configuration file '/workspace/shared/palette-qr-gui/portal-sysroot/usr/share/xdg-desktop-portal/portals/portals.conf' for non-specific desktop
+XDP: load portals from /workspace/shared/palette-qr-gui/portal-sysroot/usr/share/xdg-desktop-portal/portals
+XDP: loading /workspace/shared/palette-qr-gui/portal-sysroot/usr/share/xdg-desktop-portal/portals/gtk.portal
+XDP: portal implementation supports org.freedesktop.impl.portal.FileChooser
+XDP: portal implementation supports org.freedesktop.impl.portal.AppChooser
+XDP: portal implementation supports org.freedesktop.impl.portal.Print
+XDP: portal implementation supports org.freedesktop.impl.portal.Notification
+XDP: portal implementation supports org.freedesktop.impl.portal.Inhibit
+XDP: portal implementation supports org.freedesktop.impl.portal.Access
+XDP: portal implementation supports org.freedesktop.impl.portal.Account
+XDP: portal implementation supports org.freedesktop.impl.portal.Email
+XDP: portal implementation supports org.freedesktop.impl.portal.DynamicLauncher
+XDP: portal implementation supports org.freedesktop.impl.portal.Lockdown
+XDP: portal implementation supports org.freedesktop.impl.portal.Settings
+
+(/workspace/shared/palette-qr-gui/portal-sysroot/usr/libexec/xdg-desktop-portal:2458): xdg-desktop-portal-WARNING **: 22:00:47.847: Document portal fuse mount point unknown: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.portal.Documents was not provided by any .service files
+XDP: Found 'none' in configuration for default
+XDP: providing portal org.freedesktop.portal.MemoryMonitor
+XDP: providing portal org.freedesktop.portal.PowerProfileMonitor
+XDP: providing portal org.freedesktop.portal.NetworkMonitor
+XDP: providing portal org.freedesktop.portal.ProxyResolver
+XDP: providing portal org.freedesktop.portal.Trash
+XDP: providing portal org.freedesktop.portal.GameMode
+
+(/workspace/shared/palette-qr-gui/portal-sysroot/usr/libexec/xdg-desktop-portal:2458): xdg-desktop-portal-WARNING **: 22:00:47.858: Failed to create RealtimeKit proxy: Could not connect: No such file or directory
+XDP: providing portal org.freedesktop.portal.Realtime
+XDP: Found 'none' in configuration for default
+XDP: Found 'gtk' in configuration for org.freedesktop.impl.portal.FileChooser
+XDP: Using gtk.portal for org.freedesktop.impl.portal.FileChooser (config)
+XDP: providing portal org.freedesktop.portal.FileChooser
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: Found 'none' in configuration for default
+XDP: providing portal org.freedesktop.host.portal.Registry
+XDP: org.freedesktop.portal.Desktop acquired
+XDP: Adding derived host app ''
+XDP: Handling SaveFile

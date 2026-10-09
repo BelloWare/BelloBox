@@ -1,0 +1,14 @@
+    Finished `test` profile [unoptimized] target(s) in 0.23s
+     Running unittests src/lib.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823)
+
+running 7 tests
+test qr::tests::enlarged_card_rounds_up_and_clamps_both_ends ... ok
+test qr::tests::limits_are_bytes_not_characters ... ok
+test qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads ... ok
+test qr::tests::palette_limits_reject_blank_and_oversize_without_truncation ... ok
+test qr::tests::palette_rasters_preserve_modules_and_fit_both_cards ... ok
+test qr::tests::png_is_crisp_with_white_quiet_zone ... ok
+test qr::tests::svg_has_real_geometry_and_quiet_zone ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 443 filtered out; finished in 2.07s
+

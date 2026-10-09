@@ -1,0 +1,11 @@
+{
+  "commit": "4589e0280844df4a070533c7babb9d01cf430905",
+  "tree": "294c99a7847757d2c41217834b8dc87eab9e4765",
+  "source_manifest_sha256": "e4cbbb6cb16a3c459b2b77ff4c86f858fba746930218709da819fb77737fd04e",
+  "binary": "/workspace/shared/box-popup-qr-clipboard-evidence/bellobox-ordinary-v3",
+  "binary_sha256": "fe662658648c356888745ab72aaf0b8c9df85252f7b559680b7bc803ace7c174",
+  "package_clean": true,
+  "default_features": true,
+  "source_after_checks_unchanged": true,
+  "sealed_utc": "2026-10-09T04:52:46.842539+00:00"
+}

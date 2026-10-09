@@ -1,0 +1,33 @@
+{
+  "name": "build-default",
+  "kind": "build",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "build",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--bin",
+    "bellobox"
+  ],
+  "started_at": "2026-10-09T05:13:32.990803+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/evidence/build-default.log",
+  "ended_at": "2026-10-09T05:13:45.152176+00:00",
+  "elapsed_seconds": 12.161060333019122,
+  "exit_code": 0,
+  "log_sha256": "ec24b516565ba5d4d1f4126dbc9c0b5432acdca2925cdc419a4079f966de204c",
+  "counts": [],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+      "sha256": "a1f8517e07a05505a678da9e1eebc4b813dc5726476891c5c2cd7e1845d39878",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [],
+  "listed_tests": [],
+  "expected_name_set_matches": null
+}

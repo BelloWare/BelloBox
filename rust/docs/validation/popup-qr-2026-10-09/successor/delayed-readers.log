@@ -1,0 +1,13 @@
+   Compiling bello-workbench-ui v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bello-workbench-ui)
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 17.11s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 2 tests
+test launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes ... ok
+test launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 447 filtered out; finished in 0.40s
+

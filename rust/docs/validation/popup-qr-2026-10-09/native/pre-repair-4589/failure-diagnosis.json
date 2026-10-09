@@ -1,0 +1,70 @@
+{
+  "candidate": "4589e0280844df4a070533c7babb9d01cf430905",
+  "baseline": "15197a71d81c620bf60da18f0d066505e4c0dc99",
+  "first_failure_preserved": true,
+  "failed_names": [
+    "launcher_clock_ui::copilot::tests::discarded_palette_retains_physical_guard_and_rejects_late_actions",
+    "launcher_clock_ui::copilot::tests::palette_send_time_apply_handoff_preserves_deferred_locations_and_draft",
+    "launcher_ui::copilot_lifecycle_tests::actual_launch_failure_preserves_source_then_success_transfers_orphaned_guard",
+    "launcher_ui::copilot_lifecycle_tests::deactivation_uses_launcher_close_gate_instead_of_dropping_live_worker",
+    "launcher_ui::copilot_lifecycle_tests::native_close_keeps_guard_across_discard_replacement_and_non_clock_selection"
+  ],
+  "unchanged_fixture_source": [
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+      "sha256": "8fde4f7e4b0ffb2cfb8af33ec62281d488a8ba5d4f89b7fb35f901ab638d2cc3",
+      "identical_to_published_15197": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "sha256": "ac493ccde6a46ef5a488f957e249d93bd75a059562330da7af34fa08728c2cb6",
+      "identical_to_published_15197": true
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/clock_copilot_worker.rs",
+      "sha256": "57d2fad53bc9a75068c063a03514c7d619ac348f553c394fcde8026209659563",
+      "identical_to_published_15197": true
+    }
+  ],
+  "first_failure": {
+    "source": "launcher_clock_ui/copilot/tests.rs:55",
+    "error": "OS35 WouldBlock while reading accepted numeric-loopback socket; channel disconnect at line224",
+    "following_failures": "four PoisonError failures on shared TEST_LOCK"
+  },
+  "native_probe": {
+    "checked_at": "2026-10-09T05:01:17.595502+00:00",
+    "source_sha256": "3cf3f24816a9ffdfe13980161220d61a95c3372048022bb8c999158df93eab1c",
+    "binary_sha256": "a546c139ed30b0d647fe67a1d5c319908b94210fdfbf55eef8a3f86905f288ba",
+    "source_or_test_changes": false,
+    "only_numeric_loopback_generated_socket_pairs": true,
+    "results": [
+      {
+        "command": [
+          "/opt/homebrew/bin/rustc",
+          "--edition=2024",
+          "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/evidence/native-accept-probe.rs",
+          "-o",
+          "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/diagnostic/native-accept-probe"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.1531950420467183,
+        "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/evidence/native-accept-probe-0.log",
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "command": [
+          "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/diagnostic/native-accept-probe"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.7799747500102967,
+        "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/evidence/native-accept-probe-1.log",
+        "log_sha256": "e3b4b0e05429bf4655b16d61b94ef014f6230198a07c5f6e617a94774ca243b8"
+      }
+    ]
+  },
+  "native_probe_observation": "3/3 accepted sockets returned WouldBlock immediately (1 microsecond) despite read timeout; explicitly setting only the standalone probe sockets blocking returned the delayed byte successfully after about255ms",
+  "diagnosis": "Evidence points to a pre-existing macOS test-fixture race: nonblocking listener acceptance and no explicit accepted-socket blocking reset before byte reads. A production regression is not established. Full native preflight is not green.",
+  "suggested_root_owned_followup": "Set the fixture accepted socket to blocking mode before timeout/read (or implement bounded WouldBlock retries), then request an exact candidate retest. Do not change production clipboard/capture/tool/vault gates.",
+  "exact_candidate_replay_performed": false,
+  "no_source_edits": true
+}

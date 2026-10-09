@@ -1,0 +1,66 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 13.22s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 43 tests
+test desktop::qr_clipboard_tests::popup_disabled_copy_pointer_never_writes_or_claims_success ... ok
+test desktop::qr_clipboard_tests::popup_activation_evidence_is_per_window_and_requires_both_releases ... ok
+test desktop::qr_clipboard_tests::popup_refused_copy_preserves_sentinel_and_save_stays_available ... ok
+test desktop::qr_clipboard_tests::popup_refused_save_focus_supports_missed_release_recovery_without_editing ... ok
+test desktop::qr_clipboard_tests::popup_editor_activation_keys_block_pointer_save_without_consuming_input_or_replay ... ok
+test desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows ... FAILED
+test desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results ... ok
+test desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy ... ok
+test desktop::qr_clipboard_tests::popup_synthetic_image_fixture_copies_only_current_generation ... ok
+test desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation ... ok
+test desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes ... ok
+test desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded ... ok
+test desktop::quit_tests::qr_save_cancel_and_invalid_input_leave_no_quit_blocker ... ok
+test desktop::quit_tests::qr_save_dialog_survives_host_close_and_quit_refusal_preserves_its_output ... ok
+test launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release ... ok
+test launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement ... ok
+test launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff ... ok
+test launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot ... ok
+test desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly ... ok
+test launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo ... ok
+test launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft ... ok
+test launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor ... ok
+test launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only ... ok
+test launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor ... ok
+test launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay ... ok
+test launcher_qr_ui::tests::ordinary_constructor_keeps_actual_backend_policy_even_in_test_builds ... ok
+test launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations ... ok
+test launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning ... ok
+test launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite ... ok
+test launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success ... ok
+test launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr ... ok
+test launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close ... ok
+test launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save ... ok
+test launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit ... ok
+test launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline ... ok
+test launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open ... ok
+test launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles ... ok
+test launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release ... ok
+test launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release ... ok
+test launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection ... ok
+test launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay ... ok
+test qr_clipboard::tests::actual_backend_contract_never_infers_support_from_an_empty_name ... ok
+test launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases ... ok
+
+failures:
+
+---- desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows stdout ----
+
+thread 'desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows' (49) panicked at crates/bellobox-app/src/desktop/qr_clipboard_tests.rs:188:13:
+qr-save: Bounds { origin: Point { x: 228px, y: 459px }, size: Size { 58px × 30px } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows
+
+test result: FAILED. 42 passed; 1 failed; 0 ignored; 0 measured; 401 filtered out; finished in 3.22s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

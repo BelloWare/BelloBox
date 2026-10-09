@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "clean",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-core",
+    "-p",
+    "bellobox-app"
+  ],
+  "exit_code": 0,
+  "log_sha256": "ae8ddf40e0a40105fe9492e86910f653b27870c1517bcca83f9d528a799120ad"
+}

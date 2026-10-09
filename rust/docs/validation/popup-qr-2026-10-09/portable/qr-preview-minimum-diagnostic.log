@@ -1,0 +1,23 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 13.29s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+520x620: preview=Bounds { origin: Point { x: 12px, y: 81.5px }, size: Size { 496px × 279.5px } }, image=Bounds { origin: Point { x: 112px, y: 73px }, size: Size { 296px × 296px } }, editor=Bounds { origin: Point { x: 12px, y: 396.5px }, size: Size { 496px × 116px } }
+400x480: preview=Bounds { origin: Point { x: 12px, y: 72px }, size: Size { 376px × 161.5px } }, image=Bounds { origin: Point { x: 52px, y: 5px }, size: Size { 296px × 296px } }, editor=Bounds { origin: Point { x: 12px, y: 259.5px }, size: Size { 376px × 116px } }
+
+thread 'desktop::qr_clipboard_tests::popup_qr_preview_fits_without_overlapping_editor_at_supported_sizes' (45) panicked at crates/bellobox-app/src/desktop/qr_clipboard_tests.rs:352:29:
+assertion failed: image.top() >= preview.top() && image.bottom() <= preview.bottom()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test desktop::qr_clipboard_tests::popup_qr_preview_fits_without_overlapping_editor_at_supported_sizes ... FAILED
+
+failures:
+
+failures:
+    desktop::qr_clipboard_tests::popup_qr_preview_fits_without_overlapping_editor_at_supported_sizes
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 444 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

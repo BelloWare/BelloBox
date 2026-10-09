@@ -1,0 +1,47 @@
+{
+  "target": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+  "config_dir": "negative-config",
+  "clean_source": "regression-source",
+  "steps": [
+    {
+      "name": "negative-inventory-default",
+      "kind": "inventory",
+      "source": "regression-source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "--",
+        "--list"
+      ]
+    },
+    {
+      "name": "negative-delayed-read-regressions",
+      "kind": "test",
+      "source": "regression-source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "fixture_reader_waits_for_delayed_request_bytes",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "inventory": "negative-inventory-default",
+      "selector": "fixture_reader_waits_for_delayed_request_bytes",
+      "ignored_suffixes": [],
+      "expected_selected_count": 2
+    }
+  ]
+}

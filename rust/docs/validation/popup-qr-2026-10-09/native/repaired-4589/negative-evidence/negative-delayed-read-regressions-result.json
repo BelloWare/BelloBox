@@ -1,0 +1,69 @@
+{
+  "name": "negative-delayed-read-regressions",
+  "kind": "test",
+  "source": "regression-source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--bin",
+    "bellobox",
+    "fixture_reader_waits_for_delayed_request_bytes",
+    "--",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "inventory": "negative-inventory-default",
+  "selector": "fixture_reader_waits_for_delayed_request_bytes",
+  "ignored_suffixes": [],
+  "expected_selected_count": 2,
+  "expected_tests": [
+    "launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes",
+    "launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes"
+  ],
+  "expected_ignored_names": [],
+  "expected_selected_names": [
+    "launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes",
+    "launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes"
+  ],
+  "expected_passed": 2,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T05:12:52.760111+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/regression-source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/negative-evidence/negative-delayed-read-regressions.log",
+  "ended_at": "2026-10-09T05:12:54.303763+00:00",
+  "elapsed_seconds": 1.543459584005177,
+  "exit_code": 101,
+  "log_sha256": "8e1848d99a3630cdad3a1362fc3ae15f4862c586950d03312645c12e9c1b8d41",
+  "counts": [
+    {
+      "passed": 0,
+      "failed": 2,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 447
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+      "sha256": "a4bc9fb11c65bd44876b44ec516a1216a4b37813ad5a71d058ae685722af108d",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "launcher_clock_ui::copilot::tests::fixture_reader_waits_for_delayed_request_bytes",
+      "FAILED"
+    ],
+    [
+      "launcher_ui::copilot_lifecycle_tests::fixture_reader_waits_for_delayed_request_bytes",
+      "FAILED"
+    ]
+  ],
+  "listed_tests": [],
+  "expected_name_set_matches": false
+}

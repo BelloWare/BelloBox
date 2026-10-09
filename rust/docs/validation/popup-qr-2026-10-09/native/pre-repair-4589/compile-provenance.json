@@ -1,0 +1,106 @@
+[
+  {
+    "name": "build-default",
+    "exact_source_compiled": true,
+    "compile_and_test_lines": [
+      "   Compiling bellobox-core v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-core)",
+      "   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-app)"
+    ],
+    "binaries": [
+      {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+        "sha256": "50292cdc63f6b02ea92c02bf5af84227564c0129f476667299da4bbbc65900e2",
+        "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+      }
+    ]
+  },
+  {
+    "name": "build-minimal",
+    "exact_source_compiled": true,
+    "compile_and_test_lines": [
+      "   Compiling bellobox-core v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-core)",
+      "   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-app)"
+    ],
+    "binaries": [
+      {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+        "sha256": "fc280fb7aeec58bb1ee2dd45a2e0dd6f67a72d29d52557407705598c3233730c",
+        "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+      }
+    ]
+  },
+  {
+    "name": "build-movie-fixtures",
+    "exact_source_compiled": true,
+    "compile_and_test_lines": [
+      "   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-app)"
+    ],
+    "binaries": [
+      {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox",
+        "sha256": "96a6b40024c400b87f995a18eb6bb9a754a74736c08e186fce8de1d490792563",
+        "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/bellobox: Mach-O 64-bit executable arm64"
+      }
+    ]
+  },
+  {
+    "name": "inventory-default",
+    "exact_source_compiled": true,
+    "compile_and_test_lines": [
+      "   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-app)",
+      "     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f)"
+    ],
+    "binaries": [
+      {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f",
+        "sha256": "33f6c20df81b1f272acef86ac6c31a94a66bc5b0b1d35582f017fb0247aefcc1",
+        "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-9af21ae127328d7f: Mach-O 64-bit executable arm64"
+      }
+    ]
+  },
+  {
+    "name": "inventory-minimal",
+    "exact_source_compiled": true,
+    "compile_and_test_lines": [
+      "   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-app)",
+      "     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04)"
+    ],
+    "binaries": [
+      {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04",
+        "sha256": "be4dee103ff975b6d1dbe3c3e3098999ab1d6508c1e7a2b3abfe4fd5cf41cc31",
+        "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04: Mach-O 64-bit executable arm64"
+      }
+    ]
+  },
+  {
+    "name": "inventory-movie-fixtures",
+    "exact_source_compiled": true,
+    "compile_and_test_lines": [
+      "   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-app)",
+      "     Running unittests src/main.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e)"
+    ],
+    "binaries": [
+      {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e",
+        "sha256": "79eeaa809ef7ac873ae7288617c8297aff438e5c4513d8b4314b99ce7c010abc",
+        "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-639576cd647f593e: Mach-O 64-bit executable arm64"
+      }
+    ]
+  },
+  {
+    "name": "inventory-core-qr",
+    "exact_source_compiled": true,
+    "compile_and_test_lines": [
+      "   Compiling bellobox-core v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-core)",
+      "     Running unittests src/lib.rs (/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823)"
+    ],
+    "binaries": [
+      {
+        "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823",
+        "sha256": "8b5ba01fe0a532885d47e539be826de706e81874ed8c04bb81cb63b762bb6975",
+        "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823: Mach-O 64-bit executable arm64"
+      }
+    ]
+  }
+]

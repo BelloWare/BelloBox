@@ -1,0 +1,50 @@
+[
+  {
+    "path": "rust/crates/bellobox-app/src/desktop.rs",
+    "mode": "100644",
+    "git_blob": "af31b6eeb16961b2c5ff771d502d2fe869022063",
+    "sha256": "28467350ac13b58fda11a60920495027feec09bff4de79a8103b46573f17c84c"
+  },
+  {
+    "path": "rust/crates/bellobox-app/src/desktop/qr_clipboard_tests.rs",
+    "mode": "100644",
+    "git_blob": "e6e077630a6d0a1ede1f400eaf1bf92df6117c24",
+    "sha256": "94433a6e2ea71a42ecc410cdb13300c91e660c810b7d9b41392d712206520508"
+  },
+  {
+    "path": "rust/crates/bellobox-app/src/launcher_qr_ui.rs",
+    "mode": "100644",
+    "git_blob": "2aaeb0c2e068b4e208d7e15896be9d3eca844bd8",
+    "sha256": "0e53442ea59b863fbefa8b737201906d05a68425abbb66187bf3196762de8f34"
+  },
+  {
+    "path": "rust/crates/bellobox-app/src/launcher_qr_ui/tests.rs",
+    "mode": "100644",
+    "git_blob": "9e0aa4b95e4cac63f6861d2983ecab843732bd3e",
+    "sha256": "f0319f4a442fd21430936aa9b8388ed227172bd5f33e07ac5eaf4c4ec55c3722"
+  },
+  {
+    "path": "rust/crates/bellobox-app/src/main.rs",
+    "mode": "100644",
+    "git_blob": "7b77c69711b2edce99d101dd546be71b2fb25203",
+    "sha256": "ddd0738ec0fef03d2d60c84d1bd49ac8c6b6d2f4bcfa95e23787f92c835ae8b9"
+  },
+  {
+    "path": "rust/crates/bellobox-app/src/qr_clipboard.rs",
+    "mode": "100644",
+    "git_blob": "5a9d4ce33893b4338ef6aeda552a2b7d0ceba1f0",
+    "sha256": "778d881a4dc7a596ddde97f698a6906fad0d0634d607becc601f0af34dd87278"
+  },
+  {
+    "path": "rust/crates/bellobox-app/src/qr_input.rs",
+    "mode": "100644",
+    "git_blob": "7b7c86da64f7ff7643a87778a7f964c78dddbf4a",
+    "sha256": "a46d82103610456fc5ef68379984ffa8aa73dd869b7c7e11128f0d7d54d9be3e"
+  },
+  {
+    "path": "rust/docs/palette-qr.md",
+    "mode": "100644",
+    "git_blob": "03343e8ad3809923298a4e65a40df7fd8019b1ea",
+    "sha256": "93ad9391f3d02ac3294f7cee8cf04dffcc1deea5ce42c97482da03ca0f08a1fc"
+  }
+]

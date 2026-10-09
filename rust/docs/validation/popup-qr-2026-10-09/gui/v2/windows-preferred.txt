@@ -1,0 +1,113 @@
+
+xwininfo: Window id: 0x260 (the root window) (has no name)
+
+  Root window id: 0x260 (the root window) (has no name)
+  Parent window id: 0x0 (none)
+     26 children:
+     0x200000b "xdg-desktop-portal-gtk": ()  10x10+-100+-100  +-100+-100
+     0x2000001 "xdg-desktop-portal-gtk": ("xdg-desktop-portal-gtk" "Xdg-desktop-portal-gtk")  10x10+10+10  +10+10
+     0x1c00000 (has no name): ()  1x1+0+0  +0+0
+     0x1e00000 (has no name): ()  1x1+0+0  +0+0
+     0x1a00001 "xdg-desktop-portal-gtk": ("xdg-desktop-portal-gtk" "Xdg-desktop-portal-gtk")  10x10+10+10  +10+10
+     0x2200001 "Xfce Terminal": ("xfce4-terminal" "Xfce4-terminal")  10x10+10+10  +10+10
+     0x400dd1 (has no name): ()  1187x883+0+0  +0+0
+     0xa00002 "orbit-desktop": ("" "")  1x1+0+0  +0+0
+        1 child:
+        0xa00003 (has no name): ()  1x1+-1+-1  +-1+-1
+     0x800002 "orbit-dock": ("" "")  1x1+0+0  +0+0
+        1 child:
+        0x800003 (has no name): ()  1x1+-1+-1  +-1+-1
+     0x200004 "xfsettingsd": ()  10x10+-100+-100  +-100+-100
+     0x40003d (has no name): ()  1x1+-1+-1  +-1+-1
+     0x200003 (has no name): ()  10x10+0+0  +0+0
+     0x400032 "Xfwm4": ("xfwm4" "Xfwm4")  5x5+-1000+-1000  +-1000+-1000
+        1 child:
+        0x400033 (has no name): ()  1x1+-1+-1  +-1001+-1001
+     0x400030 (has no name): ()  10x10+-100+-100  +-100+-100
+     0x200002 (has no name): ()  1x1+-1+-1  +-1+-1
+     0x200001 "xfsettingsd": ("xfsettingsd" "Xfsettingsd")  10x10+10+10  +10+10
+     0x400001 "xfwm4": ("xfwm4" "Xfwm4")  10x10+10+10  +10+10
+     0x400036 (has no name): ()  1x1024+-1+0  +-1+0
+     0x400037 (has no name): ()  1x1024+1364+0  +1364+0
+     0x400038 (has no name): ()  1364x1+0+-1  +0+-1
+     0x400039 (has no name): ()  1364x1+0+1024  +0+1024
+     0x400de4 (has no name): ()  320x120+522+920  +522+920
+        16 children:
+        0x800004 "Orbit OS": ("orbit-dock" "orbit-dock")  320x120+0+0  +522+920
+           1 child:
+           0x800005 (has no name): ()  1x1+-1+-1  +521+919
+        0x400df3 (has no name): ()  1x1+0+0  +522+920
+        0x400df2 (has no name): ()  1x1+0+0  +522+920
+        0x400df1 (has no name): ()  1x1+0+0  +522+920
+        0x400df0 (has no name): ()  1x1+0+0  +522+920
+        0x400def (has no name): ()  1x1+0+0  +522+920
+        0x400dee (has no name): ()  1x1+0+0  +522+920
+        0x400ded (has no name): ()  1x1+0+0  +522+920
+        0x400dec (has no name): ()  1x1+0+0  +522+920
+        0x400deb (has no name): ()  1x1+0+0  +522+920
+        0x400dea (has no name): ()  1x1+0+0  +522+920
+        0x400de9 (has no name): ()  1x1+0+0  +522+920
+        0x400de8 (has no name): ()  1x1+0+0  +522+920
+        0x400de7 (has no name): ()  1x1+0+0  +522+920
+        0x400de6 (has no name): ()  1x1+0+0  +522+920
+        0x400de5 (has no name): ()  1x1+0+0  +522+920
+     0x2800001 "Sky Linux virtual cursor": ()  1364x1024+0+0  +0+0
+     0x44feb7 (has no name): ()  1187x883+88+53  +88+53
+        16 children:
+        0x22021eb "Terminal": ("xfce4-terminal" "Xfce4-terminal")  1177x849+5+29  +93+82
+           1 child:
+           0x22021ec (has no name): ()  1x1+-1+-1  +92+81
+        0x44fec6 (has no name): ()  21x29+1161+0  +1249+53
+        0x44fec5 (has no name): ()  21x29+1138+0  +1226+53
+        0x44fec4 (has no name): ()  21x29+1115+0  +1203+53
+        0x44fec3 (has no name): ()  1x1+0+0  +88+53
+        0x44fec2 (has no name): ()  1x1+0+0  +88+53
+        0x44fec1 (has no name): ()  1x1+0+0  +88+53
+        0x44fec0 (has no name): ()  1171x5+8+0  +96+53
+        0x44febf (has no name): ()  1171x29+8+0  +96+53
+        0x44febe (has no name): ()  8x29+1179+0  +1267+53
+        0x44febd (has no name): ()  8x29+0+0  +88+53
+        0x44febc (has no name): ()  16x16+1171+867  +1259+920
+        0x44febb (has no name): ()  16x16+0+867  +88+920
+        0x44feba (has no name): ()  1155x5+16+878  +104+931
+        0x44feb9 (has no name): ()  5x838+1182+29  +1270+82
+        0x44feb8 (has no name): ()  5x838+0+29  +88+82
+     0x46093b (has no name): ()  530x654+88+88  +88+88
+        16 children:
+        0x1c00001 "QR Code — Bello Box": ()  520x620+5+29  +93+117
+        0x46094a (has no name): ()  21x29+504+0  +592+88
+        0x460949 (has no name): ()  21x29+481+0  +569+88
+        0x460948 (has no name): ()  21x29+458+0  +546+88
+        0x460947 (has no name): ()  1x1+0+0  +88+88
+        0x460946 (has no name): ()  1x1+0+0  +88+88
+        0x460945 (has no name): ()  1x1+0+0  +88+88
+        0x460944 (has no name): ()  514x5+8+0  +96+88
+        0x460943 (has no name): ()  514x29+8+0  +96+88
+        0x460942 (has no name): ()  8x29+522+0  +610+88
+        0x460941 (has no name): ()  8x29+0+0  +88+88
+        0x460940 (has no name): ()  16x16+514+638  +602+726
+        0x46093f (has no name): ()  16x16+0+638  +88+726
+        0x46093e (has no name): ()  498x5+16+649  +104+737
+        0x46093d (has no name): ()  5x609+525+29  +613+117
+        0x46093c (has no name): ()  5x609+0+29  +88+117
+     0x400da0 (has no name): ()  1364x1024+0+0  +0+0
+        16 children:
+        0xa00004 "Orbit OS Desktop": ("orbit-desktop" "orbit-desktop")  1364x1024+0+0  +0+0
+           1 child:
+           0xa00005 (has no name): ()  1x1+-1+-1  +-1+-1
+        0x400daf (has no name): ()  1x1+0+0  +0+0
+        0x400dae (has no name): ()  1x1+0+0  +0+0
+        0x400dad (has no name): ()  1x1+0+0  +0+0
+        0x400dac (has no name): ()  1x1+0+0  +0+0
+        0x400dab (has no name): ()  1x1+0+0  +0+0
+        0x400daa (has no name): ()  1x1+0+0  +0+0
+        0x400da9 (has no name): ()  1x1+0+0  +0+0
+        0x400da8 (has no name): ()  1x1+0+0  +0+0
+        0x400da7 (has no name): ()  1x1+0+0  +0+0
+        0x400da6 (has no name): ()  1x1+0+0  +0+0
+        0x400da5 (has no name): ()  1x1+0+0  +0+0
+        0x400da4 (has no name): ()  1x1+0+0  +0+0
+        0x400da3 (has no name): ()  1x1+0+0  +0+0
+        0x400da2 (has no name): ()  1x1+0+0  +0+0
+        0x400da1 (has no name): ()  1x1+0+0  +0+0
+

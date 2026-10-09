@@ -1,0 +1,440 @@
+{
+  "target": "/Users/admin/Library/Caches/BelloRustWork/box-target",
+  "steps": [
+    {
+      "name": "build-default",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox"
+      ]
+    },
+    {
+      "name": "build-minimal",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox"
+      ]
+    },
+    {
+      "name": "build-movie-fixtures",
+      "kind": "build",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox"
+      ]
+    },
+    {
+      "name": "inventory-default",
+      "kind": "inventory",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "--",
+        "--list"
+      ]
+    },
+    {
+      "name": "default-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "qr",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "inventory": "inventory-default",
+      "selector": "qr",
+      "ignored_suffixes": [],
+      "expected_selected_count": 46
+    },
+    {
+      "name": "default-launcher",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--bin",
+        "bellobox",
+        "launcher",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "inventory": "inventory-default",
+      "selector": "launcher",
+      "ignored_suffixes": [
+        "readiness_cache_child"
+      ],
+      "expected_selected_count": 55
+    },
+    {
+      "name": "inventory-minimal",
+      "kind": "inventory",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox",
+        "--",
+        "--list"
+      ]
+    },
+    {
+      "name": "minimal-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox",
+        "qr",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "inventory": "inventory-minimal",
+      "selector": "qr",
+      "ignored_suffixes": [],
+      "expected_selected_count": 46
+    },
+    {
+      "name": "minimal-launcher",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features",
+        "--bin",
+        "bellobox",
+        "launcher",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "inventory": "inventory-minimal",
+      "selector": "launcher",
+      "ignored_suffixes": [
+        "readiness_cache_child"
+      ],
+      "expected_selected_count": 55
+    },
+    {
+      "name": "inventory-movie-fixtures",
+      "kind": "inventory",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "--",
+        "--list"
+      ]
+    },
+    {
+      "name": "movie-fixtures-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "qr",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "inventory": "inventory-movie-fixtures",
+      "selector": "qr",
+      "ignored_suffixes": [],
+      "expected_selected_count": 46
+    },
+    {
+      "name": "movie-fixtures-launcher",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "movie-fixtures",
+        "--bin",
+        "bellobox",
+        "launcher",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "inventory": "inventory-movie-fixtures",
+      "selector": "launcher",
+      "ignored_suffixes": [
+        "readiness_cache_child"
+      ],
+      "expected_selected_count": 55
+    },
+    {
+      "name": "inventory-core-qr",
+      "kind": "inventory",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "qr::tests::",
+        "--",
+        "--list"
+      ]
+    },
+    {
+      "name": "core-qr",
+      "kind": "test",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-core",
+        "--lib",
+        "qr::tests::",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "inventory": "inventory-core-qr",
+      "selector": "qr::tests::",
+      "ignored_suffixes": [],
+      "expected_selected_count": 7,
+      "source_expected_tests": [
+        "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+        "qr::tests::limits_are_bytes_not_characters",
+        "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+        "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+        "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+        "qr::tests::png_is_crisp_with_white_quiet_zone",
+        "qr::tests::svg_has_real_geometry_and_quiet_zone"
+      ]
+    },
+    {
+      "name": "format",
+      "kind": "format",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ]
+    },
+    {
+      "name": "candidate-default-strict-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "variant": "default",
+      "app_scoped": false
+    },
+    {
+      "name": "candidate-default-app-scoped-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--no-deps",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "variant": "default",
+      "app_scoped": true
+    },
+    {
+      "name": "candidate-minimal-strict-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--no-default-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "variant": "minimal",
+      "app_scoped": false
+    },
+    {
+      "name": "candidate-minimal-app-scoped-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--no-deps",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--no-default-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "variant": "minimal",
+      "app_scoped": true
+    },
+    {
+      "name": "candidate-movie-fixtures-strict-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "variant": "movie-fixtures",
+      "app_scoped": false
+    },
+    {
+      "name": "candidate-movie-fixtures-app-scoped-clippy",
+      "kind": "lint",
+      "source": "source",
+      "command": [
+        "/opt/homebrew/bin/cargo",
+        "clippy",
+        "--no-deps",
+        "--offline",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--features",
+        "movie-fixtures",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "variant": "movie-fixtures",
+      "app_scoped": true
+    }
+  ]
+}

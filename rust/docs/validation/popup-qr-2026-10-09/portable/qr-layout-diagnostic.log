@@ -1,0 +1,23 @@
+   Compiling bellobox-app v0.1.0 (/workspace/shared/box-popup-qr-clipboard/rust/crates/bellobox-app)
+    Finished `test` profile [unoptimized] target(s) in 14.21s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (/workspace/shared/build-recovery/target/debug/deps/bellobox-4e371e545acec530)
+
+running 1 test
+notice-free 520x620: Some(Bounds { origin: Point { x: 348px, y: 578px }, size: Size { 58px × 30px } })
+notice-free 400x480: Some(Bounds { origin: Point { x: 228px, y: 459px }, size: Size { 58px × 30px } })
+
+thread 'desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows' (46) panicked at crates/bellobox-app/src/desktop/qr_clipboard_tests.rs:200:13:
+qr-save: Bounds { origin: Point { x: 228px, y: 459px }, size: Size { 58px × 30px } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows ... FAILED
+
+failures:
+
+failures:
+    desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 443 filtered out; finished in 0.11s
+
+error: test failed, to rerun pass `-p bellobox-app --bin bellobox`

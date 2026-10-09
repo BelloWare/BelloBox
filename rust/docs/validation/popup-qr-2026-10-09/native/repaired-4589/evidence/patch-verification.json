@@ -1,0 +1,51 @@
+{
+  "base": "4589e0280844df4a070533c7babb9d01cf430905",
+  "base_tree": "294c99a7847757d2c41217834b8dc87eab9e4765",
+  "patch_sha256": "6420ac93d90893255a51cbedd9485d04ec3c47043488c74159264c0b8bc58ae4",
+  "patch_bytes": 5118,
+  "postimages_sha256": "052029e4f33d745dd133292504ceed27afe9b028f0e48dba5c97e1049c2c3d41",
+  "snapshots": {
+    "source": {
+      "files": 1926,
+      "manifest_sha256": "d981986cfc99b92f784e153082625c98e946c191f13e83e7f7fe50881f929e1e",
+      "changed_paths": [
+        "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+        "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs"
+      ]
+    },
+    "regression-source": {
+      "files": 1926,
+      "manifest_sha256": "a43e4302dff9c859a9653812a93fce775cb75138d988f0257e786081d1f98ead",
+      "changed_paths": [
+        "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+        "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs"
+      ]
+    }
+  },
+  "git_apply_checks": [
+    {
+      "command": [
+        "git",
+        "apply",
+        "--check",
+        "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/evidence/fixture-blocking.patch"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "apply",
+        "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/evidence/fixture-blocking.patch"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "applied_postimages_match": true,
+  "production_files_unchanged": true,
+  "claimed_file_modes_unchanged": true
+}

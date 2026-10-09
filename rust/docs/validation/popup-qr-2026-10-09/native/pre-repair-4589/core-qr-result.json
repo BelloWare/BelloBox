@@ -1,0 +1,107 @@
+{
+  "name": "core-qr",
+  "kind": "test",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-core",
+    "--lib",
+    "qr::tests::",
+    "--",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "inventory": "inventory-core-qr",
+  "selector": "qr::tests::",
+  "ignored_suffixes": [],
+  "expected_selected_count": 7,
+  "source_expected_tests": [
+    "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+    "qr::tests::limits_are_bytes_not_characters",
+    "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+    "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+    "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+    "qr::tests::png_is_crisp_with_white_quiet_zone",
+    "qr::tests::svg_has_real_geometry_and_quiet_zone"
+  ],
+  "expected_tests": [
+    "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+    "qr::tests::limits_are_bytes_not_characters",
+    "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+    "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+    "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+    "qr::tests::png_is_crisp_with_white_quiet_zone",
+    "qr::tests::svg_has_real_geometry_and_quiet_zone"
+  ],
+  "expected_ignored_names": [],
+  "expected_selected_names": [
+    "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+    "qr::tests::limits_are_bytes_not_characters",
+    "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+    "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+    "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+    "qr::tests::png_is_crisp_with_white_quiet_zone",
+    "qr::tests::svg_has_real_geometry_and_quiet_zone"
+  ],
+  "expected_passed": 7,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T04:58:32.952311+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/evidence/core-qr.log",
+  "ended_at": "2026-10-09T04:58:35.329709+00:00",
+  "elapsed_seconds": 2.377174000022933,
+  "exit_code": 0,
+  "log_sha256": "c34b843926c56e16a0826d2fd25ee93edda19d4cf56a6a4b7f4b21967b0c55fb",
+  "counts": [
+    {
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 443
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823",
+      "sha256": "8b5ba01fe0a532885d47e539be826de706e81874ed8c04bb81cb63b762bb6975",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox_core-646f33ab51d4d823: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "qr::tests::enlarged_card_rounds_up_and_clamps_both_ends",
+      "ok"
+    ],
+    [
+      "qr::tests::limits_are_bytes_not_characters",
+      "ok"
+    ],
+    [
+      "qr::tests::palette_density_and_enlargement_cover_sparse_and_dense_payloads",
+      "ok"
+    ],
+    [
+      "qr::tests::palette_limits_reject_blank_and_oversize_without_truncation",
+      "ok"
+    ],
+    [
+      "qr::tests::palette_rasters_preserve_modules_and_fit_both_cards",
+      "ok"
+    ],
+    [
+      "qr::tests::png_is_crisp_with_white_quiet_zone",
+      "ok"
+    ],
+    [
+      "qr::tests::svg_has_real_geometry_and_quiet_zone",
+      "ok"
+    ]
+  ],
+  "listed_tests": [],
+  "expected_name_set_matches": true
+}

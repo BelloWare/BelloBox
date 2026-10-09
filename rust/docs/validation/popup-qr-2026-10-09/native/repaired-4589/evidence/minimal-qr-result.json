@@ -1,0 +1,334 @@
+{
+  "name": "minimal-qr",
+  "kind": "test",
+  "source": "source",
+  "command": [
+    "/opt/homebrew/bin/cargo",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "bellobox-app",
+    "--no-default-features",
+    "--bin",
+    "bellobox",
+    "qr",
+    "--",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "inventory": "inventory-minimal",
+  "selector": "qr",
+  "ignored_suffixes": [],
+  "expected_selected_count": 46,
+  "expected_tests": [
+    "desktop::qr_clipboard_tests::popup_activation_evidence_is_per_window_and_requires_both_releases",
+    "desktop::qr_clipboard_tests::popup_decoded_intrinsic_image_uses_exact_final_square_bounds",
+    "desktop::qr_clipboard_tests::popup_disabled_copy_pointer_never_writes_or_claims_success",
+    "desktop::qr_clipboard_tests::popup_editor_activation_keys_block_pointer_save_without_consuming_input_or_replay",
+    "desktop::qr_clipboard_tests::popup_qr_preview_fits_without_overlapping_editor_at_supported_sizes",
+    "desktop::qr_clipboard_tests::popup_refused_copy_preserves_sentinel_and_save_stays_available",
+    "desktop::qr_clipboard_tests::popup_refused_save_focus_supports_missed_release_recovery_without_editing",
+    "desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows",
+    "desktop::qr_clipboard_tests::popup_synthetic_image_fixture_copies_only_current_generation",
+    "desktop::qr_clipboard_tests::popup_tiny_image_hosts_do_not_create_overflowing_padded_children",
+    "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+    "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+    "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+    "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+    "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+    "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly",
+    "desktop::quit_tests::qr_save_cancel_and_invalid_input_leave_no_quit_blocker",
+    "desktop::quit_tests::qr_save_dialog_survives_host_close_and_quit_refusal_preserves_its_output",
+    "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+    "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+    "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+    "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+    "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+    "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+    "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+    "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+    "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+    "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+    "launcher_qr_ui::tests::ordinary_constructor_keeps_actual_backend_policy_even_in_test_builds",
+    "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+    "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+    "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+    "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+    "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success",
+    "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+    "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+    "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+    "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+    "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+    "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+    "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+    "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+    "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+    "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+    "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+    "qr_clipboard::tests::actual_backend_contract_never_infers_support_from_an_empty_name"
+  ],
+  "expected_ignored_names": [],
+  "expected_selected_names": [
+    "desktop::qr_clipboard_tests::popup_activation_evidence_is_per_window_and_requires_both_releases",
+    "desktop::qr_clipboard_tests::popup_decoded_intrinsic_image_uses_exact_final_square_bounds",
+    "desktop::qr_clipboard_tests::popup_disabled_copy_pointer_never_writes_or_claims_success",
+    "desktop::qr_clipboard_tests::popup_editor_activation_keys_block_pointer_save_without_consuming_input_or_replay",
+    "desktop::qr_clipboard_tests::popup_qr_preview_fits_without_overlapping_editor_at_supported_sizes",
+    "desktop::qr_clipboard_tests::popup_refused_copy_preserves_sentinel_and_save_stays_available",
+    "desktop::qr_clipboard_tests::popup_refused_save_focus_supports_missed_release_recovery_without_editing",
+    "desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows",
+    "desktop::qr_clipboard_tests::popup_synthetic_image_fixture_copies_only_current_generation",
+    "desktop::qr_clipboard_tests::popup_tiny_image_hosts_do_not_create_overflowing_padded_children",
+    "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+    "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+    "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+    "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+    "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+    "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly",
+    "desktop::quit_tests::qr_save_cancel_and_invalid_input_leave_no_quit_blocker",
+    "desktop::quit_tests::qr_save_dialog_survives_host_close_and_quit_refusal_preserves_its_output",
+    "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+    "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+    "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+    "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+    "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+    "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+    "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+    "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+    "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+    "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+    "launcher_qr_ui::tests::ordinary_constructor_keeps_actual_backend_policy_even_in_test_builds",
+    "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+    "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+    "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+    "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+    "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success",
+    "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+    "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+    "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+    "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+    "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+    "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+    "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+    "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+    "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+    "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+    "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+    "qr_clipboard::tests::actual_backend_contract_never_infers_support_from_an_empty_name"
+  ],
+  "expected_passed": 46,
+  "expected_ignored": 0,
+  "started_at": "2026-10-09T05:14:43.363787+00:00",
+  "cwd": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/source/rust",
+  "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem/evidence/minimal-qr.log",
+  "ended_at": "2026-10-09T05:14:49.384194+00:00",
+  "elapsed_seconds": 6.020115957944654,
+  "exit_code": 0,
+  "log_sha256": "a508db5a4c0cb96492d48b16adb166baae5e4173f6403ce77a17f31c52bea898",
+  "counts": [
+    {
+      "passed": 46,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 403
+    }
+  ],
+  "binaries": [
+    {
+      "path": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04",
+      "sha256": "489b9530aa53494a53478e894be3726a5c7d62cf2ef8aa6f67e9bca2b6435177",
+      "file": "/Users/admin/Library/Caches/BelloRustWork/box-target/debug/deps/bellobox-b652706f2b83ed04: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "tests": [
+    [
+      "desktop::qr_clipboard_tests::popup_activation_evidence_is_per_window_and_requires_both_releases",
+      "ok"
+    ],
+    [
+      "desktop::qr_clipboard_tests::popup_decoded_intrinsic_image_uses_exact_final_square_bounds",
+      "ok"
+    ],
+    [
+      "desktop::qr_clipboard_tests::popup_disabled_copy_pointer_never_writes_or_claims_success",
+      "ok"
+    ],
+    [
+      "desktop::qr_clipboard_tests::popup_editor_activation_keys_block_pointer_save_without_consuming_input_or_replay",
+      "ok"
+    ],
+    [
+      "desktop::qr_clipboard_tests::popup_qr_preview_fits_without_overlapping_editor_at_supported_sizes",
+      "ok"
+    ],
+    [
+      "desktop::qr_clipboard_tests::popup_refused_copy_preserves_sentinel_and_save_stays_available",
+      "ok"
+    ],
+    [
+      "desktop::qr_clipboard_tests::popup_refused_save_focus_supports_missed_release_recovery_without_editing",
+      "ok"
+    ],
+    [
+      "desktop::qr_clipboard_tests::popup_save_and_copy_remain_inside_source_sized_windows",
+      "ok"
+    ],
+    [
+      "desktop::qr_clipboard_tests::popup_synthetic_image_fixture_copies_only_current_generation",
+      "ok"
+    ],
+    [
+      "desktop::qr_clipboard_tests::popup_tiny_image_hosts_do_not_create_overflowing_padded_children",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::cancel_close_and_reopen_reject_old_window_results",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::empty_blank_and_oversize_edits_invalidate_pending_copy",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::rapid_edits_only_latest_queued_work_encodes",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::reordered_success_and_error_never_replace_newer_generation",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::save_snapshot_stays_click_time_while_status_is_generation_guarded",
+      "ok"
+    ],
+    [
+      "desktop::qr_jobs::tests::worker_output_matches_unchanged_core_exactly",
+      "ok"
+    ],
+    [
+      "desktop::quit_tests::qr_save_cancel_and_invalid_input_leave_no_quit_blocker",
+      "ok"
+    ],
+    [
+      "desktop::quit_tests::qr_save_dialog_survives_host_close_and_quit_refusal_preserves_its_output",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::armed_save_is_cancelled_by_focus_or_row_change_before_release",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::armed_save_rejects_edit_aba_and_retirement",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::byte_limits_clear_copyability_without_truncating_handoff",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::current_generation_alone_can_publish_copy_and_snapshot",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::density_toggle_retains_editor_identity_and_real_undo",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::explicit_copy_and_empty_paste_use_current_image_only",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::global_input_limit_explains_disabled_open_and_preserves_draft",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::held_clear_activation_cannot_type_into_newly_focused_editor",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::ime_arrows_return_and_tab_belong_to_retained_editor",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::mixed_mouse_or_programmatic_save_refuses_held_activation_without_replay",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::ordinary_constructor_keeps_actual_backend_policy_even_in_test_builds",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::oversized_whitespace_heading_uses_byte_admission_before_scanning",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::retire_and_reactivate_cancel_pending_generations",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::same_text_aba_rejects_old_success_and_error_then_recovers_at_byte_limit",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::save_dialog_cancel_then_edit_keeps_click_time_bytes_and_no_overwrite",
+      "ok"
+    ],
+    [
+      "launcher_qr_ui::tests::unsupported_image_copy_never_changes_clipboard_or_claims_success",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::actual_open_popup_receives_edited_and_explicitly_empty_qr",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::actual_save_pending_blocks_launcher_open_navigation_and_close",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::composition_observes_physical_keys_without_stealing_ime_or_replaying_save",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::dispatched_clear_held_return_and_release_preserve_empty_then_allow_newline",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::editor_return_hold_blocks_mouse_save_after_preview_settles",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::empty_selection_creates_qr_and_ime_escape_return_route_without_open",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::escape_and_focus_aba_cancel_armed_save_before_release",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::held_save_activation_does_not_open_modal_until_release",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::overlapping_save_keys_cancel_until_both_releases",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::retained_qr_draft_is_exact_and_other_tools_keep_original_selection",
+      "ok"
+    ],
+    [
+      "launcher_ui::qr_lifecycle_tests::search_space_before_qr_creation_survives_focus_change_without_save_replay",
+      "ok"
+    ],
+    [
+      "qr_clipboard::tests::actual_backend_contract_never_infers_support_from_an_empty_name",
+      "ok"
+    ]
+  ],
+  "listed_tests": [],
+  "expected_name_set_matches": true
+}

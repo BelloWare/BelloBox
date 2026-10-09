@@ -1,0 +1,17 @@
+{
+  "root": "/Users/admin/Library/Caches/BelloRustWork/box-4589-fixture-repair-dp1pakem",
+  "base": "4589e0280844df4a070533c7babb9d01cf430905",
+  "base_tree": "294c99a7847757d2c41217834b8dc87eab9e4765",
+  "baseline": "15197a71d81c620bf60da18f0d066505e4c0dc99",
+  "prior_root": "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f",
+  "base_manifest_sha256": "91f6d24f76721aabc2a64fa0395606c0a2a39ded9256fe917452d47909ec2353",
+  "claim": 6074666951,
+  "acknowledgment": 6074697050,
+  "acknowledgment_updated_at": "2026-10-09T05:08:39Z",
+  "paths": [
+    "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+    "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs"
+  ],
+  "prepared_at": "2026-10-09T05:12:13.130622+00:00",
+  "notes": "Two-file test-only exact-base patch; source = base plus delayed-byte tests and blocking normalization. regression-source = base plus same tests without normalization for negative control. Baseline lint evidence carried from exact15197 pre-repair receipt; all originals preserved."
+}

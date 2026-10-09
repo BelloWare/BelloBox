@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'desktop::qr_clipboard_tests::popup_decoded_intrinsic_image_uses_exact_final_square_bounds' (6) panicked at crates/bellobox-app/src/desktop/qr_clipboard_tests.rs:404:17:
+assertion failed: visual.debug_bounds("qr-image").is_none()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test desktop::qr_clipboard_tests::popup_decoded_intrinsic_image_uses_exact_final_square_bounds ... FAILED
+
+failures:
+
+failures:
+    desktop::qr_clipboard_tests::popup_decoded_intrinsic_image_uses_exact_final_square_bounds
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 445 filtered out; finished in 0.06s
+

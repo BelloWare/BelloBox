@@ -1,0 +1,6 @@
+   Compiling bello-workbench v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bello-workbench)
+   Compiling bello-platform v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bello-platform)
+   Compiling bello-workbench-ui v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bello-workbench-ui)
+   Compiling bellobox-core v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-core)
+   Compiling bellobox-app v0.1.0 (/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/source/rust/crates/bellobox-app)
+    Finished `dev` profile [unoptimized] target(s) in 17.04s

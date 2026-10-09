@@ -1,0 +1,32 @@
+[
+  {
+    "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+    "base": {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+      "mode": "100644",
+      "git_blob": "f0e6e62b7cad68fd83519adb233ec34b1f48b7a6",
+      "sha256": "8fde4f7e4b0ffb2cfb8af33ec62281d488a8ba5d4f89b7fb35f901ab638d2cc3"
+    },
+    "postimage": {
+      "path": "rust/crates/bellobox-app/src/launcher_clock_ui/copilot/tests.rs",
+      "mode": "100644",
+      "git_blob": "ff34ad1b84d79cf33ca30044808b27c228237bfc",
+      "sha256": "ba7f979d6be8654678bf4abe10cba4c2ee075db731fad3b86bb514c502276082"
+    }
+  },
+  {
+    "path": "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+    "base": {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "mode": "100644",
+      "git_blob": "5fbba1df21e35572dacd5dee3873968c359fabaf",
+      "sha256": "ac493ccde6a46ef5a488f957e249d93bd75a059562330da7af34fa08728c2cb6"
+    },
+    "postimage": {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/copilot_lifecycle_tests.rs",
+      "mode": "100644",
+      "git_blob": "22ad9f9dcbc1a658c7b5555827d08e86a5d32476",
+      "sha256": "92f9d1ce762a9f7391f6ff1ef3f154f49cb1daf44d8f885a36b016930758300e"
+    }
+  }
+]

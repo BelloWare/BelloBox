@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-10-09T05:01:17.595502+00:00",
+  "source_sha256": "3cf3f24816a9ffdfe13980161220d61a95c3372048022bb8c999158df93eab1c",
+  "binary_sha256": "a546c139ed30b0d647fe67a1d5c319908b94210fdfbf55eef8a3f86905f288ba",
+  "source_or_test_changes": false,
+  "only_numeric_loopback_generated_socket_pairs": true,
+  "results": [
+    {
+      "command": [
+        "/opt/homebrew/bin/rustc",
+        "--edition=2024",
+        "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/evidence/native-accept-probe.rs",
+        "-o",
+        "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/diagnostic/native-accept-probe"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.1531950420467183,
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/evidence/native-accept-probe-0.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/diagnostic/native-accept-probe"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.7799747500102967,
+      "log": "/Users/admin/Library/Caches/BelloRustWork/box-4589-full-qr-mfat7c4f/evidence/native-accept-probe-1.log",
+      "log_sha256": "e3b4b0e05429bf4655b16d61b94ef014f6230198a07c5f6e617a94774ca243b8"
+    }
+  ]
+}
