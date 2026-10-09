@@ -1,0 +1,10 @@
+{
+  "base": "5934b9897854a4102ef71d6463d4b4f7a3005158",
+  "candidate_commit": "59339af1fa422acea4067207c55344666c3fa4ab",
+  "files": {
+    "rust/crates/bello-platform/src/movie.rs": "809cada6b4541f6968b657c650d19508cf2204e25996ce03240c2a731f632adf",
+    "rust/crates/bello-platform/src/movie/macos/fixtures.rs": "1b470e4025dd5551445405111b0de8c4e31fa104886f5fb7e8f06763d71c09f0",
+    "rust/crates/bello-platform/src/movie/macos/tests.rs": "30bf897c3986d70365f4cefdffb0c8dd82cf4c3f1eb68fee7d7d512bae952010",
+    "rust/crates/bellobox-app/src/gif_converter/native_host_tests.rs": "1aedf5ae38024df0c86d803bb5f2a47565e35289915cdf6004a8b6c172e19cd5"
+  }
+}

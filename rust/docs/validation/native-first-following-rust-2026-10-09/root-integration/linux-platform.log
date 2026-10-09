@@ -1,0 +1,22 @@
+   Compiling bello-platform v0.1.0 (/workspace/shared/box-first-following-rust/rust/crates/bello-platform)
+    Finished `test` profile [unoptimized] target(s) in 1.50s
+     Running unittests src/lib.rs (/workspace/shared/build-recovery/target/debug/deps/bello_platform-159aa1172716fa7c)
+
+running 14 tests
+test movie::retirement::tests::logical_cancellation_cannot_complete_held_callback_retirement ... ok
+test movie::tests::cancellation_is_shared_atomic_state ... ok
+test movie::tests::frame_transfer_moves_pixels_and_debug_redacts_them ... ok
+test movie::tests::geometry_handles_rotation_mirror_and_origin ... ok
+test movie::tests::geometry_rejects_nonfinite_singular_and_excessive ... ok
+test movie::tests::identity::source_guard_canonicalizes_symlinked_parent_directories ... ok
+test movie::tests::identity::source_guard_rejects_directory_empty_and_replaced_files ... ok
+test movie::tests::identity::source_guard_resolves_symlink_and_detects_edits ... ok
+test movie::tests::pixel_storage_requires_entire_padded_last_row ... ok
+test movie::tests::read_range_preserves_source_pts_and_tolerance ... ok
+test movie::tests::read_range_rejects_invalid_or_unbounded_values ... ok
+test movie::tests::selected_source_is_send_sync_owned_identity_not_equal_metadata ... ok
+test movie::tests::source_seek_has_independent_short_long_end_and_invalid_rules ... ok
+test movie::tests::unavailable_open_never_reads_a_path ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 157 filtered out; finished in 0.00s
+

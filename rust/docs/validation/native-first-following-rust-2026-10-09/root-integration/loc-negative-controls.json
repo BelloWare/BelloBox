@@ -1,0 +1,32 @@
+[
+  {
+    "control": "source-byte-drift",
+    "rejected": true,
+    "reason": "after SHA256 rust/crates/bello-platform/src/movie.rs"
+  },
+  {
+    "control": "support-range-drift",
+    "rejected": true,
+    "reason": "reviewed counts after rust/crates/bello-platform/src/movie.rs"
+  },
+  {
+    "control": "omit-source-file",
+    "rejected": true,
+    "reason": "complete repository Rust scope"
+  },
+  {
+    "control": "git-tree-drift",
+    "rejected": true,
+    "reason": "tree object 0beefc3c3a556cf055d4273e227f1e1d1cf3511f"
+  },
+  {
+    "control": "omit-evidence-probe",
+    "rejected": true,
+    "reason": "exact disjoint evidence inventory"
+  },
+  {
+    "control": "modify-candidate-tree",
+    "rejected": true,
+    "reason": "tree object c6b021437434ce691c1a225469abeac3b92c80df"
+  }
+]
