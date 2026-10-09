@@ -3,7 +3,7 @@
   "generated_at_utc": "2026-10-09T06:05:00Z",
   "evidence_cutoff_utc": "2026-10-09T05:45:13Z",
   "repository": "BelloWare/BelloBox",
-  "as_of_utc": "2026-10-09T16:22:00Z",
+  "as_of_utc": "2026-10-09T16:37:00Z",
   "base_commit": "0e13ee6def214425865759591c37539429530d71",
   "summary": {
     "ci_runs": 168,
@@ -66984,6 +66984,2522 @@
       "inference_duration_seconds": null,
       "inference_status": "unavailable",
       "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1637-http-source-publication",
+      "repository_assignment": "BelloBox",
+      "activity": "Root HTTP source verification and normal publication",
+      "category": "publication (mixed)",
+      "start_utc": "2026-10-09T16:29:41.540Z",
+      "end_utc": "2026-10-09T16:30:33.669Z",
+      "duration_seconds": 52.129,
+      "source": [
+        {
+          "receipt_sha256": "285951a12cd816d0d0f5b92c5b7aba43c3c9bae55eab057f2ea9e3360133b734",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "completed",
+      "accounting_group": "task_window",
+      "include_in_totals": false,
+      "resource": "mixed task window",
+      "duration_basis": "Observed mixed task/workflow interval includes tools, coordination and waiting; overlaps command resources and other workers",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time."
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-06368eba9acf6a7dee445f2c01262bbd8109006f@2026-10-09T16:22:24.894Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: .github/workflows/rust-macos.yml",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:22:24.894Z",
+      "end_utc": "2026-10-09T16:22:34.257Z",
+      "duration_seconds": 9.363,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-06368eba9acf6a7dee445f2c01262bbd8109006f@2026-10-09T16:22:24.894Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/06368eba9acf6a7dee445f2c01262bbd8109006f",
+      "operation_content_hash": "06368eba9acf6a7dee445f2c01262bbd8109006f"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-42ac1963f75cc9a453b8f6dc172f760d09cc9623@2026-10-09T16:22:55.553Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/http_session.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:22:55.553Z",
+      "end_utc": "2026-10-09T16:23:01.299Z",
+      "duration_seconds": 5.746,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-42ac1963f75cc9a453b8f6dc172f760d09cc9623@2026-10-09T16:22:55.553Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/42ac1963f75cc9a453b8f6dc172f760d09cc9623",
+      "operation_content_hash": "42ac1963f75cc9a453b8f6dc172f760d09cc9623"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-8d7e558ae76ab5ab6d0ef4f0c0440aad68c7433d@2026-10-09T16:22:55.553Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/http_session/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:22:55.553Z",
+      "end_utc": "2026-10-09T16:23:05.174Z",
+      "duration_seconds": 9.621,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-8d7e558ae76ab5ab6d0ef4f0c0440aad68c7433d@2026-10-09T16:22:55.553Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8d7e558ae76ab5ab6d0ef4f0c0440aad68c7433d",
+      "operation_content_hash": "8d7e558ae76ab5ab6d0ef4f0c0440aad68c7433d"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-621cf7d9a9667275bd412dc8f6a331c3c7d87b23@2026-10-09T16:22:55.552Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/http_ui.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:22:55.552Z",
+      "end_utc": "2026-10-09T16:23:09.665Z",
+      "duration_seconds": 14.113,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-621cf7d9a9667275bd412dc8f6a331c3c7d87b23@2026-10-09T16:22:55.552Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/621cf7d9a9667275bd412dc8f6a331c3c7d87b23",
+      "operation_content_hash": "621cf7d9a9667275bd412dc8f6a331c3c7d87b23"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-ef919da4ad07ecc761d1adb68241fd93c4964056@2026-10-09T16:22:55.553Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/desktop.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:22:55.553Z",
+      "end_utc": "2026-10-09T16:23:15.283Z",
+      "duration_seconds": 19.73,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-ef919da4ad07ecc761d1adb68241fd93c4964056@2026-10-09T16:22:55.553Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/ef919da4ad07ecc761d1adb68241fd93c4964056",
+      "operation_content_hash": "ef919da4ad07ecc761d1adb68241fd93c4964056"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-1a1bb950a798885fd0f7bfecf9ef528e388f391d@2026-10-09T16:23:15.828Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/shutdown.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:23:15.828Z",
+      "end_utc": "2026-10-09T16:23:21.182Z",
+      "duration_seconds": 5.354,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-1a1bb950a798885fd0f7bfecf9ef528e388f391d@2026-10-09T16:23:15.828Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/1a1bb950a798885fd0f7bfecf9ef528e388f391d",
+      "operation_content_hash": "1a1bb950a798885fd0f7bfecf9ef528e388f391d"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-0bfff1ebad33fccf273c82e0bc9503232576dbd2@2026-10-09T16:23:15.828Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/http_ui/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:23:15.828Z",
+      "end_utc": "2026-10-09T16:23:25.588Z",
+      "duration_seconds": 9.76,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-0bfff1ebad33fccf273c82e0bc9503232576dbd2@2026-10-09T16:23:15.828Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/0bfff1ebad33fccf273c82e0bc9503232576dbd2",
+      "operation_content_hash": "0bfff1ebad33fccf273c82e0bc9503232576dbd2"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-869fd3ab9f17d710bd4499e548e93e780b243fe0@2026-10-09T16:23:15.828Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/main.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:23:15.828Z",
+      "end_utc": "2026-10-09T16:23:29.780Z",
+      "duration_seconds": 13.952,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-869fd3ab9f17d710bd4499e548e93e780b243fe0@2026-10-09T16:23:15.828Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/869fd3ab9f17d710bd4499e548e93e780b243fe0",
+      "operation_content_hash": "869fd3ab9f17d710bd4499e548e93e780b243fe0"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-07f3c5a6ca7efe5d63822618510a374c34d366af@2026-10-09T16:23:15.836Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/transport.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:23:15.836Z",
+      "end_utc": "2026-10-09T16:23:36.065Z",
+      "duration_seconds": 20.229,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-07f3c5a6ca7efe5d63822618510a374c34d366af@2026-10-09T16:23:15.836Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/07f3c5a6ca7efe5d63822618510a374c34d366af",
+      "operation_content_hash": "07f3c5a6ca7efe5d63822618510a374c34d366af"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-7a968aa23a67002f1866d70b0ae2aa9405567734@2026-10-09T16:23:37.003Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/transport/http_request.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:23:37.003Z",
+      "end_utc": "2026-10-09T16:23:42.986Z",
+      "duration_seconds": 5.983,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-7a968aa23a67002f1866d70b0ae2aa9405567734@2026-10-09T16:23:37.003Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/7a968aa23a67002f1866d70b0ae2aa9405567734",
+      "operation_content_hash": "7a968aa23a67002f1866d70b0ae2aa9405567734"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-d039b51eb0ddbc6d04bcf237415c13f4660f9598@2026-10-09T16:23:37.003Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-core/src/developer/http_request.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:23:37.003Z",
+      "end_utc": "2026-10-09T16:23:48.898Z",
+      "duration_seconds": 11.895,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-d039b51eb0ddbc6d04bcf237415c13f4660f9598@2026-10-09T16:23:37.003Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d039b51eb0ddbc6d04bcf237415c13f4660f9598",
+      "operation_content_hash": "d039b51eb0ddbc6d04bcf237415c13f4660f9598"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-e828d48e82ef6d4951403004e725ccb54b3e6fa7@2026-10-09T16:23:37.003Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-app/src/transport/http_request/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:23:37.003Z",
+      "end_utc": "2026-10-09T16:23:56.482Z",
+      "duration_seconds": 19.479,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-e828d48e82ef6d4951403004e725ccb54b3e6fa7@2026-10-09T16:23:37.003Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/e828d48e82ef6d4951403004e725ccb54b3e6fa7",
+      "operation_content_hash": "e828d48e82ef6d4951403004e725ccb54b3e6fa7"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-03f29aacc4438872af799f21866c5354f7288541@2026-10-09T16:23:37.005Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-core/src/developer.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:23:37.005Z",
+      "end_utc": "2026-10-09T16:24:15.154Z",
+      "duration_seconds": 38.149,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-03f29aacc4438872af799f21866c5354f7288541@2026-10-09T16:23:37.005Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/03f29aacc4438872af799f21866c5354f7288541",
+      "operation_content_hash": "03f29aacc4438872af799f21866c5354f7288541"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-72ade90ca985b972e506566ec5c028dca225535c@2026-10-09T16:24:15.834Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-core/tests/http_swift_oracle.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:15.834Z",
+      "end_utc": "2026-10-09T16:24:20.181Z",
+      "duration_seconds": 4.347,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-72ade90ca985b972e506566ec5c028dca225535c@2026-10-09T16:24:15.834Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/72ade90ca985b972e506566ec5c028dca225535c",
+      "operation_content_hash": "72ade90ca985b972e506566ec5c028dca225535c"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-bea497d70bd83af805377b7458d027bf8e8e7785@2026-10-09T16:24:15.751Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:15.751Z",
+      "end_utc": "2026-10-09T16:24:22.238Z",
+      "duration_seconds": 6.487,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-bea497d70bd83af805377b7458d027bf8e8e7785@2026-10-09T16:24:15.751Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/bea497d70bd83af805377b7458d027bf8e8e7785",
+      "operation_content_hash": "bea497d70bd83af805377b7458d027bf8e8e7785"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-6882f30325517f59f04ceb1346d6f64c3ebb2e2a@2026-10-09T16:24:15.752Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:15.752Z",
+      "end_utc": "2026-10-09T16:24:28.164Z",
+      "duration_seconds": 12.412,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-6882f30325517f59f04ceb1346d6f64c3ebb2e2a@2026-10-09T16:24:15.752Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/6882f30325517f59f04ceb1346d6f64c3ebb2e2a",
+      "operation_content_hash": "6882f30325517f59f04ceb1346d6f64c3ebb2e2a"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-fba0f5878b9215bdd7631dd960c4a9c8c9758cdc@2026-10-09T16:24:15.833Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/crates/bellobox-core/src/developer/http_request_tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:15.833Z",
+      "end_utc": "2026-10-09T16:24:32.954Z",
+      "duration_seconds": 17.121,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-fba0f5878b9215bdd7631dd960c4a9c8c9758cdc@2026-10-09T16:24:15.833Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/fba0f5878b9215bdd7631dd960c4a9c8c9758cdc",
+      "operation_content_hash": "fba0f5878b9215bdd7631dd960c4a9c8c9758cdc"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-a7e8ae93056ba3cd9760c10f881de3eb9de31df8@2026-10-09T16:24:33.715Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/README.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:33.715Z",
+      "end_utc": "2026-10-09T16:24:39.389Z",
+      "duration_seconds": 5.674,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-a7e8ae93056ba3cd9760c10f881de3eb9de31df8@2026-10-09T16:24:33.715Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/a7e8ae93056ba3cd9760c10f881de3eb9de31df8",
+      "operation_content_hash": "a7e8ae93056ba3cd9760c10f881de3eb9de31df8"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-e62b7ef3eb9f176650bed9f6eba8d007917bbcd5@2026-10-09T16:24:33.716Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/http-workflow.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:33.716Z",
+      "end_utc": "2026-10-09T16:24:45.768Z",
+      "duration_seconds": 12.053,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-e62b7ef3eb9f176650bed9f6eba8d007917bbcd5@2026-10-09T16:24:33.716Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/e62b7ef3eb9f176650bed9f6eba8d007917bbcd5",
+      "operation_content_hash": "e62b7ef3eb9f176650bed9f6eba8d007917bbcd5"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-3d82e206b0dd8a0d39add336295ccb9e4e5ad3a0@2026-10-09T16:24:33.716Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/app-commands.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:33.716Z",
+      "end_utc": "2026-10-09T16:24:50.806Z",
+      "duration_seconds": 17.09,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-3d82e206b0dd8a0d39add336295ccb9e4e5ad3a0@2026-10-09T16:24:33.716Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/3d82e206b0dd8a0d39add336295ccb9e4e5ad3a0",
+      "operation_content_hash": "3d82e206b0dd8a0d39add336295ccb9e4e5ad3a0"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-a984e099778609b720c2304d8b22902605beb5db@2026-10-09T16:24:33.717Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/bellobox-parity.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:33.717Z",
+      "end_utc": "2026-10-09T16:24:56.786Z",
+      "duration_seconds": 23.069,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-a984e099778609b720c2304d8b22902605beb5db@2026-10-09T16:24:33.717Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/a984e099778609b720c2304d8b22902605beb5db",
+      "operation_content_hash": "a984e099778609b720c2304d8b22902605beb5db"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-8e5af1e724c8f7f2781984d0ba4e27547d09e8ca@2026-10-09T16:24:57.510Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/app-handoff.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:57.510Z",
+      "end_utc": "2026-10-09T16:25:03.170Z",
+      "duration_seconds": 5.66,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-8e5af1e724c8f7f2781984d0ba4e27547d09e8ca@2026-10-09T16:24:57.510Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8e5af1e724c8f7f2781984d0ba4e27547d09e8ca",
+      "operation_content_hash": "8e5af1e724c8f7f2781984d0ba4e27547d09e8ca"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-bb23dda17bb9bfc6ea0b7373fb5545598096ce0e@2026-10-09T16:24:57.510Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/core-checks.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:57.510Z",
+      "end_utc": "2026-10-09T16:25:17.264Z",
+      "duration_seconds": 19.754,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-bb23dda17bb9bfc6ea0b7373fb5545598096ce0e@2026-10-09T16:24:57.510Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/bb23dda17bb9bfc6ea0b7373fb5545598096ce0e",
+      "operation_content_hash": "bb23dda17bb9bfc6ea0b7373fb5545598096ce0e"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-d84e49c8902b1ec0a4fd9ce5125fe841d35f0cd4@2026-10-09T16:24:57.511Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/changed-source.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:57.511Z",
+      "end_utc": "2026-10-09T16:25:22.836Z",
+      "duration_seconds": 25.325,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-d84e49c8902b1ec0a4fd9ce5125fe841d35f0cd4@2026-10-09T16:24:57.511Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d84e49c8902b1ec0a4fd9ce5125fe841d35f0cd4",
+      "operation_content_hash": "d84e49c8902b1ec0a4fd9ce5125fe841d35f0cd4"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-531c621c85b83806ecbda8936e8ee2c859ff3c4d@2026-10-09T16:24:57.511Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/compiled-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:24:57.511Z",
+      "end_utc": "2026-10-09T16:25:28.369Z",
+      "duration_seconds": 30.858,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-531c621c85b83806ecbda8936e8ee2c859ff3c4d@2026-10-09T16:24:57.511Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/531c621c85b83806ecbda8936e8ee2c859ff3c4d",
+      "operation_content_hash": "531c621c85b83806ecbda8936e8ee2c859ff3c4d"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-2b245077b29118660ae553a03c3f305006403342@2026-10-09T16:25:28.959Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160836-dark.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:25:28.959Z",
+      "end_utc": "2026-10-09T16:25:35.101Z",
+      "duration_seconds": 6.142,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-2b245077b29118660ae553a03c3f305006403342@2026-10-09T16:25:28.959Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/2b245077b29118660ae553a03c3f305006403342",
+      "operation_content_hash": "2b245077b29118660ae553a03c3f305006403342"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-d69c081e52af09177cb83f24b05429319ba8ec21@2026-10-09T16:25:28.960Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160053-light.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:25:28.960Z",
+      "end_utc": "2026-10-09T16:25:40.400Z",
+      "duration_seconds": 11.44,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-d69c081e52af09177cb83f24b05429319ba8ec21@2026-10-09T16:25:28.960Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d69c081e52af09177cb83f24b05429319ba8ec21",
+      "operation_content_hash": "d69c081e52af09177cb83f24b05429319ba8ec21"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-d94748fdf9b6647457fc3fe8772fb28d4930afb4@2026-10-09T16:25:28.959Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/failure-notes.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:25:28.959Z",
+      "end_utc": "2026-10-09T16:25:47.498Z",
+      "duration_seconds": 18.539,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-d94748fdf9b6647457fc3fe8772fb28d4930afb4@2026-10-09T16:25:28.959Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d94748fdf9b6647457fc3fe8772fb28d4930afb4",
+      "operation_content_hash": "d94748fdf9b6647457fc3fe8772fb28d4930afb4"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-fe51488c7066f6687ef680d6bfaa4f7768ef205c@2026-10-09T16:25:28.963Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T161330-light.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:25:28.963Z",
+      "end_utc": "2026-10-09T16:25:52.169Z",
+      "duration_seconds": 23.206,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-fe51488c7066f6687ef680d6bfaa4f7768ef205c@2026-10-09T16:25:28.963Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/fe51488c7066f6687ef680d6bfaa4f7768ef205c",
+      "operation_content_hash": "fe51488c7066f6687ef680d6bfaa4f7768ef205c"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-1f59ad8ba84810c29863506d197672b8ee125950@2026-10-09T16:25:52.854Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-receipt.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:25:52.854Z",
+      "end_utc": "2026-10-09T16:25:58.112Z",
+      "duration_seconds": 5.258,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-1f59ad8ba84810c29863506d197672b8ee125950@2026-10-09T16:25:52.854Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/1f59ad8ba84810c29863506d197672b8ee125950",
+      "operation_content_hash": "1f59ad8ba84810c29863506d197672b8ee125950"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-34f1042132f3ddb11ecc471dfaf1bd47dd58a4fe@2026-10-09T16:25:52.858Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:25:52.858Z",
+      "end_utc": "2026-10-09T16:26:03.340Z",
+      "duration_seconds": 10.482,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-34f1042132f3ddb11ecc471dfaf1bd47dd58a4fe@2026-10-09T16:25:52.858Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/34f1042132f3ddb11ecc471dfaf1bd47dd58a4fe",
+      "operation_content_hash": "34f1042132f3ddb11ecc471dfaf1bd47dd58a4fe"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-b6c773ccdcc348c60be87bbc53704e6d83c7e2b9@2026-10-09T16:25:52.858Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-seal.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:25:52.858Z",
+      "end_utc": "2026-10-09T16:26:10.621Z",
+      "duration_seconds": 17.763,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-b6c773ccdcc348c60be87bbc53704e6d83c7e2b9@2026-10-09T16:25:52.858Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/b6c773ccdcc348c60be87bbc53704e6d83c7e2b9",
+      "operation_content_hash": "b6c773ccdcc348c60be87bbc53704e6d83c7e2b9"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-25867e7c50a5382fdc8890f8e227334dc7f4fc0c@2026-10-09T16:25:52.859Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:25:52.859Z",
+      "end_utc": "2026-10-09T16:26:24.362Z",
+      "duration_seconds": 31.503,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "Failed denied initial call; authorized exact retry recorded separately",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-25867e7c50a5382fdc8890f8e227334dc7f4fc0c@2026-10-09T16:25:52.859Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/25867e7c50a5382fdc8890f8e227334dc7f4fc0c",
+      "operation_content_hash": "25867e7c50a5382fdc8890f8e227334dc7f4fc0c"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-25867e7c50a5382fdc8890f8e227334dc7f4fc0c@2026-10-09T16:27:19.156Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:27:19.156Z",
+      "end_utc": "2026-10-09T16:27:23.849Z",
+      "duration_seconds": 4.693,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-25867e7c50a5382fdc8890f8e227334dc7f4fc0c@2026-10-09T16:27:19.156Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/25867e7c50a5382fdc8890f8e227334dc7f4fc0c",
+      "operation_content_hash": "25867e7c50a5382fdc8890f8e227334dc7f4fc0c"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-6a2e487c37b404fbcce0c9b524c19d8b3b26fcd8@2026-10-09T16:27:35.896Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/source-unchanged-final.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:27:35.896Z",
+      "end_utc": "2026-10-09T16:27:39.881Z",
+      "duration_seconds": 3.985,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-6a2e487c37b404fbcce0c9b524c19d8b3b26fcd8@2026-10-09T16:27:35.896Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/6a2e487c37b404fbcce0c9b524c19d8b3b26fcd8",
+      "operation_content_hash": "6a2e487c37b404fbcce0c9b524c19d8b3b26fcd8"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-8e6e858a688cf16e3d306f658351290cf420b453@2026-10-09T16:27:35.904Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/loc-controls.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:27:35.904Z",
+      "end_utc": "2026-10-09T16:27:43.733Z",
+      "duration_seconds": 7.829,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-8e6e858a688cf16e3d306f658351290cf420b453@2026-10-09T16:27:35.904Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8e6e858a688cf16e3d306f658351290cf420b453",
+      "operation_content_hash": "8e6e858a688cf16e3d306f658351290cf420b453"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-9692c3607d3ecc1b941c005569061b7d3fc9e5f5@2026-10-09T16:27:35.904Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/independent-review.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:27:35.904Z",
+      "end_utc": "2026-10-09T16:27:47.489Z",
+      "duration_seconds": 11.585,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-9692c3607d3ecc1b941c005569061b7d3fc9e5f5@2026-10-09T16:27:35.904Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/9692c3607d3ecc1b941c005569061b7d3fc9e5f5",
+      "operation_content_hash": "9692c3607d3ecc1b941c005569061b7d3fc9e5f5"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-0a64b03ab6fc4f95188f0f4676c04f6a0fea4837@2026-10-09T16:27:35.912Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/loc.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:27:35.912Z",
+      "end_utc": "2026-10-09T16:27:51.489Z",
+      "duration_seconds": 15.577,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-0a64b03ab6fc4f95188f0f4676c04f6a0fea4837@2026-10-09T16:27:35.912Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/0a64b03ab6fc4f95188f0f4676c04f6a0fea4837",
+      "operation_content_hash": "0a64b03ab6fc4f95188f0f4676c04f6a0fea4837"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-908900f4d6cb39b6077fa17f0a8a3a140c28ee2d@2026-10-09T16:27:52.158Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/swift-source-verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:27:52.158Z",
+      "end_utc": "2026-10-09T16:28:05.845Z",
+      "duration_seconds": 13.687,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-908900f4d6cb39b6077fa17f0a8a3a140c28ee2d@2026-10-09T16:27:52.158Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/908900f4d6cb39b6077fa17f0a8a3a140c28ee2d",
+      "operation_content_hash": "908900f4d6cb39b6077fa17f0a8a3a140c28ee2d"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-bc381e4de8c57687e5a0b431666917c015b96935@2026-10-09T16:27:52.158Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/verify-http-loc.py",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:27:52.158Z",
+      "end_utc": "2026-10-09T16:28:10.506Z",
+      "duration_seconds": 18.348,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-bc381e4de8c57687e5a0b431666917c015b96935@2026-10-09T16:27:52.158Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/bc381e4de8c57687e5a0b431666917c015b96935",
+      "operation_content_hash": "bc381e4de8c57687e5a0b431666917c015b96935"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-0f2a62af5e337b027af1d3ab7f8fde0f0d20708e@2026-10-09T16:27:52.179Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/documentation-evidence-supplement.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:27:52.179Z",
+      "end_utc": "2026-10-09T16:28:16.087Z",
+      "duration_seconds": 23.908,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-0f2a62af5e337b027af1d3ab7f8fde0f0d20708e@2026-10-09T16:27:52.179Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/0f2a62af5e337b027af1d3ab7f8fde0f0d20708e",
+      "operation_content_hash": "0f2a62af5e337b027af1d3ab7f8fde0f0d20708e"
+    },
+    {
+      "id": "20261009-1637-box-http-create_blob-c49cf788194806adc60d5fa8ab670fc30b629aa0@2026-10-09T16:27:52.179Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Create immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:27:52.179Z",
+      "end_utc": "2026-10-09T16:28:21.037Z",
+      "duration_seconds": 28.858,
+      "source": [
+        {
+          "receipt_sha256": "7796728a6b42ca2f70dae15f79e6e34e2b5b0c10fbe24b6de624ea7e95a1576b",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-create_blob-c49cf788194806adc60d5fa8ab670fc30b629aa0@2026-10-09T16:27:52.179Z",
+      "operation_method": "create_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/c49cf788194806adc60d5fa8ab670fc30b629aa0",
+      "operation_content_hash": "c49cf788194806adc60d5fa8ab670fc30b629aa0"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-06368eba9acf6a7dee445f2c01262bbd8109006f@2026-10-09T16:26:50.558Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: .github/workflows/rust-macos.yml",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:26:50.558Z",
+      "end_utc": "2026-10-09T16:26:51.253Z",
+      "duration_seconds": 0.695,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-06368eba9acf6a7dee445f2c01262bbd8109006f@2026-10-09T16:26:50.558Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/06368eba9acf6a7dee445f2c01262bbd8109006f",
+      "operation_content_hash": "06368eba9acf6a7dee445f2c01262bbd8109006f"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-8d7e558ae76ab5ab6d0ef4f0c0440aad68c7433d@2026-10-09T16:28:43.556Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/http_session/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:43.556Z",
+      "end_utc": "2026-10-09T16:28:43.891Z",
+      "duration_seconds": 0.335,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-8d7e558ae76ab5ab6d0ef4f0c0440aad68c7433d@2026-10-09T16:28:43.556Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8d7e558ae76ab5ab6d0ef4f0c0440aad68c7433d",
+      "operation_content_hash": "8d7e558ae76ab5ab6d0ef4f0c0440aad68c7433d"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-42ac1963f75cc9a453b8f6dc172f760d09cc9623@2026-10-09T16:28:43.556Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/http_session.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:43.556Z",
+      "end_utc": "2026-10-09T16:28:44.054Z",
+      "duration_seconds": 0.498,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-42ac1963f75cc9a453b8f6dc172f760d09cc9623@2026-10-09T16:28:43.556Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/42ac1963f75cc9a453b8f6dc172f760d09cc9623",
+      "operation_content_hash": "42ac1963f75cc9a453b8f6dc172f760d09cc9623"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-ef919da4ad07ecc761d1adb68241fd93c4964056@2026-10-09T16:28:43.556Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/desktop.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:43.556Z",
+      "end_utc": "2026-10-09T16:28:43.978Z",
+      "duration_seconds": 0.422,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-ef919da4ad07ecc761d1adb68241fd93c4964056@2026-10-09T16:28:43.556Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/ef919da4ad07ecc761d1adb68241fd93c4964056",
+      "operation_content_hash": "ef919da4ad07ecc761d1adb68241fd93c4964056"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-869fd3ab9f17d710bd4499e548e93e780b243fe0@2026-10-09T16:28:45.716Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/main.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:45.716Z",
+      "end_utc": "2026-10-09T16:28:46.134Z",
+      "duration_seconds": 0.418,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-869fd3ab9f17d710bd4499e548e93e780b243fe0@2026-10-09T16:28:45.716Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/869fd3ab9f17d710bd4499e548e93e780b243fe0",
+      "operation_content_hash": "869fd3ab9f17d710bd4499e548e93e780b243fe0"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-0bfff1ebad33fccf273c82e0bc9503232576dbd2@2026-10-09T16:28:45.716Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/http_ui/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:45.716Z",
+      "end_utc": "2026-10-09T16:28:46.190Z",
+      "duration_seconds": 0.474,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-0bfff1ebad33fccf273c82e0bc9503232576dbd2@2026-10-09T16:28:45.716Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/0bfff1ebad33fccf273c82e0bc9503232576dbd2",
+      "operation_content_hash": "0bfff1ebad33fccf273c82e0bc9503232576dbd2"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-1a1bb950a798885fd0f7bfecf9ef528e388f391d@2026-10-09T16:28:45.716Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/shutdown.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:45.716Z",
+      "end_utc": "2026-10-09T16:28:46.217Z",
+      "duration_seconds": 0.501,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-1a1bb950a798885fd0f7bfecf9ef528e388f391d@2026-10-09T16:28:45.716Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/1a1bb950a798885fd0f7bfecf9ef528e388f391d",
+      "operation_content_hash": "1a1bb950a798885fd0f7bfecf9ef528e388f391d"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-621cf7d9a9667275bd412dc8f6a331c3c7d87b23@2026-10-09T16:28:45.716Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/http_ui.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:45.716Z",
+      "end_utc": "2026-10-09T16:28:46.432Z",
+      "duration_seconds": 0.716,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-621cf7d9a9667275bd412dc8f6a331c3c7d87b23@2026-10-09T16:28:45.716Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/621cf7d9a9667275bd412dc8f6a331c3c7d87b23",
+      "operation_content_hash": "621cf7d9a9667275bd412dc8f6a331c3c7d87b23"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-7a968aa23a67002f1866d70b0ae2aa9405567734@2026-10-09T16:28:47.505Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/transport/http_request.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:47.505Z",
+      "end_utc": "2026-10-09T16:28:47.852Z",
+      "duration_seconds": 0.347,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-7a968aa23a67002f1866d70b0ae2aa9405567734@2026-10-09T16:28:47.505Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/7a968aa23a67002f1866d70b0ae2aa9405567734",
+      "operation_content_hash": "7a968aa23a67002f1866d70b0ae2aa9405567734"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-e828d48e82ef6d4951403004e725ccb54b3e6fa7@2026-10-09T16:28:47.505Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/transport/http_request/tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:47.505Z",
+      "end_utc": "2026-10-09T16:28:47.971Z",
+      "duration_seconds": 0.466,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-e828d48e82ef6d4951403004e725ccb54b3e6fa7@2026-10-09T16:28:47.505Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/e828d48e82ef6d4951403004e725ccb54b3e6fa7",
+      "operation_content_hash": "e828d48e82ef6d4951403004e725ccb54b3e6fa7"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-07f3c5a6ca7efe5d63822618510a374c34d366af@2026-10-09T16:28:47.505Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-app/src/transport.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:47.505Z",
+      "end_utc": "2026-10-09T16:28:47.978Z",
+      "duration_seconds": 0.473,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-07f3c5a6ca7efe5d63822618510a374c34d366af@2026-10-09T16:28:47.505Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/07f3c5a6ca7efe5d63822618510a374c34d366af",
+      "operation_content_hash": "07f3c5a6ca7efe5d63822618510a374c34d366af"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-03f29aacc4438872af799f21866c5354f7288541@2026-10-09T16:28:47.505Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-core/src/developer.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:47.505Z",
+      "end_utc": "2026-10-09T16:28:48.081Z",
+      "duration_seconds": 0.576,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-03f29aacc4438872af799f21866c5354f7288541@2026-10-09T16:28:47.505Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/03f29aacc4438872af799f21866c5354f7288541",
+      "operation_content_hash": "03f29aacc4438872af799f21866c5354f7288541"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-fba0f5878b9215bdd7631dd960c4a9c8c9758cdc@2026-10-09T16:28:50.196Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-core/src/developer/http_request_tests.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:50.196Z",
+      "end_utc": "2026-10-09T16:28:50.546Z",
+      "duration_seconds": 0.35,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-fba0f5878b9215bdd7631dd960c4a9c8c9758cdc@2026-10-09T16:28:50.196Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/fba0f5878b9215bdd7631dd960c4a9c8c9758cdc",
+      "operation_content_hash": "fba0f5878b9215bdd7631dd960c4a9c8c9758cdc"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-bea497d70bd83af805377b7458d027bf8e8e7785@2026-10-09T16:28:50.196Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-core/tests/fixtures/http-swift-characterization.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:50.196Z",
+      "end_utc": "2026-10-09T16:28:50.554Z",
+      "duration_seconds": 0.358,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-bea497d70bd83af805377b7458d027bf8e8e7785@2026-10-09T16:28:50.196Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/bea497d70bd83af805377b7458d027bf8e8e7785",
+      "operation_content_hash": "bea497d70bd83af805377b7458d027bf8e8e7785"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-d039b51eb0ddbc6d04bcf237415c13f4660f9598@2026-10-09T16:28:50.196Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-core/src/developer/http_request.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:50.196Z",
+      "end_utc": "2026-10-09T16:28:50.560Z",
+      "duration_seconds": 0.364,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-d039b51eb0ddbc6d04bcf237415c13f4660f9598@2026-10-09T16:28:50.196Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d039b51eb0ddbc6d04bcf237415c13f4660f9598",
+      "operation_content_hash": "d039b51eb0ddbc6d04bcf237415c13f4660f9598"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-6882f30325517f59f04ceb1346d6f64c3ebb2e2a@2026-10-09T16:28:50.196Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-core/tests/fixtures/http-swift-oracle.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:50.196Z",
+      "end_utc": "2026-10-09T16:28:50.706Z",
+      "duration_seconds": 0.51,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-6882f30325517f59f04ceb1346d6f64c3ebb2e2a@2026-10-09T16:28:50.196Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/6882f30325517f59f04ceb1346d6f64c3ebb2e2a",
+      "operation_content_hash": "6882f30325517f59f04ceb1346d6f64c3ebb2e2a"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-a7e8ae93056ba3cd9760c10f881de3eb9de31df8@2026-10-09T16:28:51.670Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/README.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:51.670Z",
+      "end_utc": "2026-10-09T16:28:52.009Z",
+      "duration_seconds": 0.339,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-a7e8ae93056ba3cd9760c10f881de3eb9de31df8@2026-10-09T16:28:51.670Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/a7e8ae93056ba3cd9760c10f881de3eb9de31df8",
+      "operation_content_hash": "a7e8ae93056ba3cd9760c10f881de3eb9de31df8"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-e62b7ef3eb9f176650bed9f6eba8d007917bbcd5@2026-10-09T16:28:51.670Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/http-workflow.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:51.670Z",
+      "end_utc": "2026-10-09T16:28:52.039Z",
+      "duration_seconds": 0.369,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-e62b7ef3eb9f176650bed9f6eba8d007917bbcd5@2026-10-09T16:28:51.670Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/e62b7ef3eb9f176650bed9f6eba8d007917bbcd5",
+      "operation_content_hash": "e62b7ef3eb9f176650bed9f6eba8d007917bbcd5"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-72ade90ca985b972e506566ec5c028dca225535c@2026-10-09T16:28:51.670Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/crates/bellobox-core/tests/http_swift_oracle.rs",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:51.670Z",
+      "end_utc": "2026-10-09T16:28:52.071Z",
+      "duration_seconds": 0.401,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-72ade90ca985b972e506566ec5c028dca225535c@2026-10-09T16:28:51.670Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/72ade90ca985b972e506566ec5c028dca225535c",
+      "operation_content_hash": "72ade90ca985b972e506566ec5c028dca225535c"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-a984e099778609b720c2304d8b22902605beb5db@2026-10-09T16:28:51.670Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/bellobox-parity.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:51.670Z",
+      "end_utc": "2026-10-09T16:28:52.530Z",
+      "duration_seconds": 0.86,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-a984e099778609b720c2304d8b22902605beb5db@2026-10-09T16:28:51.670Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/a984e099778609b720c2304d8b22902605beb5db",
+      "operation_content_hash": "a984e099778609b720c2304d8b22902605beb5db"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-8e5af1e724c8f7f2781984d0ba4e27547d09e8ca@2026-10-09T16:28:54.066Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/app-handoff.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:54.066Z",
+      "end_utc": "2026-10-09T16:28:54.406Z",
+      "duration_seconds": 0.34,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-8e5af1e724c8f7f2781984d0ba4e27547d09e8ca@2026-10-09T16:28:54.066Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8e5af1e724c8f7f2781984d0ba4e27547d09e8ca",
+      "operation_content_hash": "8e5af1e724c8f7f2781984d0ba4e27547d09e8ca"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-3d82e206b0dd8a0d39add336295ccb9e4e5ad3a0@2026-10-09T16:28:54.066Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/app-commands.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:54.066Z",
+      "end_utc": "2026-10-09T16:28:54.423Z",
+      "duration_seconds": 0.357,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-3d82e206b0dd8a0d39add336295ccb9e4e5ad3a0@2026-10-09T16:28:54.066Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/3d82e206b0dd8a0d39add336295ccb9e4e5ad3a0",
+      "operation_content_hash": "3d82e206b0dd8a0d39add336295ccb9e4e5ad3a0"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-531c621c85b83806ecbda8936e8ee2c859ff3c4d@2026-10-09T16:28:54.066Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/compiled-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:54.066Z",
+      "end_utc": "2026-10-09T16:28:54.489Z",
+      "duration_seconds": 0.423,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-531c621c85b83806ecbda8936e8ee2c859ff3c4d@2026-10-09T16:28:54.066Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/531c621c85b83806ecbda8936e8ee2c859ff3c4d",
+      "operation_content_hash": "531c621c85b83806ecbda8936e8ee2c859ff3c4d"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-d84e49c8902b1ec0a4fd9ce5125fe841d35f0cd4@2026-10-09T16:28:54.066Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/changed-source.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:54.066Z",
+      "end_utc": "2026-10-09T16:28:54.531Z",
+      "duration_seconds": 0.465,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-d84e49c8902b1ec0a4fd9ce5125fe841d35f0cd4@2026-10-09T16:28:54.066Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d84e49c8902b1ec0a4fd9ce5125fe841d35f0cd4",
+      "operation_content_hash": "d84e49c8902b1ec0a4fd9ce5125fe841d35f0cd4"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-d94748fdf9b6647457fc3fe8772fb28d4930afb4@2026-10-09T16:28:55.392Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/failure-notes.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:55.392Z",
+      "end_utc": "2026-10-09T16:28:55.712Z",
+      "duration_seconds": 0.32,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-d94748fdf9b6647457fc3fe8772fb28d4930afb4@2026-10-09T16:28:55.392Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d94748fdf9b6647457fc3fe8772fb28d4930afb4",
+      "operation_content_hash": "d94748fdf9b6647457fc3fe8772fb28d4930afb4"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-d69c081e52af09177cb83f24b05429319ba8ec21@2026-10-09T16:28:55.392Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160053-light.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:55.392Z",
+      "end_utc": "2026-10-09T16:28:55.724Z",
+      "duration_seconds": 0.332,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-d69c081e52af09177cb83f24b05429319ba8ec21@2026-10-09T16:28:55.392Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/d69c081e52af09177cb83f24b05429319ba8ec21",
+      "operation_content_hash": "d69c081e52af09177cb83f24b05429319ba8ec21"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-2b245077b29118660ae553a03c3f305006403342@2026-10-09T16:28:55.392Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T160836-dark.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:55.392Z",
+      "end_utc": "2026-10-09T16:28:55.852Z",
+      "duration_seconds": 0.46,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-2b245077b29118660ae553a03c3f305006403342@2026-10-09T16:28:55.392Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/2b245077b29118660ae553a03c3f305006403342",
+      "operation_content_hash": "2b245077b29118660ae553a03c3f305006403342"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-bb23dda17bb9bfc6ea0b7373fb5545598096ce0e@2026-10-09T16:28:55.392Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/core-checks.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:55.392Z",
+      "end_utc": "2026-10-09T16:28:55.889Z",
+      "duration_seconds": 0.497,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-bb23dda17bb9bfc6ea0b7373fb5545598096ce0e@2026-10-09T16:28:55.392Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/bb23dda17bb9bfc6ea0b7373fb5545598096ce0e",
+      "operation_content_hash": "bb23dda17bb9bfc6ea0b7373fb5545598096ce0e"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-b6c773ccdcc348c60be87bbc53704e6d83c7e2b9@2026-10-09T16:28:56.804Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-seal.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:56.804Z",
+      "end_utc": "2026-10-09T16:28:57.207Z",
+      "duration_seconds": 0.403,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-b6c773ccdcc348c60be87bbc53704e6d83c7e2b9@2026-10-09T16:28:56.804Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/b6c773ccdcc348c60be87bbc53704e6d83c7e2b9",
+      "operation_content_hash": "b6c773ccdcc348c60be87bbc53704e6d83c7e2b9"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-fe51488c7066f6687ef680d6bfaa4f7768ef205c@2026-10-09T16:28:56.804Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-fixture-20261009T161330-light.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:56.804Z",
+      "end_utc": "2026-10-09T16:28:57.246Z",
+      "duration_seconds": 0.442,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-fe51488c7066f6687ef680d6bfaa4f7768ef205c@2026-10-09T16:28:56.804Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/fe51488c7066f6687ef680d6bfaa4f7768ef205c",
+      "operation_content_hash": "fe51488c7066f6687ef680d6bfaa4f7768ef205c"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-1f59ad8ba84810c29863506d197672b8ee125950@2026-10-09T16:28:56.804Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-receipt.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:56.804Z",
+      "end_utc": "2026-10-09T16:28:57.259Z",
+      "duration_seconds": 0.455,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-1f59ad8ba84810c29863506d197672b8ee125950@2026-10-09T16:28:56.804Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/1f59ad8ba84810c29863506d197672b8ee125950",
+      "operation_content_hash": "1f59ad8ba84810c29863506d197672b8ee125950"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-25867e7c50a5382fdc8890f8e227334dc7f4fc0c@2026-10-09T16:28:56.804Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui-source-manifest.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:56.804Z",
+      "end_utc": "2026-10-09T16:28:57.270Z",
+      "duration_seconds": 0.466,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-25867e7c50a5382fdc8890f8e227334dc7f4fc0c@2026-10-09T16:28:56.804Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/25867e7c50a5382fdc8890f8e227334dc7f4fc0c",
+      "operation_content_hash": "25867e7c50a5382fdc8890f8e227334dc7f4fc0c"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-8e6e858a688cf16e3d306f658351290cf420b453@2026-10-09T16:28:59.044Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/loc-controls.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:59.044Z",
+      "end_utc": "2026-10-09T16:28:59.516Z",
+      "duration_seconds": 0.472,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-8e6e858a688cf16e3d306f658351290cf420b453@2026-10-09T16:28:59.044Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/8e6e858a688cf16e3d306f658351290cf420b453",
+      "operation_content_hash": "8e6e858a688cf16e3d306f658351290cf420b453"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-9692c3607d3ecc1b941c005569061b7d3fc9e5f5@2026-10-09T16:28:59.044Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/independent-review.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:59.044Z",
+      "end_utc": "2026-10-09T16:28:59.538Z",
+      "duration_seconds": 0.494,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-9692c3607d3ecc1b941c005569061b7d3fc9e5f5@2026-10-09T16:28:59.044Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/9692c3607d3ecc1b941c005569061b7d3fc9e5f5",
+      "operation_content_hash": "9692c3607d3ecc1b941c005569061b7d3fc9e5f5"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-34f1042132f3ddb11ecc471dfaf1bd47dd58a4fe@2026-10-09T16:28:59.044Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/gui.md",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:59.044Z",
+      "end_utc": "2026-10-09T16:29:00.143Z",
+      "duration_seconds": 1.099,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-34f1042132f3ddb11ecc471dfaf1bd47dd58a4fe@2026-10-09T16:28:59.044Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/34f1042132f3ddb11ecc471dfaf1bd47dd58a4fe",
+      "operation_content_hash": "34f1042132f3ddb11ecc471dfaf1bd47dd58a4fe"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-0a64b03ab6fc4f95188f0f4676c04f6a0fea4837@2026-10-09T16:28:59.044Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/loc.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:28:59.044Z",
+      "end_utc": "2026-10-09T16:28:59.604Z",
+      "duration_seconds": 0.56,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-0a64b03ab6fc4f95188f0f4676c04f6a0fea4837@2026-10-09T16:28:59.044Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/0a64b03ab6fc4f95188f0f4676c04f6a0fea4837",
+      "operation_content_hash": "0a64b03ab6fc4f95188f0f4676c04f6a0fea4837"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-908900f4d6cb39b6077fa17f0a8a3a140c28ee2d@2026-10-09T16:29:01.043Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/swift-source-verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:29:01.043Z",
+      "end_utc": "2026-10-09T16:29:01.389Z",
+      "duration_seconds": 0.346,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-908900f4d6cb39b6077fa17f0a8a3a140c28ee2d@2026-10-09T16:29:01.043Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/908900f4d6cb39b6077fa17f0a8a3a140c28ee2d",
+      "operation_content_hash": "908900f4d6cb39b6077fa17f0a8a3a140c28ee2d"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-bc381e4de8c57687e5a0b431666917c015b96935@2026-10-09T16:29:01.043Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/verify-http-loc.py",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:29:01.043Z",
+      "end_utc": "2026-10-09T16:29:01.398Z",
+      "duration_seconds": 0.355,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-bc381e4de8c57687e5a0b431666917c015b96935@2026-10-09T16:29:01.043Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/bc381e4de8c57687e5a0b431666917c015b96935",
+      "operation_content_hash": "bc381e4de8c57687e5a0b431666917c015b96935"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-c49cf788194806adc60d5fa8ab670fc30b629aa0@2026-10-09T16:29:01.043Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/verification.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:29:01.043Z",
+      "end_utc": "2026-10-09T16:29:01.429Z",
+      "duration_seconds": 0.386,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-c49cf788194806adc60d5fa8ab670fc30b629aa0@2026-10-09T16:29:01.043Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/c49cf788194806adc60d5fa8ab670fc30b629aa0",
+      "operation_content_hash": "c49cf788194806adc60d5fa8ab670fc30b629aa0"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-6a2e487c37b404fbcce0c9b524c19d8b3b26fcd8@2026-10-09T16:29:01.043Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/source-unchanged-final.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:29:01.043Z",
+      "end_utc": "2026-10-09T16:29:01.531Z",
+      "duration_seconds": 0.488,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-6a2e487c37b404fbcce0c9b524c19d8b3b26fcd8@2026-10-09T16:29:01.043Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/6a2e487c37b404fbcce0c9b524c19d8b3b26fcd8",
+      "operation_content_hash": "6a2e487c37b404fbcce0c9b524c19d8b3b26fcd8"
+    },
+    {
+      "id": "20261009-1637-box-http-get_blob-0f2a62af5e337b027af1d3ab7f8fde0f0d20708e@2026-10-09T16:29:02.340Z",
+      "repository_assignment": "BelloBox",
+      "activity": "Read back immutable HTTP blob: rust/docs/validation/http-workflow-2026-10-09/documentation-evidence-supplement.json",
+      "category": "publication",
+      "start_utc": "2026-10-09T16:29:02.340Z",
+      "end_utc": "2026-10-09T16:29:02.652Z",
+      "duration_seconds": 0.312,
+      "source": [
+        {
+          "receipt_sha256": "fdb18ec60c0a9058f92134aa1b720842331261cef7915c663ce11b0f8e7aad36",
+          "provenance": "Retained timing receipt; local observation unless public service record explicitly indicated"
+        }
+      ],
+      "outcome": "SHA/content verified",
+      "accounting_group": "catchup_api",
+      "include_in_totals": true,
+      "resource": "observed API/client operation",
+      "duration_basis": "Observed connector interval; parallel calls overlap and resource sum is not elapsed workflow duration",
+      "parent_id": null,
+      "prospective": true,
+      "checkpoint": "20261009-1637",
+      "inference_duration_seconds": null,
+      "inference_status": "unavailable",
+      "uncertainty": "Partial selected evidence; parallel resources and nested/mixed windows must not be summed as project elapsed time.",
+      "operation_identity": "box-http-get_blob-0f2a62af5e337b027af1d3ab7f8fde0f0d20708e@2026-10-09T16:29:02.340Z",
+      "operation_method": "get_blob",
+      "operation_target": "BelloWare/BelloBox/git/blobs/0f2a62af5e337b027af1d3ab7f8fde0f0d20708e",
+      "operation_content_hash": "0f2a62af5e337b027af1d3ab7f8fde0f0d20708e"
     }
   ],
   "commit_milestones": [
@@ -67754,16 +70270,17 @@
         }
       },
       "catchup_api": {
-        "count": 55,
-        "known_duration_count": 55,
-        "resource_seconds_sum": 968.0189999999999,
-        "wall_coverage_seconds": 216.248,
+        "count": 138,
+        "known_duration_count": 138,
+        "resource_seconds_sum": 1602.9899999999984,
+        "wall_coverage_seconds": 485.928,
         "category_seconds": {
-          "publication": 960.444,
+          "publication": 1595.4149999999986,
           "publication verification": 7.575
         },
         "resource_seconds": {
-          "pending API/client operation": 968.0189999999999
+          "pending API/client operation": 968.0189999999999,
+          "observed API/client operation": 634.9710000000003
         }
       }
     }
@@ -68589,6 +71106,33 @@
           },
           "known_endpoint_items": 3,
           "known_endpoint_resource_seconds": 866.244246
+        }
+      },
+      "ci_coverage_within_window_seconds": 0,
+      "window_seconds": 900.0,
+      "outside_selected_ci_job_intervals_seconds": 900.0,
+      "warning": "Outside selected CI intervals includes other productive work and unobserved periods; never classify as idle or inference. Selected receipt coverage remains incomplete.",
+      "nested_ci_step_seconds": {}
+    },
+    {
+      "checkpoint": "20261009-1637",
+      "through_utc": "2026-10-09T16:37:00Z",
+      "coverage_window_start_utc": "2026-10-09T16:22:00Z",
+      "new_items": 84,
+      "groups": {
+        "catchup_api": {
+          "count": 83,
+          "known_duration_count": 83,
+          "resource_seconds_sum": 634.9710000000003,
+          "wall_coverage_seconds": 269.68,
+          "category_seconds": {
+            "publication": 634.9710000000003
+          },
+          "resource_seconds": {
+            "observed API/client operation": 634.9710000000003
+          },
+          "known_endpoint_items": 83,
+          "known_endpoint_resource_seconds": 634.971
         }
       },
       "ci_coverage_within_window_seconds": 0,
