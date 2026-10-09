@@ -1,0 +1,33 @@
+{
+  "result": "PASS isolated-portal palette QR Save and Cancel on unchanged Text Tools ordinary binary",
+  "binary_sha256": "a40582a69013261f6ec0f9ee4d6e78aa221e13efc0dd1f089c2840f5b9e9a6d1",
+  "matches_preflight_a405": true,
+  "manifest_sha256": "a0667e7fc8f47e37f29717222bb68e251f01afa61f9639c8626d101d4fd9933f",
+  "eight_source_postimages_match": true,
+  "route": "Supported Sky CUA cloud desktop Terminal, inspected launch.sh, wrapper dbus-run-session; existing official extracted portal binaries, isolated config/session, no installation or security change",
+  "capability": "org.freedesktop.portal.FileChooser version4 confirmed before app launch",
+  "fixture": "Hello World, 11 ASCII bytes, launch QR popup then CtrlK palette query qr",
+  "steps": [
+    "Fresh pointer Save587,506 opened native GTK Save dialog. Unique local filename entered and Save1182,900 clicked.",
+    "UI confirmed Saved full local path. Export is PNG522x522 grayscale8bit.",
+    "Second fresh pointer Save opened dialog. Cancel1091,900 returned Save cancelled. Exactly one export remains with unchanged hash.",
+    "Closed palette then QR popup normally. Session exit0; cleanup trap killed/waited its portal children. Post-exit portal/permission-store process list empty, no Bello windows remain."
+  ],
+  "export": {
+    "path": "local-only/text-tools-portal-hello-1012.png",
+    "bytes": 2861,
+    "sha256": "1fff722bea6218eb9fedc9bfca36a7a74615da223686a86931c3c070ac786cd6",
+    "dimensions": [
+      522,
+      522
+    ],
+    "count_after_cancel": 1
+  },
+  "start_utc": "2026-10-09T10:11:11,545051788+00:00",
+  "end_utc": "2026-10-09T10:13:01,093423163+00:00",
+  "observed_session_seconds": 109.548372,
+  "limits": "Session elapsed includes GUI interaction, not latency benchmark. No QR decode test in this focused run. No provider action/credential/network request invoked; transport counter not instrumented. Clipboard untouched by Save flow, no separate byte probe. X11 Copy Image remains unavailable.",
+  "conclusion": "Same candidate succeeds when FileChooser portal capability is available. Earlier candidate/baseline failures and executor socket-EPERM attempt preserved separately; no Text Tools-specific Save regression demonstrated.",
+  "prior_failure_receipt": "qr-save-differential.json",
+  "executor_attempt": "qr-portal-launch-attempt.json"
+}

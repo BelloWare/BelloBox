@@ -1,0 +1,16 @@
+{
+  "result": "Shared QR Save failure; Text Tools-specific regression not demonstrated; cause unresolved",
+  "candidate_sha256": "a40582a69013261f6ec0f9ee4d6e78aa221e13efc0dd1f089c2840f5b9e9a6d1",
+  "baseline_sha256": "45d32a1aeebd4b84124636b793dee3997b01677dbad3b5f6ea01953ea53a31ac",
+  "baseline_manifest_sha256": "e4b32434a399d4242f7717ad9fe63895ddcc968cce815199df5d76459ed2fd67",
+  "identical_fixture": "Hello World (11 ASCII bytes), palette query qr, fresh pointer Save click587,506",
+  "candidate_capture": "qr-save",
+  "baseline_capture": "baseline-qr-save",
+  "actual_message": "The system save dialog could not be opened.",
+  "dialog_seen": false,
+  "file_saved": false,
+  "candidate_exit": 0,
+  "baseline_exit": 0,
+  "diagnostics": "Both app logs empty. Read-only desktop terminal lookup found neither zenity nor xdg-desktop-portal on PATH and no portal/zenity process. Existing old portal log files are historical, not current-call errors. No explicit underlying portal error captured; absence alone does not prove cause. No installation or environment change performed.",
+  "capabilities_file": "portal-capabilities.txt"
+}

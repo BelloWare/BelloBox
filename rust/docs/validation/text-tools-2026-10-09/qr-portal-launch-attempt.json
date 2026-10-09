@@ -1,0 +1,13 @@
+{
+  "observed_window_utc": [
+    "2026-10-09T10:09:32Z",
+    "2026-10-09T10:09:56Z"
+  ],
+  "classification": "mixed observer launch attempts; inference time unavailable",
+  "command": "dbus-run-session -- bash /workspace/shared/box-text-portal-retest/launch.sh",
+  "ordinary_result": "exit127; failed to open socket: Operation not permitted",
+  "reviewed_escalated_result": "exit127; failed to open socket: Operation not permitted",
+  "app_started": false,
+  "gui_actions_performed": false,
+  "next": "Paused restricted launch and reported to root; no alternate route attempted"
+}

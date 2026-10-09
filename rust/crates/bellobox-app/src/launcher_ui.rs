@@ -19,6 +19,11 @@ struct Launcher {
     settings_writable: bool,
     notice: Option<String>,
     jobs: crate::session::SessionJobs,
+    text: Option<Entity<crate::launcher_text_ui::LauncherTextPreview>>,
+    text_subscriptions: Vec<Subscription>,
+    text_active: bool,
+    text_sized: bool,
+    text_opening: bool,
     json: Option<Entity<crate::launcher_json_ui::LauncherJsonPreview>>,
     json_subscriptions: Vec<Subscription>,
     json_active: bool,
@@ -80,8 +85,9 @@ impl Launcher {
             if window.is_window_active() {
                 this.was_active = true;
             } else if this.was_active
-                && (this.clock_active || this.json_active)
+                && (this.clock_active || this.json_active || this.text_active)
                 && !this.json_opening
+                && !this.text_opening
                 && !this.qr_save_pending(cx)
             {
                 // The compact source palette dismisses on deactivation. Limit
@@ -105,6 +111,11 @@ impl Launcher {
             settings_writable,
             notice,
             jobs: crate::session::SessionJobs::default(),
+            text: None,
+            text_subscriptions: Vec::new(),
+            text_active: false,
+            text_sized: false,
+            text_opening: false,
             json: None,
             json_subscriptions: Vec::new(),
             json_active: false,
@@ -139,6 +150,7 @@ impl Launcher {
                     this.closed = true;
                     this.discard_qr(cx);
                     this.discard_json(cx);
+                    this.discard_text(cx);
                     this.discard_clock(cx)
                 });
             }
@@ -235,6 +247,61 @@ impl Launcher {
             qr.update(cx, |qr, cx| qr.retire(cx));
         }
         self.qr_active = false;
+    }
+    fn discard_text(&mut self, cx: &mut Context<Self>) {
+        self.text_subscriptions.clear();
+        if let Some(text) = self.text.take() {
+            text.update(cx, |j, cx| j.retire(cx));
+        }
+        self.text_active = false;
+    }
+    fn route_text_key(
+        &mut self,
+        event: &KeyDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> bool {
+        if !self.text_active {
+            return false;
+        }
+        let Some(text) = self.text.clone() else {
+            return false;
+        };
+        if text.read(cx).menu_open() {
+            let search = self.query.read(cx).focus_handle(cx);
+            return text.update(cx, |t, cx| t.handle_key(event, &search, window, cx));
+        }
+        let key = event.keystroke.key.as_str();
+        let m = event.keystroke.modifiers;
+        if key == "escape"
+            && (self.suppress_escape || text.read(cx).owns_focus(window, cx))
+            && !m.platform
+            && !m.control
+            && !m.alt
+            && !m.shift
+        {
+            self.suppress_escape = true;
+            self.query.read(cx).focus(window);
+            window.prevent_default();
+            cx.stop_propagation();
+            return true;
+        }
+        if key == "k" && (m.platform || m.control) && !m.alt && !m.shift {
+            self.query.update(cx, |e, cx| e.set_text(String::new(), cx));
+            self.query.read(cx).focus(window);
+            window.prevent_default();
+            cx.stop_propagation();
+            return true;
+        }
+        if text.read(cx).output_focused(window, cx)
+            && !m.platform
+            && !m.control
+            && (key.chars().count() == 1 || key == "space")
+        {
+            self.query.read(cx).focus(window);
+        }
+        let search = self.query.read(cx).focus_handle(cx);
+        text.update(cx, |j, cx| j.handle_key(event, &search, window, cx))
     }
     fn discard_json(&mut self, cx: &mut Context<Self>) {
         self.json_subscriptions.clear();
@@ -378,6 +445,7 @@ impl Launcher {
             self.jobs.cancel();
             self.discard_qr(cx);
             self.discard_json(cx);
+            self.discard_text(cx);
             self.discard_clock(cx);
             crate::shutdown::close_window(window, cx);
         }
@@ -400,6 +468,10 @@ impl Launcher {
             return;
         }
         self.clock_active = false;
+        self.text_active = false;
+        if let Some(text) = &self.text {
+            text.update(cx, |t, _| t.set_active(false));
+        }
         self.json_active = false;
         if let Some(json) = &self.json {
             json.update(cx, |j, _| j.set_active(false));
@@ -417,6 +489,35 @@ impl Launcher {
                 .update(cx, |e, cx| e.set_text(String::new(), cx));
             return;
         };
+        if command.id == "textTools" {
+            if self.text.is_none() {
+                let text = cx.new(|cx| {
+                    crate::launcher_text_ui::LauncherTextPreview::new(
+                        self.input.clone(),
+                        window,
+                        cx,
+                    )
+                });
+                self.text_subscriptions
+                    .push(cx.observe(&text, |_, _, cx| cx.notify()));
+                self.text_subscriptions.push(cx.subscribe_in(
+                    &text,
+                    window,
+                    |this, _, _: &crate::launcher_text_ui::Open, window, cx| {
+                        if this.text_active {
+                            this.launch(window, cx);
+                        }
+                    },
+                ));
+                self.text = Some(text);
+            }
+            self.text_active = true;
+            if let Some(text) = &self.text {
+                text.update(cx, |j, _| j.set_active(true));
+            }
+            cx.notify();
+            return;
+        }
         if command.id == "json" {
             if self.json.is_none() {
                 let json = cx.new(|cx| {
@@ -532,6 +633,37 @@ impl Launcher {
             return;
         }
         if let Some(c) = self.commands(cx).get(self.selected).cloned() {
+            if c.id == "textTools" && self.text_active {
+                if !self.allow_close(cx) {
+                    return;
+                }
+                let Some(text) = &self.text else {
+                    return;
+                };
+                let handoff = match text.read(cx).session.read(cx).snapshot() {
+                    Ok(handoff) => handoff,
+                    Err(error) => {
+                        self.notice = Some(error);
+                        cx.notify();
+                        return;
+                    }
+                };
+                self.text_opening = true;
+                let result = crate::desktop::open_text_handoff(handoff, cx);
+                self.text_opening = false;
+                if let Err(error) = result {
+                    self.notice = Some(error);
+                    cx.notify();
+                    return;
+                }
+                self.discard_text(cx);
+                self.text_active = false;
+                // Retained/same-turn callbacks must not fall through to the
+                // generic original-input route while native Close is pending.
+                self.closed = true;
+                self.close(window, cx);
+                return;
+            }
             if c.id == "json" && self.json_active {
                 if !self.allow_close(cx) {
                     return;
@@ -630,6 +762,8 @@ impl Render for Launcher {
             || self.qr_sized
             || self.json_active
             || self.json_sized
+            || self.text_active
+            || self.text_sized
         {
             let natural = if self.clock_active {
                 clock_palette_height(count, !self.input.is_empty() || self.notice.is_some())
@@ -638,7 +772,7 @@ impl Render for Launcher {
                         .as_ref()
                         .map(|c| c.read(cx).height() - crate::launcher_clock_ui::PREVIEW_HEIGHT)
                         .unwrap_or(0.)
-            } else if self.json_active {
+            } else if self.json_active || self.text_active {
                 64. + if !self.input.is_empty() || self.notice.is_some() {
                     48.
                 } else {
@@ -676,6 +810,7 @@ impl Render for Launcher {
             self.clock_sized = self.clock_active;
             self.qr_sized = self.qr_active;
             self.json_sized = self.json_active;
+            self.text_sized = self.text_active;
         }
         self.selected = self.selected.min(count.saturating_sub(1));
         let best = launcher::suggestions(&self.input).first().copied();
@@ -696,6 +831,11 @@ impl Render for Launcher {
                     this.suppress_escape = false;
                 }
                 if this.query.read(cx).has_marked_text() {
+                    return;
+                }
+                if let Some(text) = &this.text
+                    && text.update(cx, |t, cx| t.handle_key_up(event, window, cx))
+                {
                     return;
                 }
                 if let Some(json) = &this.json
@@ -720,6 +860,9 @@ impl Render for Launcher {
                 this.physical_activation_keys
                     .observe(&event.keystroke.key, true);
                 if this.query.read(cx).has_marked_text() {
+                    return;
+                }
+                if this.route_text_key(event, window, cx) {
                     return;
                 }
                 if this.route_json_key(event, window, cx) {
@@ -894,6 +1037,7 @@ impl Render for Launcher {
                                 this.discard_clock(cx);
                                 this.discard_qr(cx);
                                 this.discard_json(cx);
+                                this.discard_text(cx);
                                 this.selected = 0;
                                 this.query
                                     .update(cx, |editor, cx| editor.set_text(String::new(), cx));
@@ -1035,6 +1179,14 @@ impl Render for Launcher {
                             .when(selected && self.qr_active, |s| {
                                 s.child(self.qr.as_ref().expect("active QR session").clone())
                             })
+                            .when(selected && self.text_active, |s| {
+                                s.child(
+                                    self.text
+                                        .as_ref()
+                                        .expect("active Text Tools preview")
+                                        .clone(),
+                                )
+                            })
                             .when(selected && self.json_active, |s| {
                                 s.child(self.json.as_ref().expect("active JSON session").clone())
                             })
@@ -1042,7 +1194,8 @@ impl Render for Launcher {
                                 selected
                                     && !self.clock_active
                                     && !self.qr_active
-                                    && !self.json_active,
+                                    && !self.json_active
+                                    && !self.text_active,
                                 |s| {
                                     s.child(
                                         div()
@@ -1115,6 +1268,7 @@ impl Render for Launcher {
                                             this.discard_clock(cx);
                                             this.discard_qr(cx);
                                             this.discard_json(cx);
+                                            this.discard_text(cx);
                                             this.selected = 0;
                                             this.query.update(cx, |editor, cx| {
                                                 editor.set_text(String::new(), cx)
@@ -1126,6 +1280,7 @@ impl Render for Launcher {
                                             this.discard_clock(cx);
                                             this.discard_qr(cx);
                                             this.discard_json(cx);
+                                            this.discard_text(cx);
                                             this.notice = Some(e);
                                             this.input.clear();
                                         }
@@ -1634,3 +1789,6 @@ mod qr_lifecycle_tests {
 
 #[cfg(test)]
 mod json_tests;
+
+#[cfg(test)]
+mod text_tests;

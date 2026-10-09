@@ -3,6 +3,7 @@ mod json;
 mod permissions;
 pub(crate) mod qr_jobs;
 mod snippets;
+mod text_tools;
 use bello_workbench_ui::{EditorAppearance, EditorEvent, EditorView};
 use bellobox_core::{
     launcher,
@@ -25,7 +26,9 @@ struct BelloBox {
     input: Entity<EditorView>,
     second: Entity<EditorView>,
     output: Entity<EditorView>,
-    text_category: usize,
+    text_session: Option<Entity<crate::text_tool_state::TextSession>>,
+    text_focus: Vec<gpui::FocusHandle>,
+    text_consume: [bool; 2],
     controls: crate::tool_controls::ToolControls,
     open_menu: Option<&'static str>,
     menu_index: usize,
@@ -127,7 +130,37 @@ impl BelloBox {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
+        Self::new_for_with_sessions(command, text, json, None, window, cx)
+    }
+    fn new_for_with_sessions(
+        command: String,
+        text: String,
+        json: Option<Entity<crate::json_session::JsonSession>>,
+        text_choices: Option<crate::text_tool_state::Choices>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
         let fixture = command;
+        let text_session = (fixture == "textTools").then(|| {
+            cx.new(|cx| {
+                let choices = text_choices.unwrap_or_default();
+                match bellobox_core::validate_input(&text) {
+                    Ok(()) => {
+                        crate::text_tool_state::TextSession::new(text.clone(), choices, false, cx)
+                    }
+                    Err(error) => {
+                        let mut s = crate::text_tool_state::TextSession::new(
+                            String::new(),
+                            choices,
+                            false,
+                            cx,
+                        );
+                        s.reject_input(error, cx);
+                        s
+                    }
+                }
+            })
+        });
         let json = json.or_else(|| {
             (fixture == "json").then(|| {
                 cx.new(|cx| match bellobox_core::validate_input(&text) {
@@ -181,7 +214,13 @@ impl BelloBox {
             input,
             second,
             output,
-            text_category: 0,
+            text_focus: if text_session.is_some() {
+                (0..21).map(|_| cx.focus_handle()).collect()
+            } else {
+                Vec::new()
+            },
+            text_consume: [false; 2],
+            text_session,
             controls,
             open_menu: None,
             menu_index: 0,
@@ -253,20 +292,17 @@ impl BelloBox {
             }
         });
         app.init_json(window, cx);
+        app.init_text(window, cx);
         app.init_snippets(window, cx);
         app.init_permissions(window, cx);
         if matches!(
             app.selected.as_str(),
-            "json" | "subnet" | "chmod" | "numberBase"
+            "json" | "textTools" | "subnet" | "chmod" | "numberBase"
         ) {
             app.input.read(cx).focus(window);
         }
         if app.selected == "ai" {
             app.input.update(cx, |e, cx| e.set_read_only(true, cx));
-        }
-        if app.selected == "textTools" {
-            app.second
-                .update(cx, |e, cx| e.set_text("upper".into(), cx));
         }
         if app.selected == "updates" {
             app.check_updates(cx);
@@ -280,6 +316,19 @@ impl BelloBox {
         app
     }
     fn run_tool(&mut self, cx: &mut Context<Self>) {
+        if let Some(session) = self.text_session.clone() {
+            let input = self.input.read(cx).text();
+            match bellobox_core::validate_input(input) {
+                Ok(()) => {
+                    let input = input.to_owned();
+                    let choices = session.read(cx).choices;
+                    session.update(cx, |s, cx| s.set_draft(input, choices, cx));
+                }
+                Err(error) => session.update(cx, |s, cx| s.reject_input(error, cx)),
+            }
+            self.sync_text(cx);
+            return;
+        }
         if let Some(session) = &self.json {
             let mode = crate::json_session::Mode::parse(self.second.read(cx).text());
             let input = self.input.read(cx).text();
@@ -1696,47 +1745,14 @@ impl BelloBox {
             .into_any_element()
     }
     fn render_text(&self, p: crate::theme::Palette, cx: &mut Context<Self>) -> gpui::AnyElement {
-        const CATEGORIES: [&str; 7] = [
-            "Case", "Encode", "Decode", "Pretty", "Hash", "Lines", "Count",
-        ];
-        let defaults = [
-            "upper", "base64", "decode", "pretty", "hash", "sort", "count",
-        ];
-        let options: &[(&str, &str)] = match self.text_category {
-            0 => &[
-                ("upper", "UPPERCASE"),
-                ("lower", "lowercase"),
-                ("title", "Title Case"),
-                ("sentence", "Sentence case"),
-                ("camel", "camelCase"),
-                ("pascal", "PascalCase"),
-                ("snake", "snake_case"),
-                ("kebab", "kebab-case"),
-                ("constant", "CONSTANT_CASE"),
-            ],
-            1 => &[
-                ("base64", "Base64"),
-                ("url", "URL"),
-                ("html", "HTML entities"),
-                ("hex", "Hex"),
-            ],
-            2 => &[
-                ("decode", "Auto-detect"),
-                ("decode-base64", "Base64"),
-                ("decode-url", "URL"),
-                ("decode-html", "HTML entities"),
-                ("decode-hex", "Hex"),
-            ],
-            5 => &[
-                ("sort", "Sort A → Z"),
-                ("sort-reverse", "Sort Z → A"),
-                ("reverse", "Reverse"),
-                ("unique", "Remove duplicates"),
-                ("nonempty", "Remove empty lines"),
-                ("trim", "Trim each line"),
-            ],
-            _ => &[],
-        };
+        use crate::text_tool_state::Category;
+        let choices = self
+            .text_session
+            .as_ref()
+            .expect("text host")
+            .read(cx)
+            .choices;
+        let options = choices.options();
         div()
             .size_full()
             .flex()
@@ -1756,28 +1772,13 @@ impl BelloBox {
                     .border_1()
                     .border_color(p.separator)
                     .bg(p.surface)
-                    .children(CATEGORIES.into_iter().enumerate().map(|(i, label)| {
-                        let selected = i == self.text_category;
-                        div()
-                            .id(("text-category", i))
+                    .children(Category::ALL.into_iter().enumerate().map(|(i, category)| {
+                        let label = category.label();
+                        let selected = category == choices.category;
+                        self.text_button(i, label, p, cx)
                             .flex_1()
-                            .h(px(26.))
-                            .flex()
-                            .items_center()
                             .justify_center()
-                            .rounded(px(5.))
-                            .text_size(px(12.))
                             .text_color(if selected { p.accent } else { p.secondary })
-                            .when(selected, |s| {
-                                s.border_1().border_color(p.separator).bg(p.surface)
-                            })
-                            .cursor_pointer()
-                            .child(label)
-                            .on_click(cx.listener(move |this, _, _, cx| {
-                                this.text_category = i;
-                                this.choose(defaults[i], cx);
-                                cx.notify();
-                            }))
                     })),
             )
             .child(
@@ -1785,14 +1786,8 @@ impl BelloBox {
                     .flex()
                     .flex_col()
                     .gap(px(4.))
-                    .child(self.input_actions("Input", p, cx))
-                    .child(editor_card(self.input.clone(), 132., p))
-                    .child(link("reset-input", "Reset", p).on_click(cx.listener(
-                        |this, _, _, cx| {
-                            this.input
-                                .update(cx, |e, cx| e.set_text(this.initial_text.clone(), cx))
-                        },
-                    ))),
+                    .child(self.text_input_actions(p, cx))
+                    .child(editor_card(self.input.clone(), 132., p)),
             )
             .child(div().h(px(1.)).bg(p.separator))
             .child(
@@ -1807,16 +1802,21 @@ impl BelloBox {
                     .child(div().flex().flex_wrap().gap(px(8.)).children(
                         options.iter().enumerate().map(|(i, (value, label))| {
                             let value = *value;
-                            let selected = self.second.read(cx).text() == value;
-                            button(("text-option", i), *label, p)
+                            let selected = choices.argument() == value;
+                            self.text_button(7 + i, label, p, cx)
                                 .w(px(150.))
                                 .h(px(34.))
                                 .justify_start()
                                 .text_color(if selected { p.accent } else { p.secondary })
                                 .bg(if selected { p.surface } else { p.well })
-                                .on_click(cx.listener(move |this, _, _, cx| this.choose(value, cx)))
                         }),
                     ))
+                    .child(
+                        div()
+                            .text_size(px(11.))
+                            .text_color(p.secondary)
+                            .child(choices.scope_note()),
+                    )
                     .child(editor_card(self.output.clone(), 210., p)),
             )
             .child(
@@ -1831,15 +1831,13 @@ impl BelloBox {
                             .text_color(p.secondary)
                             .child(self.error.clone().unwrap_or_else(|| self.status.clone())),
                     )
-                    .child(button("text-copy", "Copy Result", p).on_click(cx.listener(
-                        |this, _, _, cx| {
-                            cx.write_to_clipboard(ClipboardItem::new_string(
-                                this.output.read(cx).text().into(),
-                            ));
-                            this.status = "Result copied.".into();
-                            cx.notify();
-                        },
-                    ))),
+                    .when(
+                        self.text_session
+                            .as_ref()
+                            .is_some_and(|s| s.read(cx).can_chain()),
+                        |s| s.child(self.text_button(17, "Use as Input", p, cx)),
+                    )
+                    .child(self.text_button(18, "Copy Result", p, cx)),
             )
             .into_any_element()
     }
@@ -2015,6 +2013,9 @@ impl Render for BelloBox {
                 if this.selected == "qr" {
                     this.qr_activation_keys.observe(&event.keystroke.key, true);
                 }
+                if this.text_key(event, window, cx) {
+                    return;
+                }
                 if this.permission_tab(event, window, cx) {
                     return;
                 }
@@ -2048,17 +2049,37 @@ impl Render for BelloBox {
                     cx.notify();
                 }
             }))
-            .capture_key_up(cx.listener(|this, event: &gpui::KeyUpEvent, _, _| {
+            .capture_key_up(cx.listener(|this, event: &gpui::KeyUpEvent, window, cx| {
+                if this.text_key_up(event, window, cx) {
+                    return;
+                }
                 if this.selected == "qr" {
                     this.qr_activation_keys.observe(&event.keystroke.key, false);
                 }
             }))
             .on_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, window, cx| {
-                if this.json.is_some() && this.input.read(cx).has_marked_text() {
+                if (this.json.is_some() || this.text_session.is_some())
+                    && this.input.read(cx).has_marked_text()
+                {
                     return;
                 }
                 let command = event.keystroke.modifiers.platform
                     || cfg!(target_os = "linux") && event.keystroke.modifiers.control;
+                if command && this.text_session.is_some() {
+                    if event.keystroke.modifiers.shift && event.keystroke.key == "c" {
+                        this.text_copy(cx);
+                        cx.stop_propagation();
+                        return;
+                    }
+                    if !event.keystroke.modifiers.shift
+                        && let Ok(index) = event.keystroke.key.parse::<usize>()
+                        && (1..=7).contains(&index)
+                    {
+                        this.text_category(crate::text_tool_state::Category::ALL[index - 1], cx);
+                        cx.stop_propagation();
+                        return;
+                    }
+                }
                 if command
                     && event.keystroke.modifiers.shift
                     && event.keystroke.key == "c"
@@ -2086,6 +2107,12 @@ impl Render for BelloBox {
         perf("render_cpu", start.elapsed().as_micros());
         view
     }
+}
+pub(crate) fn open_text_handoff(
+    handoff: crate::text_tool_state::Handoff,
+    cx: &mut App,
+) -> Result<(), String> {
+    text_tools::open(handoff, cx)
 }
 pub(crate) fn open_json_handoff(
     session: Entity<crate::json_session::JsonSession>,
@@ -2154,7 +2181,7 @@ fn open_tool_with_clock_context(
 
     let (width, height, min_w, min_h) = match id {
         "qr" => (520., 620., 400., 480.),
-        "textTools" => (720., 660., 580., 520.),
+        "textTools" => (720., 660., 720., 520.),
         "ai" => (720., 600., 580., 480.),
         _ => (820., 660., 740., 560.),
     };
@@ -2239,3 +2266,19 @@ mod quit_tests;
 
 #[cfg(test)]
 mod qr_clipboard_tests;
+
+#[cfg(test)]
+pub(crate) fn text_window_state(
+    window: gpui::AnyWindowHandle,
+    cx: &mut App,
+) -> Option<(String, crate::text_tool_state::Choices)> {
+    window
+        .downcast::<BelloBox>()?
+        .update(cx, |v, _, cx| {
+            v.text_session
+                .as_ref()
+                .map(|s| (v.input.read(cx).text().to_owned(), s.read(cx).choices))
+        })
+        .ok()
+        .flatten()
+}

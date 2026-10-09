@@ -1,0 +1,50 @@
+{
+  "result": "PASS for exercised Text Tools workflow, qualified coverage",
+  "environment": "Actual ordinary sealed Linux X11 GUI, Sky CUA, software lavapipe, 1364x1024 desktop, light appearance",
+  "before": {
+    "utc": "2026-10-09T09:47:01.540734+00:00",
+    "binary": "a40582a69013261f6ec0f9ee4d6e78aa221e13efc0dd1f089c2840f5b9e9a6d1",
+    "manifest": "a0667e7fc8f47e37f29717222bb68e251f01afa61f9639c8626d101d4fd9933f",
+    "source_match": true
+  },
+  "after": {
+    "utc": "2026-10-09T10:00:48.203524+00:00",
+    "binary": "a40582a69013261f6ec0f9ee4d6e78aa221e13efc0dd1f089c2840f5b9e9a6d1",
+    "manifest": "a0667e7fc8f47e37f29717222bb68e251f01afa61f9639c8626d101d4fd9933f",
+    "source_match": true,
+    "exit": "0"
+  },
+  "observed_workflow_seconds": 826.66279,
+  "timing_scope": "Preflight to post-exit hash verification wall time, includes interaction and inspection; not a render-latency benchmark",
+  "observed": [
+    "Started Hello World. Initial popup Uppercase HELLO WORLD. Ctrl+K compact preview has seven categories and no editor or chain.",
+    "Case dropdown keyboard six Down then Return selected snake_case; Escape dismissed menu. Encode URL produced Hello%20World; explicit Copy pasted exact output into query. Query native Copy retained text tools rather than result.",
+    "Decode Auto-detect and explicit Base64 reported errors, disabled Copy and removed stale URL output. Pretty disclosed JSON-only and rejected Hello World. Lines disclosed ordinal ordering, Remove duplicates selected. Count showed 11 scalars,10 without whitespace,2 words,1 line,~4 tokens with caveats.",
+    "Hash individual MD5 Copy pasted b10a8db164e0754105b7a99be72e3fe5 into query. Full popup Ctrl+Shift+C copied all four hash lines, verified by pasting into input including complete SHA512 ending 1447f459b.",
+    "Query changed to Clock then back. Count and snake/URL/Base64/Remove duplicates retained. Return opened a separate popup carrying Hello World and all four options. Palette closed and original popup survived.",
+    "Base64 Encode output SGVsbG8gV29ybGQ= chained as input, Decode Base64 recovered Hello World. Decode output chained, Case snake result chained hello_world. Reset restored original Hello World. Sequential screenshots were used where immediately batched controls had not settled.",
+    "Ctrl+1,2,3,5,6,7 exercised categories. Hash and Count excluded Use as Input. Ctrl+N created third empty/default Uppercase window. Entered third, native editor Copy/delete/Paste preserved lowercase third while output THIRD. Tab/backward Tab returned focus.",
+    "Resized second popup to measured720x520 minimum. Count/footer readable. Case wrapped options; result below fold reached by scrolling down then up135 pixels, displayed fresh_input for edited fresh input. Copy/Use as Input footer stayed usable.",
+    "Closed third window; second preserved fresh input. Closed second; original still Hello World/Uppercase. Reopened palette fresh default Uppercase and empty query. Held Space700ms on category did not type into query; Escape routed focus back, subsequent qr typed into query. Fresh Escape from query closed palette.",
+    "Clock preview and JSON invalid-input preview navigation rendered. QR Hello World rendered; Save failure recorded separately. All owned windows closed normally, exit0."
+  ],
+  "invariants": {
+    "binary_and_manifest_unchanged": true,
+    "all_eight_source_postimages_match_before_after": true,
+    "original_input_preserved": "Observed Hello World in original window after independent edits; Reset returned exact displayed original ASCII",
+    "clipboard": "Synthetic clipboard intentionally changed by Copy checks; outputs verified by UI paste",
+    "persistent_data": "Isolated app-config/settings.json contains recents/usage and defaults, no synthetic input payload. No Agent stores touched. No storage-byte invariance claim for expected recents writes.",
+    "provider": "No provider actions, credentials or requests invoked. Transport counter not instrumented; no measured network-zero claim.",
+    "screenshots": "Local only; not published"
+  },
+  "limitations": [
+    "Oversized explicit Paste/copy invalidation and failure injection remain deterministic test coverage, not exercised interactively.",
+    "Dark appearance, exhaustive held Return/repeat combinations, every category shortcut and all individual hash buttons not tested.",
+    "Selected output-native Copy was not separately tested; whole-result and editor/query ownership were.",
+    "No native macOS or full Swift parity claim. Pretty JSON-only, scalar count/generic tokens, ordinal sorting remain visible known gaps."
+  ],
+  "cleanup": {
+    "exit_code": 0,
+    "all_owned_windows_closed": true
+  }
+}

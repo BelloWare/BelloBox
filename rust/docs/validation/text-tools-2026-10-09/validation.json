@@ -1,0 +1,256 @@
+{
+  "base_commit": "0c4a610c9e3aff8fdc9fe7aaf903c7412e95397e",
+  "base_tree": "a66faf5cdfedf2312d4542ed38e603114ef8f858",
+  "swift_spec": "e43b1c4595c42383e087fe70f38c28d07c31dda0",
+  "scope": "Text Tools palette choices and fresh popup value snapshot; bounded local state and protected copy/chain/reset",
+  "historical_checks": [
+    {
+      "command": "cargo test --locked -p bellobox-app text_ -- --test-threads=2",
+      "start_utc": "2026-10-09T09:33:26Z",
+      "end_utc": "2026-10-09T09:33:38Z",
+      "result": "compile failure: child adapter methods private to module and missing Focusable import; corrected before next run",
+      "log": "focused-initial.log"
+    },
+    {
+      "command": "cargo test --locked -p bellobox-app text_ -- --test-threads=2",
+      "start_utc": "2026-10-09T09:38:40Z",
+      "end_utc": "2026-10-09T09:39:04Z",
+      "result": "31 passed; 24 new Text Tools tests plus existing name matches; before mechanical Clippy dereference cleanup"
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "start_utc": "2026-10-09T09:39:53.835004+00:00",
+      "end_utc": "2026-10-09T09:39:55.573388+00:00",
+      "observed_elapsed_seconds": 1.738,
+      "exit_code": 0,
+      "log": "final-format.log"
+    },
+    {
+      "name": "strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_utc": "2026-10-09T09:39:55.574120+00:00",
+      "end_utc": "2026-10-09T09:40:04.721306+00:00",
+      "observed_elapsed_seconds": 9.147,
+      "exit_code": 101,
+      "log": "final-strict.log"
+    }
+  ],
+  "pending": [
+    "exact-commit Linux/macOS CI",
+    "native interactive acceptance"
+  ],
+  "source_review": "One blocker found in reused explicit Paste path: rejected clipboard input left previous result copyable. Fixed only in Text Tools with retained editor draft and synchronous size admission; regression passed. All-four-option actual launcher->popup coverage added. Review is not test execution.",
+  "engine_gaps": [
+    "JSON-only Pretty unlike Swift Text Tools reindent/XML/HTML/code",
+    "ordinal line sorting versus localized case-insensitive ordering",
+    "Unicode-scalar counts and generic token heuristic; model/provider controls absent",
+    "full Unicode case/decode equivalence not claimed"
+  ],
+  "unchanged_gates": [
+    "selection/replace",
+    "capture/recording/movie",
+    "provider consent and production OCR upload",
+    "vault and credentials",
+    "shared editor/dependencies/lockfile"
+  ],
+  "timing_note": "Observed command wall times and separate mixed task windows only; overlapping work is not additive. Model inference timing unavailable.",
+  "final_checks": [
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "start_utc": "2026-10-09T09:41:01.429802+00:00",
+      "end_utc": "2026-10-09T09:41:03.055954+00:00",
+      "observed_elapsed_seconds": 1.626,
+      "exit_code": 0,
+      "log": "final-format.log"
+    },
+    {
+      "name": "strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_utc": "2026-10-09T09:41:03.056985+00:00",
+      "end_utc": "2026-10-09T09:41:09.650490+00:00",
+      "observed_elapsed_seconds": 6.594,
+      "exit_code": 0,
+      "log": "final-strict.log"
+    },
+    {
+      "name": "default-app",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--",
+        "--test-threads=2"
+      ],
+      "start_utc": "2026-10-09T09:41:09.652278+00:00",
+      "end_utc": "2026-10-09T09:43:07.168634+00:00",
+      "observed_elapsed_seconds": 117.516,
+      "exit_code": 0,
+      "log": "final-default-app.log"
+    },
+    {
+      "name": "recording-app",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "recording-fixtures",
+        "--",
+        "--test-threads=2"
+      ],
+      "start_utc": "2026-10-09T09:43:07.169569+00:00",
+      "end_utc": "2026-10-09T09:45:27.525812+00:00",
+      "observed_elapsed_seconds": 140.356,
+      "exit_code": 0,
+      "log": "final-recording-app.log"
+    },
+    {
+      "name": "recording-strict",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--features",
+        "recording-fixtures",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start_utc": "2026-10-09T09:45:27.528302+00:00",
+      "end_utc": "2026-10-09T09:45:35.216260+00:00",
+      "observed_elapsed_seconds": 7.688,
+      "exit_code": 0,
+      "log": "final-recording-strict.log"
+    },
+    {
+      "name": "minimal",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "-p",
+        "bellobox-app",
+        "--no-default-features"
+      ],
+      "start_utc": "2026-10-09T09:45:35.217089+00:00",
+      "end_utc": "2026-10-09T09:45:39.094649+00:00",
+      "observed_elapsed_seconds": 3.878,
+      "exit_code": 0,
+      "log": "final-minimal.log"
+    },
+    {
+      "name": "clean-app",
+      "command": [
+        "cargo",
+        "clean",
+        "-p",
+        "bellobox-app"
+      ],
+      "start_utc": "2026-10-09T09:45:39.095548+00:00",
+      "end_utc": "2026-10-09T09:45:39.215613+00:00",
+      "observed_elapsed_seconds": 0.12,
+      "exit_code": 0,
+      "log": "final-clean-app.log"
+    },
+    {
+      "name": "ordinary-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "bellobox-app"
+      ],
+      "start_utc": "2026-10-09T09:45:39.216425+00:00",
+      "end_utc": "2026-10-09T09:45:49.846825+00:00",
+      "observed_elapsed_seconds": 10.63,
+      "exit_code": 0,
+      "log": "final-ordinary-build.log"
+    }
+  ],
+  "results": {
+    "default_app": {
+      "passed": 493,
+      "ignored_existing": 2
+    },
+    "recording_app": {
+      "passed": 509,
+      "ignored_existing": 2
+    },
+    "new_text_tools_tests": 24
+  },
+  "ordinary_binary": {
+    "sealed_utc": "2026-10-09T09:46:06.886239+00:00",
+    "binary_sha256": "a40582a69013261f6ec0f9ee4d6e78aa221e13efc0dd1f089c2840f5b9e9a6d1",
+    "binary_bytes": 147103592,
+    "source_manifest_sha256": "a0667e7fc8f47e37f29717222bb68e251f01afa61f9639c8626d101d4fd9933f",
+    "configuration": "ordinary default features; package-clean; no movie-fixtures/recording-fixtures flags; non-test binary"
+  },
+  "mixed_task_window": {
+    "start_utc": "2026-10-09T09:22:54Z",
+    "end_utc": "2026-10-09T09:46:19Z",
+    "qualification": "Interleaved source/test writing, review/fixes, waiting for shared build lane, focused/broad checks, docs and sealing. Includes/overlaps commands; not additive or inference timing."
+  },
+  "gui_acceptance": {
+    "result": "Qualified pass for observed ordinary Linux Text Tools workflow",
+    "receipt": "gui-acceptance.json",
+    "ordinary_binary_sha256": "a40582a69013261f6ec0f9ee4d6e78aa221e13efc0dd1f089c2840f5b9e9a6d1",
+    "limitations": "Oversized Paste/failure injection synthetic-only; dark appearance/exhaustive held-key combinations/output-selection Copy not separately observed."
+  },
+  "shared_qr_save_failure": {
+    "receipt": "qr-save-differential.json",
+    "result": "Historical same-session failure on candidate and previous0c4 without the required FileChooser test-session backend. Preserved differential; unchanged candidate subsequently passed with existing official portal capability."
+  },
+  "mixed_evidence_window": {
+    "start_utc": "2026-10-09T09:46:19Z",
+    "end_utc": "2026-10-09T10:04:25Z",
+    "qualification": "Documentation/LOC evidence, awaiting actual GUI and focused QR Save baseline differential; overlaps peer GUI observed window, not additive."
+  },
+  "qr_portal_retest": {
+    "receipt": "qr-portal-retest.json",
+    "result": "PASS isolated-portal palette QR Save and Cancel on unchanged Text Tools ordinary binary",
+    "observed_session_seconds": 109.548372,
+    "no_product_change": true
+  }
+}

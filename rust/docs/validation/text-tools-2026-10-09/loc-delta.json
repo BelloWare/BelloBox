@@ -1,0 +1,305 @@
+{
+  "base_commit": "0c4a610c9e3aff8fdc9fe7aaf903c7412e95397e",
+  "baseline_ledger_path": "rust/docs/validation/json-formatter-2026-10-09/loc/ledger.json",
+  "baseline_ledger_sha256": "6909641763904cbaa2b0a594fa46352d55586ecdf8134636900bf563846f0289",
+  "baseline_counts": {
+    "production": 59595,
+    "support": 43168,
+    "benchmark": 105
+  },
+  "delta": {
+    "production": 1387,
+    "support": 1189,
+    "benchmark": 0
+  },
+  "cumulative_counts": {
+    "production": 60982,
+    "support": 44357,
+    "benchmark": 105
+  },
+  "changed_files": [
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "before": {
+        "sha256": "008d3d26378d60988e81cdb0f78614244be47a50d12c0fb29a442e16a21c7dee",
+        "physical_lines": 2241,
+        "nonblank": 2232,
+        "support_ranges_1based": [
+          [
+            2237,
+            2241
+          ]
+        ],
+        "counts": {
+          "production": 2228,
+          "support": 4,
+          "benchmark": 0
+        }
+      },
+      "after": {
+        "sha256": "87fba6d2fcd83d43f609ac678a79fc2b2fe3578afa159713f25f196d8540f5ea",
+        "physical_lines": 2284,
+        "nonblank": 2274,
+        "support_ranges_1based": [
+          [
+            2264,
+            2284
+          ]
+        ],
+        "counts": {
+          "production": 2255,
+          "support": 19,
+          "benchmark": 0
+        }
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/text_tools.rs",
+      "before": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "physical_lines": 0,
+        "nonblank": 0,
+        "support_ranges_1based": [],
+        "counts": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        }
+      },
+      "after": {
+        "sha256": "548064b13d90cfcfeb05fc9ac36ffb2d4a0abe9745a3cf14a5ae554b7d69c429",
+        "physical_lines": 306,
+        "nonblank": 304,
+        "support_ranges_1based": [
+          [
+            123,
+            124
+          ]
+        ],
+        "counts": {
+          "production": 302,
+          "support": 2,
+          "benchmark": 0
+        }
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/text_tools/tests.rs",
+      "before": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "physical_lines": 0,
+        "nonblank": 0,
+        "support_ranges_1based": [],
+        "counts": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        }
+      },
+      "after": {
+        "sha256": "bedac93ddfb6c2e93fe2ae93f9aa85b88f4cad4603e1101f367ba59e752cf9ca",
+        "physical_lines": 268,
+        "nonblank": 266,
+        "support_ranges_1based": [
+          [
+            1,
+            268
+          ]
+        ],
+        "counts": {
+          "production": 0,
+          "support": 266,
+          "benchmark": 0
+        }
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_text_ui.rs",
+      "before": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "physical_lines": 0,
+        "nonblank": 0,
+        "support_ranges_1based": [],
+        "counts": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        }
+      },
+      "after": {
+        "sha256": "19ad95ff0540ead8488883ee1f8a5f65ccabb7e6e6bc117885c8d531737bb290",
+        "physical_lines": 373,
+        "nonblank": 370,
+        "support_ranges_1based": [
+          [
+            139,
+            142
+          ]
+        ],
+        "counts": {
+          "production": 366,
+          "support": 4,
+          "benchmark": 0
+        }
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+      "before": {
+        "sha256": "2a693a0b49529e53665dcc00d7afeb0c933f7b028fc8b73b2300b2eb8509745a",
+        "physical_lines": 1636,
+        "nonblank": 1631,
+        "support_ranges_1based": [
+          [
+            1169,
+            1636
+          ]
+        ],
+        "counts": {
+          "production": 1166,
+          "support": 465,
+          "benchmark": 0
+        }
+      },
+      "after": {
+        "sha256": "870e498c5857deefdc75fa8631e10f8d3f975ffd2ecf22e74954dfa4de68dd8c",
+        "physical_lines": 1794,
+        "nonblank": 1788,
+        "support_ranges_1based": [
+          [
+            1324,
+            1794
+          ]
+        ],
+        "counts": {
+          "production": 1321,
+          "support": 467,
+          "benchmark": 0
+        }
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/text_tests.rs",
+      "before": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "physical_lines": 0,
+        "nonblank": 0,
+        "support_ranges_1based": [],
+        "counts": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        }
+      },
+      "after": {
+        "sha256": "a5e02611fdb9b327db9259602f98ce68298c78096279d7a84fea6fc55f7d1d08",
+        "physical_lines": 239,
+        "nonblank": 237,
+        "support_ranges_1based": [
+          [
+            1,
+            239
+          ]
+        ],
+        "counts": {
+          "production": 0,
+          "support": 237,
+          "benchmark": 0
+        }
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "before": {
+        "sha256": "6a3a3e950f430f0f5e722e93979d820ee71a7a7bbb01a9a31d839e7deab12035",
+        "physical_lines": 181,
+        "nonblank": 180,
+        "support_ranges_1based": [],
+        "counts": {
+          "production": 180,
+          "support": 0,
+          "benchmark": 0
+        }
+      },
+      "after": {
+        "sha256": "75579bb0ccabbd12a04f02536671baee436ac77e5e7e2e7d16e3f34f624189b3",
+        "physical_lines": 183,
+        "nonblank": 182,
+        "support_ranges_1based": [],
+        "counts": {
+          "production": 182,
+          "support": 0,
+          "benchmark": 0
+        }
+      }
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/text_tool_state.rs",
+      "before": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "physical_lines": 0,
+        "nonblank": 0,
+        "support_ranges_1based": [],
+        "counts": {
+          "production": 0,
+          "support": 0,
+          "benchmark": 0
+        }
+      },
+      "after": {
+        "sha256": "6197c4420d2d98bea5a272d048dd3f01441b63281d5b8af38c565d26501d1391",
+        "physical_lines": 1222,
+        "nonblank": 1198,
+        "support_ranges_1based": [
+          [
+            43,
+            50
+          ],
+          [
+            303,
+            304
+          ],
+          [
+            336,
+            337
+          ],
+          [
+            348,
+            351
+          ],
+          [
+            401,
+            417
+          ],
+          [
+            458,
+            472
+          ],
+          [
+            539,
+            545
+          ],
+          [
+            549,
+            556
+          ],
+          [
+            610,
+            1222
+          ]
+        ],
+        "counts": {
+          "production": 535,
+          "support": 663,
+          "benchmark": 0
+        }
+      }
+    }
+  ],
+  "product_files": 214,
+  "excluded_evidence_nonblank": 115,
+  "method": "Nonblank physical Rust lines including comments; exact positive cfg(test) spans and their children are support; production feature gates remain production. Unchanged inventory hashes verified. Shared editor counted once under Box, not again under Agent. No benchmark changes.",
+  "shared_counted_once": true,
+  "inference_time": "unavailable",
+  "complete_inventory_ledger_sha256": "0a56b2ca151b55b8715407d325806328352a893f92d9cb68213025ebf0be1ab2"
+}

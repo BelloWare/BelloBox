@@ -928,3 +928,17 @@ not changed. See the [formatter validation record](validation/json-formatter-202
 for tests, actual source-mutant controls, native host/vector scope and incremental
 ordinary Linux GUI acceptance. Native deployed-runtime equivalence, every Unicode
 edge/version, error strings and Workbench validation-count parity remain open.
+
+
+## Text Tools palette snapshot workflow (2026-10-09)
+
+The interactive compact row now retains seven categories and four independent
+operation choices, complete Copy and structured hash/count presentation. It has
+no compact input editor or chaining action. Open takes a value snapshot into a
+fresh popup owner; it does not reuse the JSON shared-session transfer. Popup
+Paste/Clear/Reset, per-category retention, guarded Copy/chain, input focus and
+source minimum dimensions complete the bounded offline workflow. Explicit
+oversized Paste preserves the rejected local draft and invalidates old output.
+See [scope and evidence](palette-text-tools.md). JSON-only Pretty, ordinal sorting,
+scalar counts/generic tokens and native selection/Replace limitations remain
+visible; this is not full engine or native macOS parity.

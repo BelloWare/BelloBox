@@ -1,0 +1,48 @@
+{
+  "base_commit": "0c4a610c9e3aff8fdc9fe7aaf903c7412e95397e",
+  "base_tree": "a66faf5cdfedf2312d4542ed38e603114ef8f858",
+  "files": [
+    {
+      "path": "rust/crates/bellobox-app/src/desktop.rs",
+      "sha256": "87fba6d2fcd83d43f609ac678a79fc2b2fe3578afa159713f25f196d8540f5ea",
+      "bytes": 93380
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/text_tools.rs",
+      "sha256": "548064b13d90cfcfeb05fc9ac36ffb2d4a0abe9745a3cf14a5ae554b7d69c429",
+      "bytes": 11151
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/desktop/text_tools/tests.rs",
+      "sha256": "bedac93ddfb6c2e93fe2ae93f9aa85b88f4cad4603e1101f367ba59e752cf9ca",
+      "bytes": 9025
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_text_ui.rs",
+      "sha256": "19ad95ff0540ead8488883ee1f8a5f65ccabb7e6e6bc117885c8d531737bb290",
+      "bytes": 15976
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui.rs",
+      "sha256": "870e498c5857deefdc75fa8631e10f8d3f975ffd2ecf22e74954dfa4de68dd8c",
+      "bytes": 74167
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/launcher_ui/text_tests.rs",
+      "sha256": "a5e02611fdb9b327db9259602f98ce68298c78096279d7a84fea6fc55f7d1d08",
+      "bytes": 7848
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/main.rs",
+      "sha256": "75579bb0ccabbd12a04f02536671baee436ac77e5e7e2e7d16e3f34f624189b3",
+      "bytes": 10119
+    },
+    {
+      "path": "rust/crates/bellobox-app/src/text_tool_state.rs",
+      "sha256": "6197c4420d2d98bea5a272d048dd3f01441b63281d5b8af38c565d26501d1391",
+      "bytes": 44310
+    }
+  ],
+  "cargo_lock_sha256": "222781fafc842dd19d132664d33dfffbd51b1fc3bc9c42932461ce2e90b1c097",
+  "changes": "App Text Tools workflow only; no core/shared editor/dependency/gate changes"
+}
