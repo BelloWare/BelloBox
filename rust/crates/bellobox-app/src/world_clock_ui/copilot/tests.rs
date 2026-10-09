@@ -31,6 +31,7 @@ fn accept(listener: &TcpListener) -> TcpStream {
         match listener.accept() {
             Ok((socket, address)) => {
                 assert!(address.ip().is_loopback());
+                socket.set_nonblocking(false).unwrap();
                 return socket;
             }
             Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
@@ -73,6 +74,43 @@ fn read_request(socket: &mut TcpStream) -> String {
     }
     String::from_utf8(bytes).unwrap()
 }
+#[test]
+fn fixture_reader_waits_for_delayed_request_bytes() {
+    const HEADERS: &str = "POST /fixture HTTP/1.1\r\nContent-Length: 4\r\n\r\n";
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let mut client = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
+    client
+        .set_write_timeout(Some(Duration::from_secs(5)))
+        .unwrap();
+    let (started, reading) = mpsc::channel();
+    let (finished, result) = mpsc::channel();
+    let server = std::thread::spawn(move || {
+        let mut socket = accept(&listener);
+        started.send(()).unwrap();
+        let request = read_request(&mut socket);
+        assert_eq!(socket.read_timeout().unwrap(), Some(Duration::from_secs(5)));
+        finished.send(request).unwrap();
+    });
+    reading.recv_timeout(Duration::from_secs(5)).unwrap();
+    // No bytes are available yet; a nonblocking accepted socket fails here.
+    assert_eq!(
+        result.recv_timeout(Duration::from_millis(100)),
+        Err(mpsc::RecvTimeoutError::Timeout)
+    );
+    client.write_all(HEADERS.as_bytes()).unwrap();
+    // Receiving the headers must still wait for the delayed request body.
+    assert_eq!(
+        result.recv_timeout(Duration::from_millis(100)),
+        Err(mpsc::RecvTimeoutError::Timeout)
+    );
+    client.write_all(b"test").unwrap();
+    assert_eq!(
+        result.recv_timeout(Duration::from_secs(5)).unwrap(),
+        format!("{HEADERS}test")
+    );
+    server.join().unwrap();
+}
+
 fn respond(socket: &mut TcpStream, answer: &str) {
     let delta = serde_json::json!({"choices":[{"delta":{"content":answer}}]});
     let body = format!("data: {delta}\n\ndata: [DONE]\n\n");
