@@ -250,8 +250,8 @@ pub fn config_dir() -> PathBuf {
     }
     #[cfg(target_os = "macos")]
     {
-        return PathBuf::from(std::env::var_os("HOME").unwrap_or_default())
-            .join("Library/Application Support/BelloBox/Rust");
+        PathBuf::from(std::env::var_os("HOME").unwrap_or_default())
+            .join("Library/Application Support/BelloBox/Rust")
     }
     #[cfg(not(target_os = "macos"))]
     {
