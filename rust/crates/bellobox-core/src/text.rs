@@ -250,14 +250,70 @@ pub enum LineOperation {
 fn normalized_newlines(text: &str) -> String {
     text.replace("\r\n", "\n").replace('\r', "\n")
 }
+/// Swift `CharacterSet.whitespaces` as Foundation reports it: tab, the space
+/// separators (Zs) and U+200B, per the pinned TextTransforms oracle. Unlike
+/// `char::is_whitespace`, it excludes U+000B/U+000C, U+0085, U+2028 and U+2029.
+fn is_swift_whitespace(c: char) -> bool {
+    matches!(
+        c,
+        '\t' | ' ' | '\u{a0}' | '\u{1680}' | '\u{2000}'
+            ..='\u{200b}' | '\u{202f}' | '\u{205f}' | '\u{3000}'
+    )
+}
+/// Stable caseless order outside macOS, approximating Foundation's
+/// `localizedCaseInsensitiveCompare`: case is ignored and accents only break
+/// ties. Locale-specific collation (punctuation, script order) is not modeled.
+fn portable_caseless_sort(rows: &mut Vec<String>, descending: bool) {
+    let keys: Vec<(String, String)> = rows
+        .iter()
+        .map(|row| {
+            let decomposed: Vec<char> = row.nfd().collect();
+            let primary = decomposed
+                .iter()
+                .filter(|c| !unicode_normalization::char::is_combining_mark(**c))
+                .flat_map(|c| c.to_lowercase())
+                .collect();
+            let secondary = decomposed.iter().flat_map(|c| c.to_lowercase()).collect();
+            (primary, secondary)
+        })
+        .collect();
+    let mut order: Vec<usize> = (0..rows.len()).collect();
+    order.sort_by(|&a, &b| {
+        let ordering = keys[a].cmp(&keys[b]);
+        if descending {
+            ordering.reverse()
+        } else {
+            ordering
+        }
+    });
+    let mut taken: Vec<Option<String>> = rows.drain(..).map(Some).collect();
+    rows.extend(order.into_iter().filter_map(|index| taken[index].take()));
+}
+/// Sort A→Z / Z→A like Swift `LineTool`, using `sorter` for the collation (the
+/// app passes Foundation's on macOS). A sorter that returns `false` could not
+/// sort, and the portable caseless order is used instead.
+pub fn lines_sorted_with(
+    text: &str,
+    descending: bool,
+    sorter: &dyn Fn(&mut Vec<String>, bool) -> bool,
+) -> String {
+    let mut rows: Vec<String> = normalized_newlines(text)
+        .split('\n')
+        .map(str::to_owned)
+        .collect();
+    if !sorter(&mut rows, descending) {
+        portable_caseless_sort(&mut rows, descending);
+    }
+    rows.join("\n")
+}
 pub fn lines(text: &str, operation: LineOperation) -> String {
     let mut rows: Vec<String> = normalized_newlines(text)
         .split('\n')
         .map(str::to_owned)
         .collect();
     match operation {
-        LineOperation::Sort => rows.sort(),
-        LineOperation::SortReverse => rows.sort_by(|a, b| b.cmp(a)),
+        LineOperation::Sort => portable_caseless_sort(&mut rows, false),
+        LineOperation::SortReverse => portable_caseless_sort(&mut rows, true),
         LineOperation::Reverse => rows.reverse(),
         LineOperation::Unique => {
             let mut seen = HashSet::new();
@@ -265,8 +321,13 @@ pub fn lines(text: &str, operation: LineOperation) -> String {
             // original spelling, including empty rows; normalize only the key.
             rows.retain(|s| seen.insert(s.nfc().collect::<String>()));
         }
-        LineOperation::Nonempty => rows.retain(|s| !s.trim().is_empty()),
-        LineOperation::Trim => rows = rows.iter().map(|s| s.trim().to_owned()).collect(),
+        LineOperation::Nonempty => rows.retain(|s| !s.trim_matches(is_swift_whitespace).is_empty()),
+        LineOperation::Trim => {
+            rows = rows
+                .iter()
+                .map(|s| s.trim_matches(is_swift_whitespace).to_owned())
+                .collect()
+        }
     }
     rows.join("\n")
 }
@@ -443,5 +504,82 @@ mod tests {
             hashes("hello")
                 .contains("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824")
         );
+    }
+    #[test]
+    fn trim_and_remove_empty_follow_swift_whitespaces() {
+        // Members and non-members measured by the pinned Swift TextTransforms oracle.
+        for (scalar, member) in [
+            ('\u{9}', true),
+            ('\u{a0}', true),
+            ('\u{1680}', true),
+            ('\u{2003}', true),
+            ('\u{200b}', true),
+            ('\u{202f}', true),
+            ('\u{205f}', true),
+            ('\u{3000}', true),
+            ('\u{b}', false),
+            ('\u{c}', false),
+            ('\u{85}', false),
+            ('\u{2028}', false),
+            ('\u{2029}', false),
+            ('\u{feff}', false),
+        ] {
+            let padded = format!("{scalar}x{scalar}");
+            let alone = scalar.to_string();
+            assert_eq!(
+                lines(&padded, LineOperation::Trim),
+                if member {
+                    "x".to_owned()
+                } else {
+                    padded.clone()
+                },
+                "{scalar:?}"
+            );
+            assert_eq!(
+                lines(&alone, LineOperation::Trim),
+                if member { String::new() } else { alone.clone() },
+                "{scalar:?}"
+            );
+            assert_eq!(
+                lines(&padded, LineOperation::Nonempty),
+                padded,
+                "{scalar:?}"
+            );
+            assert_eq!(
+                lines(&alone, LineOperation::Nonempty),
+                if member { String::new() } else { alone.clone() },
+                "{scalar:?}"
+            );
+        }
+    }
+    #[test]
+    fn portable_sort_ignores_case_breaks_ties_by_accent_and_is_stable() {
+        let input = "b\nB\na\nA\ncafé\ncafe\nZebra\napple";
+        assert_eq!(
+            lines(input, LineOperation::Sort),
+            "a\nA\napple\nb\nB\ncafe\ncafé\nZebra"
+        );
+        // Equal keys keep their input order in both directions, as Swift's sort does.
+        assert_eq!(
+            lines(input, LineOperation::SortReverse),
+            "Zebra\ncafé\ncafe\nb\nB\napple\na\nA"
+        );
+    }
+    #[test]
+    fn injected_sorter_is_used_and_a_declining_sorter_falls_back() {
+        let reversed = |rows: &mut Vec<String>, descending: bool| {
+            rows.sort();
+            if !descending {
+                rows.reverse();
+            }
+            true
+        };
+        assert_eq!(lines_sorted_with("a\r\nc\rb", false, &reversed), "c\nb\na");
+        let declines = |_: &mut Vec<String>, _: bool| false;
+        assert_eq!(
+            lines_sorted_with("b\nA\na", false, &declines),
+            lines("b\nA\na", LineOperation::Sort)
+        );
+        assert_eq!(lines_sorted_with("b\nA\na", true, &declines), "b\nA\na");
     }
 }

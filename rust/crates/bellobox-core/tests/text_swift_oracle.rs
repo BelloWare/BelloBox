@@ -331,6 +331,30 @@ mod native {
                     .as_bytes(),
             );
         }
-        // Whitespace membership/Trim/Nonempty are recorded only, not parity assertions.
+        // Trim and Remove empty lines now follow Swift's CharacterSet.whitespaces
+        // exactly. (The pinned driver keeps its original field name.)
+        for scalar in actual["whitespace_diagnostics_only"].as_array().unwrap() {
+            for case in scalar["cases"].as_array().unwrap() {
+                let input = String::from_utf8(
+                    STANDARD
+                        .decode(case["input"]["base64"].as_str().unwrap())
+                        .unwrap(),
+                )
+                .unwrap();
+                check_bytes(
+                    &case["trim"],
+                    bellobox_core::text::lines(&input, bellobox_core::text::LineOperation::Trim)
+                        .as_bytes(),
+                );
+                check_bytes(
+                    &case["removeEmpty"],
+                    bellobox_core::text::lines(
+                        &input,
+                        bellobox_core::text::LineOperation::Nonempty,
+                    )
+                    .as_bytes(),
+                );
+            }
+        }
     }
 }

@@ -20,6 +20,7 @@ pub mod native_capture;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 mod process;
 pub mod recording;
+pub mod text_collation;
 mod time_zone;
 pub mod window_capture;
 
