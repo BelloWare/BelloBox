@@ -8,7 +8,6 @@ use unicode_normalization::UnicodeNormalization;
 
 const INPUT_LIMIT: usize = 500_000;
 const OUTPUT_LIMIT: usize = 4_000_000;
-const NODE_LIMIT: usize = 20_000;
 const DEPTH_LIMIT: usize = 64;
 type Result<T> = std::result::Result<T, String>;
 
@@ -37,10 +36,11 @@ pub(super) fn execute(input: &str, option: &str) -> Result<String> {
     render(&value, pretty, OUTPUT_LIMIT)
 }
 
+// DeveloperJSON.swift bounds input bytes and nesting depth only; it has no
+// value-count limit, and every value consumes input, so INPUT_LIMIT bounds the tree.
 struct Parser<'a> {
     input: &'a str,
     pos: usize,
-    nodes: usize,
     cancelled: Option<&'a AtomicBool>,
 }
 impl<'a> Parser<'a> {
@@ -54,7 +54,6 @@ impl<'a> Parser<'a> {
         let mut p = Self {
             input,
             pos: 0,
-            nodes: 0,
             cancelled,
         };
         let node = p.value(0)?;
@@ -171,11 +170,11 @@ impl<'a> Parser<'a> {
     }
     fn value(&mut self, depth: usize) -> Result<Node<'a>> {
         self.check_cancelled()?;
-        self.ws()?;
-        self.nodes += 1;
-        if depth >= DEPTH_LIMIT || self.nodes > NODE_LIMIT {
-            return Err("JSON exceeds 64 levels or 20,000 values.".into());
+        // Swift checks depth before skipping whitespace, so the reported column matches.
+        if depth >= DEPTH_LIMIT {
+            return Err(self.error("JSON nesting exceeds 64 levels"));
         }
+        self.ws()?;
         match self.byte() {
             Some(b'"') => self.string().map(Node::String),
             Some(b'{') => {
@@ -446,7 +445,6 @@ mod comparison_projection_tests {
             let mut parser = Parser {
                 input,
                 pos: 0,
-                nodes: 0,
                 cancelled: Some(&cancel),
             };
             let result = if input == " " {
@@ -460,7 +458,6 @@ mod comparison_projection_tests {
         let mut parser = Parser {
             input: &input,
             pos: 0,
-            nodes: 0,
             cancelled: Some(&cancel),
         };
         assert_eq!(parser.string().unwrap_err(), "Comparison cancelled.");

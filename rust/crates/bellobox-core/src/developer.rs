@@ -2832,7 +2832,8 @@ mod tests {
         );
         assert!(execute("unicode", &"é".repeat(250_001), "").is_err());
         assert!(execute("compare", &"a".repeat(300_000), &"b".repeat(300_000)).is_err());
-        assert!(execute("json", &format!("[{}]", vec!["0"; 20_001].join(",")), "").is_err());
+        // DeveloperJSON.swift has no value-count limit (2026-10-10 parity fix).
+        assert!(execute("json", &format!("[{}]", vec!["0"; 20_001].join(",")), "").is_ok());
     }
     #[test]
     fn pointer_handles_fragments_and_escapes() {

@@ -128,11 +128,32 @@ fn depth_limit_counts_root_and_nested_values() {
     assert!(execute(&invalid, "validate").is_err());
 }
 #[test]
-fn exact_node_budget_includes_root() {
-    let valid = format!("[{}]", vec!["0"; NODE_LIMIT - 1].join(","));
-    assert!(execute(&valid, "validate").is_ok());
-    let invalid = format!("[{}]", vec!["0"; NODE_LIMIT].join(","));
-    assert!(execute(&invalid, "validate").is_err());
+fn value_count_is_bounded_only_by_input_bytes_like_swift() {
+    // DeveloperJSON.swift has no value-count limit: the densest document that fits
+    // the combined input+option byte bound must validate and format.
+    let densest = format!(
+        "[{}]",
+        vec!["0"; (INPUT_LIMIT - "validate".len() - 1) / 2].join(",")
+    );
+    assert!(densest.len() + "validate".len() <= INPUT_LIMIT);
+    assert_eq!(execute(&densest, "validate").unwrap(), "Valid JSON.");
+    assert_eq!(execute(&densest, "minify").unwrap(), densest);
+    let records = format!(
+        "[{}]",
+        vec![r#"{"id":1,"tags":["a","b"],"ok":true}"#; 5_000].join(",")
+    );
+    assert!(
+        execute(&records, "pretty").is_ok(),
+        "30,001 values must format"
+    );
+}
+#[test]
+fn depth_error_reports_the_swift_message_and_position() {
+    let invalid = format!("{}0{}", "[".repeat(64), "]".repeat(64));
+    assert_eq!(
+        execute(&invalid, "validate").unwrap_err(),
+        "JSON nesting exceeds 64 levels at line 1, byte column 65."
+    );
 }
 #[test]
 fn input_budget_includes_untrimmed_option_bytes() {

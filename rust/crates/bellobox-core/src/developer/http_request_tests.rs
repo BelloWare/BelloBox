@@ -639,9 +639,13 @@ fn json_failure_size_depth_node_and_expansion_limits_preserve_original() {
     assert_eq!(response(oversized.as_bytes()).body(), oversized);
     let deep = format!("{}0{}", "[".repeat(65), "]".repeat(65));
     assert_eq!(response(deep.as_bytes()).body(), deep);
+    // Like HTTPRequestTool.swift, any document DeveloperJSON accepts is pretty-printed;
+    // there is no value-count limit (removed 2026-10-10).
     let nodes = format!("[{}]", vec!["0"; 20_001].join(","));
-    assert_eq!(response(nodes.as_bytes()).body(), nodes);
-    // Under the input/node/depth caps, indentation can still expand >2 MB.
+    let pretty = super::super::json_formatter::execute(&nodes, "").unwrap();
+    assert_ne!(pretty, nodes);
+    assert_eq!(response(nodes.as_bytes()).body(), pretty);
+    // Under the input/depth caps, indentation can still expand >2 MB.
     let expanded = format!(
         "{}[{}]{}",
         "[".repeat(60),

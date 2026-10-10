@@ -98,8 +98,11 @@ substrings, recursively orders keys using NFC comparison while retaining emitted
 key spelling, and rejects canonical-equivalent duplicates locally. Arrays retain
 order; `jsonPointer` keeps its pre-existing distinct-key semantics. Successful
 Validate remains exactly `Valid JSON.`. No dependency, lockfile, or session-owner
-change is involved. The existing 500,000-byte input/options, 4,000,000-byte output,
-20,000-value and depth-64 guards remain; output is checked while streaming.
+change is involved. The existing 500,000-byte input/options, 4,000,000-byte output
+and depth-64 guards remain; output is checked while streaming. The former
+Rust-only 20,000-value guard was removed on 2026-10-10 because
+`DeveloperJSON.swift` has no value-count limit (a 486 KB document with 32,347
+values formats in Swift); depth errors now use Swift's message and position.
 
 [Formatter scope and evidence](validation/json-formatter-2026-10-09/README.md)
 records 501 Core tests, 19 App JSON regressions, strict/minimal checks, two real
