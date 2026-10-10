@@ -68,6 +68,34 @@ Parity defects found by this run (both reproducible from `harness/`):
    `localizedCaseInsensitiveCompare`; Trim and Remove Empty use Swift's
    whitespace set); the sort timing above predates that change.
 
+### Box JSON Tools (end-to-end, external measurement)
+
+Shipped Swift Box 0.0.77 (Keychain IPC denied, preferences backed up and restored
+exactly) and Rust `d3fd43a` (release), one app at a time on a fresh launch, the
+JSON Tools window in Pretty mode. Each sample clicks Clear, then Paste with the
+input on the clipboard, and records when the footer reaches its finished state
+("Copy Result" enabled), matched against a capture of that state
+(`harness/box-json-e2e.sh`, `harness/belloperf.swift input --done-ref`). Both
+apps wait 220 ms after an input change before computing (`UtilityWorkbenchModel.schedule`,
+`json_session.rs`), so that is the floor. Inputs are the engine benchmark's
+296 KB document and two prefixes of it (`harness/slice-json.py`, `box-e2e/inputs.sha256`).
+
+| Input | Swift 0.0.77 p50 [min–max] | Rust `d3fd43a` p50 [min–max] |
+|---|---|---|
+| 30 KB, 115 objects (n=10) | 2,264 ms [2,227–2,367] | 256 ms [239–270] |
+| 100 KB, 379 objects (n=10) | 24,571 ms [24,299–24,871] | 259 ms [251–278] |
+| 296 KB, 1,100 objects (Swift n=2, Rust n=10) | 88,869 / 88,959 ms; the result area then stays blank | 260 ms [247–280] |
+
+Swift computes off the main thread in ~50 ms (the engine benchmark above); the
+time goes into showing the result, one SwiftUI `Text` with `.fixedSize` and text
+selection in a `ScrollView` (`UtilityWorkbenchView.swift`, `e43b1c4`, lines
+227–229). The main thread stays at 100% for the whole wait, and the cost grows
+faster than the text (3.3× the input, 11× the time). At 296 KB the 24,201-line
+result never draws, likely because the text layer is far taller than the GPU's
+texture limit; at 30 and 100 KB it draws visibly blurred (`box-e2e/screens/`).
+Rust shows results in its virtualized editor and is debounce-bound at every
+size. This is a defect in the shipping Swift app, independent of the migration.
+
 ### Agent interaction and streaming (end-to-end, external measurement)
 
 Same Mac, same loopback gateway (`harness/benchgw.py`: one 96,000-character
@@ -122,8 +150,11 @@ this record (BelloAgent `rust` branch) holds the follow-up native check.
   read otherwise blocks on a password prompt on this Mac).
 - Agent interaction results are single sessions per app (n=40 per latency
   series, n=1 for Find and each streaming run); Swift ran as an XCTest-hosted
-  Release build, not the shipped bundle. Not yet measured: Box tool-window and
-  image/GIF end-to-end workflows.
+  Release build, not the shipped bundle.
+- Box end-to-end covers JSON Tools only; Text Tools, the image editor and Box
+  typing latency are not yet measured, and movie-to-GIF cannot be compared
+  because Rust's movie reader is closed. The 296 KB Swift case has n=2 (each
+  sample takes ~89 s).
 
 ## Reproduce
 

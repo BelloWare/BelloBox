@@ -324,6 +324,13 @@ func postWheel(_ pixels: Int32, at point: CGPoint) {
 func commandInput(_ argv: ArraySlice<String>) {
     var pid: pid_t = 0, kind = "key", region = CGRect.zero, click: CGPoint? = nil, count = 40, interval = 0.35, wheel: Int32 = -60
     var out: String? = nil, label = "input", timeout = 2000.0, text: [Character]? = nil
+    // --kind click: each sample clicks --at; --reset X,Y clicks there --reset-ms before it;
+    // --settle-ms N: after the first change, also wait until the region is unchanged for N ms
+    // and record when it last changed (the result fully drawn).
+    var at: CGPoint? = nil, reset: CGPoint? = nil, resetDelay = 0.6, settle = 0.0, windowID: CGWindowID? = nil
+    // --done-ref PNG: also wait until --done-region looks like this reference
+    // (a capture-region image of the finished state); records when it first does.
+    var doneRef: Frame? = nil, doneRegion = CGRect.zero, doneThreshold = 0.002
     var it = argv.makeIterator()
     func nums(_ s: String) -> [Double] { s.split(separator: ",").map { Double($0)! } }
     while let a = it.next() {
@@ -339,25 +346,41 @@ func commandInput(_ argv: ArraySlice<String>) {
         case "--out": out = it.next()!
         case "--label": label = it.next()!
         case "--text": text = Array(it.next()!)
+        case "--at": let v = nums(it.next()!); at = CGPoint(x: v[0], y: v[1])
+        case "--reset": let v = nums(it.next()!); reset = CGPoint(x: v[0], y: v[1])
+        case "--reset-ms": resetDelay = Double(it.next()!)! / 1000
+        case "--settle-ms": settle = Double(it.next()!)!
+        case "--window": windowID = CGWindowID(it.next()!)!
+        case "--done-ref":
+            let url = URL(fileURLWithPath: it.next()!) as CFURL
+            guard let source = CGImageSourceCreateWithURL(url, nil), let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { die("cannot read reference") }
+            doneRef = Frame(image: image)
+        case "--done-region": let v = nums(it.next()!); doneRegion = CGRect(x: v[0], y: v[1], width: v[2], height: v[3])
+        case "--done-threshold": doneThreshold = Double(it.next()!)!
         default: die("unknown argument \(a)")
         }
     }
-    guard let window = windows(of: processTree(pid)).max(by: { $0.bounds.width * $0.bounds.height < $1.bounds.width * $1.bounds.height }) else { die("no window for pid \(pid)") }
+    let candidates = windows(of: processTree(pid))
+    guard let window = windowID.flatMap({ id in candidates.first { $0.id == id } })
+        ?? candidates.max(by: { $0.bounds.width * $0.bounds.height < $1.bounds.width * $1.bounds.height }) else { die("no window for pid \(pid)") }
     NSRunningApplication(processIdentifier: window.pid)?.activate(options: [.activateIgnoringOtherApps])
     Thread.sleep(forTimeInterval: 0.6)
     guard frontmostPID() == window.pid else { die("target is not frontmost; refusing to post input") }
     if let click { postClick(click); Thread.sleep(forTimeInterval: 0.4) }
     let center = CGPoint(x: region.midX, y: region.midY)
     if kind == "wheel" { CGWarpMouseCursorPosition(center); Thread.sleep(forTimeInterval: 0.2) }
-    var samples: [Double] = []; var timeouts = 0; var captures: [Int] = []
+    var samples: [Double] = []; var timeouts = 0; var captures: [Int] = []; var settled: [Double] = []; var finished: [Double] = []; var notFinished = 0
     let letters = Array("abcdefghijklmnopqrstuvwxyz")
     let keyCodes: [Character: CGKeyCode] = ["a": 0, "s": 1, "d": 2, "f": 3, "h": 4, "g": 5, "z": 6, "x": 7, "c": 8, "v": 9, "b": 11, "q": 12, "w": 13, "e": 14, "r": 15, "y": 16, "t": 17, "o": 31, "u": 32, "i": 34, "p": 35, "l": 37, "j": 38, "k": 40, "n": 45, "m": 46]
     for index in 0..<count {
+        if let reset { postClick(reset); Thread.sleep(forTimeInterval: resetDelay) }
         Thread.sleep(forTimeInterval: interval)
         guard frontmostPID() == window.pid else { print("target lost focus; stopping at sample \(index)"); break }
         guard let before = regionImage(window: window.id, rect: region) else { continue }
         let t0 = now()
-        if kind == "key" {
+        if kind == "click" {
+            postClick(at!)
+        } else if kind == "key" {
             let source = text ?? letters
             let c = source[index % source.count]; postKey(keyCodes[c] ?? 0, character: String(c))
         } else {
@@ -366,15 +389,38 @@ func commandInput(_ argv: ArraySlice<String>) {
         var done = false; var polls = 0
         while now() - t0 < timeout {
             polls += 1
-            if let frame = regionImage(window: window.id, rect: region), frame.changed(from: before) > 0 { samples.append(now() - t0); done = true; break }
+            if let frame = regionImage(window: window.id, rect: region), frame.changed(from: before) > 0 {
+                samples.append(now() - t0); done = true
+                if settle > 0 {
+                    var last = frame, lastChange = now()
+                    while now() - lastChange < settle && now() - t0 < timeout {
+                        if let next = regionImage(window: window.id, rect: region), next.changed(from: last) > 0 { last = next; lastChange = now() }
+                    }
+                    settled.append(lastChange - t0)
+                }
+                break
+            }
         }
         captures.append(polls)
         if !done { timeouts += 1 }
+        if let doneRef {
+            var reached = false
+            while now() - t0 < timeout {
+                if let frame = regionImage(window: window.id, rect: doneRegion), frame.changed(from: doneRef) <= doneThreshold { finished.append(now() - t0); reached = true; break }
+                Thread.sleep(forTimeInterval: 0.005)
+            }
+            if !reached { notFinished += 1 }
+        }
     }
     let summary = summarize(samples)
     print("SUMMARY \(label): \(summary) timeouts=\(timeouts)")
+    if settle > 0 { print("SETTLED \(label): \(summarize(settled))") }
+    if doneRef != nil { print("DONE \(label): \(summarize(finished)) notFinished=\(notFinished)") }
     if let out {
         let report: [String: Any] = ["label": label, "kind": kind, "region": [region.minX, region.minY, region.width, region.height], "samplesMs": samples,
+                                     "settledMs": settled, "settleQuietMs": settle, "settledSummary": summarize(settled),
+                                     "doneMs": finished, "doneSummary": summarize(finished), "notFinished": notFinished,
+                                     "doneRegion": [doneRegion.minX, doneRegion.minY, doneRegion.width, doneRegion.height],
                                      "timeouts": timeouts, "pollsPerSample": captures, "summary": summary, "windowSize": [window.bounds.width, window.bounds.height]]
         try! JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: out))
     }
@@ -422,6 +468,26 @@ func commandWindows(_ argv: ArraySlice<String>) {
     for w in windows(of: processTree(pid)) { print("window id=\(w.id) pid=\(w.pid) bounds=\(w.bounds)") }
 }
 
+// belloperf capture-region WINDOW x,y,w,h OUT.png : the region exactly as input samples it.
+func commandCaptureRegion(_ argv: ArraySlice<String>) {
+    let a = Array(argv); let id = CGWindowID(a[0])!
+    let v = a[1].split(separator: ",").map { Double($0)! }
+    guard let image = CGWindowListCreateImage(CGRect(x: v[0], y: v[1], width: v[2], height: v[3]), .optionIncludingWindow, id, [.boundsIgnoreFraming, .nominalResolution]) else { die("no image") }
+    let dest = CGImageDestinationCreateWithURL(URL(fileURLWithPath: a[2]) as CFURL, "public.png" as CFString, 1, nil)!
+    CGImageDestinationAddImage(dest, image, nil); CGImageDestinationFinalize(dest); print("\(image.width)x\(image.height)")
+}
+
+// belloperf order PID... : on-screen windows of these processes, front to back.
+func commandOrder(_ argv: ArraySlice<String>) {
+    let pids = Set(argv.map { pid_t($0)! })
+    let list = (CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]]) ?? []
+    for w in list {
+        guard let pid = w[kCGWindowOwnerPID as String] as? pid_t, pids.contains(pid),
+              let id = w[kCGWindowNumber as String] as? Int, let b = w[kCGWindowBounds as String] as? [String: Any] else { continue }
+        print("pid=\(pid) window=\(id) layer=\(w[kCGWindowLayer as String] ?? 0) bounds=\(b["X"] ?? 0),\(b["Y"] ?? 0),\(b["Width"] ?? 0),\(b["Height"] ?? 0)")
+    }
+}
+
 func commandCapture(_ argv: ArraySlice<String>) {
     let a = Array(argv); let id = CGWindowID(a[0])!
     guard let image = CGWindowListCreateImage(.null, .optionIncludingWindow, id, [.boundsIgnoreFraming, .nominalResolution]) else { die("no image") }
@@ -436,6 +502,8 @@ case "launch": commandLaunch(argv.dropFirst(2))
 case "input": commandInput(argv.dropFirst(2))
 case "windows": commandWindows(argv.dropFirst(2))
 case "capture": commandCapture(argv.dropFirst(2))
+case "order": commandOrder(argv.dropFirst(2))
+case "capture-region": commandCaptureRegion(argv.dropFirst(2))
 case "sample": commandSample(argv.dropFirst(2))
 default: die("unknown command \(argv[1])")
 }

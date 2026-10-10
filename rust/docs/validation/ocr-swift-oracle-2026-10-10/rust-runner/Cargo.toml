@@ -4,11 +4,12 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
-# Standalone: runs the checked-out rust-branch bello-platform OCR on files.
+# Standalone (its own workspace): runs this checkout's bello-platform OCR on files.
+# cargo run --release --manifest-path rust/docs/validation/ocr-swift-oracle-2026-10-10/rust-runner/Cargo.toml -- IMAGE
 [workspace]
 
 [dependencies]
-bello-platform = { path = "/Users/admin/projects/BelloBox-rust/rust/crates/bello-platform" }
+bello-platform = { path = "../../../../crates/bello-platform" }
 
 [profile.release]
 lto = "thin"
