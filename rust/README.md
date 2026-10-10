@@ -1,6 +1,7 @@
 # BelloBox Rust migration
 
-Work in progress on the `rust` branch. This does **not** replace the shipped Swift
+Work in progress on the `rust` branch. Current status, release blockers and
+same-Mac Swift/Rust measurements: [STATUS-2026-10-10](docs/STATUS-2026-10-10.md). This does **not** replace the shipped Swift
 app or claim feature parity. The original application and its release pipeline
 remain in the repository as the behavioral reference.
 
