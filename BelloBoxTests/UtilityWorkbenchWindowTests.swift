@@ -35,6 +35,33 @@ final class UtilityWorkbenchWindowTests: XCTestCase {
             charactersIgnoringModifiers: text, isARepeat: false, keyCode: code))
     }
 
+    private static func descendants(of view: NSView) -> [NSView] {
+        view.subviews.flatMap { [$0] + descendants(of: $0) }
+    }
+
+    func testLargeResultsAppearPromptlyInANativeTextView() async throws {
+        // 0.0.77 laid a result out as one SwiftUI Text on the main thread: 100 KB
+        // of pretty JSON took 25 s to appear and 296 KB never drew.
+        let items = (0..<1_500).map { #"{"id":\#($0),"name":"item \#($0)","tags":["a","b"],"meta":{"n":\#($0),"path":"/a/b/\#($0)"}}"# }
+        let json = "[" + items.joined(separator: ",") + "]"
+        let windows = UtilityWorkbenchWindows(onSearchTools: {})
+        let model = UtilityWorkbenchModel(command: .json, selection: selection(json), snippets: snippets())
+        let controller = windows.open(model, settings: AppSettings(defaults: defaults))
+        defer { windows.windows.forEach { $0.close() } }
+        let window = try XCTUnwrap(controller.window)
+        try await waitUntil { model.result != nil && !model.busy }
+        XCTAssertGreaterThan(model.output.components(separatedBy: "\n").count, 15_000)
+        let start = Date()
+        window.contentView?.layoutSubtreeIfNeeded()
+        window.displayIfNeeded()
+        let elapsed = Date().timeIntervalSince(start)
+        let shown = Self.descendants(of: try XCTUnwrap(window.contentView)).compactMap { $0 as? LauncherOutputTextView }
+        XCTAssertEqual(shown.count, 1, "The result is shown by one native text view")
+        XCTAssertTrue(shown.first?.string == model.output, "It holds the complete result, not an excerpt")
+        XCTAssertEqual(shown.first?.isEditable, false)
+        XCTAssertLessThan(elapsed, 3, "Laying out and drawing the result took \(elapsed) s")
+    }
+
     func testDiffStaysVisibleAcrossFocusChangesAndPreservesNativeEditing() async throws {
         let windows = UtilityWorkbenchWindows(onSearchTools: {})
         let model = UtilityWorkbenchModel(command: .compare, selection: selection("alpha\nbeta"), snippets: snippets())

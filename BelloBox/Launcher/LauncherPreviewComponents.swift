@@ -13,12 +13,15 @@ struct LauncherOutputText: NSViewRepresentable {
     var label: String
     var monospaced = true
     var fontSize: CGFloat = 11
+    /// Off: long lines keep their width and scroll horizontally, as code and
+    /// pretty-printed data should.
+    var wraps = true
 
     func makeNSView(context: Context) -> NSScrollView {
         let scroll = NSScrollView()
         scroll.drawsBackground = false
         scroll.hasVerticalScroller = true
-        scroll.hasHorizontalScroller = false
+        scroll.hasHorizontalScroller = !wraps
         scroll.autohidesScrollers = true
         scroll.scrollerStyle = .overlay
         let view = LauncherOutputTextView(frame: .zero)
@@ -31,9 +34,12 @@ struct LauncherOutputText: NSViewRepresentable {
         view.minSize = .zero
         view.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
         view.isVerticallyResizable = true
-        view.isHorizontallyResizable = false
+        view.isHorizontallyResizable = !wraps
         view.autoresizingMask = [.width]
-        view.textContainer?.widthTracksTextView = true
+        view.textContainer?.widthTracksTextView = wraps
+        if !wraps {
+            view.textContainer?.containerSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        }
         view.textContainer?.lineFragmentPadding = 2
         view.isAutomaticLinkDetectionEnabled = false
         view.isAutomaticDataDetectionEnabled = false
