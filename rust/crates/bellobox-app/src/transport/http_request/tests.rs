@@ -291,7 +291,12 @@ fn read_timeout_and_absolute_deadline_bound_a_continuous_trickle() {
     let start = Instant::now();
     assert!(dispatch(draft(&s).prepare().unwrap(), &AtomicBool::new(false), short).is_err());
     assert!(start.elapsed() < Duration::from_millis(140));
+    // Only the absolute deadline may end a continuous trickle. Send each chunk
+    // immediately (macOS loopback can hold small segments back under Nagle and
+    // delayed ACK) and keep this case's read timeout above the deadline, so a
+    // stalled CI runner cannot end it through the per-read timeout instead.
     let s = server(|stream, _| {
+        let _ = stream.set_nodelay(true);
         let _ = stream.write_all(
             b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n",
         );
@@ -302,8 +307,19 @@ fn read_timeout_and_absolute_deadline_bound_a_continuous_trickle() {
             thread::sleep(Duration::from_millis(15));
         }
     });
+    let trickle = Limits {
+        read: Duration::from_secs(1),
+        ..short
+    };
     let start = Instant::now();
-    assert!(dispatch(draft(&s).prepare().unwrap(), &AtomicBool::new(false), short).is_err());
+    assert!(
+        dispatch(
+            draft(&s).prepare().unwrap(),
+            &AtomicBool::new(false),
+            trickle
+        )
+        .is_err()
+    );
     assert!(start.elapsed() >= Duration::from_millis(100));
     assert!(start.elapsed() < Duration::from_millis(190));
 }
