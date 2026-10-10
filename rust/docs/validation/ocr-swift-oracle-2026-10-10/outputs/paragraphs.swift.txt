@@ -1,0 +1,10 @@
+Release notes for the parser
+
+The parser now reads the token stream once, so nested blocks
+keep their offsets and the tree matches what callers expect.
+Large files open about twice as fast as before.
+
+Known issue: a comment at the very end of a file
+is attached to the wrong node when it has no newline.
+
+Version 2.4.1 - October 2026

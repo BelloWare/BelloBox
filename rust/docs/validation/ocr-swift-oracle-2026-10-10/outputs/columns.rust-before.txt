@@ -1,0 +1,9 @@
+Left column first line
+Left column second line
+Left column third line
+Left column fourth line
+Right column first line
+Right column second line
+Right column third line
+Right column fourth line
+A footer spanning the page below both columns

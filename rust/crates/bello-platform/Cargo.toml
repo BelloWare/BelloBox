@@ -16,6 +16,8 @@ libc.workspace = true
 [dev-dependencies]
 # Existing workspace-locked SHA-256; binds the independent Swift test source.
 sha2 = "=0.10.9"
+# Reads the checked-in Swift OCR layout oracle.
+serde_json.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block2 = "=0.6.2"

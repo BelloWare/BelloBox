@@ -1,0 +1,15 @@
+[package]
+name = "rust-ocr-runner"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Standalone: runs the checked-out rust-branch bello-platform OCR on files.
+[workspace]
+
+[dependencies]
+bello-platform = { path = "/Users/admin/projects/BelloBox-rust/rust/crates/bello-platform" }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

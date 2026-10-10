@@ -7,6 +7,7 @@
 //! rather than a variadic call to objc_msgSend. No private key is read here.
 
 use crate::{ErrorKind, PlatformError, Result, MAX_OCR_IMAGE_BYTES, MAX_OCR_TEXT_BYTES};
+use objc2_core_foundation::{CGPoint, CGRect, CGSize};
 use std::ffi::{c_char, c_void};
 use std::marker::PhantomData;
 use std::path::PathBuf;
@@ -70,6 +71,11 @@ extern "C" {
     fn CFDictionaryGetValue(dictionary: *const c_void, key: *const c_void) -> Id;
     fn CFNumberGetTypeID() -> usize;
     fn CFNumberGetValue(number: *const c_void, kind: isize, value: *mut c_void) -> u8;
+}
+
+#[link(name = "CoreGraphics", kind = "framework")]
+extern "C" {
+    fn CGImageCreateWithImageInRect(image: *const c_void, rect: CGRect) -> Id;
 }
 
 #[link(name = "ImageIO", kind = "framework")]
@@ -558,7 +564,7 @@ pub fn recognize_text(image: &[u8], languages: Option<&str>) -> Result<String> {
         ));
     }
     let languages = vision_languages(languages)?;
-    unsafe {
+    let regions = unsafe {
         let _pool = AutoreleasePool::new(OCR)?;
         let data = OwnedCf::new(
             CFDataCreate(ptr::null(), image.as_ptr(), image.len() as isize),
@@ -577,81 +583,179 @@ pub fn recognize_text(image: &[u8], languages: Option<&str>) -> Result<String> {
             CGImageSourceCreateImageAtIndex(source.as_ptr(), 0, ptr::null()),
             OCR,
         )?;
-        let request = OwnedObject::new(
-            send!(class(b"VNRecognizeTextRequest\0", OCR)?, b"new\0", () -> Id),
-            OCR,
-        )?;
-        send!(request.as_ptr(), b"setRecognitionLevel:\0", (usize => 0) -> ()); // VNRequestTextRecognitionLevelAccurate
-        send!(request.as_ptr(), b"setRevision:\0", (usize => 3) -> ()); // macOS 13+
-        send!(request.as_ptr(), b"setUsesLanguageCorrection:\0", (ObjcBool => 1) -> ());
-        if languages.is_empty() {
-            send!(request.as_ptr(), b"setAutomaticallyDetectsLanguage:\0", (ObjcBool => 1) -> ());
-        } else {
-            let array = send!(class(b"NSMutableArray\0", OCR)?, b"array\0", () -> Id);
-            for language in languages {
-                let value = ns_string(&language, OCR)?;
-                send!(array, b"addObject:\0", (Id => value.as_ptr()) -> ());
+        let mut regions = Vec::new();
+        // Raw lines before overlap removal; the formatted text is bounded below.
+        let mut budget = 2 * MAX_OCR_TEXT_BYTES;
+        if orientation == 1 {
+            // As Swift's OCRTileSegmenter: a tall image is read in overlapping
+            // bands, which Vision would otherwise scale until text is unreadable.
+            for (y, band) in crate::ocr_layout::tile_bands(height as u64) {
+                let tile = if band == height as u64 {
+                    None
+                } else {
+                    let rect = CGRect {
+                        origin: CGPoint {
+                            x: 0.0,
+                            y: y as f64,
+                        },
+                        size: CGSize {
+                            width: width as f64,
+                            height: band as f64,
+                        },
+                    };
+                    Some(OwnedCf::new(
+                        CGImageCreateWithImageInRect(image.as_ptr(), rect),
+                        OCR,
+                    )?)
+                };
+                let target = tile.as_ref().map_or(image.as_ptr(), |tile| tile.as_ptr());
+                let band_regions = recognize_regions(
+                    target,
+                    1,
+                    &languages,
+                    width as f64,
+                    band as f64,
+                    &mut budget,
+                )?;
+                regions.extend(
+                    crate::ocr_layout::reading_order(&band_regions)
+                        .into_iter()
+                        .map(|mut region| {
+                            if let Some(rect) = &mut region.rect {
+                                rect.y += y as f64;
+                            }
+                            region
+                        }),
+                );
             }
-            send!(request.as_ptr(), b"setRecognitionLanguages:\0", (Id => array) -> ());
+        } else {
+            // Vision applies the file's orientation, so such an image is read
+            // whole, in its displayed (possibly rotated) frame.
+            let (shown_width, shown_height) = if orientation >= 5 {
+                (height, width)
+            } else {
+                (width, height)
+            };
+            regions = recognize_regions(
+                image.as_ptr(),
+                orientation,
+                &languages,
+                shown_width as f64,
+                shown_height as f64,
+                &mut budget,
+            )?;
         }
-        let options = send!(class(b"NSDictionary\0", OCR)?, b"dictionary\0", () -> Id);
-        let allocated = send!(class(b"VNImageRequestHandler\0", OCR)?, b"alloc\0", () -> Id);
-        let handler = OwnedObject::new(
-            send!(allocated, b"initWithCGImage:orientation:options:\0",
-            (Id => image.as_ptr(), u32 => orientation, Id => options) -> Id),
+        regions
+    };
+    let text = crate::ocr_layout::recognized_text(&regions).ok_or_else(|| {
+        PlatformError::new(
+            ErrorKind::InvalidOutput,
+            OCR,
+            "No text was found in this screenshot.",
+        )
+    })?;
+    if text.len() > MAX_OCR_TEXT_BYTES {
+        return Err(PlatformError::new(
+            ErrorKind::OutputTooLarge,
+            OCR,
+            "OCR exceeds the 1 MiB text limit.",
+        ));
+    }
+    Ok(text)
+}
+
+/// One Vision text request on `image` (width × height pixels as Vision sees
+/// it), as Swift's MacVisionOCRService configures it: lines with their top
+/// candidate and pixel rectangle (top-left origin), at most 4096 per request
+/// and within the remaining text `budget`.
+unsafe fn recognize_regions(
+    image: Id,
+    orientation: u32,
+    languages: &[String],
+    width: f64,
+    height: f64,
+    budget: &mut usize,
+) -> Result<Vec<crate::ocr_layout::Region>> {
+    let request = OwnedObject::new(
+        send!(class(b"VNRecognizeTextRequest\0", OCR)?, b"new\0", () -> Id),
+        OCR,
+    )?;
+    send!(request.as_ptr(), b"setRecognitionLevel:\0", (usize => 0) -> ()); // VNRequestTextRecognitionLevelAccurate
+    send!(request.as_ptr(), b"setRevision:\0", (usize => 3) -> ()); // macOS 13+
+    send!(request.as_ptr(), b"setUsesLanguageCorrection:\0", (ObjcBool => 1) -> ());
+    if languages.is_empty() {
+        send!(request.as_ptr(), b"setAutomaticallyDetectsLanguage:\0", (ObjcBool => 1) -> ());
+    } else {
+        let array = send!(class(b"NSMutableArray\0", OCR)?, b"array\0", () -> Id);
+        for language in languages {
+            let value = ns_string(language, OCR)?;
+            send!(array, b"addObject:\0", (Id => value.as_ptr()) -> ());
+        }
+        send!(request.as_ptr(), b"setRecognitionLanguages:\0", (Id => array) -> ());
+    }
+    let options = send!(class(b"NSDictionary\0", OCR)?, b"dictionary\0", () -> Id);
+    let allocated = send!(class(b"VNImageRequestHandler\0", OCR)?, b"alloc\0", () -> Id);
+    let handler = OwnedObject::new(
+        send!(allocated, b"initWithCGImage:orientation:options:\0",
+        (Id => image, u32 => orientation, Id => options) -> Id),
+        OCR,
+    )?;
+    let requests =
+        send!(class(b"NSArray\0", OCR)?, b"arrayWithObject:\0", (Id => request.as_ptr()) -> Id);
+    let mut native_error: Id = ptr::null_mut();
+    if send!(handler.as_ptr(), b"performRequests:error:\0", (Id => requests, *mut Id => &mut native_error) -> ObjcBool)
+        == 0
+    {
+        return Err(error(
+            OCR,
+            "Apple Vision could not recognize this image or language configuration.",
+        ));
+    }
+    let observations = send!(request.as_ptr(), b"results\0", () -> Id);
+    let count = send!(observations, b"count\0", () -> usize);
+    if count > 4096 {
+        return Err(PlatformError::new(
+            ErrorKind::OutputTooLarge,
+            OCR,
+            "OCR exceeds the 4096-region limit.",
+        ));
+    }
+    let mut regions = Vec::with_capacity(count);
+    for index in 0..count {
+        let observation = send!(observations, b"objectAtIndex:\0", (usize => index) -> Id);
+        let candidates = send!(observation, b"topCandidates:\0", (usize => 1) -> Id);
+        if send!(candidates, b"count\0", () -> usize) == 0 {
+            continue;
+        }
+        let candidate = send!(candidates, b"objectAtIndex:\0", (usize => 0) -> Id);
+        let text = string(
+            send!(candidate, b"string\0", () -> Id),
+            MAX_OCR_TEXT_BYTES,
             OCR,
         )?;
-        let requests =
-            send!(class(b"NSArray\0", OCR)?, b"arrayWithObject:\0", (Id => request.as_ptr()) -> Id);
-        let mut native_error: Id = ptr::null_mut();
-        if send!(handler.as_ptr(), b"performRequests:error:\0", (Id => requests, *mut Id => &mut native_error) -> ObjcBool)
-            == 0
-        {
-            return Err(error(
-                OCR,
-                "Apple Vision could not recognize this image or language configuration.",
-            ));
-        }
-        let observations = send!(request.as_ptr(), b"results\0", () -> Id);
-        let count = send!(observations, b"count\0", () -> usize);
-        if count > 4096 {
-            return Err(PlatformError::new(
+        *budget = budget.checked_sub(text.len() + 1).ok_or_else(|| {
+            PlatformError::new(
                 ErrorKind::OutputTooLarge,
                 OCR,
-                "OCR exceeds the 4096-region limit.",
-            ));
-        }
-        let mut output = String::new();
-        for index in 0..count {
-            let observation = send!(observations, b"objectAtIndex:\0", (usize => index) -> Id);
-            let candidates = send!(observation, b"topCandidates:\0", (usize => 1) -> Id);
-            if send!(candidates, b"count\0", () -> usize) == 0 {
-                continue;
-            }
-            let candidate = send!(candidates, b"objectAtIndex:\0", (usize => 0) -> Id);
-            let text = string(
-                send!(candidate, b"string\0", () -> Id),
-                MAX_OCR_TEXT_BYTES,
-                OCR,
-            )?;
-            if text.is_empty() {
-                continue;
-            }
-            let separator = usize::from(!output.is_empty());
-            if text.len() + separator > MAX_OCR_TEXT_BYTES - output.len() {
-                return Err(PlatformError::new(
-                    ErrorKind::OutputTooLarge,
-                    OCR,
-                    "OCR exceeds the 1 MiB text limit.",
-                ));
-            }
-            if separator != 0 {
-                output.push('\n');
-            }
-            output.push_str(&text);
-        }
-        Ok(output)
+                "OCR exceeds the 1 MiB text limit.",
+            )
+        })?;
+        // A struct return: objc2 picks the right objc_msgSend variant per ABI,
+        // unlike the integer/pointer-only send! bridge above.
+        let observation = &*observation.cast::<objc2::runtime::AnyObject>();
+        let bounds: CGRect = objc2::msg_send![observation, boundingBox];
+        let normalized = crate::ocr_layout::Rect::new(
+            bounds.origin.x,
+            bounds.origin.y,
+            bounds.size.width,
+            bounds.size.height,
+        );
+        regions.push(crate::ocr_layout::Region {
+            text,
+            rect: Some(crate::ocr_layout::pixel_rect(normalized, width, height)),
+        });
     }
+    Ok(regions)
 }
 
 unsafe fn image_orientation(dictionary: Id) -> Result<u32> {
