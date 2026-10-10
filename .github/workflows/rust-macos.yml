@@ -76,7 +76,8 @@ jobs:
           cargo test --locked -p bellobox-core --test http_swift_oracle -- --list | grep -Fx "$oracle: test"
       - name: Run pure domain and filesystem tests
         # No GPUI application launch, permissions, keychain, capture or updater actions.
-        run: cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform -- --show-output
+        # Failing test names are repeated as a public annotation (logs need auth).
+        run: bash scripts/ci-annotate.sh "Core, workbench and platform tests" cargo test --locked -p bellobox-core -p bello-workbench -p bello-platform -- --show-output
       - name: Characterize synthetic CoreGraphics alpha without capture
         run: cargo test --locked -p bello-platform native_alpha_ -- --show-output
       - name: Test supplied-image Window host mask without GPUI launch
@@ -99,7 +100,7 @@ jobs:
         # Keep the complete suite; local focused-module evidence does not replace it.
         env:
           CARGO_BUILD_JOBS: '1'
-        run: cargo test --locked -p bellobox-app --features recording-fixtures -- --test-threads=1 --show-output
+        run: bash scripts/ci-annotate.sh "Full App suite (recording fixtures)" cargo test --locked -p bellobox-app --features recording-fixtures -- --test-threads=1 --show-output
       - name: Lint recording feature App and native platform paths
         env:
           CARGO_BUILD_JOBS: '1'
