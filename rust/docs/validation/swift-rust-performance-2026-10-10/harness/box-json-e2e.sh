@@ -20,10 +20,11 @@ if [ $APP = rust ]; then
   TILE=(345 418); PASTE=(750 183); CLEAR=(790 183); RESULT=(20 365 780 250)
   MATCH="$BIN"
 else
-  BIN="$W/swift-apps/box/Bello Box.app/Contents/MacOS/Bello Box"
+  # SWIFT_BOX_APP selects another build of the Swift app (default: the shipped one).
+  BIN="${SWIFT_BOX_APP:-$W/swift-apps/box/Bello Box.app}/Contents/MacOS/Bello Box"
   (/usr/bin/sandbox-exec -f $W/harness/no-keychain.sb "$BIN" > $OUT/swift-$NAME-stdout.log 2> $OUT/swift-$NAME-stderr.log &)
   TILE=(345 400); PASTE=(757 159); CLEAR=(791 159); RESULT=(20 340 780 270)
-  MATCH="swift-apps/box/Bello Box.app/Contents/MacOS/Bello Box"
+  MATCH="$BIN"
 fi
 FOOTER=(0 632 820 54)
 sleep 4

@@ -96,6 +96,13 @@ texture limit; at 30 and 100 KB it draws visibly blurred (`box-e2e/screens/`).
 Rust shows results in its virtualized editor and is debounce-bound at every
 size. This is a defect in the shipping Swift app, independent of the migration.
 
+Fixed on BelloBox `dev/next` (`88e4c7f`, unreleased) at the owner's request:
+results draw in the existing native `LauncherOutputText` in a non-wrapping mode.
+Same harness on a Release build of that commit (`SWIFT_BOX_APP`, n=5,
+`box-e2e/json-swift-fixed/`): 30 KB 332 ms [322–345], 100 KB 485 ms [479–516],
+296 KB 927 ms [914–955], and the 296 KB result draws
+(`screens/swift-fixed-json-300k-finished.jpg`).
+
 ### Agent interaction and streaming (end-to-end, external measurement)
 
 Same Mac, same loopback gateway (`harness/benchgw.py`: one 96,000-character
