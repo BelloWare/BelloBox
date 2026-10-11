@@ -1,6 +1,21 @@
 import Foundation
 import Security
 
+/// Where provider API keys are kept. Tests substitute an in-memory store.
+protocol APIKeyStore {
+    func get(account: String) -> String?
+    /// Whether a key exists, without reading it: an attribute-only query, so it
+    /// never asks for the login password the way reading the secret can.
+    func contains(account: String) -> Bool
+    @discardableResult func set(_ value: String, account: String) -> Bool
+}
+
+struct KeychainAPIKeyStore: APIKeyStore {
+    func get(account: String) -> String? { KeychainStore.get(account: account) }
+    func contains(account: String) -> Bool { KeychainStore.contains(account: account) }
+    func set(_ value: String, account: String) -> Bool { KeychainStore.set(value, account: account) }
+}
+
 /// Minimal Keychain wrapper for storing provider API keys as generic passwords.
 enum KeychainStore {
     static let service = "com.ainoob.BelloBox"
@@ -49,6 +64,21 @@ enum KeychainStore {
                   let string = String(data: data, encoding: .utf8)
             else { return nil }
             return string
+        }
+    }
+
+    static func contains(account: String) -> Bool {
+#if DEBUG
+        if isDisabledForAutomatedTests { return false }
+#endif
+        return queue.sync {
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: service,
+                kSecAttrAccount as String: account,
+                kSecMatchLimit as String: kSecMatchLimitOne,
+            ]
+            return SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
         }
     }
 

@@ -223,13 +223,11 @@ struct UtilityWorkbenchView: View {
                         }.background(RoundedRectangle(cornerRadius: 10).fill(.primary.opacity(0.025)))
                     }
                 } else {
-                    GeometryReader { geometry in
-                        ScrollView([.horizontal, .vertical]) {
-                            Text(result.text).font(.system(size: 12, design: .monospaced)).textSelection(.enabled)
-                                .fixedSize(horizontal: true, vertical: true)
-                                .frame(minWidth: max(0, geometry.size.width - 24), minHeight: max(0, geometry.size.height - 24), alignment: .topLeading).padding(12)
-                        }
-                    }.frame(height: 210).toolSurface(.input, cornerRadius: 10)
+                    // A native text view lays out only what is on screen. One SwiftUI
+                    // Text laid out the whole result on the main thread: 100 KB of
+                    // pretty JSON took 25 s to appear and 296 KB never drew.
+                    LauncherOutputText(text: result.text, label: model.command.title + " result", fontSize: 12, wraps: false)
+                        .padding(6).frame(height: 210).toolSurface(.input, cornerRadius: 10)
                 }
             } else if !result.status.isEmpty {
                 Text(result.status).font(.callout).foregroundStyle(BoxTheme.secondaryText)

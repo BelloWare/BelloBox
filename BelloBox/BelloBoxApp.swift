@@ -180,40 +180,56 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         runE2EPermissionBootstrapIfNeeded()
 #endif
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self else { return }
+        // A normal launch shows its window at once; it used to wait 0.3 s, which
+        // only E2E fixtures still do (the scripts that drive them expect it).
+        if let delay = Self.launchWindowDelay(environment: ProcessInfo.processInfo.environment) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in self?.showLaunchWindow() }
+        } else {
+            showLaunchWindow()
+        }
+    }
+
+    nonisolated static func launchWindowDelay(environment: [String: String]) -> TimeInterval? {
 #if DEBUG
-            let previewKeys = ["BELLOBOX_E2E_SCREENSHOT_IMAGE", "BELLOBOX_E2E_QR_TEXT", "BELLOBOX_E2E_TEXT_TOOLS_TEXT", "BELLOBOX_E2E_AI_PREVIEW_TEXT",
-                               "BELLOBOX_E2E_RECORDING_OPTIONS", "BELLOBOX_E2E_RECORDING_REVIEW_FILE",
-                               "BELLOBOX_E2E_RECORDING_HUD", "BELLOBOX_E2E_CONVERTING_GIF", "BELLOBOX_E2E_VIDEO_TO_GIF",
-                               "BELLOBOX_E2E_WRITE_SYNTHETIC_ASSETS", "BELLOBOX_E2E_SCROLL_HUD_DEMO", "BELLOBOX_E2E_SCROLL_FRAMES_DIR",
-                               "BELLOBOX_E2E_OCR_IMAGE", "BELLOBOX_E2E_CAPTURE_OVERLAY_IMAGE", "BELLOBOX_E2E_CAPTURE_OVERLAY_SIMULATED_DISPLAYS"]
-            if previewKeys.contains(where: { ProcessInfo.processInfo.environment[$0] != nil }) { return }
-            let launcherFixture = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT_FILE"]
-                .flatMap { try? String(contentsOfFile: $0, encoding: .utf8) }
-                ?? ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT"]
-            if let text = launcherFixture {
-                let command = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_COMMAND"].flatMap(LauncherCommand.init(rawValue:))
-                // BELLOBOX_E2E_LAUNCHER_FOCUS=<command id> highlights that row (its
-                // interactive preview) without opening it.
-                let focus = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_FOCUS"].flatMap(LauncherCommand.init(rawValue:))
-                self.overlay?.openLauncher(selection: TextSelection(text: text, anchorRect: nil, appName: "Example", bundleID: nil, pid: nil),
-                                           command: command, focus: focus)
-                return
-            }
-            if ProcessInfo.processInfo.environment["BELLOBOX_E2E_OPEN_WORLD_CLOCK"] == "1" {
-                let seed = ProcessInfo.processInfo.environment["BELLOBOX_E2E_WORLD_CLOCK_SEED"]
-                    .flatMap(Double.init)
-                    .map { Date(timeIntervalSince1970: $0) }
-                self.showWorldClock(seed.map { WorldClockHandoff(instant: $0) })
-                return
-            }
+        if environment.keys.contains(where: { $0.hasPrefix("BELLOBOX_E2E_") }) { return 0.3 }
 #endif
-            if self.settings.hasCompletedSetup {
-                self.showMainWindow()
-            } else {
-                self.showOnboarding()
-            }
+        return nil
+    }
+
+    /// Home, or the setup guide on first run. DEBUG E2E fixtures open their own
+    /// surface instead.
+    private func showLaunchWindow() {
+#if DEBUG
+        let previewKeys = ["BELLOBOX_E2E_SCREENSHOT_IMAGE", "BELLOBOX_E2E_QR_TEXT", "BELLOBOX_E2E_TEXT_TOOLS_TEXT", "BELLOBOX_E2E_AI_PREVIEW_TEXT",
+                           "BELLOBOX_E2E_RECORDING_OPTIONS", "BELLOBOX_E2E_RECORDING_REVIEW_FILE",
+                           "BELLOBOX_E2E_RECORDING_HUD", "BELLOBOX_E2E_CONVERTING_GIF", "BELLOBOX_E2E_VIDEO_TO_GIF",
+                           "BELLOBOX_E2E_WRITE_SYNTHETIC_ASSETS", "BELLOBOX_E2E_SCROLL_HUD_DEMO", "BELLOBOX_E2E_SCROLL_FRAMES_DIR",
+                           "BELLOBOX_E2E_OCR_IMAGE", "BELLOBOX_E2E_CAPTURE_OVERLAY_IMAGE", "BELLOBOX_E2E_CAPTURE_OVERLAY_SIMULATED_DISPLAYS"]
+        if previewKeys.contains(where: { ProcessInfo.processInfo.environment[$0] != nil }) { return }
+        let launcherFixture = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT_FILE"]
+            .flatMap { try? String(contentsOfFile: $0, encoding: .utf8) }
+            ?? ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_TEXT"]
+        if let text = launcherFixture {
+            let command = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_COMMAND"].flatMap(LauncherCommand.init(rawValue:))
+            // BELLOBOX_E2E_LAUNCHER_FOCUS=<command id> highlights that row (its
+            // interactive preview) without opening it.
+            let focus = ProcessInfo.processInfo.environment["BELLOBOX_E2E_LAUNCHER_FOCUS"].flatMap(LauncherCommand.init(rawValue:))
+            overlay?.openLauncher(selection: TextSelection(text: text, anchorRect: nil, appName: "Example", bundleID: nil, pid: nil),
+                                  command: command, focus: focus)
+            return
+        }
+        if ProcessInfo.processInfo.environment["BELLOBOX_E2E_OPEN_WORLD_CLOCK"] == "1" {
+            let seed = ProcessInfo.processInfo.environment["BELLOBOX_E2E_WORLD_CLOCK_SEED"]
+                .flatMap(Double.init)
+                .map { Date(timeIntervalSince1970: $0) }
+            showWorldClock(seed.map { WorldClockHandoff(instant: $0) })
+            return
+        }
+#endif
+        if settings.hasCompletedSetup {
+            showMainWindow()
+        } else {
+            showOnboarding()
         }
     }
 

@@ -38,19 +38,14 @@ enum TextComparison {
         }
         let a = try tokens(left), b = try tokens(right)
         guard a.count + b.count <= 8_000 else { throw UtilityError("Compare up to 8,000 combined lines, words, or JSON fields. Narrow the selection first.") }
-        let difference = b.difference(from: a)
-        var removals = Set<Int>(), insertions = Set<Int>()
-        for change in difference {
-            switch change {
-            case .remove(let offset, _, _): removals.insert(offset)
-            case .insert(let offset, _, _): insertions.insert(offset)
-            }
-        }
+        // Our copy of Swift 6.3.3's diff, not the OS runtime's `difference(from:)`,
+        // whose choice among equally short alignments varies with macOS.
+        let (removals, insertions) = MyersDifference.changes(from: a, to: b, by: ==)
         var rows: [ComparisonRow] = [], i = 0, j = 0
         func append(_ text: String, _ kind: ComparisonRow.Kind) { rows.append(.init(id: rows.count, kind: kind, text: text)) }
         while i < a.count || j < b.count {
-            if i < a.count && removals.contains(i) { append(a[i], .removed); i += 1 }
-            else if j < b.count && insertions.contains(j) { append(b[j], .added); j += 1 }
+            if i < a.count && removals[i] { append(a[i], .removed); i += 1 }
+            else if j < b.count && insertions[j] { append(b[j], .added); j += 1 }
             else if i < a.count && j < b.count { append(a[i], .same); i += 1; j += 1 }
             else { break }
         }
