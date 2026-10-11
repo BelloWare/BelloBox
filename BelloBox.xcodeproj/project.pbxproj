@@ -101,6 +101,7 @@
 		64DCF1F0FAB5A11BED505FF4 /* OCRBoundingBoxConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148EF6E45CAA938514E09373 /* OCRBoundingBoxConverterTests.swift */; };
 		66EA891CA96745AA76D5ED62 /* OCRTileSegmenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53AF1FC84FE01FA5F65237A7 /* OCRTileSegmenter.swift */; };
 		683D3018960DFCDA277C86CB /* AdditionalUtilityViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11572123F92283ED2D61194 /* AdditionalUtilityViews.swift */; };
+		68D174F7FBDAE2E40FDE6AD2 /* LaunchWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA37874F14EB86B285CF59E /* LaunchWindowTests.swift */; };
 		68FA7AEAF24DA3D88C38576C /* TokenEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D9CE5279414592D4099D52 /* TokenEstimator.swift */; };
 		6A7730623BB40C36817E3A9D /* ScrollCaptureEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F621560FFE825DE10349FFC /* ScrollCaptureEngineTests.swift */; };
 		6B4C02305A47CADA08A8D4CF /* QRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55BCDD13A339B6F5EE6D7793 /* QRCodeGenerator.swift */; };
@@ -297,6 +298,7 @@
 		2DF7E45348E3013AD507E2F5 /* LLMOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMOCRService.swift; sourceTree = "<group>"; };
 		2E1DF5FC45C218199A054C0A /* PrivacyGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyGuard.swift; sourceTree = "<group>"; };
 		2EB451CD3FA28EDD750EA21C /* OCRBoundingBoxConversionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRBoundingBoxConversionTests.swift; sourceTree = "<group>"; };
+		2FA37874F14EB86B285CF59E /* LaunchWindowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchWindowTests.swift; sourceTree = "<group>"; };
 		2FE7409167E82B2CF5FB4E81 /* LauncherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherView.swift; sourceTree = "<group>"; };
 		3065E35A1F46F5F92925D2DB /* UIUXBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIUXBehaviorTests.swift; sourceTree = "<group>"; };
 		31D451D118605E72B2E84CC6 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
@@ -721,6 +723,7 @@
 				F0FCB6FBA4B6B0FDF5BA95CE /* LauncherInteractivePreviewTests.swift */,
 				D05BAC95E8A7DD067A87BAA8 /* LauncherPreviewTests.swift */,
 				7345786FE3B76521E6C45449 /* LauncherUsageTests.swift */,
+				2FA37874F14EB86B285CF59E /* LaunchWindowTests.swift */,
 				2B3B6C5F935E2FCE80960B5B /* LiteralTextEditorTests.swift */,
 				C9E68A40F9F58088083B393B /* LLMOCRRequestBuilderTests.swift */,
 				1F644D5CDDEC738B44A1694F /* LLMOCRResponseParserTests.swift */,
@@ -1062,6 +1065,7 @@
 				E3DA7BB43CD956C4A24BC02C /* InlineTextEditingTests.swift in Sources */,
 				17148A22CBC0660A47359050 /* LLMOCRRequestBuilderTests.swift in Sources */,
 				D93FAC85138695EF088AAC6F /* LLMOCRResponseParserTests.swift in Sources */,
+				68D174F7FBDAE2E40FDE6AD2 /* LaunchWindowTests.swift in Sources */,
 				64151A7D15C6D6DA5D414585 /* LauncherInteractionTests.swift in Sources */,
 				DE5BBAC32ED08D0413F413D9 /* LauncherInteractivePreviewTests.swift in Sources */,
 				13D23D235F983EE93B2801FD /* LauncherPreviewTests.swift in Sources */,
