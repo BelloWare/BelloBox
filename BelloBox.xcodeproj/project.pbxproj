@@ -195,6 +195,7 @@
 		D7D31D26EA9CA740885F8FFD /* ThemeContrastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61236C150B6BC57BB0A9C069 /* ThemeContrastTests.swift */; };
 		D828AFF7F4EA95FBF8FBC860 /* CertificateExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08455E5451C0F351A160FACC /* CertificateExample.swift */; };
 		D93FAC85138695EF088AAC6F /* LLMOCRResponseParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F644D5CDDEC738B44A1694F /* LLMOCRResponseParserTests.swift */; };
+		DA06DB91A8AA9F066F1C1747 /* TextToolsPopupViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64521FE8966E1A121C198F82 /* TextToolsPopupViewTests.swift */; };
 		DC103FAAF581A1C86F5C4FC4 /* RecordingFileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3571BA3877C285743C49BB8D /* RecordingFileStoreTests.swift */; };
 		DD3BCDB796853525E001772F /* RecordingInputMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A35F36F50D47226405B1A3 /* RecordingInputMonitor.swift */; };
 		DD7A5C06D428698B0B3F8063 /* ExtendedUtilityVisuals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 733BDA03C6EAEA0CCE0FBA22 /* ExtendedUtilityVisuals.swift */; };
@@ -364,6 +365,7 @@
 		630B21CF97B099B2E7E045CC /* AudioSourcePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSourcePickerView.swift; sourceTree = "<group>"; };
 		635232F920A7544875DC69D2 /* RecordingFrameRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFrameRendererTests.swift; sourceTree = "<group>"; };
 		642589BD82D27E9330660A24 /* SelectionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionRequest.swift; sourceTree = "<group>"; };
+		64521FE8966E1A121C198F82 /* TextToolsPopupViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToolsPopupViewTests.swift; sourceTree = "<group>"; };
 		658F31988B15EF9377B4055D /* BelloBox.Debug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BelloBox.Debug.entitlements; sourceTree = "<group>"; };
 		67E90A6BCCDD74F11AB36C27 /* RecordingAudioMixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingAudioMixer.swift; sourceTree = "<group>"; };
 		6945A1998B09730F8C64B275 /* ScrollCaptureHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollCaptureHUDView.swift; sourceTree = "<group>"; };
@@ -754,6 +756,7 @@
 				4D01FF03C76886B0F5250F42 /* SelectionCaptureTests.swift */,
 				5A23EB7774A4E06366D0E564 /* SelectionResizeGeometryTests.swift */,
 				05590BA92817412B2FFDF870 /* SnapshotDocumentTests.swift */,
+				64521FE8966E1A121C198F82 /* TextToolsPopupViewTests.swift */,
 				F41464E634659AD5A3498BFD /* TextTransformsTests.swift */,
 				61236C150B6BC57BB0A9C069 /* ThemeContrastTests.swift */,
 				070D5F61C4AA6D81748DE98E /* TimestampSummaryTests.swift */,
@@ -963,6 +966,7 @@
 				};
 			};
 			buildConfigurationList = 431CF8842FD8E51677DF7C3B /* Build configuration list for PBXProject "BelloBox" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -976,7 +980,6 @@
 				BA55A7EB2D10E902BFFD0C67 /* XCRemoteSwiftPackageReference "Yams" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = E1803B065C599C229DCDFA54 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -1096,6 +1099,7 @@
 				14A556AF02EC49D6739D4919 /* SelectionCaptureTests.swift in Sources */,
 				C22179447DAFD61FE2CB3384 /* SelectionResizeGeometryTests.swift in Sources */,
 				891045F169274EAC000B64DE /* SnapshotDocumentTests.swift in Sources */,
+				DA06DB91A8AA9F066F1C1747 /* TextToolsPopupViewTests.swift in Sources */,
 				0B8C2FF396C390C38BDE5545 /* TextTransformsTests.swift in Sources */,
 				D7D31D26EA9CA740885F8FFD /* ThemeContrastTests.swift in Sources */,
 				1D51253EC79DE514579E872D /* TimestampSummaryTests.swift in Sources */,

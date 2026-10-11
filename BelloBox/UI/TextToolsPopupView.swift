@@ -64,7 +64,15 @@ final class TextToolsPopupViewModel: ObservableObject {
     var encodeOutput: String { TextEncoder.encode(input, encodeMethod) }
     var decodeResult: TextDecoder.Decoded? { TextDecoder.decode(input, as: decodeFormat) }
     var prettyResult: PrettyPrinter.Result? { PrettyPrinter.prettyPrint(input) }
-    var lineOutput: String { LineTool.apply(input, lineOp) }
+    /// Sorting 490 KB of lines takes ~0.2 s and one render asks for the result
+    /// several times (result, Copy, Use as Input, Replace), so keep the last one.
+    var lineOutput: String {
+        if let cached = lineCache, cached.operation == lineOp, cached.input == input { return cached.output }
+        let output = LineTool.apply(input, lineOp)
+        lineCache = (input, lineOp, output)
+        return output
+    }
+    private var lineCache: (input: String, operation: LineTool.Operation, output: String)?
     var hashes: [(HashTool.Algorithm, String)] {
         HashTool.Algorithm.allCases.map { ($0, HashTool.hash(input, $0)) }
     }
@@ -385,16 +393,22 @@ struct TextToolsPopupView: View {
     private func outputBlock(_ text: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             ToolSectionHeading(title: "Result")
-            ScrollView {
-                Text(text.isEmpty ? "Your result appears here." : text)
-                    .font(.system(.callout, design: .monospaced))
-                    .foregroundStyle(text.isEmpty ? .secondary : .primary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
-            }
-            .frame(minHeight: 200)
-            .padding(8)
-            .toolSurface(.input, cornerRadius: 10)
+            // A native text view lays out only what is on screen. One selectable
+            // SwiftUI Text laid out the whole result on the main thread: 30 KB of
+            // sorted lines took 2.6 s to appear and 490 KB stalled for minutes.
+            // The insets put the text 8 pt in from the surface, as before.
+            LauncherOutputText(text: text, label: "Text Tools result", fontSize: 12)
+                .overlay(alignment: .topLeading) {
+                    if text.isEmpty {
+                        Text("Your result appears here.")
+                            .font(.system(.callout, design: .monospaced)).foregroundStyle(.secondary)
+                            .padding(.horizontal, 6).padding(.vertical, 5)
+                            .allowsHitTesting(false).accessibilityHidden(true)
+                    }
+                }
+                .frame(height: 210)
+                .padding(.horizontal, 2).padding(.vertical, 3)
+                .toolSurface(.input, cornerRadius: 10)
         }
     }
 
