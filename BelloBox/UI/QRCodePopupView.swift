@@ -7,36 +7,63 @@ import UniformTypeIdentifiers
 final class QRCodePopupViewModel: ObservableObject {
     @Published var text: String {
         didSet {
-            guard text != oldValue else { return }
-            cachedImageText = nil
-            cachedImage = nil
+            // Exact bytes: é and e + U+0301 are equal Strings but different codes.
+            guard !text.utf8.elementsEqual(oldValue.utf8) else { return }
             statusMessage = nil
             errorMessage = nil
+            renderImage()
         }
     }
     @Published var statusMessage: String?
     @Published var errorMessage: String?
-
-    private var cachedImageText: String?
-    private var cachedImage: NSImage?
+    /// The full-size code for display, copying and saving: never fewer than
+    /// four pixels per module, so dense codes stay readable. After an edit it
+    /// is drawn off the main thread (up to ~30 ms for 2,000 bytes), so typing
+    /// never waits on it; until it lands this is the previous text's code.
+    /// Text that cannot be encoded clears it at once, and with no previous code
+    /// (the first text, or after an unencodable one) it is drawn at once, so
+    /// the card never flashes a placeholder.
+    @Published private(set) var image: NSImage?
+    private var imageText: String
+    private let renders = QRRenderQueue()
 
     var onClose: () -> Void = {}
 
     init(text: String) {
         self.text = text
+        imageText = text
+        image = Self.render(text)
     }
 
-    /// The full-size code for display, copying and saving: never fewer than
-    /// four pixels per module, so dense codes stay readable.
-    var image: NSImage? {
-        if cachedImageText == text {
-            return cachedImage
+    private nonisolated static func render(_ text: String) -> NSImage? {
+        QRCodeGenerator.image(for: text, pixelSize: QRCodeGenerator.exportPixelSize(for: text))
+    }
+
+    private func renderImage() {
+        let text = text
+        guard QRCodeGenerator.isEncodable(text), image != nil else {
+            renders.cancel()
+            image = Self.render(text)
+            imageText = text
+            return
         }
-        let image = QRCodeGenerator.image(for: text, pixelSize: QRCodeGenerator.exportPixelSize(for: text))
-        cachedImageText = text
-        cachedImage = image
+        renders.run({ Self.render(text) }) { [weak self] image in
+            guard let self, self.text.utf8.elementsEqual(text.utf8) else { return }
+            self.image = image
+            self.imageText = text
+        }
+    }
+
+    /// The code for the current text, drawn now if an edit's is still on its way.
+    private var currentImage: NSImage? {
+        if !imageText.utf8.elementsEqual(text.utf8) {
+            renders.cancel()
+            image = Self.render(text)
+            imageText = text
+        }
         return image
     }
+
     var byteCount: Int { text.utf8.count }
     var isEmpty: Bool { text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     var isTooLong: Bool { byteCount > QRCodeGenerator.maxByteCount }
@@ -51,7 +78,7 @@ final class QRCodePopupViewModel: ObservableObject {
     func copyImage() {
         statusMessage = nil
         errorMessage = nil
-        guard let image else {
+        guard let image = currentImage else {
             errorMessage = "There is no QR image to copy."
             return
         }

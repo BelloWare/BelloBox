@@ -74,3 +74,35 @@ enum QRCodeGenerator {
         return context.createCGImage(scaled, from: scaled.extent)
     }
 }
+
+/// Runs QR encodes on a background queue for one view model. Only the newest
+/// request is delivered: a request superseded before it starts does no work,
+/// and one superseded while running is dropped when it finishes.
+final class QRRenderQueue {
+    private static let queue = DispatchQueue(label: "BelloBox.QRRender", qos: .userInitiated)
+
+    private final class Generation: @unchecked Sendable {
+        private let lock = NSLock()
+        private var value = 0
+        func next() -> Int { lock.lock(); defer { lock.unlock() }; value += 1; return value }
+        func isCurrent(_ id: Int) -> Bool { lock.lock(); defer { lock.unlock() }; return value == id }
+    }
+    private let generation = Generation()
+
+    @MainActor
+    func run<Result>(_ work: @escaping () -> Result, deliver: @escaping @MainActor (Result) -> Void) {
+        let id = generation.next()
+        let generation = generation
+        Self.queue.async {
+            guard generation.isCurrent(id) else { return }
+            let result = work()
+            Task { @MainActor in
+                guard generation.isCurrent(id) else { return }
+                deliver(result)
+            }
+        }
+    }
+
+    /// Drops whatever is queued or running.
+    func cancel() { _ = generation.next() }
+}

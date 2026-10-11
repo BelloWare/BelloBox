@@ -35,7 +35,7 @@ final class QRCodeGeneratorTests: XCTestCase {
     }
 
     @MainActor
-    func testPopupViewModelReusesImageUntilTextChanges() throws {
+    func testPopupViewModelReusesImageUntilTextChanges() async throws {
         let viewModel = QRCodePopupViewModel(text: "Bello Box")
         let first = try XCTUnwrap(viewModel.image)
         let second = try XCTUnwrap(viewModel.image)
@@ -43,6 +43,8 @@ final class QRCodeGeneratorTests: XCTestCase {
         XCTAssertTrue(first === second)
 
         viewModel.text = "Bello Box updated"
+        // The edited text's code is drawn off the main thread (QRRenderingTests).
+        for _ in 0..<300 where viewModel.image === first { try await Task.sleep(nanoseconds: 10_000_000) }
         let updated = try XCTUnwrap(viewModel.image)
         XCTAssertFalse(first === updated)
     }

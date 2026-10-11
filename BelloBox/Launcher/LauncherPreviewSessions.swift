@@ -104,6 +104,13 @@ final class LauncherQRPreview: ObservableObject {
     /// publisher before the change lands, so height answers are never stale.
     private var metrics: (text: String, modules: Int?)
     private var renders: [CGFloat: NSImage?] = [:]
+    /// The raster the card last showed, kept while the edited text's is drawn.
+    private var shownCard: NSImage?
+    /// The text changed since the last raster landed: draw the next one off
+    /// the main thread instead of while typing.
+    private var textChangedSinceRender = false
+    private var pendingCard: (text: String, side: CGFloat)?
+    private let cardRenders = QRRenderQueue()
     private var reportedExtraHeight: CGFloat = 0
 
     init(text: String) {
@@ -116,9 +123,11 @@ final class LauncherQRPreview: ObservableObject {
     }
 
     private func textWillChange(to text: String) {
-        guard text != metrics.text else { return }
+        guard !text.utf8.elementsEqual(metrics.text.utf8) else { return }
         // Old rasters are dropped, not kept per size for every payload.
         renders = [:]
+        textChangedSinceRender = true
+        pendingCard = nil
         metrics = (text, QRCodeGenerator.moduleCount(for: text))
         reportHeightIfChanged()
     }
@@ -150,16 +159,36 @@ final class LauncherQRPreview: ObservableObject {
     var extraHeight: CGFloat { isEnlarged ? largeCardPoints - Self.compactCardPoints : 0 }
     /// The code rendered for the card at two pixels per point, so Retina
     /// displays get exact pixels and standard displays a clean 2:1 reduction.
-    /// Only the current text's rasters are kept.
+    /// Only the current text's rasters are kept. After an edit the raster is
+    /// drawn off the main thread and the card keeps the previous one until it
+    /// lands; a new size for the same text, or a first code, is drawn at once.
     var cardImage: NSImage? {
         let side = (cardPoints - 2 * Self.cardInset) * 2
         if let render = renders[side] { return render }
-        let image = QRCodeGenerator.image(for: metrics.text, pixelSize: side)
-        renders[side] = image
-        return image
+        let text = metrics.text
+        guard textChangedSinceRender, shownCard != nil, metrics.modules != nil else {
+            let image = QRCodeGenerator.image(for: text, pixelSize: side)
+            renders[side] = image
+            shownCard = image
+            textChangedSinceRender = false
+            return image
+        }
+        if pendingCard?.side != side || pendingCard.map({ !$0.text.utf8.elementsEqual(text.utf8) }) ?? true {
+            pendingCard = (text, side)
+            cardRenders.run({ QRCodeGenerator.image(for: text, pixelSize: side) }) { [weak self] image in
+                guard let self, self.metrics.text.utf8.elementsEqual(text.utf8) else { return }
+                self.renders[side] = image
+                self.shownCard = image
+                self.textChangedSinceRender = false
+                self.pendingCard = nil
+                self.objectWillChange.send()
+            }
+        }
+        return shownCard
     }
     var cachedRenderCount: Int { renders.count }
-    var exportPixelSize: Int { Int(QRCodeGenerator.exportPixelSize(for: metrics.text)) }
+    /// From the metrics, not a fresh encode on every render.
+    var exportPixelSize: Int { max(512, (metrics.modules ?? 0) * 4) }
 }
 
 /// The Ask AI row: a prompt draft and the quick actions. Nothing is sent from
