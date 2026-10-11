@@ -167,6 +167,7 @@
 		B3BD1B46A626F09D3A6B368C /* comparison-corpus.json in Resources */ = {isa = PBXBuildFile; fileRef = 9C35E9FEFC9704535D3EC9A4 /* comparison-corpus.json */; };
 		B482A5825F527EE9D070A860 /* PasswordFieldDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC8791358E0B3A99F792938 /* PasswordFieldDetector.swift */; };
 		B8F5E66A35006CDDF2947826 /* AIGenerationOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0A7C589D9BA703B57ECF6B /* AIGenerationOptions.swift */; };
+		BAD0AEA56972F2670CBE3FF8 /* ScreenshotUndoHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CA7A3E72506A2F306907B2 /* ScreenshotUndoHistoryTests.swift */; };
 		BC8AC63D4E2CC1E85F295C17 /* DisplayCaptureResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5C19929B015353837BEFCAA /* DisplayCaptureResolver.swift */; };
 		BD3E28C2EAF68B105B6D9AA6 /* OCRImagePreprocessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8A9544E2A9E55028C5C851 /* OCRImagePreprocessor.swift */; };
 		BE796201F6FF9C43375812A4 /* LauncherHandoff.swift in Sources */ = {isa = PBXBuildFile; fileRef = C98944EEC22687CDAE82F9EB /* LauncherHandoff.swift */; };
@@ -470,6 +471,7 @@
 		D5601FF6525CCBF605C9C911 /* OCRPromptTemplates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRPromptTemplates.swift; sourceTree = "<group>"; };
 		D5C19929B015353837BEFCAA /* DisplayCaptureResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCaptureResolver.swift; sourceTree = "<group>"; };
 		D6B603F0B5CD70E58101A9A9 /* AIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIClient.swift; sourceTree = "<group>"; };
+		D8CA7A3E72506A2F306907B2 /* ScreenshotUndoHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotUndoHistoryTests.swift; sourceTree = "<group>"; };
 		DA409C8802B014BD73F6302F /* LaunchAtLoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginController.swift; sourceTree = "<group>"; };
 		DBA0CDE0F4FDCCC2F9D41E12 /* BelloBoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BelloBoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8E1A1677B354F05CACBD68 /* FeatureWorkflowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureWorkflowTests.swift; sourceTree = "<group>"; };
@@ -767,6 +769,7 @@
 				BAC7888CC7676FC7B96E8C88 /* ScreenshotPopupViewModelOCRTaskTests.swift */,
 				9FA06F46359B3BB8BA781DE8 /* ScreenshotSelectionAdjustmentTests.swift */,
 				45FD06039C7B11E24A182A64 /* ScreenshotTestHelpers.swift */,
+				D8CA7A3E72506A2F306907B2 /* ScreenshotUndoHistoryTests.swift */,
 				4F621560FFE825DE10349FFC /* ScrollCaptureEngineTests.swift */,
 				4D01FF03C76886B0F5250F42 /* SelectionCaptureTests.swift */,
 				5A23EB7774A4E06366D0E564 /* SelectionResizeGeometryTests.swift */,
@@ -1114,6 +1117,7 @@
 				0EB965E72ADEF79E96150367 /* ScreenshotPopupViewModelOCRTaskTests.swift in Sources */,
 				2F540FDFDE4CC7FB9CA34EA7 /* ScreenshotSelectionAdjustmentTests.swift in Sources */,
 				F0D11BAE30BD34488AA595F7 /* ScreenshotTestHelpers.swift in Sources */,
+				BAD0AEA56972F2670CBE3FF8 /* ScreenshotUndoHistoryTests.swift in Sources */,
 				6A7730623BB40C36817E3A9D /* ScrollCaptureEngineTests.swift in Sources */,
 				14A556AF02EC49D6739D4919 /* SelectionCaptureTests.swift in Sources */,
 				C22179447DAFD61FE2CB3384 /* SelectionResizeGeometryTests.swift in Sources */,

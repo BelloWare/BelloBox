@@ -81,6 +81,11 @@ final class ScreenshotPopupViewModel: ObservableObject {
     private let makeLLMOCRService: (AIConfig) -> OCRService
     private let originalAnnotations: [ScreenshotAnnotation]
     private let originalCropRect: CGRect?
+    /// Undo keeps at most 64 steps and about 64 MiB of snapshots (as the Rust
+    /// editor does); each snapshot holds every annotation, so long pen strokes
+    /// made an unbounded history grow quadratically. The oldest steps go first.
+    static let undoStepLimit = 64
+    static let undoHistoryByteLimit = 64 << 20
     private var undoStack: [ScreenshotDocument] = []
     private var redoStack: [ScreenshotDocument] = []
     private var ocrTask: Task<Void, Never>?
@@ -520,6 +525,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         guard let previous = undoStack.popLast() else { return }
         redoStack.append(document)
         document = previous
+        boundHistory()
         documentRevision += 1
         basePreviewRevision += 1
         syncOCRPanel()
@@ -529,6 +535,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
         guard let next = redoStack.popLast() else { return }
         undoStack.append(document)
         document = next
+        boundHistory()
         documentRevision += 1
         basePreviewRevision += 1
         syncOCRPanel()
@@ -778,9 +785,34 @@ final class ScreenshotPopupViewModel: ObservableObject {
         )
     }
 
+    /// Estimated bytes the undo and redo snapshots retain: their annotation
+    /// data, plus any base image the current document no longer shows.
+    var undoHistoryBytes: Int {
+        var images: [ObjectIdentifier: Int] = [:]
+        var bytes = 0
+        for snapshot in undoStack + redoStack {
+            bytes += snapshot.retainedAnnotationBytes
+            if snapshot.baseImage !== document.baseImage {
+                images[ObjectIdentifier(snapshot.baseImage)] = snapshot.baseImage.bytesPerRow * snapshot.baseImage.height
+            }
+        }
+        return bytes + images.values.reduce(0, +)
+    }
+
+    /// Drops the oldest undo steps, then the furthest redo steps, past the
+    /// limits. The latest step each way always stays, so the last change can be
+    /// undone however large it is.
+    private func boundHistory() {
+        if undoStack.count > Self.undoStepLimit { undoStack.removeFirst(undoStack.count - Self.undoStepLimit) }
+        if redoStack.count > Self.undoStepLimit { redoStack.removeFirst(redoStack.count - Self.undoStepLimit) }
+        while undoStack.count > 1, undoHistoryBytes > Self.undoHistoryByteLimit { undoStack.removeFirst() }
+        while redoStack.count > 1, undoHistoryBytes > Self.undoHistoryByteLimit { redoStack.removeFirst() }
+    }
+
     private func pushUndo() {
         undoStack.append(document)
         redoStack.removeAll()
+        boundHistory()
         documentRevision += 1
     }
 
@@ -1294,4 +1326,20 @@ final class ZoomableCanvasScrollView: NSScrollView {
 /// A flipped document view so a tall image starts at its top, like a page.
 final class FlippedDocumentView: NSView {
     override var isFlipped: Bool { true }
+}
+
+private extension ScreenshotDocument {
+    /// What one history snapshot keeps alive besides the shared base image.
+    var retainedAnnotationBytes: Int {
+        annotations.reduce(0) { total, annotation in
+            var bytes = MemoryLayout<ScreenshotAnnotation>.stride
+            switch annotation.kind {
+            case let .freehand(points): bytes += points.count * MemoryLayout<CGPoint>.stride
+            case let .text(text, _, _): bytes += text.utf8.count
+            default: break
+            }
+            for erasure in annotation.erasures { bytes += MemoryLayout<EraserStroke>.stride + erasure.points.count * MemoryLayout<CGPoint>.stride }
+            return total + bytes
+        }
+    }
 }
