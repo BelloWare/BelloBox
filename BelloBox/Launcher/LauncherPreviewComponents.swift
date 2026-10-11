@@ -8,14 +8,30 @@ import SwiftUI
 /// NSScrollView, and is never editable, so the palette keeps its navigation
 /// keys while it is clicked (see `LauncherWindowController.handleKeyEvent`).
 struct LauncherOutputText: NSViewRepresentable {
-    var text: String
-    var attributed: NSAttributedString? = nil
+    /// Compared by exact bytes, so SwiftUI updates the view when only the
+    /// Unicode spelling changes: String == treats é and e + U+0301 as equal.
+    private struct ExactText: Equatable {
+        let value: String
+        static func == (lhs: Self, rhs: Self) -> Bool { lhs.value.utf8.elementsEqual(rhs.value.utf8) }
+    }
+    private var exactText: ExactText
+    var text: String { exactText.value }
+    var attributed: NSAttributedString?
     var label: String
-    var monospaced = true
-    var fontSize: CGFloat = 11
+    var monospaced: Bool
+    var fontSize: CGFloat
     /// Off: long lines keep their width and scroll horizontally, as code and
     /// pretty-printed data should.
-    var wraps = true
+    var wraps: Bool
+
+    init(text: String, attributed: NSAttributedString? = nil, label: String, monospaced: Bool = true, fontSize: CGFloat = 11, wraps: Bool = true) {
+        exactText = ExactText(value: text)
+        self.attributed = attributed
+        self.label = label
+        self.monospaced = monospaced
+        self.fontSize = fontSize
+        self.wraps = wraps
+    }
 
     func makeNSView(context: Context) -> NSScrollView {
         let scroll = NSScrollView()
@@ -64,8 +80,10 @@ struct LauncherOutputText: NSViewRepresentable {
             view.scroll(.zero)
             return
         }
-        guard view.shownAttributed != nil || view.string != text || view.font != font else { return }
+        // Exact bytes: String == would keep é when the text becomes e + U+0301.
+        guard view.shownAttributed != nil || !view.shownText.utf8.elementsEqual(text.utf8) || view.font != font else { return }
         view.shownAttributed = nil
+        view.shownText = text
         view.font = font
         view.textColor = NSColor(BoxTheme.primaryText)
         view.string = text
@@ -77,6 +95,8 @@ struct LauncherOutputText: NSViewRepresentable {
 final class LauncherOutputTextView: NSTextView {
     /// The attributed content currently shown, so updates skip identical input.
     var shownAttributed: NSAttributedString?
+    /// The plain text currently shown.
+    var shownText = ""
     override var needsPanelToBecomeKey: Bool { true }
 }
 

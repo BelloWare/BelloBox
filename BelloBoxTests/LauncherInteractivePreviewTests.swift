@@ -653,7 +653,7 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         XCTAssertTrue(qr.isEnlarged, "The enlarged state survives navigating away and back")
     }
 
-    func testChangingTheTextOfAnEnlargedCodeResizesOnceForTheNewDensityAndDropsOldRasters() throws {
+    func testChangingTheTextOfAnEnlargedCodeResizesOnceForTheNewDensityAndDropsOldRasters() async throws {
         let model = model(String(repeating: "b", count: 1_900))
         defer { model.cancelAll() }
         focus(model, .qr)
@@ -677,7 +677,7 @@ final class LauncherInteractivePreviewTests: XCTestCase {
         XCTAssertEqual(resizes.count, 1, "The same density does not resize again")
         XCTAssertEqual(qr.cachedRenderCount, 0, "Old rasters are dropped when the text changes")
         _ = qr.cardImage
-        XCTAssertEqual(qr.cachedRenderCount, 1)
+        try await waitUntil { qr.cachedRenderCount == 1 } // the edited text's raster is drawn off the main thread
         qr.isEnlarged = false
         _ = qr.cardImage
         XCTAssertEqual(qr.cachedRenderCount, 2, "At most one raster per card size for the current text")
