@@ -117,6 +117,7 @@ final class AppSettings: ObservableObject {
     """
 
     private let defaults: UserDefaults
+    private let apiKeyStore: APIKeyStore
 
     func resetLearnedToolOrder() { LauncherUsageStore(defaults: defaults).reset() }
 
@@ -124,7 +125,9 @@ final class AppSettings: ObservableObject {
         didSet {
             guard providerKind != oldValue else { return }
             defaults.set(providerKind.rawValue, forKey: Keys.provider)
-            apiKey = KeychainStore.get(account: KeychainStore.account(for: providerKind)) ?? ""
+            // The other provider's key is read when something needs it.
+            loadedAPIKey = nil
+            storedAPIKeyExists = nil
         }
     }
 
@@ -251,20 +254,36 @@ final class AppSettings: ObservableObject {
     @Published var activeShortcutRecorderID: UUID?
 
     /// API key for the currently-selected provider. Persisted to the Keychain.
-    @Published var apiKey: String {
-        didSet {
-            guard apiKey != oldValue else { return }
-            KeychainStore.set(apiKey, account: KeychainStore.account(for: providerKind))
+    /// Read on first use (an AI request, Settings), never at launch: when the
+    /// item's ACL does not trust this build, reading it waits on a password
+    /// prompt, and at launch that kept every window from appearing.
+    var apiKey: String {
+        get {
+            if let loadedAPIKey { return loadedAPIKey }
+            let key = apiKeyStore.get(account: KeychainStore.account(for: providerKind)) ?? ""
+            loadedAPIKey = key
+            return key
+        }
+        set {
+            let oldValue = apiKey
+            objectWillChange.send()
+            loadedAPIKey = newValue
+            guard newValue != oldValue else { return }
+            apiKeyStore.set(newValue, account: KeychainStore.account(for: providerKind))
+            storedAPIKeyExists = !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
     }
+    private var loadedAPIKey: String?
+    private var storedAPIKeyExists: Bool?
 
     var hasCompletedSetup: Bool {
         get { defaults.bool(forKey: Keys.hasCompletedSetup) }
         set { defaults.set(newValue, forKey: Keys.hasCompletedSetup) }
     }
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, apiKeyStore: APIKeyStore = KeychainAPIKeyStore()) {
         self.defaults = defaults
+        self.apiKeyStore = apiKeyStore
         let kind = ProviderKind(rawValue: defaults.string(forKey: Keys.provider) ?? "") ?? .openAI
         providerKind = kind
         openAIBaseURL = defaults.string(forKey: Keys.openAIBase) ?? ProviderKind.openAI.defaultBaseURL
@@ -360,13 +379,14 @@ final class AppSettings: ObservableObject {
         recordingGIFFrameRate = Self.normalizedGIFFrameRate(defaults.object(forKey: Keys.recordingGIFFrameRate) as? Int ?? GIFExportOptions.default.framesPerSecond)
         recordingGIFMaxWidth = Self.normalizedGIFMaxWidth(defaults.object(forKey: Keys.recordingGIFMaxWidth) as? Int ?? GIFExportOptions.default.maxWidth)
         recordingGIFLoops = (defaults.object(forKey: Keys.recordingGIFLoops) as? Bool) ?? GIFExportOptions.default.loops
-        apiKey = KeychainStore.get(account: KeychainStore.account(for: kind)) ?? ""
         loadGenerationPreferences()
         persistLoadedValues()
     }
 
     /// The resolved configuration for the active provider.
-    var currentConfig: AIConfig {
+    var currentConfig: AIConfig { config(apiKey: providerKind == .codexCLI ? "" : apiKey) }
+
+    private func config(apiKey: String) -> AIConfig {
         switch providerKind {
         case .openAI:
             return AIConfig(
@@ -406,7 +426,16 @@ final class AppSettings: ObservableObject {
         }
     }
 
-    var isConfigured: Bool { currentConfig.isUsable }
+    /// Answers without reading the key, so status text never prompts: only
+    /// Anthropic needs a key to be usable, and for it an attribute-only query
+    /// says whether one is stored.
+    var isConfigured: Bool {
+        guard providerKind == .anthropic, loadedAPIKey == nil else { return config(apiKey: loadedAPIKey ?? "").isUsable }
+        if storedAPIKeyExists == nil {
+            storedAPIKeyExists = apiKeyStore.contains(account: KeychainStore.account(for: providerKind))
+        }
+        return config(apiKey: storedAPIKeyExists == true ? "stored" : "").isUsable
+    }
 
     var generationModelName: String {
         switch providerKind {

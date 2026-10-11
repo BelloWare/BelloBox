@@ -183,7 +183,7 @@ final class LauncherAIPreview: ObservableObject {
     var isConfigured: Bool { settings.isConfigured }
     var providerSummary: String {
         guard settings.isConfigured else { return "No AI provider yet" }
-        let model = settings.currentConfig.model.trimmingCharacters(in: .whitespacesAndNewlines)
+        let model = settings.generationModelName.trimmingCharacters(in: .whitespacesAndNewlines)
         return settings.providerKind.displayName + (model.isEmpty ? "" : " · " + model)
     }
     var hasSelection: Bool { characterCount > 0 }

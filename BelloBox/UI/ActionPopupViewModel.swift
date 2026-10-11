@@ -42,8 +42,7 @@ final class ActionPopupViewModel: ObservableObject {
 
     var isConfigured: Bool { settings.isConfigured }
     var providerSummary: String {
-        let config = settings.currentConfig
-        return "\(settings.providerKind.displayName) · \(config.model)"
+        "\(settings.providerKind.displayName) · \(settings.generationModelName)"
     }
     var canReplace: Bool {
         selection.pid != nil && lastActionReplaces && errorMessage == nil && !isStreaming
