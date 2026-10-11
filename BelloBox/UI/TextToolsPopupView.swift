@@ -26,7 +26,7 @@ final class TextToolsPopupViewModel: ObservableObject {
         }
     }
 
-    @Published var input: String { didSet { statusMessage = nil } }
+    @Published var input: String { didSet { statusMessage = nil; lineCache = nil } }
     @Published private(set) var statusMessage: String?
     @Published var category: Category = .caseConvert { didSet { statusMessage = nil } }
     @Published var caseStyle: CaseConverter.Style = .upper { didSet { statusMessage = nil } }
@@ -67,12 +67,13 @@ final class TextToolsPopupViewModel: ObservableObject {
     /// Sorting 490 KB of lines takes ~0.2 s and one render asks for the result
     /// several times (result, Copy, Use as Input, Replace), so keep the last one.
     var lineOutput: String {
-        if let cached = lineCache, cached.operation == lineOp, cached.input == input { return cached.output }
+        if let cached = lineCache, cached.operation == lineOp { return cached.output }
         let output = LineTool.apply(input, lineOp)
-        lineCache = (input, lineOp, output)
+        lineCache = (lineOp, output)
         return output
     }
-    private var lineCache: (input: String, operation: LineTool.Operation, output: String)?
+    /// Cleared on every edit: String == would match é with e + U+0301.
+    private var lineCache: (operation: LineTool.Operation, output: String)?
     var hashes: [(HashTool.Algorithm, String)] {
         HashTool.Algorithm.allCases.map { ($0, HashTool.hash(input, $0)) }
     }

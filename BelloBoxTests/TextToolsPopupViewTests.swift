@@ -73,4 +73,23 @@ final class TextToolsPopupViewTests: XCTestCase {
             XCTAssertLessThan(elapsed, 3, "\(category): laying out and drawing the result took \(elapsed) s")
         }
     }
+
+    func testAResultFollowsAnEditThatOnlyChangesTheUnicodeSpelling() throws {
+        // String == treats é and e + U+0301 as equal; the result must still
+        // follow the exact text, since Copy and Replace use these bytes.
+        let viewModel = TextToolsPopupViewModel(selection: TextSelection(text: "b\n\u{E9}", anchorRect: nil, appName: nil, bundleID: nil, pid: nil),
+                                                settings: AppSettings(defaults: defaults), accessibility: AccessibilityService())
+        viewModel.lineOp = .sortAscending
+        viewModel.category = .lines
+        let window = window(viewModel)
+        defer { window.close() }
+        window.contentView?.layoutSubtreeIfNeeded()
+        XCTAssertEqual(Array(viewModel.lineOutput.unicodeScalars), Array("b\n\u{E9}".unicodeScalars))
+        viewModel.input = "b\ne\u{301}"
+        XCTAssertEqual(Array(viewModel.lineOutput.unicodeScalars), Array("b\ne\u{301}".unicodeScalars))
+        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+        window.contentView?.layoutSubtreeIfNeeded()
+        let shown = try XCTUnwrap(Self.descendants(of: try XCTUnwrap(window.contentView)).compactMap { $0 as? LauncherOutputTextView }.first)
+        XCTAssertEqual(Array(shown.string.unicodeScalars), Array("b\ne\u{301}".unicodeScalars), "The text view shows the new spelling")
+    }
 }
