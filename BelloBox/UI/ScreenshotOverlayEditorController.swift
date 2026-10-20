@@ -14,7 +14,9 @@ final class ScreenshotOverlayEditorController {
         }
     }
 
-    func show(viewModel: ScreenshotPopupViewModel, captureFrame: CGRect, settings: AppSettings) {
+    @discardableResult
+    func show(viewModel: ScreenshotPopupViewModel, captureFrame: CGRect, settings: AppSettings) -> Bool {
+        guard WindowDialogPresenter.canStartCapture() else { return false }
         close()
         self.viewModel = viewModel
         installKeyMonitor()
@@ -41,6 +43,7 @@ final class ScreenshotOverlayEditorController {
         }
 
         targetWindow?.makeKeyAndOrderFront(nil)
+        return true
     }
 
     func close() {
@@ -83,7 +86,11 @@ final class ScreenshotOverlayEditorController {
 
     /// A sheet (including a remote file panel) must receive Escape itself.
     func handleKeyEvent(_ event: NSEvent) -> Bool {
-        guard event.keyCode == 53, !WindowDialogPresenter.ownsKeyboard else { return false }
+        guard event.keyCode == 53,
+              !windows.contains(where: { WindowDialogPresenter.hasDialog(for: $0) })
+        else { return false }
+        if let window = event.window ?? NSApp.keyWindow,
+           !windows.contains(where: { $0 === window }) { return false }
         viewModel?.handleEscape()
         return true
     }

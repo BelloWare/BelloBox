@@ -5,6 +5,225 @@ import XCTest
 
 @MainActor
 final class DialogPresentationTests: XCTestCase {
+    func testSettingsDiagnosticsSheetRejectsScreenshotHotkeyWithVisibleHint() async throws {
+        let settings = makeSettings()
+        let owner = makeWindow(level: .normal)
+        defer { close(owner); OverlayTooltipPresenter.shared.hide() }
+        let view = SettingsView(settings: settings, navigation: WindowNavigation(.capture))
+        owner.contentView = NSHostingView(rootView: view)
+        view.exportCaptureDiagnostics(in: owner)
+        let panel = try await savePanel(in: owner)
+        XCTAssertEqual(panel.nameFieldStringValue, "bello-box-capture-diagnostics.log")
+        let controller = SelectionOverlayController(settings: settings)
+        var accepted: [String] = []
+        controller.debugCaptureRequest = { accepted.append($0) }
+
+        controller.triggerScreenshotShortcut()
+        XCTAssertTrue(accepted.isEmpty, "A screenshot hotkey must stop before requesting capture")
+        XCTAssertEqual(OverlayTooltipPresenter.shared.visibleText, "Close the dialog before starting a capture.")
+        XCTAssertTrue(OverlayTooltipPresenter.shared.debugPanel?.isVisible == true)
+        XCTAssertTrue(panel.isKeyWindow, "The hint must leave the file dialog usable")
+        XCTAssertTrue(owner.attachedSheet === panel)
+        let visibleWindows = Set(NSApp.windows.filter(\.isVisible).map(ObjectIdentifier.init))
+        controller.triggerScreenshotCapture()
+        controller.triggerScrollingScreenshotCapture()
+        XCTAssertTrue(NSApp.windows.filter(\.isVisible).allSatisfy { visibleWindows.contains(ObjectIdentifier($0)) },
+                      "Menu capture requests must also leave the existing sheet alone")
+        let hint = try XCTUnwrap(OverlayTooltipPresenter.shared.debugPanel)
+        XCTAssertGreaterThan(hint.level.rawValue, panel.level.rawValue)
+        XCTAssertTrue(hint.ignoresMouseEvents)
+        XCTAssertFalse(hint.canBecomeKey)
+        try await waitUntil { OverlayTooltipPresenter.shared.visibleText == nil }
+        XCTAssertTrue(panel.isKeyWindow, "The hint expires without moving focus")
+
+        // File panels handle WindowServer events remotely; their Cancel action is
+        // the native equivalent of Escape (physical Escape is covered by the fixture).
+        panel.cancel(nil)
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
+        controller.triggerScreenshotShortcut()
+        XCTAssertEqual(accepted, ["screenshot"], "Dismissal must unblock the next request")
+    }
+
+    func testSnippetDeleteConfirmationRejectsRecordingHotkeyAndEscapeCancels() async throws {
+        let owner = makeWindow(level: .normal)
+        defer { close(owner); OverlayTooltipPresenter.shared.hide() }
+        var presented = true
+        var deletions = 0
+        // Mount the same native confirmation used by UtilityWorkbenchView's
+        // Delete button; no real snippet library is read or written.
+        owner.contentView = NSHostingView(rootView: Text("Snippet fixture").windowConfirmation(
+            "Delete this snippet?", isPresented: Binding(get: { presented }, set: { presented = $0 }),
+            confirmTitle: "Delete", onConfirm: { deletions += 1 }
+        ))
+        try await waitUntil { owner.attachedSheet?.isKeyWindow == true }
+        let sheet = try XCTUnwrap(owner.attachedSheet)
+        let controller = SelectionOverlayController(settings: makeSettings())
+        var accepted: [String] = []
+        controller.debugCaptureRequest = { accepted.append($0) }
+
+        controller.triggerRecording()
+        XCTAssertTrue(accepted.isEmpty, "A recording hotkey must stop before requesting capture")
+        XCTAssertEqual(OverlayTooltipPresenter.shared.visibleText, "Close the dialog before starting a capture.")
+        XCTAssertTrue(sheet.isKeyWindow)
+        try sendEscape(to: sheet)
+        try await waitUntil { !presented && owner.attachedSheet == nil }
+        XCTAssertEqual(deletions, 0)
+        controller.triggerRecording()
+        XCTAssertEqual(accepted, ["recording"])
+    }
+
+    func testUnrelatedDialogDoesNotDisableCaptureEscape() async throws {
+        let controller = CaptureOverlayController(
+            screenCaptureService: ScreenCaptureService(), settings: makeSettings(), macOCRService: MacVisionOCRService()
+        )
+        var cancelled = false
+        controller.beginScreenshotForTesting(snapshots: [], onError: { XCTFail($0) }, onCancel: { cancelled = true })
+        let overlay = try XCTUnwrap(controller.debugOverlayWindows.first)
+        let owner = makeWindow(level: .normal)
+        defer { controller.cancel(); close(owner) }
+        let alert = NSAlert()
+        alert.messageText = "Unrelated confirmation"
+        alert.addButton(withTitle: "Cancel").keyEquivalent = "\u{1b}"
+        var response: NSApplication.ModalResponse?
+        WindowDialogPresenter.present(alert, for: owner) { response = $0 }
+        try await waitUntil { alert.window.isKeyWindow }
+        XCTAssertTrue(WindowDialogPresenter.hasDialog(for: owner))
+        XCTAssertFalse(WindowDialogPresenter.hasDialog(for: overlay))
+
+        XCTAssertFalse(controller.handleKeyEvent(try escapeEvent(in: alert.window)),
+                       "The frontmost dialog must receive its own Escape")
+        // Reproduce a hidden/unreachable unrelated sheet without starting a
+        // second capture. Its ownership must never suppress the shield's Escape.
+        alert.window.level = .normal
+        overlay.makeKeyAndOrderFront(nil)
+        XCTAssertTrue(controller.handleKeyEvent(try escapeEvent(in: overlay)))
+        XCTAssertTrue(cancelled)
+        XCTAssertTrue(controller.debugOverlayWindows.isEmpty)
+        XCTAssertNil(response, "Cancelling this overlay must not cancel another owner's sheet")
+        owner.endSheet(alert.window, returnCode: .cancel)
+        try await waitUntil { response != nil }
+    }
+
+    func testFrontmostUnrelatedConfirmationReceivesEscapeBeforeCapture() async throws {
+        let controller = CaptureOverlayController(
+            screenCaptureService: ScreenCaptureService(), settings: makeSettings(), macOCRService: MacVisionOCRService()
+        )
+        var cancelled = false
+        controller.beginScreenshotForTesting(snapshots: [], onError: { XCTFail($0) }, onCancel: { cancelled = true })
+        let overlay = try XCTUnwrap(controller.debugOverlayWindows.first)
+        let owner = makeWindow(level: .normal)
+        defer { controller.cancel(); close(owner) }
+        let alert = NSAlert()
+        alert.messageText = "Frontmost confirmation"
+        alert.addButton(withTitle: "Cancel").keyEquivalent = "\u{1b}"
+        var response: NSApplication.ModalResponse?
+        WindowDialogPresenter.present(alert, for: owner) { response = $0 }
+        try await waitUntil { alert.window.isKeyWindow }
+        XCTAssertGreaterThan(alert.window.level.rawValue, overlay.level.rawValue)
+        try sendEscape(to: alert.window)
+        try await waitUntil { response != nil && !WindowDialogPresenter.hasDialog(for: owner) }
+        XCTAssertEqual(response, .alertFirstButtonReturn)
+        XCTAssertFalse(cancelled, "The first Escape dismisses only the frontmost dialog")
+        overlay.makeKeyAndOrderFront(nil)
+        try sendEscape(to: overlay)
+        try await waitUntil { cancelled }
+        XCTAssertTrue(controller.debugOverlayWindows.isEmpty)
+    }
+
+    func testNativeSheetAlsoBlocksCaptureAndOwnersRemainIndependent() async throws {
+        let owner = makeWindow(level: .normal)
+        let other = makeWindow(level: .floating)
+        let nativeSheet = NSPanel(contentRect: CGRect(x: 0, y: 0, width: 350, height: 150),
+                                  styleMask: [.titled], backing: .buffered, defer: false)
+        defer { close(owner); close(other); OverlayTooltipPresenter.shared.hide() }
+        // Covers sheets made by AppKit/SwiftUI outside WindowDialogPresenter,
+        // such as the World Clock location picker.
+        owner.beginSheet(nativeSheet, completionHandler: nil)
+        try await waitUntil { owner.attachedSheet === nativeSheet }
+        let controller = SelectionOverlayController(settings: makeSettings())
+        var requests = 0
+        controller.debugCaptureRequest = { _ in requests += 1 }
+        controller.triggerScreenshotShortcut()
+        controller.triggerRecording()
+        XCTAssertEqual(requests, 0)
+        XCTAssertTrue(WindowDialogPresenter.hasDialog(for: owner))
+        XCTAssertFalse(WindowDialogPresenter.hasDialog(for: other))
+
+        let alert = NSAlert()
+        alert.messageText = "Another owner's confirmation"
+        alert.addButton(withTitle: "Cancel")
+        WindowDialogPresenter.present(alert, for: other) { _ in }
+        try await waitUntil { other.attachedSheet === alert.window }
+        owner.endSheet(nativeSheet, returnCode: .cancel)
+        try await waitUntil { !WindowDialogPresenter.hasDialog(for: owner) }
+        XCTAssertTrue(WindowDialogPresenter.hasDialog(for: other))
+        controller.triggerRecording()
+        XCTAssertEqual(requests, 0, "Closing one owner's sheet must not clear another owner's state")
+        other.endSheet(alert.window, returnCode: .cancel)
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
+        controller.triggerScreenshotShortcut()
+        XCTAssertEqual(requests, 1)
+    }
+
+    func testCaptureBoundariesRejectDialogBeforeCreatingAnyShields() async throws {
+        let owner = makeWindow(level: .normal)
+        defer { close(owner); OverlayTooltipPresenter.shared.hide() }
+        let panel = NSSavePanel()
+        WindowDialogPresenter.present(panel, for: owner) { _ in }
+        _ = try await savePanel(in: owner)
+        let settings = makeSettings()
+        let controller = CaptureOverlayController(
+            screenCaptureService: ScreenCaptureService(), settings: settings, macOCRService: MacVisionOCRService()
+        )
+        defer { controller.cancel() }
+        var cancellations = 0
+        controller.beginRecording(
+            initialOptions: settings.recordingOptions, onRecord: { _, _ in XCTFail("Must not record") },
+            onError: { XCTFail($0) }, onCancel: { cancellations += 1 }
+        )
+        controller.beginScreenshot(onError: { XCTFail($0) }, onCancel: { cancellations += 1 })
+        // Enter at the post-snapshot boundary, representing a dialog opened while
+        // the asynchronous snapshot phase was in flight. No Screen Recording needed.
+        controller.beginScreenshotForTesting(
+            snapshots: [], onError: { XCTFail($0) }, onCancel: { cancellations += 1 }
+        )
+        XCTAssertEqual(cancellations, 3)
+        XCTAssertTrue(controller.debugOverlayWindows.isEmpty)
+        let editor = ScreenshotOverlayEditorController()
+        defer { editor.close() }
+        let model = makeScreenshotModel(settings: settings)
+        XCTAssertFalse(editor.show(viewModel: model, captureFrame: owner.frame, settings: settings))
+        XCTAssertNil(model.hostWindow)
+        XCTAssertTrue(panel.isKeyWindow)
+        XCTAssertTrue(owner.attachedSheet === panel)
+        panel.cancel(nil)
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
+    }
+
+    func testUnrelatedDialogDoesNotDisableScreenshotEditorEscape() async throws {
+        let settings = makeSettings()
+        let model = makeScreenshotModel(settings: settings)
+        let controller = ScreenshotOverlayEditorController()
+        let screen = try XCTUnwrap(NSScreen.main)
+        controller.show(viewModel: model, captureFrame: screen.frame.insetBy(dx: 200, dy: 200), settings: settings)
+        try await waitUntil { model.hostWindow != nil }
+        let overlay = try XCTUnwrap(model.hostWindow)
+        let owner = makeWindow(level: .normal)
+        defer { controller.close(); close(owner) }
+        var closes = 0
+        model.onClose = { closes += 1 }
+        let panel = NSSavePanel()
+        WindowDialogPresenter.present(panel, for: owner) { _ in }
+        _ = try await savePanel(in: owner)
+        XCTAssertFalse(controller.handleKeyEvent(try escapeEvent(in: panel)))
+        panel.level = .normal
+        overlay.makeKeyAndOrderFront(nil)
+        XCTAssertTrue(controller.handleKeyEvent(try escapeEvent(in: overlay)))
+        XCTAssertEqual(closes, 1, "Another owner's dialog cannot disable this editor's Escape")
+        panel.cancel(nil)
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
+    }
+
     func testScreenshotSaveAttachesToOverlayAndCancelPreservesShield() async throws {
         let suite = "BelloBoxTests.DialogPresentation.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
@@ -44,7 +263,7 @@ final class DialogPresentationTests: XCTestCase {
         defer { timer.invalidate() }
         model.saveRenderedImage()
         await fulfillment(of: [inspected], timeout: 5)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertTrue(overlay.isVisible)
         XCTAssertEqual(overlay.level, .screenSaver)
         XCTAssertNil(model.errorMessage)
@@ -101,7 +320,7 @@ final class DialogPresentationTests: XCTestCase {
         XCTAssertTrue(panel.sheetParent === owner)
         XCTAssertGreaterThan(panel.level.rawValue, otherShield.level.rawValue)
         XCTAssertEqual(owner.level, .screenSaver)
-        XCTAssertTrue(WindowDialogPresenter.ownsKeyboard)
+        XCTAssertTrue(WindowDialogPresenter.hasActiveDialogs)
         owner.endSheet(panel, returnCode: response)
         try await waitUntil { result != nil }
         XCTAssertEqual(result, response)
@@ -109,7 +328,7 @@ final class DialogPresentationTests: XCTestCase {
         XCTAssertEqual(owner.level, .screenSaver)
         XCTAssertEqual(otherShield.level.rawValue, NSWindow.Level.screenSaver.rawValue + 1)
         XCTAssertTrue(owner.isVisible && otherShield.isVisible)
-        XCTAssertFalse(WindowDialogPresenter.ownsKeyboard)
+        XCTAssertFalse(WindowDialogPresenter.hasActiveDialogs)
     }
 
     func testExplicitOwnerWinsOverAnotherKeyWindow() async throws {
@@ -122,7 +341,7 @@ final class DialogPresentationTests: XCTestCase {
         try await waitUntil { owner.attachedSheet === panel }
         XCTAssertNil(other.attachedSheet)
         panel.cancel(nil)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
     }
 
     func testClosedOwnerCancelsWithoutOpeningAnOrphanDialog() {
@@ -133,7 +352,7 @@ final class DialogPresentationTests: XCTestCase {
         WindowDialogPresenter.present(panel, for: owner) { response = $0 }
         XCTAssertEqual(response, .cancel)
         XCTAssertFalse(panel.isVisible)
-        XCTAssertFalse(WindowDialogPresenter.ownsKeyboard)
+        XCTAssertFalse(WindowDialogPresenter.hasActiveDialogs)
     }
 
     func testPanelStartupFailureRestoresLevelBeforeAndAfterCompletion() {
@@ -150,7 +369,7 @@ final class DialogPresentationTests: XCTestCase {
         XCTAssertEqual(panel.level, originalLevel)
         XCTAssertEqual(owner.level, .screenSaver)
         XCTAssertNil(owner.attachedSheet)
-        XCTAssertFalse(WindowDialogPresenter.ownsKeyboard)
+        XCTAssertFalse(WindowDialogPresenter.hasActiveDialogs)
     }
 
     func testRepeatedSaveDoesNotStackSheets() async throws {
@@ -166,7 +385,7 @@ final class DialogPresentationTests: XCTestCase {
         XCTAssertTrue(owner.attachedSheet === first)
         XCTAssertFalse(second.isVisible)
         first.cancel(nil)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
     }
 
     func testScreenshotSuccessfulWriteAndWriteErrorKeepOverlayLevelAndFocus() async throws {
@@ -196,7 +415,7 @@ final class DialogPresentationTests: XCTestCase {
             }
             _ = try await savePanel(in: owner)
             owner.endSheet(panel, returnCode: .OK)
-            try await waitUntil { result != nil && !WindowDialogPresenter.ownsKeyboard }
+            try await waitUntil { result != nil && !WindowDialogPresenter.hasActiveDialogs }
             XCTAssertEqual(owner.level, .screenSaver)
             XCTAssertTrue(owner.isVisible)
             if shouldFail {
@@ -228,7 +447,7 @@ final class DialogPresentationTests: XCTestCase {
         model.handleEscape()
         XCTAssertEqual(closes, 0)
         panel.cancel(nil)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertEqual(closes, 0)
         XCTAssertTrue(owner.isVisible)
         XCTAssertEqual(owner.level, .screenSaver)
@@ -258,11 +477,14 @@ final class DialogPresentationTests: XCTestCase {
         XCTAssertTrue(owner.styleMask.contains(.nonactivatingPanel))
         XCTAssertFalse(controller.handleKeyEvent(try escapeEvent(in: panel)))
         panel.cancel(nil)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertFalse(cancelled)
         XCTAssertFalse(controller.debugOverlayWindows.isEmpty)
         XCTAssertEqual(owner.level, .screenSaver)
         XCTAssertTrue(owner.isVisible)
+        XCTAssertTrue(controller.handleKeyEvent(try escapeEvent(in: owner)))
+        XCTAssertTrue(cancelled, "After the sheet, Escape must cancel the capture again")
+        XCTAssertTrue(controller.debugOverlayWindows.isEmpty)
     }
 
     func testClosingScreenshotOverlayCancelsItsPendingSave() async throws {
@@ -277,7 +499,7 @@ final class DialogPresentationTests: XCTestCase {
         model.saveRenderedImage()
         let panel = try await savePanel(in: owner)
         controller.close()
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertFalse(panel.isVisible)
         XCTAssertFalse(owner.isVisible)
         XCTAssertEqual(owner.level, .screenSaver)
@@ -299,7 +521,7 @@ final class DialogPresentationTests: XCTestCase {
         let alert = try XCTUnwrap(owner.attachedSheet)
         XCTAssertGreaterThan(alert.level.rawValue, owner.level.rawValue)
         try sendEscape(to: alert)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertFalse(model.showDiscardCloseConfirmation)
         XCTAssertTrue(model.hasImageEdits)
         XCTAssertTrue(owner.isVisible)
@@ -323,7 +545,7 @@ final class DialogPresentationTests: XCTestCase {
             let panel = try await savePanel(in: owner)
             XCTAssertTrue(panel.nameFieldStringValue.hasSuffix(mode == .markdown ? ".md" : ".txt"))
             panel.cancel(nil)
-            try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+            try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
             XCTAssertNil(model.statusMessage)
         }
         for markdown in [false, true] {
@@ -352,7 +574,7 @@ final class DialogPresentationTests: XCTestCase {
         model.save()
         let panel = try await savePanel(in: owner)
         panel.cancel(nil)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertNil(model.errorMessage)
         XCTAssertNil(model.statusMessage)
         XCTAssertEqual(owner.level, .statusBar)
@@ -372,13 +594,13 @@ final class DialogPresentationTests: XCTestCase {
         XCTAssertTrue(controller.isVisible)
         XCTAssertFalse(controller.handleKeyEvent(try escapeEvent(in: panel)))
         panel.cancel(nil)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard && controller.isSearchFieldFocused }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs && controller.isSearchFieldFocused }
         XCTAssertTrue(controller.isVisible)
         XCTAssertEqual(owner.level, .floating)
         qr.save(in: owner)
         let pending = try await savePanel(in: owner)
         controller.close()
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertFalse(pending.isVisible)
         XCTAssertFalse(controller.isVisible)
     }
@@ -397,7 +619,7 @@ final class DialogPresentationTests: XCTestCase {
             action()
             let panel = try await savePanel(in: owner)
             panel.cancel(nil)
-            try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+            try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
             XCTAssertFalse(model.isSaving || model.isConverting)
             XCTAssertNil(model.statusMessage)
             XCTAssertEqual(owner.level, .statusBar)
@@ -414,7 +636,7 @@ final class DialogPresentationTests: XCTestCase {
         let open = try await savePanel(in: owner)
         XCTAssertTrue(open is NSOpenPanel)
         open.cancel(nil)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertNil(model.sourceURL)
         let movie = try await SyntheticMediaFixture.writeMovie(
             to: temporaryDirectory().appendingPathComponent("fixture.mov"),
@@ -425,7 +647,7 @@ final class DialogPresentationTests: XCTestCase {
         model.convert()
         let save = try await savePanel(in: owner)
         save.cancel(nil)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertFalse(model.isConverting)
         XCTAssertNil(model.result)
         XCTAssertEqual(owner.level, .statusBar)
@@ -446,7 +668,7 @@ final class DialogPresentationTests: XCTestCase {
         let alert = try XCTUnwrap(owner.attachedSheet)
         XCTAssertGreaterThan(alert.level.rawValue, owner.level.rawValue)
         try sendEscape(to: alert)
-        try await waitUntil { !WindowDialogPresenter.ownsKeyboard }
+        try await waitUntil { !WindowDialogPresenter.hasActiveDialogs }
         XCTAssertEqual(removals, 0)
         XCTAssertFalse(model.showDiscardConfirmation)
         XCTAssertEqual(owner.level, .statusBar)

@@ -442,8 +442,12 @@ BelloBox/
   `.screenSaver`: lowering them would expose other apps and change capture/focus
   behavior. Only the dialog level changes, restored before completion on both
   acceptance and cancellation, including when an export subsequently fails.
-  Capture Escape monitors defer to dialogs; closing an overlay cancels its
-  pending sheet. This policy covers PNG, OCR, QR, movie/GIF, diagnostics, and
+  New screenshot/recording requests stop while any dialog or native/SwiftUI sheet
+  is open, with a brief non-interactive tooltip. Recheck before creating capture
+  shields after asynchronous snapshot preparation. Dialog state belongs to each
+  owner: capture Escape monitors defer to their own sheets and leave other
+  windows' key events alone; closing an overlay cancels only its pending sheet.
+  This policy covers PNG, OCR, QR, movie/GIF, diagnostics, and
   screenshot/recording/snippet discard confirmations. LLM OCR approval and GIF
   options remain inside the editor's own surface.
 - Annotations: `ScreenshotAnnotation.erasures` are per-annotation brush strokes

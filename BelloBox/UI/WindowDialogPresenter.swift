@@ -7,11 +7,44 @@ import SwiftUI
 /// including above shields on other displays if the user moves the dialog.
 @MainActor
 enum WindowDialogPresenter {
-    private static var activeDialogs = Set<ObjectIdentifier>()
+    private final class Presentation {
+        weak var owner: NSWindow?
+        weak var dialog: NSWindow?
+        var isStarting = true
 
-    static var ownsKeyboard: Bool {
-        !activeDialogs.isEmpty || NSApp.modalWindow != nil
-            || NSApp.windows.contains { $0.attachedSheet != nil }
+        init(owner: NSWindow, dialog: NSWindow) {
+            self.owner = owner
+            self.dialog = dialog
+        }
+    }
+
+    // Each owner has its own presentation, including the short interval before
+    // AppKit attaches the sheet. Weak references cannot keep a closed owner active.
+    private static var presentations: [ObjectIdentifier: Presentation] = [:]
+
+    static func hasDialog(for owner: NSWindow?) -> Bool {
+        guard let owner, owner.isVisible else { return false }
+        let presentation = presentations[ObjectIdentifier(owner)]
+        return owner.attachedSheet != nil
+            || (presentation?.owner === owner && presentation?.dialog != nil)
+    }
+
+    /// Aggregate only for *starting* captures, never for an overlay's keyboard
+    /// handling. Include native/SwiftUI sheets that don't use this presenter.
+    static var hasActiveDialogs: Bool {
+        presentations.values.contains {
+            $0.dialog != nil && ($0.isStarting || $0.owner?.isVisible == true || $0.dialog?.isVisible == true)
+        } || NSApp.modalWindow?.isVisible == true
+            || NSApp.windows.contains { $0.isVisible && $0.attachedSheet != nil }
+    }
+
+    static func canStartCapture(onBlocked: () -> Void = {}) -> Bool {
+        guard !hasActiveDialogs else {
+            onBlocked()
+            OverlayTooltipPresenter.shared.showNotice("Close the dialog before starting a capture.")
+            return false
+        }
+        return true
     }
 
     static func present(
@@ -21,13 +54,14 @@ enum WindowDialogPresenter {
     ) {
         if let window, !window.isVisible { completion(.cancel); return }
         let owner = presentationWindow(window)
-        guard owner?.attachedSheet == nil else { completion(.cancel); return }
-        let finish = prepare(panel, completion: completion)
+        guard !hasDialog(for: owner) else { completion(.cancel); return }
+        let finish = prepare(panel, owner: owner ?? panel, completion: completion)
         if let owner {
             panel.beginSheetModal(for: owner, completionHandler: finish)
         } else {
             panel.begin(completionHandler: finish)
         }
+        presentations[ObjectIdentifier(owner ?? panel)]?.isStarting = false
         elevate(panel)
     }
 
@@ -36,9 +70,10 @@ enum WindowDialogPresenter {
         for window: NSWindow,
         completion: @escaping (NSApplication.ModalResponse) -> Void
     ) {
-        guard window.isVisible, window.attachedSheet == nil else { completion(.cancel); return }
-        let finish = prepare(alert.window, completion: completion)
+        guard window.isVisible, !hasDialog(for: window) else { completion(.cancel); return }
+        let finish = prepare(alert.window, owner: window, completion: completion)
         alert.beginSheetModal(for: window, completionHandler: finish)
+        presentations[ObjectIdentifier(window)]?.isStarting = false
         elevate(alert.window)
     }
 
@@ -62,15 +97,16 @@ enum WindowDialogPresenter {
 
     private static func prepare(
         _ dialog: NSWindow,
+        owner: NSWindow,
         completion: @escaping (NSApplication.ModalResponse) -> Void
     ) -> (NSApplication.ModalResponse) -> Void {
-        let identifier = ObjectIdentifier(dialog)
+        let identifier = ObjectIdentifier(owner)
         let originalLevel = dialog.level
-        activeDialogs.insert(identifier)
+        presentations[identifier] = Presentation(owner: owner, dialog: dialog)
         elevate(dialog)
         return { response in
             dialog.level = originalLevel
-            activeDialogs.remove(identifier)
+            presentations.removeValue(forKey: identifier)
             // Restore before any write/conversion can fail or open another dialog.
             completion(response)
         }
@@ -79,7 +115,7 @@ enum WindowDialogPresenter {
     private static func elevate(_ dialog: NSWindow) {
         // A failed begin can finish synchronously. Do not raise it again after
         // its completion has already restored the original level.
-        guard activeDialogs.contains(ObjectIdentifier(dialog)) else { return }
+        guard presentations.values.contains(where: { $0.dialog === dialog }) else { return }
         let highest = NSApp.windows.filter { $0 !== dialog && $0.isVisible }
             .map(\.level.rawValue).max() ?? NSWindow.Level.normal.rawValue
         dialog.level = NSWindow.Level(rawValue: max(NSWindow.Level.modalPanel.rawValue, highest + 1))

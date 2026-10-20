@@ -205,7 +205,7 @@ struct SettingsView: View {
                 Toggle("Enable screenshot diagnostics logging", isOn: $settings.captureDiagnosticsEnabled)
                 HStack(spacing: 10) {
                     Button {
-                        exportCaptureDiagnostics()
+                        exportCaptureDiagnostics(in: dialogHost.window)
                     } label: {
                         Label("Export Diagnostics Log…", systemImage: "square.and.arrow.up")
                     }
@@ -475,13 +475,13 @@ struct SettingsView: View {
         .padding(.vertical, 3)
     }
 
-    private func exportCaptureDiagnostics() {
+    func exportCaptureDiagnostics(in window: NSWindow?) {
         let panel = NSSavePanel()
         panel.title = "Export Bello Box Diagnostics"
         panel.nameFieldStringValue = "bello-box-capture-diagnostics.log"
         panel.canCreateDirectories = true
 
-        WindowDialogPresenter.present(panel, for: dialogHost.window) { response in
+        WindowDialogPresenter.present(panel, for: window) { response in
             guard response == .OK, let url = panel.url else { return }
             do {
                 try CaptureDiagnostics.exportLog(to: url)

@@ -678,7 +678,7 @@ final class ScreenshotPopupViewModel: ObservableObject {
     }
 
     func handleEscape() {
-        guard !WindowDialogPresenter.ownsKeyboard else { return }
+        guard !WindowDialogPresenter.hasDialog(for: hostWindow) else { return }
         if llmConfirmation != nil { cancelLLMOCR(); return }
         requestClose()
     }
