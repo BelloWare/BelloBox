@@ -115,6 +115,9 @@ opens the image in an annotation editor with pen, arrows, rectangles,
 highlights, text labels, crop, masks, an eraser, undo/redo, OCR, copy image,
 and save PNG.
 
+- **Save…** opens a dialog attached above the editor, including the full-screen
+  capture overlay. Escape or Cancel returns to editing with your screenshot
+  and annotations intact.
 - **Mask** hides content behind an opaque fill. Pick charcoal, black, white,
   orange, teal or plum (or any custom colour) and a solid, striped or dotted
   finish; whatever you choose, the export and OCR upload never let the pixels

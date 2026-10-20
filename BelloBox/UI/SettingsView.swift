@@ -20,6 +20,7 @@ struct SettingsView: View {
     @State private var microphonePermission = MicrophonePermission.status()
     @State private var inputMonitoringPermission = InputMonitoringPermission.status()
     @State private var diagnosticsExportMessage: String?
+    @State private var dialogHost = DialogWindowReference()
     @State private var learnedOrderReset = false
     private let permissionTimer = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
 
@@ -40,6 +41,7 @@ struct SettingsView: View {
         .frame(minWidth: 900, minHeight: 680)
         .workspaceBackground().buttonStyle(SecondaryButtonStyle()).tint(BoxTheme.accent).accentColor(BoxTheme.accentFill)
         .windowSurfacePreferences(settings)
+        .background(DialogWindowReader { dialogHost.window = $0 })
         .onReceive(navigation.$requested) { requested in
             if let requested { selectedCategory = requested }
         }
@@ -203,7 +205,7 @@ struct SettingsView: View {
                 Toggle("Enable screenshot diagnostics logging", isOn: $settings.captureDiagnosticsEnabled)
                 HStack(spacing: 10) {
                     Button {
-                        exportCaptureDiagnostics()
+                        exportCaptureDiagnostics(in: dialogHost.window)
                     } label: {
                         Label("Export Diagnostics Log…", systemImage: "square.and.arrow.up")
                     }
@@ -473,18 +475,20 @@ struct SettingsView: View {
         .padding(.vertical, 3)
     }
 
-    private func exportCaptureDiagnostics() {
+    func exportCaptureDiagnostics(in window: NSWindow?) {
         let panel = NSSavePanel()
         panel.title = "Export Bello Box Diagnostics"
         panel.nameFieldStringValue = "bello-box-capture-diagnostics.log"
         panel.canCreateDirectories = true
 
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do {
-            try CaptureDiagnostics.exportLog(to: url)
-            diagnosticsExportMessage = "Exported."
-        } catch {
-            diagnosticsExportMessage = error.localizedDescription
+        WindowDialogPresenter.present(panel, for: window) { response in
+            guard response == .OK, let url = panel.url else { return }
+            do {
+                try CaptureDiagnostics.exportLog(to: url)
+                diagnosticsExportMessage = "Exported."
+            } catch {
+                diagnosticsExportMessage = error.localizedDescription
+            }
         }
     }
 }

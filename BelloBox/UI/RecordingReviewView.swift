@@ -33,6 +33,7 @@ final class RecordingReviewViewModel: ObservableObject {
     /// Bumped by close and by every export so late results are dropped.
     private var generation = 0
     var onClose: () -> Void = {}
+    weak var hostWindow: NSWindow?
 
     init(fileURL: URL, recoveryWarning: String? = nil, gifURL: URL? = nil, gifOptions: GIFExportOptions = .default,
          removeRecording: @escaping (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) },
@@ -100,8 +101,11 @@ final class RecordingReviewViewModel: ObservableObject {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = fileURL.lastPathComponent
         panel.allowedContentTypes = [.quickTimeMovie]
-        guard panel.runModal() == .OK, let destination = panel.url else { return }
-        Task { await saveRecording(to: destination) }
+        let generation = generation
+        WindowDialogPresenter.present(panel, for: hostWindow) { [weak self] response in
+            guard let self, self.generation == generation, response == .OK, let destination = panel.url else { return }
+            Task { await self.saveRecording(to: destination) }
+        }
     }
 
     func saveRecording(to destination: URL) async {
@@ -115,8 +119,11 @@ final class RecordingReviewViewModel: ObservableObject {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = gifURL.lastPathComponent
         panel.allowedContentTypes = [.gif]
-        guard panel.runModal() == .OK, let destination = panel.url else { return }
-        Task { await saveGIF(to: destination) }
+        let generation = generation
+        WindowDialogPresenter.present(panel, for: hostWindow) { [weak self] response in
+            guard let self, self.generation == generation, response == .OK, let destination = panel.url else { return }
+            Task { await self.saveGIF(to: destination) }
+        }
     }
 
     func saveGIF(to destination: URL) async {
@@ -192,8 +199,11 @@ final class RecordingReviewViewModel: ObservableObject {
         panel.allowedContentTypes = [.gif]
         panel.canCreateDirectories = true
         panel.nameFieldStringValue = fileURL.deletingPathExtension().lastPathComponent + ".gif"
-        guard panel.runModal() == .OK, let destination = panel.url else { return }
-        Task { await exportGIF(to: destination) }
+        let generation = generation
+        WindowDialogPresenter.present(panel, for: hostWindow) { [weak self] response in
+            guard let self, self.generation == generation, response == .OK, let destination = panel.url else { return }
+            Task { await self.exportGIF(to: destination) }
+        }
     }
 
     func exportGIF(to destination: URL) async {
@@ -332,14 +342,13 @@ struct RecordingReviewView: View {
             .popupCard()
             .onAppear { viewModel.loadSourceInfo() }
             .onDisappear { viewModel.player.pause() }
-            .alert("Move this recording to Trash?", isPresented: $viewModel.showDiscardConfirmation) {
-                Button("Keep Recording", role: .cancel) { viewModel.cancelDiscard() }
-                Button("Move to Trash", role: .destructive) { viewModel.discard() }
-            } message: {
-                Text(viewModel.hasGIF
+            .background(DialogWindowReader { viewModel.hostWindow = $0 })
+            .windowConfirmation("Move this recording to Trash?", isPresented: $viewModel.showDiscardConfirmation,
+                message: viewModel.hasGIF
                      ? "\(viewModel.fileName) and its GIF will be moved to Trash. You can restore them from Finder."
-                     : "\(viewModel.fileName) will be moved to Trash. You can restore it from Finder.")
-            }
+                     : "\(viewModel.fileName) will be moved to Trash. You can restore it from Finder.",
+                confirmTitle: "Move to Trash", cancelTitle: "Keep Recording",
+                onConfirm: { viewModel.discard() }, onCancel: viewModel.cancelDiscard)
 
             if viewModel.showsGIFExport {
                 GIFExportPanel(

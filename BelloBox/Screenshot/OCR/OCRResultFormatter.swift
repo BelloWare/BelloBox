@@ -63,22 +63,30 @@ enum OCRResultFormatter {
     }
 
     @MainActor
-    static func saveText(_ result: OCRResult, suggestedName: String) throws {
-        try save(plainText(from: result), suggestedName: suggestedName, extension: "txt")
+    static func saveText(_ result: OCRResult, suggestedName: String, in window: NSWindow? = nil,
+                         completion: @escaping (Result<Void, Error>) -> Void) {
+        save(plainText(from: result), suggestedName: suggestedName, extension: "txt", in: window, completion: completion)
     }
 
     @MainActor
-    static func saveMarkdown(_ result: OCRResult, suggestedName: String) throws {
-        try save(markdown(from: result), suggestedName: suggestedName, extension: "md")
+    static func saveMarkdown(_ result: OCRResult, suggestedName: String, in window: NSWindow? = nil,
+                             completion: @escaping (Result<Void, Error>) -> Void) {
+        save(markdown(from: result), suggestedName: suggestedName, extension: "md", in: window, completion: completion)
     }
 
     @MainActor
-    private static func save(_ text: String, suggestedName: String, extension ext: String) throws {
+    private static func save(_ text: String, suggestedName: String, extension ext: String, in window: NSWindow?,
+                             completion: @escaping (Result<Void, Error>) -> Void) {
         let panel = NSSavePanel()
         panel.allowedContentTypes = ext == "md" ? [UTType(filenameExtension: "md") ?? .plainText] : [.plainText]
         panel.canCreateDirectories = true
         panel.nameFieldStringValue = suggestedName.hasSuffix(".\(ext)") ? suggestedName : "\(suggestedName).\(ext)"
-        guard panel.runModal() == .OK, let url = panel.url else { throw OCRError.cancelled }
-        try text.data(using: .utf8)?.write(to: url, options: .atomic)
+        WindowDialogPresenter.present(panel, for: window) { response in
+            guard response == .OK, let url = panel.url else {
+                completion(.failure(OCRError.cancelled))
+                return
+            }
+            completion(Result { try Data(text.utf8).write(to: url, options: .atomic) })
+        }
     }
 }

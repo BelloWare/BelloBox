@@ -213,6 +213,7 @@ final class VideoToGIFViewModel: ObservableObject {
     /// Bumped on every load, convert and close so late results are dropped.
     private var generation = 0
     var onClose: () -> Void = {}
+    weak var hostWindow: NSWindow?
 
     init(options: GIFExportOptions = .default,
          transcodeGIF: @escaping GIFTranscode = { try await GIFTranscoder.transcode(sourceURL: $0, to: $1, options: $2, progress: $3) }) {
@@ -237,8 +238,11 @@ final class VideoToGIFViewModel: ObservableObject {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.message = "Choose a movie to turn into a GIF"
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        load(url)
+        let generation = generation
+        WindowDialogPresenter.present(panel, for: hostWindow) { [weak self] response in
+            guard let self, self.generation == generation, response == .OK, let url = panel.url else { return }
+            self.load(url)
+        }
     }
 
     /// Uses a movie the caller already chose (review fixtures, tests).
@@ -284,8 +288,11 @@ final class VideoToGIFViewModel: ObservableObject {
         panel.allowedContentTypes = [.gif]
         panel.canCreateDirectories = true
         panel.nameFieldStringValue = sourceURL.deletingPathExtension().lastPathComponent + ".gif"
-        guard panel.runModal() == .OK, let destination = panel.url else { return }
-        Task { await convert(to: destination) }
+        let generation = generation
+        WindowDialogPresenter.present(panel, for: hostWindow) { [weak self] response in
+            guard let self, self.generation == generation, response == .OK, let destination = panel.url else { return }
+            Task { await self.convert(to: destination) }
+        }
     }
 
     func convert(to destination: URL) async {
@@ -375,6 +382,7 @@ struct VideoToGIFView: View {
             .frame(width: Self.preferredSize.width, height: Self.preferredSize.height)
             .popupCard()
             .onExitCommand(perform: viewModel.close)
+            .background(DialogWindowReader { viewModel.hostWindow = $0 })
     }
 }
 

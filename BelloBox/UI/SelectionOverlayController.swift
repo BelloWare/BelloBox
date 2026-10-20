@@ -46,6 +46,9 @@ final class SelectionOverlayController: NSObject {
 #if DEBUG
     private var e2eScreenshotPulseWindow: NSWindow?
     private var e2eRecordingPulseWindow: NSWindow?
+    /// Observe accepted hotkeys without capturing displays, checking permissions,
+    /// or reading another app's selection in native integration tests.
+    var debugCaptureRequest: ((String) -> Void)?
 #endif
 
     /// Set by the app to open the Settings window.
@@ -82,6 +85,7 @@ final class SelectionOverlayController: NSObject {
             // Skip the utility-window fade: a panel still fading out would be frozen
             // into the display snapshot taken a few milliseconds later.
             self?.popupPanel?.animationBehavior = .none
+            if let panel = self?.popupPanel { WindowDialogPresenter.cancelDialogs(for: panel) }
             self?.popupPanel?.orderOut(nil)
             self?.screenshotOverlayEditorController?.close()
         }
@@ -407,6 +411,7 @@ final class SelectionOverlayController: NSObject {
     }
 
     private func activateScreenshot() {
+        guard WindowDialogPresenter.canStartCapture() else { return }
         if let selection = pendingSelection { rememberToolbarChoice(.screenshot, selection: selection) }
         let anchor = pendingSelection?.anchorRect
         hideToolbar(animated: false)
@@ -414,6 +419,7 @@ final class SelectionOverlayController: NSObject {
     }
 
     private func activateRecording() {
+        guard WindowDialogPresenter.canStartCapture() else { return }
         if let selection = pendingSelection { rememberToolbarChoice(.recording, selection: selection) }
         let anchor = pendingSelection?.anchorRect
         hideToolbar(animated: false)
@@ -599,6 +605,7 @@ final class SelectionOverlayController: NSObject {
     /// `options` come from the palette's recording preview; the capture
     /// overlay starts from them instead of the saved defaults.
     func triggerRecording(options: RecordingOptions? = nil) {
+        guard WindowDialogPresenter.canStartCapture() else { return }
 #if DEBUG
         if writeE2EHotkeyMarkerIfNeeded(kind: "recording") { return }
 #endif
@@ -723,6 +730,7 @@ final class SelectionOverlayController: NSObject {
     }
 
     private func beginUnifiedRecordingCapture(anchorRect: CGRect?, options: RecordingOptions? = nil) {
+        guard WindowDialogPresenter.canStartCapture() else { return }
         let options = options ?? settings.recordingOptions
         let permissions = recordingCoordinator.permissionState(options: options)
         guard permissions.canRecordVideo else {
@@ -895,6 +903,7 @@ final class SelectionOverlayController: NSObject {
     // MARK: - Screenshots
 
     func triggerScreenshotCapture() {
+        guard WindowDialogPresenter.canStartCapture() else { return }
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
         hideToolbar(animated: false)
         // Invoked from the menu bar: give the menu's own dismissal fade time to finish
@@ -903,12 +912,14 @@ final class SelectionOverlayController: NSObject {
     }
 
     func triggerScrollingScreenshotCapture() {
+        guard WindowDialogPresenter.canStartCapture() else { return }
         guard !isCaptureSurfaceActive else { NSSound.beep(); return }
         hideToolbar()
         showScreenshotChooser(anchorRect: nil, initialMode: .scrolling)
     }
 
     func triggerScreenshotShortcut() {
+        guard WindowDialogPresenter.canStartCapture() else { return }
 #if DEBUG
         if writeE2EHotkeyMarkerIfNeeded(kind: "screenshot") { return }
 #endif
@@ -927,6 +938,7 @@ final class SelectionOverlayController: NSObject {
         snapshotDelay: TimeInterval = CaptureOverlayController.defaultSnapshotDelay,
         scrollCaptureOnSelection: Bool = false
     ) {
+        guard WindowDialogPresenter.canStartCapture() else { return }
 #if DEBUG
         if let area = e2eRegionArea() {
             Task { await self.captureArea(area, anchorRect: anchorRect) }
@@ -1048,6 +1060,7 @@ final class SelectionOverlayController: NSObject {
     }
 
     private func showScreenshotOverlayEditor(document: ScreenshotDocument, frame: CGRect) {
+        guard WindowDialogPresenter.canStartCapture() else { return }
         hidePopup()
         let viewModel = ScreenshotPopupViewModel(
             document: document,
@@ -1061,8 +1074,9 @@ final class SelectionOverlayController: NSObject {
                 self?.screenshotOverlayEditorController = nil
             }
         }
-        controller.show(viewModel: viewModel, captureFrame: frame, settings: settings)
-        screenshotOverlayEditorController = controller
+        if controller.show(viewModel: viewModel, captureFrame: frame, settings: settings) {
+            screenshotOverlayEditorController = controller
+        }
     }
 
     private func hideScreenshotOverlayEditor() {
@@ -1220,6 +1234,10 @@ final class SelectionOverlayController: NSObject {
 
     @discardableResult
     private func writeE2EHotkeyMarkerIfNeeded(kind: String) -> Bool {
+        if let debugCaptureRequest {
+            debugCaptureRequest(kind)
+            return true
+        }
         let env = ProcessInfo.processInfo.environment
         let key = "BELLOBOX_E2E_\(kind.uppercased())_HOTKEY_MARKER"
         guard let path = env[key], !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
@@ -2407,7 +2425,10 @@ final class SelectionOverlayController: NSObject {
             // Vanish immediately so a capture started right after cannot see the fade.
             popupPanel?.animationBehavior = .none
         }
-        popupPanel?.orderOut(nil)
+        if let popupPanel {
+            WindowDialogPresenter.cancelDialogs(for: popupPanel)
+            popupPanel.orderOut(nil)
+        }
         popupPanel = nil
         conversionProgress = nil
         hideScreenshotOverlayEditor()

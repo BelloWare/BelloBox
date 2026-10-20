@@ -145,6 +145,7 @@
 		9B7CE3F3B8B7F22497CF822B /* LauncherUtilityPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC2181180B0A661FDA1AC67 /* LauncherUtilityPreviews.swift */; };
 		9C0100D9A73B07635FBB9214 /* ActionPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 622B6A40F69FA3A931BDEEE5 /* ActionPopupView.swift */; };
 		9D149A2D58954E7332F4B397 /* DeveloperTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A60A8F19303506D8A141824 /* DeveloperTime.swift */; };
+		9EB32696260321B498E66FBD /* WindowDialogPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98D8E888C823E0C9A4E654C0 /* WindowDialogPresenter.swift */; };
 		9EB9EAFDF90179E5C2034E89 /* LiteralTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29F8A4FDD01C01B1CA25946 /* LiteralTextEditor.swift */; };
 		9F15D32F17E9EEF8BB59FDAB /* CaptureDimmingViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DF5236289579189F833B4A0 /* CaptureDimmingViewTests.swift */; };
 		9F9F8FBCBE6316A35225C1D8 /* LauncherCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C080D2027E240847FBB3C957 /* LauncherCatalog.swift */; };
@@ -222,6 +223,7 @@
 		E9F5F075D0B3F605B7EFAD39 /* QuickAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6987A826FEC30AE6E8F75509 /* QuickAction.swift */; };
 		EA35BAD2192ADD8192309D79 /* CaptureWindowCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D435BC123B789A7484F28A56 /* CaptureWindowCatalog.swift */; };
 		EAD9F2BB07EAA764D3B71801 /* RecordingOutputTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECEEA21107144DD9B12643EB /* RecordingOutputTransaction.swift */; };
+		EB0B4E2CC00A5AFC5EAF7165 /* DialogPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62775A27E4FD9FEDEDE68CF0 /* DialogPresentationTests.swift */; };
 		EDE4DAF00D574527E17AEF23 /* DebugInfoCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FD2F4B65CB74AC0790DD02 /* DebugInfoCollector.swift */; };
 		EDF34383592FF57E106672C2 /* OCRResultFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C8374FE4C7B510B4F2F2113 /* OCRResultFormatter.swift */; };
 		F01E97565C63BC311C263F42 /* RegionCaptureGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55E83D1693A5BB0C69E5B7A4 /* RegionCaptureGeometry.swift */; };
@@ -371,6 +373,7 @@
 		5ED2530E3E35695C66EE221F /* AppSettingsAPIKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsAPIKeyTests.swift; sourceTree = "<group>"; };
 		61236C150B6BC57BB0A9C069 /* ThemeContrastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeContrastTests.swift; sourceTree = "<group>"; };
 		622B6A40F69FA3A931BDEEE5 /* ActionPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionPopupView.swift; sourceTree = "<group>"; };
+		62775A27E4FD9FEDEDE68CF0 /* DialogPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogPresentationTests.swift; sourceTree = "<group>"; };
 		62BAF09F1C84E3B46FEE918B /* WorkspaceNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceNavigationTests.swift; sourceTree = "<group>"; };
 		630B21CF97B099B2E7E045CC /* AudioSourcePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSourcePickerView.swift; sourceTree = "<group>"; };
 		635232F920A7544875DC69D2 /* RecordingFrameRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFrameRendererTests.swift; sourceTree = "<group>"; };
@@ -412,6 +415,7 @@
 		95D9CE5279414592D4099D52 /* TokenEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenEstimator.swift; sourceTree = "<group>"; };
 		97F6FA0F6E7381E4B04A34D7 /* ActionPopupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionPopupViewModel.swift; sourceTree = "<group>"; };
 		98735DED41F0CE8FCE9FC5AB /* LauncherSelectionContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherSelectionContext.swift; sourceTree = "<group>"; };
+		98D8E888C823E0C9A4E654C0 /* WindowDialogPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowDialogPresenter.swift; sourceTree = "<group>"; };
 		98DC0948C3E1FBC14B77BFA5 /* TextToolsPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToolsPopupView.swift; sourceTree = "<group>"; };
 		991EF0D88337969AD14C986E /* AdditionalUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdditionalUtility.swift; sourceTree = "<group>"; };
 		9A1F19FA474E63FAC1BB2574 /* ScreenshotPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotPopupView.swift; sourceTree = "<group>"; };
@@ -620,6 +624,7 @@
 				98DC0948C3E1FBC14B77BFA5 /* TextToolsPopupView.swift */,
 				4C1DF2470EFA12544D457904 /* Theme.swift */,
 				5EB099CBE66A178E63807214 /* ToolViewport.swift */,
+				98D8E888C823E0C9A4E654C0 /* WindowDialogPresenter.swift */,
 				4375BE04DABF8C06977D786D /* WindowMaterials.swift */,
 				3BEF010CC110EC27BD98219B /* WindowNavigation.swift */,
 				B98E57C3E6E5FE805E22A9AA /* WorldClockComponents.swift */,
@@ -727,6 +732,7 @@
 				560EAD2C438DD6C3E89134BB /* ComparisonCorpusTests.swift */,
 				92CF009E56B87169B4330D59 /* DebugInfoCollectorTests.swift */,
 				46D5B17461B3176DC095DE65 /* DeveloperUtilityTests.swift */,
+				62775A27E4FD9FEDEDE68CF0 /* DialogPresentationTests.swift */,
 				B1D07F262FEACFC1C7D3A024 /* DisplayCaptureResolverTests.swift */,
 				ED260DECF74C028BDA2FA9C5 /* DisplayCaptureVerificationTests.swift */,
 				A0D4E5CC96F8BF3F3DE2820F /* ExtendedUtilityTests.swift */,
@@ -1076,6 +1082,7 @@
 				5F8583D7255825D40E14A318 /* ComparisonCorpusTests.swift in Sources */,
 				3489FD327C260048AA9EF200 /* DebugInfoCollectorTests.swift in Sources */,
 				D0F60357670622904ADC875E /* DeveloperUtilityTests.swift in Sources */,
+				EB0B4E2CC00A5AFC5EAF7165 /* DialogPresentationTests.swift in Sources */,
 				D4212D711E5AFA0E76D409C5 /* DisplayCaptureResolverTests.swift in Sources */,
 				D737884ACFFE082C2817B94E /* DisplayCaptureVerificationTests.swift in Sources */,
 				7ED9991FDACB9D1D2D87F0CD /* ExtendedUtilityTests.swift in Sources */,
@@ -1290,6 +1297,7 @@
 				C4665D9947EC9E8165A2AF9A /* UtilityWorkbenchView.swift in Sources */,
 				DEF309F3FBA09D2D6044B4FA /* UtilityWorkbenchWindowController.swift in Sources */,
 				2DF3C41E77F2E00F24094C28 /* WindowCapturePicker.swift in Sources */,
+				9EB32696260321B498E66FBD /* WindowDialogPresenter.swift in Sources */,
 				0B4BFB06A34BD7FDB4130458 /* WindowMaterials.swift in Sources */,
 				FE6B9347E08704851FF48762 /* WindowNavigation.swift in Sources */,
 				FE9E83C2C5E7D4AF8AA9341D /* WorldClockAIResolver.swift in Sources */,

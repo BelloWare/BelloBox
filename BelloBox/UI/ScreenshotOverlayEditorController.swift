@@ -14,10 +14,12 @@ final class ScreenshotOverlayEditorController {
         }
     }
 
-    func show(viewModel: ScreenshotPopupViewModel, captureFrame: CGRect, settings: AppSettings) {
+    @discardableResult
+    func show(viewModel: ScreenshotPopupViewModel, captureFrame: CGRect, settings: AppSettings) -> Bool {
+        guard WindowDialogPresenter.canStartCapture() else { return false }
         close()
         self.viewModel = viewModel
-        installKeyMonitor(viewModel: viewModel)
+        installKeyMonitor()
         AppActivation.bringAppForward()
         let targetScreen = ScreenCoordinateSpace.displayForCocoaRect(captureFrame)
             ?? ScreenPlacement.screen(containing: CGPoint(x: captureFrame.midX, y: captureFrame.midY))
@@ -41,6 +43,7 @@ final class ScreenshotOverlayEditorController {
         }
 
         targetWindow?.makeKeyAndOrderFront(nil)
+        return true
     }
 
     func close() {
@@ -62,6 +65,7 @@ final class ScreenshotOverlayEditorController {
             self.keyMonitor = nil
         }
         for window in windows {
+            WindowDialogPresenter.cancelDialogs(for: window)
             window.orderOut(nil)
         }
         windows.removeAll()
@@ -71,15 +75,24 @@ final class ScreenshotOverlayEditorController {
         isClosing = false
     }
 
-    private func installKeyMonitor(viewModel: ScreenshotPopupViewModel) {
+    private func installKeyMonitor() {
         if let keyMonitor {
             NSEvent.removeMonitor(keyMonitor)
         }
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak viewModel] event in
-            guard event.keyCode == 53 else { return event }
-            Task { @MainActor in viewModel?.handleEscape() }
-            return nil
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
+            self?.handleKeyEvent(event) == true ? nil : event
         }
+    }
+
+    /// A sheet (including a remote file panel) must receive Escape itself.
+    func handleKeyEvent(_ event: NSEvent) -> Bool {
+        guard event.keyCode == 53,
+              !windows.contains(where: { WindowDialogPresenter.hasDialog(for: $0) })
+        else { return false }
+        if let window = event.window ?? NSApp.keyWindow,
+           !windows.contains(where: { $0 === window }) { return false }
+        viewModel?.handleEscape()
+        return true
     }
 }
 
@@ -168,12 +181,11 @@ private struct ScreenshotOverlayEditorView: View {
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
             .onExitCommand(perform: viewModel.handleEscape)
-            .alert("Discard screenshot edits?", isPresented: $viewModel.showDiscardCloseConfirmation) {
-                Button("Keep Editing", role: .cancel) { viewModel.cancelDiscardClose() }
-                Button("Discard", role: .destructive) { viewModel.confirmDiscardAndClose() }
-            } message: {
-                Text("Your screenshot annotations and crop changes will be lost.")
-            }
+            .background(DialogWindowReader { viewModel.hostWindow = $0 })
+            .windowConfirmation("Discard screenshot edits?", isPresented: $viewModel.showDiscardCloseConfirmation,
+                message: "Your screenshot annotations and crop changes will be lost.",
+                confirmTitle: "Discard", cancelTitle: "Keep Editing",
+                onConfirm: viewModel.confirmDiscardAndClose, onCancel: viewModel.cancelDiscardClose)
         }
     }
 

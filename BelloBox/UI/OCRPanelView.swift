@@ -17,6 +17,7 @@ final class OCRPanelViewModel: ObservableObject {
     var onCopyPlainText: () -> Void = {}
     var onCopyMarkdown: () -> Void = {}
     var onCancel: () -> Void = {}
+    weak var hostWindow: NSWindow?
 
     var plainText: String { result.map(OCRResultFormatter.plainText) ?? "" }
     var markdown: String { result.map(OCRResultFormatter.markdown) ?? "" }
@@ -31,16 +32,15 @@ final class OCRPanelViewModel: ObservableObject {
         panel.allowedContentTypes = isMarkdown ? [UTType(filenameExtension: "md") ?? .plainText] : [.plainText]
         panel.nameFieldStringValue = isMarkdown ? "screenshot-text.md" : "screenshot-text.txt"
         panel.canCreateDirectories = true
-        panel.begin { response in
+        WindowDialogPresenter.present(panel, for: hostWindow) { [weak self] response in
+            guard let self else { return }
             guard response == .OK, let url = panel.url else { return }
-            Task { @MainActor in
-                do {
-                    try text.write(to: url, atomically: true, encoding: .utf8)
-                    self.errorMessage = nil
-                    self.statusMessage = "Saved to \(url.lastPathComponent)."
-                } catch {
-                    self.errorMessage = "Could not save text: \(error.localizedDescription)"
-                }
+            do {
+                try text.write(to: url, atomically: true, encoding: .utf8)
+                self.errorMessage = nil
+                self.statusMessage = "Saved to \(url.lastPathComponent)."
+            } catch {
+                self.errorMessage = "Could not save text: \(error.localizedDescription)"
             }
         }
     }

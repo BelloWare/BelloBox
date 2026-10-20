@@ -178,7 +178,10 @@ final class CaptureOverlayController {
             NotificationCenter.default.removeObserver(resignActiveObserver)
             self.resignActiveObserver = nil
         }
-        for window in windows { window.orderOut(nil) }
+        for window in windows {
+            WindowDialogPresenter.cancelDialogs(for: window)
+            window.orderOut(nil)
+        }
         windows.removeAll()
         overlayViews.removeAll()
         snapshots.removeAll()
@@ -195,6 +198,7 @@ final class CaptureOverlayController {
         onError: @escaping (String) -> Void,
         onCancel: @escaping () -> Void
     ) {
+        guard WindowDialogPresenter.canStartCapture(onBlocked: onCancel) else { return }
         cancel()
         self.purpose = purpose
         self.onError = onError
@@ -226,6 +230,7 @@ final class CaptureOverlayController {
         let snapshotTiming = CaptureTiming("overlay.snapshots")
         captureTask = Task { @MainActor [weak self] in
             guard let self else { return }
+            guard WindowDialogPresenter.canStartCapture(onBlocked: { self.cancelFromUser() }) else { return }
             var captured: [DisplaySnapshot] = []
             do {
                 captured = try await self.screenCaptureService.captureDisplaySnapshots(
@@ -237,6 +242,7 @@ final class CaptureOverlayController {
                 )
             } catch {
                 guard !Task.isCancelled, self.captureToken == token else { return }
+                guard WindowDialogPresenter.canStartCapture(onBlocked: { self.cancelFromUser() }) else { return }
                 self.logDiagnostics("overlay.snapshots.error", ["error=\(error.localizedDescription)"])
                 let reportError = self.onError
                 self.cancel()
@@ -261,6 +267,8 @@ final class CaptureOverlayController {
     }
 
     private func showOverlayWindows(snapshots: [DisplaySnapshot]) {
+        // A sheet can open while display snapshots are being prepared.
+        guard WindowDialogPresenter.canStartCapture(onBlocked: { self.cancelFromUser() }) else { return }
         let capturableWindows = CaptureWindowCatalog.currentWindows()
         let policy = selectionPolicy(for: purpose)
         var snapshotsByDisplayID: [CGDirectDisplayID: DisplaySnapshot] = [:]
@@ -361,15 +369,27 @@ final class CaptureOverlayController {
             NSEvent.removeMonitor(keyMonitor)
         }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
-            guard event.keyCode == 53 else { return event }
-            Task { @MainActor in self?.handleEscape() }
-            return nil
+            self?.handleKeyEvent(event) == true ? nil : event
         }
+    }
+
+    func handleKeyEvent(_ event: NSEvent) -> Bool {
+        guard event.keyCode == 53, !hasOwnDialog else { return false }
+        if let window = event.window ?? NSApp.keyWindow,
+           !windows.contains(where: { $0 === window }), scrollCapture?.panel !== window { return false }
+        handleEscape()
+        return true
+    }
+
+    private var hasOwnDialog: Bool {
+        windows.contains { WindowDialogPresenter.hasDialog(for: $0) }
+            || WindowDialogPresenter.hasDialog(for: scrollCapture?.panel)
     }
 
     /// Escape leaves scroll-to-capture first (back to the editor) and only then closes
     /// the overlay.
     private func handleEscape() {
+        guard !hasOwnDialog else { return }
         if scrollCapture != nil {
             cancelScrollCapture()
         } else {
@@ -425,6 +445,7 @@ final class CaptureOverlayController {
     }
 
     private func cancelSelectionPhaseAfterFocusLoss() {
+        guard !hasOwnDialog else { return }
         guard purpose != nil else { return }
         guard activeScreenshotViewModel == nil else { return }
         guard overlayViews.allSatisfy({ !$0.hasLockedSelection }) else { return }
@@ -1621,6 +1642,7 @@ private struct CaptureScreenshotOverlaySurface: View {
                 }
             }
             .onExitCommand(perform: onCancel)
+            .background(DialogWindowReader { viewModel.hostWindow = $0 })
             .onAppear { onSelectionFrameChanged(selected) }
             .onChange(of: viewModel.document.cropRect) { _ in
                 onSelectionFrameChanged(currentSelectionFrame(in: bounds))

@@ -37,6 +37,19 @@ final class OverlayTooltipPresenter {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
+    /// Brief feedback for an unavailable action. It cannot take focus or mouse
+    /// input from the dialog that the user needs to finish.
+    func showNotice(_ text: String) {
+        installDismissMonitorIfNeeded()
+        pending?.cancel()
+        let noticeOwner = UUID()
+        owner = noticeOwner
+        present(text, at: NSEvent.mouseLocation)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            self?.hide(owner: noticeOwner)
+        }
+    }
+
     /// Swaps the text of the tooltip that is showing, or about to show, for the control
     /// under the pointer (a live value such as the line width).
     func update(_ text: String, owner: UUID? = nil) {
@@ -65,7 +78,9 @@ final class OverlayTooltipPresenter {
         let tooltip = panel ?? FloatingTooltipPanel()
         // Above the capture overlay (screen saver level) and its HUD (+1). No shadow: its
         // soft edge could otherwise reach into an excluded region.
-        tooltip.level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 2)
+        let highest = NSApp.windows.filter { $0 !== tooltip && $0.isVisible }
+            .map(\.level.rawValue).max() ?? 0
+        tooltip.level = NSWindow.Level(rawValue: max(NSWindow.Level.screenSaver.rawValue + 2, highest + 1))
         tooltip.hasShadow = false
         panel = tooltip
         tooltip.update(text: text)
