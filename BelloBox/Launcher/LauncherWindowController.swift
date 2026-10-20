@@ -316,6 +316,7 @@ final class LauncherWindowController: NSObject, NSWindowDelegate {
         menuObservers.forEach { NotificationCenter.default.removeObserver($0) }
         menuObservers = []; isTrackingMenu = false
         panel?.delegate = nil
+        if let panel { WindowDialogPresenter.cancelDialogs(for: panel) }
         panel?.close()
         searchField = nil; copilotField = nil; pendingSearchFocus = false; panel = nil; model = nil
     }

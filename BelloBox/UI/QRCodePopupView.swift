@@ -28,6 +28,7 @@ final class QRCodePopupViewModel: ObservableObject {
     private let renders = QRRenderQueue()
 
     var onClose: () -> Void = {}
+    weak var hostWindow: NSWindow?
 
     init(text: String) {
         self.text = text
@@ -91,8 +92,7 @@ final class QRCodePopupViewModel: ObservableObject {
         }
     }
 
-    /// Saves as PNG. Inside the palette the panel is attached to that window
-    /// as a sheet, so the palette does not dismiss while it is open.
+    /// Both the popup and palette attach the save sheet to their own window.
     func save(in window: NSWindow? = nil) {
         statusMessage = nil
         errorMessage = nil
@@ -104,19 +104,15 @@ final class QRCodePopupViewModel: ObservableObject {
         panel.allowedContentTypes = [.png]
         panel.nameFieldStringValue = "qr-code.png"
         panel.canCreateDirectories = true
-        let finish: (NSApplication.ModalResponse) -> Void = { response in
+        WindowDialogPresenter.present(panel, for: window ?? hostWindow) { [weak self] response in
+            guard let self else { return }
             guard response == .OK, let url = panel.url else { return }
             do {
                 try data.write(to: url, options: .atomic)
-                Task { @MainActor in self.statusMessage = "Saved to \(url.lastPathComponent)." }
+                self.statusMessage = "Saved to \(url.lastPathComponent)."
             } catch {
-                Task { @MainActor in self.errorMessage = "Could not save QR image: \(error.localizedDescription)" }
+                self.errorMessage = "Could not save QR image: \(error.localizedDescription)"
             }
-        }
-        if let window, window.isVisible {
-            panel.beginSheetModal(for: window, completionHandler: finish)
-        } else {
-            panel.begin(completionHandler: finish)
         }
     }
 
@@ -151,6 +147,7 @@ struct QRCodePopupView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .popupCard()
         .appearPop()
+        .background(DialogWindowReader { viewModel.hostWindow = $0 })
         .onExitCommand { viewModel.close() }
     }
 

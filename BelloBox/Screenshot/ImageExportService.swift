@@ -45,17 +45,26 @@ enum ImageExportService {
     }
 
     @MainActor
-    static func savePNG(_ image: CGImage, suggestedName: String) throws {
-        let panel = NSSavePanel()
+    static func savePNG(
+        _ image: CGImage, suggestedName: String, in window: NSWindow? = nil,
+        savePanel: NSSavePanel? = nil,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        let panel = savePanel ?? NSSavePanel()
         panel.allowedContentTypes = [.png]
         panel.canCreateDirectories = true
         panel.nameFieldStringValue = suggestedName.hasSuffix(".png") ? suggestedName : "\(suggestedName).png"
 
-        guard panel.runModal() == .OK, let url = panel.url else {
-            throw ImageExportError.saveCancelled
+        WindowDialogPresenter.present(panel, for: window) { response in
+            guard response == .OK, let url = panel.url else {
+                completion(.failure(ImageExportError.saveCancelled))
+                return
+            }
+            completion(Result {
+                let data = try pngData(from: image)
+                try data.write(to: url, options: .atomic)
+            })
         }
-        let data = try pngData(from: image)
-        try data.write(to: url, options: .atomic)
     }
 
     private static func encodedData(from image: CGImage, type: String, properties: [String: Any]?) throws -> Data {

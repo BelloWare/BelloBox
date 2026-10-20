@@ -436,6 +436,16 @@ BelloBox/
 - Screenshot capture requires Screen Recording permission and uses
   ScreenCaptureKit as the primary path. Local annotation, stitching, and Mac OCR
   stay on-device.
+- Save/open panels and destructive confirmations use `WindowDialogPresenter`
+  with the invoking view's weak `hostWindow` (`DialogWindowReader`). They attach
+  as sheets and sit above all visible BelloBox windows. Keep capture shields at
+  `.screenSaver`: lowering them would expose other apps and change capture/focus
+  behavior. Only the dialog level changes, restored before completion on both
+  acceptance and cancellation, including when an export subsequently fails.
+  Capture Escape monitors defer to dialogs; closing an overlay cancels its
+  pending sheet. This policy covers PNG, OCR, QR, movie/GIF, diagnostics, and
+  screenshot/recording/snippet discard confirmations. LLM OCR approval and GIF
+  options remain inside the editor's own surface.
 - Annotations: `ScreenshotAnnotation.erasures` are per-annotation brush strokes
   in document pixels; `AnnotationRenderer` draws an erased annotation into a
   transparency layer clipped to `paintedRect(for:)` and punches the strokes out

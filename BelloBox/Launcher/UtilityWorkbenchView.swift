@@ -336,10 +336,8 @@ struct UtilityWorkbenchView: View {
                 if model.snippetID != nil { Button("Delete…") { showDeleteSnippet = true }.buttonStyle(SecondaryButtonStyle()) }
             }
             Text("Use {{name}} for a field, or {{selection}}, {{date}}, {{timestamp}}, and {{uuid}}. Fill fields below and copy or replace with the preview.").font(.caption).foregroundStyle(BoxTheme.secondaryText)
-        }.alert("Delete this snippet?", isPresented: $showDeleteSnippet) {
-            Button("Delete", role: .destructive, action: model.deleteSnippet)
-            Button("Cancel", role: .cancel) {}
-        }
+        }.windowConfirmation("Delete this snippet?", isPresented: $showDeleteSnippet,
+                             confirmTitle: "Delete", onConfirm: model.deleteSnippet)
     }
     private func tablePreview(_ table: DataTable) -> some View {
         VStack(alignment: .leading, spacing: 8) {

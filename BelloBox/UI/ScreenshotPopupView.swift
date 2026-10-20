@@ -107,6 +107,9 @@ final class ScreenshotPopupViewModel: ObservableObject {
     private var eraserStrokeIndices: [UUID: Int] = [:]
 
     var onClose: () -> Void = {}
+    weak var hostWindow: NSWindow? {
+        didSet { ocrPanel.hostWindow = hostWindow }
+    }
 
     init(
         document: ScreenshotDocument,
@@ -557,11 +560,18 @@ final class ScreenshotPopupViewModel: ObservableObject {
         statusMessage = nil
         do {
             let image = try AnnotationRenderer.render(document)
-            try ImageExportService.savePNG(image, suggestedName: "BelloBox-Screenshot-\(Int(Date().timeIntervalSince1970))")
-            errorMessage = nil
-            statusMessage = "Saved PNG."
-        } catch ImageExportError.saveCancelled {
-            errorMessage = nil
+            ImageExportService.savePNG(image, suggestedName: "BelloBox-Screenshot-\(Int(Date().timeIntervalSince1970))", in: hostWindow) { [weak self] result in
+                guard let self, !self.isClosed else { return }
+                switch result {
+                case .success:
+                    self.errorMessage = nil
+                    self.statusMessage = "Saved PNG."
+                case .failure(ImageExportError.saveCancelled):
+                    self.errorMessage = nil
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                }
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -668,6 +678,8 @@ final class ScreenshotPopupViewModel: ObservableObject {
     }
 
     func handleEscape() {
+        guard !WindowDialogPresenter.ownsKeyboard else { return }
+        if llmConfirmation != nil { cancelLLMOCR(); return }
         requestClose()
     }
 
@@ -990,12 +1002,11 @@ struct ScreenshotPopupView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .popupCard()
                 .onExitCommand(perform: viewModel.handleEscape)
-                .alert("Discard screenshot edits?", isPresented: $viewModel.showDiscardCloseConfirmation) {
-                    Button("Keep Editing", role: .cancel) { viewModel.cancelDiscardClose() }
-                    Button("Discard", role: .destructive) { viewModel.confirmDiscardAndClose() }
-                } message: {
-                    Text("Your screenshot annotations and crop changes will be lost.")
-                }
+                .background(DialogWindowReader { viewModel.hostWindow = $0 })
+                .windowConfirmation("Discard screenshot edits?", isPresented: $viewModel.showDiscardCloseConfirmation,
+                    message: "Your screenshot annotations and crop changes will be lost.",
+                    confirmTitle: "Discard", cancelTitle: "Keep Editing",
+                    onConfirm: viewModel.confirmDiscardAndClose, onCancel: viewModel.cancelDiscardClose)
 
                 if let confirmation = viewModel.llmConfirmation {
                     LLMOCRConfirmationView(

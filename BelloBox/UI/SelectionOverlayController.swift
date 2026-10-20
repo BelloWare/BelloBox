@@ -82,6 +82,7 @@ final class SelectionOverlayController: NSObject {
             // Skip the utility-window fade: a panel still fading out would be frozen
             // into the display snapshot taken a few milliseconds later.
             self?.popupPanel?.animationBehavior = .none
+            if let panel = self?.popupPanel { WindowDialogPresenter.cancelDialogs(for: panel) }
             self?.popupPanel?.orderOut(nil)
             self?.screenshotOverlayEditorController?.close()
         }
@@ -2407,7 +2408,10 @@ final class SelectionOverlayController: NSObject {
             // Vanish immediately so a capture started right after cannot see the fade.
             popupPanel?.animationBehavior = .none
         }
-        popupPanel?.orderOut(nil)
+        if let popupPanel {
+            WindowDialogPresenter.cancelDialogs(for: popupPanel)
+            popupPanel.orderOut(nil)
+        }
         popupPanel = nil
         conversionProgress = nil
         hideScreenshotOverlayEditor()

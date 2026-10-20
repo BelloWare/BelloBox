@@ -178,7 +178,10 @@ final class CaptureOverlayController {
             NotificationCenter.default.removeObserver(resignActiveObserver)
             self.resignActiveObserver = nil
         }
-        for window in windows { window.orderOut(nil) }
+        for window in windows {
+            WindowDialogPresenter.cancelDialogs(for: window)
+            window.orderOut(nil)
+        }
         windows.removeAll()
         overlayViews.removeAll()
         snapshots.removeAll()
@@ -361,15 +364,20 @@ final class CaptureOverlayController {
             NSEvent.removeMonitor(keyMonitor)
         }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
-            guard event.keyCode == 53 else { return event }
-            Task { @MainActor in self?.handleEscape() }
-            return nil
+            self?.handleKeyEvent(event) == true ? nil : event
         }
+    }
+
+    func handleKeyEvent(_ event: NSEvent) -> Bool {
+        guard event.keyCode == 53, !WindowDialogPresenter.ownsKeyboard else { return false }
+        handleEscape()
+        return true
     }
 
     /// Escape leaves scroll-to-capture first (back to the editor) and only then closes
     /// the overlay.
     private func handleEscape() {
+        guard !WindowDialogPresenter.ownsKeyboard else { return }
         if scrollCapture != nil {
             cancelScrollCapture()
         } else {
@@ -425,6 +433,7 @@ final class CaptureOverlayController {
     }
 
     private func cancelSelectionPhaseAfterFocusLoss() {
+        guard !WindowDialogPresenter.ownsKeyboard else { return }
         guard purpose != nil else { return }
         guard activeScreenshotViewModel == nil else { return }
         guard overlayViews.allSatisfy({ !$0.hasLockedSelection }) else { return }
@@ -1621,6 +1630,7 @@ private struct CaptureScreenshotOverlaySurface: View {
                 }
             }
             .onExitCommand(perform: onCancel)
+            .background(DialogWindowReader { viewModel.hostWindow = $0 })
             .onAppear { onSelectionFrameChanged(selected) }
             .onChange(of: viewModel.document.cropRect) { _ in
                 onSelectionFrameChanged(currentSelectionFrame(in: bounds))
